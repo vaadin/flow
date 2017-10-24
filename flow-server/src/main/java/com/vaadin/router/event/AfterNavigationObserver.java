@@ -17,21 +17,18 @@ package com.vaadin.router.event;
 
 /**
  * Any {@code com.vaadin.ui.Component} implementing this interface will be informed when they
- * are being detached from the UI.
- * <p>
- * During this phase there is the possibility to reroute to another navigation
- * target or to postpone the navigation (to for instance get user input).
+ * have been attached to the UI and all navigation tasks have resolved.
  *
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface BeforeLeaveListener {
+public interface AfterNavigationObserver {
 
     /**
-     * Method called before navigation is executed.
+     * Method called after navigation has been executed.
      * 
      * @param event
-     *            before navigation event with event details
+     *            after navigation event with event details
      */
-    void beforeNavigation(BeforeNavigationEvent event);
+    void afterNavigation(AfterNavigationEvent event);
 }

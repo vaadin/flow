@@ -16,17 +16,22 @@
 package com.vaadin.router.event;
 
 /**
- * Any {@link com.vaadin.ui.Component} implementing this interface will be
- * informed when they are being detached from or attached to the UI.
+ * Any {@code com.vaadin.ui.Component} implementing this interface will be informed when they
+ * are being attached to the UI.
  * <p>
- * If the {@link ActivationState} of the {@link BeforeNavigationEvent} is
- * {@link ActivationState#DEACTIVATING} then it is possible to reroute and
- * postpone, but in the case it is {@link ActivationState#ACTIVATING} then only
- * rerouting is supported.
+ * During this phase there is the possibility to reroute to another navigation
+ * target.
  *
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface BeforeNavigationListener
-        extends BeforeEnterListener, BeforeLeaveListener {
+public interface BeforeEnterObserver {
+
+    /**
+     * Method called before in navigation is executed.
+     * 
+     * @param event
+     *            before navigation event with event details
+     */
+    void beforeEnter(BeforeNavigationEvent event);
 }

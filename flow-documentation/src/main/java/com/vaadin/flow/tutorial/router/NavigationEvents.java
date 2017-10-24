@@ -21,9 +21,9 @@ import com.vaadin.router.ContinueNavigationAction;
 import com.vaadin.router.Route;
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
-import com.vaadin.router.event.AfterNavigationListener;
+import com.vaadin.router.event.AfterNavigationObserver;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Anchor;
@@ -46,7 +46,7 @@ public class NavigationEvents {
         }
     }
 
-    public class SideElement extends Div implements BeforeNavigationListener {
+    public class SideElement extends Div implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             // Handle for instance before navigation clean up
@@ -61,7 +61,7 @@ public class NavigationEvents {
     }
 
     @Route("blog")
-    public class BlogList extends Div implements BeforeNavigationListener {
+    public class BlogList extends Div implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             // implementation omitted
@@ -78,7 +78,7 @@ public class NavigationEvents {
         }
     }
 
-    public class SignupForm extends Div implements BeforeNavigationListener {
+    public class SignupForm extends Div implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             if (event.getActivationState() == ActivationState.DEACTIVATING
@@ -95,7 +95,7 @@ public class NavigationEvents {
         }
     }
 
-    public class SideMenu extends Div implements AfterNavigationListener {
+    public class SideMenu extends Div implements AfterNavigationObserver {
         Anchor blog = new Anchor("blog", "Blog");
 
         @Override

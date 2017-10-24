@@ -21,13 +21,13 @@ import java.util.Collections;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 
 @Route(value = "com.vaadin.flow.uitest.ui.RequestParametersView", layout = ViewTestLayout.class)
 public class RequestParametersView extends Div
-        implements BeforeNavigationListener {
+        implements BeforeNavigationObserver {
     static final String REQUEST_PARAM_NAME = "testRequestParam";
     static final String NO_INPUT_TEXT = "No input";
     static final String REQUEST_PARAM_ID = "requestParamDisplayLabel";

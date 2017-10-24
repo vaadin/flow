@@ -23,7 +23,6 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.router.event.ErrorNavigationEvent;
 import com.vaadin.router.event.EventUtil;
 import com.vaadin.router.event.NavigationEvent;
@@ -111,10 +110,12 @@ public class ErrorStateRenderer implements NavigationHandler {
                 .setErrorParameter(beforeNavigationActivating,
                         ((ErrorNavigationEvent) event).getErrorParameter());
 
-        List<BeforeNavigationListener> listeners = EventUtil
-                .collectBeforeNavigationListeners(chain);
-        listeners.forEach(listener -> listener
-                .beforeNavigation(beforeNavigationActivating));
+        EventUtil.collectBeforeNavigationObservers(chain)
+                .forEach(listener -> listener
+                        .beforeNavigation(beforeNavigationActivating));
+        EventUtil.collectBeforeEnterObservers(chain)
+                .forEach(listener -> listener
+                        .beforeEnter(beforeNavigationActivating));
 
         @SuppressWarnings("unchecked")
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
@@ -128,7 +129,7 @@ public class ErrorStateRenderer implements NavigationHandler {
         AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
                 RouterUtil.createEvent(event, chain));
 
-        EventUtil.collectAfterNavigationListeners(chain).forEach(
+        EventUtil.collectAfterNavigationObservers(chain).forEach(
                 listener -> listener.afterNavigation(afterNavigationEvent));
 
         return statusCode;

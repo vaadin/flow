@@ -32,11 +32,11 @@ import org.junit.rules.ExpectedException;
 
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
-import com.vaadin.router.event.AfterNavigationListener;
-import com.vaadin.router.event.BeforeEnterListener;
-import com.vaadin.router.event.BeforeLeaveListener;
+import com.vaadin.router.event.AfterNavigationObserver;
+import com.vaadin.router.event.BeforeEnterObserver;
+import com.vaadin.router.event.BeforeLeaveObserver;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.server.MockVaadinServletService;
@@ -75,7 +75,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("foo/bar")
     @Tag(Tag.DIV)
     public static class FooBarNavigationTarget extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             eventCollector.add("FooBar " + event.getActivationState());
@@ -85,9 +85,9 @@ public class RouterTest extends RoutingTestBase {
     @Route("enteringTarget")
     @Tag(Tag.DIV)
     public static class EnteringNavigationTarget extends Component
-            implements BeforeEnterListener {
+            implements BeforeEnterObserver {
         @Override
-        public void beforeNavigation(BeforeNavigationEvent event) {
+        public void beforeEnter(BeforeNavigationEvent event) {
             eventCollector.add("EnterListener got event with state "
                     + event.getActivationState());
         }
@@ -96,18 +96,60 @@ public class RouterTest extends RoutingTestBase {
     @Route("leavingTarget")
     @Tag(Tag.DIV)
     public static class LeavingNavigationTarget extends Component
-            implements BeforeLeaveListener {
+            implements BeforeLeaveObserver {
         @Override
-        public void beforeNavigation(BeforeNavigationEvent event) {
+        public void beforeLeave(BeforeNavigationEvent event) {
             eventCollector.add("LeaveListener got event with state "
                     + event.getActivationState());
+        }
+    }
+
+    @Route("combined")
+    @Tag(Tag.DIV)
+    public static class CombinedObserverTarget extends Component {
+        @Tag(Tag.DIV)
+        public static class Enter extends Component
+                implements BeforeEnterObserver {
+
+            @Override
+            public void beforeEnter(BeforeNavigationEvent event) {
+                eventCollector.add("EnterListener got event with state "
+                        + event.getActivationState());
+            }
+        }
+
+        @Tag(Tag.DIV)
+        public static class Leave extends Component
+                implements BeforeLeaveObserver {
+
+            @Override
+            public void beforeLeave(BeforeNavigationEvent event) {
+                eventCollector.add("LeaveListener got event with state "
+                        + event.getActivationState());
+            }
+        }
+
+        @Tag(Tag.DIV)
+        public static class Before extends Component
+                implements BeforeNavigationObserver {
+
+            @Override
+            public void beforeNavigation(BeforeNavigationEvent event) {
+                eventCollector.add("BeforeNavigation got event with state "
+                        + event.getActivationState());
+            }
+        }
+
+        public CombinedObserverTarget() {
+            getElement().appendChild(new Enter().getElement(),
+                    new Leave().getElement(), new Before().getElement());
         }
     }
 
     @Route("reroute")
     @Tag(Tag.DIV)
     public static class ReroutingNavigationTarget extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             eventCollector.add("Redirecting");
@@ -124,7 +166,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("param")
     @Tag(Tag.DIV)
     public static class RouteWithParameter extends Component
-            implements BeforeNavigationListener, HasUrlParameter<String> {
+            implements BeforeNavigationObserver, HasUrlParameter<String> {
 
         private String param;
 
@@ -144,7 +186,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("param")
     @Tag(Tag.DIV)
     public static class RouteWithMultipleParameters extends Component
-            implements BeforeNavigationListener, HasUrlParameter<String> {
+            implements BeforeNavigationObserver, HasUrlParameter<String> {
 
         private String param;
 
@@ -281,7 +323,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("redirect/to/param")
     @Tag(Tag.DIV)
     public static class RerouteToRouteWithParam extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -292,7 +334,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("fail/param")
     @Tag(Tag.DIV)
     public static class FailRerouteWithParam extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -303,7 +345,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("redirect/to/params")
     @Tag(Tag.DIV)
     public static class RerouteToRouteWithMultipleParams extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -314,7 +356,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("fail/params")
     @Tag(Tag.DIV)
     public static class FailRerouteWithParams extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -379,7 +421,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("url")
     @Tag(Tag.DIV)
     public static class NavigationTargetWithDynamicTitleFromNavigation extends
-            Component implements HasDynamicTitle, BeforeNavigationListener {
+            Component implements HasDynamicTitle, BeforeNavigationObserver {
 
         private String title = DYNAMIC_TITLE;
 
@@ -428,7 +470,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Tag(Tag.DIV)
     private static class AfterNavigation extends Component
-            implements AfterNavigationListener {
+            implements AfterNavigationObserver {
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
             eventCollector.add("Event after navigation");
@@ -437,7 +479,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Tag(Tag.DIV)
     private static class BeforeNavigation extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             eventCollector.add("Event before navigation");
@@ -493,7 +535,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     public static class ErrorTarget extends RouteNotFoundError implements
-            HasErrorParameter<NotFoundException>, BeforeNavigationListener {
+            HasErrorParameter<NotFoundException>, BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -528,7 +570,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("exception")
     @Tag(Tag.DIV)
     public static class FailOnException extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -539,7 +581,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("beforeToError/exception")
     @Tag(Tag.DIV)
     public static class RerouteToError extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -550,7 +592,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("beforeToError/message")
     @Tag(Tag.DIV)
     public static class RerouteToErrorWithMessage extends Component
-            implements BeforeNavigationListener, HasUrlParameter<String> {
+            implements BeforeNavigationObserver, HasUrlParameter<String> {
 
         String message;
 
@@ -587,7 +629,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("loop")
     @Tag(Tag.DIV)
     public static class LoopByReroute extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -599,7 +641,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("redirect/loop")
     @Tag(Tag.DIV)
     public static class RedirectToLoopByReroute extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -611,7 +653,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("postpone")
     @Tag(Tag.DIV)
     public static class EagerlyPostponingNavigationTarget extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             eventCollector.add("Attempting to postpone...");
@@ -623,7 +665,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("postpone")
     @Tag(Tag.DIV)
     public static class PostponingForeverNavigationTarget extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             if (event.getActivationState() == ActivationState.DEACTIVATING) {
@@ -638,7 +680,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("postpone")
     @Tag(Tag.DIV)
     public static class PostponingAndResumingNavigationTarget extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             if (event.getActivationState() == ActivationState.DEACTIVATING) {
@@ -654,7 +696,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("postpone")
     @Tag(Tag.DIV)
     public static class PostponingFirstTimeNavigationTarget extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
         private int counter = 0;
 
         @Override
@@ -676,7 +718,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Tag(Tag.DIV)
     public static class ChildListener extends Component
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -687,7 +729,7 @@ public class RouterTest extends RoutingTestBase {
     @Route("postpone")
     @Tag(Tag.DIV)
     public static class PostponingAndResumingCompoundNavigationTarget
-            extends Component implements BeforeNavigationListener {
+            extends Component implements BeforeNavigationObserver {
         public PostponingAndResumingCompoundNavigationTarget() {
             getElement().appendChild(new ChildListener().getElement());
         }
@@ -861,7 +903,7 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("enteringTarget"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("BeforeEnterListener should have fired.", 1,
+        Assert.assertEquals("BeforeEnterObserver should have fired.", 1,
                 eventCollector.size());
         Assert.assertEquals("EnterListener got event with state ACTIVATING",
                 eventCollector.get(0));
@@ -874,10 +916,45 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("BeforeLeaveListener should have fired", 2,
+        Assert.assertEquals("BeforeLeaveObserver should have fired", 2,
                 eventCollector.size());
         Assert.assertEquals("LeaveListener got event with state DEACTIVATING",
                 eventCollector.get(1));
+    }
+
+    @Test
+    public void leave_navigate_and_enter_listeners_execute_in_correct_order()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(CombinedObserverTarget.class,
+                                RootNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        // Observer execution order should be BeforeNavigation before
+        // EnterListener, but BeforeLeave before BeforeNavigation
+        router.navigate(ui, new Location("combined"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "BeforeNavigationObserver and BeforeEnterObserver should have fired.",
+                2, eventCollector.size());
+        Assert.assertEquals("BeforeNavigation got event with state ACTIVATING",
+                eventCollector.get(0));
+        Assert.assertEquals("EnterListener got event with state ACTIVATING",
+                eventCollector.get(1));
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "BeforeNavigationObserver and BeforeLeaveObserver target should have fired.",
+                4, eventCollector.size());
+
+        Assert.assertEquals("LeaveListener got event with state DEACTIVATING",
+                eventCollector.get(2));
+        Assert.assertEquals(
+                "BeforeNavigation got event with state DEACTIVATING",
+                eventCollector.get(3));
     }
 
     @Test
@@ -1723,7 +1800,9 @@ public class RouterTest extends RoutingTestBase {
                 HttpServletResponse.SC_OK, status2);
         Assert.assertEquals(PostponingAndResumingNavigationTarget.class,
                 getUIComponent());
-        Thread.sleep(200);
+
+        Thread.sleep(300);
+
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 3,
                 eventCollector.size());
@@ -1810,7 +1889,9 @@ public class RouterTest extends RoutingTestBase {
                 HttpServletResponse.SC_OK, status2);
         Assert.assertEquals(PostponingAndResumingCompoundNavigationTarget.class,
                 getUIComponent());
+
         Thread.sleep(200);
+
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 5,
                 eventCollector.size());

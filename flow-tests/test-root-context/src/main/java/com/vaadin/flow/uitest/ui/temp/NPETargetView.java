@@ -18,11 +18,11 @@ package com.vaadin.flow.uitest.ui.temp;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.BeforeNavigationObserver;
 
 @Route(value = "npe")
 public class NPETargetView extends AbstractDivView
-        implements BeforeNavigationListener {
+        implements BeforeNavigationObserver {
 
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {
