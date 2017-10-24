@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.router.View;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.Html;
 
-public class StaticHtmlView extends Html implements View {
+@Route(value = "com.vaadin.flow.uitest.ui.StaticHtmlView", layout = ViewTestLayout.class)
+public class StaticHtmlView extends Html {
 
     public StaticHtmlView() {
         super(StaticHtmlView.class.getResourceAsStream("StaticHtmlView.html"));

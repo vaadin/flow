@@ -13,20 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.function;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.Serializable;
 
-import com.vaadin.flow.router.View;
-import com.vaadin.ui.AngularTemplate;
+/**
+ * A {@link Runnable} that is also {@link Serializable}.
+ *
+ * @author Vaadin Ltd
+ */
+@FunctionalInterface
+public interface SerializableRunnable extends Runnable, Serializable {
 
-public class UmlautÅäöView extends AngularTemplate implements View {
-
-    public UmlautÅäöView() {
-        super(new ByteArrayInputStream(
-                "<div id='content'>Umlaut view: åäöü. a\u00adb</div>"
-                        .getBytes(StandardCharsets.UTF_8)));
-
-    }
 }

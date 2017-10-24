@@ -17,6 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.Assert;
@@ -120,17 +121,20 @@ public class GridViewIT extends ComponentDemoTest {
                 messageDiv.getText());
         assertRowsSelected(grid, 0, 5);
 
-        List<WebElement> cells = grid
-                .findElements(By.tagName("vaadin-grid-cell-content"));
-        cells.get(0).click();
-        cells.get(2).click();
+        List<WebElement> checkboxes = grid
+                .findElements(By.tagName("vaadin-checkbox")).stream()
+                .filter(element -> "Select Row"
+                        .equals(element.getAttribute("aria-label")))
+                .collect(Collectors.toList());
+        clickCheckbox(checkboxes.get(0));
+        clickCheckbox(checkboxes.get(1));
         Assert.assertEquals(
                 getSelectionMessage(GridView.items.subList(1, 5),
                         GridView.items.subList(2, 5), true),
                 messageDiv.getText());
         assertRowsSelected(grid, 2, 5);
 
-        cells.get(10).click();
+        clickCheckbox(checkboxes.get(5));
         Assert.assertTrue(isRowSelected(grid, 5));
         selectBtn.click();
         assertRowsSelected(grid, 0, 5);
@@ -173,6 +177,22 @@ public class GridViewIT extends ComponentDemoTest {
         clickElementWithJs(buttons.get(1));
         waitUntilNot(driver -> hasHtmlCell(grid,
                 "<div title=\"Person 1 Updated Updated\">Person 1 Updated Updated<br><small>23 years old</small></div>"));
+    }
+
+    @Test
+    public void gridWithResizableColumns() {
+        WebElement grid = findElement(By.id("resizable-columns"));
+        scrollToElement(grid);
+
+        Assert.assertEquals("Two resize handlers should be present", 2L,
+                getCommandExecutor().executeScript(
+                        "return arguments[0].shadowRoot.querySelectorAll('[part~=\"resize-handle\"]').length;",
+                        grid));
+
+        Assert.assertEquals("First width is fixed", "75px",
+                getCommandExecutor().executeScript(
+                        "return arguments[0].shadowRoot.querySelectorAll('th')[0].style.width;",
+                        grid));
     }
 
     private static String getSelectionMessage(Object oldSelection,
@@ -226,6 +246,10 @@ public class GridViewIT extends ComponentDemoTest {
         return cells.stream()
                 .filter(cell -> text.equals(cell.getAttribute("innerHTML")))
                 .findAny().orElse(null);
+    }
+
+    private void clickCheckbox(WebElement checkbox) {
+        getInShadowRoot(checkbox, By.id("nativeCheckbox")).click();
     }
 
     @Override

@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.angular.model.TemplateModel;
 
-public class JSWithComponentsView extends Div implements View {
+@Route(value = "com.vaadin.flow.uitest.ui.JSWithComponentsView", layout = ViewTestLayout.class)
+public class JSWithComponentsView extends Div {
 
     public static class JSDiv extends Div {
         public JSDiv() {

@@ -51,8 +51,7 @@ The default exception handlers can be overridden by extending them like:
 .Custom route not found
 [source, java]
 ----
-public class CustomNotFoundTarget extends RouteNotFoundError
-        implements HasErrorParameter<NotFoundException> {
+public class CustomNotFoundTarget extends RouteNotFoundError {
 
     @Override
     public int setErrorParameter(BeforeNavigationEvent event,

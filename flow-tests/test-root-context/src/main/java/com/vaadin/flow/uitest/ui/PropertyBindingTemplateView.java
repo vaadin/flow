@@ -19,18 +19,16 @@ import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.NativeButton;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.angular.model.TemplateModel;
-import com.vaadin.ui.AngularTemplate;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class PropertyBindingTemplateView extends Div implements View {
+@Route(value = "com.vaadin.flow.uitest.ui.PropertyBindingTemplateView", layout = ViewTestLayout.class)
+public class PropertyBindingTemplateView extends Div {
 
     public interface Model extends TemplateModel {
         void setName(String name);

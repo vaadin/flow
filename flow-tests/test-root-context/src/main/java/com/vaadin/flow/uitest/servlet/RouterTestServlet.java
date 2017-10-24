@@ -1,15 +1,22 @@
 package com.vaadin.flow.uitest.servlet;
 
 import javax.servlet.annotation.WebServlet;
+import java.util.stream.Stream;
 
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
-import com.vaadin.server.VaadinServletConfiguration;
-import com.vaadin.ui.html.Div;
-import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinServletConfiguration;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.server.WrappedSession;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.NativeButton;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/new-router-session/*" })
@@ -23,7 +30,7 @@ public class RouterTestServlet extends VaadinServlet {
         }
     }
 
-    @Route("")
+    @Route("abc")
     public static class RootNavigationTarget extends ClassNameDiv {
     }
 
@@ -89,4 +96,84 @@ public class RouterTestServlet extends VaadinServlet {
     public static class TargetLayout extends ClassNameDiv {
 
     }
+
+    public static class Layout extends Div
+            implements RouterLayout, BeforeNavigationListener {
+
+        private Element sessionId;
+
+        public Layout() {
+            sessionId = ElementFactory.createDiv().setAttribute("id",
+                    "sessionId");
+            getElement().appendChild(sessionId);
+            getElement().appendChild(ElementFactory.createDiv());
+            getElement().appendChild(ElementFactory.createHr());
+        }
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            WrappedSession session = VaadinSession.getCurrent().getSession();
+            if (session == null) {
+                sessionId.setText("No session");
+            } else {
+                sessionId.setText("Session id: " + session.getId());
+            }
+        }
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static Stream<Class<? extends Component>> getViewClasses() {
+        return (Stream) Stream.of(NormalView.class, AnotherNormalView.class,
+                ViewWhichCausesInternalException.class,
+                ViewWhichInvalidatesSession.class);
+    }
+
+    public static abstract class MyAbstractView extends Div {
+
+        protected MyAbstractView() {
+            getViewClasses().forEach(c -> {
+                String viewName = c.getSimpleName();
+                Element div = ElementFactory.createDiv();
+                getElement().appendChild(div);
+                if (getClass() == c) {
+                    div.appendChild(ElementFactory.createStrong(viewName));
+                } else {
+                    div.appendChild(ElementFactory.createRouterLink(viewName,
+                            viewName));
+                }
+                div.appendChild(ElementFactory.createHr());
+            });
+        }
+
+    }
+
+    @Route(value = "NormalView", layout = Layout.class)
+    public static class NormalView extends MyAbstractView {
+    }
+
+    @Route(value = "AnotherNormalView", layout = Layout.class)
+    public static class AnotherNormalView extends MyAbstractView {
+    }
+
+    @Route(value = "ViewWhichCausesInternalException", layout = Layout.class)
+    public static class ViewWhichCausesInternalException extends MyAbstractView
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            throw new RuntimeException(
+                    "Intentionally caused by " + getClass().getSimpleName());
+        }
+    }
+
+    @Route(value = "ViewWhichInvalidatesSession", layout = Layout.class)
+    public static class ViewWhichInvalidatesSession extends MyAbstractView
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            VaadinSession.getCurrent().getSession().invalidate();
+        }
+    }
+
 }
