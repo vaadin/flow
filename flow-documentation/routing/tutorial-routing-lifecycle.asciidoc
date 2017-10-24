@@ -21,7 +21,7 @@ of the navigation status.
 During this lifecycle there is the possibility to reroute to another view, reroute to an
 error view and even postpone navigation to get user confirmation.
 
-=== BeforeNavigationListeners
+=== BeforeNavigationObservers
 
 Any `Component` implementing `BeforeNavigationObserver` will be informed when they
 are being detached or attached to the UI. The components to inform of navigation
@@ -50,13 +50,13 @@ public class SideElement extends Div implements BeforeNavigationObserver {
 ----
 
 === BeforeLeaveObserver
-The `BeforeLeaveObserver` is a specific BeforeNavigationObserver that is only
+The `BeforeLeaveObserver` will only be
 notified when the component will be detached from the UI.
 
 During the `BeforeLeaveObserver` state postponing and rerouting is supported.
 
 === BeforeEnterObserver
-The `BeforeLeaveObserver` is a specific BeforeNavigationObserver that is only
+The `BeforeLeaveObserver` will only be
 notified when the component will be attached to the UI.
 
 During the `BeforeEnterObserver` state only reroute is supported.
@@ -69,7 +69,7 @@ state, and enables optional functions like rerouting and postponing.
 === Reroute
 The `BeforeNavigationEvent` can be used to reroute dynamically if there is a need
 to show completely different information in some state.
-Rerouting can happen from a listener in the detaching or the attaching chain.
+Rerouting can happen from a observer in the detaching or the attaching chain.
 
 In this example the reroute would happen on attach of `BlogList` when it receives no results.
 [source,java]
@@ -126,9 +126,9 @@ public class SignupForm extends Div implements BeforeNavigationObserver {
     }
 }
 ----
-Postponing interrupts the process of notifying listeners. When the transition is
-resumed, the remaining listeners after the one which initiated the postpone will be called.
-As an example, let's assume the current page has 3 listeners __a__, __b__ and __c__,
+Postponing interrupts the process of notifying observers. When the transition is
+resumed, the remaining observers after the one which initiated the postpone will be called.
+As an example, let's assume the current page has 3 observers __a__, __b__ and __c__,
 which are being notified in this order. If __b__ calls `postpone`, the call to __c__,
 as well as the rest of the transition process, is deferred. If the transition
 postponed by __b__ is not resumed, __c__ will not get a notification about this
@@ -138,8 +138,8 @@ where it was interrupted. Thus __a__ and __b__ are not called again, but __c__ i
 
 [NOTE]
 Postpone may only be initiated while navigating away from a page, meaning it is only
-available for a `BeforeNavigationListener` where the `BeforeNavigationEvent::getActivationState`
-is *DEACTIVATING* or when we use a `BeforeLeaveListener`; if the method
+available for a `BeforeNavigationObserver` where the `BeforeNavigationEvent::getActivationState`
+is *DEACTIVATING* or when we use a `BeforeLeaveObserver`; if the method
 is called while entering / activating the new page, it will throw an `IllegalStateException`.
 [NOTE]
 At most one navigation event may be postponed at any time; starting a new
