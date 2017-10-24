@@ -47,17 +47,36 @@ public class ClasspathHelper {
     public static final String COM_VAADIN_FILE_PREFIX = "com"
             + File.separatorChar + "vaadin" + File.separatorChar;
 
+    /**
+     * Attempts to find and load all available Vaadin classes on the class path
+     * that pass the given filters.
+     *
+     * @param classpathFilter
+     *            predicate to use for filtering based on class path
+     * @param classFilter
+     *            predicate to use for filtering based on a class
+     * @return stream of found vaadin classes
+     */
     public static Stream<Class<?>> getVaadinClassesFromClasspath(
             Predicate<String> classpathFilter,
             Predicate<Class<?>> classFilter) {
         return getRawClasspathEntries().stream().filter(classpathFilter)
                 .map(File::new).map(file -> getVaadinClassesFromFile(file))
-                .flatMap(List::stream).filter(classFilter)
+                .flatMap(List::stream)
                 .filter(cls -> !cls.isSynthetic() && !cls.isAnonymousClass()
-                        && !Modifier.isPrivate(cls.getModifiers()));
+                        && !Modifier.isPrivate(cls.getModifiers()))
+                .filter(classFilter);
 
     }
 
+    /**
+     * Attempts to find and load all available Vaadin classes on the class path
+     * that pass the given filter.
+     *
+     * @param classpathFilter
+     *            predicate to use for filtering based on class path
+     * @return stream of found vaadin classes
+     */
     public static Stream<Class<?>> getVaadinClassesFromClasspath(
             Predicate<String> classpathFilter) {
         return getVaadinClassesFromClasspath(classpathFilter, cls -> true);
