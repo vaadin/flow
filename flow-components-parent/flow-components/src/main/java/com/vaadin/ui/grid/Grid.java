@@ -56,6 +56,9 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.common.Focusable;
+import com.vaadin.ui.common.HasSize;
+import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.event.ComponentEvent;
@@ -82,7 +85,8 @@ import elemental.json.JsonValue;
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column.html")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 @JavaScript("context://gridConnector.js")
-public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
+public class Grid<T> extends AbstractListing<T>
+        implements HasDataProvider<T>, HasStyle, HasSize, Focusable<Grid<T>> {
 
     private final class UpdateQueue implements Update {
         private List<Runnable> queue = new ArrayList<>();
@@ -431,6 +435,30 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         @Synchronize("resizable-changed")
         public boolean isResizable() {
             return getElement().getProperty("resizable", false);
+        }
+
+        /**
+         * Hides or shows the column. By default columns are visible before
+         * explicitly hiding them.
+         *
+         * @param hidden
+         *            {@code true} to hide the column, {@code false} to show
+         * @return this column, for method chaining
+         */
+        public Column<T> setHidden(boolean hidden) {
+            getElement().setProperty("hidden", hidden);
+            return this;
+        }
+
+        /**
+         * Returns whether this column is hidden. Default is {@code false}.
+         *
+         * @return {@code true} if the column is currently hidden, {@code false}
+         *         otherwise
+         */
+        @Synchronize("hidden-changed")
+        public boolean isHidden() {
+            return getElement().getProperty("hidden", false);
         }
 
         /**
