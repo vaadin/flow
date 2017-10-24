@@ -578,6 +578,18 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Tag(Tag.DIV)
+    public static class FaultyErrorView extends Component
+            implements HasErrorParameter<IllegalArgumentException> {
+
+        @Override
+        public int setErrorParameter(BeforeNavigationEvent event,
+                ErrorParameter<IllegalArgumentException> parameter) {
+            // Return faulty status code.
+            return 0;
+        }
+    }
+
     @Route("beforeToError/exception")
     @Tag(Tag.DIV)
     public static class RerouteToError extends Component
@@ -654,6 +666,7 @@ public class RouterTest extends RoutingTestBase {
     @Tag(Tag.DIV)
     public static class EagerlyPostponingNavigationTarget extends Component
             implements BeforeNavigationObserver {
+
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             eventCollector.add("Attempting to postpone...");
@@ -666,6 +679,7 @@ public class RouterTest extends RoutingTestBase {
     @Tag(Tag.DIV)
     public static class PostponingForeverNavigationTarget extends Component
             implements BeforeNavigationObserver {
+
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             if (event.getActivationState() == ActivationState.DEACTIVATING) {
@@ -681,6 +695,7 @@ public class RouterTest extends RoutingTestBase {
     @Tag(Tag.DIV)
     public static class PostponingAndResumingNavigationTarget extends Component
             implements BeforeNavigationObserver {
+
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             if (event.getActivationState() == ActivationState.DEACTIVATING) {
@@ -697,6 +712,7 @@ public class RouterTest extends RoutingTestBase {
     @Tag(Tag.DIV)
     public static class PostponingFirstTimeNavigationTarget extends Component
             implements BeforeNavigationObserver {
+
         private int counter = 0;
 
         @Override
@@ -730,6 +746,7 @@ public class RouterTest extends RoutingTestBase {
     @Tag(Tag.DIV)
     public static class PostponingAndResumingCompoundNavigationTarget
             extends Component implements BeforeNavigationObserver {
+
         public PostponingAndResumingCompoundNavigationTarget() {
             getElement().appendChild(new ChildListener().getElement());
         }
@@ -1119,8 +1136,8 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals(
-                "Routing with mismatching parameters should have failed -", 500,
-                result);
+                "Routing with mismatching parameters should have failed -",
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [hello].";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -1180,8 +1197,8 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals(
-                "Routing with mismatching parameters should have failed -", 500,
-                result);
+                "Routing with mismatching parameters should have failed -",
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
         String message = "Given route parameter 'class java.lang.Long' is of the wrong type. Required 'class java.lang.String'.";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -1203,8 +1220,8 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals(
-                "Routing with mismatching parameters should have failed -", 500,
-                result);
+                "Routing with mismatching parameters should have failed -",
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [this, must, work].";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -1224,8 +1241,8 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals(
-                "Routing with mismatching parameters should have failed -", 500,
-                result);
+                "Routing with mismatching parameters should have failed -",
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [this, must, work].";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -1327,8 +1344,8 @@ public class RouterTest extends RoutingTestBase {
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(FooNavigationTarget.class));
 
-        Assert.assertEquals(404, router.navigate(ui, new Location(""),
-                NavigationTrigger.PROGRAMMATIC));
+        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, router.navigate(
+                ui, new Location(""), NavigationTrigger.PROGRAMMATIC));
     }
 
     @Test
@@ -1559,8 +1576,8 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Non existent route should have returned.", 500,
-                result);
+        Assert.assertEquals("Non existent route should have returned.",
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
         String message = String.format(
                 "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class %s",
@@ -1599,8 +1616,8 @@ public class RouterTest extends RoutingTestBase {
 
         int result = router.navigate(ui, new Location("error"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Non existent route should have returned.", 404,
-                result);
+        Assert.assertEquals("Non existent route should have returned.",
+                HttpServletResponse.SC_NOT_FOUND, result);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
@@ -1617,8 +1634,8 @@ public class RouterTest extends RoutingTestBase {
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Non existent route should have returned.", 500,
-                result);
+        Assert.assertEquals("Non existent route should have returned.",
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
     }
 
     @Test
@@ -1630,8 +1647,8 @@ public class RouterTest extends RoutingTestBase {
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Non existent route should have returned.", 404,
-                result);
+        Assert.assertEquals("Non existent route should have returned.",
+                HttpServletResponse.SC_NOT_FOUND, result);
 
         Assert.assertEquals(
                 "Expected the extending class to be used instead of the super class",
@@ -1660,8 +1677,8 @@ public class RouterTest extends RoutingTestBase {
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Non existent route should have returned.", 404,
-                result);
+        Assert.assertEquals("Non existent route should have returned.",
+                HttpServletResponse.SC_NOT_FOUND, result);
 
         Assert.assertEquals(
                 "Expected the extending class to be used instead of the super class",
@@ -1684,7 +1701,7 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Target should have rerouted to exception target.",
-                500, result);
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
         Assert.assertEquals(IllegalTarget.class, getUIComponent());
 
@@ -1707,7 +1724,7 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Target should have rerouted to exception target.",
-                500, result);
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
         Assert.assertEquals(IllegalTarget.class, getUIComponent());
 
@@ -1737,6 +1754,33 @@ public class RouterTest extends RoutingTestBase {
                 HttpServletResponse.SC_NOT_FOUND, result);
 
         Assert.assertEquals(RouteNotFoundError.class, getUIComponent());
+    }
+
+    @Test
+    public void faulty_error_response_code_should_throw_exception()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(RerouteToError.class));
+        router.getRegistry().setErrorNavigationTargets(
+                Collections.singleton(FaultyErrorView.class));
+
+        String location = "beforeToError/exception";
+        int result = router.navigate(ui, new Location(location),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "Target should have failed on an internal exception.",
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+
+        String validationMessage = String.format(
+                "Error state code must be a valid HttpServletResponse value. Received invalid value of '%s' for '%s'",
+                0, FaultyErrorView.class.getName());
+
+        String errorMessage = String.format(
+                "There was an exception while trying to navigate to '%s' with the exception message '%s'",
+                location, validationMessage);
+
+        assertExceptionComponent(errorMessage, InternalServerError.class);
     }
 
     @Test
@@ -1801,7 +1845,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(PostponingAndResumingNavigationTarget.class,
                 getUIComponent());
 
-        Thread.sleep(300);
+        Thread.sleep(200);
 
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 3,

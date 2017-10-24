@@ -15,6 +15,7 @@
  */
 package com.vaadin.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,7 @@ import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Handles error navigation rendering in the target UI.
@@ -39,6 +41,8 @@ import com.vaadin.ui.common.HasElement;
 public class ErrorStateRenderer implements NavigationHandler {
 
     private final NavigationState navigationState;
+    private static List<Integer> statusCodes = ReflectTools
+            .getConstantIntValues(HttpServletResponse.class);
 
     /**
      * Constructs a new state renderer for the given navigation state.
@@ -110,6 +114,8 @@ public class ErrorStateRenderer implements NavigationHandler {
                 .setErrorParameter(beforeNavigationActivating,
                         ((ErrorNavigationEvent) event).getErrorParameter());
 
+        validateStatusCode(statusCode, routeTargetType);
+
         EventUtil.collectBeforeNavigationObservers(chain)
                 .forEach(listener -> listener
                         .beforeNavigation(beforeNavigationActivating));
@@ -133,6 +139,16 @@ public class ErrorStateRenderer implements NavigationHandler {
                 listener -> listener.afterNavigation(afterNavigationEvent));
 
         return statusCode;
+    }
+
+    private void validateStatusCode(int statusCode,
+            Class<? extends Component> targetClass) {
+        if (!statusCodes.contains(statusCode)) {
+            String msg = String.format(
+                    "Error state code must be a valid HttpServletResponse value. Received invalid value of '%s' for '%s'",
+                    statusCode, targetClass.getName());
+            throw new IllegalStateException(msg);
+        }
     }
 
     /**
