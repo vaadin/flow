@@ -18,7 +18,7 @@ any Flow project.
 * java api classes (`Button`, `TextField`, etc)
 * web components' files (html, js, css etc)
 
-All sections are used by `flow` to display the components in web pages correctly.
+All sections are used by Flow to display the components in web pages correctly.
 By default, both sections are provided in the same jar.
 
 Web components' files are provided as https://github.com/webjars/webjars/[webjars] –
@@ -116,9 +116,9 @@ General webJars usage manual is here: <<tutorial-how-to-use-webjars#, How to use
 
 == bower.json configuration
 
-Currently `bower.json` is needed for production mode and in cases wne you'd like to be able
-to manipulate web component's files before adding them to the application (transpile, minify, check, bundle etc)
-It is also can be used in developmentMode as a webjars' substitution.
+Currently `bower.json` is needed for production mode and in cases when you'd like to be able
+to manipulate web component's files before adding them to the application (transpile, minify, check, bundle etc).
+It also can be used in developmentMode as a webjars' substitution.
 
 In your `bower.json` file, which is located at `${frontend.working.directory}`, you
 need to add the webcomponent dependencies to each desired webcomponent. Here is
@@ -157,10 +157,10 @@ How to integrate java and web components' files is explained in
 
 == Runtime configuration
 
-Extra parameters can be specified to configure `flow`:
+Extra parameters can be specified to configure `Flow`:
 
 * disable.webjars - if set to `true`, webjars would be ignored during request resolving,
-allows `flow` to use external source of web components' files.
+allowing Flow to use external source of web components' files.
 [NOTE]
 Webjars are enabled for development mode and disabled for production mode by default,
 unless explicitly overridden by parameter specified.
@@ -170,16 +170,16 @@ Next group of parameters are paths to external web component's locations in deve
 
 Development mode:
 
-* frontend.url.dev (default value is context://frontend) – a location `flow` searches web components' files in development mode.
+* frontend.url.dev (default value is `context://frontend`) – a location Flow searches web components' files in development mode.
 Supports changes reload on a working application and should be set as a directory, containing `bower.json` file.
-By default, `flow` looks for files in `frontend` directory,
+By default, Flow looks for files in `frontend` directory,
 located in https://docs.jboss.org/jbossas/guides/webguide/r2/en/html/ch06.html[context root] of the application
 
 Production mode:
 
-* frontend.url.es5 (default value is context://frontend-es5) - a location `flow` searches web components' files in production mode
+* frontend.url.es5 (default value is `context://frontend-es5`) - a location Flow searches web components' files in production mode
 when the request is coming from older browsers, not supporting http://es6-features.org/[es6], default web components' development language version.
-* frontend.url.es6 (default value is context://frontend-es6) - a location `flow` searches web components' files in production mode for requests from modern browsers
+* frontend.url.es6 (default value is `context://frontend-es6`) - a location Flow searches web components' files in production mode for requests from modern browsers
 
 == Demo and code samples
 
