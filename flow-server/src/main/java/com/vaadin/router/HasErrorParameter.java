@@ -29,13 +29,16 @@ public interface HasErrorParameter<T extends Exception> {
     /**
      * Method called for the implementing class when a corresponding exception
      * has been caught during navigation.
+     * <p>
+     * Note! returned int should be a valid
+     * {@link javax.servlet.http.HttpServletResponse} code
      * 
      * @param event
      *            the before navigation event for this request
      * @param parameter
      *            error parameter containing custom exception and caught
      *            exception
-     * @return html servlet status code
+     * @return a valid {@link javax.servlet.http.HttpServletResponse} code
      */
     int setErrorParameter(BeforeNavigationEvent event,
             ErrorParameter<T> parameter);
