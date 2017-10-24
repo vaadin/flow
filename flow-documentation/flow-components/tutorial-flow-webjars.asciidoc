@@ -4,7 +4,7 @@ order: 4
 layout: page
 ---
 
-This tutorial is intended to explain what options the user when he's willing to use web components in the project.
+This tutorial is intended to explain what options the user has when he's willing to use web components in the project.
 Explanation on how to use WebJars in arbitrary project is in <<tutorial-how-to-use-webjars#, How to use webjars>>
 
 = Current web components' files situation
