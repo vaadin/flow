@@ -43,7 +43,7 @@ public class ErrorStateRenderer implements NavigationHandler {
 
     private final NavigationState navigationState;
     private static List<Integer> statusCodes = ReflectTools
-            .getConstantIntValues(HttpServletResponse.class);s
+            .getConstantIntValues(HttpServletResponse.class);
 
     /**
      * Constructs a new state renderer for the given navigation state.
