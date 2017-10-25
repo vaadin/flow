@@ -1,14 +1,12 @@
 ---
-title: History API
+title: StreamReceiver
 order: 7
 layout: page
 ---
 
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
-= Using stream resources
-
-== StreamReceiver for receiving incoming data stream
+= StreamReceiver for receiving incoming data stream
 
 To receive upload from the client we need to register a `StreamReceiver` that
 will get a URL that will handle receiving of an upload stream.
