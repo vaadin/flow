@@ -462,6 +462,31 @@ public class Grid<T> extends AbstractListing<T>
         }
 
         /**
+         * Sets this column's frozen state.
+         * <p>
+         * <strong>Note:</strong> Columns are frozen in-place, freeze columns
+         * from left to right for a consistent outcome.
+         *
+         * @param frozen
+         *            whether to freeze or unfreeze this column
+         * @return this column, for method chaining
+         */
+        public Column<T> setFrozen(boolean frozen) {
+            getElement().setProperty("frozen", frozen);
+            return this;
+        }
+
+        /**
+         * Gets the this column's frozen state.
+         *
+         * @return whether this column is frozen
+         */
+        @Synchronize("frozen-changed")
+        public boolean isFrozen() {
+            return getElement().getProperty("frozen", false);
+        }
+
+        /**
          * Gets the underlying {@code <vaadin-grid-column>} element.
          * <p>
          * <strong>It is highly discouraged to directly use the API exposed by
