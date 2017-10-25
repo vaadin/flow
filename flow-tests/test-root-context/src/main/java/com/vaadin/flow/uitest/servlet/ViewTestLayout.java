@@ -25,13 +25,13 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.html.Div;
 
 public class ViewTestLayout extends Div
-        implements RouterLayout, BeforeNavigationListener {
+        implements RouterLayout, BeforeNavigationObserver {
 
     private Element element = ElementFactory.createDiv();
     private Element viewContainer = ElementFactory.createDiv();
