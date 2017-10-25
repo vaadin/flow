@@ -68,11 +68,16 @@ public class ComponentDemoServer {
         File file = new File(WEB_APP_PATH);
         if (!file.exists()) {
             try {
-                file.mkdirs();
+                if (!file.mkdirs()) {
+                    throw new RuntimeException(
+                            "Failed to create the following directory for webapp: "
+                                    + WEB_APP_PATH);
+                }
             } catch (SecurityException exception) {
-                throw new SecurityException(
+                throw new RuntimeException(
                         "Failed to create the following directory for webapp: "
-                                + WEB_APP_PATH);
+                                + WEB_APP_PATH,
+                        exception);
             }
         }
         context.setWar(file.getPath());
