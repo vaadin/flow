@@ -308,9 +308,8 @@ public class StreamReceiverHandler {
                     new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));
             try {
                 outWriter.print("<html><body>download handled</body></html>");
-                outWriter.flush();
             } finally {
-                outWriter.close();
+                outWriter.flush();
             }
         }
     }
