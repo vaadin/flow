@@ -10,7 +10,7 @@ import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.server.VaadinSession;
@@ -98,7 +98,7 @@ public class RouterTestServlet extends VaadinServlet {
     }
 
     public static class Layout extends Div
-            implements RouterLayout, BeforeNavigationListener {
+            implements RouterLayout, BeforeNavigationObserver {
 
         private Element sessionId;
 
@@ -157,7 +157,7 @@ public class RouterTestServlet extends VaadinServlet {
 
     @Route(value = "ViewWhichCausesInternalException", layout = Layout.class)
     public static class ViewWhichCausesInternalException extends MyAbstractView
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -168,7 +168,7 @@ public class RouterTestServlet extends VaadinServlet {
 
     @Route(value = "ViewWhichInvalidatesSession", layout = Layout.class)
     public static class ViewWhichInvalidatesSession extends MyAbstractView
-            implements BeforeNavigationListener {
+            implements BeforeNavigationObserver {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {

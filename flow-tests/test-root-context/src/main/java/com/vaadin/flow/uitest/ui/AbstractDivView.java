@@ -16,13 +16,13 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.html.Div;
 
 public abstract class AbstractDivView extends Div
-        implements BeforeNavigationListener {
+        implements BeforeNavigationObserver {
 
     public AbstractDivView() {
     }
