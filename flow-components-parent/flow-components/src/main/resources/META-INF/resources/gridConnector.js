@@ -52,6 +52,11 @@ window.gridConnector = {
         };
         grid._createPropertyObserver('activeItem', '__activeItemChanged', true);
 
+        grid.__activeItemChangedDetails = function(newVal, oldVal) {
+            grid.detailsOpenedItems = [newVal];
+        }
+        grid._createPropertyObserver('activeItem', '__activeItemChangedDetails', true);
+
         grid.dataProvider = function(params, callback) {
             if (params.pageSize != grid.pageSize) { 
                 throw 'Invalid pageSize'; 

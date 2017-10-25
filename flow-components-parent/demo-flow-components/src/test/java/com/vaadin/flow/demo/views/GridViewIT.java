@@ -22,6 +22,7 @@ import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.UnhandledAlertException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.ComponentDemoTest;
@@ -207,6 +208,34 @@ public class GridViewIT extends ComponentDemoTest {
                 .executeScript(firstCellHiddenScript, grid));
     }
 
+    @Test
+    public void gridDetailsRowTests() {
+        WebElement grid = findElement(By.id("grid-with-details-row"));
+        scrollToElement(grid);
+
+        getRow(grid, 0).click();
+
+        WebElement detailsElement = grid
+                .findElement(By.className("custom-details"));
+        Assert.assertEquals(
+                String.format("<div class=\"custom-details\">"
+                        + "<div>Hi! My name is %s!</div>"
+                        + "<div><vaadin-button tabindex=\"0\" role=\"button\">Alert age</vaadin-button></div>"
+                        + "</div>", GridView.items.get(0).getName()),
+                detailsElement.getAttribute("outerHTML"));
+        try {
+            getCommandExecutor().executeScript("arguments[0].click()",
+                    detailsElement.findElement(By.tagName("vaadin-button")));
+        } catch (UnhandledAlertException uae) {
+            Assert.assertEquals(
+                    String.format("My age is %s",
+                            GridView.items.get(0).getAge()),
+                    getDriver().switchTo().alert().getText());
+            return;
+        }
+        Assert.fail("No alert from details row button click.");
+    }
+
     private static String getSelectionMessage(Object oldSelection,
             Object newSelection, boolean isFromClient) {
         return String.format(
@@ -231,10 +260,13 @@ public class GridViewIT extends ComponentDemoTest {
                 rowIndex -> Assert.assertTrue(isRowSelected(grid, rowIndex)));
     }
 
-    private boolean isRowSelected(WebElement grid, int row) {
-        WebElement gridRow = getInShadowRoot(grid, By.id("items"))
+    private WebElement getRow(WebElement grid, int row) {
+        return getInShadowRoot(grid, By.id("items"))
                 .findElements(By.cssSelector("tr")).get(row);
-        return gridRow.getAttribute("selected") != null;
+    }
+
+    private boolean isRowSelected(WebElement grid, int row) {
+        return getRow(grid, row).getAttribute("selected") != null;
     }
 
     private boolean hasCell(WebElement grid, String text) {

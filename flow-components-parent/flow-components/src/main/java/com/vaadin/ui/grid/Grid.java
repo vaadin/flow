@@ -337,27 +337,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
             getElement().setAttribute("id", columnId)
                     .appendChild(headerTemplate, contentTemplate);
 
-            Map<String, SerializableConsumer<T>> eventConsumers = renderer
-                    .getEventHandlers();
-
-            if (!eventConsumers.isEmpty()) {
-                /*
-                 * This code allows the template to use Polymer specific syntax
-                 * for events, such as on-click (instead of the native onclick).
-                 * The principle is: we set a new function inside the column,
-                 * and the function is called by the rendered template. For that
-                 * to work, the template element must have the "__dataHost"
-                 * property set with the column element.
-                 */
-                getElement().getNode().runWhenAttached(
-                        ui -> processTemplateRendererEventConsumers(ui,
-                                getElement(), eventConsumers));
-
-                contentTemplate.getNode()
-                        .runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                                "$0.__dataHost = $1;", contentTemplate,
-                                getElement()));
-            }
+            getGrid().setupTemplateRenderer(renderer,
+                    contentTemplate, getElement());
         }
 
         /**
@@ -470,53 +451,6 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
             return super.getElement();
         }
 
-        private void processTemplateRendererEventConsumers(UI ui,
-                Element colElement,
-                Map<String, SerializableConsumer<T>> eventConsumers) {
-            eventConsumers.forEach((handlerName,
-                    consumer) -> setupTemplateRendererEventHandler(ui,
-                            colElement, handlerName, consumer));
-        }
-
-        private void setupTemplateRendererEventHandler(UI ui,
-                Element colElement, String handlerName, Consumer<T> consumer) {
-
-            // vaadin.sendEventMessage is an exported function at the client
-            // side
-            ui.getPage()
-                    .executeJavaScript(String.format(
-                            "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
-                            handlerName, colElement.getNode().getId(),
-                            handlerName), colElement);
-
-            colElement.addEventListener(handlerName,
-                    event -> processEventFromTemplateRenderer(event,
-                            handlerName, consumer));
-        }
-
-        private void processEventFromTemplateRenderer(DomEvent event,
-                String handlerName, Consumer<T> consumer) {
-            if (event.getEventData() != null) {
-                String itemKey = event.getEventData().getString("key");
-                T item = getGrid().getDataCommunicator().getKeyMapper()
-                        .get(itemKey);
-
-                if (item != null) {
-                    consumer.accept(item);
-                } else {
-                    Logger.getLogger(getClass().getName()).log(Level.INFO,
-                            () -> String.format(
-                                    "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
-                                    handlerName, itemKey));
-                }
-            } else {
-                Logger.getLogger(getClass().getName()).log(Level.INFO,
-                        () -> String.format(
-                                "Received an event for the handler '%s' without any data. Ignoring event.",
-                                handlerName));
-            }
-        }
-
         /**
          * Gets the grid that this column belongs to.
          *
@@ -601,10 +535,6 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     public Column<T> addColumn(String header,
             TemplateRenderer<T> renderer) {
         String columnKey = getColumnKey(true);
-
-        renderer.getValueProviders().forEach((key, provider) -> {
-            columnGenerators.put(key, provider.andThen(JsonSerializer::toJson));
-        });
 
         getDataCommunicator().reset();
         
@@ -852,6 +782,32 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         return getSelectionModel().addSelectionListener(listener);
     }
 
+    private Element detailsTemplate;
+
+    /**
+     * 
+     * @param renderer
+     */
+    public void setItemDetailsRenderer(TemplateRenderer<T> renderer) {
+        if (detailsTemplate != null) {
+            getElement().getNode().runWhenAttached(
+                    ui -> getElement().removeChild(detailsTemplate));
+        }
+        if (renderer == null) {
+            return;
+        }
+        Element newDetailsTemplate = new Element("template")
+                .setAttribute("class", "row-details")
+                .setProperty("innerHTML", renderer.getTemplate());
+
+        detailsTemplate = newDetailsTemplate;
+        getElement().getNode().runWhenAttached(
+                ui -> getElement().appendChild(detailsTemplate));
+
+        setupTemplateRenderer(renderer, detailsTemplate,
+                getElement());
+    }
+
     @ClientDelegate
     private void select(int key) {
         getSelectionModel().selectFromClient(findByKey(key));
@@ -889,5 +845,82 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     @ClientDelegate
     private void setRequestedRange(int start, int length) {
         getDataCommunicator().setRequestedRange(start, length);
+    }
+
+    private void setupTemplateRenderer(
+            TemplateRenderer<T> renderer, Element contentTemplate,
+            Element templateDataHost) {
+
+        renderer.getValueProviders().forEach((key, provider) -> {
+            columnGenerators.put(key, provider.andThen(JsonSerializer::toJson));
+        });
+
+        Map<String, SerializableConsumer<T>> eventConsumers = renderer
+                .getEventHandlers();
+
+        if (!eventConsumers.isEmpty()) {
+            /*
+             * This code allows the template to use Polymer specific syntax for
+             * events, such as on-click (instead of the native onclick). The
+             * principle is: we set a new function inside the column, and the
+             * function is called by the rendered template. For that to work,
+             * the template element must have the "__dataHost" property set with
+             * the column element.
+             */
+            templateDataHost.getNode().runWhenAttached(
+                    ui -> processTemplateRendererEventConsumers(ui,
+                            templateDataHost, eventConsumers));
+
+            contentTemplate.getNode()
+                    .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                            "$0.__dataHost = $1;", contentTemplate,
+                            templateDataHost));
+        }
+    }
+
+    private void processTemplateRendererEventConsumers(UI ui,
+            Element colElement,
+            Map<String, SerializableConsumer<T>> eventConsumers) {
+        eventConsumers.forEach(
+                (handlerName, consumer) -> setupTemplateRendererEventHandler(ui,
+                        colElement, handlerName, consumer));
+    }
+
+    private void setupTemplateRendererEventHandler(UI ui, Element eventOrigin,
+            String handlerName, Consumer<T> consumer) {
+
+        // vaadin.sendEventMessage is an exported function at the client
+        // side
+        ui.getPage()
+                .executeJavaScript(String.format(
+                        "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
+                        handlerName, eventOrigin.getNode().getId(),
+                        handlerName), eventOrigin);
+
+        eventOrigin.addEventListener(handlerName,
+                event -> processEventFromTemplateRenderer(event, handlerName,
+                        consumer));
+    }
+
+    private void processEventFromTemplateRenderer(DomEvent event,
+            String handlerName, Consumer<T> consumer) {
+        if (event.getEventData() != null) {
+            String itemKey = event.getEventData().getString("key");
+            T item = getDataCommunicator().getKeyMapper().get(itemKey);
+
+            if (item != null) {
+                consumer.accept(item);
+            } else {
+                Logger.getLogger(getClass().getName()).log(Level.INFO,
+                        () -> String.format(
+                                "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
+                                handlerName, itemKey));
+            }
+        } else {
+            Logger.getLogger(getClass().getName()).log(Level.INFO,
+                    () -> String.format(
+                            "Received an event for the handler '%s' without any data. Ignoring event.",
+                            handlerName));
+        }
     }
 }
