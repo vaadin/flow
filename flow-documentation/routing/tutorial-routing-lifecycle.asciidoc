@@ -69,7 +69,7 @@ state, and enables optional functions like rerouting and postponing.
 === Reroute
 The `BeforeNavigationEvent` can be used to reroute dynamically if there is a need
 to show completely different information in some state.
-Rerouting can happen from a observer in the detaching or the attaching chain.
+Rerouting can happen from an observer in the detaching or the attaching chain.
 
 In this example the reroute would happen on attach of `BlogList` when it receives no results.
 [source,java]
@@ -139,7 +139,7 @@ where it was interrupted. Thus __a__ and __b__ are not called again, but __c__ i
 [NOTE]
 Postpone may only be initiated while navigating away from a page, meaning it is only
 available for a `BeforeNavigationObserver` where the `BeforeNavigationEvent::getActivationState`
-is *DEACTIVATING* or when we use a `BeforeLeaveObserver`; if the method
+is *DEACTIVATING* or when we use a `BeforeLeaveObserver`. If the method
 is called while entering / activating the new page, it will throw an `IllegalStateException`.
 [NOTE]
 At most one navigation event may be postponed at any time; starting a new

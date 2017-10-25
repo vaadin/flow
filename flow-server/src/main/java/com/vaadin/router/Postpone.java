@@ -26,8 +26,8 @@ import com.vaadin.router.event.BeforeNavigationObserver;
  * Container class for containing left over listeners on postponed navigation.
  */
 public class Postpone implements Serializable {
-    private ArrayDeque<BeforeLeaveObserver> remainingLeaveListeners = new ArrayDeque<>();
-    private ArrayDeque<BeforeNavigationObserver> remainingNavigationListeners = new ArrayDeque<>();
+    private final ArrayDeque<BeforeLeaveObserver> remainingLeaveListeners;
+    private final ArrayDeque<BeforeNavigationObserver> remainingNavigationListeners;
 
     private Postpone(Deque<BeforeLeaveObserver> beforeLeave, Deque<BeforeNavigationObserver> beforeNavigation) {
         remainingLeaveListeners = new ArrayDeque<>(beforeLeave);
