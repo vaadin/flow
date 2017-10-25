@@ -105,7 +105,7 @@
       }
 
       _onSelectClick(e) {
-        e.target.checked ? this._grid.doDeselection(e.model.item, true) : this._grid.doSelection(e.model.item, true);
+        e.target.checked ? this._grid.$connector.doDeselection(e.model.item, true) : this._grid.$connector.doSelection(e.model.item, true);
       }
 
       _onSelectAllClick(e) {
