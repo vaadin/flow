@@ -17,11 +17,11 @@ package com.vaadin.flow.spring;
 
 import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.ui.html.Div;
 
 @Route("npe")
-public class NPETarget extends Div implements BeforeNavigationListener {
+public class NPETarget extends Div implements BeforeNavigationObserver {
 
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {

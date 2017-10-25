@@ -33,50 +33,82 @@ public final class EventUtil {
     }
 
     /**
-     * Collect all Components implementing BeforeNavigationListener connected to
-     * given element tree.
+     * Collect all Components implementing {@link BeforeNavigationObserver} connected to
+     * the given element tree.
      * 
      * @param element
      *            element to search from
      * @return navigation listeners
      */
-    public static List<BeforeNavigationListener> collectBeforeNavigationListeners(
+    public static List<BeforeNavigationObserver> collectBeforeNavigationObservers(
             Element element) {
         return getListenerComponents(flattenChildren(element),
-                BeforeNavigationListener.class).collect(Collectors.toList());
+                BeforeNavigationObserver.class).collect(Collectors.toList());
+    }
+
+
+    /**
+     * Collect all Components implementing {@link BeforeLeaveObserver} connected to
+     * the given element tree.
+     *
+     * @param element
+     *            element to search from
+     * @return navigation listeners
+     */
+    public static List<BeforeLeaveObserver> collectBeforeLeaveObservers(
+            Element element) {
+        return getListenerComponents(flattenChildren(element),
+                BeforeLeaveObserver.class).collect(Collectors.toList());
     }
 
     /**
-     * Collect all Components implementing BeforeNavigationListener connected to
-     * tree of all given Components in list.
+     * Collect all Components implementing {@link BeforeNavigationObserver} connected to
+     * the tree of all given Components in list.
      *
      * @param components
      *            components to search
      * @return navigation listeners
      */
-    public static List<BeforeNavigationListener> collectBeforeNavigationListeners(
+    public static List<BeforeNavigationObserver> collectBeforeNavigationObservers(
             List<HasElement> components) {
         Stream<Element> elements = components.stream()
                 .flatMap(component -> flattenChildren(component.getElement()));
 
-        return getListenerComponents(elements, BeforeNavigationListener.class)
+        return getListenerComponents(elements, BeforeNavigationObserver.class)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Collect all Components implementing AfterNavigationListener that are
+     * Collect all Components implementing {@link BeforeEnterObserver} connected to
+     * the tree of all given Components in list.
+     *
+     * @param components
+     *            components to search
+     * @return navigation listeners
+     */
+    public static List<BeforeEnterObserver> collectBeforeEnterObservers(
+            List<HasElement> components) {
+        Stream<Element> elements = components.stream()
+                .flatMap(component -> flattenChildren(component.getElement()));
+
+        return getListenerComponents(elements, BeforeEnterObserver.class)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Collect all Components implementing {@link AfterNavigationObserver} that are
      * found in the trees of given Components.
      *
      * @param components
      *            components to search
      * @return after navigation listeners
      */
-    public static List<AfterNavigationListener> collectAfterNavigationListeners(
+    public static List<AfterNavigationObserver> collectAfterNavigationObservers(
             List<HasElement> components) {
         Stream<Element> elements = components.stream()
                 .flatMap(component -> flattenChildren(component.getElement()));
 
-        return getListenerComponents(elements, AfterNavigationListener.class)
+        return getListenerComponents(elements, AfterNavigationObserver.class)
                 .collect(Collectors.toList());
     }
 

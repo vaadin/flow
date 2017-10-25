@@ -16,19 +16,22 @@
 package com.vaadin.router.event;
 
 /**
- * Event sent to the activated navigation chain instances
- * implementing this interface after navigation has resolved.
+ * Any {@code com.vaadin.ui.Component} implementing this interface will be
+ * informed when they are being attached to the UI.
+ * <p>
+ * During this phase there is the possibility to reroute to another navigation
+ * target.
  *
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface AfterNavigationListener {
+public interface BeforeEnterObserver {
 
     /**
-     * Method called after navigation has been executed.
+     * Method called before navigation to attaching Component chain is made.
      * 
      * @param event
-     *            after navigation event with event details
+     *            before navigation event with event details
      */
-    void afterNavigation(AfterNavigationEvent event);
+    void beforeEnter(BeforeNavigationEvent event);
 }
