@@ -17,18 +17,20 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.nodefeature.TemplateMap;
+import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.common.ClientDelegate;
-import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Input;
 import com.vaadin.ui.html.NativeButton;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.angular.model.TemplateModel;
-import com.vaadin.ui.AngularTemplate;
+import com.vaadin.ui.polymertemplate.Id;
 
-public class BasicTemplateView extends AngularTemplate implements View {
+@Route(value = "com.vaadin.flow.uitest.ui.BasicTemplateView", layout = ViewTestLayout.class)
+public class BasicTemplateView extends AngularTemplate {
 
     public interface Model extends TemplateModel {
         // Not actually always a string any more, but must define some type for

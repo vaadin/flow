@@ -38,6 +38,7 @@ import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.TemplateNode;
+import com.vaadin.router.ContinueNavigationAction;
 import com.vaadin.router.Location;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.server.VaadinService;
@@ -141,6 +142,8 @@ public class UIInternals implements Serializable {
     private final Set<Integer> sentTemplateIds = new HashSet<>();
 
     private Location lastHandledNavigation = null;
+
+    private ContinueNavigationAction continueNavigationAction = null;
 
     /**
      * The Vaadin session to which the related UI belongs.
@@ -769,5 +772,24 @@ public class UIInternals implements Serializable {
      */
     public void clearLastHandledNavigation() {
         setLastHandledNavigation(null);
+    }
+
+    /**
+     * Get stored {@link ContinueNavigationAction} if any.
+     *
+     * @return continue navigation action object
+     */
+    public ContinueNavigationAction getContinueNavigationAction() {
+        return continueNavigationAction;
+    }
+
+    /**
+     * Set a {@link ContinueNavigationAction} or null to clear existing action.
+     *
+     * @param continueNavigationAction
+     *            continue navigatio action to store or null
+     */
+    public void setContinueNavigationAction(ContinueNavigationAction continueNavigationAction) {
+        this.continueNavigationAction = continueNavigationAction;
     }
 }

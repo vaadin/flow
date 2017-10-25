@@ -17,6 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Input;
 import com.vaadin.flow.util.JsonUtils;
@@ -24,6 +26,7 @@ import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 
+@Route(value = "com.vaadin.flow.uitest.ui.ExecJavaScriptView", layout = ViewTestLayout.class)
 public class ExecJavaScriptView extends AbstractDivView {
     @Override
     protected void onShow() {

@@ -13,20 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.router.event;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
+/**
+ * Any {@code com.vaadin.ui.Component} implementing this interface will be informed when they
+ * have been attached to the UI and all navigation tasks have resolved.
+ *
+ * @author Vaadin Ltd
+ */
+@FunctionalInterface
+public interface AfterNavigationObserver {
 
-import com.vaadin.flow.router.View;
-import com.vaadin.ui.AngularTemplate;
-
-public class UmlautÅäöView extends AngularTemplate implements View {
-
-    public UmlautÅäöView() {
-        super(new ByteArrayInputStream(
-                "<div id='content'>Umlaut view: åäöü. a\u00adb</div>"
-                        .getBytes(StandardCharsets.UTF_8)));
-
-    }
+    /**
+     * Method called after navigation has been executed.
+     * 
+     * @param event
+     *            after navigation event with event details
+     */
+    void afterNavigation(AfterNavigationEvent event);
 }

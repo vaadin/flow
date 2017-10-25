@@ -1,0 +1,135 @@
+<dom-module id="vaadin-grid-flow-selection-column">
+  <template>
+    <template class="header" id="defaultHeaderTemplate">
+      <vaadin-checkbox
+        id="selectAllCheckbox"
+        aria-label="Select All"
+        hidden$="[[selectAllHidden]]"
+        on-click="_onSelectAllClick"
+        checked="[[selectAll]]">
+      </vaadin-checkbox>
+    </template>
+    <template id="defaultBodyTemplate">
+      <vaadin-checkbox
+        aria-label="Select Row"
+        checked="[[selected]]"
+        on-click="_onSelectClick">
+      </vaadin-checkbox>
+    </template>
+  </template>
+
+  <script>
+  {
+    class GridFlowSelectionColumnElement extends Vaadin.GridColumnElement {
+
+      static get is() {
+        return 'vaadin-grid-flow-selection-column';
+      }
+
+      static get properties() {
+        return {
+
+          /**
+           * Width of the cells for this column.
+           */
+          width: {
+            type: String,
+            value: '52px'
+          },
+
+          /**
+           * Flex grow ratio for the cell widths. When set to 0, cell width is fixed.
+           */
+          flexGrow: {
+            type: Number,
+            value: 0
+          },
+
+          /**
+           * When true, all the items are selected.
+           */
+          selectAll: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
+
+          selectAllHidden: Boolean
+        };
+      }
+
+      constructor() {
+        super();
+        this._boundOnSelectEvent = this._onSelectEvent.bind(this);
+        this._boundOnDeselectEvent = this._onDeselectEvent.bind(this);
+      }
+
+      _prepareHeaderTemplate() {
+        return this._prepareTemplatizer(this.$.defaultHeaderTemplate);
+      }
+
+      _prepareBodyTemplate() {
+        return this._prepareTemplatizer(this.$.defaultBodyTemplate);
+      }
+
+      /** @private */
+      connectedCallback() {
+        super.connectedCallback();
+        if (this._grid) {
+          this._grid.addEventListener('select', this._boundOnSelectEvent);
+          this._grid.addEventListener('deselect', this._boundOnDeselectEvent);
+        }
+      }
+
+      /** @private */
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        if (this._grid) {
+          this._grid.removeEventListener('select', this._boundOnSelectEvent);
+          this._grid.removeEventListener('deselect', this._boundOnDeselectEvent);
+
+          const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+          if (isSafari && window.ShadyDOM && this.parentElement) {
+            // Detach might have been caused by order change.
+            // Shady on safari doesn't restore isAttached so we'll need to do it manually.
+            const parent = this.parentElement;
+            const nextSibling = this.nextElementSibling;
+            parent.removeChild(this);
+            if (nextSibling) {
+              parent.insertBefore(this, nextSibling);
+            } else {
+              parent.appendChild(this);
+            }
+          }
+        }
+      }
+
+      _onSelectClick(e) {
+        e.target.checked ? this._grid.$connector.doDeselection(e.model.item, true) : this._grid.$connector.doSelection(e.model.item, true);
+      }
+
+      _onSelectAllClick(e) {
+        e.preventDefault();
+        this.selectAll ? this.$server.deselectAll() : this.$server.selectAll();
+      }
+
+      _onSelectEvent(e) {
+      }
+
+      _onDeselectEvent(e) {
+        if (e.detail.userOriginated) {
+          this.selectAll = false;
+        }
+      }
+    }
+
+    customElements.define(GridFlowSelectionColumnElement.is, GridFlowSelectionColumnElement);
+
+    /**
+     * @namespace Vaadin
+     */
+    window.Vaadin = window.Vaadin || {};
+    Vaadin.GridFlowSelectionColumnElement = GridFlowSelectionColumnElement;
+  }
+  </script>
+</dom-module>

@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.NativeButton;
 
+@Route(value = "com.vaadin.flow.uitest.ui.template.TemplateWithConnectedCallbacksView", layout = ViewTestLayout.class)
 public class TemplateWithConnectedCallbacksView extends AbstractDivView {
 
     private TemplateWithConnectedCallbacks component;

@@ -13,22 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.router.event;
+package com.vaadin.function;
+
+import java.io.Serializable;
 
 /**
- * Event sent to the activated navigation chain instances
- * implementing this interface after navigation has resolved.
+ * A {@link Runnable} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface AfterNavigationListener {
+public interface SerializableRunnable extends Runnable, Serializable {
 
-    /**
-     * Method called after navigation has been executed.
-     * 
-     * @param event
-     *            after navigation event with event details
-     */
-    void afterNavigation(AfterNavigationEvent event);
 }

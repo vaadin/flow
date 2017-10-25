@@ -392,6 +392,10 @@ public class DefaultDeploymentConfiguration
             BiConsumer<String, Predicate<String>> resourceScanner) {
         Set<String> excludedDirectories = new HashSet<>(
                 Arrays.asList("node/", "node_modules/"));
+        if (!areWebJarsEnabled()) {
+            excludedDirectories.add("webjars/");
+        }
+
         Optional<String> frontendDirectoryPath = getFrontendDirectoryPath();
         Set<String> frontendDirectoryPolyfills = frontendDirectoryPath
                 .map(searchBase -> locatePolyfills(resourceScanner, searchBase,
@@ -444,10 +448,11 @@ public class DefaultDeploymentConfiguration
             String scanBase, Set<String> exclusions) {
         Set<String> foundPolyfills = new HashSet<>();
         resourceScanner.accept(scanBase, name -> {
-            if (name.endsWith(WEB_COMPONENTS_LOADER_JS_NAME)) {
+            boolean notExcludedPath = exclusions.stream().noneMatch(name::contains);
+            if (notExcludedPath && name.endsWith(WEB_COMPONENTS_LOADER_JS_NAME)) {
                 foundPolyfills.add(name);
             }
-            return exclusions.stream().noneMatch(name::contains);
+            return notExcludedPath;
         });
         return foundPolyfills;
     }

@@ -18,20 +18,14 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.ui.html.NativeButton;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.HasDynamicTitle;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.ui.html.NativeButton;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class ShadowRootView extends AbstractDivView {
-
-    @Override
-    public String getTitle(LocationChangeEvent locationChangeEvent) {
-        return "Shadow root view";
-    }
+@Route(value = "com.vaadin.flow.uitest.ui.ShadowRootView", layout = ViewTestLayout.class)
+public class ShadowRootView extends AbstractDivView implements HasDynamicTitle {
 
     @Override
     protected void onShow() {
@@ -54,5 +48,10 @@ public class ShadowRootView extends AbstractDivView {
                 event -> shadowRoot.removeChild(shadowLabel));
         removeChild.setId("remove");
         add(removeChild);
+    }
+
+    @Override
+    public String getPageTitle() {
+        return "Shadow root view";
     }
 }

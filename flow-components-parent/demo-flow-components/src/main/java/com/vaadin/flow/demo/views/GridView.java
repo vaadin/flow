@@ -28,10 +28,13 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.Grid;
+import com.vaadin.ui.grid.Grid.Column;
 import com.vaadin.ui.grid.Grid.SelectionMode;
+import com.vaadin.ui.grid.GridMultiSelectionModel;
 import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
+import com.vaadin.ui.layout.HorizontalLayout;
 import com.vaadin.ui.renderers.TemplateRenderer;
 
 /**
@@ -153,6 +156,7 @@ public class GridView extends DemoView {
         createMultiSelect();
         createNoneSelect();
         createColumnTemplate();
+        createColumnApiExample();
 
         addCard("Grid example model",
                 new Label("These objects are used in the examples above"));
@@ -260,11 +264,16 @@ public class GridView extends DemoView {
         Button selectBtn = new Button("Select first five persons");
         selectBtn.addClickListener(event -> grid.asMultiSelect()
                 .setValue(new LinkedHashSet<>(people.subList(0, 5))));
+        Button selectAllBtn = new Button("Select all");
+        selectAllBtn.addClickListener(
+                event -> ((GridMultiSelectionModel<Person>) grid
+                        .getSelectionModel()).selectAll());
         // end-source-example
         grid.setId("multi-selection");
         selectBtn.setId("multi-selection-button");
         messageDiv.setId("multi-selection-message");
-        addCard("Grid Multi Selection", grid, selectBtn, messageDiv);
+        addCard("Grid Multi Selection", grid,
+                new HorizontalLayout(selectBtn, selectAllBtn), messageDiv);
     }
 
     private void createNoneSelect() {
@@ -324,6 +333,26 @@ public class GridView extends DemoView {
         // end-source-example
         grid.setId("template-renderer");
         addCard("Grid with columns using template renderer", grid);
+    }
+
+    private void createColumnApiExample() {
+        // begin-source-example
+        // source-example-heading: Column API example
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(getItems());
+
+        Column<Person> idColumn = grid.addColumn("ID", Person::getId)
+                .setFlexGrow(0).setWidth("75px");
+        grid.addColumn("Name", Person::getName).setResizable(true);
+        grid.addColumn("Age", Person::getAge).setResizable(true);
+
+        Button btn = new Button("Toggle visibility of the ID column");
+        btn.addClickListener(event -> idColumn.setHidden(!idColumn.isHidden()));
+        // end-source-example
+
+        grid.setId("column-api-example");
+        btn.setId("toggle-id-column-visibility");
+        addCard("Column API example", grid, btn);
     }
 
     private List<Person> getItems() {
