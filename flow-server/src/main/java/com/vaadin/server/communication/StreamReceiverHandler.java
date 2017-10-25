@@ -126,12 +126,8 @@ public class StreamReceiverHandler implements Serializable {
 
         if (ServletFileUpload
                 .isMultipartContent((HttpServletRequest) request)) {
-            try {
-                doHandleMultipartFileUpload(session, request, response,
-                        streamReceiver, source);
-            } catch (FileUploadException e) {
-                getLog().log(Level.WARNING, "File upload failed.", e);
-            }
+            doHandleMultipartFileUpload(session, request, response,
+                    streamReceiver, source);
         } else {
             // if boundary string does not exist, the posted file is from
             // XHR2.post(File)
@@ -164,29 +160,38 @@ public class StreamReceiverHandler implements Serializable {
      */
     protected void doHandleMultipartFileUpload(VaadinSession session,
             VaadinRequest request, VaadinResponse response,
-            StreamReceiver streamReceiver, StateNode owner)
-            throws IOException, FileUploadException {
+            StreamReceiver streamReceiver, StateNode owner) throws IOException {
 
         // Create a new file upload handler
         ServletFileUpload upload = new ServletFileUpload();
 
         long contentLength = getContentLength(request);
         // Parse the request
-        FileItemIterator iter = upload
-                .getItemIterator((HttpServletRequest) request);
-        while (iter.hasNext()) {
-            FileItemStream item = iter.next();
-            String name = item.getFieldName();
-            InputStream stream = item.openStream();
-            try {
-                handleFileUploadValidationAndData(session, stream,
-                        streamReceiver, name, item.getContentType(),
-                        contentLength, owner);
-            } catch (UploadException e) {
-                session.getErrorHandler().error(new ErrorEvent(e));
+        FileItemIterator iter;
+        try {
+            iter = upload.getItemIterator((HttpServletRequest) request);
+            while (iter.hasNext()) {
+                FileItemStream item = iter.next();
+                handleStream(session, streamReceiver, owner, contentLength,
+                        item);
             }
+        } catch (FileUploadException e) {
+            getLog().log(Level.WARNING, "File upload failed.", e);
         }
         sendUploadResponse(response);
+    }
+
+    private void handleStream(VaadinSession session,
+            StreamReceiver streamReceiver, StateNode owner, long contentLength,
+            FileItemStream item) throws IOException {
+        String name = item.getFieldName();
+        InputStream stream = item.openStream();
+        try {
+            handleFileUploadValidationAndData(session, stream, streamReceiver,
+                    name, item.getContentType(), contentLength, owner);
+        } catch (UploadException e) {
+            session.getErrorHandler().error(new ErrorEvent(e));
+        }
     }
 
     /**
