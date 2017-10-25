@@ -179,6 +179,34 @@ public class GridViewIT extends ComponentDemoTest {
                 "<div title=\"Person 1 Updated Updated\">Person 1 Updated Updated<br><small>23 years old</small></div>"));
     }
 
+    @Test
+    public void gridColumnApiTests() {
+        WebElement grid = findElement(By.id("column-api-example"));
+        scrollToElement(grid);
+
+        Assert.assertEquals("Two resize handlers should be present", 2L,
+                getCommandExecutor().executeScript(
+                        "return arguments[0].shadowRoot.querySelectorAll('[part~=\"resize-handle\"]').length;",
+                        grid));
+
+        Assert.assertEquals("First width is fixed", "75px",
+                getCommandExecutor().executeScript(
+                        "return arguments[0].shadowRoot.querySelectorAll('th')[0].style.width;",
+                        grid));
+
+        WebElement toggleIdColumnVisibility = findElement(
+                By.id("toggle-id-column-visibility"));
+        String firstCellHiddenScript = "return arguments[0].shadowRoot.querySelectorAll('td')[0].hidden;";
+        Assert.assertNotEquals(true, getCommandExecutor()
+                .executeScript(firstCellHiddenScript, grid));
+        toggleIdColumnVisibility.click();
+        Assert.assertEquals(true, getCommandExecutor()
+                .executeScript(firstCellHiddenScript, grid));
+        toggleIdColumnVisibility.click();
+        Assert.assertNotEquals(true, getCommandExecutor()
+                .executeScript(firstCellHiddenScript, grid));
+    }
+
     private static String getSelectionMessage(Object oldSelection,
             Object newSelection, boolean isFromClient) {
         return String.format(
