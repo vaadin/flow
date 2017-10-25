@@ -39,8 +39,8 @@ public class StreamReceiver extends AbstractStreamResource {
      * Creates {@link StreamReceiver} instance for {@code streamVariable} as a
      * data receiver.
      * <p>
-     * {@code name} parameter value will be used in URI (generated when resource
-     * is registered) in a way that the {@code name} is the last segment of the
+     * {@code resourceName} parameter value will be used in URI (generated when resource
+     * is registered) in a way that the {@code resourceName} is the last segment of the
      * path. So this is synthetic file name (not real one).
      *
      * @param node

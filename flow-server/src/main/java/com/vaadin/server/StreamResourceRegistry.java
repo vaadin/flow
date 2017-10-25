@@ -101,6 +101,16 @@ public class StreamResourceRegistry implements Serializable {
     }
 
     /**
+     * Unregister a stream resource.
+     * 
+     * @param resource
+     *            stream resource to unregister
+     */
+    public void unregisterResource(AbstractStreamResource resource) {
+        res.remove(getURI(resource));
+    }
+
+    /**
      * Gets the URI for the given {@code resource}.
      * <p>
      * The URI won't be handled (and won't work) if {@code resource} is not

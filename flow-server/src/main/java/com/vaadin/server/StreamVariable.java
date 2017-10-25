@@ -24,20 +24,19 @@ import java.io.Serializable;
  * in web terminals {@link StreamVariable} can be used to send large files from
  * browsers to the server without consuming large amounts of memory.
  * <p>
- * Note, writing to the {@link OutputStream} is not synchronized by the terminal
+ * Note, writing to the {@link OutputStream} is not synchronized by the handler
  * (to avoid stalls in other operations when eg. streaming to a slow network
  * service or file system). If UI is changed as a side effect of writing to the
  * output stream, developer must handle synchronization manually.
- * <p>
  *
  * @author Vaadin Ltd.
  */
 public interface StreamVariable extends Serializable {
 
     /**
-     * Invoked by the terminal when a new upload arrives, after
+     * Invoked when a new upload arrives, after
      * {@link #streamingStarted(StreamingStartEvent)} method has been called.
-     * The terminal implementation will write the streamed variable to the
+     * The implementation will write the streamed variable to the
      * returned output stream.
      *
      * @return Stream to which the uploaded file should be written.
@@ -61,7 +60,7 @@ public interface StreamVariable extends Serializable {
     boolean listenProgress();
 
     /**
-     * This method is called by the terminal if {@link #listenProgress()}
+     * This method is called if {@link #listenProgress()}
      * returns true when the streaming starts.
      * 
      * @param event
@@ -100,10 +99,10 @@ public interface StreamVariable extends Serializable {
      */
     /**
      * If this method returns true while the content is being streamed the
-     * terminal is told to stop receiving current upload.
+     * handler is told to stop receiving the current upload.
      * <p>
      * Note, the usage of this method is not synchronized over the Application
-     * instance by the terminal like other methods. The implementation should
+     * instance like other methods. The implementation should
      * only return a boolean field and especially not modify UI or implement a
      * synchronization by itself.
      *
@@ -152,7 +151,7 @@ public interface StreamVariable extends Serializable {
     interface StreamingStartEvent extends StreamingEvent {
         /**
          * The owner of the StreamVariable can call this method to inform the
-         * terminal implementation that this StreamVariable will not be used to
+         * implementation that this StreamVariable will not be used to
          * accept more post.
          */
         void disposeStreamVariable();

@@ -325,8 +325,7 @@ public class StreamReceiverHandler implements Serializable {
             StreamReceiver streamReceiver) {
         session.lock();
         try {
-            session.getResourceRegistry().registerResource(streamReceiver)
-                    .unregister();
+            session.getResourceRegistry().unregisterResource(streamReceiver);
         } finally {
             session.unlock();
         }

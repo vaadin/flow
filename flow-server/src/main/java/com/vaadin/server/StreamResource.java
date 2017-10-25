@@ -27,8 +27,8 @@ import com.vaadin.function.ContentTypeResolver;
  * Represents dynamically generated data.
  * <p>
  * The instance should be registered via
- * {@link StreamResourceRegistry#registerResource(AbstractStreamResource)}. This method
- * returns an object which may be used to get resource URI.
+ * {@link StreamResourceRegistry#registerResource(AbstractStreamResource)}. This
+ * method returns an object which may be used to get resource URI.
  *
  * @author Vaadin Ltd
  */
@@ -48,8 +48,7 @@ public class StreamResource extends AbstractStreamResource {
 
         @Override
         public String apply(StreamResource resource, ServletContext context) {
-            return Optional
-                    .ofNullable(context.getMimeType(resource.getName()))
+            return Optional.ofNullable(context.getMimeType(resource.getName()))
                     .orElse(DEFAULT_CONTENT_TYPE);
         }
 
@@ -61,7 +60,7 @@ public class StreamResource extends AbstractStreamResource {
 
         private InputStreamFactory factory;
 
-        protected Pipe(InputStreamFactory factory) {
+        private Pipe(InputStreamFactory factory) {
             this.factory = factory;
         }
 
