@@ -83,7 +83,7 @@ public class StreamReceiverHandler implements Serializable {
     }
 
     /**
-     * Handle reception of incoming stream from the client.s
+     * Handle reception of incoming stream from the client.
      * 
      * @param session
      *            The session for the request
@@ -124,15 +124,19 @@ public class StreamReceiverHandler implements Serializable {
             session.unlock();
         }
 
-        if (ServletFileUpload
-                .isMultipartContent((HttpServletRequest) request)) {
-            doHandleMultipartFileUpload(session, request, response,
-                    streamReceiver, source);
-        } else {
-            // if boundary string does not exist, the posted file is from
-            // XHR2.post(File)
-            doHandleXhrFilePost(session, request, response, streamReceiver,
-                    source, getContentLength(request));
+        try {
+            if (ServletFileUpload
+                    .isMultipartContent((HttpServletRequest) request)) {
+                doHandleMultipartFileUpload(session, request, response,
+                        streamReceiver, source);
+            } else {
+                // if boundary string does not exist, the posted file is from
+                // XHR2.post(File)
+                doHandleXhrFilePost(session, request, response, streamReceiver,
+                        source, getContentLength(request));
+            }
+        } finally {
+            UI.setCurrent(null);
         }
     }
 

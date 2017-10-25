@@ -75,19 +75,8 @@ public class StreamRequestHandler implements RequestHandler {
                         (StreamResource) resource);
             } else if (resource instanceof StreamReceiver) {
                 StreamReceiver streamReceiver = (StreamReceiver) resource;
-                /*
-                 * URI pattern:
-                 * VAADIN/dynamic/file-upload/[UIID]/[SECKEY]/[NAME]
-                 *
-                 * @see #generateURI
-                 */
-                // strip away part until the data we are interested starts
-                int startOfData = pathInfo.indexOf(DYN_RES_PREFIX)
-                        + DYN_RES_PREFIX.length();
+                String[] parts = parsePath(pathInfo);
 
-                String uppUri = pathInfo.substring(startOfData);
-                // [0] UIid, [1] security key, [2] name
-                String[] parts = uppUri.split("/", 3);
                 receiverHandler.handleRequest(session, request, response,
                         streamReceiver, parts[0], parts[1]);
             } else {
@@ -95,6 +84,23 @@ public class StreamRequestHandler implements RequestHandler {
             }
         }
         return true;
+    }
+
+    /**
+     * Parse the pathInfo for id data.
+  s   * <p>
+     * URI pattern: VAADIN/dynamic/resource/[UIID]/[SECKEY]/[NAME]
+     *
+     * @see #generateURI
+     */
+    private String[] parsePath(String pathInfo) {
+        // strip away part until the data we are interested starts
+        int startOfData = pathInfo.indexOf(DYN_RES_PREFIX)
+                + DYN_RES_PREFIX.length();
+
+        String uppUri = pathInfo.substring(startOfData);
+        // [0] UIid, [1] security key, [2] name
+        return uppUri.split("/", 3);
     }
 
     /**

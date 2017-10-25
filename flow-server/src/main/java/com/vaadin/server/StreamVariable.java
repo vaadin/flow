@@ -31,7 +31,6 @@ import java.io.Serializable;
  * <p>
  *
  * @author Vaadin Ltd.
- * @since 6.5
  */
 public interface StreamVariable extends Serializable {
 
@@ -101,7 +100,7 @@ public interface StreamVariable extends Serializable {
      */
     /**
      * If this method returns true while the content is being streamed the
-     * Terminal to stop receiving current upload.
+     * terminal is told to stop receiving current upload.
      * <p>
      * Note, the usage of this method is not synchronized over the Application
      * instance by the terminal like other methods. The implementation should

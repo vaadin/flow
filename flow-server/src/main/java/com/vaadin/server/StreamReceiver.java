@@ -15,8 +15,6 @@
  */
 package com.vaadin.server;
 
-import java.io.OutputStream;
-
 import com.vaadin.flow.StateNode;
 
 /**
@@ -38,10 +36,8 @@ public class StreamReceiver extends AbstractStreamResource {
     private final StreamVariable streamVariable;
 
     /**
-     * Creates {@link StreamReceiver} instance using mandatory parameter output
-     * stream {@code writer} as a data receiver. {@code writer} should write
-     * data in the output stream provided as an argument to its
-     * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)} method.
+     * Creates {@link StreamReceiver} instance for {@code streamVariable} as a
+     * data receiver.
      * <p>
      * {@code name} parameter value will be used in URI (generated when resource
      * is registered) in a way that the {@code name} is the last segment of the
