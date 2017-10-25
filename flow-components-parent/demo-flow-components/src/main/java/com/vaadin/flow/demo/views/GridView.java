@@ -359,7 +359,8 @@ public class GridView extends DemoView {
         grid.setId("column-api-example");
         idColumnVisibility.setId("toggle-id-column-visibility");
         userReordering.setId("toggle-user-reordering");
-        addCard("Column API example", grid, userReordering);
+        addCard("Column API example", grid,
+                new HorizontalLayout(idColumnVisibility, userReordering));
     }
 
     private List<Person> getItems() {
