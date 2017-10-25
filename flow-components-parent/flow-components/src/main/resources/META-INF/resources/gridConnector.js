@@ -11,7 +11,9 @@ window.gridConnector = {
 
         grid.size = 0; // To avoid NaN here and there before we get proper data
 
-        grid.doSelection = function(item, userOriginated) {
+        grid.$connector = {};
+
+        grid.$connector.doSelection = function(item, userOriginated) {
             if (selectionMode === 'NONE') {
                 return;
             }
@@ -28,7 +30,7 @@ window.gridConnector = {
             grid.fire('select', {item: item, userOriginated: userOriginated});
         };
 
-        grid.doDeselection = function(item, userOriginated) {
+        grid.$connector.doDeselection = function(item, userOriginated) {
             if (selectionMode === 'SINGLE' || selectionMode === 'MULTI') {
                 grid.deselectItem(item);
                 delete selectedKeys[item.key];
@@ -45,9 +47,9 @@ window.gridConnector = {
                 return;
             }
             if (!selectedKeys[newVal.key]) {
-                grid.doSelection(newVal, true);
+                grid.$connector.doSelection(newVal, true);
             } else {
-                grid.doDeselection(newVal, true);
+                grid.$connector.doDeselection(newVal, true);
             }
         };
         grid._createPropertyObserver('activeItem', '__activeItemChanged', true);
@@ -96,7 +98,7 @@ window.gridConnector = {
             }
         }
 
-        grid.connectorSet = function(index, items) {
+        grid.$connector.set = function(index, items) {
             if (index % grid.pageSize != 0) {
                 throw 'Got new data to index ' + index + ' which is not aligned with the page size of ' + grid.pageSize;
             }
@@ -111,9 +113,9 @@ window.gridConnector = {
                 for(var j = 0; j < slice.length; j++) {
                     var item = slice[j]
                     if (item.selected && !selectedKeys[item.key]) {
-                        grid.doSelection(item);
+                        grid.$connector.doSelection(item);
                     } else if (selectedKeys[item.key]) {
-                        grid.doDeselection(item);
+                        grid.$connector.doDeselection(item);
                     }
                 }
                 updateGridCache(page);
@@ -131,7 +133,7 @@ window.gridConnector = {
             return null;
         }
 
-        grid.updateData = function(items) {
+        grid.$connector.updateData = function(items) {
             var pagesToUpdate = [];
             for (var i = 0; i < items.length; i++) {
                 var cacheLocation = itemToCacheLocation(items[i].key);
@@ -147,7 +149,7 @@ window.gridConnector = {
             }
         };
 
-        grid.connectorClear = function(index, length) {
+        grid.$connector.clear = function(index, length) {
             if (index % grid.pageSize != 0) {
                 throw 'Got cleared data for index ' + index + ' which is not aligned with the page size of ' + grid.pageSize;
             }
@@ -161,7 +163,7 @@ window.gridConnector = {
                 for (var j = 0; j < items.length; j++) {
                     var item = items[j];
                     if (selectedKeys[item.key]) {
-                        grid.doDeselection(item);
+                        grid.$connector.doDeselection(item);
                     }
                 }
                 delete cache[page];
@@ -169,11 +171,11 @@ window.gridConnector = {
             }
         };
 
-        grid.connectorUpdateSize = function(newSize) {
+        grid.$connector.updateSize = function(newSize) {
             grid.size = newSize;
         };
 
-        grid.connectorConfirm = function(id) {
+        grid.$connector.confirm = function(id) {
             // We're done applying changes from this batch, resolve outstanding
             // callbacks
             var outstandingRequests = Object.getOwnPropertyNames(pageCallbacks);
@@ -191,7 +193,7 @@ window.gridConnector = {
             grid.$server.confirmUpdate(id);
         }
 
-        grid.setSelectionMode = function(mode) {
+        grid.$connector.setSelectionMode = function(mode) {
             if ((typeof mode === 'string' || mode instanceof String)
                 && validSelectionModes.indexOf(mode) >= 0) {
                 selectionMode = mode;
