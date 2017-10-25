@@ -1,0 +1,20 @@
+.sources {
+    margin: 15px -15px -25px -15px;
+    background-color: #f5f2f0;
+    overflow: auto;
+    position: relative;
+    padding: 0 20px;
+    font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
+    -webkit-font-smoothing: antialiased;
+}
+
+pre, code {
+    font-family: monospace, monospace;
+}
+pre {
+    overflow: auto;
+}
+pre > code {
+    display: block;
+    word-wrap: normal;
+}
