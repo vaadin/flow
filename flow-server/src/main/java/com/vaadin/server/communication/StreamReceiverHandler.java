@@ -22,9 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import org.apache.commons.fileupload.FileItemIterator;
@@ -56,14 +53,7 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  *
  */
-public class StreamReceiverRequestHandler {
-
-    private static final char PATH_SEPARATOR = '/';
-
-    /**
-     * Dynamic resource URI prefix.
-     */
-    static final String DYN_RES_PREFIX = "VAADIN/dynamic/file-upload/";
+public class StreamReceiverHandler {
 
     public static final String CONTENT_TYPE_TEXT_HTML_UTF_8 = "text/html; charset=utf-8";
 
@@ -88,7 +78,26 @@ public class StreamReceiverRequestHandler {
         }
     }
 
-    public boolean handleRequest(VaadinSession session, VaadinRequest request,
+    /**
+     * Handle reception of incoming stream from the client.s
+     * 
+     * @param session
+     *            The session for the request
+     * @param request
+     *            The request to handle
+     * @param response
+     *            The response object to which a response can be written.
+     * @param streamReceiver
+     *            the receiver containing the destination stream variable
+     * @param uiId
+     *            id of the targeted ui
+     * @param securityKey
+     *            security from the request that should match registered stream
+     *            receiver id
+     * @throws IOException
+     *             if an IO error occurred
+     */
+    public void handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response, StreamReceiver streamReceiver, String uiId,
             String securityKey) throws IOException {
         StateNode source;
@@ -99,7 +108,7 @@ public class StreamReceiverRequestHandler {
             if (secKey == null || !secKey.equals(securityKey)) {
                 getLog().warning(
                         "Received incoming stream with faulty security key.");
-                return true;
+                return;
             }
 
             UI ui = session.getUIById(Integer.parseInt(uiId));
@@ -111,9 +120,8 @@ public class StreamReceiverRequestHandler {
             session.unlock();
         }
 
-        String contentType = request.getContentType();
-        if (contentType.contains("boundary")) {
-            // Multipart requests contain boundary string
+        if (ServletFileUpload
+                .isMultipartContent((HttpServletRequest) request)) {
             doHandleMultipartFileUpload(session, request, response,
                     streamReceiver, source);
         } else {
@@ -122,38 +130,30 @@ public class StreamReceiverRequestHandler {
             doHandleXhrFilePost(session, request, response, streamReceiver,
                     source, getContentLength(request));
         }
-        return true;
     }
 
     /**
-     * Generates URI string for a dynamic resource using its {@code id} and
-     * {@code name}. [0] UIid, [1] cid, [2] name, [3] sec key
+     * Method used to stream content from a multipart request to given
+     * StreamVariable.
+     * <p>
+     * This method takes care of locking the session as needed and does not
+     * assume the caller has locked the session. This allows the session to be
+     * locked only when needed and not when handling the upload data.
      *
-     * @param id
-     *            unique resource id
-     * @return generated URI string
+     * @param session
+     *            The session containing the stream variable
+     * @param request
+     *            The upload request
+     * @param response
+     *            The upload response
+     * @param streamReceiver
+     *            the receiver containing the destination stream variable
+     * @param owner
+     *            The owner of the stream
+     * @throws IOException
+     *             If there is a problem reading the request or writing the
+     *             response
      */
-    public static String generateURI(int nodeId, String name, String id) {
-        StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
-
-        try {
-            builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
-            builder.append(nodeId).append(PATH_SEPARATOR);
-            builder.append(
-                    URLEncoder.encode(name, StandardCharsets.UTF_8.name()))
-                    .append(PATH_SEPARATOR);
-            builder.append(id);
-        } catch (UnsupportedEncodingException e) {
-            // UTF8 has to be supported
-            throw new RuntimeException(e);
-        }
-        return builder.toString();
-    }
-
-    private static Logger getLog() {
-        return Logger.getLogger(StreamReceiverRequestHandler.class.getName());
-    }
-
     protected void doHandleMultipartFileUpload(VaadinSession session,
             VaadinRequest request, VaadinResponse response,
             StreamReceiver streamReceiver, StateNode owner) throws IOException {
@@ -191,7 +191,7 @@ public class StreamReceiverRequestHandler {
         } catch (FileUploadException e) {
             e.printStackTrace();
         }
-        sendUploadResponse(request, response);
+        sendUploadResponse(response);
     }
 
     /**
@@ -211,7 +211,7 @@ public class StreamReceiverRequestHandler {
      * @param streamReceiver
      *            the receiver containing the destination stream variable
      * @param owner
-     *            The owner of the stream variable
+     *            The owner of the stream
      * @param contentLength
      *            The length of the request content
      * @throws IOException
@@ -235,7 +235,7 @@ public class StreamReceiverRequestHandler {
         } catch (UploadException e) {
             session.getErrorHandler().error(new ErrorEvent(e));
         }
-        sendUploadResponse(request, response);
+        sendUploadResponse(response);
     }
 
     private void handleFileUploadValidationAndData(VaadinSession session,
@@ -314,14 +314,15 @@ public class StreamReceiverRequestHandler {
     }
 
     /**
-     * TODO document
+     * Build response for handled download.
      *
-     * @param request
      * @param response
+     *            response to write to
      * @throws IOException
+     *             exception when writing to stream
      */
-    protected void sendUploadResponse(VaadinRequest request,
-            VaadinResponse response) throws IOException {
+    private void sendUploadResponse(VaadinResponse response)
+            throws IOException {
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
         try (OutputStream out = response.getOutputStream()) {
             final PrintWriter outWriter = new PrintWriter(
@@ -339,7 +340,7 @@ public class StreamReceiverRequestHandler {
         });
     }
 
-    protected final boolean streamToReceiver(VaadinSession session,
+    private final boolean streamToReceiver(VaadinSession session,
             final InputStream in, StreamReceiver streamReceiver,
             String filename, String type, long contentLength)
             throws UploadException {
@@ -457,5 +458,9 @@ public class StreamReceiverRequestHandler {
         } catch (NumberFormatException e) {
             return -1l;
         }
+    }
+
+    private static Logger getLog() {
+        return Logger.getLogger(StreamReceiverHandler.class.getName());
     }
 }

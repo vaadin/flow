@@ -1,16 +1,12 @@
 package com.vaadin.server.communication;
 
 import javax.servlet.ReadListener;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
 
-import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -21,7 +17,6 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.StreamReceiver;
-import com.vaadin.server.StreamReceiverRegistry;
 import com.vaadin.server.StreamResourceRegistry;
 import com.vaadin.server.StreamVariable;
 import com.vaadin.server.VaadinRequest;
@@ -30,8 +25,6 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.server.WrappedHttpSession;
-import com.vaadin.server.WrappedSession;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;
 
@@ -40,16 +33,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-public class StreamReceiverRequestHandlerTest {
+public class StreamReceiverHandlerTest {
 
-    private StreamReceiverRequestHandler handler;
+    private StreamReceiverHandler handler;
     @Mock
     private VaadinResponse response;
     @Mock
     private StreamVariable streamVariable;
     @Mock
     private StateNode stateNode;
-//    @Mock
+    // @Mock
     private VaadinRequest request;
     @Mock
     private UI ui;
@@ -84,8 +77,7 @@ public class StreamReceiverRequestHandlerTest {
         contentType = "foobar";
         MockitoAnnotations.initMocks(this);
 
-        handler = new StreamReceiverRequestHandler();
-
+        handler = new StreamReceiverHandler();
 
         VaadinServlet mockServlet = new VaadinServlet();
         mockServlet.init(new MockServletConfig());
@@ -104,19 +96,19 @@ public class StreamReceiverRequestHandlerTest {
 
     private void mockReceiverAndRegistry() {
         when(session.getResourceRegistry()).thenReturn(registry);
-        when(registry.getReceiver(Mockito.any()))
+        when(registry.getResource(Mockito.any()))
                 .thenReturn(Optional.of(streamReceiver));
         when(streamReceiver.getId()).thenReturn(expectedSecurityKey);
         when(streamReceiver.getStreamVariable()).thenReturn(streamVariable);
     }
 
-
     private void mockRequest() throws IOException {
-        HttpServletRequest servletRequest = Mockito.mock(HttpServletRequest.class);
-        when(servletRequest.getContentLength()).thenReturn(Integer.parseInt(contentLength));
+        HttpServletRequest servletRequest = Mockito
+                .mock(HttpServletRequest.class);
+        when(servletRequest.getContentLength())
+                .thenReturn(Integer.parseInt(contentLength));
 
-        request = new VaadinServletRequest(
-                servletRequest, mockService) {
+        request = new VaadinServletRequest(servletRequest, mockService) {
             @Override
             public String getParameter(String name) {
                 if ("restartApplication".equals(name)
@@ -129,9 +121,9 @@ public class StreamReceiverRequestHandlerTest {
 
             @Override
             public String getPathInfo() {
-                return "/"
-                        + StreamReceiverRequestHandler.DYN_RES_PREFIX + uiId + "/"
-                        + nodeId + "/" + variableName + "/" + expectedSecurityKey;
+                return "/" + StreamRequestHandler.DYN_RES_PREFIX + uiId + "/"
+                        + nodeId + "/" + variableName + "/"
+                        + expectedSecurityKey;
             }
 
             @Override
@@ -146,7 +138,7 @@ public class StreamReceiverRequestHandlerTest {
 
             @Override
             public String getHeader(String name) {
-                if("content-length".equals(name.toLowerCase())){
+                if ("content-length".equals(name.toLowerCase())) {
                     return contentLength;
                 }
                 return super.getHeader(name);
@@ -162,6 +154,7 @@ public class StreamReceiverRequestHandlerTest {
     private ServletInputStream createInputStream(final String content) {
         return new ServletInputStream() {
             boolean finished = false;
+
             @Override
             public boolean isFinished() {
                 return finished;
@@ -184,7 +177,7 @@ public class StreamReceiverRequestHandlerTest {
             public int read() throws IOException {
                 if (counter > msg.length + 1) {
                     throw new AssertionError(
-                            "-1 was ignored by StreamReceiverRequestHandler.");
+                            "-1 was ignored by StreamReceiverHandler.");
                 }
 
                 if (counter >= msg.length) {
@@ -212,18 +205,21 @@ public class StreamReceiverRequestHandlerTest {
     @Test(expected = IOException.class)
     public void exceptionIsThrownOnUnexpectedEnd() throws IOException {
         contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
-        inputStream = createInputStream("------WebKitFormBoundary7NsWHeCJVZNwi6ll\n"
-                + "Content-Disposition: form-data; name=\"file\"; filename=\"EBookJP.txt\"\n"
-                + "Content-Type: text/plain\n" + "\n" + "\n"
-                + "------WebKitFormBoundary7NsWHeCJVZNwi6ll--");
+        inputStream = createInputStream(
+                "------WebKitFormBoundary7NsWHeCJVZNwi6ll\n"
+                        + "Content-Disposition: form-data; name=\"file\"; filename=\"EBookJP.txt\"\n"
+                        + "Content-Type: text/plain\n" + "\n" + "\n"
+                        + "------WebKitFormBoundary7NsWHeCJVZNwi6ll--");
         contentLength = "99";
 
-        handler.doHandleMultipartFileUpload(null, request, response, null, null);
+        handler.doHandleMultipartFileUpload(null, request, response, null,
+                null);
     }
 
     @Test
     public void responseIsSentOnCorrectSecurityKey() throws IOException {
-        handler.handleRequest(session, request, response, streamReceiver, String.valueOf(uiId), expectedSecurityKey);
+        handler.handleRequest(session, request, response, streamReceiver,
+                String.valueOf(uiId), expectedSecurityKey);
 
         verify(responseOutput).close();
     }
@@ -232,7 +228,8 @@ public class StreamReceiverRequestHandlerTest {
     public void responseIsNotSentOnIncorrectSecurityKey() throws IOException {
         when(streamReceiver.getId()).thenReturn("another key expected");
 
-        handler.handleRequest(session, request, response, streamReceiver, String.valueOf(uiId), expectedSecurityKey);
+        handler.handleRequest(session, request, response, streamReceiver,
+                String.valueOf(uiId), expectedSecurityKey);
 
         verifyZeroInteractions(responseOutput);
     }
@@ -241,7 +238,8 @@ public class StreamReceiverRequestHandlerTest {
     public void responseIsNotSentOnMissingSecurityKey() throws IOException {
         when(streamReceiver.getId()).thenReturn(null);
 
-        handler.handleRequest(session, request, response, streamReceiver, String.valueOf(uiId), expectedSecurityKey);
+        handler.handleRequest(session, request, response, streamReceiver,
+                String.valueOf(uiId), expectedSecurityKey);
 
         verifyZeroInteractions(responseOutput);
     }

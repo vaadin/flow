@@ -18,10 +18,6 @@ package com.vaadin.server.communication;
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.logging.Logger;
 
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceWriter;
@@ -29,7 +25,6 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.ui.UI;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
@@ -37,20 +32,28 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  *
  */
-public class StreamResourceRequestHandler {
-
-    private static final char PATH_SEPARATOR = '/';
+public class StreamResourceHandler {
 
     /**
-     * Dynamic resource URI prefix.
+     * Handle sending for a stream resource request.
+     * 
+     * @param session
+     *            session for the request
+     * @param request
+     *            request to handle
+     * @param response
+     *            response object to which a response can be written.
+     * @param streamResource
+     *            stream resource that handles data writer
+     *
+     * @throws IOException
+     *             if an IO error occurred
      */
-    static final String DYN_RES_PREFIX = "VAADIN/dynamic/generated-resources/";
-
-    public boolean handleRequest(VaadinSession session, VaadinRequest request,
+    public void handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response, StreamResource streamResource)
             throws IOException {
 
-        StreamResourceWriter writer = null;
+        StreamResourceWriter writer;
         session.lock();
         try {
             ServletContext context = ((VaadinServletRequest) request)
@@ -69,35 +72,6 @@ public class StreamResourceRequestHandler {
         try (OutputStream outputStream = response.getOutputStream()) {
             writer.accept(outputStream, session);
         }
-        return true;
-    }
-
-    /**
-     * Generates URI string for a dynamic resource using its {@code id} and
-     * {@code name}.
-     *
-     * @param id
-     *            unique resource id
-     * @param name
-     *            resource name
-     * @return generated URI string
-     */
-    public static String generateURI(String id, String name) {
-        StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
-        try {
-            builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
-            builder.append(id).append(PATH_SEPARATOR);
-            builder.append(
-                    URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
-        } catch (UnsupportedEncodingException e) {
-            // UTF8 has to be supported
-            throw new RuntimeException(e);
-        }
-        return builder.toString();
-    }
-
-    private static Logger getLog() {
-        return Logger.getLogger(StreamResourceRequestHandler.class.getName());
     }
 
 }

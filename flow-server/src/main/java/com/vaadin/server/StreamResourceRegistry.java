@@ -22,19 +22,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.vaadin.server.communication.StreamReceiverRequestHandler;
-import com.vaadin.server.communication.StreamResourceRequestHandler;
+import com.vaadin.server.communication.StreamRequestHandler;
 
 /**
  * Registry for {@link StreamResource} instances.
  *
  * @author Vaadin Ltd
- *
  */
 public class StreamResourceRegistry implements Serializable {
 
-    private final Map<URI, StreamResource> resources = new HashMap<>();
-    private final Map<URI, StreamReceiver> receivers = new HashMap<>();
+    private final Map<URI, AbstractStreamResource> res = new HashMap<>();
 
     private final VaadinSession session;
 
@@ -47,7 +44,7 @@ public class StreamResourceRegistry implements Serializable {
         private Registration(StreamResourceRegistry registry, String id,
                 String fileName) {
             this.registry = registry;
-            uri = getURI(id, fileName);
+            uri = getURI(fileName, id);
         }
 
         @Override
@@ -57,16 +54,46 @@ public class StreamResourceRegistry implements Serializable {
 
         @Override
         public void unregister() {
-            registry.resources.remove(getResourceUri());
+            registry.res.remove(getResourceUri());
         }
 
         @Override
         public StreamResource getResource() {
             Optional<StreamResource> resource = registry
-                    .getResource(getResourceUri());
+                    .getStreamResource(getResourceUri());
             return resource.isPresent() ? resource.get() : null;
         }
+    }
 
+    private static final class ReceiverRegistration
+            implements StreamRegistration {
+
+        private final StreamResourceRegistry registry;
+
+        private final URI uri;
+
+        private ReceiverRegistration(StreamResourceRegistry registry, String id,
+                String attributeName) {
+            this.registry = registry;
+            uri = getURI(attributeName, id);
+        }
+
+        @Override
+        public URI getResourceUri() {
+            return uri;
+        }
+
+        @Override
+        public void unregister() {
+            registry.res.remove(getResourceUri());
+        }
+
+        @Override
+        public StreamReceiver getResource() {
+            Optional<StreamReceiver> receiver = registry
+                    .getStreamReceiver(getResourceUri());
+            return receiver.isPresent() ? receiver.get() : null;
+        }
     }
 
     /**
@@ -79,181 +106,100 @@ public class StreamResourceRegistry implements Serializable {
         this.session = session;
     }
 
+    /**
+     * Registers a stream resource in the session and returns registration
+     * handler.
+     * <p>
+     * You can get resource URI to use it in the application (e.g. set an
+     * attribute value or property value) via the registration handler. The
+     * registration handler should be used to unregister resource when it's not
+     * needed anymore. Note that it is the developer's responsibility to
+     * unregister resources. Otherwise resources won't be garbage collected
+     * until the session expires which causes memory leak.
+     * 
+     * @param resource
+     *            stream resource to register
+     * @return registration handler
+     */
     public StreamRegistration registerResource(
             AbstractStreamResource resource) {
-        StreamRegistration registration = null;
-        if (resource instanceof StreamResource) {
-            registration = registerResource((StreamResource) resource);
-        } else if (resource instanceof StreamReceiver) {
-            registration = registerResource((StreamReceiver) resource);
-        }
+        assert session
+                .hasLock() : "Session needs to be locked when registering stream resources.";
+        StreamRegistration registration = new Registration(this,
+                resource.getId(), resource.getName());
+        res.put(registration.getResourceUri(), resource);
         return registration;
     }
 
     /**
-     * Registers a stream resource in the session and returns registration
-     * handler.
+     * Gets the URI for the given {@code resource}.
      * <p>
-     * You can get resource URI to use it in the application (e.g. set an
-     * attribute value or property value) via the registration handler. The
-     * registration handler should be used to unregister resource when it's not
-     * needed anymore. Note that it is the developer's responsibility to
-     * unregister resources. Otherwise resources won't be garbage collected
-     * until the session expires which causes memory leak.
+     * The URI won't be handled (and won't work) if {@code resource} is not
+     * registered in the session.
+     *
+     * @see #registerResource(AbstractStreamResource)
      *
      * @param resource
-     *            stream resource to register
-     * @return registration handler.
+     *            stream resource
+     * @return resource URI
      */
-    public StreamRegistration registerResource(StreamResource resource) {
-        assert session.hasLock();
-        Registration registration = new Registration(this, resource.getId(),
-                resource.getFileName());
-        resources.put(registration.getResourceUri(), resource);
-        return registration;
-    }
-
-    /**
-     * Get registered resource by its {@code URI}.
-     *
-     * @param uri
-     *            resource URI
-     * @return an optional resource, or an empty optional if no resource has
-     *         been registered with this URI
-     */
-    public Optional<StreamResource> getResource(URI uri) {
-        assert session.hasLock();
-        return Optional.ofNullable(resources.get(uri));
-    }
-
     public static URI getURI(AbstractStreamResource resource) {
-        URI uri = null;
-        if (resource instanceof StreamResource) {
-            uri = getURI((StreamResource) resource);
-        } else if (resource instanceof StreamReceiver) {
-            uri = getURI((StreamReceiver) resource);
-        }
-        return uri;
+        return getURI(resource.getName(), resource.getId());
     }
 
-    /**
-     * Gets the URI for the given {@code resource}.
-     * <p>
-     * The URI won't be handled (and won't work) if {@code resource} is not
-     * registered in the session.
-     *
-     * @see #registerResource(StreamResource)
-     *
-     * @param resource
-     *            stream resource
-     * @return resource URI
-     */
-    public static URI getURI(StreamResource resource) {
-        return getURI(resource.getId(), resource.getFileName());
-    }
-
-    private static URI getURI(String id, String fileName) {
+    private static URI getURI(String name, String id) {
         try {
-            return new URI(
-                    StreamResourceRequestHandler.generateURI(id, fileName));
+            return new URI(StreamRequestHandler.generateURI(name, id));
         } catch (URISyntaxException e) {
             // this may not happen if implementation is correct
             throw new RuntimeException(e);
         }
     }
 
-    private static final class ReceiverRegistration
-            implements StreamRegistration {
-
-        private final StreamResourceRegistry registry;
-
-        private final URI uri;
-
-        private ReceiverRegistration(StreamResourceRegistry registry, String id,
-                int nodeId, String attributeName) {
-            this.registry = registry;
-            uri = getURI(nodeId, id, attributeName);
-        }
-
-        @Override
-        public URI getResourceUri() {
-            return uri;
-        }
-
-        @Override
-        public void unregister() {
-            registry.receivers.remove(getResourceUri());
-        }
-
-        @Override
-        public StreamReceiver getResource() {
-            Optional<StreamReceiver> receiver = registry
-                    .getReceiver(getResourceUri());
-            return receiver.isPresent() ? receiver.get() : null;
-        }
-    }
-
     /**
-     * Registers a stream resource in the session and returns registration
-     * handler.
+     * Get a registered resource for given {@code URI}.
      * <p>
-     * You can get resource URI to use it in the application (e.g. set an
-     * attribute value or property value) via the registration handler. The
-     * registration handler should be used to unregister resource when it's not
-     * needed anymore. Note that it is the developer's responsibility to
-     * unregister resources. Otherwise resources won't be garbage collected
-     * until the session expires which causes memory leak.
-     *
-     * @param resource
-     *            stream resource to register
-     * @return registration handler.
-     */
-    public StreamRegistration registerResource(StreamReceiver resource) {
-        assert session.hasLock();
-        ReceiverRegistration registration = new ReceiverRegistration(this,
-                resource.getId(), resource.getNode().getId(),
-                resource.getAttributeName());
-        receivers.put(registration.getResourceUri(), resource);
-        return registration;
-    }
-
-    /**
-     * Get registered resource by its {@code URI}.
+     * Resource may be a StreamResource or a StreamReceiver
      *
      * @param uri
      *            resource URI
      * @return an optional resource, or an empty optional if no resource has
      *         been registered with this URI
      */
-    public Optional<StreamReceiver> getReceiver(URI uri) {
+    public Optional<AbstractStreamResource> getResource(URI uri) {
         assert session.hasLock();
-        return Optional.ofNullable(receivers.get(uri));
+        return Optional.ofNullable(res.get(uri));
     }
 
     /**
-     * Gets the URI for the given {@code resource}.
-     * <p>
-     * The URI won't be handled (and won't work) if {@code resource} is not
-     * registered in the session.
+     * Get a registered stream resource by its {@code URI}.
      *
-     * @see #registerResource(StreamReceiver)
-     *
-     * @param resource
-     *            stream resource
-     * @return resource URI
+     * @param uri
+     *            resource URI
+     * @return an optional resource, or an empty optional if no resource has
+     *         been registered with this URI
      */
-    public static URI getURI(StreamReceiver resource) {
-        return getURI(resource.getNode().getId(), resource.getId(),
-                resource.getAttributeName());
+    public Optional<StreamResource> getStreamResource(URI uri) {
+        assert session.hasLock();
+        AbstractStreamResource abstractStreamResource = res.get(uri);
+        if (abstractStreamResource instanceof StreamResource)
+            return Optional.of((StreamResource) abstractStreamResource);
+        return Optional.empty();
     }
 
-    private static URI getURI(int nodeId, String id, String attributeName) {
-        try {
-            return new URI(StreamReceiverRequestHandler.generateURI(nodeId,
-                    attributeName, id));
-        } catch (URISyntaxException e) {
-            // this may not happen if implementation is correct
-            throw new RuntimeException(e);
-        }
+    /**
+     * Get a registered stream receiver resource by its {@code URI}.
+     *
+     * @param uri
+     *            resource URI
+     * @return an optional resource, or an empty optional if no resource has
+     *         been registered with this URI
+     */
+    public Optional<StreamReceiver> getStreamReceiver(URI uri) {
+        assert session.hasLock();
+        AbstractStreamResource abstractStreamResource = res.get(uri);
+        if (abstractStreamResource instanceof StreamReceiver)
+            return Optional.of((StreamReceiver) abstractStreamResource);
+        return Optional.empty();
     }
 }

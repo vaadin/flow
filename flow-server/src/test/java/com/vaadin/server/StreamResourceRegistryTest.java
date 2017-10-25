@@ -65,7 +65,7 @@ public class StreamResourceRegistryTest {
 
         URI uri = registration.getResourceUri();
 
-        Optional<StreamResource> stored = registry.getResource(uri);
+        Optional<StreamResource> stored = registry.getStreamResource(uri);
         Assert.assertSame(
                 "Unexpected stored resource is returned for registered URI",
                 resource, stored.get());
@@ -89,7 +89,7 @@ public class StreamResourceRegistryTest {
 
         registration.unregister();
 
-        Optional<StreamResource> stored = registry.getResource(uri);
+        Optional<StreamResource> stored = registry.getStreamResource(uri);
         Assert.assertFalse(
                 "Unexpected stored resource is found after unregister()",
                 stored.isPresent());
@@ -134,7 +134,7 @@ public class StreamResourceRegistryTest {
                 .registerResource(resource);
 
         URI url = registration.getResourceUri();
-        String suffix = URLEncoder.encode(resource.getFileName(),
+        String suffix = URLEncoder.encode(resource.getName(),
                 StandardCharsets.UTF_8.name());
         Assert.assertTrue("Resource url is not encoded",
                 url.toString().endsWith(suffix));

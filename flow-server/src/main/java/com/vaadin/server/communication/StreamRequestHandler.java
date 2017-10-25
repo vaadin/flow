@@ -11,16 +11,26 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.StreamReceiver;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.UI;
 
 public class StreamRequestHandler implements RequestHandler {
 
     private static final char PATH_SEPARATOR = '/';
+
+    /**
+     * Dynamic resource URI prefix.
+     */
+    static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
+
+    private StreamResourceHandler resourceHandler = new StreamResourceHandler();
+    private StreamReceiverHandler receiverHandler = new StreamReceiverHandler();
 
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
@@ -34,63 +44,79 @@ public class StreamRequestHandler implements RequestHandler {
         assert pathInfo.startsWith(Character.toString(PATH_SEPARATOR));
         pathInfo = pathInfo.substring(1);
 
-        if (pathInfo.startsWith(StreamResourceRequestHandler.DYN_RES_PREFIX)) {
-            StreamResource streamResource;
-            session.lock();
-            try {
-                Optional<StreamResource> resource = StreamRequestHandler
-                        .getPathUri(pathInfo)
-                        .flatMap(session.getResourceRegistry()::getResource);
-                if (!resource.isPresent()) {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                            "Resource is not found for path=" + pathInfo);
-                    return true;
-                }
-                streamResource = resource.get();
-            } finally {
-                session.unlock();
-            }
-            return new StreamResourceRequestHandler().handleRequest(session,
-                    request, response, streamResource);
-        } else if (pathInfo
-                .startsWith(StreamReceiverRequestHandler.DYN_RES_PREFIX)) {
-            StreamReceiver streamReceiver;
-            session.lock();
-            try {
-                Optional<StreamReceiver> receiver = StreamRequestHandler
-                        .getPathUri(pathInfo)
-                        .flatMap(session.getResourceRegistry()::getReceiver);
-                if (!receiver.isPresent()) {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                            "No receiver registered for path '" + pathInfo
-                                    + "'");
-                    return true;
-                }
-                streamReceiver = receiver.get();
-            } finally {
-                session.unlock();
-            }
-            /*
-             * URI pattern:
-             * VAADIN/dynamic/file-upload/[UIID]/[NODEID]/[NAME]/[SECKEY]
-             *
-             * @see #generateURI
-             */
-            // strip away part until the data we are interested starts
-            int startOfData = pathInfo.indexOf(StreamReceiverRequestHandler.DYN_RES_PREFIX)
-                    + StreamReceiverRequestHandler.DYN_RES_PREFIX.length();
-
-            String uppUri = pathInfo.substring(startOfData);
-            // [0] UIid, [1] id, [2] name, [3] security key
-            String[] parts = uppUri.split("/", 4);
-            return new StreamReceiverRequestHandler().handleRequest(session,
-                    request, response, streamReceiver, parts[0], parts[3]);
+        if (!pathInfo.startsWith(DYN_RES_PREFIX)) {
+            return false;
         }
 
-        return false;
+        Optional<AbstractStreamResource> abstractStreamResource;
+        session.lock();
+        try {
+            abstractStreamResource = StreamRequestHandler.getPathUri(pathInfo)
+                    .flatMap(session.getResourceRegistry()::getResource);
+            if (!abstractStreamResource.isPresent()) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                        "Resource is not found for path=" + pathInfo);
+                return true;
+            }
+        } finally {
+            session.unlock();
+        }
+
+        if (abstractStreamResource.isPresent()) {
+            AbstractStreamResource resource = abstractStreamResource.get();
+            if (resource instanceof StreamResource) {
+                resourceHandler.handleRequest(session, request, response,
+                        (StreamResource) resource);
+            } else if (resource instanceof StreamReceiver) {
+                StreamReceiver streamReceiver = (StreamReceiver) resource;
+                /*
+                 * URI pattern:
+                 * VAADIN/dynamic/file-upload/[UIID]/[SECKEY]/[NAME]
+                 *
+                 * @see #generateURI
+                 */
+                // strip away part until the data we are interested starts
+                int startOfData = pathInfo.indexOf(DYN_RES_PREFIX)
+                        + DYN_RES_PREFIX.length();
+
+                String uppUri = pathInfo.substring(startOfData);
+                // [0] UIid, [1] security key, [2] name
+                String[] parts = uppUri.split("/", 3);
+                receiverHandler.handleRequest(session, request, response,
+                        streamReceiver, parts[0], parts[1]);
+            } else {
+                getLog().warning("Received unknown stream resource.");
+            }
+        }
+        return true;
     }
 
-    protected static Optional<URI> getPathUri(String path) {
+    /**
+     * Generates URI string for a dynamic resource using its {@code id} and
+     * {@code name}. [0] UIid, [1] sec key, [2] name
+     *
+     * @param name
+     *            file or attribute name to use in path
+     * @param id
+     *            unique resource id
+     * @return generated URI string
+     */
+    public static String generateURI(String name, String id) {
+        StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
+
+        try {
+            builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
+            builder.append(id).append(PATH_SEPARATOR);
+            builder.append(
+                    URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+        } catch (UnsupportedEncodingException e) {
+            // UTF8 has to be supported
+            throw new RuntimeException(e);
+        }
+        return builder.toString();
+    }
+
+    private static Optional<URI> getPathUri(String path) {
         int index = path.lastIndexOf('/');
         boolean hasPrefix = index >= 0;
         if (!hasPrefix) {
@@ -116,6 +142,6 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     private static Logger getLog() {
-        return Logger.getLogger(StreamResourceRequestHandler.class.getName());
+        return Logger.getLogger(StreamResourceHandler.class.getName());
     }
 }

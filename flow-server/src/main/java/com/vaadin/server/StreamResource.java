@@ -15,14 +15,11 @@
  */
 package com.vaadin.server;
 
+import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.Optional;
-import java.util.UUID;
-
-import javax.servlet.ServletContext;
 
 import com.vaadin.function.ContentTypeResolver;
 
@@ -30,11 +27,10 @@ import com.vaadin.function.ContentTypeResolver;
  * Represents dynamically generated data.
  * <p>
  * The instance should be registered via
- * {@link StreamResourceRegistry#registerResource(StreamResource)}. This method
+ * {@link StreamResourceRegistry#registerResource(AbstractStreamResource)}. This method
  * returns an object which may be used to get resource URI.
  *
  * @author Vaadin Ltd
- *
  */
 public class StreamResource extends AbstractStreamResource {
 
@@ -44,11 +40,7 @@ public class StreamResource extends AbstractStreamResource {
 
     private final String fileName;
 
-    private long cacheTime = 0L;
-
     private final StreamResourceWriter writer;
-
-    private final String id = UUID.randomUUID().toString();
 
     private ContentTypeResolver resolver = DEFAULT_RESOLVER;
 
@@ -57,13 +49,13 @@ public class StreamResource extends AbstractStreamResource {
         @Override
         public String apply(StreamResource resource, ServletContext context) {
             return Optional
-                    .ofNullable(context.getMimeType(resource.getFileName()))
+                    .ofNullable(context.getMimeType(resource.getName()))
                     .orElse(DEFAULT_CONTENT_TYPE);
         }
 
     }
 
-    protected static class Pipe implements StreamResourceWriter {
+    private static class Pipe implements StreamResourceWriter {
 
         private static final int BUFFER_SIZE = 1024;
 
@@ -162,45 +154,6 @@ public class StreamResource extends AbstractStreamResource {
     }
 
     /**
-     * Gets the length of cache expiration time. This gives the possibility to
-     * cache the resource. "Cache-Control" HTTP header will be set based on this
-     * value.
-     * <p>
-     * Default value is {@code 0}. So caching is disabled.
-     *
-     * @return cache time in milliseconds.
-     */
-    public long getCacheTime() {
-        return cacheTime;
-    }
-
-    /**
-     * Get the resource file name.
-     * <p>
-     * The value will be used in URI (generated when resource is registered) in
-     * a way that the {@code name} is the last segment of the path. So this is
-     * synthetic file name (not real one).
-     *
-     * @return resource file name
-     */
-    public String getFileName() {
-        return fileName;
-    }
-
-    /**
-     * Set cache time in millis. Zero or negative value disables the caching of
-     * this stream.
-     *
-     * @param cacheTime
-     *            cache time
-     * @return this resource
-     */
-    public StreamResource setCacheTime(long cacheTime) {
-        this.cacheTime = cacheTime;
-        return this;
-    }
-
-    /**
      * Returns the stream resource writer.
      * <p>
      * Writer writes data in the output stream provided as an argument to its
@@ -259,13 +212,8 @@ public class StreamResource extends AbstractStreamResource {
         return resolver;
     }
 
-    /**
-     * Gets unique identifier of the resource.
-     *
-     * @return the resource unique id
-     */
-    public final String getId() {
-        return id;
+    @Override
+    public String getName() {
+        return fileName;
     }
-
 }

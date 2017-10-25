@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 
 import com.vaadin.server.InputStreamFactory;
 import com.vaadin.server.StreamResource;
-import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.server.StreamRegistration;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
@@ -36,8 +36,8 @@ import com.vaadin.ui.html.NativeButton;
 
 public class DependencyView extends AbstractDivView {
 
-    private StreamResourceRegistration htmlImport2;
-    private StreamResourceRegistration htmlImport3;
+    private StreamRegistration htmlImport2;
+    private StreamRegistration htmlImport3;
 
     @Tag("div")
     @HtmlImport("/test-files/html/orderedHtmlImport.html")
@@ -120,7 +120,7 @@ public class DependencyView extends AbstractDivView {
         getPage().addHtmlImport("/test-files/html/htmlimport1.html");
     }
 
-    public static StreamResourceRegistration registerResource(UI ui,
+    public static StreamRegistration registerResource(UI ui,
             String name, InputStreamFactory streamFactory) {
         return ui.getSession().getResourceRegistry()
                 .registerResource(new StreamResource(name, streamFactory));

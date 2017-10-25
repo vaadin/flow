@@ -16,21 +16,26 @@
 package com.vaadin.server;
 
 import java.io.OutputStream;
-import java.util.UUID;
 
 import com.vaadin.flow.StateNode;
 
+/**
+ * Represents a receiver for data upload from the client.
+ * <p>
+ * The instance should be registered via
+ * {@link StreamResourceRegistry#registerResource(AbstractStreamResource)}. This
+ * method returns an object which may be used to get resource URI.
+ *
+ * @author Vaadin Ltd
+ *
+ */
 public class StreamReceiver extends AbstractStreamResource {
-
-    private long cacheTime = 0L;
 
     private StateNode node;
 
     private final String attributeName;
 
     private final StreamVariable streamVariable;
-
-    private final String id = UUID.randomUUID().toString();
 
     /**
      * Creates {@link StreamReceiver} instance using mandatory parameter output
@@ -42,61 +47,44 @@ public class StreamReceiver extends AbstractStreamResource {
      * is registered) in a way that the {@code name} is the last segment of the
      * path. So this is synthetic file name (not real one).
      *
+     * @param node
+     *            receiver node
+     * @param resourceName
+     *            resource name for registration URI
+     * @param streamVariable
+     *            stream variable for controlling the upload stream
      */
-    public StreamReceiver(StateNode node, String attributeName,
+    public StreamReceiver(StateNode node, String resourceName,
             StreamVariable streamVariable) {
-        assert attributeName != null;
+        assert node != null;
+        assert resourceName != null;
         assert streamVariable != null;
 
         this.node = node;
         this.streamVariable = streamVariable;
-        this.attributeName = attributeName;
+        this.attributeName = resourceName;
     }
 
     /**
-     * Gets the length of cache expiration time. This gives the possibility to
-     * cache the resource. "Cache-Control" HTTP header will be set based on this
-     * value.
-     * <p>
-     * Default value is {@code 0}. So caching is disabled.
-     *
-     * @return cache time in milliseconds.
+     * Get the node that this stream receiver is linked to
+     * 
+     * @return bound node
      */
-    public long getCacheTime() {
-        return cacheTime;
-    }
-
-    /**
-     * Set cache time in millis. Zero or negative value disables the caching of
-     * this stream.
-     *
-     * @param cacheTime
-     *            cache time
-     * @return this resource
-     */
-    public StreamReceiver setCacheTime(long cacheTime) {
-        this.cacheTime = cacheTime;
-        return this;
-    }
-
-    /**
-     * Gets unique identifier of the resource.
-     *
-     * @return the resource unique id
-     */
-    public String getId() {
-        return id;
-    }
-
-    public String getAttributeName() {
-        return attributeName;
-    }
-
     public StateNode getNode() {
         return node;
     }
 
+    /**
+     * Get the {@link StreamVariable} for this stream receiver
+     * 
+     * @return stream variable for this receiver
+     */
     public StreamVariable getStreamVariable() {
         return streamVariable;
+    }
+
+    @Override
+    public String getName() {
+        return attributeName;
     }
 }

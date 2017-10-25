@@ -1376,12 +1376,12 @@ public class ElementTest extends AbstractNodeTest {
 
         String uri = ui.getElement().getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getStreamResource(new URI(uri));
         Assert.assertTrue(res.isPresent());
 
         String resName = "resource2";
         ui.getElement().setAttribute("foo", createEmptyResource(resName));
-        res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
+        res = ui.getSession().getResourceRegistry().getStreamResource(new URI(uri));
         Assert.assertFalse(res.isPresent());
 
         Assert.assertTrue(ui.getElement().hasAttribute("foo"));
@@ -1399,7 +1399,7 @@ public class ElementTest extends AbstractNodeTest {
 
         String uri = ui.getElement().getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getStreamResource(new URI(uri));
         Assert.assertTrue(res.isPresent());
         res = null;
 
@@ -1409,7 +1409,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().setAttribute("foo", "bar");
 
         TestUtil.isGarbageCollected(ref);
-        res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
+        res = ui.getSession().getResourceRegistry().getStreamResource(new URI(uri));
 
         Assert.assertFalse(res.isPresent());
         Assert.assertTrue(ui.getElement().hasAttribute("foo"));
@@ -1426,7 +1426,7 @@ public class ElementTest extends AbstractNodeTest {
 
         String uri = ui.getElement().getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getStreamResource(new URI(uri));
         Assert.assertTrue(res.isPresent());
         res = null;
 
@@ -1436,7 +1436,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().removeAttribute("foo");
         TestUtil.isGarbageCollected(ref);
 
-        res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
+        res = ui.getSession().getResourceRegistry().getStreamResource(new URI(uri));
         Assert.assertFalse(res.isPresent());
         Assert.assertFalse(ui.getElement().hasAttribute("foo"));
         Assert.assertNull(ui.getElement().getAttribute("foo"));
@@ -1458,7 +1458,7 @@ public class ElementTest extends AbstractNodeTest {
 
         String uri = element.getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getStreamResource(new URI(uri));
         Assert.assertTrue(res.isPresent());
     }
 
@@ -1484,7 +1484,7 @@ public class ElementTest extends AbstractNodeTest {
 
         String uri = element.getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getStreamResource(new URI(uri));
         Assert.assertTrue(res.isPresent());
         Assert.assertTrue(uri.endsWith(resName));
 
@@ -1567,7 +1567,7 @@ public class ElementTest extends AbstractNodeTest {
 
         String uri = element.getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getStreamResource(new URI(uri));
         Assert.assertTrue(res.isPresent());
         Assert.assertTrue(uri.endsWith(resName));
     }
@@ -1642,12 +1642,12 @@ public class ElementTest extends AbstractNodeTest {
 
         URI uri = new URI(attribute);
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(uri);
+                .getStreamResource(uri);
         Assert.assertTrue(res.isPresent());
 
         ui.getElement().removeAllChildren();
 
-        res = ui.getSession().getResourceRegistry().getResource(uri);
+        res = ui.getSession().getResourceRegistry().getStreamResource(uri);
         Assert.assertFalse(res.isPresent());
 
         Assert.assertTrue(element.hasAttribute("foo"));
@@ -1676,17 +1676,17 @@ public class ElementTest extends AbstractNodeTest {
 
         URI uri = new URI(attribute);
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(uri);
+                .getStreamResource(uri);
         Assert.assertTrue(res.isPresent());
 
         ui.getElement().removeAllChildren();
 
-        res = ui.getSession().getResourceRegistry().getResource(uri);
+        res = ui.getSession().getResourceRegistry().getStreamResource(uri);
         Assert.assertFalse(res.isPresent());
 
         ui.getElement().appendChild(element);
 
-        res = ui.getSession().getResourceRegistry().getResource(uri);
+        res = ui.getSession().getResourceRegistry().getStreamResource(uri);
         Assert.assertTrue(res.isPresent());
     }
 
@@ -1706,17 +1706,17 @@ public class ElementTest extends AbstractNodeTest {
 
         URI uri = new URI(attribute);
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(uri);
+                .getStreamResource(uri);
         Assert.assertTrue(res.isPresent());
 
         ui.getElement().removeAllChildren();
 
-        res = ui.getSession().getResourceRegistry().getResource(uri);
+        res = ui.getSession().getResourceRegistry().getStreamResource(uri);
         Assert.assertFalse(res.isPresent());
 
         ui.getElement().appendChild(element);
 
-        res = ui.getSession().getResourceRegistry().getResource(uri);
+        res = ui.getSession().getResourceRegistry().getStreamResource(uri);
         Assert.assertTrue(res.isPresent());
     }
 
