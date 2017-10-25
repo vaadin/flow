@@ -42,9 +42,9 @@ public class StreamResourceRegistry implements Serializable {
         private final URI uri;
 
         private Registration(StreamResourceRegistry registry, String id,
-                String fileName) {
+                String name) {
             this.registry = registry;
-            uri = getURI(fileName, id);
+            uri = getURI(name, id);
         }
 
         @Override
@@ -62,37 +62,6 @@ public class StreamResourceRegistry implements Serializable {
             Optional<StreamResource> resource = registry
                     .getStreamResource(getResourceUri());
             return resource.isPresent() ? resource.get() : null;
-        }
-    }
-
-    private static final class ReceiverRegistration
-            implements StreamRegistration {
-
-        private final StreamResourceRegistry registry;
-
-        private final URI uri;
-
-        private ReceiverRegistration(StreamResourceRegistry registry, String id,
-                String attributeName) {
-            this.registry = registry;
-            uri = getURI(attributeName, id);
-        }
-
-        @Override
-        public URI getResourceUri() {
-            return uri;
-        }
-
-        @Override
-        public void unregister() {
-            registry.res.remove(getResourceUri());
-        }
-
-        @Override
-        public StreamReceiver getResource() {
-            Optional<StreamReceiver> receiver = registry
-                    .getStreamReceiver(getResourceUri());
-            return receiver.isPresent() ? receiver.get() : null;
         }
     }
 

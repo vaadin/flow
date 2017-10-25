@@ -18,6 +18,7 @@ package com.vaadin.server.communication;
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceWriter;
@@ -32,7 +33,7 @@ import com.vaadin.server.VaadinSession;
  * @author Vaadin Ltd
  *
  */
-public class StreamResourceHandler {
+public class StreamResourceHandler implements Serializable {
 
     /**
      * Handle sending for a stream resource request.

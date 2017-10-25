@@ -15,7 +15,9 @@
  */
 package com.vaadin.server;
 
-@SuppressWarnings("serial")
+/**
+ * Exception for when there is no {@link java.io.InputStream} available.
+ */
 public class NoInputStreamException extends Exception {
 
 }

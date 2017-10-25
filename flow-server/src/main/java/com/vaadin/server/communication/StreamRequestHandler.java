@@ -20,6 +20,12 @@ import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
 
+/**
+ * Handles {@link StreamResource} and {@link StreamReceiver} instances
+ * registered in {@link VaadinSession}.
+ *
+ * @author Vaadin Ltd
+ */
 public class StreamRequestHandler implements RequestHandler {
 
     private static final char PATH_SEPARATOR = '/';

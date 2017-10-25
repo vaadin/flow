@@ -66,7 +66,7 @@ public class StreamReceiver extends AbstractStreamResource {
     }
 
     /**
-     * Get the node that this stream receiver is linked to
+     * Get the node that this stream receiver is linked to.
      * 
      * @return bound node
      */
@@ -75,7 +75,7 @@ public class StreamReceiver extends AbstractStreamResource {
     }
 
     /**
-     * Get the {@link StreamVariable} for this stream receiver
+     * Get the {@link StreamVariable} for this stream receiver.
      * 
      * @return stream variable for this receiver
      */

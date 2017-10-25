@@ -40,7 +40,8 @@ public final class EncodeUtil {
     public static String rfc5987Encode(String value) {
         StringBuilder builder = new StringBuilder();
 
-        for (int i = 0; i < value.length();) {
+        int i = 0;
+        while (i < value.length()) {
             int cp = value.codePointAt(i);
             if (cp < 127 && (Character.isLetterOrDigit(cp) || cp == '.')) {
                 builder.append((char) cp);
