@@ -323,8 +323,13 @@ public class StreamReceiverHandler implements Serializable {
 
     private void cleanStreamVariable(VaadinSession session,
             StreamReceiver streamReceiver) {
-        session.accessSynchronously(() -> session.getResourceRegistry()
-                .registerResource(streamReceiver).unregister());
+        session.lock();
+        try {
+            session.getResourceRegistry().registerResource(streamReceiver)
+                    .unregister();
+        } finally {
+            session.unlock();
+        }
     }
 
     private final boolean streamToReceiver(VaadinSession session,

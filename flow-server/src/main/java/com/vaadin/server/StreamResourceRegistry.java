@@ -58,9 +58,9 @@ public class StreamResourceRegistry implements Serializable {
         }
 
         @Override
-        public StreamResource getResource() {
-            Optional<StreamResource> resource = registry
-                    .getStreamResource(getResourceUri());
+        public AbstractStreamResource getResource() {
+            Optional<AbstractStreamResource> resource = registry
+                    .getResource(getResourceUri());
             return resource.isPresent() ? resource.get() : null;
         }
     }
@@ -141,34 +141,24 @@ public class StreamResourceRegistry implements Serializable {
     }
 
     /**
-     * Get a registered stream resource by its {@code URI}.
-     *
+     * Get a registered resource of given type.
+     * 
+     * @param type
+     *            resource class type
      * @param uri
      *            resource URI
+     * @param <T>
+     *            resource extending AbstractStreamResource
      * @return an optional resource, or an empty optional if no resource has
      *         been registered with this URI
      */
-    public Optional<StreamResource> getStreamResource(URI uri) {
+    public <T extends AbstractStreamResource> Optional<T> getResource(
+            Class<T> type, URI uri) {
         assert session.hasLock();
         AbstractStreamResource abstractStreamResource = res.get(uri);
-        if (abstractStreamResource instanceof StreamResource)
-            return Optional.of((StreamResource) abstractStreamResource);
-        return Optional.empty();
-    }
-
-    /**
-     * Get a registered stream receiver resource by its {@code URI}.
-     *
-     * @param uri
-     *            resource URI
-     * @return an optional resource, or an empty optional if no resource has
-     *         been registered with this URI
-     */
-    public Optional<StreamReceiver> getStreamReceiver(URI uri) {
-        assert session.hasLock();
-        AbstractStreamResource abstractStreamResource = res.get(uri);
-        if (abstractStreamResource instanceof StreamReceiver)
-            return Optional.of((StreamReceiver) abstractStreamResource);
+        if (abstractStreamResource != null
+                && type.isAssignableFrom(abstractStreamResource.getClass()))
+            return Optional.of((T) abstractStreamResource);
         return Optional.empty();
     }
 }
