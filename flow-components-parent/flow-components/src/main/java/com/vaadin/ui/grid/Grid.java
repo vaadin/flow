@@ -790,8 +790,12 @@ public class Grid<T> extends AbstractListing<T>
     private Element detailsTemplate;
 
     /**
-     * 
+     * Set the renderer to use for displaying the item details rows in this
+     * grid.
+     *
      * @param renderer
+     *            the renderer to use for displaying item details rows,
+     *            {@code null} to remove the current renderer
      */
     public void setItemDetailsRenderer(TemplateRenderer<T> renderer) {
         if (detailsTemplate != null) {
