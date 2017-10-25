@@ -27,6 +27,14 @@ abstract class AbstractStreamingEvent implements StreamingEvent {
     private final long contentLength;
     private final long bytesReceived;
 
+    protected AbstractStreamingEvent(String filename, String type, long length,
+            long bytesReceived) {
+        this.filename = filename;
+        this.type = type;
+        contentLength = length;
+        this.bytesReceived = bytesReceived;
+    }
+
     @Override
     public final String getFileName() {
         return filename;
@@ -35,14 +43,6 @@ abstract class AbstractStreamingEvent implements StreamingEvent {
     @Override
     public final String getMimeType() {
         return type;
-    }
-
-    protected AbstractStreamingEvent(String filename, String type, long length,
-            long bytesReceived) {
-        this.filename = filename;
-        this.type = type;
-        contentLength = length;
-        this.bytesReceived = bytesReceived;
     }
 
     @Override

@@ -17,12 +17,28 @@ package com.vaadin.server.communication.streaming;
 
 import com.vaadin.server.StreamVariable.StreamingErrorEvent;
 
-@SuppressWarnings("serial")
+/**
+ * Implementation for {@link StreamingErrorEvent}.
+ */
 public final class StreamingErrorEventImpl extends AbstractStreamingEvent
         implements StreamingErrorEvent {
 
     private final Exception exception;
 
+    /**
+     * Streaming error event constructor.
+     * 
+     * @param filename
+     *            filename
+     * @param type
+     *            file type
+     * @param contentLength
+     *            content length
+     * @param bytesReceived
+     *            amount of bytes received
+     * @param exception
+     *            exception for stream failure
+     */
     public StreamingErrorEventImpl(final String filename, final String type,
             long contentLength, long bytesReceived, final Exception exception) {
         super(filename, type, contentLength, bytesReceived);

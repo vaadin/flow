@@ -22,13 +22,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.util.Streams;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.server.ErrorEvent;
@@ -58,6 +58,9 @@ public class StreamReceiverHandler {
     public static final String CONTENT_TYPE_TEXT_HTML_UTF_8 = "text/html; charset=utf-8";
 
     private static final int MAX_UPLOAD_BUFFER_SIZE = 4 * 1024;
+
+    /* Minimum interval which will be used for streaming progress events. */
+    public static final int DEFAULT_STREAMING_PROGRESS_EVENT_INTERVAL_MS = 500;
 
     /**
      * An UploadInterruptedException will be thrown by an ongoing upload if
@@ -170,26 +173,20 @@ public class StreamReceiverHandler {
                 FileItemStream item = iter.next();
                 String name = item.getFieldName();
                 InputStream stream = item.openStream();
-                if (item.isFormField()) {
-                    System.out.println("Form field " + name + " with value "
-                            + Streams.asString(stream) + " detected.");
-                } else {
-
-                    try {
-                        handleFileUploadValidationAndData(session, stream,
-                                streamReceiver, name, item.getContentType(),
-                                contentLength, owner);
-                    } catch (UploadException e) {
-                        session.getErrorHandler().error(new ErrorEvent(e));
-                    }
-
-                    System.out.println("File field " + name + " with file name "
-                            + item.getName() + " detected.");
-                    // Process the input stream
+                try {
+                    handleFileUploadValidationAndData(session, stream,
+                            streamReceiver, name, item.getContentType(),
+                            contentLength, owner);
+                } catch (UploadException e) {
+                    session.getErrorHandler().error(new ErrorEvent(e));
                 }
+
+                System.out.println("File field " + name + " with file name "
+                        + item.getName() + " detected.");
+                // Process the input stream
             }
         } catch (FileUploadException e) {
-            e.printStackTrace();
+            getLog().log(Level.WARNING, "File upload failed.", e);
         }
         sendUploadResponse(response);
     }
@@ -273,9 +270,6 @@ public class StreamReceiverHandler {
         }
     }
 
-    /* Minimum interval which will be used for streaming progress events. */
-    public static final int DEFAULT_STREAMING_PROGRESS_EVENT_INTERVAL_MS = 500;
-
     /**
      * To prevent event storming, streaming progress events are sent in this
      * interval rather than every time the buffer is filled. This fixes #13155.
@@ -293,24 +287,9 @@ public class StreamReceiverHandler {
             if (out != null) {
                 out.close();
             }
-        } catch (IOException e1) {
-            // NOP
+        } catch (IOException ioe) {
+            getLog().log(Level.FINE, "Exception closing stream", ioe);
         }
-    }
-
-    /**
-     * Removes any possible path information from the filename and returns the
-     * filename. Separators / and \\ are used.
-     *
-     * @param filename
-     * @return
-     */
-    private static String removePath(String filename) {
-        if (filename != null) {
-            filename = filename.replaceAll("^.*[/\\\\]", "");
-        }
-
-        return filename;
     }
 
     /**
@@ -327,17 +306,19 @@ public class StreamReceiverHandler {
         try (OutputStream out = response.getOutputStream()) {
             final PrintWriter outWriter = new PrintWriter(
                     new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));
-            outWriter.print("<html><body>download handled</body></html>");
-            outWriter.flush();
+            try {
+                outWriter.print("<html><body>download handled</body></html>");
+                outWriter.flush();
+            } finally {
+                outWriter.close();
+            }
         }
     }
 
     private void cleanStreamVariable(VaadinSession session,
             StreamReceiver streamReceiver) {
-        session.accessSynchronously(() -> {
-            session.getResourceRegistry().registerResource(streamReceiver)
-                    .unregister();
-        });
+        session.accessSynchronously(() -> session.getResourceRegistry()
+                .registerResource(streamReceiver).unregister());
     }
 
     private final boolean streamToReceiver(VaadinSession session,
@@ -375,7 +356,7 @@ public class StreamReceiverHandler {
                 throw new NoInputStreamException();
             }
 
-            final byte buffer[] = new byte[MAX_UPLOAD_BUFFER_SIZE];
+            final byte[] buffer = new byte[MAX_UPLOAD_BUFFER_SIZE];
             long lastStreamingEvent = 0;
             int bytesReadToBuffer = 0;
             do {
@@ -385,21 +366,9 @@ public class StreamReceiverHandler {
                     totalBytes += bytesReadToBuffer;
                 }
                 if (listenProgress) {
-                    long now = System.currentTimeMillis();
-                    // to avoid excessive session locking and event storms,
-                    // events are sent in intervals, or at the end of the file.
-                    if (lastStreamingEvent + getProgressEventInterval() <= now
-                            || bytesReadToBuffer <= 0) {
-                        lastStreamingEvent = now;
-                        session.lock();
-                        try {
-                            StreamingProgressEventImpl progressEvent = new StreamingProgressEventImpl(
-                                    filename, type, contentLength, totalBytes);
-                            streamVariable.onProgress(progressEvent);
-                        } finally {
-                            session.unlock();
-                        }
-                    }
+                    lastStreamingEvent = updateProgress(session, filename, type,
+                            contentLength, streamVariable, totalBytes,
+                            lastStreamingEvent, bytesReadToBuffer);
                 }
                 if (streamVariable.isInterrupted()) {
                     throw new UploadInterruptedException();
@@ -445,6 +414,27 @@ public class StreamReceiverHandler {
             }
         }
         return startedEvent.isDisposed();
+    }
+
+    private long updateProgress(VaadinSession session, String filename,
+            String type, long contentLength, StreamVariable streamVariable,
+            long totalBytes, long lastStreamingEvent, int bytesReadToBuffer) {
+        long now = System.currentTimeMillis();
+        // to avoid excessive session locking and event storms,
+        // events are sent in intervals, or at the end of the file.
+        if (lastStreamingEvent + getProgressEventInterval() <= now
+                || bytesReadToBuffer <= 0) {
+            lastStreamingEvent = now;
+            session.lock();
+            try {
+                StreamingProgressEventImpl progressEvent = new StreamingProgressEventImpl(
+                        filename, type, contentLength, totalBytes);
+                streamVariable.onProgress(progressEvent);
+            } finally {
+                session.unlock();
+            }
+        }
+        return lastStreamingEvent;
     }
 
     /**

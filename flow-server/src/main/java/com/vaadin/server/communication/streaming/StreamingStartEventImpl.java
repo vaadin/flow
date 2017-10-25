@@ -17,12 +17,24 @@ package com.vaadin.server.communication.streaming;
 
 import com.vaadin.server.StreamVariable.StreamingStartEvent;
 
-@SuppressWarnings("serial")
+/**
+ * Implementation for {@link StreamingStartEvent}.
+ */
 public final class StreamingStartEventImpl extends AbstractStreamingEvent
         implements StreamingStartEvent {
 
     private boolean disposed;
 
+    /**
+     * Streaming start event constructor.
+     * 
+     * @param filename
+     *            filename
+     * @param type
+     *            file type
+     * @param contentLength
+     *            content length
+     */
     public StreamingStartEventImpl(final String filename, final String type,
             long contentLength) {
         super(filename, type, contentLength, 0);
@@ -33,6 +45,11 @@ public final class StreamingStartEventImpl extends AbstractStreamingEvent
         disposed = true;
     }
 
+    /**
+     * Get if stream resource should be unregistered.
+     * 
+     * @return true if stream variable should be unregistered
+     */
     public boolean isDisposed() {
         return disposed;
     }

@@ -17,10 +17,24 @@ package com.vaadin.server.communication.streaming;
 
 import com.vaadin.server.StreamVariable.StreamingProgressEvent;
 
-@SuppressWarnings("serial")
+/**
+ * Implementation for {@link StreamingProgressEvent}.
+ */
 public final class StreamingProgressEventImpl extends AbstractStreamingEvent
         implements StreamingProgressEvent {
 
+    /**
+     * Streaming progress event constructor.
+     * 
+     * @param filename
+     *            filename
+     * @param type
+     *            file type
+     * @param contentLength
+     *            content length
+     * @param bytesReceived
+     *            current bytes received amount
+     */
     public StreamingProgressEventImpl(final String filename, final String type,
             long contentLength, long bytesReceived) {
         super(filename, type, contentLength, bytesReceived);

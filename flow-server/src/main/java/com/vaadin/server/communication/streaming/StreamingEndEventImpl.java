@@ -17,10 +17,22 @@ package com.vaadin.server.communication.streaming;
 
 import com.vaadin.server.StreamVariable.StreamingEndEvent;
 
-@SuppressWarnings("serial")
+/**
+ * Implementation of {@link StreamingEndEvent}.
+ */
 public final class StreamingEndEventImpl extends AbstractStreamingEvent
         implements StreamingEndEvent {
 
+    /**
+     * End event constructor.
+     * 
+     * @param filename
+     *            filename
+     * @param type
+     *            file type
+     * @param totalBytes
+     *            total size in bytes
+     */
     public StreamingEndEventImpl(String filename, String type,
             long totalBytes) {
         super(filename, type, totalBytes, totalBytes);

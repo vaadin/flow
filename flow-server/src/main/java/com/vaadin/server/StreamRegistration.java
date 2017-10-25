@@ -17,10 +17,8 @@ package com.vaadin.server;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.Optional;
 
 public interface StreamRegistration extends Serializable {
-
 
     /**
      * Get resource URI for registered {@link StreamResource} instance.
