@@ -22,7 +22,6 @@ import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.UnhandledAlertException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.ComponentDemoTest;
@@ -232,20 +231,13 @@ public class GridViewIT extends ComponentDemoTest {
         Assert.assertEquals(
                 String.format("<div class=\"custom-details\">"
                         + "<div>Hi! My name is %s!</div>"
-                        + "<div><vaadin-button tabindex=\"0\" role=\"button\">Alert age</vaadin-button></div>"
+                        + "<div><vaadin-button tabindex=\"0\" role=\"button\">Update Person</vaadin-button></div>"
                         + "</div>", GridView.items.get(0).getName()),
                 detailsElement.getAttribute("outerHTML"));
-        try {
-            getCommandExecutor().executeScript("arguments[0].click()",
-                    detailsElement.findElement(By.tagName("vaadin-button")));
-        } catch (UnhandledAlertException uae) {
-            Assert.assertEquals(
-                    String.format("My age is %s",
-                            GridView.items.get(0).getAge()),
-                    getDriver().switchTo().alert().getText());
-            return;
-        }
-        Assert.fail("No alert from details row button click.");
+        getCommandExecutor().executeScript("arguments[0].click()",
+                detailsElement.findElement(By.tagName("vaadin-button")));
+
+        Assert.assertTrue(hasCell(grid, "Person 1 Updated"));
     }
 
     private static String getSelectionMessage(Object oldSelection,
