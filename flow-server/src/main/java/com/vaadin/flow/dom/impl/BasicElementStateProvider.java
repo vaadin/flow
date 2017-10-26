@@ -31,7 +31,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
@@ -51,8 +50,9 @@ import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.template.angular.AbstractControlTemplateNode;
-import com.vaadin.server.StreamResource;
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.event.PropertyChangeListener;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -315,11 +315,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public void setAttribute(StateNode node, String attribute,
-            StreamResource resource) {
+            AbstractStreamResource receiver) {
         assert node != null;
         assert attribute != null;
-        assert resource != null;
-        getAttributeFeature(node).setResource(attribute, resource);
+        assert receiver != null;
+        getAttributeFeature(node).setResource(attribute, receiver);
     }
 
     @Override

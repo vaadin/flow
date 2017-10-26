@@ -31,7 +31,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;
@@ -51,10 +50,11 @@ import com.vaadin.flow.template.angular.BindingValueProvider;
 import com.vaadin.flow.template.angular.ElementTemplateNode;
 import com.vaadin.flow.template.angular.StaticBindingValueProvider;
 import com.vaadin.flow.template.angular.TemplateNode;
-import com.vaadin.server.StreamResource;
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.event.PropertyChangeListener;
 
 /**
  * Handles storing and retrieval of the state information for an element defined
@@ -126,7 +126,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public void setAttribute(StateNode node, String attribute,
-            StreamResource resource) {
+            AbstractStreamResource resource) {
         checkModifiableAttribute(attribute);
         modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .setAttribute(overrideNode, attribute, resource));
@@ -310,9 +310,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Registration addEventListener(StateNode node,
-            String eventType, DomEventListener listener,
-            String[] eventDataExpressions) {
+    public Registration addEventListener(StateNode node, String eventType,
+            DomEventListener listener, String[] eventDataExpressions) {
         ElementListenerMap listeners = getOrCreateOverrideNode(node)
                 .getFeature(ElementListenerMap.class);
 
@@ -501,8 +500,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Registration addPropertyChangeListener(StateNode node,
-            String name, PropertyChangeListener listener) {
+    public Registration addPropertyChangeListener(StateNode node, String name,
+            PropertyChangeListener listener) {
         throw new UnsupportedOperationException();
     }
 

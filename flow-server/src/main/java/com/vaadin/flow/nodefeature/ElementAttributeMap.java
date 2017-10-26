@@ -23,8 +23,9 @@ import java.util.stream.Stream;
 import com.vaadin.flow.NodeOwner;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
+import com.vaadin.server.AbstractStreamResource;
+import com.vaadin.server.StreamRegistration;
 import com.vaadin.server.StreamResource;
-import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.StreamResourceRegistry;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.Registration;
@@ -36,9 +37,9 @@ import com.vaadin.shared.Registration;
  */
 public class ElementAttributeMap extends NodeMap {
 
-    private HashMap<String, StreamResourceRegistration> resourceRegistrations;
+    private HashMap<String, StreamRegistration> resourceRegistrations;
 
-    private HashMap<String, Registration> pendingResources;
+    private HashMap<String, Registration> pendingRegistrations;
 
     /**
      * Creates a new element attribute map for the given node.
@@ -117,7 +118,7 @@ public class ElementAttributeMap extends NodeMap {
      * @param resource
      *            the value
      */
-    public void setResource(String attribute, StreamResource resource) {
+    public void setResource(String attribute, AbstractStreamResource resource) {
         set(attribute, StreamResourceRegistry.getURI(resource).toASCIIString());
         if (getNode().isAttached()) {
             registerResource(attribute, resource);
@@ -126,9 +127,9 @@ public class ElementAttributeMap extends NodeMap {
         }
     }
 
-    private void ensurePendingResources() {
-        if (pendingResources == null) {
-            pendingResources = new HashMap<>();
+    private void ensurePendingRegistrations() {
+        if (pendingRegistrations == null) {
+            pendingRegistrations = new HashMap<>();
         }
     }
 
@@ -140,11 +141,11 @@ public class ElementAttributeMap extends NodeMap {
 
     private void unregisterResource(String attribute) {
         ensureResourceRegistrations();
-        ensurePendingResources();
+        ensurePendingRegistrations();
 
-        StreamResourceRegistration registration = resourceRegistrations
+        StreamRegistration registration = resourceRegistrations
                 .remove(attribute);
-        Registration handle = pendingResources.remove(attribute);
+        Registration handle = pendingRegistrations.remove(attribute);
         if (handle != null) {
             handle.remove();
         }
@@ -154,43 +155,44 @@ public class ElementAttributeMap extends NodeMap {
         if (resourceRegistrations.isEmpty()) {
             resourceRegistrations = null;
         }
-        if (pendingResources.isEmpty()) {
-            pendingResources = null;
+        if (pendingRegistrations.isEmpty()) {
+            pendingRegistrations = null;
         }
     }
 
-    private void deferRegistration(String attribute, StreamResource resource) {
-        ensurePendingResources();
+    private void deferRegistration(String attribute,
+            AbstractStreamResource resource) {
+        ensurePendingRegistrations();
 
-        assert !pendingResources.containsKey(attribute);
+        assert !pendingRegistrations.containsKey(attribute);
         Registration handle = getNode()
                 .addAttachListener(() -> registerResource(attribute, resource));
-        pendingResources.put(attribute, handle);
+        pendingRegistrations.put(attribute, handle);
     }
 
-    private void registerResource(String attribute, StreamResource resource) {
+    private void registerResource(String attribute,
+            AbstractStreamResource resource) {
         ensureResourceRegistrations();
-        ensurePendingResources();
+        ensurePendingRegistrations();
 
         assert !resourceRegistrations.containsKey(attribute);
-        StreamResourceRegistration registration = getSession()
-                .getResourceRegistry().registerResource(resource);
+        StreamRegistration registration = getSession().getResourceRegistry()
+                .registerResource(resource);
         resourceRegistrations.put(attribute, registration);
-        Registration handle = pendingResources.remove(attribute);
+        Registration handle = pendingRegistrations.remove(attribute);
         if (handle != null) {
             handle.remove();
         }
-        pendingResources.put(attribute,
+        pendingRegistrations.put(attribute,
                 getNode().addDetachListener(() -> unsetResource(attribute)));
     }
 
     private void unsetResource(String attribute) {
         ensureResourceRegistrations();
-        StreamResourceRegistration registration = resourceRegistrations
-                .get(attribute);
-        Optional<StreamResource> resource = Optional.empty();
+        StreamRegistration registration = resourceRegistrations.get(attribute);
+        Optional<AbstractStreamResource> resource = Optional.empty();
         if (registration != null) {
-            resource = registration.getResource();
+            resource = Optional.ofNullable(registration.getResource());
         }
         unregisterResource(attribute);
         resource.ifPresent(res -> deferRegistration(attribute, res));
