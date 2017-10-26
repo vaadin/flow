@@ -13,20 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.temp;
+package com.vaadin.flow.demo;
 
-import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.router.Route;
-import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationObserver;
+import javax.servlet.annotation.WebServlet;
 
-@Route(value = "npe")
-public class NPETargetView extends AbstractDivView
-        implements BeforeNavigationObserver {
+import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinServletConfiguration;
 
-    @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
-        event.rerouteToError(NullPointerException.class);
-    }
-
+/**
+ * @author Vaadin Ltd
+ *
+ */
+@WebServlet(urlPatterns = "/*", name = "DemoServlet", asyncSupported = true)
+@VaadinServletConfiguration(usingNewRouting = true, productionMode = false)
+public class DemoServlet extends VaadinServlet {
 }

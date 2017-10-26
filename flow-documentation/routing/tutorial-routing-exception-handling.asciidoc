@@ -79,7 +79,7 @@ exception class to target or with an added custom error message.
 .Reroute to error view
 [source, java]
 ----
-public class AuthenticationHandler implements BeforeNavigationListener {
+public class AuthenticationHandler implements BeforeNavigationObserver {
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {
         Class<?> target = event.getNavigationTarget();

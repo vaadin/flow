@@ -56,6 +56,9 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.common.Focusable;
+import com.vaadin.ui.common.HasSize;
+import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.event.ComponentEvent;
@@ -82,29 +85,30 @@ import elemental.json.JsonValue;
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column.html")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 @JavaScript("context://gridConnector.js")
-public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
+public class Grid<T> extends AbstractListing<T>
+        implements HasDataProvider<T>, HasStyle, HasSize, Focusable<Grid<T>> {
 
     private final class UpdateQueue implements Update {
         private List<Runnable> queue = new ArrayList<>();
 
         private UpdateQueue(int size) {
-            enqueue("connectorUpdateSize", size);
+            enqueue("$connector.updateSize", size);
         }
 
         @Override
         public void set(int start, List<JsonValue> items) {
-            enqueue("connectorSet", start,
+            enqueue("$connector.set", start,
                     items.stream().collect(JsonUtils.asArray()));
         }
 
         @Override
         public void clear(int start, int length) {
-            enqueue("connectorClear", start, length);
+            enqueue("$connector.clear", start, length);
         }
 
         @Override
         public void commit(int updateId) {
-            enqueue("connectorConfirm", updateId);
+            enqueue("$connector.confirm", updateId);
             queue.forEach(Runnable::run);
             queue.clear();
         }
@@ -532,7 +536,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     private final Map<String, Function<T, JsonValue>> columnGenerators = new HashMap<>();
     private final DataCommunicator<T> dataCommunicator = new DataCommunicator<>(
             this::generateItemJson, arrayUpdater,
-            data -> getElement().callFunction("updateData", data),
+            data -> getElement().callFunction("$connector.updateData", data),
             getElement().getNode());
 
     private int nextColumnId = 0;
@@ -710,7 +714,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         Objects.requireNonNull(selectionMode, "selection mode cannot be null");
         selectionModel.remove();
         selectionModel = model;
-        getElement().callFunction("setSelectionMode", selectionMode.name());
+        getElement().callFunction("$connector.setSelectionMode",
+                selectionMode.name());
     }
 
     /**

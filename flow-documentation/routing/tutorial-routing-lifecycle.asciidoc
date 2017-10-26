@@ -12,12 +12,22 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 During the navigation lifecycle the activating and deactivating components will
 get a number of different lifecycle state events.
 
-== BeforeNavigationEvent
+== BeforeNavigation
 
-Any `Component` in the activating or deactivating navigation target chain will
-receive a `BeforeNavigationEvent` if they extend the `BeforeNavigationListener` *interface*.
+In this state of the navigation lifecycle we detach any existing components, collect
+the components for the new view to be shown and inform component event listeners
+of the navigation status.
 
-This holds also true for listener implementations in a node component found from the root target e.g.
+During this lifecycle there is the possibility to reroute to another view, reroute to an
+error view and even postpone navigation to get user confirmation.
+
+=== BeforeNavigationObservers
+
+Any `Component` implementing `BeforeNavigationObserver` will be informed when they
+are being detached or attached to the UI. The components to inform of navigation
+events will be collected from the root component and children connected to it.
+
+.Child component implementing BeforNavigationObserver
 [source,java]
 ----
 @Route("")
@@ -31,7 +41,7 @@ public class MainLayout extends PolymerTemplate<TemplateModel> {
     }
 }
 
-public class SideElement extends Div implements BeforeNavigationListener {
+public class SideElement extends Div implements BeforeNavigationObserver {
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {
         // Handle for instance before navigation clean up
@@ -39,11 +49,27 @@ public class SideElement extends Div implements BeforeNavigationListener {
 }
 ----
 
+=== BeforeLeaveObserver
+The `BeforeLeaveObserver` will only be
+notified when the component will be detached from the UI.
+
+During the `BeforeLeaveObserver` state postponing and rerouting is supported.
+
+=== BeforeEnterObserver
+The `BeforeLeaveObserver` will only be
+notified when the component will be attached to the UI.
+
+During the `BeforeEnterObserver` state only reroute is supported.
+
+== BeforeNavigationEvent
+
+The `BeforeNavigationEvent` class contains information about the current navigation
+state, and enables optional functions like rerouting and postponing.
 
 === Reroute
 The `BeforeNavigationEvent` can be used to reroute dynamically if there is a need
 to show completely different information in some state.
-Rerouting can happen from a listener in the detaching or the attaching chain.
+Rerouting can happen from an observer in the detaching or the attaching chain.
 
 In this example the reroute would happen on attach of `BlogList` when it receives no results.
 [source,java]
@@ -56,7 +82,7 @@ public class NoItemsView extends Div {
 }
 
 @Route("blog")
-public class BlogList extends Div implements BeforeNavigationListener {
+public class BlogList extends Div implements BeforeNavigationObserver {
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {
         // implementation omitted
@@ -79,10 +105,11 @@ public class BlogList extends Div implements BeforeNavigationListener {
 === Postpone
 `BeforeNavigationEvent` has a `postpone` method, which can be used to postpone
 the current navigational transition until a specific condition is met.
+
 E.g. the client may request the user's confirmation before leaving the page:
 [source,java]
 ----
-public class SignupForm extends Div implements BeforeNavigationListener {
+public class SignupForm extends Div implements BeforeNavigationObserver {
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {
         if (event.getActivationState() == ActivationState.DEACTIVATING
@@ -99,9 +126,9 @@ public class SignupForm extends Div implements BeforeNavigationListener {
     }
 }
 ----
-Postponing interrupts the process of notifying listeners. When the transition is
-resumed, the remaining listeners after the one which initiated the postpone will be called.
-As an example, let's assume the current page has 3 listeners __a__, __b__ and __c__,
+Postponing interrupts the process of notifying observers. When the transition is
+resumed, the remaining observers after the one which initiated the postpone will be called.
+As an example, let's assume the current page has 3 observers __a__, __b__ and __c__,
 which are being notified in this order. If __b__ calls `postpone`, the call to __c__,
 as well as the rest of the transition process, is deferred. If the transition
 postponed by __b__ is not resumed, __c__ will not get a notification about this
@@ -110,7 +137,9 @@ event at all and the transition never finishes. If, however, __b__ executes its
 where it was interrupted. Thus __a__ and __b__ are not called again, but __c__ is notified.
 
 [NOTE]
-Postpone may only be initiated while leaving (deactivating) a page; if the method
+Postpone may only be initiated while navigating away from a page, meaning it is only
+available for a `BeforeNavigationObserver` where the `BeforeNavigationEvent::getActivationState`
+is *DEACTIVATING* or when we use a `BeforeLeaveObserver`. If the method
 is called while entering / activating the new page, it will throw an `IllegalStateException`.
 [NOTE]
 At most one navigation event may be postponed at any time; starting a new
@@ -132,14 +161,14 @@ the activating chain.
 
 [source,java]
 ----
-public class SideMenu extends Div implements AfterNavigationListener {
+public class SideMenu extends Div implements AfterNavigationObserver {
     Anchor blog = new Anchor("blog", "Blog");
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
         boolean active = event.getLocation().getFirstSegment()
                 .equals(blog.getHref());
-        blog.getElement().getClassList().set("≥active", active);
+        blog.getElement().getClassList().set("active", active);
     }
 }
 ----
