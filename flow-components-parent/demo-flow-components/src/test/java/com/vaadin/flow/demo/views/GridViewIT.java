@@ -205,6 +205,18 @@ public class GridViewIT extends ComponentDemoTest {
         toggleIdColumnVisibility.click();
         Assert.assertNotEquals(true, getCommandExecutor()
                 .executeScript(firstCellHiddenScript, grid));
+
+        Assert.assertNotEquals("true",
+                grid.getAttribute("columnReorderingAllowed"));
+
+        WebElement toggleUserReordering = findElement(
+                By.id("toggle-user-reordering"));
+        toggleUserReordering.click();
+        Assert.assertEquals("true",
+                grid.getAttribute("columnReorderingAllowed"));
+        toggleUserReordering.click();
+        Assert.assertNotEquals("true",
+                grid.getAttribute("columnReorderingAllowed"));
     }
 
     private static String getSelectionMessage(Object oldSelection,

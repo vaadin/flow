@@ -40,6 +40,7 @@ import com.vaadin.flow.nodefeature.TextNodeMap;
 import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.shared.Registration;
@@ -122,7 +123,7 @@ public class Element extends Node<Element> {
 
         if (autocreate) {
             CustomElementRegistry.getInstance()
-            .wrapElementIfNeeded(Element.this);
+                    .wrapElementIfNeeded(Element.this);
         }
     }
 
@@ -352,7 +353,8 @@ public class Element extends Node<Element> {
      *            the resource value, not null
      * @return this element
      */
-    public Element setAttribute(String attribute, StreamResource resource) {
+    public Element setAttribute(String attribute,
+            AbstractStreamResource resource) {
         String lowerCaseAttribute = validateAttribute(attribute, resource);
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
@@ -449,9 +451,9 @@ public class Element extends Node<Element> {
      */
     public Stream<String> getAttributeNames() {
         assert getStateProvider().getAttributeNames(getNode())
-        .map(CustomAttribute::get).filter(Optional::isPresent)
-        .filter(attr -> attr.get().hasAttribute(this))
-        .count() == 0 : "Overlap between stored attributes and existing custom attributes";
+                .map(CustomAttribute::get).filter(Optional::isPresent)
+                .filter(attr -> attr.get().hasAttribute(this))
+                .count() == 0 : "Overlap between stored attributes and existing custom attributes";
 
         Stream<String> regularNames = getStateProvider()
                 .getAttributeNames(getNode());
@@ -1041,7 +1043,7 @@ public class Element extends Node<Element> {
             builder.append(getText());
         } else {
             getChildren().filter(childFilter)
-            .forEach(e -> e.appendTextContent(builder, childFilter));
+                    .forEach(e -> e.appendTextContent(builder, childFilter));
         }
     }
 
@@ -1132,7 +1134,7 @@ public class Element extends Node<Element> {
     public Element addSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
         getStateProvider().getSynchronizedPropertyEvents(getNode())
-        .add(eventType);
+                .add(eventType);
         return this;
     }
 
@@ -1149,7 +1151,7 @@ public class Element extends Node<Element> {
     public Element removeSynchronizedProperty(String property) {
         verifySetPropertyName(property);
         getStateProvider().getSynchronizedProperties(getNode())
-        .remove(property);
+                .remove(property);
         return this;
     }
 
@@ -1167,7 +1169,7 @@ public class Element extends Node<Element> {
     public Element removeSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
         getStateProvider().getSynchronizedPropertyEvents(getNode())
-        .remove(eventType);
+                .remove(eventType);
         return this;
     }
 
@@ -1345,20 +1347,20 @@ public class Element extends Node<Element> {
     public void callFunction(String functionName, Serializable... arguments) {
         assert functionName != null;
         assert !functionName
-        .startsWith(".") : "Function name should not start with a dot";
+                .startsWith(".") : "Function name should not start with a dot";
 
-        getNode()
-        .runWhenAttached(
+        getNode().runWhenAttached(
                 ui -> doCallFunction(ui, functionName, arguments));
 
     }
 
     private void doCallFunction(UI ui, String functionName,
             Serializable... arguments) {
-        ui.getInternals().getStateTree().beforeClientResponse(getNode(), () ->{
+        ui.getInternals().getStateTree().beforeClientResponse(getNode(), () -> {
             // $0.method($1,$2,$3)
-            String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
-                    .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
+            String paramPlaceholderString = IntStream
+                    .range(1, arguments.length + 1).mapToObj(i -> "$" + i)
+                    .collect(Collectors.joining(","));
             Serializable[] jsParameters = Stream
                     .concat(Stream.of(this), Stream.of(arguments))
                     .toArray(size -> new Serializable[size]);

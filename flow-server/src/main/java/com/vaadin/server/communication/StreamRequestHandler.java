@@ -15,8 +15,8 @@
  */
 package com.vaadin.server.communication;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,36 +26,36 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.server.RequestHandler;
+import com.vaadin.server.StreamReceiver;
 import com.vaadin.server.StreamResource;
-import com.vaadin.server.StreamResourceWriter;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.UI;
 
 /**
- * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
+ * Handles {@link StreamResource} and {@link StreamReceiver} instances
+ * registered in {@link VaadinSession}.
  *
  * @author Vaadin Ltd
- *
  */
-public class StreamResourceRequestHandler implements RequestHandler {
+public class StreamRequestHandler implements RequestHandler {
 
     private static final char PATH_SEPARATOR = '/';
 
     /**
      * Dynamic resource URI prefix.
      */
-    static final String DYN_RES_PREFIX = "VAADIN/dynamic/generated-resources/";
+    static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
+
+    private StreamResourceHandler resourceHandler = new StreamResourceHandler();
+    private StreamReceiverHandler receiverHandler = new StreamReceiverHandler();
 
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        StreamResourceWriter writer = null;
 
         String pathInfo = request.getPathInfo();
         if (pathInfo == null) {
@@ -64,54 +64,77 @@ public class StreamResourceRequestHandler implements RequestHandler {
         // remove leading '/'
         assert pathInfo.startsWith(Character.toString(PATH_SEPARATOR));
         pathInfo = pathInfo.substring(1);
+
         if (!pathInfo.startsWith(DYN_RES_PREFIX)) {
             return false;
         }
 
+        Optional<AbstractStreamResource> abstractStreamResource;
         session.lock();
         try {
-            Optional<StreamResource> resource = getPathUri(pathInfo)
+            abstractStreamResource = StreamRequestHandler.getPathUri(pathInfo)
                     .flatMap(session.getResourceRegistry()::getResource);
-            if (!resource.isPresent()) {
+            if (!abstractStreamResource.isPresent()) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND,
                         "Resource is not found for path=" + pathInfo);
                 return true;
             }
-
-            StreamResource streamResource = resource.get();
-            ServletContext context = ((VaadinServletRequest) request)
-                    .getServletContext();
-            response.setContentType(streamResource.getContentTypeResolver()
-                    .apply(streamResource, context));
-            response.setCacheTime(streamResource.getCacheTime());
-            writer = streamResource.getWriter();
-            if (writer == null) {
-                throw new IOException(
-                        "Stream resource produces null input stream");
-            }
         } finally {
             session.unlock();
         }
-        try (OutputStream outputStream = response.getOutputStream()) {
-            writer.accept(outputStream, session);
+
+        if (abstractStreamResource.isPresent()) {
+            AbstractStreamResource resource = abstractStreamResource.get();
+            if (resource instanceof StreamResource) {
+                resourceHandler.handleRequest(session, request, response,
+                        (StreamResource) resource);
+            } else if (resource instanceof StreamReceiver) {
+                StreamReceiver streamReceiver = (StreamReceiver) resource;
+                String[] parts = parsePath(pathInfo);
+
+                receiverHandler.handleRequest(session, request, response,
+                        streamReceiver, parts[0], parts[1]);
+            } else {
+                getLog().warning("Received unknown stream resource.");
+            }
         }
         return true;
     }
 
     /**
-     * Generates URI string for a dynamic resource using its {@code id} and
-     * {@code name}.
+     * Parse the pathInfo for id data.
+  s   * <p>
+     * URI pattern: VAADIN/dynamic/resource/[UIID]/[SECKEY]/[NAME]
      *
+     * @see #generateURI
+     */
+    private String[] parsePath(String pathInfo) {
+        // strip away part until the data we are interested starts
+        int startOfData = pathInfo.indexOf(DYN_RES_PREFIX)
+                + DYN_RES_PREFIX.length();
+
+        String uppUri = pathInfo.substring(startOfData);
+        // [0] UIid, [1] security key, [2] name
+        return uppUri.split("/", 3);
+    }
+
+    /**
+     * Generates URI string for a dynamic resource using its {@code id} and
+     * {@code name}. [0] UIid, [1] sec key, [2] name
+     *
+     * @param name
+     *            file or attribute name to use in path
      * @param id
      *            unique resource id
-     * @param name
-     *            resource name
      * @return generated URI string
      */
-    public static String generateURI(String id, String name) {
+    public static String generateURI(String name, String id) {
         StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
+
         try {
-            builder.append(id).append(PATH_SEPARATOR).append(
+            builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
+            builder.append(id).append(PATH_SEPARATOR);
+            builder.append(
                     URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException e) {
             // UTF8 has to be supported
@@ -146,7 +169,6 @@ public class StreamResourceRequestHandler implements RequestHandler {
     }
 
     private static Logger getLog() {
-        return Logger.getLogger(StreamResourceRequestHandler.class.getName());
+        return Logger.getLogger(StreamResourceHandler.class.getName());
     }
-
 }

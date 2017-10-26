@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.flow.model;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,27 +21,24 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.ui.common.HtmlImport;
-
 /**
- * Annotation enabling using multiple {@link HtmlImport @HtmlImport}
- * annotations.
+ * Annotation enabling use of multiple {@link Convert} annotations.
  * <p>
- * <b>NOT meant to be used</b>, for multiple HTML dependencies,
- * {@link HtmlImport @HtmlImport} should be used instead.
+ * <b>NOT meant to be used</b>, for multiple converters, {@link Convert} should
+ * be used instead.
  *
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target(ElementType.METHOD)
 @Documented
-public @interface InternalContainerAnnotationForHtml {
+public @interface InternalContainerAnnotationForConvert {
 
     /**
-     * Not to be used, instead multiple {@link HtmlImport @HtmlImport}
-     * annotations should be used.
+     * Not to be used, instead multiple {@link Convert} annotations should be
+     * used.
      *
-     * @return an array of the HtmlImport annotations
+     * @return an array of the Convert annotations
      */
-    HtmlImport[] value();
+    Convert[] value();
 }

@@ -20,8 +20,8 @@ import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.server.StreamRegistration;
 import com.vaadin.server.StreamResource;
-import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasText;
@@ -60,7 +60,7 @@ public class DependencyUI extends UI {
 
         Element jsOrder = ElementFactory.createButton("Load js")
                 .setAttribute("id", "loadJs");
-        StreamResourceRegistration foo = getSession().getResourceRegistry()
+        StreamRegistration foo = getSession().getResourceRegistry()
                 .registerResource(getJsResource());
         jsOrder.addEventListener("click", e -> {
             getPage()

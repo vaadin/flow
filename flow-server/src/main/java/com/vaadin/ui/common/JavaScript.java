@@ -23,7 +23,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.annotations.InternalContainerAnnotationForJS;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Component;
 
