@@ -1,0 +1,16 @@
+---
+title: Getting Started with Spring and Flow
+order: 5
+layout: page
+---
+
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+= Getting Started with Spring and Flow
+
+A tutorial application which showcases the basic usage of a Flow & Spring Boot Application is available at https://github.com/vaadin/flow-spring-tutorial.
+You can use this application example to test the different concepts and features presented in the documentation.
+
+For starting a new project with Spring and Flow, you can clone the https://github.com/vaadin/flow-spring-tutorial[Skeleton Starter for Flow and Spring] repository.
+It is a project template with the necessary configuration and dependencies included for starting building you own application.
+This starter will be soon available for download from https://vaadin.com/start, where you can customize the naming (package, project) for it.
