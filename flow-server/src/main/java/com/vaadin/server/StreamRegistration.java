@@ -17,18 +17,19 @@ package com.vaadin.server;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.Optional;
 
 /**
- * Stream resource registration result.
+ * Stream registration result.
  * <p>
- * Use {@link #getResourceUri()} to get URI after {@link StreamResource} is
- * registered. It also allows to unregister the resource.
+ * Use {@link #getResourceUri()} to get URI after {@link StreamResource} /
+ * {@link StreamReceiver} is registered.
+ * <p>
+ * Also allows resource unregistering.
  *
  * @author Vaadin Ltd
  *
  */
-public interface StreamResourceRegistration extends Serializable {
+public interface StreamRegistration extends Serializable {
 
     /**
      * Get resource URI for registered {@link StreamResource} instance.
@@ -52,11 +53,10 @@ public interface StreamResourceRegistration extends Serializable {
     void unregister();
 
     /**
-     * Get the resource whose registration result is represented by this
-     * {@link StreamResourceRegistration} instance.
+     * Get the stream resource whose registration result is represented by this
+     * {@link StreamRegistration} instance.
      *
-     * @return an optional resource, or an empty optional if resource has been
-     *         already unregistered
+     * @return resource, or null if resource has been already unregistered
      */
-    Optional<StreamResource> getResource();
+    AbstractStreamResource getResource();
 }

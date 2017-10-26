@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import org.jsoup.Jsoup;
 
 import com.vaadin.server.StreamResource;
-import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.server.StreamRegistration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Tag;
@@ -61,7 +61,7 @@ public class LazyLoadingTemplateUI extends UI {
         template.setId("template");
         a.add(template);
 
-        StreamResourceRegistration registration = getSession()
+        StreamRegistration registration = getSession()
                 .getResourceRegistry()
                 .registerResource(getHtmlImportResource());
         getPage().addHtmlImport(

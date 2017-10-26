@@ -33,7 +33,7 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.server.communication.StreamResourceRequestHandler;
+import com.vaadin.server.communication.StreamRequestHandler;
 import com.vaadin.util.CurrentInstance;
 
 /**
@@ -149,14 +149,14 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void serviceContainsStreamResourceHandler()
+    public void serviceContainsStreamRequestHandler()
             throws ServiceException, ServletException {
         ServletConfig servletConfig = new MockServletConfig();
         VaadinServlet servlet = new VaadinServlet();
         servlet.init(servletConfig);
         VaadinService service = servlet.getService();
         Assert.assertTrue(service.createRequestHandlers().stream()
-                .filter(StreamResourceRequestHandler.class::isInstance)
+                .filter(StreamRequestHandler.class::isInstance)
                 .findAny().isPresent());
     }
 

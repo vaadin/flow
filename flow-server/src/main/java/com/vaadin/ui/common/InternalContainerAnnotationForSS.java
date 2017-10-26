@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.ui.common;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,26 +21,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.model.Convert;
-
 /**
- * Annotation enabling use of multiple {@link Convert} annotations.
+ * Annotation enabling using multiple {@link StyleSheet @StyleSheet}
+ * annotations.
  * <p>
- * <b>NOT meant to be used</b>, for multiple converters, {@link Convert} should
- * be used instead.
- * 
+ * <b>NOT meant to be used</b>, for multiple style sheet dependencies,
+ * {@link StyleSheet @StyleSheet} should be used instead.
+ *
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Documented
-public @interface InternalContainerAnnotationForConvert {
+public @interface InternalContainerAnnotationForSS {
 
     /**
-     * Not to be used, instead multiple {@link Convert} annotations should be
-     * used.
+     * Not to be used, instead multiple {@link StyleSheet @StyleSheet}
+     * annotations should be used.
      *
-     * @return an array of the Convert annotations
+     * @return an array of the style sheet annotations
      */
-    Convert[] value();
+    StyleSheet[] value();
 }
