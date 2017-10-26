@@ -253,6 +253,24 @@ public class GridViewIT extends ComponentDemoTest {
         Assert.assertTrue(hasCell(grid, "Person 1 Updated"));
     }
 
+    @Test
+    public void groupedColumns() {
+        WebElement grid = findElement(By.id("grid-column-grouping"));
+        scrollToElement(grid);
+
+        String columnGroupTag = "vaadin-grid-column-group";
+        WebElement topLevelColumn = grid
+                .findElement(By.tagName(columnGroupTag));
+        List<WebElement> secondLevelColumns = topLevelColumn
+                .findElements(By.tagName(columnGroupTag));
+        Assert.assertEquals(2, secondLevelColumns.size());
+        secondLevelColumns.forEach(columnGroup -> {
+            List<WebElement> childColumns = columnGroup
+                    .findElements(By.tagName("vaadin-grid-column"));
+            Assert.assertEquals(2, childColumns.size());
+        });
+    }
+
     private static String getSelectionMessage(Object oldSelection,
             Object newSelection, boolean isFromClient) {
         return String.format(
