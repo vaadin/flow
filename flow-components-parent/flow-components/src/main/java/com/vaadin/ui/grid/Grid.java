@@ -799,8 +799,7 @@ public class Grid<T> extends AbstractListing<T>
      */
     public void setItemDetailsRenderer(TemplateRenderer<T> renderer) {
         if (detailsTemplate != null) {
-            getElement().getNode().runWhenAttached(
-                    ui -> getElement().removeChild(detailsTemplate));
+            getElement().removeChild(detailsTemplate);
         }
         if (renderer == null) {
             return;
@@ -810,8 +809,7 @@ public class Grid<T> extends AbstractListing<T>
                 .setProperty("innerHTML", renderer.getTemplate());
 
         detailsTemplate = newDetailsTemplate;
-        getElement().getNode().runWhenAttached(
-                ui -> getElement().appendChild(detailsTemplate));
+        getElement().appendChild(detailsTemplate);
 
         setupTemplateRenderer(renderer, detailsTemplate,
                 getElement());
