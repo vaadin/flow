@@ -101,12 +101,12 @@ public class StreamResourceRegistry implements Serializable {
     }
 
     /**
-     * Unregister a stream resource.
+     * Unregister a stream receiver resource.
      * 
      * @param resource
-     *            stream resource to unregister
+     *            stream receiver resource to unregister
      */
-    public void unregisterResource(AbstractStreamResource resource) {
+    public void unregisterResource(StreamReceiver resource) {
         res.remove(getURI(resource));
     }
 
