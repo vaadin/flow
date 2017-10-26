@@ -22,9 +22,12 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.util.ClassUtils;
+import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.ServletForwardingController;
+
+import com.vaadin.server.VaadinServlet;
 
 /**
  * Vaadin servlet configuration.
@@ -48,6 +51,13 @@ public class VaadinServletConfiguration {
     static final String[] VAADIN_URL_MAPINGS = new String[] { "/VAADIN/*",
             "/PUSH/*", "/webjars/*" };
 
+    /**
+     * Makes an url handler mapping allowing to forward requests from a
+     * {@link DispatcherServlet} to {@link VaadinServlet}.
+     *
+     * @return an url handler mapping instance which forwards requests to vaadin
+     *         servlet
+     */
     @Bean
     public SimpleUrlHandlerMapping vaadinRootMapping() {
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
@@ -58,6 +68,11 @@ public class VaadinServletConfiguration {
         return mapping;
     }
 
+    /**
+     * Makes a forwarding controller.
+     *
+     * @return a forwarding controller
+     */
     @Bean
     public Controller vaadinForwardingController() {
         ServletForwardingController controller = new ServletForwardingController();
