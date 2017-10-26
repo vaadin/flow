@@ -21,11 +21,12 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ComponentMapping;
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.server.StreamResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.event.PropertyChangeListener;
 
 /**
  * Handles storing and retrieval of the state information for an element using a
@@ -77,7 +78,7 @@ public interface ElementStateProvider extends Serializable {
      *            the attribute value, not null
      */
     void setAttribute(StateNode node, String attribute,
-            StreamResource resource);
+            AbstractStreamResource resource);
 
     /**
      * Gets the value of the given attribute.
@@ -376,8 +377,8 @@ public interface ElementStateProvider extends Serializable {
      *            listener to get notifications about property value changes
      * @return an event registration handle for removing the listener
      */
-    Registration addPropertyChangeListener(StateNode node,
-            String name, PropertyChangeListener listener);
+    Registration addPropertyChangeListener(StateNode node, String name,
+            PropertyChangeListener listener);
 
     /**
      * Gets shadow root for the {@code node} if it has been attached.

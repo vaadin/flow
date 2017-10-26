@@ -349,13 +349,21 @@ public class GridView extends DemoView {
         grid.addColumn("Name", Person::getName).setResizable(true);
         grid.addColumn("Age", Person::getAge).setResizable(true);
 
-        Button btn = new Button("Toggle visibility of the ID column");
-        btn.addClickListener(event -> idColumn.setHidden(!idColumn.isHidden()));
+        Button idColumnVisibility = new Button(
+                "Toggle visibility of the ID column");
+        idColumnVisibility.addClickListener(
+                event -> idColumn.setHidden(!idColumn.isHidden()));
+
+        Button userReordering = new Button("Toggle user reordering of columns");
+        userReordering.addClickListener(event -> grid
+                .setColumnReorderingAllowed(!grid.isColumnReorderingAllowed()));
         // end-source-example
 
         grid.setId("column-api-example");
-        btn.setId("toggle-id-column-visibility");
-        addCard("Column API example", grid, btn);
+        idColumnVisibility.setId("toggle-id-column-visibility");
+        userReordering.setId("toggle-user-reordering");
+        addCard("Column API example", grid,
+                new HorizontalLayout(idColumnVisibility, userReordering));
     }
 
     private void createDetailsRow() {
