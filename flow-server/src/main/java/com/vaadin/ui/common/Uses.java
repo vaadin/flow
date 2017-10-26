@@ -23,7 +23,6 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import com.vaadin.annotations.InternalContainerAnnotationForUses;
 import com.vaadin.ui.Component;
 
 /**

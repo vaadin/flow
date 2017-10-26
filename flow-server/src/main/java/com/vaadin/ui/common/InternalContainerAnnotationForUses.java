@@ -13,15 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.ui.common;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import com.vaadin.ui.common.Uses;
 
 /**
  * Annotation enabling using multiple {@link Uses @Uses} annotations.
