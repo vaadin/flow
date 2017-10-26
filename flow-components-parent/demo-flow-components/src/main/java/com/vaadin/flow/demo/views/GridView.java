@@ -25,7 +25,6 @@ import java.util.stream.IntStream;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.Grid;
@@ -370,7 +369,7 @@ public class GridView extends DemoView {
         // begin-source-example
         // source-example-heading: Grid with a details row
         Grid<Person> grid = new Grid<>();
-        grid.setItems(getItems());
+        grid.setItems(createItems());
 
         grid.addColumn("Name", Person::getName);
         grid.addColumn("Age", Person::getAge);
@@ -379,12 +378,12 @@ public class GridView extends DemoView {
         grid.setItemDetailsRenderer(TemplateRenderer
                 .<Person> of("<div class='custom-details'>"
                         + "<div>Hi! My name is [[item.name]]!</div>"
-                        + "<div><vaadin-button on-click='handleAlert'>Alert age</vaadin-button></div>"
+                        + "<div><vaadin-button on-click='handleClick'>Update Person</vaadin-button></div>"
                         + "</div>")
                 .withProperty("name", Person::getName)
-                .withEventHandler("handleAlert", person -> {
-                    UI.getCurrent().getPage().executeJavaScript(
-                            "alert('My age is ' + $0);", person.getAge());
+                .withEventHandler("handleClick", person -> {
+                    person.setName(person.getName() + " Updated");
+                    grid.getDataCommunicator().refresh(person);
                 }));
         // end-source-example
         grid.setId("grid-with-details-row");
