@@ -354,13 +354,18 @@ public class GridView extends DemoView {
         Button userReordering = new Button("Toggle user reordering of columns");
         userReordering.addClickListener(event -> grid
                 .setColumnReorderingAllowed(!grid.isColumnReorderingAllowed()));
+
+        Button freezeIdColumn = new Button("Toggle frozen state of ID column");
+        freezeIdColumn.addClickListener(
+                event -> idColumn.setFrozen(!idColumn.isFrozen()));
         // end-source-example
 
         grid.setId("column-api-example");
         idColumnVisibility.setId("toggle-id-column-visibility");
         userReordering.setId("toggle-user-reordering");
-        addCard("Column API example", grid,
-                new HorizontalLayout(idColumnVisibility, userReordering));
+        freezeIdColumn.setId("toggle-id-column-frozen");
+        addCard("Column API example", grid, new HorizontalLayout(
+                idColumnVisibility, userReordering, freezeIdColumn));
     }
 
     private List<Person> getItems() {

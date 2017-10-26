@@ -217,6 +217,18 @@ public class GridViewIT extends ComponentDemoTest {
         toggleUserReordering.click();
         Assert.assertNotEquals("true",
                 grid.getAttribute("columnReorderingAllowed"));
+
+        String idColumnFrozenStatusScript = "return arguments[0].shadowRoot.querySelectorAll('th')[0].getAttribute('frozen')";
+        WebElement toggleIdColumnFrozen = findElement(
+                By.id("toggle-id-column-frozen"));
+        Assert.assertEquals(null, getCommandExecutor()
+                .executeScript(idColumnFrozenStatusScript, grid));
+        toggleIdColumnFrozen.click();
+        Assert.assertEquals("", getCommandExecutor()
+                .executeScript(idColumnFrozenStatusScript, grid));
+        toggleIdColumnFrozen.click();
+        Assert.assertEquals(null, getCommandExecutor()
+                .executeScript(idColumnFrozenStatusScript, grid));
     }
 
     private static String getSelectionMessage(Object oldSelection,
