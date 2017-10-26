@@ -18,8 +18,21 @@ package com.vaadin.spring;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.web.servlet.DispatcherServlet;
+
+import com.vaadin.server.VaadinServlet;
 
 /**
+ * Condition to check whether the Vaadin servlet is mapped to the root
+ * ({@literal "/*"}).
+ * <p>
+ * In this case a {@link DispatcherServlet} is used. It's mapped to the root
+ * instead of VaadinServlet and forwards requests to {@link VaadinServlet}. If
+ * there are other mappings (via Spring endpoints e.g.) then
+ * {@link DispatcherServlet} makes it possible to handle them properly via those
+ * endpoints. Otherwise {@link VaadinServlet} will handle all the URLs because
+ * it has the highest priority.
+ *
  * @author Vaadin Ltd
  *
  */
@@ -34,6 +47,18 @@ public class RootMappedCondition implements Condition {
                 context.getEnvironment().getProperty(URL_MAPPING_PROPERTY));
     }
 
+    /**
+     * Returns {@code true} if {@code mapping} is the root mapping
+     * ({@literal "/*"}).
+     * <p>
+     * The mapping is controlled via the {@code vaadin.urlMapping} property
+     * value. By default it's {@literal "/*"}.
+     *
+     * @param mapping
+     *            the mapping string to check
+     * @return {@code true} if {@code mapping} is the root mapping and
+     *         {@code false} otherwise
+     */
     public static boolean isRootMapping(String mapping) {
         if (mapping == null) {
             return true;
