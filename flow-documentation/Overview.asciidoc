@@ -83,6 +83,7 @@ These tutorials show how the different features are used.
 ** <<spring/tutorial-spring-routing#,Routing with Spring>>
 ** <<spring/tutorial-spring-scopes#,Vaadin Spring Scopes>>
 ** <<spring/tutorial-spring-configuration#,Vaadin Spring Configuration>>
+** <<spring/tutorial-spring-examples.asciidoc#,Getting Started with Spring and Flow>>
 * Misc
 ** <<miscellaneous/tutorial-execute-javascript#,Executing JavaScript>>
 ** <<miscellaneous/tutorial-history-api#,The History API>>
