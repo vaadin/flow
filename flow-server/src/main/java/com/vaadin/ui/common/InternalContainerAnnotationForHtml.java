@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.ui.common;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,27 +21,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.ui.common.JavaScript;
-
 /**
- * Annotation enabling using multiple {@link JavaScript @JavaScript}
+ * Annotation enabling using multiple {@link HtmlImport @HtmlImport}
  * annotations.
  * <p>
- * <b>NOT meant to be used</b>, for multiple style sheet dependencies,
- * {@link JavaScript @JavaScript} should be used instead.
+ * <b>NOT meant to be used</b>, for multiple HTML dependencies,
+ * {@link HtmlImport @HtmlImport} should be used instead.
  *
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-public @interface InternalContainerAnnotationForJS {
+public @interface InternalContainerAnnotationForHtml {
 
     /**
-     * Not to be used, instead multiple {@link JavaScript @JavaScript}
+     * Not to be used, instead multiple {@link HtmlImport @HtmlImport}
      * annotations should be used.
      *
-     * @return an array of the JavaScript annotations
+     * @return an array of the HtmlImport annotations
      */
-    JavaScript[] value();
+    HtmlImport[] value();
 }

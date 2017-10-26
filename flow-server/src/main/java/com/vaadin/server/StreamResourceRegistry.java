@@ -22,31 +22,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.vaadin.server.communication.StreamResourceRequestHandler;
+import com.vaadin.server.communication.StreamRequestHandler;
 
 /**
  * Registry for {@link StreamResource} instances.
  *
  * @author Vaadin Ltd
- *
  */
 public class StreamResourceRegistry implements Serializable {
 
-    private final Map<URI, StreamResource> resources = new HashMap<>();
+    private final Map<URI, AbstractStreamResource> res = new HashMap<>();
 
     private final VaadinSession session;
 
-    private static final class Registration
-            implements StreamResourceRegistration {
+    private static final class Registration implements StreamRegistration {
 
         private final StreamResourceRegistry registry;
 
         private final URI uri;
 
         private Registration(StreamResourceRegistry registry, String id,
-                String fileName) {
+                String name) {
             this.registry = registry;
-            uri = getURI(id, fileName);
+            uri = getURI(name, id);
         }
 
         @Override
@@ -56,14 +54,15 @@ public class StreamResourceRegistry implements Serializable {
 
         @Override
         public void unregister() {
-            registry.resources.remove(getResourceUri());
+            registry.res.remove(getResourceUri());
         }
 
         @Override
-        public Optional<StreamResource> getResource() {
-            return registry.getResource(getResourceUri());
+        public AbstractStreamResource getResource() {
+            Optional<AbstractStreamResource> resource = registry
+                    .getResource(getResourceUri());
+            return resource.isPresent() ? resource.get() : null;
         }
-
     }
 
     /**
@@ -86,31 +85,29 @@ public class StreamResourceRegistry implements Serializable {
      * needed anymore. Note that it is the developer's responsibility to
      * unregister resources. Otherwise resources won't be garbage collected
      * until the session expires which causes memory leak.
-     *
+     * 
      * @param resource
      *            stream resource to register
-     * @return registration handler.
+     * @return registration handler
      */
-    public StreamResourceRegistration registerResource(
-            StreamResource resource) {
-        assert session.hasLock();
-        Registration registration = new Registration(this, resource.getId(),
-                resource.getFileName());
-        resources.put(registration.getResourceUri(), resource);
+    public StreamRegistration registerResource(
+            AbstractStreamResource resource) {
+        assert session
+                .hasLock() : "Session needs to be locked when registering stream resources.";
+        StreamRegistration registration = new Registration(this,
+                resource.getId(), resource.getName());
+        res.put(registration.getResourceUri(), resource);
         return registration;
     }
 
     /**
-     * Get registered resource by its {@code URI}.
-     *
-     * @param uri
-     *            resource URI
-     * @return an optional resource, or an empty optional if no resource has
-     *         been registered with this URI
+     * Unregister a stream receiver resource.
+     * 
+     * @param resource
+     *            stream receiver resource to unregister
      */
-    public Optional<StreamResource> getResource(URI uri) {
-        assert session.hasLock();
-        return Optional.ofNullable(resources.get(uri));
+    public void unregisterResource(StreamReceiver resource) {
+        res.remove(getURI(resource));
     }
 
     /**
@@ -119,23 +116,59 @@ public class StreamResourceRegistry implements Serializable {
      * The URI won't be handled (and won't work) if {@code resource} is not
      * registered in the session.
      *
-     * @see #registerResource(StreamResource)
+     * @see #registerResource(AbstractStreamResource)
      *
      * @param resource
      *            stream resource
      * @return resource URI
      */
-    public static URI getURI(StreamResource resource) {
-        return getURI(resource.getId(), resource.getFileName());
+    public static URI getURI(AbstractStreamResource resource) {
+        return getURI(resource.getName(), resource.getId());
     }
 
-    private static URI getURI(String id, String fileName) {
+    private static URI getURI(String name, String id) {
         try {
-            return new URI(
-                    StreamResourceRequestHandler.generateURI(id, fileName));
+            return new URI(StreamRequestHandler.generateURI(name, id));
         } catch (URISyntaxException e) {
             // this may not happen if implementation is correct
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Get a registered resource for given {@code URI}.
+     * <p>
+     * Resource may be a StreamResource or a StreamReceiver
+     *
+     * @param uri
+     *            resource URI
+     * @return an optional resource, or an empty optional if no resource has
+     *         been registered with this URI
+     */
+    public Optional<AbstractStreamResource> getResource(URI uri) {
+        assert session.hasLock();
+        return Optional.ofNullable(res.get(uri));
+    }
+
+    /**
+     * Get a registered resource of given type.
+     * 
+     * @param type
+     *            resource class type
+     * @param uri
+     *            resource URI
+     * @param <T>
+     *            resource extending AbstractStreamResource
+     * @return an optional resource, or an empty optional if no resource has
+     *         been registered with this URI
+     */
+    public <T extends AbstractStreamResource> Optional<T> getResource(
+            Class<T> type, URI uri) {
+        assert session.hasLock();
+        AbstractStreamResource abstractStreamResource = res.get(uri);
+        if (abstractStreamResource != null
+                && type.isAssignableFrom(abstractStreamResource.getClass()))
+            return Optional.of((T) abstractStreamResource);
+        return Optional.empty();
     }
 }
