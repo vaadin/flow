@@ -188,7 +188,7 @@ public class StreamReceiverHandler implements Serializable {
     private void handleStream(VaadinSession session,
             StreamReceiver streamReceiver, StateNode owner, long contentLength,
             FileItemStream item) throws IOException {
-        String name = item.getFieldName();
+        String name = item.getName();
         InputStream stream = item.openStream();
         try {
             handleFileUploadValidationAndData(session, stream, streamReceiver,
