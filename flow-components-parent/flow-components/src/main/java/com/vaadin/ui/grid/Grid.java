@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -33,8 +34,10 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
+import com.vaadin.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.DataProviderListener;
 import com.vaadin.data.provider.Query;
 import com.vaadin.data.selection.MultiSelect;
 import com.vaadin.data.selection.MultiSelectionListener;
@@ -57,13 +60,17 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.Focusable;
+import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.html.Span;
+import com.vaadin.ui.renderers.ComponentRenderer;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
 
@@ -84,6 +91,7 @@ import elemental.json.JsonValue;
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid.html")
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column.html")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
+@HtmlImport("context://flow-component-renderer.html")
 @JavaScript("context://gridConnector.js")
 public class Grid<T> extends AbstractListing<T>
         implements HasDataProvider<T>, HasStyle, HasSize, Focusable<Grid<T>> {
@@ -99,6 +107,7 @@ public class Grid<T> extends AbstractListing<T>
         public void set(int start, List<JsonValue> items) {
             enqueue("$connector.set", start,
                     items.stream().collect(JsonUtils.asArray()));
+            itemEventBus.fireEvent(new ItemsSentEvent(Grid.this, items));
         }
 
         @Override
@@ -115,6 +124,59 @@ public class Grid<T> extends AbstractListing<T>
 
         private void enqueue(String name, Serializable... arguments) {
             queue.add(() -> getElement().callFunction(name, arguments));
+        }
+    }
+
+    private final class ItemsSentEvent extends ComponentEvent<Grid<T>> {
+
+        private final List<JsonValue> items;
+
+        public ItemsSentEvent(Grid<T> source, List<JsonValue> items) {
+            super(source, false);
+            this.items = items;
+        }
+
+        public List<JsonValue> getItems() {
+            return items;
+        }
+    }
+
+    private final class DataProviderChangedEvent
+            extends ComponentEvent<Grid<T>> {
+
+        private final DataProvider<T, ?> dataProvider;
+
+        public DataProviderChangedEvent(Grid<T> source,
+                DataProvider<T, ?> dataProvider) {
+            super(source, false);
+            this.dataProvider = dataProvider;
+        }
+
+        public DataProvider<T, ?> getDataProvider() {
+            return dataProvider;
+        }
+    }
+
+    private static final class RendereredComponent<T> implements Serializable {
+        private Component component;
+        private ComponentRenderer<? extends Component, T> componentRenderer;
+
+        public RendereredComponent(Component component,
+                ComponentRenderer<? extends Component, T> componentRenderer) {
+            this.component = component;
+            this.componentRenderer = componentRenderer;
+        }
+
+        public Component getComponent() {
+            return component;
+        }
+
+        public Component recreateComponent(T item) {
+            if (component != null) {
+                component.getElement().removeFromParent();
+            }
+            component = componentRenderer.createComponent(item);
+            return component;
         }
     }
 
@@ -314,6 +376,7 @@ public class Grid<T> extends AbstractListing<T>
     public static class Column<T> extends Component {
 
         private final Grid<T> grid;
+        private Map<String, RendereredComponent<T>> renderedComponents;
 
         /**
          * Constructs a new Column for use inside a Grid.
@@ -330,6 +393,55 @@ public class Grid<T> extends AbstractListing<T>
         public Column(Grid<T> grid, String columnId, String header,
                 TemplateRenderer<T> renderer) {
             this.grid = grid;
+
+            if (renderer instanceof ComponentRenderer) {
+                renderedComponents = new HashMap<>();
+                ComponentRenderer<? extends Component, T> componentRenderer = (ComponentRenderer<? extends Component, T>) renderer;
+
+                Span container = new Span();
+                container.getStyle().set("display", "none");
+
+                String containerId = UUID.randomUUID().toString();
+                container.setId(containerId);
+                this.getElement().getNode().runWhenAttached(ui -> {
+                    ui.add(container);
+                });
+
+                componentRenderer.setTemplateAttribute("key", "[[item.key]]");
+                componentRenderer.setTemplateAttribute("keyname", "key");
+                componentRenderer.setTemplateAttribute("containerid",
+                        containerId);
+
+                DataProviderListener<T> dataProviderListener = event -> {
+                    if (event instanceof DataRefreshEvent) {
+                        DataRefreshEvent<T> refreshEvent = (DataRefreshEvent<T>) event;
+                        T item = refreshEvent.getItem();
+                        String key = grid.getDataCommunicator().getKeyMapper()
+                                .key(item);
+                        RendereredComponent<T> rendereredComponent = renderedComponents
+                                .get(key);
+                        if (rendereredComponent != null) {
+                            rendereredComponent.recreateComponent(item);
+                        }
+
+                    } else {
+                        container.removeAll();
+                        renderedComponents.clear();
+                    }
+                };
+
+                grid.getDataProvider()
+                        .addDataProviderListener(dataProviderListener);
+
+                grid.itemEventBus.addListener(
+                        Grid.DataProviderChangedEvent.class,
+                        event -> event.getDataProvider()
+                                .addDataProviderListener(dataProviderListener));
+
+                grid.itemEventBus.addListener(Grid.ItemsSentEvent.class,
+                        event -> onItemsSent(event.getItems(), container,
+                                componentRenderer));
+            }
 
             Element headerTemplate = new Element("template")
                     .setAttribute("class", "header")
@@ -393,7 +505,6 @@ public class Grid<T> extends AbstractListing<T>
         public int getFlexGrow() {
             return getElement().getProperty("flexGrow", 1);
         }
-
 
         /**
          * When set to {@code true}, the column is user-resizable. By default
@@ -480,6 +591,26 @@ public class Grid<T> extends AbstractListing<T>
             return super.getElement();
         }
 
+        private void onItemsSent(List<JsonValue> items, HasComponents container,
+                ComponentRenderer<? extends Component, T> componentRenderer) {
+            items.stream().map(value -> ((JsonObject) value).getString("key"))
+                    .filter(key -> !renderedComponents.containsKey(key))
+                    .forEach(key -> {
+
+                        Span wrapper = new Span();
+                        wrapper.getElement().setAttribute("key", key);
+                        container.add(wrapper);
+
+                        Component renderedComponent = componentRenderer
+                                .createComponent(grid.getDataCommunicator()
+                                        .getKeyMapper().get(key));
+                        wrapper.add(renderedComponent);
+
+                        renderedComponents.put(key, new RendereredComponent<>(
+                                renderedComponent, componentRenderer));
+                    });
+        }
+
         /**
          * Gets the grid that this column belongs to.
          *
@@ -499,6 +630,8 @@ public class Grid<T> extends AbstractListing<T>
             getElement().getNode());
 
     private int nextColumnId = 0;
+
+    private ComponentEventBus itemEventBus = new ComponentEventBus(this);
 
     private GridSelectionModel<T> selectionModel = SelectionMode.SINGLE
             .createModel(this);
@@ -547,7 +680,7 @@ public class Grid<T> extends AbstractListing<T>
         String columnKey = getColumnKey(false);
         return addColumn(header,
                 TemplateRenderer.<T> of("[[item." + columnKey + "]]")
-                .withProperty(columnKey, valueProvider));
+                        .withProperty(columnKey, valueProvider));
     }
 
     /**
@@ -589,6 +722,8 @@ public class Grid<T> extends AbstractListing<T>
     public void setDataProvider(DataProvider<T, ?> dataProvider) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
         getDataCommunicator().setDataProvider(dataProvider, null);
+        itemEventBus
+                .fireEvent(new DataProviderChangedEvent(this, dataProvider));
     }
 
     /**

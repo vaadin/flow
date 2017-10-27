@@ -35,6 +35,7 @@ import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.layout.HorizontalLayout;
+import com.vaadin.ui.renderers.ComponentRenderer;
 import com.vaadin.ui.renderers.TemplateRenderer;
 
 /**
@@ -149,6 +150,25 @@ public class GridView extends DemoView {
     }
     // end-source-example
 
+    private static class PersonComponent extends Div {
+
+        private String text;
+        private int timesClicked;
+
+        public PersonComponent() {
+            this.addClickListener(event -> {
+                timesClicked++;
+                setText(text + "\nClicked " + timesClicked);
+            });
+        }
+
+        public void setPerson(Person person) {
+            text = "Hi, I'm " + person.getName() + "!";
+            setText(text);
+        }
+
+    }
+
     @Override
     void initView() {
         createBasicUsage();
@@ -157,6 +177,7 @@ public class GridView extends DemoView {
         createMultiSelect();
         createNoneSelect();
         createColumnTemplate();
+        createColumnComponentRenderer();
         createColumnApiExample();
         createDetailsRow();
 
@@ -326,7 +347,7 @@ public class GridView extends DemoView {
                     grid.getDataCommunicator().reset();
                 }).withEventHandler("handleRemove", person -> {
                     ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
-                            .getDataCommunicator().getDataProvider();
+                            .getDataProvider();
                     dataProvider.getItems().remove(person);
                     grid.getDataCommunicator().reset();
                 }));
@@ -335,6 +356,29 @@ public class GridView extends DemoView {
         // end-source-example
         grid.setId("template-renderer");
         addCard("Grid with columns using template renderer", grid);
+    }
+
+    private void createColumnComponentRenderer() {
+        // begin-source-example
+        // source-example-heading: Grid with columns using component renderer
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(createItems());
+
+        grid.addColumn("Person", new ComponentRenderer<>(PersonComponent::new,
+                PersonComponent::setPerson));
+
+        grid.addColumn("Actions",
+                new ComponentRenderer<>(item -> new Button("Remove", evt -> {
+                    ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
+                            .getDataProvider();
+                    dataProvider.getItems().remove(item);
+                    grid.getDataCommunicator().reset();
+                })));
+
+        grid.setSelectionMode(SelectionMode.NONE);
+        // end-source-example
+        grid.setId("template-renderer");
+        addCard("Grid with columns using component renderer", grid);
     }
 
     private void createColumnApiExample() {
