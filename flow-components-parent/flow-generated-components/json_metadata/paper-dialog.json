@@ -42,7 +42,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The orientation against which to align the element horizontally\nrelative to the `positionTarget`. Possible values are \"left\", \"right\", \"auto\".\n       "
+      "description": "The orientation against which to align the element horizontally\nrelative to the `positionTarget`. Possible values are \"left\", \"right\", \"center\", \"auto\".\n       "
     },
     {
       "name": "verticalAlign",
@@ -50,7 +50,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The orientation against which to align the element vertically\nrelative to the `positionTarget`. Possible values are \"top\", \"bottom\", \"auto\".\n       "
+      "description": "The orientation against which to align the element vertically\nrelative to the `positionTarget`. Possible values are \"top\", \"bottom\", \"middle\", \"auto\".\n       "
     },
     {
       "name": "dynamicAlign",
@@ -66,7 +66,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "A pixel value that will be added to the position calculated for the\ngiven `horizontalAlign`, in the direction of alignment. You can think\nof it as increasing or decreasing the distance to the side of the\nscreen given by `horizontalAlign`.\n\nIf `horizontalAlign` is \"left\", this offset will increase or decrease\nthe distance to the left side of the screen: a negative offset will\nmove the dropdown to the left; a positive one, to the right.\n\nConversely if `horizontalAlign` is \"right\", this offset will increase\nor decrease the distance to the right side of the screen: a negative\noffset will move the dropdown to the right; a positive one, to the left.\n       "
+      "description": "A pixel value that will be added to the position calculated for the\ngiven `horizontalAlign`, in the direction of alignment. You can think\nof it as increasing or decreasing the distance to the side of the\nscreen given by `horizontalAlign`.\n\nIf `horizontalAlign` is \"left\" or \"center\", this offset will increase or\ndecrease the distance to the left side of the screen: a negative offset will\nmove the dropdown to the left; a positive one, to the right.\n\nConversely if `horizontalAlign` is \"right\", this offset will increase\nor decrease the distance to the right side of the screen: a negative\noffset will move the dropdown to the right; a positive one, to the left.\n       "
     },
     {
       "name": "verticalOffset",
@@ -74,7 +74,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "A pixel value that will be added to the position calculated for the\ngiven `verticalAlign`, in the direction of alignment. You can think\nof it as increasing or decreasing the distance to the side of the\nscreen given by `verticalAlign`.\n\nIf `verticalAlign` is \"top\", this offset will increase or decrease\nthe distance to the top side of the screen: a negative offset will\nmove the dropdown upwards; a positive one, downwards.\n\nConversely if `verticalAlign` is \"bottom\", this offset will increase\nor decrease the distance to the bottom side of the screen: a negative\noffset will move the dropdown downwards; a positive one, upwards.\n       "
+      "description": "A pixel value that will be added to the position calculated for the\ngiven `verticalAlign`, in the direction of alignment. You can think\nof it as increasing or decreasing the distance to the side of the\nscreen given by `verticalAlign`.\n\nIf `verticalAlign` is \"top\" or \"middle\", this offset will increase or\ndecrease the distance to the top side of the screen: a negative offset will\nmove the dropdown upwards; a positive one, downwards.\n\nConversely if `verticalAlign` is \"bottom\", this offset will increase\nor decrease the distance to the bottom side of the screen: a negative\noffset will move the dropdown downwards; a positive one, upwards.\n       "
     },
     {
       "name": "autoFitOnAttach",
@@ -421,5 +421,5 @@
     "Polymer.NeonAnimatableBehavior"
   ],
   "mixins": [],
-  "description": "Material design: [Dialogs](https://www.google.com/design/spec/components/dialogs.html)\n\n`<paper-dialog>` is a dialog with Material Design styling and optional animations when it is\nopened or closed. It provides styles for a header, content area, and an action area for buttons.\nYou can use the `<paper-dialog-scrollable>` element (in its own repository) if you need a scrolling\ncontent area. To autofocus a specific child element after opening the dialog, give it the `autofocus`\nattribute. See `Polymer.PaperDialogBehavior` and `Polymer.IronOverlayBehavior` for specifics.\n\nFor example, the following code implements a dialog with a header, scrolling content area and\nbuttons. Focus will be given to the `dialog-confirm` button when the dialog is opened.\n\n    <paper-dialog>\n      <h2>Header</h2>\n      <paper-dialog-scrollable>\n        Lorem ipsum...\n      </paper-dialog-scrollable>\n      <div class=\"buttons\">\n        <paper-button dialog-dismiss>Cancel</paper-button>\n        <paper-button dialog-confirm autofocus>Accept</paper-button>\n      </div>\n    </paper-dialog>\n\n### Styling\n\nSee the docs for `Polymer.PaperDialogBehavior` for the custom properties available for styling\nthis element.\n\n### Animations\n\nSet the `entry-animation` and/or `exit-animation` attributes to add an animation when the dialog\nis opened or closed. See the documentation in\n[PolymerElements/neon-animation](https://github.com/PolymerElements/neon-animation) for more info.\n\nFor example:\n\n    <link rel=\"import\" href=\"components/neon-animation/animations/scale-up-animation.html\">\n    <link rel=\"import\" href=\"components/neon-animation/animations/fade-out-animation.html\">\n\n    <paper-dialog entry-animation=\"scale-up-animation\"\n                  exit-animation=\"fade-out-animation\">\n      <h2>Header</h2>\n      <div>Dialog body</div>\n    </paper-dialog>\n\n### Accessibility\n\nSee the docs for `Polymer.PaperDialogBehavior` for accessibility features implemented by this\nelement."
+  "description": ""
 }

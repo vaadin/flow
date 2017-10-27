@@ -30,68 +30,6 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasComponents;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * {@code paper-tab} is styled to look like a tab. It should be used in
- * conjunction with {@code paper-tabs}.
- * </p>
- * <p>
- * Example:
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-tabs selected=&quot;0&quot;&gt;
- *   &lt;paper-tab&gt;TAB 1&lt;/paper-tab&gt;
- *   &lt;paper-tab&gt;TAB 2&lt;/paper-tab&gt;
- *   &lt;paper-tab&gt;TAB 3&lt;/paper-tab&gt;
- * &lt;/paper-tabs&gt;
- * </code>
- * </pre>
- * 
- * <h3>Styling</h3>
- * <p>
- * The following custom properties and mixins are available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Custom property</th>
- * <th>Description</th>
- * <th>Default</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code --paper-tab-ink}</td>
- * <td>Ink color</td>
- * <td>{@code --paper-yellow-a100}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-tab}</td>
- * <td>Mixin applied to the tab</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-tab-content}</td>
- * <td>Mixin applied to the tab content</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-tab-content-unselected}</td>
- * <td>Mixin applied to the tab content when the tab is not selected</td>
- * <td>{@code</td>
- * </tr>
- * </tbody>
- * </table>
- * <p>
- * This element applies the mixin {@code --paper-font-common-base} but does not
- * import {@code paper-styles/typography.html}. In order to apply the
- * {@code Roboto} font to this element, make sure you've imported
- * {@code paper-styles/typography.html}.
- * </p>
- */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
 		"WebComponent: paper-tab#2.0.0", "Flow#1.0-SNAPSHOT"})
 @Tag("paper-tab")

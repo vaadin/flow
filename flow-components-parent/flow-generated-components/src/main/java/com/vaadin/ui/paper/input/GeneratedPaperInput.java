@@ -31,16 +31,6 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * This is a fresh new hell to make this element hybrid. Basically, in 2.0 we
- * lost is=, so the example same template can't be used with iron-input 1.0 and
- * 2.0. Expect some conditional code (especially in the tests).
- * </p>
- */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
 		"WebComponent: paper-input#2.0.2", "Flow#1.0-SNAPSHOT"})
 @Tag("paper-input")

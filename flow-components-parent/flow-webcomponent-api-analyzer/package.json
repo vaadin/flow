@@ -19,7 +19,7 @@
     "map-stream": "latest",
     "marked": "latest",
     "minimist": "~1.1.1",
-    "polymer-analyzer": "~2.2.1",
+    "polymer-analyzer": "~2.4.0",
     "require-dir": "latest",
     "run-sequence": "latest",
     "stream-from-array": "latest",

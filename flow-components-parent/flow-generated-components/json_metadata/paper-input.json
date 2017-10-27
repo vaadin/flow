@@ -431,5 +431,5 @@
     "Polymer.IronA11yKeysBehavior"
   ],
   "mixins": [],
-  "description": "This is a fresh new hell to make this element hybrid. Basically, in 2.0\n    we lost is=, so the example same template can't be used with iron-input 1.0 and 2.0.\n    Expect some conditional code (especially in the tests)."
+  "description": ""
 }

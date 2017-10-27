@@ -17,6 +17,7 @@ package com.vaadin.generator.metadata;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Base class of properties exposed by the webcomponent, that can be properties
@@ -27,7 +28,7 @@ import java.util.List;
 public class ComponentPropertyBaseData {
 
     private String name;
-    private List<ComponentBasicType> type;
+    private Set<ComponentBasicType> type;
     private String description;
     private List<ComponentObjectType> objectType = new ArrayList<>();
 
@@ -43,7 +44,8 @@ public class ComponentPropertyBaseData {
     /**
      * Sets the object type properties.
      *
-     * @param objectType the
+     * @param objectType
+     *            the
      */
     public void setObjectType(List<ComponentObjectType> objectType) {
         this.objectType = objectType;
@@ -69,27 +71,29 @@ public class ComponentPropertyBaseData {
     }
 
     /**
-     * Gets the type of the property, or if property allows varying types, a list of those.
+     * Gets the type of the property, or if property allows varying types, a set
+     * of those.
      *
-     * @return the type the type in a list or the a list of allowed types
+     * @return the type the type in a set or the set of allowed types
      */
-    public List<ComponentBasicType> getType() {
+    public Set<ComponentBasicType> getType() {
         return type;
     }
 
     /**
-     * Sets the type of the property, or if property allows varying types, a list of those.
+     * Sets the type of the property, or if property allows varying types, a set
+     * of those.
      *
      * @param type
-     *            The type of the property in a list or a list of allowed types
+     *            The type of the property in a set or a set of allowed types
      */
-    public void setType(List<ComponentBasicType> type) {
+    public void setType(Set<ComponentBasicType> type) {
         this.type = type;
     }
 
     /**
-     * Gets the public description of the function parameter, that can be used to
-     * generate the corresponding Javadoc at the Java class.
+     * Gets the public description of the function parameter, that can be used
+     * to generate the corresponding Javadoc at the Java class.
      *
      * @return The function parameter description.
      */
@@ -98,8 +102,8 @@ public class ComponentPropertyBaseData {
     }
 
     /**
-     * Sets the public description of the function parameter, that can be used to
-     * generate the corresponding Javadoc at the Java class.
+     * Sets the public description of the function parameter, that can be used
+     * to generate the corresponding Javadoc at the Java class.
      *
      * @param description
      *            The function parameter description.
