@@ -42,6 +42,7 @@ import com.vaadin.ui.renderers.TemplateRenderer;
  */
 @ComponentDemo(name = "Grid", href = "vaadin-grid")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-grid.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
 public class GridView extends DemoView {
 
     static List<Person> items = new ArrayList<>();
@@ -157,6 +158,7 @@ public class GridView extends DemoView {
         createNoneSelect();
         createColumnTemplate();
         createColumnApiExample();
+        createDetailsRow();
 
         addCard("Grid example model",
                 new Label("These objects are used in the examples above"));
@@ -361,6 +363,31 @@ public class GridView extends DemoView {
         userReordering.setId("toggle-user-reordering");
         addCard("Column API example", grid,
                 new HorizontalLayout(idColumnVisibility, userReordering));
+    }
+
+    private void createDetailsRow() {
+        // begin-source-example
+        // source-example-heading: Grid with a details row
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(createItems());
+
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", Person::getAge);
+
+        grid.setSelectionMode(SelectionMode.NONE);
+        grid.setItemDetailsRenderer(TemplateRenderer
+                .<Person> of("<div class='custom-details'>"
+                        + "<div>Hi! My name is [[item.name]]!</div>"
+                        + "<div><vaadin-button on-click='handleClick'>Update Person</vaadin-button></div>"
+                        + "</div>")
+                .withProperty("name", Person::getName)
+                .withEventHandler("handleClick", person -> {
+                    person.setName(person.getName() + " Updated");
+                    grid.getDataCommunicator().refresh(person);
+                }));
+        // end-source-example
+        grid.setId("grid-with-details-row");
+        addCard("Grid with a details row", grid);
     }
 
     private List<Person> getItems() {
