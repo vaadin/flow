@@ -219,6 +219,26 @@ public class GridViewIT extends ComponentDemoTest {
                 grid.getAttribute("columnReorderingAllowed"));
     }
 
+    @Test
+    public void gridDetailsRowTests() {
+        WebElement grid = findElement(By.id("grid-with-details-row"));
+        scrollToElement(grid);
+
+        getRow(grid, 0).click();
+
+        WebElement detailsElement = grid
+                .findElement(By.className("custom-details"));
+        Assert.assertEquals("<div class=\"custom-details\">"
+                + "<div>Hi! My name is Person 1!</div>"
+                + "<div><vaadin-button tabindex=\"0\" role=\"button\">Update Person</vaadin-button></div>"
+                + "</div>",
+                detailsElement.getAttribute("outerHTML"));
+        getCommandExecutor().executeScript("arguments[0].click()",
+                detailsElement.findElement(By.tagName("vaadin-button")));
+
+        Assert.assertTrue(hasCell(grid, "Person 1 Updated"));
+    }
+
     private static String getSelectionMessage(Object oldSelection,
             Object newSelection, boolean isFromClient) {
         return String.format(
@@ -243,10 +263,13 @@ public class GridViewIT extends ComponentDemoTest {
                 rowIndex -> Assert.assertTrue(isRowSelected(grid, rowIndex)));
     }
 
-    private boolean isRowSelected(WebElement grid, int row) {
-        WebElement gridRow = getInShadowRoot(grid, By.id("items"))
+    private WebElement getRow(WebElement grid, int row) {
+        return getInShadowRoot(grid, By.id("items"))
                 .findElements(By.cssSelector("tr")).get(row);
-        return gridRow.getAttribute("selected") != null;
+    }
+
+    private boolean isRowSelected(WebElement grid, int row) {
+        return getRow(grid, row).getAttribute("selected") != null;
     }
 
     private boolean hasCell(WebElement grid, String text) {
