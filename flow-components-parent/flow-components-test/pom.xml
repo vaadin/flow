@@ -10,6 +10,11 @@
     <artifactId>flow-components-test</artifactId>
     <name>Flow component API integration test module</name>
     <packaging>war</packaging>
+    
+    <properties>
+        <!-- Don't care about coding style or licenses for tests -->
+        <sonar.skip>true</sonar.skip>
+    </properties>
 
     <dependencies>
         <dependency>
