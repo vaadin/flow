@@ -217,6 +217,20 @@ public class GridViewIT extends ComponentDemoTest {
         toggleUserReordering.click();
         Assert.assertNotEquals("true",
                 grid.getAttribute("columnReorderingAllowed"));
+
+        String idColumnFrozenStatusScript = "return arguments[0].frozen";
+        WebElement toggleIdColumnFrozen = findElement(
+                By.id("toggle-id-column-frozen"));
+        WebElement idColumn = grid
+                .findElements(By.tagName("vaadin-grid-column")).get(0);
+        Assert.assertEquals(false, getCommandExecutor()
+                .executeScript(idColumnFrozenStatusScript, idColumn));
+        toggleIdColumnFrozen.click();
+        Assert.assertEquals(true, getCommandExecutor()
+                .executeScript(idColumnFrozenStatusScript, idColumn));
+        toggleIdColumnFrozen.click();
+        Assert.assertEquals(false, getCommandExecutor()
+                .executeScript(idColumnFrozenStatusScript, idColumn));
     }
 
     @Test
