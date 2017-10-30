@@ -17,10 +17,15 @@ package com.vaadin.flow.spring;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 
 @SpringBootApplication
-public class TestServletInitializer extends SpringBootServletInitializer {
+@EnableAuthorizationServer
+@Configuration
+@EnableWebSecurity
+public class TestServletInitializer {
 
     public static void main(String[] args) {
         SpringApplication.run(TestServletInitializer.class, args);
