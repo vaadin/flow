@@ -70,9 +70,7 @@ public class SourceContentResolver {
     private static List<SourceCodeExample> parseSourceCodeExamplesForClass(
             Class<? extends DemoView> demoViewClass) {
 
-        String resourcePath = "../test-classes/"
-                + demoViewClass.getPackage().getName().replaceAll("\\.", "/")
-                + "/" + demoViewClass.getSimpleName() + ".java";
+        String resourcePath = getResourcePath(demoViewClass);
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 SourceContentResolver.class.getClassLoader()
@@ -86,6 +84,26 @@ public class SourceContentResolver {
                     "Error reading source examples for class " + demoViewClass,
                     e);
         }
+    }
+
+    private static String getResourcePath(
+            Class<? extends DemoView> demoViewClass) {
+        String resourcePath = "../test-classes/"
+                + demoViewClass.getPackage().getName().replaceAll("\\.", "/")
+                + "/" + demoViewClass.getSimpleName() + ".java";
+        if (SourceContentResolver.class.getClassLoader()
+                .getResource(resourcePath) == null) {
+            resourcePath = "../test-classes/"
+                    + demoViewClass.getPackage().getName() + "/"
+                    + demoViewClass.getSimpleName() + ".java";
+            if (SourceContentResolver.class.getClassLoader()
+                    .getResource(resourcePath) == null) {
+                throw new IllegalArgumentException(
+                        "Could not find file resources for '"
+                                + demoViewClass.getName() + "'!");
+            }
+        }
+        return resourcePath;
     }
 
     private static List<SourceCodeExample> parseSourceCodeExamples(
