@@ -16,8 +16,9 @@
 package com.vaadin.flow.components.it.textfield;
 
 import com.vaadin.flow.components.it.TestView;
-import com.vaadin.ui.html.Div;
 import com.vaadin.ui.button.Button;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
 import com.vaadin.ui.textfield.TextField;
 
 /**
@@ -35,10 +36,9 @@ public class TextFieldView extends TestView {
     private void initView() {
         Div message = new Div();
         TextField textField = new TextField();
-        textField.addValueChangeListener(
-                event -> message.setText(
-                        String.format("Old value: '%s'. New value: '%s'.",
-                                event.getOldValue(), event.getValue())));
+        textField.addValueChangeListener(event -> message
+                .setText(String.format("Old value: '%s'. New value: '%s'.",
+                        event.getOldValue(), event.getValue())));
         add(textField, message);
 
         Button button = new Button("Set/unset text field read-only");
@@ -53,5 +53,18 @@ public class TextFieldView extends TestView {
                 event -> textField.setRequiredIndicatorVisible(
                         !textField.isRequiredIndicatorVisible()));
         add(required);
+
+        TextField valueChangeSource = new TextField();
+        valueChangeSource.setId("value-change");
+        Button valueChange = new Button("Get text field value",
+                event -> handleTextFieldValue(valueChangeSource));
+        valueChange.setId("get-value");
+        add(valueChangeSource, valueChange);
+    }
+
+    private void handleTextFieldValue(TextField field) {
+        Label label = new Label(field.getValue());
+        label.addClassName("text-field-value");
+        add(label);
     }
 }
