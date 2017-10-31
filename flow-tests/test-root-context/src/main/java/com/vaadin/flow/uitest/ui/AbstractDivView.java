@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.ui.html.Div;
-
-import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.flow.router.View;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.html.Div;
 
-public abstract class AbstractDivView extends Div implements View {
+public abstract class AbstractDivView extends Div
+        implements BeforeNavigationObserver {
 
     public AbstractDivView() {
     }
@@ -32,7 +32,7 @@ public abstract class AbstractDivView extends Div implements View {
     }
 
     @Override
-    public void onLocationChange(LocationChangeEvent event) {
+    public void beforeNavigation(BeforeNavigationEvent event) {
         onShow();
     }
 

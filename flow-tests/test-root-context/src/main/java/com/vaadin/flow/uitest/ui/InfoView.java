@@ -19,18 +19,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Hr;
-import com.vaadin.flow.router.View;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.router.Route;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WebBrowser;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.event.AttachEvent;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Hr;
+import com.vaadin.ui.html.NativeButton;
 
-public class InfoView extends Div implements View {
+@Route(value = "com.vaadin.flow.uitest.ui.InfoView", layout = ViewTestLayout.class)
+public class InfoView extends Div {
 
     public InfoView() {
         setClassName("infoContainer");

@@ -16,15 +16,18 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import java.util.Collections;
+
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
-import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.flow.router.View;
 
-/**
- * @author Vaadin Ltd.
- */
-public class RequestParametersView extends Div implements View {
+@Route(value = "com.vaadin.flow.uitest.ui.RequestParametersView", layout = ViewTestLayout.class)
+public class RequestParametersView extends Div
+        implements BeforeNavigationObserver {
     static final String REQUEST_PARAM_NAME = "testRequestParam";
     static final String NO_INPUT_TEXT = "No input";
     static final String REQUEST_PARAM_ID = "requestParamDisplayLabel";
@@ -38,8 +41,11 @@ public class RequestParametersView extends Div implements View {
     }
 
     @Override
-    public void onLocationChange(LocationChangeEvent locationChangeEvent) {
-        requestParamLabel.setText(locationChangeEvent
-                .getQueryParameter(REQUEST_PARAM_NAME).orElse(NO_INPUT_TEXT));
+    public void beforeNavigation(BeforeNavigationEvent event) {
+        requestParamLabel.setText(event.getLocation().getQueryParameters()
+                .getParameters()
+                .getOrDefault(REQUEST_PARAM_NAME, Collections.emptyList())
+                .stream().findFirst().orElse(NO_INPUT_TEXT));
+
     }
 }

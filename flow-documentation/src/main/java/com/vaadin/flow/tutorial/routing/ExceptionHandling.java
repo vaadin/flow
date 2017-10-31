@@ -7,7 +7,7 @@ import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.NotFoundException;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
@@ -27,8 +27,7 @@ public class ExceptionHandling {
         }
     }
 
-    public class CustomNotFoundTarget extends RouteNotFoundError
-            implements HasErrorParameter<NotFoundException> {
+    public class CustomNotFoundTarget extends RouteNotFoundError {
 
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
@@ -38,7 +37,7 @@ public class ExceptionHandling {
         }
     }
 
-    public class AuthenticationHandler implements BeforeNavigationListener {
+    public class AuthenticationHandler implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             Class<?> target = event.getNavigationTarget();

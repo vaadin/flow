@@ -36,6 +36,7 @@ import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.TextNodeMap;
 import com.vaadin.flow.util.JavaScriptSemantics;
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.shared.Registration;
@@ -335,7 +336,8 @@ public class Element extends Node<Element> {
      *            the resource value, not null
      * @return this element
      */
-    public Element setAttribute(String attribute, StreamResource resource) {
+    public Element setAttribute(String attribute,
+            AbstractStreamResource resource) {
         String lowerCaseAttribute = validateAttribute(attribute, resource);
 
         Optional<CustomAttribute> customAttribute = CustomAttribute

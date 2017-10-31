@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import com.vaadin.spring.VaadinScopesConfig;
+import com.vaadin.spring.VaadinServletConfiguration;
 
 /**
  * Brings in the machinery to setup Spring + Vaadin applications. This
@@ -40,6 +41,6 @@ import com.vaadin.spring.VaadinScopesConfig;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(VaadinScopesConfig.class)
+@Import({ VaadinScopesConfig.class, VaadinServletConfiguration.class })
 public @interface EnableVaadin {
 }

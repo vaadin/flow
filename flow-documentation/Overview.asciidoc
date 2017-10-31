@@ -82,6 +82,7 @@ These tutorials show how the different features are used.
 ** <<spring/tutorial-spring-basic#,Use Flow with Spring>>
 ** <<spring/tutorial-spring-routing#,Routing with Spring>>
 ** <<spring/tutorial-spring-scopes#,Vaadin Spring Scopes>>
+** <<spring/tutorial-spring-configuration#,Vaadin Spring Configuration>>
 * Misc
 ** <<miscellaneous/tutorial-execute-javascript#,Executing JavaScript>>
 ** <<miscellaneous/tutorial-history-api#,The History API>>
@@ -89,6 +90,7 @@ These tutorials show how the different features are used.
 ** <<miscellaneous/tutorial-loading-indicator#,The Loading Indicator>>
 ** <<miscellaneous/tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
 ** <<miscellaneous/tutorial-service-init-listener#,Configure RequestHandlers, BootstrapListeners and DependencyFilters using VaadinServiceInitListener>>
+** <<miscellaneous/tutorial-stream-resources#,Using stream resources>>
 
 The rest of this document gives a high-level overview of the features and explains how they fit together.
 

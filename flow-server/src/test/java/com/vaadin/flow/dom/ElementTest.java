@@ -1290,6 +1290,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void setResourceAttribute_elementIsNotAttached_elementHasAttribute() {
+        UI.setCurrent(createUI());
         Element element = ElementFactory.createDiv();
         String resName = "resource";
         StreamResource resource = createEmptyResource(resName);
@@ -1316,6 +1317,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void setResourceAttributeSeveralTimes_elementIsNotAttached_elementHasAttribute() {
+        UI.setCurrent(createUI());
         Element element = ElementFactory.createDiv();
         String resName = "resource";
         StreamResource resource = createEmptyResource(resName);
@@ -1354,6 +1356,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test
     public void setResourceAttribute_elementIsAttached_elementHasAttribute() {
         UI ui = createUI();
+        UI.setCurrent(ui);
         String resName = "resource";
         StreamResource resource = createEmptyResource(resName);
         ui.getElement().setAttribute("foo", resource);
@@ -1367,17 +1370,18 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_elementIsAttached_setAnotherResource()
             throws URISyntaxException {
         UI ui = createUI();
+        UI.setCurrent(ui);
         StreamResource resource = createEmptyResource("resource1");
         ui.getElement().setAttribute("foo", resource);
 
         String uri = ui.getElement().getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getResource(StreamResource.class, new URI(uri));
         Assert.assertTrue(res.isPresent());
 
         String resName = "resource2";
         ui.getElement().setAttribute("foo", createEmptyResource(resName));
-        res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
+        res = ui.getSession().getResourceRegistry().getResource(StreamResource.class, new URI(uri));
         Assert.assertFalse(res.isPresent());
 
         Assert.assertTrue(ui.getElement().hasAttribute("foo"));
@@ -1389,12 +1393,13 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_elementIsAttached_setRawAttribute()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
+        UI.setCurrent(ui);
         StreamResource resource = createEmptyResource("resource");
         ui.getElement().setAttribute("foo", resource);
 
         String uri = ui.getElement().getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getResource(StreamResource.class, new URI(uri));
         Assert.assertTrue(res.isPresent());
         res = null;
 
@@ -1404,7 +1409,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().setAttribute("foo", "bar");
 
         TestUtil.isGarbageCollected(ref);
-        res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
+        res = ui.getSession().getResourceRegistry().getResource(StreamResource.class, new URI(uri));
 
         Assert.assertFalse(res.isPresent());
         Assert.assertTrue(ui.getElement().hasAttribute("foo"));
@@ -1415,12 +1420,13 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_elementIsAttached_removeAttribute()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
+        UI.setCurrent(ui);
         StreamResource resource = createEmptyResource("resource");
         ui.getElement().setAttribute("foo", resource);
 
         String uri = ui.getElement().getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getResource(StreamResource.class, new URI(uri));
         Assert.assertTrue(res.isPresent());
         res = null;
 
@@ -1430,7 +1436,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().removeAttribute("foo");
         TestUtil.isGarbageCollected(ref);
 
-        res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
+        res = ui.getSession().getResourceRegistry().getResource(StreamResource.class, new URI(uri));
         Assert.assertFalse(res.isPresent());
         Assert.assertFalse(ui.getElement().hasAttribute("foo"));
         Assert.assertNull(ui.getElement().getAttribute("foo"));
@@ -1440,6 +1446,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_attachElement_resourceIsRegistered()
             throws URISyntaxException {
         UI ui = createUI();
+        UI.setCurrent(ui);
 
         StreamResource resource = createEmptyResource("resource");
         Element element = ElementFactory.createDiv();
@@ -1451,7 +1458,7 @@ public class ElementTest extends AbstractNodeTest {
 
         String uri = element.getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getResource(StreamResource.class, new URI(uri));
         Assert.assertTrue(res.isPresent());
     }
 
@@ -1459,6 +1466,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_attachElement_setAnotherResource()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
+        UI.setCurrent(ui);
 
         StreamResource resource = createEmptyResource("resource1");
         Element element = ElementFactory.createDiv();
@@ -1476,7 +1484,7 @@ public class ElementTest extends AbstractNodeTest {
 
         String uri = element.getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getResource(StreamResource.class, new URI(uri));
         Assert.assertTrue(res.isPresent());
         Assert.assertTrue(uri.endsWith(resName));
 
@@ -1490,6 +1498,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_attachElement_setRawAttribute()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
+        UI.setCurrent(ui);
 
         StreamResource resource = createEmptyResource("resource");
         Element element = ElementFactory.createDiv();
@@ -1512,6 +1521,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_attachElement_removeAttribute()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
+        UI.setCurrent(ui);
 
         StreamResource resource = createEmptyResource("resource");
         Element element = ElementFactory.createDiv();
@@ -1535,6 +1545,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_attachElement_setAnotherResourceAfterAttaching()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
+        UI.setCurrent(ui);
 
         StreamResource resource = createEmptyResource("resource1");
         Element element = ElementFactory.createDiv();
@@ -1556,7 +1567,7 @@ public class ElementTest extends AbstractNodeTest {
 
         String uri = element.getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(new URI(uri));
+                .getResource(StreamResource.class, new URI(uri));
         Assert.assertTrue(res.isPresent());
         Assert.assertTrue(uri.endsWith(resName));
     }
@@ -1565,6 +1576,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_attachElement_setRawAttributeAfterAttaching()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
+        UI.setCurrent(ui);
 
         StreamResource resource = createEmptyResource("resource");
         Element element = ElementFactory.createDiv();
@@ -1590,6 +1602,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_attachElement_removeAttributeAfterAttaching()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
+        UI.setCurrent(ui);
 
         StreamResource resource = createEmptyResource("resource");
         Element element = ElementFactory.createDiv();
@@ -1615,6 +1628,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_detachElement_resourceIsUnregistered()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
+        UI.setCurrent(ui);
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
@@ -1628,12 +1642,12 @@ public class ElementTest extends AbstractNodeTest {
 
         URI uri = new URI(attribute);
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(uri);
+                .getResource(StreamResource.class, uri);
         Assert.assertTrue(res.isPresent());
 
         ui.getElement().removeAllChildren();
 
-        res = ui.getSession().getResourceRegistry().getResource(uri);
+        res = ui.getSession().getResourceRegistry().getResource(StreamResource.class, uri);
         Assert.assertFalse(res.isPresent());
 
         Assert.assertTrue(element.hasAttribute("foo"));
@@ -1651,6 +1665,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_detachAndReattachElement_resourceReregistered()
             throws URISyntaxException {
         UI ui = createUI();
+        UI.setCurrent(ui);
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
@@ -1661,17 +1676,17 @@ public class ElementTest extends AbstractNodeTest {
 
         URI uri = new URI(attribute);
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(uri);
+                .getResource(StreamResource.class, uri);
         Assert.assertTrue(res.isPresent());
 
         ui.getElement().removeAllChildren();
 
-        res = ui.getSession().getResourceRegistry().getResource(uri);
+        res = ui.getSession().getResourceRegistry().getResource(StreamResource.class, uri);
         Assert.assertFalse(res.isPresent());
 
         ui.getElement().appendChild(element);
 
-        res = ui.getSession().getResourceRegistry().getResource(uri);
+        res = ui.getSession().getResourceRegistry().getResource(StreamResource.class, uri);
         Assert.assertTrue(res.isPresent());
     }
 
@@ -1679,6 +1694,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setResourceAttribute_attachAndDetachAndReattachElement_resourceReregistered()
             throws URISyntaxException {
         UI ui = createUI();
+        UI.setCurrent(ui);
         Element element = ElementFactory.createDiv();
 
         String resName = "resource";
@@ -1690,17 +1706,17 @@ public class ElementTest extends AbstractNodeTest {
 
         URI uri = new URI(attribute);
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
-                .getResource(uri);
+                .getResource(StreamResource.class, uri);
         Assert.assertTrue(res.isPresent());
 
         ui.getElement().removeAllChildren();
 
-        res = ui.getSession().getResourceRegistry().getResource(uri);
+        res = ui.getSession().getResourceRegistry().getResource(StreamResource.class, uri);
         Assert.assertFalse(res.isPresent());
 
         ui.getElement().appendChild(element);
 
-        res = ui.getSession().getResourceRegistry().getResource(uri);
+        res = ui.getSession().getResourceRegistry().getResource(StreamResource.class, uri);
         Assert.assertTrue(res.isPresent());
     }
 

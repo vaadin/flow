@@ -23,18 +23,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.router.View;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.template.collections.ListBindingView.ListBindingModel;
+import com.vaadin.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.ModelItem;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
+@Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListBindingView", layout = ViewTestLayout.class)
 @Tag("list-binding")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ListBinding.html")
-public class ListBindingView extends PolymerTemplate<ListBindingModel>
-        implements View {
+public class ListBindingView extends PolymerTemplate<ListBindingModel> {
     static final List<String> RESET_STATE = Arrays.asList("1", "2", "3");
     static final String INITIAL_STATE = "foo";
 

@@ -16,7 +16,9 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -26,6 +28,7 @@ import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
+@Route(value = "com.vaadin.flow.uitest.ui.template.RestoreViewWithAttachedByIdView", layout = ViewTestLayout.class)
 public class RestoreViewWithAttachedByIdView extends AbstractDivView {
 
     private TemplateWithInjectedId template;

@@ -15,12 +15,24 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.Route;
+import com.vaadin.router.WildcardParameter;
+import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.html.Anchor;
 
-public class BaseHrefView extends AbstractDivView {
+@Route(value = "com.vaadin.flow.uitest.ui.BaseHrefView", layout = ViewTestLayout.class)
+public class BaseHrefView extends AbstractDivView
+        implements HasUrlParameter<String> {
 
     public BaseHrefView() {
         add(new Anchor("link", "My link"));
     }
 
+    @Override
+    public void setParameter(BeforeNavigationEvent event,
+            @WildcardParameter String parameter) {
+        // Noop
+    }
 }

@@ -47,7 +47,7 @@ import com.vaadin.flow.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.server.StreamResource;
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeListener;
 
@@ -293,11 +293,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public void setAttribute(StateNode node, String attribute,
-            StreamResource resource) {
+            AbstractStreamResource receiver) {
         assert node != null;
         assert attribute != null;
-        assert resource != null;
-        getAttributeFeature(node).setResource(attribute, resource);
+        assert receiver != null;
+        getAttributeFeature(node).setResource(attribute, receiver);
     }
 
     @Override

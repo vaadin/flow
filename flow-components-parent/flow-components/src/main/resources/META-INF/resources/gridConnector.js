@@ -11,7 +11,9 @@ window.gridConnector = {
 
         grid.size = 0; // To avoid NaN here and there before we get proper data
 
-        var doSelection = function(item, userOriginated) {
+        grid.$connector = {};
+
+        grid.$connector.doSelection = function(item, userOriginated) {
             if (selectionMode === 'NONE') {
                 return;
             }
@@ -22,36 +24,44 @@ window.gridConnector = {
             grid.selectItem(item);
             selectedKeys[item.key] = item;
             if (userOriginated) {
+                item.selected = true;
                 grid.$server.select(item.key);
             }
+            grid.fire('select', {item: item, userOriginated: userOriginated});
         };
 
-        var doDeselection = function(item, userOriginated) {
+        grid.$connector.doDeselection = function(item, userOriginated) {
             if (selectionMode === 'SINGLE' || selectionMode === 'MULTI') {
                 grid.deselectItem(item);
                 delete selectedKeys[item.key];
                 if (userOriginated) {
+                    delete item.selected;
                     grid.$server.deselect(item.key);
                 }
+                grid.fire('deselect', {item: item, userOriginated: userOriginated});
             }
         };
 
-        // $connector postfix to reduce change of name collision
-        grid._activeItemChanged$connector = function(newVal, oldVal) {
-            if (!newVal) {
+        grid.__activeItemChanged = function(newVal, oldVal) {
+            if (!newVal || selectionMode != 'SINGLE') {
                 return;
             }
             if (!selectedKeys[newVal.key]) {
-                doSelection(newVal, true);
+                grid.$connector.doSelection(newVal, true);
             } else {
-                doDeselection(newVal, true);
+                grid.$connector.doDeselection(newVal, true);
             }
         };
-        grid._createPropertyObserver('activeItem', '_activeItemChanged$connector', true);
+        grid._createPropertyObserver('activeItem', '__activeItemChanged', true);
+
+        grid.__activeItemChangedDetails = function(newVal, oldVal) {
+            grid.detailsOpenedItems = [newVal];
+        }
+        grid._createPropertyObserver('activeItem', '__activeItemChangedDetails', true);
 
         grid.dataProvider = function(params, callback) {
             if (params.pageSize != grid.pageSize) { 
-                throw "Invalid pageSize"; 
+                throw 'Invalid pageSize'; 
             }
 
             var page = params.page;
@@ -93,9 +103,9 @@ window.gridConnector = {
             }
         }
 
-        grid.connectorSet = function(index, items) {
+        grid.$connector.set = function(index, items) {
             if (index % grid.pageSize != 0) {
-                throw "Got new data to index " + index + " which is not aligned with the page size of " + grid.pageSize;
+                throw 'Got new data to index ' + index + ' which is not aligned with the page size of ' + grid.pageSize;
             }
 
             var firstPage = index / grid.pageSize;
@@ -108,9 +118,9 @@ window.gridConnector = {
                 for(var j = 0; j < slice.length; j++) {
                     var item = slice[j]
                     if (item.selected && !selectedKeys[item.key]) {
-                        doSelection(item);
+                        grid.$connector.doSelection(item);
                     } else if (selectedKeys[item.key]) {
-                        doDeselection(item);
+                        grid.$connector.doDeselection(item);
                     }
                 }
                 updateGridCache(page);
@@ -128,7 +138,7 @@ window.gridConnector = {
             return null;
         }
 
-        grid.updateData = function(items) {
+        grid.$connector.updateData = function(items) {
             var pagesToUpdate = [];
             for (var i = 0; i < items.length; i++) {
                 var cacheLocation = itemToCacheLocation(items[i].key);
@@ -144,9 +154,9 @@ window.gridConnector = {
             }
         };
 
-        grid.connectorClear = function(index, length) {
+        grid.$connector.clear = function(index, length) {
             if (index % grid.pageSize != 0) {
-                throw "Got cleared data for index " + index + " which is not aligned with the page size of " + grid.pageSize;
+                throw 'Got cleared data for index ' + index + ' which is not aligned with the page size of ' + grid.pageSize;
             }
 
             var firstPage = index / grid.pageSize;
@@ -158,7 +168,7 @@ window.gridConnector = {
                 for (var j = 0; j < items.length; j++) {
                     var item = items[j];
                     if (selectedKeys[item.key]) {
-                        doDeselection(item);
+                        grid.$connector.doDeselection(item);
                     }
                 }
                 delete cache[page];
@@ -166,11 +176,11 @@ window.gridConnector = {
             }
         };
 
-        grid.connectorUpdateSize = function(newSize) {
+        grid.$connector.updateSize = function(newSize) {
             grid.size = newSize;
         };
 
-        grid.connectorConfirm = function(id) {
+        grid.$connector.confirm = function(id) {
             // We're done applying changes from this batch, resolve outstanding
             // callbacks
             var outstandingRequests = Object.getOwnPropertyNames(pageCallbacks);
@@ -188,7 +198,7 @@ window.gridConnector = {
             grid.$server.confirmUpdate(id);
         }
 
-        grid.setSelectionMode = function(mode) {
+        grid.$connector.setSelectionMode = function(mode) {
             if ((typeof mode === 'string' || mode instanceof String)
                 && validSelectionModes.indexOf(mode) >= 0) {
                 selectionMode = mode;

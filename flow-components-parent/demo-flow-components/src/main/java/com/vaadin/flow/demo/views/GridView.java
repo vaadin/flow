@@ -28,10 +28,13 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.Grid;
+import com.vaadin.ui.grid.Grid.Column;
 import com.vaadin.ui.grid.Grid.SelectionMode;
+import com.vaadin.ui.grid.GridMultiSelectionModel;
 import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
+import com.vaadin.ui.layout.HorizontalLayout;
 import com.vaadin.ui.renderers.TemplateRenderer;
 
 /**
@@ -39,6 +42,7 @@ import com.vaadin.ui.renderers.TemplateRenderer;
  */
 @ComponentDemo(name = "Grid", href = "vaadin-grid")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-grid.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
 public class GridView extends DemoView {
 
     static List<Person> items = new ArrayList<>();
@@ -153,6 +157,8 @@ public class GridView extends DemoView {
         createMultiSelect();
         createNoneSelect();
         createColumnTemplate();
+        createColumnApiExample();
+        createDetailsRow();
 
         addCard("Grid example model",
                 new Label("These objects are used in the examples above"));
@@ -260,11 +266,16 @@ public class GridView extends DemoView {
         Button selectBtn = new Button("Select first five persons");
         selectBtn.addClickListener(event -> grid.asMultiSelect()
                 .setValue(new LinkedHashSet<>(people.subList(0, 5))));
+        Button selectAllBtn = new Button("Select all");
+        selectAllBtn.addClickListener(
+                event -> ((GridMultiSelectionModel<Person>) grid
+                        .getSelectionModel()).selectAll());
         // end-source-example
         grid.setId("multi-selection");
         selectBtn.setId("multi-selection-button");
         messageDiv.setId("multi-selection-message");
-        addCard("Grid Multi Selection", grid, selectBtn, messageDiv);
+        addCard("Grid Multi Selection", grid,
+                new HorizontalLayout(selectBtn, selectAllBtn), messageDiv);
     }
 
     private void createNoneSelect() {
@@ -324,6 +335,64 @@ public class GridView extends DemoView {
         // end-source-example
         grid.setId("template-renderer");
         addCard("Grid with columns using template renderer", grid);
+    }
+
+    private void createColumnApiExample() {
+        // begin-source-example
+        // source-example-heading: Column API example
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(getItems());
+
+        Column<Person> idColumn = grid.addColumn("ID", Person::getId)
+                .setFlexGrow(0).setWidth("75px");
+        grid.addColumn("Name", Person::getName).setResizable(true);
+        grid.addColumn("Age", Person::getAge).setResizable(true);
+
+        Button idColumnVisibility = new Button(
+                "Toggle visibility of the ID column");
+        idColumnVisibility.addClickListener(
+                event -> idColumn.setHidden(!idColumn.isHidden()));
+
+        Button userReordering = new Button("Toggle user reordering of columns");
+        userReordering.addClickListener(event -> grid
+                .setColumnReorderingAllowed(!grid.isColumnReorderingAllowed()));
+
+        Button freezeIdColumn = new Button("Toggle frozen state of ID column");
+        freezeIdColumn.addClickListener(
+                event -> idColumn.setFrozen(!idColumn.isFrozen()));
+        // end-source-example
+
+        grid.setId("column-api-example");
+        idColumnVisibility.setId("toggle-id-column-visibility");
+        userReordering.setId("toggle-user-reordering");
+        freezeIdColumn.setId("toggle-id-column-frozen");
+        addCard("Column API example", grid, new HorizontalLayout(
+                idColumnVisibility, userReordering, freezeIdColumn));
+    }
+
+    private void createDetailsRow() {
+        // begin-source-example
+        // source-example-heading: Grid with a details row
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(createItems());
+
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", Person::getAge);
+
+        grid.setSelectionMode(SelectionMode.NONE);
+        grid.setItemDetailsRenderer(TemplateRenderer
+                .<Person> of("<div class='custom-details'>"
+                        + "<div>Hi! My name is [[item.name]]!</div>"
+                        + "<div><vaadin-button on-click='handleClick'>Update Person</vaadin-button></div>"
+                        + "</div>")
+                .withProperty("name", Person::getName)
+                .withEventHandler("handleClick", person -> {
+                    person.setName(person.getName() + " Updated");
+                    grid.getDataCommunicator().refresh(person);
+                }));
+        // end-source-example
+        grid.setId("grid-with-details-row");
+        addCard("Grid with a details row", grid);
     }
 
     private List<Person> getItems() {

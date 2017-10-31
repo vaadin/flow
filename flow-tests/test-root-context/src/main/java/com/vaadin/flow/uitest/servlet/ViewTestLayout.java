@@ -22,30 +22,45 @@ import java.util.List;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.flow.router.View;
+import com.vaadin.router.Route;
+import com.vaadin.router.RouterLayout;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationObserver;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.html.Div;
 
-public class ViewTestLayout implements HasChildView {
+public class ViewTestLayout extends Div
+        implements RouterLayout, BeforeNavigationObserver {
 
     private Element element = ElementFactory.createDiv();
     private Element viewContainer = ElementFactory.createDiv();
     private Element viewSelect = ElementFactory.createSelect();
 
+    @Route(value = "", layout = ViewTestLayout.class)
+    public static class BaseNavigationTarget extends Div {
+        public BaseNavigationTarget() {
+            setText(this.getClass().getSimpleName());
+            setId("name-div");
+        }
+    }
+
     public ViewTestLayout() {
+
         element.setAttribute("id", "main-layout");
 
-        List<Class<? extends View>> classes = new ArrayList<>(
+        List<Class<? extends Component>> classes = new ArrayList<>(
                 ViewTestServlet.getViewLocator().getAllViewClasses());
-        Comparator<Class<? extends View>> comparator = Comparator
+        classes.removeIf(e -> !e.getName().endsWith("View"));
+
+        Comparator<Class<? extends Component>> comparator = Comparator
                 .comparing(Class::getName);
         Collections.sort(classes, comparator);
 
         String lastPackage = "";
         viewSelect.appendChild(ElementFactory.createOption());
         Element optionGroup = null;
-        for (Class<? extends View> c : classes) {
+        for (Class<? extends Component> c : classes) {
             if (!c.getPackage().getName().equals(lastPackage)) {
                 lastPackage = c.getPackage().getName();
                 optionGroup = new Element("optgroup");
@@ -68,25 +83,15 @@ public class ViewTestLayout implements HasChildView {
 
         element.appendChild(viewSelect, ElementFactory.createHr(),
                 viewContainer);
+
+        getElement().appendChild(element);
     }
 
     @Override
-    public Element getElement() {
-        return element;
-    }
-
-    @Override
-    public void setChildView(View subView) {
-        viewContainer.setChild(0, subView.getElement());
-
-    }
-
-    @Override
-    public void onLocationChange(LocationChangeEvent event) {
+    public void beforeNavigation(BeforeNavigationEvent event) {
         // Defer value setting until all option elements have been attached
         UI.getCurrent().getPage().executeJavaScript(
                 "setTimeout(function() {$0.value = $1}, 0)", viewSelect,
                 event.getLocation().getPath());
     }
-
 }

@@ -15,6 +15,7 @@
  */
 package com.vaadin.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +24,6 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.router.event.ErrorNavigationEvent;
 import com.vaadin.router.event.EventUtil;
 import com.vaadin.router.event.NavigationEvent;
@@ -31,6 +31,7 @@ import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Handles error navigation rendering in the target UI.
@@ -40,6 +41,8 @@ import com.vaadin.ui.common.HasElement;
 public class ErrorStateRenderer implements NavigationHandler {
 
     private final NavigationState navigationState;
+    private static List<Integer> statusCodes = ReflectTools
+            .getConstantIntValues(HttpServletResponse.class);
 
     /**
      * Constructs a new state renderer for the given navigation state.
@@ -111,10 +114,14 @@ public class ErrorStateRenderer implements NavigationHandler {
                 .setErrorParameter(beforeNavigationActivating,
                         ((ErrorNavigationEvent) event).getErrorParameter());
 
-        List<BeforeNavigationListener> listeners = EventUtil
-                .collectBeforeNavigationListeners(chain);
-        listeners.forEach(listener -> listener
-                .beforeNavigation(beforeNavigationActivating));
+        validateStatusCode(statusCode, routeTargetType);
+
+        EventUtil.collectBeforeNavigationObservers(chain)
+                .forEach(listener -> listener
+                        .beforeNavigation(beforeNavigationActivating));
+        EventUtil.collectBeforeEnterObservers(chain)
+                .forEach(listener -> listener
+                        .beforeEnter(beforeNavigationActivating));
 
         @SuppressWarnings("unchecked")
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
@@ -128,10 +135,20 @@ public class ErrorStateRenderer implements NavigationHandler {
         AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
                 RouterUtil.createEvent(event, chain));
 
-        EventUtil.collectAfterNavigationListeners(chain).forEach(
+        EventUtil.collectAfterNavigationObservers(chain).forEach(
                 listener -> listener.afterNavigation(afterNavigationEvent));
 
         return statusCode;
+    }
+
+    private void validateStatusCode(int statusCode,
+            Class<? extends Component> targetClass) {
+        if (!statusCodes.contains(statusCode)) {
+            String msg = String.format(
+                    "Error state code must be a valid HttpServletResponse value. Received invalid value of '%s' for '%s'",
+                    statusCode, targetClass.getName());
+            throw new IllegalStateException(msg);
+        }
     }
 
     /**

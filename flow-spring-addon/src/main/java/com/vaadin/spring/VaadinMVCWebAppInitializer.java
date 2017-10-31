@@ -15,16 +15,21 @@
  */
 package com.vaadin.spring;
 
+import static com.vaadin.spring.VaadinServletConfiguration.VAADIN_URL_MAPINGS;
+
 import java.util.Collection;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRegistration.Dynamic;
 
+import org.springframework.core.env.Environment;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
 
 /**
  * Abstract Vaadin Spring MVC {@link WebApplicationInitializer}.
@@ -42,13 +47,33 @@ public abstract class VaadinMVCWebAppInitializer
     public void onStartup(ServletContext servletContext)
             throws ServletException {
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.setServletContext(servletContext);
         registerConfiguration(context);
         servletContext.addListener(new ContextLoaderListener(context));
 
-        ServletRegistration.Dynamic registration = servletContext
-                .addServlet("dispatcher", new SpringServlet(context));
-        registration.setLoadOnStartup(1);
-        registration.addMapping("/*");
+        context.refresh();
+        Environment env = context.getBean(Environment.class);
+        Dynamic registration = servletContext.addServlet(
+                ClassUtils.getShortNameAsProperty(SpringServlet.class),
+                new SpringServlet(context));
+
+        String mapping = env
+                .getProperty(RootMappedCondition.URL_MAPPING_PROPERTY, "/*");
+        String[] mappings = new String[VAADIN_URL_MAPINGS.length + 1];
+        System.arraycopy(VAADIN_URL_MAPINGS, 0, mappings, 1,
+                VAADIN_URL_MAPINGS.length);
+        if (RootMappedCondition.isRootMapping(mapping)) {
+            mappings[0] = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+            Dynamic dispatcherRegistration = servletContext
+                    .addServlet("dispatcher", new DispatcherServlet(context));
+            dispatcherRegistration.addMapping("/*");
+        } else {
+            mappings[0] = mapping;
+        }
+        registration.addMapping(mappings);
+        registration.setAsyncSupported(
+                Boolean.TRUE.toString().equals(env.getProperty(
+                        "vaadin.asyncSupported", Boolean.TRUE.toString())));
     }
 
     /**
@@ -70,7 +95,8 @@ public abstract class VaadinMVCWebAppInitializer
     protected void registerConfiguration(
             AnnotationConfigWebApplicationContext context) {
         Stream<Class<? extends Object>> configs = Stream.concat(
-                Stream.of(VaadinScopesConfig.class),
+                Stream.of(VaadinScopesConfig.class,
+                        VaadinServletConfiguration.class),
                 getConfigurationClasses().stream());
         context.register(configs.toArray(Class<?>[]::new));
     }

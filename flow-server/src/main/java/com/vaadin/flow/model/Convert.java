@@ -21,17 +21,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.annotations.InternalContainerAnnotationForConvert;
-
 /**
  * Defines a ModelConverter on a template model property found through
  * {@link #path()}.
  * <p>
  * Use this annotation on setters in your {@link TemplateModel} class to perform
  * type conversions on properties.
- * 
+ *
  * @see ModelConverter
- * 
+ *
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -42,7 +40,7 @@ public @interface Convert {
     /**
      * The ModelConverter class to use for conversion of the property found
      * through {{@link #path()}.
-     * 
+     *
      * @return the ModelConverter class
      */
     Class<? extends ModelConverter<?, ?>> value();
@@ -51,7 +49,7 @@ public @interface Convert {
      * The dot separated path from the TemplateModel property to the value to
      * apply conversion to. Empty string by default, which will apply conversion
      * directly to the property.
-     * 
+     *
      * @return the dot separated path to the bean property to convert, empty
      *         string by default
      */
