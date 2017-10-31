@@ -150,7 +150,8 @@ public class ComponentMetaData {
      * <p>
      * Framework internal data, thus package-private.
      *
-     * @return a set of information objects about properties to be synchronized
+     * @return a collection of information objects about properties to be
+     *         synchronized
      */
     Collection<SynchronizedPropertyInfo> getSynchronizedProperties() {
         return Collections.unmodifiableCollection(synchronizedProperties);
@@ -210,6 +211,10 @@ public class ComponentMetaData {
                         + " even though it's not a getter.");
             }
 
+            if (infos.containsKey(method.getName())) {
+                continue;
+            }
+
             String propertyName;
             if (annotation.property().isEmpty()) {
                 propertyName = ReflectTools.getPropertyName(method);
@@ -217,12 +222,8 @@ public class ComponentMetaData {
                 propertyName = annotation.property();
             }
 
-            if (infos.containsKey(propertyName)) {
-                continue;
-            }
-
             String[] eventNames = annotation.value();
-            infos.put(propertyName,
+            infos.put(method.getName(),
                     new SynchronizedPropertyInfo(propertyName, eventNames));
         }
     }

@@ -40,6 +40,11 @@ public class ComponentMetaDataTest {
         }
     }
 
+    public interface HasFoo {
+        @Synchronize(value = "bar", property = "baz")
+        String getFoo();
+    }
+
     public static class SubClass extends Sample {
 
         @Override
@@ -53,20 +58,34 @@ public class ComponentMetaDataTest {
         }
     }
 
+    public static class ChangeSyncProperty extends Sample {
+
+        @Override
+        @Synchronize(value = "baz", property = "foo")
+        public String getFoo() {
+            return null;
+        }
+
+    }
+
+    @Tag(Tag.A)
+    public static class HasFooImpl extends Component implements HasFoo {
+
+        @Override
+        public String getFoo() {
+            return null;
+        }
+
+    }
+
     @Test
     public void synchronizedProperties_methodInClass() {
-        ComponentMetaData data = new ComponentMetaData(Sample.class);
+        assertFooPoperty(Sample.class);
+    }
 
-        Collection<SynchronizedPropertyInfo> props = data
-                .getSynchronizedProperties();
-        Assert.assertEquals(1, props.size());
-
-        SynchronizedPropertyInfo info = props.iterator().next();
-        Assert.assertEquals("baz", info.getProperty());
-
-        List<String> events = info.getEventNames().collect(Collectors.toList());
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals("bar", events.get(0));
+    @Test
+    public void synchronizedProperties_methodInInterface() {
+        assertFooPoperty(HasFooImpl.class);
     }
 
     @Test
@@ -89,5 +108,37 @@ public class ComponentMetaDataTest {
 
         Assert.assertTrue(props.stream()
                 .anyMatch(prop -> prop.getProperty().equals("bar")));
+    }
+
+    @Test
+    public void synchronizedProperties_overridesMethodAndProperty() {
+        ComponentMetaData data = new ComponentMetaData(
+                ChangeSyncProperty.class);
+
+        Collection<SynchronizedPropertyInfo> props = data
+                .getSynchronizedProperties();
+        Assert.assertEquals(1, props.size());
+
+        SynchronizedPropertyInfo info = props.iterator().next();
+        Assert.assertEquals("foo", info.getProperty());
+
+        List<String> events = info.getEventNames().collect(Collectors.toList());
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("baz", events.get(0));
+    }
+
+    private void assertFooPoperty(Class<? extends Component> clazz) {
+        ComponentMetaData data = new ComponentMetaData(clazz);
+
+        Collection<SynchronizedPropertyInfo> props = data
+                .getSynchronizedProperties();
+        Assert.assertEquals(1, props.size());
+
+        SynchronizedPropertyInfo info = props.iterator().next();
+        Assert.assertEquals("baz", info.getProperty());
+
+        List<String> events = info.getEventNames().collect(Collectors.toList());
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("bar", events.get(0));
     }
 }
