@@ -167,17 +167,17 @@ access to [classname]#MultiSelectionEvent#, which allows to easily access differ
 [source, java]
 ----
 // Grid in multi-selection mode
-Grid<Person> grid = new Grid;
+Grid<Person> grid = new Grid<>();
 grid.setItems(people);
-GridMultiSelectionModel<Person> selectionModel
-      = (GridMultiSelectionModel<Person>) grid.setSelectionMode(SelectionMode.MULTI);
+GridMultiSelectionModel<Person> selectionModel =
+        (GridMultiSelectionModel<Person>) grid.setSelectionMode(SelectionMode.MULTI);
 
 selectionModel.selectAll();
 
 selectionModel.addMultiSelectionListener(event -> {
-  message.setText(String.format("%s items added, %s removed.",
-          event.getAddedSelection().size(),
-          event.getRemovedSelection().size()));
+    message.setText(String.format("%s items added, %s removed.",
+            event.getAddedSelection().size(),
+            event.getRemovedSelection().size()));
 
     // Allow deleting only if there's any selected
     deleteSelected.setDisabled(event.getNewSelection().isEmpty());

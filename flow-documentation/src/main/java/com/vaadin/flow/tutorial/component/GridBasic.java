@@ -97,21 +97,22 @@ public class GridBasic {
         Label message = new Label();
         Button deleteSelected = null;
         
+        // Grid in multi-selection mode
         Grid<Person> grid = new Grid<>();
-                grid.setItems(people);
-                GridMultiSelectionModel<Person> selectionModel
-                      = (GridMultiSelectionModel<Person>) grid.setSelectionMode(SelectionMode.MULTI);
+        grid.setItems(people);
+        GridMultiSelectionModel<Person> selectionModel =
+                (GridMultiSelectionModel<Person>) grid.setSelectionMode(SelectionMode.MULTI);
 
-                selectionModel.selectAll();
+        selectionModel.selectAll();
 
-                selectionModel.addMultiSelectionListener(event -> {
-                    message.setText(String.format("%s items added, %s removed.",
-                            event.getAddedSelection().size(),
-                            event.getRemovedSelection().size()));
+        selectionModel.addMultiSelectionListener(event -> {
+            message.setText(String.format("%s items added, %s removed.",
+                    event.getAddedSelection().size(),
+                    event.getRemovedSelection().size()));
 
-                    // Allow deleting only if there's any selected
-                    deleteSelected.setDisabled(event.getNewSelection().isEmpty());
-                });
+            // Allow deleting only if there's any selected
+            deleteSelected.setDisabled(event.getNewSelection().isEmpty());
+        });
     }
     
     public void gridConfiguringColumns() {
@@ -126,4 +127,15 @@ public class GridBasic {
         
         nameColumn.setFrozen(true);
     }
+    
+    /* code of commented lines
+
+     grid.setColumnOrder(firstnameColumn, lastnameColumn,
+                    bornColumn, birthplaceColumn,
+                    diedColumn);
+     
+     Column<Date> bornColumn = grid.addColumn(Person::getBirthDate);
+     bornColumn.setCaption("Born date");
+     
+     */
 }
