@@ -36,7 +36,7 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
 
     @Override
     protected int getDeploymentPort() {
-        return 8080;
+        return 9998;
     }
 
     @Before

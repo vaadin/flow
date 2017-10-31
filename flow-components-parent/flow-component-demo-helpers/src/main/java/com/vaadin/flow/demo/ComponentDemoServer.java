@@ -115,7 +115,7 @@ public class ComponentDemoServer {
      * @return the port number to which this server will be connected.
      */
     protected int getPort() {
-        return 8080;
+        return 9998;
     }
 
     /**
