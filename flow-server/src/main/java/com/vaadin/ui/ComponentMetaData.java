@@ -17,19 +17,21 @@ package com.vaadin.ui;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.common.Uses;
-import com.vaadin.util.AnnotationReader;
 import com.vaadin.ui.event.Synchronize;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -86,7 +88,7 @@ public class ComponentMetaData {
         }
     }
 
-    private Set<SynchronizedPropertyInfo> synchronizedProperties;
+    private Collection<SynchronizedPropertyInfo> synchronizedProperties;
     private DependencyInfo dependencyInfo;
 
     /**
@@ -150,8 +152,8 @@ public class ComponentMetaData {
      *
      * @return a set of information objects about properties to be synchronized
      */
-    Set<SynchronizedPropertyInfo> getSynchronizedProperties() {
-        return Collections.unmodifiableSet(synchronizedProperties);
+    Collection<SynchronizedPropertyInfo> getSynchronizedProperties() {
+        return Collections.unmodifiableCollection(synchronizedProperties);
     }
 
     /**
@@ -173,10 +175,30 @@ public class ComponentMetaData {
      *            the class to scan
      * @return a set of information objects about properties to be synchronized
      */
-    private static Set<SynchronizedPropertyInfo> findSynchronizedProperties(
+    private static Collection<SynchronizedPropertyInfo> findSynchronizedProperties(
             Class<? extends Component> componentClass) {
-        HashSet<SynchronizedPropertyInfo> infos = new HashSet<>();
-        for (Method method : componentClass.getMethods()) {
+        Map<String, SynchronizedPropertyInfo> infos = new HashMap<>();
+        collectSynchronizedProperties(componentClass, infos);
+        return infos.values();
+    }
+
+    private static void collectSynchronizedProperties(Class<?> clazz,
+            Map<String, SynchronizedPropertyInfo> infos) {
+        if (clazz == null || clazz.equals(Object.class)) {
+            return;
+        }
+        doCollectSynchronizedProperties(clazz, infos);
+
+        Class<?> superclass = clazz.getSuperclass();
+        collectSynchronizedProperties(superclass, infos);
+
+        Stream.of(clazz.getInterfaces())
+                .forEach(iface -> collectSynchronizedProperties(iface, infos));
+    }
+
+    private static void doCollectSynchronizedProperties(Class<?> clazz,
+            Map<String, SynchronizedPropertyInfo> infos) {
+        for (Method method : clazz.getMethods()) {
             Synchronize annotation = method.getAnnotation(Synchronize.class);
             if (annotation == null) {
                 continue;
@@ -194,12 +216,15 @@ public class ComponentMetaData {
             } else {
                 propertyName = annotation.property();
             }
+
+            if (infos.containsKey(propertyName)) {
+                continue;
+            }
+
             String[] eventNames = annotation.value();
-            infos.add(new SynchronizedPropertyInfo(propertyName, eventNames));
+            infos.put(propertyName,
+                    new SynchronizedPropertyInfo(propertyName, eventNames));
         }
-
-        return infos;
-
     }
 
 }
