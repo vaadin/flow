@@ -85,110 +85,117 @@ import com.vaadin.ui.common.HasComponents;
  * </tbody>
  * </table>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ButtonElement#1.0.4", "Flow#1.0-SNAPSHOT" })
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+		"WebComponent: Vaadin.ButtonElement#1.0.4", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
 public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle,
-        HasClickListeners<R>, HasText, Focusable<R>, HasComponents {
+		extends
+			Component
+		implements
+			ComponentSupplier<R>,
+			HasStyle,
+			HasClickListeners<R>,
+			HasText,
+			Focusable<R>,
+			HasComponents {
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Specify that this control should have input focus when the page loads.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code autofocus} property from the webcomponent
-     */
-    public boolean isAutofocus() {
-        return getElement().getProperty("autofocus", false);
-    }
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Specify that this control should have input focus when the page loads.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 * 
+	 * @return the {@code autofocus} property from the webcomponent
+	 */
+	public boolean isAutofocus() {
+		return getElement().getProperty("autofocus", false);
+	}
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Specify that this control should have input focus when the page loads.
-     * </p>
-     * 
-     * @param autofocus
-     *            the boolean value to set
-     */
-    public void setAutofocus(boolean autofocus) {
-        getElement().setProperty("autofocus", autofocus);
-    }
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Specify that this control should have input focus when the page loads.
+	 * </p>
+	 * 
+	 * @param autofocus
+	 *            the boolean value to set
+	 */
+	public void setAutofocus(boolean autofocus) {
+		getElement().setProperty("autofocus", autofocus);
+	}
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * If true, the element currently has focus. This property is @deprecated
-     * and will not be accessible in the next major version of the component.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code focused} property from the webcomponent
-     */
-    public boolean isFocused() {
-        return getElement().getProperty("focused", false);
-    }
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * If true, the element currently has focus. This property is @deprecated
+	 * and will not be accessible in the next major version of the component.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 * 
+	 * @return the {@code focused} property from the webcomponent
+	 */
+	public boolean isFocused() {
+		return getElement().getProperty("focused", false);
+	}
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * If true, the user cannot interact with this element.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code disabled} property from the webcomponent
-     */
-    public boolean isDisabled() {
-        return getElement().getProperty("disabled", false);
-    }
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * If true, the user cannot interact with this element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
+	 */
+	public boolean isDisabled() {
+		return getElement().getProperty("disabled", false);
+	}
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * If true, the user cannot interact with this element.
-     * </p>
-     * 
-     * @param disabled
-     *            the boolean value to set
-     */
-    public void setDisabled(boolean disabled) {
-        getElement().setProperty("disabled", disabled);
-    }
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * If true, the user cannot interact with this element.
+	 * </p>
+	 * 
+	 * @param disabled
+	 *            the boolean value to set
+	 */
+	public void setDisabled(boolean disabled) {
+		getElement().setProperty("disabled", disabled);
+	}
 
-    /**
-     * Sets the given string as the content of this component.
-     * 
-     * @param the
-     *            text content to set
-     * @see HasText#setText(String)
-     */
-    public GeneratedVaadinButton(java.lang.String text) {
-        setText(text);
-    }
+	/**
+	 * Sets the given string as the content of this component.
+	 * 
+	 * @param the
+	 *            text content to set
+	 * @see HasText#setText(String)
+	 */
+	public GeneratedVaadinButton(java.lang.String text) {
+		setText(text);
+	}
 
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinButton() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public GeneratedVaadinButton() {
+	}
 }
