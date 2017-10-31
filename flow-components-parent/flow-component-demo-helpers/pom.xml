@@ -48,7 +48,7 @@
             <groupId>org.webjars.bower</groupId>
             <artifactId>vaadin-valo-theme</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
