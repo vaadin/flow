@@ -68,9 +68,9 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
                     logEntry));
         } else {
             Logger.getLogger(ComponentDemoTest.class.getName())
-                    .warning(
-                            "This message in browser log console may be a potential error: '"+logEntry+"'"
-                            );
+                    .warning(() -> String.format(
+                            "This message in browser log console may be a potential error: '%s'",
+                            logEntry));
         }
     }
 }
