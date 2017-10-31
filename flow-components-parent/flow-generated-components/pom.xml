@@ -32,7 +32,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <!-- When javadocs are created, let's not fail since we cannot guarantee perfect syntax for now -->
+                    <!-- When javadocs are created, let's not fail since 
+                        we cannot guarantee perfect syntax for now -->
                     <failOnError>false</failOnError>
                 </configuration>
             </plugin>
@@ -75,6 +76,19 @@
                             </execution>
                         </executions>
                     </plugin>
+
+                    <plugin>
+                        <groupId>com.marvinformatics.formatter</groupId>
+                        <artifactId>formatter-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>format</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
                 </plugins>
             </build>
         </profile>
