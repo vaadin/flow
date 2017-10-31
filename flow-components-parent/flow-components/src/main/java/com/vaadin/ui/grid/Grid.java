@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -60,7 +59,6 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.Focusable;
-import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HtmlImport;
@@ -69,8 +67,8 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.html.Span;
 import com.vaadin.ui.renderers.ComponentRenderer;
+import com.vaadin.ui.renderers.ComponentRendererUtil;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
 
@@ -172,9 +170,6 @@ public class Grid<T> extends AbstractListing<T>
         }
 
         public Component recreateComponent(T item) {
-            if (component != null) {
-                component.getElement().removeFromParent();
-            }
             component = componentRenderer.createComponent(item);
             return component;
         }
@@ -397,50 +392,8 @@ public class Grid<T> extends AbstractListing<T>
             if (renderer instanceof ComponentRenderer) {
                 renderedComponents = new HashMap<>();
                 ComponentRenderer<? extends Component, T> componentRenderer = (ComponentRenderer<? extends Component, T>) renderer;
-
-                Span container = new Span();
-                container.getStyle().set("display", "none");
-
-                String containerId = UUID.randomUUID().toString();
-                container.setId(containerId);
-                this.getElement().getNode().runWhenAttached(ui -> {
-                    ui.add(container);
-                });
-
-                componentRenderer.setTemplateAttribute("key", "[[item.key]]");
-                componentRenderer.setTemplateAttribute("keyname", "key");
-                componentRenderer.setTemplateAttribute("containerid",
-                        containerId);
-
-                DataProviderListener<T> dataProviderListener = event -> {
-                    if (event instanceof DataRefreshEvent) {
-                        DataRefreshEvent<T> refreshEvent = (DataRefreshEvent<T>) event;
-                        T item = refreshEvent.getItem();
-                        String key = grid.getDataCommunicator().getKeyMapper()
-                                .key(item);
-                        RendereredComponent<T> rendereredComponent = renderedComponents
-                                .get(key);
-                        if (rendereredComponent != null) {
-                            rendereredComponent.recreateComponent(item);
-                        }
-
-                    } else {
-                        container.removeAll();
-                        renderedComponents.clear();
-                    }
-                };
-
-                grid.getDataProvider()
-                        .addDataProviderListener(dataProviderListener);
-
-                grid.itemEventBus.addListener(
-                        Grid.DataProviderChangedEvent.class,
-                        event -> event.getDataProvider()
-                                .addDataProviderListener(dataProviderListener));
-
-                grid.itemEventBus.addListener(Grid.ItemsSentEvent.class,
-                        event -> onItemsSent(event.getItems(), container,
-                                componentRenderer));
+                grid.setupComponentRenderer(this, componentRenderer,
+                        renderedComponents);
             }
 
             Element headerTemplate = new Element("template")
@@ -453,8 +406,8 @@ public class Grid<T> extends AbstractListing<T>
             getElement().setAttribute("id", columnId)
                     .appendChild(headerTemplate, contentTemplate);
 
-            getGrid().setupTemplateRenderer(renderer,
-                    contentTemplate, getElement());
+            getGrid().setupTemplateRenderer(renderer, contentTemplate,
+                    getElement());
         }
 
         /**
@@ -591,26 +544,6 @@ public class Grid<T> extends AbstractListing<T>
             return super.getElement();
         }
 
-        private void onItemsSent(List<JsonValue> items, HasComponents container,
-                ComponentRenderer<? extends Component, T> componentRenderer) {
-            items.stream().map(value -> ((JsonObject) value).getString("key"))
-                    .filter(key -> !renderedComponents.containsKey(key))
-                    .forEach(key -> {
-
-                        Span wrapper = new Span();
-                        wrapper.getElement().setAttribute("key", key);
-                        container.add(wrapper);
-
-                        Component renderedComponent = componentRenderer
-                                .createComponent(grid.getDataCommunicator()
-                                        .getKeyMapper().get(key));
-                        wrapper.add(renderedComponent);
-
-                        renderedComponents.put(key, new RendereredComponent<>(
-                                renderedComponent, componentRenderer));
-                    });
-        }
-
         /**
          * Gets the grid that this column belongs to.
          *
@@ -637,6 +570,7 @@ public class Grid<T> extends AbstractListing<T>
             .createModel(this);
 
     private Element detailsTemplate;
+    private Map<String, RendereredComponent<T>> renderedDetailComponents;
 
     /**
      * Creates a new instance, with page size of 50.
@@ -696,12 +630,11 @@ public class Grid<T> extends AbstractListing<T>
      *
      * @see TemplateRenderer#of(String)
      */
-    public Column<T> addColumn(String header,
-            TemplateRenderer<T> renderer) {
+    public Column<T> addColumn(String header, TemplateRenderer<T> renderer) {
         String columnKey = getColumnKey(true);
 
         getDataCommunicator().reset();
-        
+
         Column<T> column = new Column<>(this, columnKey, header, renderer);
 
         getElement().getNode().runWhenAttached(
@@ -964,6 +897,21 @@ public class Grid<T> extends AbstractListing<T>
         if (renderer == null) {
             return;
         }
+        if (renderer instanceof ComponentRenderer) {
+            if (renderedDetailComponents != null) {
+                renderedDetailComponents.forEach(
+                        (key, rendereredComponent) -> rendereredComponent
+                                .getComponent().getElement()
+                                .removeFromParent());
+                renderedDetailComponents.clear();
+            } else {
+                renderedDetailComponents = new HashMap<>();
+            }
+            ComponentRenderer<? extends Component, T> componentRenderer = (ComponentRenderer<? extends Component, T>) renderer;
+            setupComponentRenderer(this, componentRenderer,
+                    renderedDetailComponents);
+        }
+
         Element newDetailsTemplate = new Element("template")
                 .setAttribute("class", "row-details")
                 .setProperty("innerHTML", renderer.getTemplate());
@@ -971,8 +919,7 @@ public class Grid<T> extends AbstractListing<T>
         detailsTemplate = newDetailsTemplate;
         getElement().appendChild(detailsTemplate);
 
-        setupTemplateRenderer(renderer, detailsTemplate,
-                getElement());
+        setupTemplateRenderer(renderer, detailsTemplate, getElement());
     }
 
     /**
@@ -1039,9 +986,8 @@ public class Grid<T> extends AbstractListing<T>
         getDataCommunicator().setRequestedRange(start, length);
     }
 
-    private void setupTemplateRenderer(
-            TemplateRenderer<T> renderer, Element contentTemplate,
-            Element templateDataHost) {
+    private void setupTemplateRenderer(TemplateRenderer<T> renderer,
+            Element contentTemplate, Element templateDataHost) {
 
         renderer.getValueProviders().forEach((key, provider) -> {
             columnGenerators.put(key, provider.andThen(JsonSerializer::toJson));
@@ -1083,11 +1029,10 @@ public class Grid<T> extends AbstractListing<T>
 
         // vaadin.sendEventMessage is an exported function at the client
         // side
-        ui.getPage()
-                .executeJavaScript(String.format(
-                        "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
-                        handlerName, eventOrigin.getNode().getId(),
-                        handlerName), eventOrigin);
+        ui.getPage().executeJavaScript(String.format(
+                "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
+                handlerName, eventOrigin.getNode().getId(), handlerName),
+                eventOrigin);
 
         eventOrigin.addEventListener(handlerName,
                 event -> processEventFromTemplateRenderer(event, handlerName,
@@ -1114,5 +1059,85 @@ public class Grid<T> extends AbstractListing<T>
                             "Received an event for the handler '%s' without any data. Ignoring event.",
                             handlerName));
         }
+    }
+
+    private void setupComponentRenderer(Component owner,
+            ComponentRenderer<? extends Component, T> componentRenderer,
+            Map<String, RendereredComponent<T>> renderedComponents) {
+
+        Element container = ComponentRendererUtil
+                .createContainerForRenderers(owner);
+
+        componentRenderer.setTemplateAttribute("key", "[[item.key]]");
+        componentRenderer.setTemplateAttribute("keyname",
+                "data-flow-renderer-item-key");
+        componentRenderer.setTemplateAttribute("containerid",
+                container.getAttribute("id"));
+
+        DataProviderListener<T> dataProviderListener = event -> {
+            if (event instanceof DataRefreshEvent) {
+                DataRefreshEvent<T> refreshEvent = (DataRefreshEvent<T>) event;
+                T item = refreshEvent.getItem();
+                String key = getDataCommunicator().getKeyMapper().key(item);
+                RendereredComponent<T> rendereredComponent = renderedComponents
+                        .get(key);
+                if (rendereredComponent != null) {
+                    Component old = rendereredComponent.component;
+                    Component recreatedComponent = rendereredComponent
+                            .recreateComponent(item);
+
+                    if (old.getElement().getNode().getId() != recreatedComponent
+                            .getElement().getNode().getId()) {
+
+                        ComponentRendererUtil.removeRendereredComponent(
+                                UI.getCurrent(), container,
+                                "[data-flow-renderer-item-key='" + key + "']");
+
+                        registerRenderedComponent(componentRenderer,
+                                renderedComponents, container, key,
+                                recreatedComponent);
+                    }
+                }
+            } else {
+                container.removeAllChildren();
+                renderedComponents.clear();
+            }
+        };
+
+        getDataProvider().addDataProviderListener(dataProviderListener);
+
+        itemEventBus.addListener(Grid.DataProviderChangedEvent.class,
+                event -> event.getDataProvider()
+                        .addDataProviderListener(dataProviderListener));
+
+        itemEventBus.addListener(ItemsSentEvent.class,
+                event -> onItemsSent(event.getItems(), container,
+                        componentRenderer, renderedComponents));
+    }
+
+    private void onItemsSent(List<JsonValue> items, Element container,
+            ComponentRenderer<? extends Component, T> componentRenderer,
+            Map<String, RendereredComponent<T>> renderedComponents) {
+        items.stream().map(value -> ((JsonObject) value).getString("key"))
+                .filter(key -> !renderedComponents.containsKey(key))
+                .forEach(key -> {
+                    Component renderedComponent = componentRenderer
+                            .createComponent(getDataCommunicator()
+                                    .getKeyMapper().get(key));
+                    registerRenderedComponent(componentRenderer,
+                            renderedComponents, container, key,
+                            renderedComponent);
+                });
+    }
+
+    private void registerRenderedComponent(
+            ComponentRenderer<? extends Component, T> componentRenderer,
+            Map<String, RendereredComponent<T>> renderedComponents,
+            Element container, String key, Component component) {
+        component.getElement().setAttribute("data-flow-renderer-item-key", key);
+        container.appendChild(component.getElement());
+
+        renderedComponents.put(key,
+                new RendereredComponent<>(component, componentRenderer));
     }
 }

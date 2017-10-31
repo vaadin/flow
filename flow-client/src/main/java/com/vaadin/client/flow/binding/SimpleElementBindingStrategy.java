@@ -223,7 +223,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -284,12 +284,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private EventRemover bindShadowRoot(BindingContext context) {
         assert context.htmlNode instanceof Element : "Cannot bind shadow root to a Node";
-    NodeMap map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+        NodeMap map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
 
-    attachShadow(context);
+        attachShadow(context);
 
-    return map.addPropertyAddListener(event -> Reactive
-            .addFlushListener(() -> attachShadow(context)));
+        return map.addPropertyAddListener(event -> Reactive
+                .addFlushListener(() -> attachShadow(context)));
     }
 
     private void attachShadow(BindingContext context) {
@@ -500,7 +500,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         // Remove all old listeners and add new ones
         context.synchronizedPropertyEventListeners
-        .forEach(EventRemover::remove);
+                .forEach(EventRemover::remove);
         context.synchronizedPropertyEventListeners.clear();
 
         for (int i = 0; i < propertyEvents.length(); i++) {
@@ -536,7 +536,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 propertyName);
 
         context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-        .getProperty(propertyName).syncToServer(currentValue);
+                .getProperty(propertyName).syncToServer(currentValue);
     }
 
     private EventRemover bindChildren(BindingContext context) {
@@ -607,7 +607,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 if (childTag == null) {
                     throw new IllegalStateException(
                             "Received element with no id and tag information, element node id = '"
-                                    + childNode.getId() + "', parent node = " + parentNode);
+                                    + childNode.getId() + "', parent node = "
+                                    + parentNode);
                 }
                 return () -> bindElementFromShadowRootByTagName(
                         context.binderContext, childNode, childTag,
@@ -671,10 +672,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             assert child != null : "Can't find element to remove";
 
-            assert DomApi.wrap(child)
-            .getParentNode() == context.htmlNode : "Invalid element parent";
-
-            DomApi.wrap(context.htmlNode).removeChild(child);
+            if (DomApi.wrap(child).getParentNode() == context.htmlNode) {
+                DomApi.wrap(context.htmlNode).removeChild(child);
+            }
         }
 
         JsArray<?> add = event.getAdd();
@@ -697,7 +697,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // Insert before the next sibling of the current node
             beforeRef = previousSibling == null ? null
                     : DomApi.wrap(previousSibling.getDomNode())
-                    .getNextSibling();
+                            .getNextSibling();
         } else {
             // Insert at the end
             beforeRef = null;
@@ -775,16 +775,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         ForEachCallback<String, Computation> computationStopper = (computation,
                 name) -> computation.stop();
 
-                computationsCollection
+        computationsCollection
                 .forEach(collection -> collection.forEach(computationStopper));
-                context.listenerBindings.forEach(computationStopper);
+        context.listenerBindings.forEach(computationStopper);
 
-                context.listenerRemovers.forEach((remover, name) -> remover.remove());
-                listeners.forEach(EventRemover::remove);
-                context.synchronizedPropertyEventListeners
+        context.listenerRemovers.forEach((remover, name) -> remover.remove());
+        listeners.forEach(EventRemover::remove);
+        context.synchronizedPropertyEventListeners
                 .forEach(EventRemover::remove);
 
-                BOUND.delete(context.node);
+        BOUND.delete(context.node);
     }
 
     private EventRemover bindDomEventListeners(BindingContext context) {
@@ -843,41 +843,41 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void handleDomEvent(Event event, Node element, StateNode node) {
         assert element instanceof Element : "Cannot handle DOM event for a Node";
-    String type = event.getType();
+        String type = event.getType();
 
-    NodeMap listenerMap = getDomEventListenerMap(node);
+        NodeMap listenerMap = getDomEventListenerMap(node);
 
-    ConstantPool constantPool = node.getTree().getRegistry()
-            .getConstantPool();
-    String expressionConstantKey = (String) listenerMap.getProperty(type)
-            .getValue();
-    assert expressionConstantKey != null;
+        ConstantPool constantPool = node.getTree().getRegistry()
+                .getConstantPool();
+        String expressionConstantKey = (String) listenerMap.getProperty(type)
+                .getValue();
+        assert expressionConstantKey != null;
 
-    assert constantPool.has(expressionConstantKey);
+        assert constantPool.has(expressionConstantKey);
 
-    JsArray<String> dataExpressions = constantPool
-            .get(expressionConstantKey);
+        JsArray<String> dataExpressions = constantPool
+                .get(expressionConstantKey);
 
-    JsonObject eventData;
-    if (dataExpressions.isEmpty()) {
-        eventData = null;
-    } else {
-        eventData = Json.createObject();
+        JsonObject eventData;
+        if (dataExpressions.isEmpty()) {
+            eventData = null;
+        } else {
+            eventData = Json.createObject();
 
-        for (int i = 0; i < dataExpressions.length(); i++) {
-            String expressionString = dataExpressions.get(i);
+            for (int i = 0; i < dataExpressions.length(); i++) {
+                String expressionString = dataExpressions.get(i);
 
-            EventDataExpression expression = getOrCreateExpression(
-                    expressionString);
+                EventDataExpression expression = getOrCreateExpression(
+                        expressionString);
 
-            JsonValue expressionValue = expression.evaluate(event,
-                    (Element) element);
+                JsonValue expressionValue = expression.evaluate(event,
+                        (Element) element);
 
-            eventData.put(expressionString, expressionValue);
+                eventData.put(expressionString, expressionValue);
+            }
         }
-    }
 
-    node.getTree().sendEventToServer(node, type, eventData);
+        node.getTree().sendEventToServer(node, type, eventData);
     }
 
     private EventRemover bindClassList(Element element, StateNode node) {
@@ -885,7 +885,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         for (int i = 0; i < classNodeList.length(); i++) {
             DomApi.wrap(element).getClassList()
-            .add((String) classNodeList.get(i));
+                    .add((String) classNodeList.get(i));
         }
 
         return classNodeList.addSpliceListener(e -> {
@@ -911,8 +911,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private EventRemover bindClientDelegateMethods(BindingContext context) {
         assert context.htmlNode instanceof Element : "Cannot bind client delegate methods to a Node";
-    return ServerEventHandlerBinder.bindServerEventHandlerNames(
-            (Element) context.htmlNode, context.node);
+        return ServerEventHandlerBinder.bindServerEventHandlerNames(
+                (Element) context.htmlNode, context.node);
     }
 
     private static EventDataExpression getOrCreateExpression(
