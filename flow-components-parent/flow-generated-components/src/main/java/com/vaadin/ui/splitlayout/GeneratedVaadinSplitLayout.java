@@ -173,133 +173,131 @@ import com.vaadin.shared.Registration;
  * </tbody>
  * </table>
  */
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.SplitLayoutElement#3.0.0", "Flow#1.0-SNAPSHOT"})
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+        "WebComponent: Vaadin.SplitLayoutElement#3.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-split-layout")
 @HtmlImport("frontend://bower_components/vaadin-split-layout/vaadin-split-layout.html")
 public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
-		extends
-			Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements ComponentSupplier<R>, HasStyle {
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Change the split layout to vertical
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 * 
-	 * @return the {@code vertical} property from the webcomponent
-	 */
-	public boolean isVertical() {
-		return getElement().getProperty("vertical", false);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Change the split layout to vertical
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code vertical} property from the webcomponent
+     */
+    public boolean isVertical() {
+        return getElement().getProperty("vertical", false);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Change the split layout to vertical
-	 * </p>
-	 * 
-	 * @param vertical
-	 *            the boolean value to set
-	 */
-	public void setVertical(boolean vertical) {
-		getElement().setProperty("vertical", vertical);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Change the split layout to vertical
+     * </p>
+     * 
+     * @param vertical
+     *            the boolean value to set
+     */
+    public void setVertical(boolean vertical) {
+        getElement().setProperty("vertical", vertical);
+    }
 
-	@DomEvent("iron-resize")
-	public static class IronResizeEvent<R extends GeneratedVaadinSplitLayout<R>>
-			extends
-				ComponentEvent<R> {
-		public IronResizeEvent(R source, boolean fromClient) {
-			super(source, fromClient);
-		}
-	}
+    @DomEvent("iron-resize")
+    public static class IronResizeEvent<R extends GeneratedVaadinSplitLayout<R>>
+            extends ComponentEvent<R> {
+        public IronResizeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
 
-	public Registration addIronResizeListener(
-			ComponentEventListener<IronResizeEvent<R>> listener) {
-		return addListener(IronResizeEvent.class,
-				(ComponentEventListener) listener);
-	}
+    public Registration addIronResizeListener(
+            ComponentEventListener<IronResizeEvent<R>> listener) {
+        return addListener(IronResizeEvent.class,
+                (ComponentEventListener) listener);
+    }
 
-	/**
-	 * Adds the given components as children of this component at the slot
-	 * 'primary'.
-	 * 
-	 * @param components
-	 *            The components to add.
-	 * @see <a
-	 *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
-	 *      page about slots</a>
-	 * @see <a
-	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
-	 *      website about slots</a>
-	 * @return this instance, for method chaining
-	 */
-	public R addToPrimary(com.vaadin.ui.Component... components) {
-		for (Component component : components) {
-			component.getElement().setAttribute("slot", "primary");
-			getElement().appendChild(component.getElement());
-		}
-		return get();
-	}
+    /**
+     * Adds the given components as children of this component at the slot
+     * 'primary'.
+     * 
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
+     */
+    public R addToPrimary(com.vaadin.ui.Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "primary");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
+    }
 
-	/**
-	 * Adds the given components as children of this component at the slot
-	 * 'secondary'.
-	 * 
-	 * @param components
-	 *            The components to add.
-	 * @see <a
-	 *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
-	 *      page about slots</a>
-	 * @see <a
-	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
-	 *      website about slots</a>
-	 * @return this instance, for method chaining
-	 */
-	public R addToSecondary(com.vaadin.ui.Component... components) {
-		for (Component component : components) {
-			component.getElement().setAttribute("slot", "secondary");
-			getElement().appendChild(component.getElement());
-		}
-		return get();
-	}
+    /**
+     * Adds the given components as children of this component at the slot
+     * 'secondary'.
+     * 
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
+     */
+    public R addToSecondary(com.vaadin.ui.Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "secondary");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
+    }
 
-	/**
-	 * Removes the given child components from this component.
-	 * 
-	 * @param components
-	 *            The components to remove.
-	 * @throws IllegalArgumentException
-	 *             if any of the components is not a child of this component.
-	 */
-	public void remove(com.vaadin.ui.Component... components) {
-		for (Component component : components) {
-			if (getElement().equals(component.getElement().getParent())) {
-				component.getElement().removeAttribute("slot");
-				getElement().removeChild(component.getElement());
-			} else {
-				throw new IllegalArgumentException("The given component ("
-						+ component + ") is not a child of this component");
-			}
-		}
-	}
+    /**
+     * Removes the given child components from this component.
+     * 
+     * @param components
+     *            The components to remove.
+     * @throws IllegalArgumentException
+     *             if any of the components is not a child of this component.
+     */
+    public void remove(com.vaadin.ui.Component... components) {
+        for (Component component : components) {
+            if (getElement().equals(component.getElement().getParent())) {
+                component.getElement().removeAttribute("slot");
+                getElement().removeChild(component.getElement());
+            } else {
+                throw new IllegalArgumentException("The given component ("
+                        + component + ") is not a child of this component");
+            }
+        }
+    }
 
-	/**
-	 * Removes all contents from this component, this includes child components,
-	 * text content as well as child elements that have been added directly to
-	 * this component using the {@link Element} API.
-	 */
-	public void removeAll() {
-		getElement().getChildren().forEach(
-				child -> child.removeAttribute("slot"));
-		getElement().removeAllChildren();
-	}
+    /**
+     * Removes all contents from this component, this includes child components,
+     * text content as well as child elements that have been added directly to
+     * this component using the {@link Element} API.
+     */
+    public void removeAll() {
+        getElement().getChildren()
+                .forEach(child -> child.removeAttribute("slot"));
+        getElement().removeAllChildren();
+    }
 }

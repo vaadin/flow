@@ -68,105 +68,105 @@ import com.vaadin.ui.common.HasComponents;
  * </tbody>
  * </table>
  */
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: paper-input-error#2.0.2", "Flow#1.0-SNAPSHOT"})
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+        "WebComponent: paper-input-error#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
 public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
-		extends
-			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+        extends Component
+        implements ComponentSupplier<R>, HasStyle, HasComponents {
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * True if the error is showing.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 * 
-	 * @return the {@code invalid} property from the webcomponent
-	 */
-	public boolean isInvalid() {
-		return getElement().getProperty("invalid", false);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * True if the error is showing.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code invalid} property from the webcomponent
+     */
+    public boolean isInvalid() {
+        return getElement().getProperty("invalid", false);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * This overrides the update function in PaperInputAddonBehavior.
-	 * </p>
-	 * 
-	 * @see UpdateState
-	 * @param state
-	 *            inputElement: The input element. value: The input value.
-	 *            invalid: True if the input value is invalid.
-	 */
-	public void update(UpdateState state) {
-		getElement().callFunction("update", state.toJson());
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * This overrides the update function in PaperInputAddonBehavior.
+     * </p>
+     * 
+     * @see UpdateState
+     * @param state
+     *            inputElement: The input element. value: The input value.
+     *            invalid: True if the input value is invalid.
+     */
+    public void update(UpdateState state) {
+        getElement().callFunction("update", state.toJson());
+    }
 
-	/**
-	 * Class that encapsulates the data to be sent to the
-	 * {@link GeneratedPaperInputError#update(UpdateState)} method.
-	 */
-	public static class UpdateState implements JsonSerializable {
-		private JsonObject internalObject;
+    /**
+     * Class that encapsulates the data to be sent to the
+     * {@link GeneratedPaperInputError#update(UpdateState)} method.
+     */
+    public static class UpdateState implements JsonSerializable {
+        private JsonObject internalObject;
 
-		public JsonObject getInputElement() {
-			return internalObject.getObject("inputElement");
-		}
+        public JsonObject getInputElement() {
+            return internalObject.getObject("inputElement");
+        }
 
-		public void setInputElement(elemental.json.JsonObject inputElement) {
-			this.internalObject.put("inputElement", inputElement);
-		}
+        public void setInputElement(elemental.json.JsonObject inputElement) {
+            this.internalObject.put("inputElement", inputElement);
+        }
 
-		public String getValue() {
-			return internalObject.getString("value");
-		}
+        public String getValue() {
+            return internalObject.getString("value");
+        }
 
-		public void setValue(java.lang.String value) {
-			this.internalObject.put("value", value);
-		}
+        public void setValue(java.lang.String value) {
+            this.internalObject.put("value", value);
+        }
 
-		public boolean isInvalid() {
-			return internalObject.getBoolean("invalid");
-		}
+        public boolean isInvalid() {
+            return internalObject.getBoolean("invalid");
+        }
 
-		public void setInvalid(boolean invalid) {
-			this.internalObject.put("invalid", invalid);
-		}
+        public void setInvalid(boolean invalid) {
+            this.internalObject.put("invalid", invalid);
+        }
 
-		@Override
-		public JsonObject toJson() {
-			return internalObject;
-		}
+        @Override
+        public JsonObject toJson() {
+            return internalObject;
+        }
 
-		@Override
-		public UpdateState readJson(elemental.json.JsonObject value) {
-			internalObject = value;
-			return this;
-		}
-	}
+        @Override
+        public UpdateState readJson(elemental.json.JsonObject value) {
+            internalObject = value;
+            return this;
+        }
+    }
 
-	/**
-	 * Adds the given components as children of this component.
-	 * 
-	 * @param components
-	 *            the components to add
-	 * @see HasComponents#add(Component...)
-	 */
-	public GeneratedPaperInputError(com.vaadin.ui.Component... components) {
-		add(components);
-	}
+    /**
+     * Adds the given components as children of this component.
+     * 
+     * @param components
+     *            the components to add
+     * @see HasComponents#add(Component...)
+     */
+    public GeneratedPaperInputError(com.vaadin.ui.Component... components) {
+        add(components);
+    }
 
-	/**
-	 * Default constructor.
-	 */
-	public GeneratedPaperInputError() {
-	}
+    /**
+     * Default constructor.
+     */
+    public GeneratedPaperInputError() {
+    }
 }
