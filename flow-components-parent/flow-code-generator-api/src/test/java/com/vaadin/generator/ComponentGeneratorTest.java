@@ -17,6 +17,7 @@ package com.vaadin.generator;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -166,7 +167,7 @@ public class ComponentGeneratorTest {
 
         ComponentFunctionParameterData parameter = new ComponentFunctionParameterData();
         parameter.setName("text");
-        parameter.setType(Collections.singletonList(ComponentBasicType.STRING));
+        parameter.setType(Collections.singleton(ComponentBasicType.STRING));
 
         functionData.setParameters(Collections.singletonList(parameter));
         componentMetadata.setMethods(Collections.singletonList(functionData));
@@ -182,8 +183,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetterAndNonFluentSetter_methodContainsJavaDoc() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData
-                .setType(Collections.singletonList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singleton(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         componentMetadata
@@ -208,8 +208,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetterAndSetter_methodContainsJavaDoc() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData
-                .setType(Collections.singletonList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singleton(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         componentMetadata
@@ -234,8 +233,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetter_methodContainsJavaDoc_noSetter() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData
-                .setType(Collections.singletonList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singleton(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         propertyData.setReadOnly(true);
@@ -258,8 +256,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetter_methodContainsJavaDocWithAtCodeWrap() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData
-                .setType(Collections.singletonList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singleton(ComponentBasicType.STRING));
         propertyData.setDescription(
                 "This is the `<input value=\"name\">` property of the component.");
         propertyData.setReadOnly(true);
@@ -281,8 +278,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetterJavaDocBlock_methodContainsJavaDocWithAtCodeWrap() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData
-                .setType(Collections.singletonList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singleton(ComponentBasicType.STRING));
         propertyData.setDescription(
                 "This is the ```<input value=\"name\">``` property of the component.");
         propertyData.setReadOnly(true);
@@ -357,7 +353,7 @@ public class ComponentGeneratorTest {
 
         ComponentPropertyBaseData property = new ComponentPropertyBaseData();
         property.setName("button");
-        property.setType(Collections.singletonList(ComponentBasicType.NUMBER));
+        property.setType(Collections.singleton(ComponentBasicType.NUMBER));
 
         eventData.setProperties(Collections.singletonList(property));
 
@@ -393,7 +389,7 @@ public class ComponentGeneratorTest {
 
         ComponentPropertyBaseData property = new ComponentPropertyBaseData();
         property.setName("details.property");
-        property.setType(Collections.singletonList(ComponentBasicType.NUMBER));
+        property.setType(Collections.singleton(ComponentBasicType.NUMBER));
 
         eventData.setProperties(Collections.singletonList(property));
 
@@ -424,8 +420,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithStringGetterAndNonFluentSetter_setterSetsEmptyForNullValue() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData
-                .setType(Collections.singletonList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singleton(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         componentMetadata
@@ -446,8 +441,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithBooleanGetterAndNonFluentSetter_setterDoesNotSetEmptyForNullValue() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("required");
-        propertyData
-                .setType(Collections.singletonList(ComponentBasicType.BOOLEAN));
+        propertyData.setType(Collections.singleton(ComponentBasicType.BOOLEAN));
         propertyData.setDescription("This is a required field.");
         componentMetadata
                 .setProperties(Collections.singletonList(propertyData));
@@ -531,7 +525,7 @@ public class ComponentGeneratorTest {
     public void classContainsGetterAndRelatedChangeEvent_getterContainsSynchronizeAnnotation() {
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("someproperty");
-        property.setType(Collections.singletonList(ComponentBasicType.STRING));
+        property.setType(Collections.singleton(ComponentBasicType.STRING));
         componentMetadata.setProperties(Collections.singletonList(property));
 
         ComponentEventData event = new ComponentEventData();
@@ -760,12 +754,12 @@ public class ComponentGeneratorTest {
     public void classContainsOverloadedMethodsForMethodsThatAcceptMultipleTypes() {
         ComponentFunctionParameterData firstParameter = new ComponentFunctionParameterData();
         firstParameter.setName("firstParam");
-        firstParameter.setType(Arrays.asList(ComponentBasicType.STRING,
-                ComponentBasicType.BOOLEAN));
+        firstParameter.setType(new LinkedHashSet<>(Arrays.asList(
+                ComponentBasicType.STRING, ComponentBasicType.BOOLEAN)));
         ComponentFunctionParameterData secondParameter = new ComponentFunctionParameterData();
         secondParameter.setName("secondParam");
-        secondParameter.setType(Arrays.asList(ComponentBasicType.STRING,
-                ComponentBasicType.BOOLEAN));
+        secondParameter.setType(new LinkedHashSet<>(Arrays.asList(
+                ComponentBasicType.STRING, ComponentBasicType.BOOLEAN)));
 
         ComponentFunctionData function = new ComponentFunctionData();
         function.setName("callSomething");
@@ -807,8 +801,8 @@ public class ComponentGeneratorTest {
 
         ComponentFunctionParameterData secondParameter = new ComponentFunctionParameterData();
         secondParameter.setName("secondParam");
-        secondParameter.setType(Arrays.asList(ComponentBasicType.STRING,
-                ComponentBasicType.BOOLEAN));
+        secondParameter.setType(new LinkedHashSet<>(Arrays.asList(
+                ComponentBasicType.STRING, ComponentBasicType.BOOLEAN)));
 
         ComponentFunctionData function = new ComponentFunctionData();
         function.setName("callSomething");
@@ -832,7 +826,7 @@ public class ComponentGeneratorTest {
     public void componentContainsValueProperty_generatedClassImplementsHasValue() {
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("value");
-        property.setType(Collections.singletonList(ComponentBasicType.STRING));
+        property.setType(Collections.singleton(ComponentBasicType.STRING));
         componentMetadata.setProperties(Collections.singletonList(property));
 
         ComponentEventData event = new ComponentEventData();
@@ -857,7 +851,7 @@ public class ComponentGeneratorTest {
     public void componentContainsValueProperty_generatedSetValuePreventsSettingTheSameValue() {
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("value");
-        property.setType(Collections.singletonList(ComponentBasicType.STRING));
+        property.setType(Collections.singleton(ComponentBasicType.STRING));
         componentMetadata.setProperties(Collections.singletonList(property));
 
         ComponentEventData event = new ComponentEventData();
@@ -878,7 +872,7 @@ public class ComponentGeneratorTest {
     public void componentContainsNumberValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTypes() {
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("value");
-        property.setType(Collections.singletonList(ComponentBasicType.NUMBER));
+        property.setType(Collections.singleton(ComponentBasicType.NUMBER));
         componentMetadata.setProperties(Collections.singletonList(property));
 
         ComponentEventData event = new ComponentEventData();
@@ -905,7 +899,7 @@ public class ComponentGeneratorTest {
     public void componentContainsNumberValueProperty_generatedSetValuesPreventSettingTheSameValue() {
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("value");
-        property.setType(Collections.singletonList(ComponentBasicType.NUMBER));
+        property.setType(Collections.singleton(ComponentBasicType.NUMBER));
         componentMetadata.setProperties(Collections.singletonList(property));
 
         ComponentEventData event = new ComponentEventData();
@@ -929,24 +923,23 @@ public class ComponentGeneratorTest {
         ComponentPropertyData objectProperty = new ComponentPropertyData();
         objectProperty.setName("objectProperty");
         objectProperty
-                .setType(Collections.singletonList(ComponentBasicType.OBJECT));
+                .setType(Collections.singleton(ComponentBasicType.OBJECT));
 
         ComponentPropertyData arrayProperty = new ComponentPropertyData();
         arrayProperty.setName("arrayProperty");
-        arrayProperty
-                .setType(Collections.singletonList(ComponentBasicType.ARRAY));
+        arrayProperty.setType(Collections.singleton(ComponentBasicType.ARRAY));
 
         ComponentPropertyData undefinedProperty = new ComponentPropertyData();
         undefinedProperty.setName("undefinedProperty");
-        undefinedProperty.setType(
-                Collections.singletonList(ComponentBasicType.UNDEFINED));
+        undefinedProperty
+                .setType(Collections.singleton(ComponentBasicType.UNDEFINED));
         componentMetadata.setProperties(Arrays.asList(objectProperty,
                 arrayProperty, undefinedProperty));
 
         ComponentFunctionParameterData objectParameter = new ComponentFunctionParameterData();
         objectParameter.setName("objectParam");
         objectParameter
-                .setType(Collections.singletonList(ComponentBasicType.OBJECT));
+                .setType(Collections.singleton(ComponentBasicType.OBJECT));
 
         ComponentFunctionData function = new ComponentFunctionData();
         function.setName("callSomething");
@@ -982,7 +975,7 @@ public class ComponentGeneratorTest {
         ComponentFunctionParameterData objectParameter = new ComponentFunctionParameterData();
         objectParameter.setName("objectParam");
         objectParameter
-                .setType(Collections.singletonList(ComponentBasicType.OBJECT));
+                .setType(Collections.singleton(ComponentBasicType.OBJECT));
 
         ComponentFunctionData function1 = new ComponentFunctionData();
         function1.setName("callSomethingWithObject");
@@ -991,7 +984,7 @@ public class ComponentGeneratorTest {
         ComponentFunctionParameterData stringParameter = new ComponentFunctionParameterData();
         stringParameter.setName("stringParam");
         stringParameter
-                .setType(Collections.singletonList(ComponentBasicType.STRING));
+                .setType(Collections.singleton(ComponentBasicType.STRING));
 
         ComponentFunctionData function2 = new ComponentFunctionData();
         function2.setName("callSomethingWithObjectAndString");
@@ -1000,9 +993,9 @@ public class ComponentGeneratorTest {
 
         ComponentFunctionParameterData multiParameter = new ComponentFunctionParameterData();
         multiParameter.setName("multiParam");
-        multiParameter.setType(Arrays.asList(ComponentBasicType.STRING,
-                ComponentBasicType.OBJECT, ComponentBasicType.ARRAY,
-                ComponentBasicType.UNDEFINED));
+        multiParameter.setType(new LinkedHashSet<>(Arrays.asList(
+                ComponentBasicType.STRING, ComponentBasicType.OBJECT,
+                ComponentBasicType.ARRAY, ComponentBasicType.UNDEFINED)));
 
         ComponentFunctionData function3 = new ComponentFunctionData();
         function3.setName("callSomethingWithMultiTypes");

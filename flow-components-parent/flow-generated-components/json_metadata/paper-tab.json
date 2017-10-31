@@ -221,5 +221,5 @@
     "Polymer.IronA11yKeysBehavior"
   ],
   "mixins": [],
-  "description": "`paper-tab` is styled to look like a tab.  It should be used in conjunction with\n`paper-tabs`.\n\nExample:\n\n    <paper-tabs selected=\"0\">\n      <paper-tab>TAB 1</paper-tab>\n      <paper-tab>TAB 2</paper-tab>\n      <paper-tab>TAB 3</paper-tab>\n    </paper-tabs>\n\n### Styling\n\nThe following custom properties and mixins are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-tab-ink` | Ink color | `--paper-yellow-a100`\n`--paper-tab` | Mixin applied to the tab | `{}`\n`--paper-tab-content` | Mixin applied to the tab content | `{}`\n`--paper-tab-content-unselected` | Mixin applied to the tab content when the tab is not selected | `{}`\n\nThis element applies the mixin `--paper-font-common-base` but does not import `paper-styles/typography.html`.\nIn order to apply the `Roboto` font to this element, make sure you've imported `paper-styles/typography.html`."
+  "description": ""
 }

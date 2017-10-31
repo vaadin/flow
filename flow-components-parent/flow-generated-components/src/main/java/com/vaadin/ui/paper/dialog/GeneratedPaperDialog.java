@@ -30,79 +30,6 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasComponents;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * Material design: <a
- * href="https://www.google.com/design/spec/components/dialogs.html">Dialogs</a>
- * </p>
- * <p>
- * {@code <paper-dialog>} is a dialog with Material Design styling and optional
- * animations when it is opened or closed. It provides styles for a header,
- * content area, and an action area for buttons. You can use the
- * {@code <paper-dialog-scrollable>} element (in its own repository) if you need
- * a scrolling content area. To autofocus a specific child element after opening
- * the dialog, give it the {@code autofocus} attribute. See
- * {@code Polymer.PaperDialogBehavior} and {@code Polymer.IronOverlayBehavior}
- * for specifics.
- * </p>
- * <p>
- * For example, the following code implements a dialog with a header, scrolling
- * content area and buttons. Focus will be given to the {@code dialog-confirm}
- * button when the dialog is opened.
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-dialog&gt;
- *   &lt;h2&gt;Header&lt;/h2&gt;
- *   &lt;paper-dialog-scrollable&gt;
- *     Lorem ipsum...
- *   &lt;/paper-dialog-scrollable&gt;
- *   &lt;div class=&quot;buttons&quot;&gt;
- *     &lt;paper-button dialog-dismiss&gt;Cancel&lt;/paper-button&gt;
- *     &lt;paper-button dialog-confirm autofocus&gt;Accept&lt;/paper-button&gt;
- *   &lt;/div&gt;
- * &lt;/paper-dialog&gt;
- * </code>
- * </pre>
- * 
- * <h3>Styling</h3>
- * <p>
- * See the docs for {@code Polymer.PaperDialogBehavior} for the custom
- * properties available for styling this element.
- * </p>
- * <h3>Animations</h3>
- * <p>
- * Set the {@code entry-animation} and/or {@code exit-animation} attributes to
- * add an animation when the dialog is opened or closed. See the documentation
- * in <a
- * href="https://github.com/PolymerElements/neon-animation">PolymerElements
- * /neon-animation</a> for more info.
- * </p>
- * <p>
- * For example:
- * </p>
- * 
- * <pre>
- * <code>&lt;link rel=&quot;import&quot; href=&quot;components/neon-animation/animations/scale-up-animation.html&quot;&gt;
- * &lt;link rel=&quot;import&quot; href=&quot;components/neon-animation/animations/fade-out-animation.html&quot;&gt;
- * 
- * &lt;paper-dialog entry-animation=&quot;scale-up-animation&quot;
- *               exit-animation=&quot;fade-out-animation&quot;&gt;
- *   &lt;h2&gt;Header&lt;/h2&gt;
- *   &lt;div&gt;Dialog body&lt;/div&gt;
- * &lt;/paper-dialog&gt;
- * </code>
- * </pre>
- * 
- * <h3>Accessibility</h3>
- * <p>
- * See the docs for {@code Polymer.PaperDialogBehavior} for accessibility
- * features implemented by this element.
- * </p>
- */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
 		"WebComponent: paper-dialog#2.0.0", "Flow#1.0-SNAPSHOT"})
 @Tag("paper-dialog")
@@ -256,7 +183,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * <p>
 	 * The orientation against which to align the element horizontally relative
 	 * to the {@code positionTarget}. Possible values are &quot;left&quot;,
-	 * &quot;right&quot;, &quot;auto&quot;.
+	 * &quot;right&quot;, &quot;center&quot;, &quot;auto&quot;.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
@@ -275,7 +202,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * <p>
 	 * The orientation against which to align the element horizontally relative
 	 * to the {@code positionTarget}. Possible values are &quot;left&quot;,
-	 * &quot;right&quot;, &quot;auto&quot;.
+	 * &quot;right&quot;, &quot;center&quot;, &quot;auto&quot;.
 	 * </p>
 	 * 
 	 * @param horizontalAlign
@@ -293,7 +220,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * <p>
 	 * The orientation against which to align the element vertically relative to
 	 * the {@code positionTarget}. Possible values are &quot;top&quot;,
-	 * &quot;bottom&quot;, &quot;auto&quot;.
+	 * &quot;bottom&quot;, &quot;middle&quot;, &quot;auto&quot;.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
@@ -312,7 +239,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * <p>
 	 * The orientation against which to align the element vertically relative to
 	 * the {@code positionTarget}. Possible values are &quot;top&quot;,
-	 * &quot;bottom&quot;, &quot;auto&quot;.
+	 * &quot;bottom&quot;, &quot;middle&quot;, &quot;auto&quot;.
 	 * </p>
 	 * 
 	 * @param verticalAlign
@@ -370,9 +297,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * given by {@code horizontalAlign}.
 	 * </p>
 	 * <p>
-	 * If {@code horizontalAlign} is &quot;left&quot;, this offset will increase
-	 * or decrease the distance to the left side of the screen: a negative
-	 * offset will move the dropdown to the left; a positive one, to the right.
+	 * If {@code horizontalAlign} is &quot;left&quot; or &quot;center&quot;,
+	 * this offset will increase or decrease the distance to the left side of
+	 * the screen: a negative offset will move the dropdown to the left; a
+	 * positive one, to the right.
 	 * </p>
 	 * <p>
 	 * Conversely if {@code horizontalAlign} is &quot;right&quot;, this offset
@@ -401,9 +329,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * given by {@code horizontalAlign}.
 	 * </p>
 	 * <p>
-	 * If {@code horizontalAlign} is &quot;left&quot;, this offset will increase
-	 * or decrease the distance to the left side of the screen: a negative
-	 * offset will move the dropdown to the left; a positive one, to the right.
+	 * If {@code horizontalAlign} is &quot;left&quot; or &quot;center&quot;,
+	 * this offset will increase or decrease the distance to the left side of
+	 * the screen: a negative offset will move the dropdown to the left; a
+	 * positive one, to the right.
 	 * </p>
 	 * <p>
 	 * Conversely if {@code horizontalAlign} is &quot;right&quot;, this offset
@@ -430,9 +359,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * by {@code verticalAlign}.
 	 * </p>
 	 * <p>
-	 * If {@code verticalAlign} is &quot;top&quot;, this offset will increase or
-	 * decrease the distance to the top side of the screen: a negative offset
-	 * will move the dropdown upwards; a positive one, downwards.
+	 * If {@code verticalAlign} is &quot;top&quot; or &quot;middle&quot;, this
+	 * offset will increase or decrease the distance to the top side of the
+	 * screen: a negative offset will move the dropdown upwards; a positive one,
+	 * downwards.
 	 * </p>
 	 * <p>
 	 * Conversely if {@code verticalAlign} is &quot;bottom&quot;, this offset
@@ -461,9 +391,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * by {@code verticalAlign}.
 	 * </p>
 	 * <p>
-	 * If {@code verticalAlign} is &quot;top&quot;, this offset will increase or
-	 * decrease the distance to the top side of the screen: a negative offset
-	 * will move the dropdown upwards; a positive one, downwards.
+	 * If {@code verticalAlign} is &quot;top&quot; or &quot;middle&quot;, this
+	 * offset will increase or decrease the distance to the top side of the
+	 * screen: a negative offset will move the dropdown upwards; a positive one,
+	 * downwards.
 	 * </p>
 	 * <p>
 	 * Conversely if {@code verticalAlign} is &quot;bottom&quot;, this offset

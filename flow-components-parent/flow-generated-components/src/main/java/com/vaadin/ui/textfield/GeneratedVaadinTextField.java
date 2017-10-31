@@ -166,24 +166,6 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * If true, the element currently has focus. This property is @deprecated
-	 * and will not be accessible in the next major version of the component.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 * 
-	 * @return the {@code focused} property from the webcomponent
-	 */
-	public boolean isFocused() {
-		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so

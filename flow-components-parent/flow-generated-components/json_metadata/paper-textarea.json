@@ -444,5 +444,5 @@
     "Polymer.IronA11yKeysBehavior"
   ],
   "mixins": [],
-  "description": "`<paper-textarea>` is a multi-line text field with Material Design styling.\n\n    <paper-textarea label=\"Textarea label\"></paper-textarea>\n\nSee `Polymer.PaperInputBehavior` for more API docs.\n\n### Validation\n\nCurrently only `required` and `maxlength` validation is supported.\n\n### Styling\n\nSee `Polymer.PaperInputContainer` for a list of custom properties used to\nstyle this element."
+  "description": ""
 }
