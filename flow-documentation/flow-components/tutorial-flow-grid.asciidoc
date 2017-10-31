@@ -158,9 +158,6 @@ In the multi-selection mode, a user can select multiple items by clicking on
 the checkboxes in the leftmost column, or by using the kbd:[Space] to select/deselect the currently focused row.
 Space bar is the default key for toggling the selection, but it can be customized.
 
-.Multiple Selection in [classname]#Grid#
-image::img/grid-selection-multi.png[width=50%, scaledwidth=75%]
-
 By obtaining a reference to the [classname]#MultiSelectionModel#,
 you can access more fine grained API for the multi-select case.
 
