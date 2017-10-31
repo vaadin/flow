@@ -39,6 +39,9 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
         return 9998;
     }
 
+    /**
+     * Method run before each test.
+     */
     @Before
     public void openDemoPageAndCheckForErrors() {
         open();
@@ -65,9 +68,9 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
                     logEntry));
         } else {
             Logger.getLogger(ComponentDemoTest.class.getName())
-                    .warning(String.format(
-                            "This message in browser log console may be a potential error: '%s'",
-                            logEntry));
+                    .warning(
+                            "This message in browser log console may be a potential error: '"+logEntry+"'"
+                            );
         }
     }
 }
