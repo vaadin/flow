@@ -77,60 +77,60 @@ import com.vaadin.ui.common.HtmlImport;
  * </tbody>
  * </table>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.PasswordFieldElement#1.1.0",
-        "Flow#1.0-SNAPSHOT" })
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+		"WebComponent: Vaadin.PasswordFieldElement#1.1.0", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-password-field.html")
 public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R>>
-        extends GeneratedVaadinTextField<R> {
+		extends
+			GeneratedVaadinTextField<R> {
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to hide the eye icon which toggles the password visibility.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code revealButtonHidden} property from the webcomponent
-     */
-    public boolean isRevealButtonHidden() {
-        return getElement().getProperty("revealButtonHidden", false);
-    }
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to hide the eye icon which toggles the password visibility.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 * 
+	 * @return the {@code revealButtonHidden} property from the webcomponent
+	 */
+	public boolean isRevealButtonHidden() {
+		return getElement().getProperty("revealButtonHidden", false);
+	}
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to hide the eye icon which toggles the password visibility.
-     * </p>
-     * 
-     * @param revealButtonHidden
-     *            the boolean value to set
-     */
-    public void setRevealButtonHidden(boolean revealButtonHidden) {
-        getElement().setProperty("revealButtonHidden", revealButtonHidden);
-    }
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to hide the eye icon which toggles the password visibility.
+	 * </p>
+	 * 
+	 * @param revealButtonHidden
+	 *            the boolean value to set
+	 */
+	public void setRevealButtonHidden(boolean revealButtonHidden) {
+		getElement().setProperty("revealButtonHidden", revealButtonHidden);
+	}
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * True if the password is visible ([type=text]).
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code passwordVisible} property from the webcomponent
-     */
-    public boolean isPasswordVisible() {
-        return getElement().getProperty("passwordVisible", false);
-    }
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * True if the password is visible ([type=text]).
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 * 
+	 * @return the {@code passwordVisible} property from the webcomponent
+	 */
+	public boolean isPasswordVisible() {
+		return getElement().getProperty("passwordVisible", false);
+	}
 }

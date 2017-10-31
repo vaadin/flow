@@ -62,70 +62,71 @@ import com.vaadin.ui.common.JsonSerializable;
  * </tbody>
  * </table>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: paper-input-char-counter#2.0.2", "Flow#1.0-SNAPSHOT" })
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+		"WebComponent: paper-input-char-counter#2.0.2", "Flow#1.0-SNAPSHOT"})
 @Tag("paper-input-char-counter")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-char-counter.html")
 public class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCounter<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * This overrides the update function in PaperInputAddonBehavior.
-     * </p>
-     * 
-     * @see UpdateState
-     * @param state
-     *            inputElement: The input element. value: The input value.
-     *            invalid: True if the input value is invalid.
-     */
-    public void update(UpdateState state) {
-        getElement().callFunction("update", state.toJson());
-    }
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * This overrides the update function in PaperInputAddonBehavior.
+	 * </p>
+	 * 
+	 * @see UpdateState
+	 * @param state
+	 *            inputElement: The input element. value: The input value.
+	 *            invalid: True if the input value is invalid.
+	 */
+	public void update(UpdateState state) {
+		getElement().callFunction("update", state.toJson());
+	}
 
-    /**
-     * Class that encapsulates the data to be sent to the
-     * {@link GeneratedPaperInputCharCounter#update(UpdateState)} method.
-     */
-    public static class UpdateState implements JsonSerializable {
-        private JsonObject internalObject;
+	/**
+	 * Class that encapsulates the data to be sent to the
+	 * {@link GeneratedPaperInputCharCounter#update(UpdateState)} method.
+	 */
+	public static class UpdateState implements JsonSerializable {
+		private JsonObject internalObject;
 
-        public JsonObject getInputElement() {
-            return internalObject.getObject("inputElement");
-        }
+		public JsonObject getInputElement() {
+			return internalObject.getObject("inputElement");
+		}
 
-        public void setInputElement(elemental.json.JsonObject inputElement) {
-            this.internalObject.put("inputElement", inputElement);
-        }
+		public void setInputElement(elemental.json.JsonObject inputElement) {
+			this.internalObject.put("inputElement", inputElement);
+		}
 
-        public String getValue() {
-            return internalObject.getString("value");
-        }
+		public String getValue() {
+			return internalObject.getString("value");
+		}
 
-        public void setValue(java.lang.String value) {
-            this.internalObject.put("value", value);
-        }
+		public void setValue(java.lang.String value) {
+			this.internalObject.put("value", value);
+		}
 
-        public boolean isInvalid() {
-            return internalObject.getBoolean("invalid");
-        }
+		public boolean isInvalid() {
+			return internalObject.getBoolean("invalid");
+		}
 
-        public void setInvalid(boolean invalid) {
-            this.internalObject.put("invalid", invalid);
-        }
+		public void setInvalid(boolean invalid) {
+			this.internalObject.put("invalid", invalid);
+		}
 
-        @Override
-        public JsonObject toJson() {
-            return internalObject;
-        }
+		@Override
+		public JsonObject toJson() {
+			return internalObject;
+		}
 
-        @Override
-        public UpdateState readJson(elemental.json.JsonObject value) {
-            internalObject = value;
-            return this;
-        }
-    }
+		@Override
+		public UpdateState readJson(elemental.json.JsonObject value) {
+			internalObject = value;
+			return this;
+		}
+	}
 }
