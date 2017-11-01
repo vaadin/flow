@@ -14,6 +14,21 @@
     </description>
     <!-- Versioning doesn't follow Flow Core. -->
     <version>0.0.1-SNAPSHOT</version>
+    
+     <dependencyManagement>
+        <dependencies>
+            <!-- vaadin-webjars-bom is actually not used by the project, but since it doesn't
+                follow the Flow core versioning, an explicity import needs to be made - otherwise
+                the build would break with a broken dependency vaadin-webjars-bom:0.0.1-SNAPSHOT -->
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-webjars-bom</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
+                <version>1.0.0.alpha7</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <profiles>
         <profile>
