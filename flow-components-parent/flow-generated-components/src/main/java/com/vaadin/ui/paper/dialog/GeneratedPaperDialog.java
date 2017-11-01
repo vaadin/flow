@@ -255,7 +255,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * <p>
      * The orientation against which to align the element horizontally relative
      * to the {@code positionTarget}. Possible values are &quot;left&quot;,
-     * &quot;right&quot;, &quot;auto&quot;.
+     * &quot;right&quot;, &quot;center&quot;, &quot;auto&quot;.
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
@@ -274,7 +274,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * <p>
      * The orientation against which to align the element horizontally relative
      * to the {@code positionTarget}. Possible values are &quot;left&quot;,
-     * &quot;right&quot;, &quot;auto&quot;.
+     * &quot;right&quot;, &quot;center&quot;, &quot;auto&quot;.
      * </p>
      * 
      * @param horizontalAlign
@@ -292,7 +292,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * <p>
      * The orientation against which to align the element vertically relative to
      * the {@code positionTarget}. Possible values are &quot;top&quot;,
-     * &quot;bottom&quot;, &quot;auto&quot;.
+     * &quot;bottom&quot;, &quot;middle&quot;, &quot;auto&quot;.
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
@@ -311,7 +311,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * <p>
      * The orientation against which to align the element vertically relative to
      * the {@code positionTarget}. Possible values are &quot;top&quot;,
-     * &quot;bottom&quot;, &quot;auto&quot;.
+     * &quot;bottom&quot;, &quot;middle&quot;, &quot;auto&quot;.
      * </p>
      * 
      * @param verticalAlign
@@ -369,9 +369,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * given by {@code horizontalAlign}.
      * </p>
      * <p>
-     * If {@code horizontalAlign} is &quot;left&quot;, this offset will increase
-     * or decrease the distance to the left side of the screen: a negative
-     * offset will move the dropdown to the left; a positive one, to the right.
+     * If {@code horizontalAlign} is &quot;left&quot; or &quot;center&quot;,
+     * this offset will increase or decrease the distance to the left side of
+     * the screen: a negative offset will move the dropdown to the left; a
+     * positive one, to the right.
      * </p>
      * <p>
      * Conversely if {@code horizontalAlign} is &quot;right&quot;, this offset
@@ -400,9 +401,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * given by {@code horizontalAlign}.
      * </p>
      * <p>
-     * If {@code horizontalAlign} is &quot;left&quot;, this offset will increase
-     * or decrease the distance to the left side of the screen: a negative
-     * offset will move the dropdown to the left; a positive one, to the right.
+     * If {@code horizontalAlign} is &quot;left&quot; or &quot;center&quot;,
+     * this offset will increase or decrease the distance to the left side of
+     * the screen: a negative offset will move the dropdown to the left; a
+     * positive one, to the right.
      * </p>
      * <p>
      * Conversely if {@code horizontalAlign} is &quot;right&quot;, this offset
@@ -429,9 +431,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * by {@code verticalAlign}.
      * </p>
      * <p>
-     * If {@code verticalAlign} is &quot;top&quot;, this offset will increase or
-     * decrease the distance to the top side of the screen: a negative offset
-     * will move the dropdown upwards; a positive one, downwards.
+     * If {@code verticalAlign} is &quot;top&quot; or &quot;middle&quot;, this
+     * offset will increase or decrease the distance to the top side of the
+     * screen: a negative offset will move the dropdown upwards; a positive one,
+     * downwards.
      * </p>
      * <p>
      * Conversely if {@code verticalAlign} is &quot;bottom&quot;, this offset
@@ -460,9 +463,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * by {@code verticalAlign}.
      * </p>
      * <p>
-     * If {@code verticalAlign} is &quot;top&quot;, this offset will increase or
-     * decrease the distance to the top side of the screen: a negative offset
-     * will move the dropdown upwards; a positive one, downwards.
+     * If {@code verticalAlign} is &quot;top&quot; or &quot;middle&quot;, this
+     * offset will increase or decrease the distance to the top side of the
+     * screen: a negative offset will move the dropdown upwards; a positive one,
+     * downwards.
      * </p>
      * <p>
      * Conversely if {@code verticalAlign} is &quot;bottom&quot;, this offset
@@ -827,6 +831,45 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      */
     public void setAlwaysOnTop(boolean alwaysOnTop) {
         getElement().setProperty("alwaysOnTop", alwaysOnTop);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Determines which action to perform when scroll outside an opened overlay
+     * happens. Possible values: lock - blocks scrolling from happening, refit -
+     * computes the new position on the overlay cancel - causes the overlay to
+     * close
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code scrollAction} property from the webcomponent
+     */
+    public String getScrollAction() {
+        return getElement().getProperty("scrollAction");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Determines which action to perform when scroll outside an opened overlay
+     * happens. Possible values: lock - blocks scrolling from happening, refit -
+     * computes the new position on the overlay cancel - causes the overlay to
+     * close
+     * </p>
+     * 
+     * @param scrollAction
+     *            the String value to set
+     */
+    public void setScrollAction(java.lang.String scrollAction) {
+        getElement().setProperty("scrollAction",
+                scrollAction == null ? "" : scrollAction);
     }
 
     /**

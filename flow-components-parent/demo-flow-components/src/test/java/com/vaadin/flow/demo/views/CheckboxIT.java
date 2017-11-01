@@ -62,8 +62,7 @@ public class CheckboxIT extends ComponentDemoTest {
 
         WebElement reset = layout.findElement(By.id("reset-indeterminate"));
         scrollIntoViewAndClick(reset);
-        waitUntil(driver -> checkbox.getAttribute("indeterminate") != null
-                && checkbox.getAttribute("checked") == null);
+        waitUntil(driver -> checkbox.getAttribute("indeterminate") != null);
     }
 
     @Test
