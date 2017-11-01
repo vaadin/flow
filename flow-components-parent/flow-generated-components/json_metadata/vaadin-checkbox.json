@@ -13,15 +13,6 @@
       "description": "Specify that this control should have input focus when the page loads.\n         "
     },
     {
-      "name": "focused",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "If true, the element currently has focus.\nThis property is @deprecated and will not be accessible in the next major version\nof the component.\n         ",
-      "readOnly": true
-    },
-    {
       "name": "disabled",
       "type": [
         "BOOLEAN"
@@ -62,20 +53,7 @@
       "description": "The value given to the data submitted with the checkbox's name to the server when the control is inside a form.\n             "
     }
   ],
-  "methods": [
-    {
-      "name": "connectedCallback",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "disconnectedCallback",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    }
-  ],
+  "methods": [],
   "events": [
     {
       "name": "checked-changed",
