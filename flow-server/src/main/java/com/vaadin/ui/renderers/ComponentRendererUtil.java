@@ -32,6 +32,9 @@ import com.vaadin.ui.UI;
  */
 public class ComponentRendererUtil {
 
+    private ComponentRendererUtil() {
+    }
+
     /**
      * Creates a container to hold all rendered components at the client side.
      * The container is attached to the DOM, but it's no visible to the user.

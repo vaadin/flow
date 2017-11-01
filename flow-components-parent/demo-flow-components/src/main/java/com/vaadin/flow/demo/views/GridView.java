@@ -155,12 +155,17 @@ public class GridView extends DemoView {
 
     // begin-source-example
     // source-example-heading: Grid with columns using component renderer
-    // Component used for the cell rendering
+    /**
+     * Component used for the cell rendering.
+     */
     public static class PersonComponent extends Div {
 
         private String text;
         private int timesClicked;
 
+        /**
+         * Zero-args constructor.
+         */
         public PersonComponent() {
             this.addClickListener(event -> {
                 timesClicked++;
@@ -168,15 +173,29 @@ public class GridView extends DemoView {
             });
         }
 
+        /**
+         * Sets the person for the component.
+         * 
+         * @param person
+         *            the person to be inside inside the cell
+         */
         public void setPerson(Person person) {
             text = "Hi, I'm " + person.getName() + "!";
             setText(text);
         }
     }
 
-    // Component used for the details row
+    /**
+     * Component used for the details row.
+     */
     public static class PersonCard extends Div {
 
+        /**
+         * Constructor that takes a Person as parameter.
+         * 
+         * @param person
+         *            the person to be used inside the card
+         */
         public PersonCard(Person person) {
             this.addClassName("custom-details");
 

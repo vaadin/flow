@@ -140,28 +140,63 @@ public class Grid<T> extends AbstractListing<T>
         }
     }
 
+    /**
+     * Internal event fired when DataProviders are changed in the Grid.
+     */
     private static final class DataProviderChangedEvent
             extends ComponentEvent<Grid<?>> {
 
+        /**
+         * Default event constructor.
+         */
         public DataProviderChangedEvent(Grid<?> source) {
             super(source, false);
         }
     }
 
+    /**
+     * Internal object to hold {@link ComponentRenderer}s and their generated
+     * {@link Component}s together.
+     * 
+     * @param <T>
+     *            the model item attached to the component
+     */
     private static final class RendereredComponent<T> implements Serializable {
         private Component component;
         private ComponentRenderer<? extends Component, T> componentRenderer;
 
+        /**
+         * Default constructor.
+         * 
+         * @param component
+         *            the generated component
+         * @param componentRenderer
+         *            the renderer that generated the component
+         */
         public RendereredComponent(Component component,
                 ComponentRenderer<? extends Component, T> componentRenderer) {
             this.component = component;
             this.componentRenderer = componentRenderer;
         }
 
+        /**
+         * Gets the current generated component.
+         * 
+         * @return the generated component by the renderer
+         */
         public Component getComponent() {
             return component;
         }
 
+        /**
+         * Recreates the component by calling
+         * {@link ComponentRenderer#createComponent(Object)}, and sets the
+         * internal component returned by {@link #getComponent()}.
+         * 
+         * @param item
+         *            the model item to be attached to the component instance
+         * @return the new generated component returned by the renderer
+         */
         public Component recreateComponent(T item) {
             component = componentRenderer.createComponent(item);
             return component;
