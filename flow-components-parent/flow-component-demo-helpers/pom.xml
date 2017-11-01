@@ -48,5 +48,16 @@
             <groupId>org.webjars.bower</groupId>
             <artifactId>vaadin-valo-theme</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- override scope for junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 </project>
