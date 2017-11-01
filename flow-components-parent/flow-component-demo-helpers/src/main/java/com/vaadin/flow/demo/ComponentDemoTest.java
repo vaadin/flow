@@ -39,6 +39,12 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
         return 9998;
     }
 
+	@Override
+	protected String getTestPath() {
+		// TODO Auto-generated method stub
+		return ("/");
+	}
+
     /**
      * Method run before each test.
      */
