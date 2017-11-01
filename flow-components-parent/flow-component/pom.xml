@@ -91,6 +91,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.3.0</version>
+                <executions>
+                    <execution>
+                        <!-- the wget goal actually binds itself to this phase by default -->
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/vaadin/flow/master/drivers.xml</url>
+                            <outputFileName>drivers.xml</outputFileName>
+                            <!-- default target location, just to demonstrate the parameter -->
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -108,12 +128,12 @@
                         <groupId>com.lazerycode.selenium</groupId>
                         <artifactId>driver-binary-downloader-maven-plugin</artifactId>
                         <version>${driver.binary.downloader.maven.plugin.version}</version>
-<!--                         <configuration> -->
-<!--                             <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem> -->
-<!--                             <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory> -->
-<!--                             <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory> -->
-<!--                             <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap> -->
-<!--                         </configuration> -->
+                         <configuration>
+                             <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
+                             <rootStandaloneServerDirectory>${project.build.directory}/driver</rootStandaloneServerDirectory>
+                             <downloadedZipFileDirectory>${project.build.directory}/driver_zips</downloadedZipFileDirectory>
+                             <customRepositoryMap>${project.build.directory}/drivers.xml</customRepositoryMap>
+                         </configuration>
                         <executions>
                             <execution>
                                 <phase>pre-integration-test</phase>
