@@ -42,7 +42,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The orientation against which to align the element horizontally\nrelative to the `positionTarget`. Possible values are \"left\", \"right\", \"auto\".\n       "
+      "description": "The orientation against which to align the element horizontally\nrelative to the `positionTarget`. Possible values are \"left\", \"right\", \"center\", \"auto\".\n       "
     },
     {
       "name": "verticalAlign",
@@ -50,7 +50,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The orientation against which to align the element vertically\nrelative to the `positionTarget`. Possible values are \"top\", \"bottom\", \"auto\".\n       "
+      "description": "The orientation against which to align the element vertically\nrelative to the `positionTarget`. Possible values are \"top\", \"bottom\", \"middle\", \"auto\".\n       "
     },
     {
       "name": "dynamicAlign",
@@ -66,7 +66,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "A pixel value that will be added to the position calculated for the\ngiven `horizontalAlign`, in the direction of alignment. You can think\nof it as increasing or decreasing the distance to the side of the\nscreen given by `horizontalAlign`.\n\nIf `horizontalAlign` is \"left\", this offset will increase or decrease\nthe distance to the left side of the screen: a negative offset will\nmove the dropdown to the left; a positive one, to the right.\n\nConversely if `horizontalAlign` is \"right\", this offset will increase\nor decrease the distance to the right side of the screen: a negative\noffset will move the dropdown to the right; a positive one, to the left.\n       "
+      "description": "A pixel value that will be added to the position calculated for the\ngiven `horizontalAlign`, in the direction of alignment. You can think\nof it as increasing or decreasing the distance to the side of the\nscreen given by `horizontalAlign`.\n\nIf `horizontalAlign` is \"left\" or \"center\", this offset will increase or\ndecrease the distance to the left side of the screen: a negative offset will\nmove the dropdown to the left; a positive one, to the right.\n\nConversely if `horizontalAlign` is \"right\", this offset will increase\nor decrease the distance to the right side of the screen: a negative\noffset will move the dropdown to the right; a positive one, to the left.\n       "
     },
     {
       "name": "verticalOffset",
@@ -74,7 +74,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "A pixel value that will be added to the position calculated for the\ngiven `verticalAlign`, in the direction of alignment. You can think\nof it as increasing or decreasing the distance to the side of the\nscreen given by `verticalAlign`.\n\nIf `verticalAlign` is \"top\", this offset will increase or decrease\nthe distance to the top side of the screen: a negative offset will\nmove the dropdown upwards; a positive one, downwards.\n\nConversely if `verticalAlign` is \"bottom\", this offset will increase\nor decrease the distance to the bottom side of the screen: a negative\noffset will move the dropdown downwards; a positive one, upwards.\n       "
+      "description": "A pixel value that will be added to the position calculated for the\ngiven `verticalAlign`, in the direction of alignment. You can think\nof it as increasing or decreasing the distance to the side of the\nscreen given by `verticalAlign`.\n\nIf `verticalAlign` is \"top\" or \"middle\", this offset will increase or\ndecrease the distance to the top side of the screen: a negative offset will\nmove the dropdown upwards; a positive one, downwards.\n\nConversely if `verticalAlign` is \"bottom\", this offset will increase\nor decrease the distance to the bottom side of the screen: a negative\noffset will move the dropdown downwards; a positive one, upwards.\n       "
     },
     {
       "name": "autoFitOnAttach",
@@ -164,6 +164,14 @@
       ],
       "objectType": [],
       "description": "Set to true to keep overlay always on top.\n       "
+    },
+    {
+      "name": "scrollAction",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Determines which action to perform when scroll outside an opened overlay happens.\nPossible values:\nlock - blocks scrolling from happening,\nrefit - computes the new position on the overlay\ncancel - causes the overlay to close\n       "
     },
     {
       "name": "modal",

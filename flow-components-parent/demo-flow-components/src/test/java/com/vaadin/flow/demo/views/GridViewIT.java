@@ -225,10 +225,10 @@ public class GridViewIT extends ComponentDemoTest {
                 .findElements(By.tagName("vaadin-grid-column")).get(0);
         Assert.assertEquals(false, getCommandExecutor()
                 .executeScript(idColumnFrozenStatusScript, idColumn));
-        toggleIdColumnFrozen.click();
+        clickElementWithJs(toggleIdColumnFrozen);
         Assert.assertEquals(true, getCommandExecutor()
                 .executeScript(idColumnFrozenStatusScript, idColumn));
-        toggleIdColumnFrozen.click();
+        clickElementWithJs(toggleIdColumnFrozen);
         Assert.assertEquals(false, getCommandExecutor()
                 .executeScript(idColumnFrozenStatusScript, idColumn));
     }
@@ -245,8 +245,7 @@ public class GridViewIT extends ComponentDemoTest {
         Assert.assertEquals("<div class=\"custom-details\">"
                 + "<div>Hi! My name is Person 1!</div>"
                 + "<div><vaadin-button tabindex=\"0\" role=\"button\">Update Person</vaadin-button></div>"
-                + "</div>",
-                detailsElement.getAttribute("outerHTML"));
+                + "</div>", detailsElement.getAttribute("outerHTML"));
         getCommandExecutor().executeScript("arguments[0].click()",
                 detailsElement.findElement(By.tagName("vaadin-button")));
 
@@ -269,6 +268,73 @@ public class GridViewIT extends ComponentDemoTest {
                     .findElements(By.tagName("vaadin-grid-column"));
             Assert.assertEquals(2, childColumns.size());
         });
+    }
+
+    @Test
+    public void gridWithComponentRenderer_cellsAreRenderered() {
+        WebElement grid = findElement(By.id("component-renderer"));
+        scrollToElement(grid);
+
+        Assert.assertTrue(hasComponentRendereredCell(grid,
+                "<div data-flow-renderer-item-key=\"1\">Hi, I'm Person 1!</div>"));
+        Assert.assertTrue(hasComponentRendereredCell(grid,
+                "<div data-flow-renderer-item-key=\"2\">Hi, I'm Person 2!</div>"));
+
+        WebElement idField = findElement(By.id("component-renderer-id-field"));
+        WebElement nameField = findElement(
+                By.id("component-renderer-name-field"));
+        WebElement updateButton = findElement(
+                By.id("component-renderer-update-button"));
+
+        executeScript("arguments[0].value = arguments[1];", idField, "1");
+        executeScript("arguments[0].value = arguments[1];", nameField,
+                "SomeOtherName");
+        clickElementWithJs(updateButton);
+
+        waitUntil(driver -> hasComponentRendereredCell(grid,
+                "<div data-flow-renderer-item-key=\"1\">Hi, I'm SomeOtherName!</div>"));
+
+        executeScript("arguments[0].value = arguments[1];", idField, "2");
+        executeScript("arguments[0].value = arguments[1];", nameField,
+                "SomeOtherName2");
+        clickElementWithJs(updateButton);
+
+        waitUntil(driver -> hasComponentRendereredCell(grid,
+                "<div data-flow-renderer-item-key=\"2\">Hi, I'm SomeOtherName2!</div>"));
+    }
+
+    @Test
+    public void gridWithComponentRenderer_detailsAreRenderered() {
+        WebElement grid = findElement(By.id("component-renderer"));
+        scrollToElement(grid);
+
+        getRow(grid, 0).click();
+        assertComponentRendereredDetails(grid, "1", "Person 1");
+
+        getRow(grid, 1).click();
+        assertComponentRendereredDetails(grid, "2", "Person 2");
+
+        WebElement idField = findElement(By.id("component-renderer-id-field"));
+        WebElement nameField = findElement(
+                By.id("component-renderer-name-field"));
+        WebElement updateButton = findElement(
+                By.id("component-renderer-update-button"));
+
+        executeScript("arguments[0].value = arguments[1];", idField, "1");
+        executeScript("arguments[0].value = arguments[1];", nameField,
+                "SomeOtherName");
+        clickElementWithJs(updateButton);
+
+        getRow(grid, 0).click();
+        assertComponentRendereredDetails(grid, "1", "SomeOtherName");
+
+        executeScript("arguments[0].value = arguments[1];", idField, "2");
+        executeScript("arguments[0].value = arguments[1];", nameField,
+                "SomeOtherName2");
+        clickElementWithJs(updateButton);
+
+        getRow(grid, 1).click();
+        assertComponentRendereredDetails(grid, "2", "SomeOtherName2");
     }
 
     private static String getSelectionMessage(Object oldSelection,
@@ -325,6 +391,50 @@ public class GridViewIT extends ComponentDemoTest {
         return cells.stream()
                 .filter(cell -> text.equals(cell.getAttribute("innerHTML")))
                 .findAny().orElse(null);
+    }
+
+    private boolean hasComponentRendereredCell(WebElement grid, String text) {
+        List<WebElement> cells = grid
+                .findElements(By.tagName("vaadin-grid-cell-content"));
+
+        return cells.stream()
+                .map(cell -> cell
+                        .findElements(By.tagName("flow-component-renderer")))
+                .filter(list -> !list.isEmpty()).map(list -> list.get(0))
+                .anyMatch(cell -> text.equals(cell.getAttribute("innerHTML")));
+    }
+
+    private void assertComponentRendereredDetails(WebElement grid, String key,
+            String personName) {
+        waitUntil(driver -> {
+            List<WebElement> elements = grid
+                    .findElements(By.className("custom-details"));
+            if (elements.size() > 0) {
+                return elements.stream().anyMatch(element -> key.equals(
+                        element.getAttribute("data-flow-renderer-item-key")));
+            }
+            return false;
+        });
+        List<WebElement> elements = grid
+                .findElements(By.className("custom-details"));
+        WebElement element = elements.stream()
+                .filter(child -> key.equals(
+                        child.getAttribute("data-flow-renderer-item-key")))
+                .findFirst().get();
+
+        Assert.assertEquals(key,
+                element.getAttribute("data-flow-renderer-item-key"));
+
+        element = element.findElement(By.tagName("vaadin-horizontal-layout"));
+        Assert.assertNotNull(element);
+
+        List<WebElement> layouts = element
+                .findElements(By.tagName("vaadin-vertical-layout"));
+        Assert.assertNotNull(layouts);
+        Assert.assertEquals(2, layouts.size());
+
+        Assert.assertTrue(layouts.get(0).getAttribute("innerHTML")
+                .contains("<label>Name: " + personName + "</label>"));
     }
 
     private void clickCheckbox(WebElement checkbox) {

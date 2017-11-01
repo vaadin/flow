@@ -23,125 +23,126 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
 
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: paper-menu-shrink-height-animation#UNKNOWN",
-		"Flow#1.0-SNAPSHOT"})
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+        "WebComponent: paper-menu-shrink-height-animation#UNKNOWN",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("paper-menu-shrink-height-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class GeneratedPaperMenuShrinkHeightAnimation<R extends GeneratedPaperMenuShrinkHeightAnimation<R>>
-		extends
-			Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements ComponentSupplier<R>, HasStyle {
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Defines the animation timing.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 * 
-	 * @return the {@code animationTiming} property from the webcomponent
-	 */
-	protected JsonObject protectedGetAnimationTiming() {
-		return (JsonObject) getElement().getPropertyRaw("animationTiming");
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Defines the animation timing.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code animationTiming} property from the webcomponent
+     */
+    protected JsonObject protectedGetAnimationTiming() {
+        return (JsonObject) getElement().getPropertyRaw("animationTiming");
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Defines the animation timing.
-	 * </p>
-	 * 
-	 * @param animationTiming
-	 *            the JsonObject value to set
-	 */
-	protected void setAnimationTiming(elemental.json.JsonObject animationTiming) {
-		getElement().setPropertyJson("animationTiming", animationTiming);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Defines the animation timing.
+     * </p>
+     * 
+     * @param animationTiming
+     *            the JsonObject value to set
+     */
+    protected void setAnimationTiming(
+            elemental.json.JsonObject animationTiming) {
+        getElement().setPropertyJson("animationTiming", animationTiming);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Can be used to determine that elements implement this behavior.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 * 
-	 * @return the {@code isNeonAnimation} property from the webcomponent
-	 */
-	public boolean isNeonAnimation() {
-		return getElement().getProperty("isNeonAnimation", false);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Can be used to determine that elements implement this behavior.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code isNeonAnimation} property from the webcomponent
+     */
+    public boolean isNeonAnimation() {
+        return getElement().getProperty("isNeonAnimation", false);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Can be used to determine that elements implement this behavior.
-	 * </p>
-	 * 
-	 * @param isNeonAnimation
-	 *            the boolean value to set
-	 */
-	public void setIsNeonAnimation(boolean isNeonAnimation) {
-		getElement().setProperty("isNeonAnimation", isNeonAnimation);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Can be used to determine that elements implement this behavior.
+     * </p>
+     * 
+     * @param isNeonAnimation
+     *            the boolean value to set
+     */
+    public void setIsNeonAnimation(boolean isNeonAnimation) {
+        getElement().setProperty("isNeonAnimation", isNeonAnimation);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Returns the animation timing by mixing in properties from {@code config}
-	 * to the defaults defined by the animation.
-	 * </p>
-	 * 
-	 * @param config
-	 *            Missing documentation!
-	 */
-	protected void timingFromConfig(elemental.json.JsonObject config) {
-		getElement().callFunction("timingFromConfig", config);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Returns the animation timing by mixing in properties from {@code config}
+     * to the defaults defined by the animation.
+     * </p>
+     * 
+     * @param config
+     *            Missing documentation!
+     */
+    protected void timingFromConfig(elemental.json.JsonObject config) {
+        getElement().callFunction("timingFromConfig", config);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Sets {@code transform} and {@code transformOrigin} properties along with
-	 * the prefixed versions.
-	 * </p>
-	 * 
-	 * @param node
-	 *            Missing documentation!
-	 * @param property
-	 *            Missing documentation!
-	 * @param value
-	 *            Missing documentation!
-	 */
-	protected void setPrefixedProperty(elemental.json.JsonObject node,
-			elemental.json.JsonObject property, elemental.json.JsonObject value) {
-		getElement().callFunction("setPrefixedProperty", node, property, value);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Sets {@code transform} and {@code transformOrigin} properties along with
+     * the prefixed versions.
+     * </p>
+     * 
+     * @param node
+     *            Missing documentation!
+     * @param property
+     *            Missing documentation!
+     * @param value
+     *            Missing documentation!
+     */
+    protected void setPrefixedProperty(elemental.json.JsonObject node,
+            elemental.json.JsonObject property,
+            elemental.json.JsonObject value) {
+        getElement().callFunction("setPrefixedProperty", node, property, value);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Called when the animation finishes.
-	 * </p>
-	 */
-	public void complete() {
-		getElement().callFunction("complete");
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Called when the animation finishes.
+     * </p>
+     */
+    public void complete() {
+        getElement().callFunction("complete");
+    }
 }

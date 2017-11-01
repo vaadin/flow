@@ -36,8 +36,11 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
+import com.vaadin.data.provider.DataChangeEvent;
+import com.vaadin.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.DataProviderListener;
 import com.vaadin.data.provider.Query;
 import com.vaadin.data.selection.MultiSelect;
 import com.vaadin.data.selection.MultiSelectionListener;
@@ -65,8 +68,11 @@ import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.renderers.ComponentRenderer;
+import com.vaadin.ui.renderers.ComponentRendererUtil;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
 
@@ -87,6 +93,7 @@ import elemental.json.JsonValue;
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid.html")
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column.html")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
+@HtmlImport("context://flow-component-renderer.html")
 @JavaScript("context://gridConnector.js")
 public class Grid<T> extends AbstractListing<T>
         implements HasDataProvider<T>, HasStyle, HasSize, Focusable<Grid<T>> {
@@ -102,6 +109,7 @@ public class Grid<T> extends AbstractListing<T>
         public void set(int start, List<JsonValue> items) {
             enqueue("$connector.set", start,
                     items.stream().collect(JsonUtils.asArray()));
+            itemEventBus.fireEvent(new ItemsSentEvent(Grid.this, items));
         }
 
         @Override
@@ -118,6 +126,83 @@ public class Grid<T> extends AbstractListing<T>
 
         private void enqueue(String name, Serializable... arguments) {
             queue.add(() -> getElement().callFunction(name, arguments));
+        }
+    }
+
+    private static final class ItemsSentEvent extends ComponentEvent<Grid<?>> {
+
+        private final List<JsonValue> items;
+
+        public ItemsSentEvent(Grid<?> source, List<JsonValue> items) {
+            super(source, false);
+            this.items = items;
+        }
+
+        public List<JsonValue> getItems() {
+            return items;
+        }
+    }
+
+    /**
+     * Internal event fired when DataProviders are changed in the Grid.
+     */
+    private static final class DataProviderChangedEvent
+            extends ComponentEvent<Grid<?>> {
+
+        /**
+         * Default event constructor.
+         */
+        public DataProviderChangedEvent(Grid<?> source) {
+            super(source, false);
+        }
+    }
+
+    /**
+     * Internal object to hold {@link ComponentRenderer}s and their generated
+     * {@link Component}s together.
+     * 
+     * @param <T>
+     *            the model item attached to the component
+     */
+    private static final class RendereredComponent<T> implements Serializable {
+        private Component component;
+        private ComponentRenderer<? extends Component, T> componentRenderer;
+
+        /**
+         * Default constructor.
+         * 
+         * @param component
+         *            the generated component
+         * @param componentRenderer
+         *            the renderer that generated the component
+         */
+        public RendereredComponent(Component component,
+                ComponentRenderer<? extends Component, T> componentRenderer) {
+            this.component = component;
+            this.componentRenderer = componentRenderer;
+        }
+
+        /**
+         * Gets the current generated component.
+         * 
+         * @return the generated component by the renderer
+         */
+        public Component getComponent() {
+            return component;
+        }
+
+        /**
+         * Recreates the component by calling
+         * {@link ComponentRenderer#createComponent(Object)}, and sets the
+         * internal component returned by {@link #getComponent()}.
+         * 
+         * @param item
+         *            the model item to be attached to the component instance
+         * @return the new generated component returned by the renderer
+         */
+        public Component recreateComponent(T item) {
+            component = componentRenderer.createComponent(item);
+            return component;
         }
     }
 
@@ -318,6 +403,7 @@ public class Grid<T> extends AbstractListing<T>
             implements ColumnBase<Column<T>> {
 
         private final Grid<T> grid;
+        private Map<String, RendereredComponent<T>> renderedComponents;
 
         /**
          * Constructs a new Column for use inside a Grid.
@@ -335,6 +421,13 @@ public class Grid<T> extends AbstractListing<T>
                 TemplateRenderer<T> renderer) {
             this.grid = grid;
 
+            if (renderer instanceof ComponentRenderer) {
+                renderedComponents = new HashMap<>();
+                ComponentRenderer<? extends Component, T> componentRenderer = (ComponentRenderer<? extends Component, T>) renderer;
+                grid.setupComponentRenderer(this, componentRenderer,
+                        renderedComponents);
+            }
+
             Element headerTemplate = new Element("template")
                     .setAttribute("class", "header")
                     .setProperty("innerHTML", HtmlUtils.escape(header));
@@ -345,8 +438,8 @@ public class Grid<T> extends AbstractListing<T>
             getElement().setAttribute("id", columnId)
                     .appendChild(headerTemplate, contentTemplate);
 
-            getGrid().setupTemplateRenderer(renderer,
-                    contentTemplate, getElement());
+            getGrid().setupTemplateRenderer(renderer, contentTemplate,
+                    getElement());
         }
 
         /**
@@ -431,10 +524,13 @@ public class Grid<T> extends AbstractListing<T>
 
     private int nextColumnId = 0;
 
+    private ComponentEventBus itemEventBus = new ComponentEventBus(this);
+
     private GridSelectionModel<T> selectionModel = SelectionMode.SINGLE
             .createModel(this);
 
     private Element detailsTemplate;
+    private Map<String, RendereredComponent<T>> renderedDetailComponents;
 
     private List<ColumnBase<?>> parentColumns = new ArrayList<>();
 
@@ -480,7 +576,7 @@ public class Grid<T> extends AbstractListing<T>
         String columnKey = getColumnKey(false);
         return addColumn(header,
                 TemplateRenderer.<T> of("[[item." + columnKey + "]]")
-                .withProperty(columnKey, valueProvider));
+                        .withProperty(columnKey, valueProvider));
     }
 
     /**
@@ -496,12 +592,11 @@ public class Grid<T> extends AbstractListing<T>
      *
      * @see TemplateRenderer#of(String)
      */
-    public Column<T> addColumn(String header,
-            TemplateRenderer<T> renderer) {
+    public Column<T> addColumn(String header, TemplateRenderer<T> renderer) {
         String columnKey = getColumnKey(true);
 
         getDataCommunicator().reset();
-        
+
         Column<T> column = new Column<>(this, columnKey, header, renderer);
         parentColumns.add(column);
         getElement().appendChild(column.getElement());
@@ -521,6 +616,7 @@ public class Grid<T> extends AbstractListing<T>
     public void setDataProvider(DataProvider<T, ?> dataProvider) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
         getDataCommunicator().setDataProvider(dataProvider, null);
+        itemEventBus.fireEvent(new DataProviderChangedEvent(this));
     }
 
     /**
@@ -761,6 +857,20 @@ public class Grid<T> extends AbstractListing<T>
         if (renderer == null) {
             return;
         }
+        if (renderer instanceof ComponentRenderer) {
+            renderedDetailComponents = renderedDetailComponents == null
+                    ? new HashMap<>()
+                    : renderedDetailComponents;
+            renderedDetailComponents
+                    .forEach((key, rendereredComponent) -> rendereredComponent
+                            .getComponent().getElement().removeFromParent());
+            renderedDetailComponents.clear();
+
+            ComponentRenderer<? extends Component, T> componentRenderer = (ComponentRenderer<? extends Component, T>) renderer;
+            setupComponentRenderer(this, componentRenderer,
+                    renderedDetailComponents);
+        }
+
         Element newDetailsTemplate = new Element("template")
                 .setAttribute("class", "row-details")
                 .setProperty("innerHTML", renderer.getTemplate());
@@ -768,8 +878,7 @@ public class Grid<T> extends AbstractListing<T>
         detailsTemplate = newDetailsTemplate;
         getElement().appendChild(detailsTemplate);
 
-        setupTemplateRenderer(renderer, detailsTemplate,
-                getElement());
+        setupTemplateRenderer(renderer, detailsTemplate, getElement());
     }
 
     /**
@@ -938,9 +1047,8 @@ public class Grid<T> extends AbstractListing<T>
         getDataCommunicator().setRequestedRange(start, length);
     }
 
-    private void setupTemplateRenderer(
-            TemplateRenderer<T> renderer, Element contentTemplate,
-            Element templateDataHost) {
+    private void setupTemplateRenderer(TemplateRenderer<T> renderer,
+            Element contentTemplate, Element templateDataHost) {
 
         renderer.getValueProviders().forEach((key, provider) -> {
             columnGenerators.put(key, provider.andThen(JsonSerializer::toJson));
@@ -982,11 +1090,10 @@ public class Grid<T> extends AbstractListing<T>
 
         // vaadin.sendEventMessage is an exported function at the client
         // side
-        ui.getPage()
-                .executeJavaScript(String.format(
-                        "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
-                        handlerName, eventOrigin.getNode().getId(),
-                        handlerName), eventOrigin);
+        ui.getPage().executeJavaScript(String.format(
+                "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
+                handlerName, eventOrigin.getNode().getId(), handlerName),
+                eventOrigin);
 
         eventOrigin.addEventListener(handlerName,
                 event -> processEventFromTemplateRenderer(event, handlerName,
@@ -1013,5 +1120,103 @@ public class Grid<T> extends AbstractListing<T>
                             "Received an event for the handler '%s' without any data. Ignoring event.",
                             handlerName));
         }
+    }
+
+    private void setupComponentRenderer(Component owner,
+            ComponentRenderer<? extends Component, T> componentRenderer,
+            Map<String, RendereredComponent<T>> renderedComponents) {
+
+        Element container = ComponentRendererUtil
+                .createContainerForRenderers(owner);
+
+        componentRenderer.setTemplateAttribute("key", "[[item.key]]");
+        componentRenderer.setTemplateAttribute("keyname",
+                "data-flow-renderer-item-key");
+        componentRenderer.setTemplateAttribute("containerid",
+                container.getAttribute("id"));
+
+        DataProviderListener<T> dataProviderListener = event -> onDataChangeEvent(
+                event, componentRenderer, renderedComponents, container);
+
+        getDataProvider().addDataProviderListener(dataProviderListener);
+
+        itemEventBus.addListener(Grid.DataProviderChangedEvent.class,
+                event -> getDataProvider()
+                        .addDataProviderListener(dataProviderListener));
+
+        itemEventBus.addListener(ItemsSentEvent.class,
+                event -> onItemsSent(event.getItems(), container,
+                        componentRenderer, renderedComponents));
+    }
+
+    private void onDataChangeEvent(DataChangeEvent<T> event,
+            ComponentRenderer<? extends Component, T> componentRenderer,
+            Map<String, RendereredComponent<T>> renderedComponents,
+            Element container) {
+
+        if (event instanceof DataRefreshEvent) {
+            // this event is fired when a single item is refreshed on the
+            // DataProvider
+            onDataRefreshEvent((DataRefreshEvent<T>) event, componentRenderer,
+                    renderedComponents, container);
+        } else {
+            // otherwise the DataProvider was entirely renewed, so we need to
+            // clear everything
+            container.removeAllChildren();
+            renderedComponents.clear();
+        }
+    }
+
+    private void onDataRefreshEvent(DataRefreshEvent<T> event,
+            ComponentRenderer<? extends Component, T> componentRenderer,
+            Map<String, RendereredComponent<T>> renderedComponents,
+            Element container) {
+
+        T item = event.getItem();
+        String key = getDataCommunicator().getKeyMapper().key(item);
+        RendereredComponent<T> rendereredComponent = renderedComponents
+                .get(key);
+        if (rendereredComponent != null) {
+            Component old = rendereredComponent.component;
+            Component recreatedComponent = rendereredComponent
+                    .recreateComponent(item);
+
+            if (old.getElement().getNode().getId() != recreatedComponent
+                    .getElement().getNode().getId()) {
+
+                ComponentRendererUtil.removeRendereredComponent(UI.getCurrent(),
+                        container,
+                        "[data-flow-renderer-item-key='" + key + "']");
+
+                registerRenderedComponent(componentRenderer, renderedComponents,
+                        container, key, recreatedComponent);
+            }
+        }
+    }
+
+    private void onItemsSent(List<JsonValue> items, Element container,
+            ComponentRenderer<? extends Component, T> componentRenderer,
+            Map<String, RendereredComponent<T>> renderedComponents) {
+        items.stream().map(value -> ((JsonObject) value).getString("key"))
+                .filter(key -> !renderedComponents.containsKey(key))
+                .forEach(key -> {
+                    Component renderedComponent = componentRenderer
+                            .createComponent(getDataCommunicator()
+                                    .getKeyMapper().get(key));
+                    registerRenderedComponent(componentRenderer,
+                            renderedComponents, container, key,
+                            renderedComponent);
+                });
+    }
+
+    private void registerRenderedComponent(
+            ComponentRenderer<? extends Component, T> componentRenderer,
+            Map<String, RendereredComponent<T>> renderedComponents,
+            Element container, String key, Component component) {
+        component.getElement().setAttribute("data-flow-renderer-item-key", key);
+        container.appendChild(component.getElement());
+
+        renderedComponents.put(key,
+                new RendereredComponent<>(component, componentRenderer));
     }
 }

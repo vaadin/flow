@@ -116,281 +116,256 @@ import com.vaadin.ui.common.HasComponents;
  * </tbody>
  * </table>
  */
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#1.0.0", "Flow#1.0-SNAPSHOT"})
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+        "WebComponent: Vaadin.CheckboxElement#1.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
-		extends
-			Component
-		implements
-			ComponentSupplier<R>,
-			HasStyle,
-			Focusable<R>,
-			HasClickListeners<R>,
-			HasValue<R, Boolean>,
-			HasComponents {
+        extends Component
+        implements ComponentSupplier<R>, HasStyle, Focusable<R>,
+        HasClickListeners<R>, HasValue<R, Boolean>, HasComponents {
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Specify that this control should have input focus when the page loads.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 * 
-	 * @return the {@code autofocus} property from the webcomponent
-	 */
-	public boolean isAutofocus() {
-		return getElement().getProperty("autofocus", false);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Specify that this control should have input focus when the page loads.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code autofocus} property from the webcomponent
+     */
+    public boolean isAutofocus() {
+        return getElement().getProperty("autofocus", false);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Specify that this control should have input focus when the page loads.
-	 * </p>
-	 * 
-	 * @param autofocus
-	 *            the boolean value to set
-	 */
-	public void setAutofocus(boolean autofocus) {
-		getElement().setProperty("autofocus", autofocus);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Specify that this control should have input focus when the page loads.
+     * </p>
+     * 
+     * @param autofocus
+     *            the boolean value to set
+     */
+    public void setAutofocus(boolean autofocus) {
+        getElement().setProperty("autofocus", autofocus);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * If true, the element currently has focus. This property is @deprecated
-	 * and will not be accessible in the next major version of the component.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 * 
-	 * @return the {@code focused} property from the webcomponent
-	 */
-	public boolean isFocused() {
-		return getElement().getProperty("focused", false);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * If true, the user cannot interact with this element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code disabled} property from the webcomponent
+     */
+    public boolean isDisabled() {
+        return getElement().getProperty("disabled", false);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * If true, the user cannot interact with this element.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 * 
-	 * @return the {@code disabled} property from the webcomponent
-	 */
-	public boolean isDisabled() {
-		return getElement().getProperty("disabled", false);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * If true, the user cannot interact with this element.
+     * </p>
+     * 
+     * @param disabled
+     *            the boolean value to set
+     */
+    public void setDisabled(boolean disabled) {
+        getElement().setProperty("disabled", disabled);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * If true, the user cannot interact with this element.
-	 * </p>
-	 * 
-	 * @param disabled
-	 *            the boolean value to set
-	 */
-	public void setDisabled(boolean disabled) {
-		getElement().setProperty("disabled", disabled);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * True if the checkbox is checked.
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'checked-changed' event happens.
+     * </p>
+     * 
+     * @return the {@code checked} property from the webcomponent
+     */
+    @Synchronize(property = "checked", value = "checked-changed")
+    @Override
+    public Boolean getValue() {
+        return getElement().getProperty("checked", false);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * True if the checkbox is checked.
-	 * <p>
-	 * This property is synchronized automatically from client side when a
-	 * 'checked-changed' event happens.
-	 * </p>
-	 * 
-	 * @return the {@code checked} property from the webcomponent
-	 */
-	@Synchronize(property = "checked", value = "checked-changed")
-	@Override
-	public Boolean getValue() {
-		return getElement().getProperty("checked", false);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * True if the checkbox is checked.
+     * </p>
+     * 
+     * @param value
+     *            the boolean value to set
+     */
+    @Override
+    public void setValue(java.lang.Boolean value) {
+        Objects.requireNonNull(value,
+                "GeneratedVaadinCheckbox value must not be null");
+        if (!Objects.equals(value, getValue())) {
+            getElement().setProperty("checked", value);
+        }
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * True if the checkbox is checked.
-	 * </p>
-	 * 
-	 * @param value
-	 *            the boolean value to set
-	 */
-	@Override
-	public void setValue(java.lang.Boolean value) {
-		Objects.requireNonNull(value,
-				"GeneratedVaadinCheckbox value must not be null");
-		if (!Objects.equals(value, getValue())) {
-			getElement().setProperty("checked", value);
-		}
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Indeterminate state of the checkbox when it's neither checked nor
+     * unchecked, but undetermined.
+     * https://developer.mozilla.org/en-US/docs/Web/
+     * HTML/Element/input/checkbox#Indeterminate_state_checkboxes
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'indeterminate-changed' event happens.
+     * </p>
+     * 
+     * @return the {@code indeterminate} property from the webcomponent
+     */
+    @Synchronize(property = "indeterminate", value = "indeterminate-changed")
+    public boolean isIndeterminate() {
+        return getElement().getProperty("indeterminate", false);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Indeterminate state of the checkbox when it's neither checked nor
-	 * unchecked, but undetermined.
-	 * https://developer.mozilla.org/en-US/docs/Web/
-	 * HTML/Element/input/checkbox#Indeterminate_state_checkboxes
-	 * <p>
-	 * This property is synchronized automatically from client side when a
-	 * 'indeterminate-changed' event happens.
-	 * </p>
-	 * 
-	 * @return the {@code indeterminate} property from the webcomponent
-	 */
-	@Synchronize(property = "indeterminate", value = "indeterminate-changed")
-	public boolean isIndeterminate() {
-		return getElement().getProperty("indeterminate", false);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Indeterminate state of the checkbox when it's neither checked nor
+     * unchecked, but undetermined.
+     * https://developer.mozilla.org/en-US/docs/Web/
+     * HTML/Element/input/checkbox#Indeterminate_state_checkboxes
+     * </p>
+     * 
+     * @param indeterminate
+     *            the boolean value to set
+     */
+    public void setIndeterminate(boolean indeterminate) {
+        getElement().setProperty("indeterminate", indeterminate);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Indeterminate state of the checkbox when it's neither checked nor
-	 * unchecked, but undetermined.
-	 * https://developer.mozilla.org/en-US/docs/Web/
-	 * HTML/Element/input/checkbox#Indeterminate_state_checkboxes
-	 * </p>
-	 * 
-	 * @param indeterminate
-	 *            the boolean value to set
-	 */
-	public void setIndeterminate(boolean indeterminate) {
-		getElement().setProperty("indeterminate", indeterminate);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The name of the control, which is submitted with the form data.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code name} property from the webcomponent
+     */
+    public String getName() {
+        return getElement().getProperty("name");
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The name of the control, which is submitted with the form data.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 * 
-	 * @return the {@code name} property from the webcomponent
-	 */
-	public String getName() {
-		return getElement().getProperty("name");
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The name of the control, which is submitted with the form data.
+     * </p>
+     * 
+     * @param name
+     *            the String value to set
+     */
+    public void setName(java.lang.String name) {
+        getElement().setProperty("name", name == null ? "" : name);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The name of the control, which is submitted with the form data.
-	 * </p>
-	 * 
-	 * @param name
-	 *            the String value to set
-	 */
-	public void setName(java.lang.String name) {
-		getElement().setProperty("name", name == null ? "" : name);
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The value given to the data submitted with the checkbox's name to the
+     * server when the control is inside a form.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code value} property from the webcomponent
+     */
+    public String getPostValue() {
+        return getElement().getProperty("value");
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The value given to the data submitted with the checkbox's name to the
-	 * server when the control is inside a form.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 * 
-	 * @return the {@code value} property from the webcomponent
-	 */
-	public String getPostValue() {
-		return getElement().getProperty("value");
-	}
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The value given to the data submitted with the checkbox's name to the
+     * server when the control is inside a form.
+     * </p>
+     * 
+     * @param postValue
+     *            the String value to set
+     */
+    public void setPostValue(java.lang.String postValue) {
+        getElement().setProperty("value", postValue == null ? "" : postValue);
+    }
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The value given to the data submitted with the checkbox's name to the
-	 * server when the control is inside a form.
-	 * </p>
-	 * 
-	 * @param postValue
-	 *            the String value to set
-	 */
-	public void setPostValue(java.lang.String postValue) {
-		getElement().setProperty("value", postValue == null ? "" : postValue);
-	}
+    @Override
+    public String getClientValuePropertyName() {
+        return "checked";
+    }
 
-	@Override
-	public String getClientValuePropertyName() {
-		return "checked";
-	}
+    @DomEvent("indeterminate-changed")
+    public static class IndeterminateChangeEvent<R extends GeneratedVaadinCheckbox<R>>
+            extends ComponentEvent<R> {
+        public IndeterminateChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
 
-	@DomEvent("indeterminate-changed")
-	public static class IndeterminateChangeEvent<R extends GeneratedVaadinCheckbox<R>>
-			extends
-				ComponentEvent<R> {
-		public IndeterminateChangeEvent(R source, boolean fromClient) {
-			super(source, fromClient);
-		}
-	}
+    public Registration addIndeterminateChangeListener(
+            ComponentEventListener<IndeterminateChangeEvent<R>> listener) {
+        return addListener(IndeterminateChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
 
-	public Registration addIndeterminateChangeListener(
-			ComponentEventListener<IndeterminateChangeEvent<R>> listener) {
-		return addListener(IndeterminateChangeEvent.class,
-				(ComponentEventListener) listener);
-	}
+    /**
+     * Adds the given components as children of this component.
+     * 
+     * @param components
+     *            the components to add
+     * @see HasComponents#add(Component...)
+     */
+    public GeneratedVaadinCheckbox(com.vaadin.ui.Component... components) {
+        add(components);
+    }
 
-	/**
-	 * Adds the given components as children of this component.
-	 * 
-	 * @param components
-	 *            the components to add
-	 * @see HasComponents#add(Component...)
-	 */
-	public GeneratedVaadinCheckbox(com.vaadin.ui.Component... components) {
-		add(components);
-	}
-
-	/**
-	 * Default constructor.
-	 */
-	public GeneratedVaadinCheckbox() {
-	}
+    /**
+     * Default constructor.
+     */
+    public GeneratedVaadinCheckbox() {
+    }
 }

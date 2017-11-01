@@ -1,0 +1,109 @@
+<dom-module id="flow-component-renderer"> 
+  <template> 
+    <slot></slot> 
+  </template> 
+  <script>
+  class FlowComponentRenderer extends Polymer.Element {
+    static get is() { return 'flow-component-renderer'; }
+    static get properties() {
+      return {
+        containerid: {
+          type: String,
+          observer: '_attributesChanged',
+          reflectToAttribute: true
+        },
+        keyname: {
+          type: String,
+          value: 'key',
+          observer: '_attributesChanged',
+          reflectToAttribute: true
+        },
+        key: {
+          type: String,
+          observer: '_attributesChanged',
+          reflectToAttribute: true
+        }
+      };
+    }
+    
+    
+    connectedCallback() {
+      super.connectedCallback();
+      this._attachRenderedComponentIfAble();
+    }
+    
+    _attributesChanged() {
+      this._attachRenderedComponentIfAble();
+    }
+    
+    _attachRenderedComponentIfAble() {
+      if (!this.key || !this.containerid || !this.keyname) {
+        return;
+      }
+      if (!this.container) {
+        this.container = document.getElementById(this.containerid);
+        if (!this.container) {
+          console.error("The container for renderered components with id " + this.containerid + " could not be found in the document.");
+          return;
+        }
+      }
+      
+      this._removeMutationObserver();
+      
+      if (this.renderedComponent) {
+        this.container.appendChild(this.renderedComponent);
+      }
+      
+      this.renderedComponent = this.container.querySelector("["+this.keyname+"='"+this.key+"']");
+      if (this.renderedComponent) {
+        this.appendChild(this.renderedComponent);
+      }
+      this._createMutationObserver();
+    }
+    
+    _createMutationObserver() {
+      const thisElement = this;
+      this.changesObserver = new MutationObserver(function(mutations, observer) {
+        let thisElementKey = thisElement.key;
+        for (let m = 0; m < mutations.length; ++m) {
+          let mutation = mutations[m];
+          for (let i = 0; i < mutation.addedNodes.length; ++i) {
+            let node = mutation.addedNodes[i];
+            let nodeKey = node.getAttribute(thisElement.keyname);
+            if (nodeKey === thisElementKey) {
+              thisElement._clear();
+              thisElement.renderedComponent = node;
+              thisElement.appendChild(thisElement.renderedComponent);
+              return;
+            }
+          }
+        }
+      }).observe(this.container, { childList: true });
+    }
+    
+    _removeMutationObserver() {
+      if (this.changesObserver) {
+        this.changesObserver.disconnect();
+        this.changesObserver = null;
+      }
+    }
+    
+    _clear() {
+      while (this.hasChildNodes()) {
+        this.removeChild(this.lastChild);
+      }
+    }
+    
+    disconnectedCallback() {
+      this._removeMutationObserver();
+      if (this.container && this.renderedComponent) {
+        this.container.appendChild(this.renderedComponent);
+        this.renderedComponent = null;
+      }
+      super.disconnectedCallback();
+    }
+    
+  }
+  window.customElements.define(FlowComponentRenderer.is, FlowComponentRenderer);
+  </script> 
+</dom-module>

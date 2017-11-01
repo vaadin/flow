@@ -158,7 +158,7 @@ public class SampleConfiguration {
 ----
 
 [NOTE]
-`VaadinScopesConfig` configuration will be registered automatically for you in this case.
+`VaadinScopesConfig` and `VaadinServletConfiguration` configurations will be registered automatically for you in this case.
 
 To be able to use Spring Web application you should declare dependencies in your `pom.xml` file to
 Flow, Flow Spring add-on and Spring web:
