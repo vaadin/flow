@@ -25,8 +25,8 @@ import com.vaadin.ui.Component;
  * A renderer that allows the usage of regular {@link Component}s inside
  * templates.
  * <p>
- * Internally it uses a `<flow-component-renderer>` webcomponent to manage the
- * component instances at the client-side.
+ * Internally it uses a {@code <flow-component-renderer>} webcomponent to manage
+ * the component instances at the client-side.
  * 
  * @author Vaadin Ltd.
  *
@@ -44,8 +44,8 @@ public class ComponentRenderer<COMPONENT, ITEM> extends TemplateRenderer<ITEM> {
     private SerializableBiConsumer<COMPONENT, ITEM> itemConsumer;
 
     /*
-     * Components that support ComponentRenderer must import the
-     * `flow-component-renderer` element, since it is not imported
+     * Components that support ComponentRenderer must import the {@code
+     * <flow-component-renderer>} element, since it is not imported
      * automatically.
      */
     private final Element componentRendererElement = new Element(

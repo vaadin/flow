@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
 /**
@@ -35,8 +36,9 @@ public class ComponentRendererUtil {
      * Creates a container to hold all rendered components at the client side.
      * The container is attached to the DOM, but it's no visible to the user.
      * <p>
-     * The container is used by the `<flow-component-renderer>` webcomponent to
-     * fetch the actual instances to be used inside the templates.
+     * The container is used by the {@code <flow-component-renderer>}
+     * webcomponent to fetch the actual instances to be used inside the
+     * templates.
      * 
      * @param owner
      *            the owner of the container. The container is removed from the
@@ -46,7 +48,7 @@ public class ComponentRendererUtil {
      * @return an element that can be used as container for rendered components
      */
     public static Element createContainerForRenderers(Component owner) {
-        Element container = new Element("div", false);
+        Element container = new Element(Tag.DIV, false);
         container.getStyle().set("display", "none");
 
         String containerId = UUID.randomUUID().toString();
