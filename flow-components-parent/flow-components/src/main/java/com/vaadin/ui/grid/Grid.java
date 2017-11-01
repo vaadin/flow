@@ -33,6 +33,7 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
+import com.vaadin.data.provider.DataChangeEvent;
 import com.vaadin.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
@@ -125,11 +126,11 @@ public class Grid<T> extends AbstractListing<T>
         }
     }
 
-    private final class ItemsSentEvent extends ComponentEvent<Grid<T>> {
+    private static final class ItemsSentEvent extends ComponentEvent<Grid<?>> {
 
         private final List<JsonValue> items;
 
-        public ItemsSentEvent(Grid<T> source, List<JsonValue> items) {
+        public ItemsSentEvent(Grid<?> source, List<JsonValue> items) {
             super(source, false);
             this.items = items;
         }
@@ -139,19 +140,11 @@ public class Grid<T> extends AbstractListing<T>
         }
     }
 
-    private final class DataProviderChangedEvent
-            extends ComponentEvent<Grid<T>> {
+    private static final class DataProviderChangedEvent
+            extends ComponentEvent<Grid<?>> {
 
-        private final DataProvider<T, ?> dataProvider;
-
-        public DataProviderChangedEvent(Grid<T> source,
-                DataProvider<T, ?> dataProvider) {
+        public DataProviderChangedEvent(Grid<?> source) {
             super(source, false);
-            this.dataProvider = dataProvider;
-        }
-
-        public DataProvider<T, ?> getDataProvider() {
-            return dataProvider;
         }
     }
 
@@ -655,8 +648,7 @@ public class Grid<T> extends AbstractListing<T>
     public void setDataProvider(DataProvider<T, ?> dataProvider) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
         getDataCommunicator().setDataProvider(dataProvider, null);
-        itemEventBus
-                .fireEvent(new DataProviderChangedEvent(this, dataProvider));
+        itemEventBus.fireEvent(new DataProviderChangedEvent(this));
     }
 
     /**
@@ -898,15 +890,14 @@ public class Grid<T> extends AbstractListing<T>
             return;
         }
         if (renderer instanceof ComponentRenderer) {
-            if (renderedDetailComponents != null) {
-                renderedDetailComponents.forEach(
-                        (key, rendereredComponent) -> rendereredComponent
-                                .getComponent().getElement()
-                                .removeFromParent());
-                renderedDetailComponents.clear();
-            } else {
-                renderedDetailComponents = new HashMap<>();
-            }
+            renderedDetailComponents = renderedDetailComponents == null
+                    ? new HashMap<>()
+                    : renderedDetailComponents;
+            renderedDetailComponents
+                    .forEach((key, rendereredComponent) -> rendereredComponent
+                            .getComponent().getElement().removeFromParent());
+            renderedDetailComponents.clear();
+
             ComponentRenderer<? extends Component, T> componentRenderer = (ComponentRenderer<? extends Component, T>) renderer;
             setupComponentRenderer(this, componentRenderer,
                     renderedDetailComponents);
@@ -1074,45 +1065,63 @@ public class Grid<T> extends AbstractListing<T>
         componentRenderer.setTemplateAttribute("containerid",
                 container.getAttribute("id"));
 
-        DataProviderListener<T> dataProviderListener = event -> {
-            if (event instanceof DataRefreshEvent) {
-                DataRefreshEvent<T> refreshEvent = (DataRefreshEvent<T>) event;
-                T item = refreshEvent.getItem();
-                String key = getDataCommunicator().getKeyMapper().key(item);
-                RendereredComponent<T> rendereredComponent = renderedComponents
-                        .get(key);
-                if (rendereredComponent != null) {
-                    Component old = rendereredComponent.component;
-                    Component recreatedComponent = rendereredComponent
-                            .recreateComponent(item);
-
-                    if (old.getElement().getNode().getId() != recreatedComponent
-                            .getElement().getNode().getId()) {
-
-                        ComponentRendererUtil.removeRendereredComponent(
-                                UI.getCurrent(), container,
-                                "[data-flow-renderer-item-key='" + key + "']");
-
-                        registerRenderedComponent(componentRenderer,
-                                renderedComponents, container, key,
-                                recreatedComponent);
-                    }
-                }
-            } else {
-                container.removeAllChildren();
-                renderedComponents.clear();
-            }
-        };
+        DataProviderListener<T> dataProviderListener = event -> onDataChangeEvent(
+                event, componentRenderer, renderedComponents, container);
 
         getDataProvider().addDataProviderListener(dataProviderListener);
 
         itemEventBus.addListener(Grid.DataProviderChangedEvent.class,
-                event -> event.getDataProvider()
+                event -> getDataProvider()
                         .addDataProviderListener(dataProviderListener));
 
         itemEventBus.addListener(ItemsSentEvent.class,
                 event -> onItemsSent(event.getItems(), container,
                         componentRenderer, renderedComponents));
+    }
+
+    private void onDataChangeEvent(DataChangeEvent<T> event,
+            ComponentRenderer<? extends Component, T> componentRenderer,
+            Map<String, RendereredComponent<T>> renderedComponents,
+            Element container) {
+
+        if (event instanceof DataRefreshEvent) {
+            // this event is fired when a single item is refreshed on the
+            // DataProvider
+            onDataRefreshEvent((DataRefreshEvent<T>) event, componentRenderer,
+                    renderedComponents, container);
+        } else {
+            // otherwise the DataProvider was entirely renewed, so we need to
+            // clear everything
+            container.removeAllChildren();
+            renderedComponents.clear();
+        }
+    }
+
+    private void onDataRefreshEvent(DataRefreshEvent<T> event,
+            ComponentRenderer<? extends Component, T> componentRenderer,
+            Map<String, RendereredComponent<T>> renderedComponents,
+            Element container) {
+
+        T item = event.getItem();
+        String key = getDataCommunicator().getKeyMapper().key(item);
+        RendereredComponent<T> rendereredComponent = renderedComponents
+                .get(key);
+        if (rendereredComponent != null) {
+            Component old = rendereredComponent.component;
+            Component recreatedComponent = rendereredComponent
+                    .recreateComponent(item);
+
+            if (old.getElement().getNode().getId() != recreatedComponent
+                    .getElement().getNode().getId()) {
+
+                ComponentRendererUtil.removeRendereredComponent(UI.getCurrent(),
+                        container,
+                        "[data-flow-renderer-item-key='" + key + "']");
+
+                registerRenderedComponent(componentRenderer, renderedComponents,
+                        container, key, recreatedComponent);
+            }
+        }
     }
 
     private void onItemsSent(List<JsonValue> items, Element container,

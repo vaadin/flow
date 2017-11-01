@@ -675,6 +675,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (DomApi.wrap(child).getParentNode() == context.htmlNode) {
                 DomApi.wrap(context.htmlNode).removeChild(child);
             }
+            /*
+             * If the client-side element is not inside the parent the server
+             * thought it should be (because of client-side-only DOM changes),
+             * nothing is done at this point. If the server appends the element
+             * to a new parent, that will override the client DOM in the code
+             * below.
+             */
         }
 
         JsArray<?> add = event.getAdd();

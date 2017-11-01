@@ -339,32 +339,12 @@ public class GridView extends DemoView {
         grid.setItems(getItems());
 
         grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", Person::getAge);
 
-        TextField idField = new TextField("", "Person id");
-        idField.addValueChangeListener(event -> {
-        });
-        TextField nameField = new TextField("", "New name");
-        nameField.addValueChangeListener(event -> {
-        });
-        Button updateButton = new Button("Update person", event -> {
-            String id = idField.getValue();
-            String name = nameField.getValue();
-            ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
-                    .getDataProvider();
-
-            dataProvider.getItems().stream()
-                    .filter(person -> String.valueOf(person.getId()).equals(id))
-                    .findFirst().ifPresent(person -> {
-                        person.setName(name);
-                        dataProvider.refreshItem(person);
-                    });
-
-        });
-
+        grid.setSelectionMode(SelectionMode.NONE);
         // end-source-example
         grid.setId("none-selection");
-        addCard("Grid with No Selection Enabled", grid, idField, nameField,
-                updateButton);
+        addCard("Grid with No Selection Enabled", grid);
     }
 
     private void createColumnTemplate() {
