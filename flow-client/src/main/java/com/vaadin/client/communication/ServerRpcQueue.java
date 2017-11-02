@@ -16,7 +16,6 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 
@@ -33,6 +32,9 @@ import elemental.json.JsonValue;
  */
 public class ServerRpcQueue {
 
+    private static final Runnable NO_OP = () -> {
+    };
+
     private JsonArray pendingInvocations = Json.createArray();
 
     private boolean flushPending = false;
@@ -41,17 +43,7 @@ public class ServerRpcQueue {
 
     private final Registry registry;
 
-    private final ScheduledCommand scheduledFlushCommand = new ScheduledCommand() {
-        @Override
-        public void execute() {
-            flushScheduled = false;
-            if (!isFlushPending()) {
-                // Somebody else cleared the queue before we had the chance
-                return;
-            }
-            registry.getMessageSender().sendInvocationsToServer();
-        }
-    };
+    private Runnable doFlushStrategy;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -84,6 +76,8 @@ public class ServerRpcQueue {
     public void clear() {
         pendingInvocations = Json.createArray();
         flushPending = false;
+        flushScheduled = false;
+        doFlushStrategy = NO_OP;
     }
 
     /**
@@ -113,9 +107,20 @@ public class ServerRpcQueue {
         }
         flushPending = true;
         flushScheduled = true;
+
+        doFlushStrategy = this::doFlush;
         // Deferred so we can be sure that all event handlers have been invoked
         // before flushing the queue
-        Scheduler.get().scheduleDeferred(scheduledFlushCommand);
+        Scheduler.get().scheduleDeferred(() -> doFlushStrategy.run());
+    }
+
+    private void doFlush() {
+        flushScheduled = false;
+        if (!isFlushPending()) {
+            // Somebody else cleared the queue before we had the chance
+            return;
+        }
+        registry.getMessageSender().sendInvocationsToServer();
     }
 
     /**
