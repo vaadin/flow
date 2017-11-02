@@ -42,6 +42,12 @@ public class ComboBoxView extends TestView {
      * Creates a new instance.
      */
     public ComboBoxView() {
+        createWithUpdateProvider();
+        createWithValueChangeListener();
+        createWithPresetValue();
+    }
+
+    private void createWithUpdateProvider() {
         ComboBox<String> comboBox = new ComboBox<>();
 
         comboBox.setItems("foo", "bar");
@@ -59,7 +65,9 @@ public class ComboBoxView extends TestView {
         setItemCaptionGenerator.setId("update-caption-gen");
 
         add(comboBox, setProvider, setItemCaptionGenerator);
+    }
 
+    private void createWithValueChangeListener() {
         ComboBox<Title> titles = new ComboBox<>();
 
         titles.setItems(Stream.of(Title.values()));
@@ -68,6 +76,16 @@ public class ComboBoxView extends TestView {
         selectedTitle.setId("selected-titles");
         titles.addValueChangeListener(event -> handleSelection(titles));
         add(titles, selectedTitle);
+    }
+
+    private void createWithPresetValue() {
+        ComboBox<Title> titles = new ComboBox<>();
+
+        titles.setItems(Stream.of(Title.values()));
+        titles.setValue(Title.MRS);
+
+        titles.setId("titles-with-preset-value");
+        add(titles);
     }
 
     private void handleSelection(ComboBox<Title> titles) {
