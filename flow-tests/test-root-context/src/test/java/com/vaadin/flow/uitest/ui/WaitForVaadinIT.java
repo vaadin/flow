@@ -33,7 +33,7 @@ public class WaitForVaadinIT extends ChromeBrowserTest {
         Assert.assertEquals("Not updated", message.getText());
 
         button.click();
-        testBench().waitForVaadin();
+        getCommandExecutor().waitForVaadin();
 
         Assert.assertEquals("Updated", message.getText());
     }
