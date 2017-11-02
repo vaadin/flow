@@ -218,7 +218,7 @@ import com.vaadin.shared.Registration;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxElement#3.0.0", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.ComboBoxElement#3.0.1", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box.html")
 public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
@@ -631,70 +631,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Set to true to disable the floating label.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code noLabelFloat} property from the webcomponent
-     */
-    public boolean isNoLabelFloat() {
-        return getElement().getProperty("noLabelFloat", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to disable the floating label.
-     * </p>
-     * 
-     * @param noLabelFloat
-     *            the boolean value to set
-     */
-    public void setNoLabelFloat(boolean noLabelFloat) {
-        getElement().setProperty("noLabelFloat", noLabelFloat);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to always float the label.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code alwaysFloatLabel} property from the webcomponent
-     */
-    public boolean isAlwaysFloatLabel() {
-        return getElement().getProperty("alwaysFloatLabel", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to always float the label.
-     * </p>
-     * 
-     * @param alwaysFloatLabel
-     *            the boolean value to set
-     */
-    public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
-        getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Set to true to prevent the user from entering invalid input.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -862,8 +798,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * A placeholder string in addition to the label. If this is set, the label
-     * will always float.
+     * A placeholder string in addition to the label.
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
@@ -880,8 +815,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * A placeholder string in addition to the label. If this is set, the label
-     * will always float.
+     * A placeholder string in addition to the label.
      * </p>
      * 
      * @param placeholder
