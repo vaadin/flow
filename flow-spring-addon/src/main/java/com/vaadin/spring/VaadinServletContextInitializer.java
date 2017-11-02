@@ -224,7 +224,7 @@ public class VaadinServletContextInitializer
         } else {
             try {
                 beanClass = definition
-                        .resolveBeanClass(getClass().getClassLoader());
+                        .resolveBeanClass(appContext.getClassLoader());
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e);
             }
