@@ -33,6 +33,7 @@ import elemental.json.JsonValue;
 public class ServerRpcQueue {
 
     private static final Runnable NO_OP = () -> {
+        // NOOP
     };
 
     private JsonArray pendingInvocations = Json.createArray();
