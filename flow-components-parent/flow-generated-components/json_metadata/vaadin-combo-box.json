@@ -2,7 +2,7 @@
   "name": "Vaadin.ComboBoxElement",
   "tag": "vaadin-combo-box",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box.html",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "properties": [
     {
       "name": "opened",
@@ -142,22 +142,6 @@
       "description": "The label for this element.\n             "
     },
     {
-      "name": "noLabelFloat",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "Set to true to disable the floating label.\n             "
-    },
-    {
-      "name": "alwaysFloatLabel",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "Set to true to always float the label.\n             "
-    },
-    {
       "name": "preventInvalidInput",
       "type": [
         "BOOLEAN"
@@ -211,7 +195,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "A placeholder string in addition to the label. If this is set, the label will always float.\n             "
+      "description": "A placeholder string in addition to the label.\n             "
     },
     {
       "name": "size",
