@@ -2,7 +2,7 @@
   "name": "Vaadin.ComboBoxLightElement",
   "tag": "vaadin-combo-box-light",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box-light.html",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "properties": [
     {
       "name": "opened",
