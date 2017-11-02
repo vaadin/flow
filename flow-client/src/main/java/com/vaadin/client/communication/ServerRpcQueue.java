@@ -39,11 +39,9 @@ public class ServerRpcQueue {
 
     private boolean flushPending = false;
 
-    private boolean flushScheduled = false;
-
     private final Registry registry;
 
-    private Runnable doFlushStrategy;
+    private Runnable doFlushStrategy = NO_OP;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -76,7 +74,6 @@ public class ServerRpcQueue {
     public void clear() {
         pendingInvocations = Json.createArray();
         flushPending = false;
-        flushScheduled = false;
         doFlushStrategy = NO_OP;
     }
 
@@ -102,25 +99,15 @@ public class ServerRpcQueue {
      * Triggers a send of server RPC and legacy variable changes to the server.
      */
     public void flush() {
-        if (flushScheduled || isEmpty()) {
+        if (isFlushScheduled() || isEmpty()) {
             return;
         }
         flushPending = true;
-        flushScheduled = true;
 
         doFlushStrategy = this::doFlush;
         // Deferred so we can be sure that all event handlers have been invoked
         // before flushing the queue
         Scheduler.get().scheduleDeferred(() -> doFlushStrategy.run());
-    }
-
-    private void doFlush() {
-        flushScheduled = false;
-        if (!isFlushPending()) {
-            // Somebody else cleared the queue before we had the chance
-            return;
-        }
-        registry.getMessageSender().sendInvocationsToServer();
     }
 
     /**
@@ -150,6 +137,19 @@ public class ServerRpcQueue {
      */
     public JsonArray toJson() {
         return pendingInvocations;
+    }
+
+    private boolean isFlushScheduled() {
+        return NO_OP != doFlushStrategy;
+    }
+
+    private void doFlush() {
+        doFlushStrategy = NO_OP;
+        if (!isFlushPending()) {
+            // Somebody else cleared the queue before we had the chance
+            return;
+        }
+        registry.getMessageSender().sendInvocationsToServer();
     }
 
 }
