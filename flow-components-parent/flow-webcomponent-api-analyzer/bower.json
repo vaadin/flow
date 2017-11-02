@@ -47,6 +47,7 @@
     "vaadin-split-layout": "3.0.0",
     "vaadin-date-picker": "2.0.5",
     "vaadin-dialog": "1.0.0",
-    "vaadin-upload": "2.1.2"
+    "vaadin-upload": "2.1.2",
+    "vaadin-progress-bar": "1.0.0-alpha5"
   }
 }
