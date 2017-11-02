@@ -67,4 +67,17 @@ public class TextFieldViewIT extends AbstractComponentIT {
         waitUntil(driver -> "false"
                 .equals(getProperty(webComponent, "required")));
     }
+
+    @Test
+    public void assertValueWithoutListener() throws InterruptedException {
+        WebElement field = findElement(By.id("value-change"));
+
+        WebElement input = getInShadowRoot(field, By.cssSelector("input"));
+        input.sendKeys("foo");
+
+        findElement(By.id("get-value")).click();
+
+        String value = findElement(By.className("text-field-value")).getText();
+        Assert.assertEquals("foo", value);
+    }
 }
