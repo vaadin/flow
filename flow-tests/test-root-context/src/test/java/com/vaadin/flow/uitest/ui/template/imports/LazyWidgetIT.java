@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 /**
  * This test is intended to check that templates work as Polymer elements even if they're lazy loaded.

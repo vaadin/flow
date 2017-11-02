@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.tests.components.AbstractComponentIT;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 import com.vaadin.ui.passwordfield.PasswordField;
 
 /**
