@@ -947,24 +947,23 @@ public class Grid<T> extends AbstractListing<T>
                     "Cannot merge less than two columns");
         }
         if (columnsToMerge.stream()
-                .filter(column -> !parentColumns.contains(column)).findAny()
-                .isPresent()) {
+                .anyMatch(column -> !parentColumns.contains(column))) {
             throw new IllegalArgumentException(
                     "Cannot merge a column that is not a parent column of this grid");
         }
 
-        columnsToMerge.forEach(
-                column -> getElement().removeChild(column.getElement()));
-
-        ColumnGroup columnGroup = new ColumnGroup(header, columnsToMerge);
-
         int insertIndex = parentColumns
                 .indexOf(columnsToMerge.iterator().next());
 
-        getElement().insertChild(insertIndex, columnGroup.getElement());
+        columnsToMerge.forEach(column -> {
+            getElement().removeChild(column.getElement());
+            parentColumns.remove(column);
+        });
 
+        ColumnGroup columnGroup = new ColumnGroup(header, columnsToMerge);
+
+        getElement().insertChild(insertIndex, columnGroup.getElement());
         parentColumns.add(insertIndex, columnGroup);
-        parentColumns.removeAll(columnsToMerge);
 
         return columnGroup;
     }
