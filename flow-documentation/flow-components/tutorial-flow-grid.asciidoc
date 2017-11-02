@@ -50,17 +50,15 @@ layout.add(grid);
 
 == Handling Selection Changes
 
-Selection in [classname]#Grid# is handled a bit differently from other selection
-components, as it is not a [classname]#HasValue#. Grid supports
+Selection in `Grid` is handled a bit differently from other selection
+components, as it is not a `HasValue`. Grid supports
 single, multiple, or no-selection, each defined by a specific selection model. Each
 selection model has a specific API depending on the type of the selection.
 
-For basic usage, switching between the built-in selection models is possible by using the
-[method]#setSelectionMode(SelectionMode)#. Possible options are [literal]#++SINGLE++# (default),
-[literal]#++MULTI++#, or [literal]#++NONE++#.
+For basic usage, switching between the built-in selection models is possible by using the `setSelectionMode(SelectionMode)`. Possible options are `++SINGLE++` (default), `++MULTI++`, or `++NONE++`.
 
-Listening to selection changes in any selection model is possible with a [classname]#SelectionListener#,
-which provides a generic [classname]#SelectionEvent# for getting the selected value or values.
+Listening to selection changes in any selection model is possible with a `SelectionListener`,
+which provides a generic `SelectionEvent` for getting the selected value or values.
 Note that the listener is actually attached to the selection model and not the grid,
 and will stop getting any events if the selection mode is changed.
 
@@ -77,7 +75,7 @@ grid.addSelectionListener(event -> {
 });
 ----
 
-Programmatically selecting the value is possible via [methodname]#select(T)#.
+Programmatically selecting the value is possible via `select(T)`.
 In multiselect mode, this will add the given item to the selection.
 
 [source, java]
@@ -91,33 +89,31 @@ grid.setSelectionMode(SelectionMode.MULTI);
 people.subList(2,3).forEach(grid::select);
 ----
 
-The current selection can be obtained from the [classname]#Grid# by
-[methodname]#getSelectedItems()#, and the returned [classname]#Set# contains either
-only one item (in single-selection mode) or several items (in multi-selection mode).
+The current selection can be obtained from the `Grid` by `getSelectedItems(), and the returned `Set` contains either only one item (in single-selection mode) or several items (in multi-selection mode).
 
 [WARNING]
 ====
 If you change selection mode for a grid, it will clear the selection
 and fire a selection event. To keep the previous selection you must
-reset the selection afterwards using the [methodname]#select()# method.
+reset the selection afterwards using the `select()` method.
 ====
 
 [WARNING]
 ====
-If you change the grid's items with [methodname]#setItems()# or the used
-[classname]#DataProvider#, it will clear the selection and fire a selection event.
+If you change the grid's items with `setItems()` or the used
+`DataProvider`, it will clear the selection and fire a selection event.
 To keep the previous selection you must reset the selection afterwards
-using the [methodname]#select()# method.
+using the `select()` method.
 ====
 
 === Selection Models
 
 For more control over the selection, you can access the used selection model with
-[methodname]#getSelectionModel()#. The return type is [classname]#GridSelectionModel#
+`getSelectionModel()`. The return type is `GridSelectionModel`
 which has generic selection model API, but you can cast that to the specific selection model type,
-typically either [classname]#SingleSelectionModel# or [classname]#MultiSelectionModel#.
+typically either `SingleSelectionModel` or `MultiSelectionModel`.
 
-The selection model is also returned by the [methodname]#setSelectionMode(SelectionMode)# method.
+The selection model is also returned by the `setSelectionMode(SelectionMode)` method.
 
 [source, java]
 ----
@@ -132,14 +128,13 @@ GridMultiSelectionModel<Person> selectionModel =
 
 ==== Single Selection Model
 
-By obtaining a reference to the [classname]#SingleSelectionModel#,
+By obtaining a reference to the `SingleSelectionModel`,
 you can access more fine grained API for the single-select case.
 
-The [methodname]#addSingleSelect(SingleSelectionListener)# method provides access to
-[classname]#SingleSelectionEvent#, which has some extra API for more convenience.
+The `addSingleSelect(SingleSelectionListener)` method provides access to `SingleSelectionEvent`, which has some extra API for more convenience.
 
 In single-select mode, it is possible to control whether the empty (null) selection is allowed.
-By default it is enabled, but can be disabled with [methodname]#setDeselectAllowed()#.
+By default it is enabled, but can be disabled with `setDeselectAllowed()`.
 
 [source, java]
 ----
@@ -155,14 +150,14 @@ singleSelect.setDeselectAllowed(false);
 === Multi-Selection Model
 
 In the multi-selection mode, a user can select multiple items by clicking on
-the checkboxes in the leftmost column, or by using the kbd:[Space] to select/deselect the currently focused row.
+the checkboxes in the leftmost column, or by using the space bar to select/deselect the currently focused row.
 Space bar is the default key for toggling the selection, but it can be customized.
 
-By obtaining a reference to the [classname]#MultiSelectionModel#,
+By obtaining a reference to the `MultiSelectionModel`,
 you can access more fine grained API for the multi-select case.
 
-The [classname]#MultiSelectionModel# provides [methodname]#addMultiSelectionListener(MultiSelectionListener)#
-access to [classname]#MultiSelectionEvent#, which allows to easily access differences in the selection change.
+The `MultiSelectionModel` provides `addMultiSelectionListener(MultiSelectionListener)`
+access to `MultiSelectionEvent`, which allows to easily access differences in the selection change.
 
 [source, java]
 ----
@@ -186,12 +181,12 @@ selectionModel.addMultiSelectionListener(event -> {
 
 == Configuring Columns
 
-The [methodname]#addColumn()# method can be used to add columns to [classname]#Grid#.
+The `addColumn()` method can be used to add columns to `Grid`.
 
-Column configuration is defined in [classname]#Grid.Column# objects, which are returned by `addColumn`.
-// NOT IMPLEMENTED YET: and can also be obtained from the grid with [methodname]#getColumns()#.
+Column configuration is defined in `Grid.Column` objects, which are returned by `addColumn`.
+// NOT IMPLEMENTED YET: and can also be obtained from the grid with `getColumns()`.
 
-The setter methods in [classname]#Column# have _fluent API_, so you can easily chain the configuration calls for columns if you want to.
+The setter methods in `Column` have _fluent API_, so you can easily chain the configuration calls for columns if you want to.
 
 [source, java]
 ----
@@ -205,7 +200,7 @@ In the following, we describe the basic column configuration.
 
 === Column Order
 
-You can enable drag and drop user reordering of columns with [methodname]#setColumnReorderingAllowed()#.
+You can enable drag and drop user reordering of columns with `setColumnReorderingAllowed()`.
 
 [source, java]
 ----
@@ -215,7 +210,7 @@ grid.setColumnReorderingAllowed(true);
 ////
 NOT IMPLEMENTED YET
 
-You can set the order of columns with [methodname]#setColumnOrder()# for the
+You can set the order of columns with `setColumnOrder()` for the
 grid. Columns that are not given for the method are placed after the specified
 columns in their natural order.
 
@@ -228,22 +223,21 @@ grid.setColumnOrder(firstnameColumn, lastnameColumn,
 ----
 
 Note that the method can not be used to hide columns. You can hide columns with
-the [methodname]#removeColumn()#, as described later.
+the `removeColumn()`, as described later.
 ////
 
 === Hiding and Removing Columns
 
-Columns can be hidden by calling [methodname]#setHidden()# in [classname]#Column#.
-Furthermore, you can set the columns user hidable using method
-[methodname]#setHidable()#.
+Columns can be hidden by calling `setHidden()` in `Column`.
+Furthermore, you can set the columns user hidable using method `setHidable()`.
 
 ////
 NOT IMPLEMENTED YET
 
 === Removing Columns
-Columns can be removed with [methodname]#removeColumn()# and
-[methodname]#removeAllColumns()#. To restore a previously removed column,
-you can call [methodname]#addColumn()#.
+Columns can be removed with `removeColumn()` and
+`removeAllColumns()`. To restore a previously removed column,
+you can call `addColumn()`.
 
 ////
 
@@ -253,7 +247,7 @@ NOT IMPLEMENTED YET
 === Column Captions
 
 Column captions are displayed in the grid header. You can set the header caption
-explicitly through the column object with [methodname]#setCaption()#.
+explicitly through the column object with `setCaption()`.
 
 [source, java]
 ----
@@ -261,8 +255,8 @@ Column<Date> bornColumn = grid.addColumn(Person::getBirthDate);
 bornColumn.setCaption("Born date");
 ----
 
-This is equivalent to setting it with [methodname]#setText()# for the header
-cell; the [classname]#HeaderCell# also allows setting the caption in HTML or as
+This is equivalent to setting it with `setText()` for the header
+cell; the `HeaderCell` also allows setting the caption in HTML or as
 a component, as well as styling it, as described later in
 <<components.grid.headerfooter>>.
 ////
@@ -272,13 +266,13 @@ a component, as well as styling it, as described later in
 === Column Widths
 
 Columns have by default undefined width, which causes automatic sizing based on the widths of the displayed data.
-You can set column widths relatively using flex grow ratios with [methodname]#setFlexGrow()#, or explicitly by a CSS string value with [methodname]#setWidth()# when flex grow has been set to 0.
+You can set column widths relatively using flex grow ratios with `setFlexGrow()`, or explicitly by a CSS string value with `setWidth()` when flex grow has been set to 0.
 
-When [methodname]#setResizable()# is enabled the user can resize a column by dragging its separator with the mouse.
+When `setResizable()` is enabled the user can resize a column by dragging its separator with the mouse.
 
 === Frozen Columns
 
-You can set columns to be frozen with the [methodname]#setFrozen()# method in [classname]#Column#, so that they are not scrolled off when scrolling horizontally.
+You can set columns to be frozen with the `setFrozen()` method in `Column`, so that they are not scrolled off when scrolling horizontally.
 Additionally, user reordering of frozen columns is disabled.
 
 [source, java]
