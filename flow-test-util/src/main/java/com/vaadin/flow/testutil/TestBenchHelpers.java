@@ -286,10 +286,8 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     private WebElement getShadowRoot(WebElement webComponent) {
-        waitUntil(driver -> getCommandExecutor().executeScript(
-                "return arguments[0].shadowRoot", webComponent) != null);
-        WebElement shadowRoot = (WebElement) getCommandExecutor()
-                .executeScript("return arguments[0].shadowRoot", webComponent);
+        WebElement shadowRoot = waitUntil(driver -> (WebElement) getCommandExecutor().executeScript(
+                "return arguments[0].shadowRoot", webComponent));
         Assert.assertNotNull("Could not locate shadowRoot in the element",
                 shadowRoot);
         return shadowRoot;
