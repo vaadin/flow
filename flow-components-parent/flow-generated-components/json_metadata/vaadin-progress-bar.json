@@ -1,0 +1,41 @@
+{
+  "name": "Vaadin.ProgressBarElement",
+  "tag": "vaadin-progress-bar",
+  "baseUrl": "vaadin-progress-bar/vaadin-progress-bar.html",
+  "version": "1.0.0-alpha5",
+  "properties": [
+    {
+      "name": "value",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Current progress value.\n           "
+    },
+    {
+      "name": "min",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Minimum bound of the progress bar.\n           "
+    },
+    {
+      "name": "max",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Maximum bound of the progress bar.\n           "
+    }
+  ],
+  "methods": [],
+  "events": [],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.ProgressMixin",
+    "Vaadin.ThemableMixin"
+  ],
+  "description": "`<vaadin-progress-bar>` is a Polymer 2 progress bar.\n\n```html\n<vaadin-progress-bar value=\"30\" min=\"10\" max=\"100\">\n</vaadin-progress-bar>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description \n----------------|----------------\n`bar` | Progress-bar's background \n`value` | Progress-bar's foreground \n\nThe following custom properties are available:\n\nCustom property | Description | Default\n----------------|-------------|-------------\n`--vaadin-progress-value` | current progress value (between 0 and 1) | 0"
+}
