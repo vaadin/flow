@@ -26,11 +26,6 @@ import com.vaadin.data.selection.SelectionModel;
 public interface GridSelectionModel<T> extends SelectionModel<T> {
 
     /**
-     * Removes this selection model from the grid.
-     */
-    void remove();
-
-    /**
      * Handles the selection of an item that originates from the client.
      *
      * @param item
