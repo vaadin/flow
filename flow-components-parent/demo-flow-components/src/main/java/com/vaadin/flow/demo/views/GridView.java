@@ -35,7 +35,10 @@ import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.layout.HorizontalLayout;
+import com.vaadin.ui.layout.VerticalLayout;
+import com.vaadin.ui.renderers.ComponentRenderer;
 import com.vaadin.ui.renderers.TemplateRenderer;
+import com.vaadin.ui.textfield.TextField;
 
 /**
  * View for {@link Grid} demo.
@@ -43,6 +46,7 @@ import com.vaadin.ui.renderers.TemplateRenderer;
 @ComponentDemo(name = "Grid", href = "vaadin-grid")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-grid.html")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-text-field.html")
 public class GridView extends DemoView {
 
     static List<Person> items = new ArrayList<>();
@@ -149,6 +153,74 @@ public class GridView extends DemoView {
     }
     // end-source-example
 
+    // begin-source-example
+    // source-example-heading: Grid with columns using component renderer
+    /**
+     * Component used for the cell rendering.
+     */
+    public static class PersonComponent extends Div {
+
+        private String text;
+        private int timesClicked;
+
+        /**
+         * Zero-args constructor.
+         */
+        public PersonComponent() {
+            this.addClickListener(event -> {
+                timesClicked++;
+                setText(text + "\nClicked " + timesClicked);
+            });
+        }
+
+        /**
+         * Sets the person for the component.
+         * 
+         * @param person
+         *            the person to be inside inside the cell
+         */
+        public void setPerson(Person person) {
+            text = "Hi, I'm " + person.getName() + "!";
+            setText(text);
+        }
+    }
+
+    /**
+     * Component used for the details row.
+     */
+    public static class PersonCard extends Div {
+
+        /**
+         * Constructor that takes a Person as parameter.
+         * 
+         * @param person
+         *            the person to be used inside the card
+         */
+        public PersonCard(Person person) {
+            this.addClassName("custom-details");
+
+            VerticalLayout layout1 = new VerticalLayout();
+            layout1.add(new Label("Name: " + person.getName()));
+            layout1.add(new Label("Id: " + person.getId()));
+            layout1.add(new Label("Age: " + person.getAge()));
+
+            VerticalLayout layout2 = new VerticalLayout();
+            layout2.add(
+                    new Label("Street: " + person.getAddress().getStreet()));
+            layout2.add(new Label(
+                    "Address number: " + person.getAddress().getNumber()));
+            layout2.add(new Label(
+                    "Postal Code: " + person.getAddress().getPostalCode()));
+
+            HorizontalLayout hlayout = new HorizontalLayout(layout1, layout2);
+            hlayout.getStyle().set("border", "1px solid gray")
+                    .set("padding", "10px").set("boxSizing", "border-box")
+                    .set("width", "100%");
+            this.add(hlayout);
+        }
+    }
+    // end-source-example
+
     @Override
     void initView() {
         createBasicUsage();
@@ -156,9 +228,10 @@ public class GridView extends DemoView {
         createSingleSelect();
         createMultiSelect();
         createNoneSelect();
-        createColumnTemplate();
         createColumnApiExample();
+        createColumnTemplate();
         createDetailsRow();
+        createColumnComponentRenderer();
 
         addCard("Grid example model",
                 new Label("These objects are used in the examples above"));
@@ -326,7 +399,7 @@ public class GridView extends DemoView {
                     grid.getDataCommunicator().reset();
                 }).withEventHandler("handleRemove", person -> {
                     ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
-                            .getDataCommunicator().getDataProvider();
+                            .getDataProvider();
                     dataProvider.getItems().remove(person);
                     grid.getDataCommunicator().reset();
                 }));
@@ -335,6 +408,58 @@ public class GridView extends DemoView {
         // end-source-example
         grid.setId("template-renderer");
         addCard("Grid with columns using template renderer", grid);
+    }
+
+    private void createColumnComponentRenderer() {
+        // begin-source-example
+        // source-example-heading: Grid with columns using component renderer
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(createItems());
+
+        // You can use a constructor and a separate setter for the renderer
+        grid.addColumn("Person", new ComponentRenderer<>(PersonComponent::new,
+                PersonComponent::setPerson));
+
+        // Or you can use an ordinary function to get the component
+        grid.addColumn("Actions",
+                new ComponentRenderer<>(item -> new Button("Remove", evt -> {
+                    ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
+                            .getDataProvider();
+                    dataProvider.getItems().remove(item);
+                    grid.getDataCommunicator().reset();
+                })));
+
+        // Item details can also use components
+        grid.setItemDetailsRenderer(new ComponentRenderer<>(PersonCard::new));
+
+        // When items are updated, new components are generated
+        TextField idField = new TextField("", "Person id");
+        TextField nameField = new TextField("", "New name");
+
+        Button updateButton = new Button("Update person", event -> {
+            String id = idField.getValue();
+            String name = nameField.getValue();
+            ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
+                    .getDataProvider();
+
+            dataProvider.getItems().stream()
+                    .filter(person -> String.valueOf(person.getId()).equals(id))
+                    .findFirst().ifPresent(person -> {
+                        person.setName(name);
+                        dataProvider.refreshItem(person);
+                    });
+
+        });
+
+        grid.setSelectionMode(SelectionMode.NONE);
+        // end-source-example
+
+        grid.setId("component-renderer");
+        idField.setId("component-renderer-id-field");
+        nameField.setId("component-renderer-name-field");
+        updateButton.setId("component-renderer-update-button");
+        addCard("Grid with columns using component renderer", grid, idField,
+                nameField, updateButton);
     }
 
     private void createColumnApiExample() {

@@ -44,7 +44,7 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-combo-box</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
@@ -75,6 +75,11 @@
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-upload</artifactId>
                 <version>2.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>vaadin-progress-bar</artifactId>
+                <version>1.0.0-alpha5</version>
             </dependency>
 
             <!-- WebJars' transitive dependencies resolutions -->

@@ -15,6 +15,9 @@
  */
 package com.vaadin.router;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -28,21 +31,35 @@ import com.vaadin.ui.Tag;
 public class InternalServerError extends Component
         implements HasErrorParameter<Exception> {
 
+    private static final String EXCEPTION_TRYING_NAVIGATE_S = "There was an exception while trying to navigate to '%s'";
+
     @Override
     public int setErrorParameter(BeforeNavigationEvent event,
             ErrorParameter<Exception> parameter) {
         String exceptionText;
         if (parameter.hasCustomMessage()) {
             exceptionText = String.format(
-                    "There was an exception while trying to navigate to '%s' with the exception message '%s'",
+                    EXCEPTION_TRYING_NAVIGATE_S
+                            + " with the exception message '%s'",
                     event.getLocation().getPath(),
                     parameter.getCustomMessage());
         } else {
-            exceptionText = String.format(
-                    "There was an exception while trying to navigate to '%s'",
+            exceptionText = String.format(EXCEPTION_TRYING_NAVIGATE_S,
                     event.getLocation().getPath());
         }
+
+        Exception exception = parameter.getException();
+        if (exception != null) {
+            getLogger().log(Level.SEVERE, exception,
+                    () -> String.format(EXCEPTION_TRYING_NAVIGATE_S,
+                            event.getLocation().getPath()));
+        }
+
         getElement().setText(exceptionText);
         return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(InternalServerError.class.getName());
     }
 }

@@ -34,6 +34,11 @@
             <artifactId>jetty-annotations</artifactId>
             <version>${jetty.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-server</artifactId>
+            <version>9.3.7.v20160115</version>
+        </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -47,6 +52,17 @@
         <dependency>
             <groupId>org.webjars.bower</groupId>
             <artifactId>vaadin-valo-theme</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- override scope for junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -15,8 +15,8 @@
  */
 package com.vaadin.ui;
 
+import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -296,7 +296,7 @@ public class ComponentUtil {
      */
     public static Stream<String> getSynchronizedProperties(
             Class<? extends Component> componentClass) {
-        Set<SynchronizedPropertyInfo> infos = componentMetaDataCache
+        Collection<SynchronizedPropertyInfo> infos = componentMetaDataCache
                 .get(componentClass).getSynchronizedProperties();
         return infos.stream().map(info -> info.getProperty());
     }
@@ -312,7 +312,7 @@ public class ComponentUtil {
      */
     public static Stream<String> getSynchronizedPropertyEvents(
             Class<? extends Component> componentClass) {
-        Set<SynchronizedPropertyInfo> infos = componentMetaDataCache
+        Collection<SynchronizedPropertyInfo> infos = componentMetaDataCache
                 .get(componentClass).getSynchronizedProperties();
         return infos.stream().flatMap(SynchronizedPropertyInfo::getEventNames)
                 .distinct();

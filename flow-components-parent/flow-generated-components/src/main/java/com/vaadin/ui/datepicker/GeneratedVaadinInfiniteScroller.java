@@ -126,7 +126,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param from
      *            Source path to link.
      */
-    protected void linkPaths(java.lang.String to,
+    protected void linkPaths(elemental.json.JsonObject to,
             elemental.json.JsonObject from) {
         getElement().callFunction("linkPaths", to, from);
     }
@@ -145,26 +145,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param from
      *            Source path to link.
      */
-    protected void linkPaths(elemental.json.JsonObject to,
-            java.lang.String from) {
-        getElement().callFunction("linkPaths", to, from);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Aliases one data path as another, such that path notifications from one
-     * are routed to the other.
-     * </p>
-     * 
-     * @param to
-     *            Target path to link.
-     * @param from
-     *            Source path to link.
-     */
-    protected void linkPaths(elemental.json.JsonObject to,
+    protected void linkPaths(java.lang.String to,
             elemental.json.JsonObject from) {
         getElement().callFunction("linkPaths", to, from);
     }
@@ -192,18 +173,18 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Removes a data path alias previously established with {@code _linkPaths}.
-     * </p>
-     * <p>
-     * Note, the path to unlink should be the target ({@code to}) used when
-     * linking the paths.
+     * Aliases one data path as another, such that path notifications from one
+     * are routed to the other.
      * </p>
      * 
-     * @param path
-     *            Target path to unlink.
+     * @param to
+     *            Target path to link.
+     * @param from
+     *            Source path to link.
      */
-    protected void unlinkPaths(elemental.json.JsonObject path) {
-        getElement().callFunction("unlinkPaths", path);
+    protected void linkPaths(elemental.json.JsonObject to,
+            java.lang.String from) {
+        getElement().callFunction("linkPaths", to, from);
     }
 
     /**
@@ -222,6 +203,25 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Target path to unlink.
      */
     public void unlinkPaths(java.lang.String path) {
+        getElement().callFunction("unlinkPaths", path);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Removes a data path alias previously established with {@code _linkPaths}.
+     * </p>
+     * <p>
+     * Note, the path to unlink should be the target ({@code to}) used when
+     * linking the paths.
+     * </p>
+     * 
+     * @param path
+     *            Target path to unlink.
+     */
+    protected void unlinkPaths(elemental.json.JsonObject path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -296,7 +296,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Root object from which the path is evaluated.
      */
     @NotSupported
-    protected void get(java.lang.String path, elemental.json.JsonObject root) {
+    protected void get(elemental.json.JsonObject path,
+            elemental.json.JsonObject root) {
     }
 
     /**
@@ -328,8 +329,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Root object from which the path is evaluated.
      */
     @NotSupported
-    protected void get(elemental.json.JsonObject path,
-            elemental.json.JsonObject root) {
+    protected void get(java.lang.String path, elemental.json.JsonObject root) {
     }
 
     /**
@@ -423,7 +423,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void push(java.lang.String path,
+    protected void push(elemental.json.JsonObject path,
             elemental.json.JsonObject _Items) {
     }
 
@@ -452,7 +452,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void push(elemental.json.JsonObject path,
+    protected void push(java.lang.String path,
             elemental.json.JsonObject _Items) {
     }
 
@@ -480,7 +480,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Path to array.
      */
     @NotSupported
-    protected void pop(elemental.json.JsonObject path) {
+    protected void pop(java.lang.String path) {
     }
 
     /**
@@ -507,7 +507,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Path to array.
      */
     @NotSupported
-    protected void pop(java.lang.String path) {
+    protected void pop(elemental.json.JsonObject path) {
     }
 
     /**
@@ -602,7 +602,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Path to array.
      */
     @NotSupported
-    protected void shift(elemental.json.JsonObject path) {
+    protected void shift(java.lang.String path) {
     }
 
     /**
@@ -629,36 +629,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Path to array.
      */
     @NotSupported
-    protected void shift(java.lang.String path) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Adds items onto the beginning of the array at the path specified.
-     * </p>
-     * <p>
-     * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.push}.
-     * </p>
-     * <p>
-     * This method notifies other paths to the same array that a splice occurred
-     * to the array.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>double</code>. Functions with return types different than void are
-     * not supported at this moment.
-     * 
-     * @param path
-     *            Path to array.
-     * @param ...items Missing documentation!
-     */
-    @NotSupported
-    protected void unshift(java.lang.String path,
-            elemental.json.JsonObject _Items) {
+    protected void shift(elemental.json.JsonObject path) {
     }
 
     /**
@@ -687,6 +658,35 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      */
     @NotSupported
     protected void unshift(elemental.json.JsonObject path,
+            elemental.json.JsonObject _Items) {
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Adds items onto the beginning of the array at the path specified.
+     * </p>
+     * <p>
+     * The arguments after {@code path} and return value match that of
+     * {@code Array.prototype.push}.
+     * </p>
+     * <p>
+     * This method notifies other paths to the same array that a splice occurred
+     * to the array.
+     * </p>
+     * <p>
+     * This function is not supported by Flow because it returns a
+     * <code>double</code>. Functions with return types different than void are
+     * not supported at this moment.
+     * 
+     * @param path
+     *            Path to array.
+     * @param ...items Missing documentation!
+     */
+    @NotSupported
+    protected void unshift(java.lang.String path,
             elemental.json.JsonObject _Items) {
     }
 

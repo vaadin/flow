@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -27,10 +28,15 @@ import com.vaadin.flow.tests.components.AbstractComponentIT;
 
 public class ComboBoxViewIT extends AbstractComponentIT {
 
+    @Before
+    public void init() {
+        open();
+        waitUntil(driver -> findElements(By.tagName("vaadin-combo-box"))
+                .size() > 0);
+    }
+
     @Test
     public void dataProvider_itemCaptionGenerator() {
-        open();
-
         WebElement combo = findElement(By.id("combo"));
 
         List<?> items = getItems(combo);
@@ -53,8 +59,6 @@ public class ComboBoxViewIT extends AbstractComponentIT {
 
     @Test
     public void selectedValue() {
-        open();
-
         WebElement combo = findElement(By.id("titles"));
 
         executeScript("arguments[0].selectedItem = arguments[0].items[0]",
@@ -66,6 +70,14 @@ public class ComboBoxViewIT extends AbstractComponentIT {
         executeScript("arguments[0].selectedItem = arguments[0].items[1]",
                 combo);
         Assert.assertEquals("MRS", selectionInfo.getText());
+    }
+
+    @Test
+    public void presetValue() {
+        WebElement combo = findElement(By.id("titles-with-preset-value"));
+        String value = String.valueOf(
+                executeScript("return arguments[0].selectedItem.label", combo));
+        Assert.assertEquals("MRS", value);
     }
 
     private List<?> getItems(WebElement combo) {
