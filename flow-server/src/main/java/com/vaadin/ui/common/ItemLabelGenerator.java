@@ -13,16 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
 import com.vaadin.function.SerializableFunction;
-import com.vaadin.ui.combobox.ComboBox;
 
 /**
  * {@link ItemLabelGenerator} can be used to customize the string shown to the
  * user for an item.
  *
- * @see ComboBox#setItemLabelGenerator(ItemLabelGenerator)
  * @param <T>
  *            item type
  * @author Vaadin Ltd
