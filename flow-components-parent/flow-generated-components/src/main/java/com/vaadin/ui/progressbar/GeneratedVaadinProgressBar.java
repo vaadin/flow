@@ -72,9 +72,27 @@ import com.vaadin.ui.common.HtmlImport;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * The following state attributes are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Attribute</th>
+ * <th>Description</th>
+ * <th>Part name</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code indeterminate}</td>
+ * <td>Set to an indeterminate progress bar</td>
+ * <td>:host</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ProgressBarElement#1.0.0-alpha5",
+        "WebComponent: Vaadin.ProgressBarElement#1.0.0-alpha6",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-progress-bar")
 @HtmlImport("frontend://bower_components/vaadin-progress-bar/vaadin-progress-bar.html")
@@ -175,5 +193,37 @@ public class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgressBar<R>>
      */
     public void setMax(double max) {
         getElement().setProperty("max", max);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Indeterminate state of the progress bar.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code indeterminate} property from the webcomponent
+     */
+    public boolean isIndeterminate() {
+        return getElement().getProperty("indeterminate", false);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Indeterminate state of the progress bar.
+     * </p>
+     * 
+     * @param indeterminate
+     *            the boolean value to set
+     */
+    public void setIndeterminate(boolean indeterminate) {
+        getElement().setProperty("indeterminate", indeterminate);
     }
 }
