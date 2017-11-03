@@ -253,6 +253,24 @@ public class GridViewIT extends ComponentDemoTest {
     }
 
     @Test
+    public void groupedColumns() {
+        WebElement grid = findElement(By.id("grid-column-grouping"));
+        scrollToElement(grid);
+
+        String columnGroupTag = "vaadin-grid-column-group";
+        WebElement topLevelColumn = grid
+                .findElement(By.tagName(columnGroupTag));
+        List<WebElement> secondLevelColumns = topLevelColumn
+                .findElements(By.tagName(columnGroupTag));
+        Assert.assertEquals(2, secondLevelColumns.size());
+        secondLevelColumns.forEach(columnGroup -> {
+            List<WebElement> childColumns = columnGroup
+                    .findElements(By.tagName("vaadin-grid-column"));
+            Assert.assertEquals(2, childColumns.size());
+        });
+    }
+
+    @Test
     public void gridWithComponentRenderer_cellsAreRenderered() {
         WebElement grid = findElement(By.id("component-renderer"));
         scrollToElement(grid);
