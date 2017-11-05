@@ -22,10 +22,6 @@ import org.junit.Test;
 
 import elemental.json.Json;
 
-/**
- * @author Vaadin Ltd
- *
- */
 public class StringToNumberDecoderTest {
 
     private StringToNumberDecoder decoder = new StringToNumberDecoder();

@@ -29,7 +29,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-public class EnumDecoder implements RpcDecoder {
+public class StringToEnumDecoder implements RpcDecoder {
 
     @Override
     public boolean isApplicable(JsonValue value, Class<?> type) {

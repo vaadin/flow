@@ -291,7 +291,7 @@ public class PublishedServerEventHandlerRpcHandler
     private static Collection<RpcDecoder> loadDecoders() {
         List<RpcDecoder> decoders = new ArrayList<>();
         decoders.add(new StringToNumberDecoder());
-        decoders.add(new EnumDecoder());
+        decoders.add(new StringToEnumDecoder());
         decoders.add(new DefaultRpcDecoder());
         return decoders;
     }
