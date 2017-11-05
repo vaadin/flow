@@ -176,6 +176,17 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void methodWithDecoderParameters_nonConvertableValues_methodIsInvoked() {
+        JsonArray params = Json.createArray();
+        params.set(0, "264.1");
+        params.set(1, "MR");
+
+        DecoderParameters component = new DecoderParameters();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "method", params);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void methodWithoutArgs_argsProvided() {
         JsonArray args = Json.createArray();
         args.set(0, true);

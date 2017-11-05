@@ -31,8 +31,8 @@ import elemental.json.JsonValue;
  * {@link Number} subclass type.
  * <p>
  * This decoder is applicable to any {@link JsonValue} which is
- * {@link JsonString} and any {@link Number} sublcass (like {@link Integer},
- * {@link Double}, {@link Long}, etc.)
+ * {@link JsonString} and any primitive type wrapper {@link Number} subclass
+ * (like {@link Integer}, {@link Double}, {@link Long}, etc.)
  *
  * @author Vaadin Ltd
  *
@@ -42,7 +42,8 @@ public class StringToNumberDecoder implements RpcDecoder {
     @Override
     public boolean isApplicable(JsonValue value, Class<?> type) {
         return value.getType().equals(JsonType.STRING)
-                && Number.class.isAssignableFrom(type);
+                && Number.class.isAssignableFrom(type)
+                && type.getPackage().equals(Integer.class.getPackage());
     }
 
     @Override
