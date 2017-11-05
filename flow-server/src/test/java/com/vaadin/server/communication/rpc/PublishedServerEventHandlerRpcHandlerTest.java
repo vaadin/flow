@@ -19,9 +19,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.polymertemplate.EventHandler;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -45,6 +46,21 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         @EventHandler
         private void method() {
+            isInvoked = true;
+        }
+    }
+
+    enum Title {
+        MR, MRS;
+    }
+
+    @Tag(Tag.DIV)
+    public static class DecoderParameters extends Component {
+
+        private boolean isInvoked;
+
+        @ClientDelegate
+        private void method(Long longValue, Title title) {
             isInvoked = true;
         }
     }
@@ -142,6 +158,19 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         ComponentWithMethod component = new ComponentWithMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", Json.createArray());
+
+        Assert.assertTrue(component.isInvoked);
+    }
+
+    @Test
+    public void methodWithDecoderParameters_convertableValues_methodIsInvoked() {
+        JsonArray params = Json.createArray();
+        params.set(0, "264");
+        params.set(1, "MRS");
+
+        DecoderParameters component = new DecoderParameters();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "method", params);
 
         Assert.assertTrue(component.isInvoked);
     }
