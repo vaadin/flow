@@ -26,7 +26,9 @@ import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.button.Button;
+import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.grid.ColumnGroup;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.Grid.Column;
 import com.vaadin.ui.grid.Grid.SelectionMode;
@@ -231,6 +233,7 @@ public class GridView extends DemoView {
         createColumnApiExample();
         createColumnTemplate();
         createDetailsRow();
+        createColumnGroup();
         createColumnComponentRenderer();
 
         addCard("Grid example model",
@@ -470,7 +473,8 @@ public class GridView extends DemoView {
 
         Column<Person> idColumn = grid.addColumn("ID", Person::getId)
                 .setFlexGrow(0).setWidth("75px");
-        grid.addColumn("Name", Person::getName).setResizable(true);
+        Column<Person> nameColumn = grid.addColumn("Name", Person::getName)
+                .setResizable(true);
         grid.addColumn("Age", Person::getAge).setResizable(true);
 
         Button idColumnVisibility = new Button(
@@ -485,14 +489,22 @@ public class GridView extends DemoView {
         Button freezeIdColumn = new Button("Toggle frozen state of ID column");
         freezeIdColumn.addClickListener(
                 event -> idColumn.setFrozen(!idColumn.isFrozen()));
+
+        Button merge = new Button("Merge ID and name columns");
+        merge.addClickListener(event -> {
+            grid.mergeColumns("ID, Name column group", idColumn, nameColumn);
+            // Remove this button from the layout
+            merge.getParent().ifPresent(
+                    component -> ((HasComponents) component).remove(merge));
+        });
         // end-source-example
 
         grid.setId("column-api-example");
         idColumnVisibility.setId("toggle-id-column-visibility");
         userReordering.setId("toggle-user-reordering");
         freezeIdColumn.setId("toggle-id-column-frozen");
-        addCard("Column API example", grid, new HorizontalLayout(
-                idColumnVisibility, userReordering, freezeIdColumn));
+        addCard("Column API example", grid, new VerticalLayout(
+                idColumnVisibility, userReordering, freezeIdColumn, merge));
     }
 
     private void createDetailsRow() {
@@ -518,6 +530,30 @@ public class GridView extends DemoView {
         // end-source-example
         grid.setId("grid-with-details-row");
         addCard("Grid with a details row", grid);
+    }
+
+    private void createColumnGroup() {
+        // begin-source-example
+        // source-example-heading: Column grouping example
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(getItems());
+
+        Column<Person> nameColumn = grid.addColumn("Name", Person::getName);
+        Column<Person> ageColumn = grid.addColumn("Age", Person::getAge);
+        Column<Person> streetColumn = grid.addColumn("Street",
+                person -> person.getAddress().getStreet());
+        Column<Person> postalCodeColumn = grid.addColumn("Postal Code",
+                person -> person.getAddress().getPostalCode());
+
+        ColumnGroup informationColumnGroup = grid
+                .mergeColumns("Basic Information", nameColumn, ageColumn);
+        ColumnGroup addressColumnGroup = grid.mergeColumns(
+                "Address information", streetColumn, postalCodeColumn);
+        grid.mergeColumns("Person Information", informationColumnGroup,
+                addressColumnGroup);
+        // end-source-example
+        grid.setId("grid-column-grouping");
+        addCard("Column grouping example", grid);
     }
 
     private List<Person> getItems() {
