@@ -31,10 +31,10 @@ import com.vaadin.data.provider.KeyMapper;
 import com.vaadin.data.provider.Query;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.ItemLabelGenerator;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.common.ItemLabelGenerator;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
