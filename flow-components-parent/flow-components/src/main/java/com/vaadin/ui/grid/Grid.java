@@ -17,6 +17,9 @@ package com.vaadin.ui.grid;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -396,7 +399,8 @@ public class Grid<T> extends AbstractListing<T>
      *            type of the underlying grid this column is compatible with
      */
     @Tag("vaadin-grid-column")
-    public static class Column<T> extends Component {
+    public static class Column<T> extends Component
+            implements ColumnBase<Column<T>> {
 
         private final Grid<T> grid;
         private Map<String, RendereredComponent<T>> renderedComponents;
@@ -488,78 +492,6 @@ public class Grid<T> extends AbstractListing<T>
         }
 
         /**
-         * When set to {@code true}, the column is user-resizable. By default
-         * this is set to {@code false}.
-         *
-         * @param resizable
-         *            whether to allow user resizing of this column
-         * @return this column, for method chaining
-         */
-        public Column<T> setResizable(boolean resizable) {
-            getElement().setProperty("resizable", resizable);
-            return this;
-        }
-
-        /**
-         * Gets whether this column is user-resizable.
-         *
-         * @return whether this column is user-resizable
-         */
-        @Synchronize("resizable-changed")
-        public boolean isResizable() {
-            return getElement().getProperty("resizable", false);
-        }
-
-        /**
-         * Hides or shows the column. By default columns are visible before
-         * explicitly hiding them.
-         *
-         * @param hidden
-         *            {@code true} to hide the column, {@code false} to show
-         * @return this column, for method chaining
-         */
-        public Column<T> setHidden(boolean hidden) {
-            getElement().setProperty("hidden", hidden);
-            return this;
-        }
-
-        /**
-         * Returns whether this column is hidden. Default is {@code false}.
-         *
-         * @return {@code true} if the column is currently hidden, {@code false}
-         *         otherwise
-         */
-        @Synchronize("hidden-changed")
-        public boolean isHidden() {
-            return getElement().getProperty("hidden", false);
-        }
-
-        /**
-         * Sets this column's frozen state.
-         * <p>
-         * <strong>Note:</strong> Columns are frozen in-place, freeze columns
-         * from left to right for a consistent outcome.
-         *
-         * @param frozen
-         *            whether to freeze or unfreeze this column
-         * @return this column, for method chaining
-         */
-        public Column<T> setFrozen(boolean frozen) {
-            getElement().setProperty("frozen", frozen);
-            return this;
-        }
-
-        /**
-         * Gets the this column's frozen state.
-         *
-         * @return whether this column is frozen
-         */
-        @Synchronize("frozen-changed")
-        public boolean isFrozen() {
-            return getElement().getProperty("frozen", false);
-        }
-
-        /**
          * Gets the underlying {@code <vaadin-grid-column>} element.
          * <p>
          * <strong>It is highly discouraged to directly use the API exposed by
@@ -599,6 +531,8 @@ public class Grid<T> extends AbstractListing<T>
 
     private Element detailsTemplate;
     private Map<String, RendereredComponent<T>> renderedDetailComponents;
+
+    private List<ColumnBase<?>> parentColumns = new ArrayList<>();
 
     /**
      * Creates a new instance, with page size of 50.
@@ -664,9 +598,8 @@ public class Grid<T> extends AbstractListing<T>
         getDataCommunicator().reset();
 
         Column<T> column = new Column<>(this, columnKey, header, renderer);
-
-        getElement().getNode().runWhenAttached(
-                ui -> getElement().appendChild(column.getElement()));
+        parentColumns.add(column);
+        getElement().appendChild(column.getElement());
 
         return column;
     }
@@ -970,6 +903,107 @@ public class Grid<T> extends AbstractListing<T>
         if (isColumnReorderingAllowed() != columnReorderingAllowed) {
             getElement().setProperty("columnReorderingAllowed",
                     columnReorderingAllowed);
+        }
+    }
+
+    /**
+     * Merges two or more columns into a {@link ColumnGroup}.
+     *
+     * @param header
+     *            the header text of the resulting column group
+     * @param firstColumn
+     *            the first column to merge
+     * @param secondColumn
+     *            the second column to merge
+     * @param additionalColumns
+     *            optional additional columns to merge
+     * @return the column group that contains the merged columns
+     */
+    public ColumnGroup mergeColumns(String header, ColumnBase<?> firstColumn,
+            ColumnBase<?> secondColumn, ColumnBase<?>... additionalColumns) {
+        List<ColumnBase<?>> toMerge = new ArrayList<>();
+        toMerge.add(firstColumn);
+        toMerge.add(secondColumn);
+        toMerge.addAll(Arrays.asList(additionalColumns));
+        return mergeColumns(header, toMerge);
+    }
+
+    /**
+     * Merges two or more columns into a {@link ColumnGroup}.
+     *
+     * @param header
+     *            the header text of the resulting column group
+     * @param columnsToMerge
+     *            the columns to merge, not {@code null} and size must be
+     *            greater than 1
+     * @return the column group that contains the merged columns
+     */
+    public ColumnGroup mergeColumns(String header,
+            Collection<ColumnBase<?>> columnsToMerge) {
+        Objects.requireNonNull(columnsToMerge,
+                "Columns to merge cannot be null");
+        if (columnsToMerge.size() < 2) {
+            throw new IllegalArgumentException(
+                    "Cannot merge less than two columns");
+        }
+        if (columnsToMerge.stream()
+                .anyMatch(column -> !parentColumns.contains(column))) {
+            throw new IllegalArgumentException(
+                    "Cannot merge a column that is not a parent column of this grid");
+        }
+
+        int insertIndex = parentColumns
+                .indexOf(columnsToMerge.iterator().next());
+
+        columnsToMerge.forEach(column -> {
+            getElement().removeChild(column.getElement());
+            parentColumns.remove(column);
+        });
+
+        ColumnGroup columnGroup = new ColumnGroup(header, columnsToMerge);
+
+        getElement().insertChild(insertIndex, columnGroup.getElement());
+        parentColumns.add(insertIndex, columnGroup);
+
+        return columnGroup;
+    }
+
+    /**
+     * Gets an unmodifiable list of all parent columns currently in this
+     * {@link Grid}. Parent columns are the top level columns of this Grid, i.e.
+     * the topmost ColumnGroup
+     *
+     * @return unmodifiable list of parent columns
+     */
+    public List<ColumnBase<?>> getParentColumns() {
+        return Collections.unmodifiableList(parentColumns);
+    }
+
+    /**
+     * Gets an unmodifiable list of all {@link Column}s currently in this
+     * {@link Grid}.
+     *
+     * @return unmodifiable list of columns
+     */
+    public List<Column<T>> getColumns() {
+        List<Column<T>> ret = new ArrayList<>();
+        getParentColumns().forEach(column -> appendChildColumns(ret, column));
+        return Collections.unmodifiableList(ret);
+    }
+
+    private List<Column<T>> fetchChildColumns(ColumnGroup columnGroup) {
+        List<Column<T>> ret = new ArrayList<>();
+        columnGroup.getChildColumns()
+                .forEach(column -> appendChildColumns(ret, column));
+        return ret;
+    }
+
+    private void appendChildColumns(List<Column<T>> list,
+            ColumnBase<?> column) {
+        if (column instanceof Column) {
+            list.add((Column<T>) column);
+        } else if (column instanceof ColumnGroup) {
+            list.addAll(fetchChildColumns((ColumnGroup) column));
         }
     }
 

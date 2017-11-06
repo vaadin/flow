@@ -1,7 +1,8 @@
 package com.vaadin.flow.uitest.servlet;
 
-import javax.servlet.annotation.WebServlet;
 import java.util.stream.Stream;
+
+import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
@@ -32,6 +33,13 @@ public class RouterTestServlet extends VaadinServlet {
 
     @Route("abc")
     public static class RootNavigationTarget extends ClassNameDiv {
+    }
+
+    @Route("throws")
+    public static class ThrowsNavigationTarget extends Div {
+        public ThrowsNavigationTarget() {
+            throw new IllegalStateException("This is an expected exception");
+        }
     }
 
     @Route("foo")
