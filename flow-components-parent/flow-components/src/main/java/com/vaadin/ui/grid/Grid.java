@@ -21,13 +21,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,6 +38,7 @@ import com.vaadin.data.provider.ArrayUpdater.Update;
 import com.vaadin.data.provider.DataChangeEvent;
 import com.vaadin.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.data.provider.DataCommunicator;
+import com.vaadin.data.provider.DataGenerator;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.DataProviderListener;
 import com.vaadin.data.provider.Query;
@@ -49,7 +49,6 @@ import com.vaadin.data.selection.SelectionListener;
 import com.vaadin.data.selection.SelectionModel;
 import com.vaadin.data.selection.SelectionModel.Single;
 import com.vaadin.data.selection.SingleSelect;
-import com.vaadin.data.selection.SingleSelectionEvent;
 import com.vaadin.data.selection.SingleSelectionListener;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
@@ -69,14 +68,12 @@ import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
-import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.renderers.ComponentRenderer;
 import com.vaadin.ui.renderers.ComponentRendererUtil;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -225,125 +222,11 @@ public class Grid<T> extends AbstractListing<T>
         SINGLE {
             @Override
             protected <T> GridSelectionModel<T> createModel(Grid<T> grid) {
-                return new GridSingleSelectionModel<T>() {
-
-                    private T selectedItem = null;
-                    private boolean deselectAllowed = true;
+                return new AbstractGridSingleSelectionModel<T>(grid) {
 
                     @Override
-                    public void selectFromClient(T item) {
-                        if (Objects.equals(item, selectedItem)) {
-                            return;
-                        }
-                        doSelect(item, true);
-                    }
-
-                    @Override
-                    public void select(T item) {
-                        if (Objects.equals(item, selectedItem)) {
-                            return;
-                        }
-                        doSelect(item, false);
-                        grid.getDataCommunicator().reset();
-                    }
-
-                    @Override
-                    public void deselectFromClient(T item) {
-                        if (isSelected(item)) {
-                            selectFromClient(null);
-                        }
-                    }
-
-                    @Override
-                    public void deselect(T item) {
-                        if (isSelected(item)) {
-                            select(null);
-                        }
-                    }
-
-                    @Override
-                    public void remove() {
-                        deselectAll();
-                    }
-
-                    @Override
-                    public Optional<T> getSelectedItem() {
-                        return Optional.ofNullable(selectedItem);
-                    }
-
-                    @Override
-                    public void setDeselectAllowed(boolean deselectAllowed) {
-                        this.deselectAllowed = deselectAllowed;
-                    }
-
-                    @Override
-                    public boolean isDeselectAllowed() {
-                        return deselectAllowed;
-                    }
-
-                    @Override
-                    public SingleSelect<Grid<T>, T> asSingleSelect() {
-                        return new SingleSelect<Grid<T>, T>() {
-
-                            @Override
-                            public void setValue(T value) {
-                                setSelectedItem(value);
-                            }
-
-                            @Override
-                            public T getValue() {
-                                return getSelectedItem()
-                                        .orElse(getEmptyValue());
-                            }
-
-                            @SuppressWarnings({ "unchecked", "rawtypes" })
-                            @Override
-                            public Registration addValueChangeListener(
-                                    ValueChangeListener<Grid<T>, T> listener) {
-                                Objects.requireNonNull(listener,
-                                        "listener cannot be null");
-                                return grid.addListener(
-                                        SingleSelectionEvent.class,
-                                        (ComponentEventListener) listener);
-                            }
-
-                            @Override
-                            public Grid<T> get() {
-                                return grid;
-                            }
-                        };
-                    }
-
-                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                    @Override
-                    public Registration addSelectionListener(
-                            SelectionListener<T> listener) {
-                        Objects.requireNonNull(listener,
-                                "listener cannot be null");
-                        return grid.addListener(SingleSelectionEvent.class,
-                                (ComponentEventListener) (event -> listener
-                                        .selectionChange(
-                                                (SelectionEvent) event)));
-                    }
-
-                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                    @Override
-                    public Registration addSingleSelectionListener(
-                            SingleSelectionListener<Grid<T>, T> listener) {
-                        Objects.requireNonNull(listener,
-                                "listener cannot be null");
-                        return grid.addListener(SingleSelectionEvent.class,
-                                (ComponentEventListener) (event -> listener
-                                        .selectionChange(
-                                                (SingleSelectionEvent) event)));
-                    }
-
-                    private void doSelect(T item, boolean userOriginated) {
-                        T oldValue = selectedItem;
-                        selectedItem = item;
-                        grid.fireEvent(new SingleSelectionEvent<Grid<T>, T>(
-                                grid, grid.asSingleSelect(), oldValue,
-                                userOriginated));
+                    protected void fireSelectionEvent(SelectionEvent<T> event) {
+                        grid.fireEvent((ComponentEvent<Grid>) event);
                     }
                 };
             }
@@ -514,11 +397,115 @@ public class Grid<T> extends AbstractListing<T>
         }
     }
 
+    /**
+     * A helper base class for creating extensions for the Grid component.
+     *
+     * @param <T>
+     *            the grid bean type
+     */
+    public abstract static class AbstractGridExtension<T>
+            implements DataGenerator<T> {
+
+        private Grid<T> grid;
+
+        /**
+         * Constructs a new grid extension, extending the given grid.
+         *
+         * @param grid
+         *            the grid to extend
+         */
+        public AbstractGridExtension(Grid<T> grid) {
+            extend(grid);
+        }
+
+        /**
+         * Adds this extension to the given grid.
+         * 
+         * @param grid
+         *            the grid to extend
+         */
+        protected void extend(Grid<T> grid) {
+            this.grid = grid;
+            getGrid().getDataGenerator().addDataGenerator(this);
+        }
+
+        /**
+         * Remove this extension from its target.
+         */
+        protected void remove() {
+            getGrid().getDataGenerator().removeDataGenerator(this);
+        }
+
+        /**
+         * Gets the Grid this extension extends.
+         * 
+         * @return the grid this extension extends
+         */
+        protected Grid<T> getGrid() {
+            return grid;
+        }
+    }
+
+    /**
+     * Data generator implementation for the Grid.
+     * 
+     * @param <T>
+     *            the grid bean type
+     */
+    private class GridDataGenerator<T> implements DataGenerator<T> {
+
+        private final Set<DataGenerator<T>> dataGenerators = new HashSet<>();
+
+        @Override
+        public void generateData(T item, JsonObject jsonObject) {
+            dataGenerators.forEach(
+                    generator -> generator.generateData(item, jsonObject));
+        }
+
+        @Override
+        public void destroyData(T item) {
+            dataGenerators.forEach(generator -> generator.destroyData(item));
+        }
+
+        @Override
+        public void destroyAllData() {
+            dataGenerators.forEach(DataGenerator::destroyAllData);
+        }
+
+        @Override
+        public void refreshData(T item) {
+            dataGenerators.forEach(generator -> generator.refreshData(item));
+        }
+
+        /**
+         * Adds the given data generator. If the generator was already added,
+         * does nothing.
+         *
+         * @param generator
+         *            the data generator to add
+         */
+        public void addDataGenerator(DataGenerator<T> generator) {
+            assert generator != null : "generator should not be null";
+            dataGenerators.add(generator);
+        }
+
+        /**
+         * Removes the given data generator.
+         *
+         * @param generator
+         *            the data generator to remove
+         */
+        public void removeDataGenerator(DataGenerator<T> generator) {
+            assert generator != null : "generator should not be null";
+            dataGenerators.remove(generator);
+        }
+    }
+
     private final ArrayUpdater arrayUpdater = UpdateQueue::new;
 
-    private final Map<String, Function<T, JsonValue>> columnGenerators = new HashMap<>();
+    private final GridDataGenerator<T> gridDataGenerator = new GridDataGenerator<>();
     private final DataCommunicator<T> dataCommunicator = new DataCommunicator<>(
-            this::generateItemJson, arrayUpdater,
+            gridDataGenerator, arrayUpdater,
             data -> getElement().callFunction("$connector.updateData", data),
             getElement().getNode());
 
@@ -526,8 +513,7 @@ public class Grid<T> extends AbstractListing<T>
 
     private ComponentEventBus itemEventBus = new ComponentEventBus(this);
 
-    private GridSelectionModel<T> selectionModel = SelectionMode.SINGLE
-            .createModel(this);
+    private GridSelectionModel<T> selectionModel;
 
     private Element detailsTemplate;
     private Map<String, RendereredComponent<T>> renderedDetailComponents;
@@ -554,6 +540,8 @@ public class Grid<T> extends AbstractListing<T>
      */
     public Grid(int pageSize) {
         setPageSize(pageSize);
+        setSelectionModel(SelectionMode.SINGLE.createModel(this),
+                SelectionMode.SINGLE);
 
         getElement().getNode()
                 .runWhenAttached(ui -> ui.getPage().executeJavaScript(
@@ -697,7 +685,10 @@ public class Grid<T> extends AbstractListing<T>
             SelectionMode selectionMode) {
         Objects.requireNonNull(model, "selection model cannot be null");
         Objects.requireNonNull(selectionMode, "selection mode cannot be null");
-        selectionModel.remove();
+        if (selectionModel != null
+                && selectionModel instanceof AbstractGridExtension) {
+            ((AbstractGridExtension) selectionModel).remove();
+        }
         selectionModel = model;
         getElement().callFunction("$connector.setSelectionMode",
                 selectionMode.name());
@@ -1025,17 +1016,6 @@ public class Grid<T> extends AbstractListing<T>
         return item;
     }
 
-    private JsonValue generateItemJson(String key, T item) {
-        JsonObject json = Json.createObject();
-        json.put("key", key);
-        columnGenerators.forEach((columnKey, generator) -> json.put(columnKey,
-                generator.apply(item)));
-        if (getSelectionModel().isSelected(item)) {
-            json.put("selected", true);
-        }
-        return json;
-    }
-
     @ClientDelegate
     private void confirmUpdate(int id) {
         getDataCommunicator().confirmUpdate(id);
@@ -1049,9 +1029,10 @@ public class Grid<T> extends AbstractListing<T>
     private void setupTemplateRenderer(TemplateRenderer<T> renderer,
             Element contentTemplate, Element templateDataHost) {
 
-        renderer.getValueProviders().forEach((key, provider) -> {
-            columnGenerators.put(key, provider.andThen(JsonSerializer::toJson));
-        });
+        renderer.getValueProviders()
+                .forEach((key, provider) -> getDataGenerator().addDataGenerator(
+                        (item, jsonObject) -> jsonObject.put(key,
+                                JsonSerializer.toJson(provider.apply(item)))));
 
         Map<String, SerializableConsumer<T>> eventConsumers = renderer
                 .getEventHandlers();
@@ -1217,5 +1198,9 @@ public class Grid<T> extends AbstractListing<T>
 
         renderedComponents.put(key,
                 new RendereredComponent<>(component, componentRenderer));
+    }
+
+    private GridDataGenerator<T> getDataGenerator() {
+        return gridDataGenerator;
     }
 }

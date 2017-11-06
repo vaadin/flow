@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.data.provider.DataGenerator;
 import com.vaadin.data.provider.Query;
 import com.vaadin.data.selection.MultiSelect;
 import com.vaadin.data.selection.MultiSelectionEvent;
@@ -30,6 +31,9 @@ import com.vaadin.data.selection.SelectionEvent;
 import com.vaadin.data.selection.SelectionListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.grid.Grid.AbstractGridExtension;
+
+import elemental.json.JsonObject;
 
 /**
  * Abstract implementation of a GridMultiSelectionModel.
@@ -40,12 +44,11 @@ import com.vaadin.ui.event.ComponentEventListener;
  *            the grid type
  */
 public abstract class AbstractGridMultiSelectionModel<T>
-        implements GridMultiSelectionModel<T> {
-
+        extends AbstractGridExtension<T>
+        implements GridMultiSelectionModel<T>, DataGenerator<T> {
 
     private final Set<T> selected;
     private final GridSelectionColumn selectionColumn;
-    private final Grid<T> grid;
     private SelectAllCheckboxVisibility selectAllCheckBoxVisibility;
     
     /**
@@ -56,7 +59,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
      *            created
      */
     public AbstractGridMultiSelectionModel(Grid<T> grid) {
-        this.grid = grid;
+        super(grid);
         selected = new LinkedHashSet<>();
         selectionColumn = new GridSelectionColumn(this::clientSelectAll,
                 this::clientDeselectAll);
@@ -69,10 +72,11 @@ public abstract class AbstractGridMultiSelectionModel<T>
     }
 
     @Override
-    public void remove() {
+    protected void remove() {
+        super.remove();
         deselectAll();
         if (selectionColumn.getElement().getNode().isAttached()) {
-            grid.getElement().removeChild(selectionColumn.getElement());
+            getGrid().getElement().removeChild(selectionColumn.getElement());
         }
     }
 
@@ -108,7 +112,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
             return;
         }
         doSelect(item, false);
-        grid.getDataCommunicator().reset();
+        getGrid().getDataCommunicator().reset();
     }
 
     @Override
@@ -117,14 +121,14 @@ public abstract class AbstractGridMultiSelectionModel<T>
             return;
         }
         doDeselect(item, false);
-        grid.getDataCommunicator().reset();
+        getGrid().getDataCommunicator().reset();
         selectionColumn.setSelectAllCheckboxState(false);
     }
 
     @Override
     public void selectAll() {
         updateSelection(
-                grid.getDataCommunicator().getDataProvider()
+                getGrid().getDataCommunicator().getDataProvider()
                         .fetch(new Query<>())
                         .collect(Collectors.toSet()),
                 Collections.emptySet());
@@ -179,14 +183,14 @@ public abstract class AbstractGridMultiSelectionModel<T>
                     ValueChangeListener<Grid<T>, Set<T>> listener) {
                 Objects.requireNonNull(listener,
                         "listener cannot be null");
-                return grid.addListener(
+                return getGrid().addListener(
                         MultiSelectionEvent.class,
                         (ComponentEventListener) listener);
             }
 
             @Override
             public Grid<T> get() {
-                return grid;
+                return getGrid();
             }
 
             @Override
@@ -202,7 +206,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
             SelectionListener<T> listener) {
         Objects.requireNonNull(listener,
                 "listener cannot be null");
-        return grid.addListener(MultiSelectionEvent.class,
+        return getGrid().addListener(MultiSelectionEvent.class,
                 (ComponentEventListener) (event -> listener
                         .selectionChange(
                                 (SelectionEvent) event)));
@@ -214,7 +218,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
             MultiSelectionListener<Grid<T>, T> listener) {
         Objects.requireNonNull(listener,
                 "listener cannot be null");
-        return grid.addListener(MultiSelectionEvent.class,
+        return getGrid().addListener(MultiSelectionEvent.class,
                 (ComponentEventListener) (event -> listener
                         .selectionChange(
                                 (MultiSelectionEvent) event)));
@@ -237,7 +241,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
     public boolean isSelectAllCheckboxVisible() {
         switch (selectAllCheckBoxVisibility) {
         case DEFAULT:
-            return grid.getDataCommunicator().getDataProvider()
+            return getGrid().getDataCommunicator().getDataProvider()
                     .isInMemory();
         case HIDDEN:
             return false;
@@ -250,6 +254,23 @@ public abstract class AbstractGridMultiSelectionModel<T>
         }
     }
 
+    @Override
+    public void generateData(T item, JsonObject jsonObject) {
+        if (isSelected(item)) {
+            jsonObject.put("selected", true);
+        }
+    }
+
+    @Override
+    public void destroyData(T item) {
+        deselect(item);
+    }
+
+    @Override
+    public void destroyAllData() {
+        deselectAll();
+    }
+
     /**
      * Method for handling the firing of selection events.
      * 
@@ -260,7 +281,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
 
     private void clientSelectAll() {
         doUpdateSelection(
-                grid.getDataCommunicator().getDataProvider()
+                getGrid().getDataCommunicator().getDataProvider()
                         .fetch(new Query<>()).collect(Collectors.toSet()),
                 Collections.emptySet(), true);
         selectionColumn.setSelectAllCheckboxState(true);
@@ -276,7 +297,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
         boolean added = selected.add(item);
         if (added) {
             fireSelectionEvent(new MultiSelectionEvent<Grid<T>, T>(
-                    grid, grid.asMultiSelect(), oldSelection,
+                    getGrid(), getGrid().asMultiSelect(), oldSelection,
                     userOriginated));
         }
     }
@@ -286,7 +307,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
         boolean removed = selected.remove(item);
         if (removed) {
             fireSelectionEvent(new MultiSelectionEvent<Grid<T>, T>(
-                    grid, grid.asMultiSelect(), oldSelection,
+                    getGrid(), getGrid().asMultiSelect(), oldSelection,
                     userOriginated));
         }
     }
@@ -301,9 +322,9 @@ public abstract class AbstractGridMultiSelectionModel<T>
         Set<T> oldSelection = new LinkedHashSet<>(selected);
         selected.removeAll(removedItems);
         selected.addAll(addedItems);
-        grid.getDataCommunicator().reset();
-        fireSelectionEvent(new MultiSelectionEvent<Grid<T>, T>(grid,
-                grid.asMultiSelect(), oldSelection, userOriginated));
+        getGrid().getDataCommunicator().reset();
+        fireSelectionEvent(new MultiSelectionEvent<Grid<T>, T>(getGrid(),
+                getGrid().asMultiSelect(), oldSelection, userOriginated));
         if (!removedItems.isEmpty()) {
             selectionColumn.setSelectAllCheckboxState(false);
         }
