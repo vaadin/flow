@@ -1,6 +1,6 @@
 package com.vaadin.flow.model;
 
-import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModel;
 
 public interface BeanModel extends TemplateModel {
     boolean isBooleanValue();

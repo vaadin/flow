@@ -30,7 +30,6 @@ import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
-import com.vaadin.client.flow.template.TemplateRegistry;
 
 /**
  * A registry of singleton instances, such as {@link ServerRpcQueue}, which can
@@ -252,15 +251,6 @@ public class Registry {
      */
     public ServerConnector getServerConnector() {
         return get(ServerConnector.class);
-    }
-
-    /**
-     * Gets the {@link TemplateRegistry} singleton.
-     *
-     * @return the {@link TemplateRegistry} singleton
-     */
-    public TemplateRegistry getTemplateRegistry() {
-        return get(TemplateRegistry.class);
     }
 
     /**

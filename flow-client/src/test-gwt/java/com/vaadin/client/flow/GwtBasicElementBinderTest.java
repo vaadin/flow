@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Locale;
 
 import com.vaadin.client.ExistingElementMap;
-import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -28,8 +27,6 @@ import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.client.flow.template.TemplateRegistry;
-import com.vaadin.client.flow.template.TestElementTemplateNode;
 import com.vaadin.flow.nodefeature.NodeFeatures;
 import com.vaadin.flow.nodefeature.NodeProperties;
 
@@ -672,44 +669,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
         assertEquals("color: red;", element.getAttribute("style"));
-    }
-
-    public void testAddTemplateChild() {
-        final int templateId = 43;
-        TestElementTemplateNode templateNode = TestElementTemplateNode
-                .create("child");
-
-        TemplateRegistry templates = new TemplateRegistry();
-
-        templates.register(templateId, templateNode);
-
-        Registry registry = new Registry() {
-            {
-                set(TemplateRegistry.class, templates);
-                set(ExistingElementMap.class, new ExistingElementMap());
-            }
-        };
-
-        StateTree stateTree = new StateTree(registry);
-
-        StateNode templateStateNode = new StateNode(345, stateTree);
-        templateStateNode.getMap(NodeFeatures.TEMPLATE)
-                .getProperty(NodeProperties.ROOT_TEMPLATE_ID)
-                .setValue(Double.valueOf(templateId));
-
-        StateNode parentElementNode = new StateNode(94, stateTree);
-        parentElementNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.TAG).setValue("div");
-        parentElementNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0,
-                templateStateNode);
-
-        Element element = Browser.getDocument().createElement("div");
-        Binder.bind(parentElementNode, element);
-
-        Reactive.flush();
-
-        assertEquals(1, element.getChildElementCount());
-        assertEquals("CHILD", element.getFirstElementChild().getTagName());
     }
 
     public void testAttachExistingElement() {

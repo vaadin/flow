@@ -19,11 +19,12 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.util.JsonUtils;
@@ -65,12 +66,13 @@ public class ListModelType<T> implements ComplexModelType<T> {
     @Override
     public List<T> modelToApplication(Serializable modelValue) {
         if (modelValue instanceof StateNode) {
-            return new TemplateModelListProxy<>((StateNode) modelValue, itemType);
+            return new TemplateModelListProxy<>((StateNode) modelValue,
+                    itemType);
         } else {
             throw new IllegalArgumentException(String.format(
                     "The stored model value '%s' type '%s' "
                             + "cannot be used as a type for a model list property",
-                            modelValue, modelValue.getClass()));
+                    modelValue, modelValue.getClass()));
         }
     }
 
@@ -81,8 +83,8 @@ public class ListModelType<T> implements ComplexModelType<T> {
             return null;
         }
 
-        StateNode node = TemplateElementStateProvider
-                .createSubModelNode(ModelList.class);
+        StateNode node = new StateNode(
+                Collections.singletonList(ModelList.class));
 
         @SuppressWarnings("unchecked")
         List<T> list = (List<T>) applicationValue;
@@ -95,7 +97,7 @@ public class ListModelType<T> implements ComplexModelType<T> {
     @Override
     public <C> ComplexModelType<C> cast(Class<C> proxyType) {
         if (getItemType() instanceof ListModelType<?>
-        && GenericTypeReflector.erase(proxyType).equals(List.class)) {
+                && GenericTypeReflector.erase(proxyType).equals(List.class)) {
             return (ComplexModelType<C>) this;
         }
         throw new IllegalArgumentException(

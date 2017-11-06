@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +36,6 @@ import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.router.ContinueNavigationAction;
 import com.vaadin.router.Location;
 import com.vaadin.router.RouterLayout;
@@ -138,8 +136,6 @@ public class UIInternals implements Serializable {
     private Location viewLocation = new Location("");
     private ArrayList<View> viewChain = new ArrayList<>();
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
-
-    private final Set<Integer> sentTemplateIds = new HashSet<>();
 
     private Location lastHandledNavigation = null;
 
@@ -677,38 +673,6 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Checks whether the given template node has already been sent to the
-     * client.
-     *
-     * @see #setTemplateSent(TemplateNode)
-     * @param node
-     *            the node to check, not <code>null</code>
-     * @return <code>true</code> if the template node has already been sent to
-     *         the client, <code>false</code> if the client does not know about
-     *         the template node
-     */
-    public boolean isTemplateSent(TemplateNode node) {
-        assert node != null;
-
-        return sentTemplateIds.contains(node.getId());
-    }
-
-    /**
-     * Marks the given template node as being sent to the client.
-     *
-     * @see #isTemplateSent(TemplateNode)
-     *
-     * @param node
-     *            the template node to set as sent, not <code>null</code>
-     */
-    public void setTemplateSent(TemplateNode node) {
-        assert node != null;
-        assert !isTemplateSent(node);
-
-        sentTemplateIds.add(node.getId());
-    }
-
-    /**
      * Returns the helper which handles loading of dependencies (css, js).
      *
      * @return the dependency list helper
@@ -789,7 +753,8 @@ public class UIInternals implements Serializable {
      * @param continueNavigationAction
      *            continue navigatio action to store or null
      */
-    public void setContinueNavigationAction(ContinueNavigationAction continueNavigationAction) {
+    public void setContinueNavigationAction(
+            ContinueNavigationAction continueNavigationAction) {
         this.continueNavigationAction = continueNavigationAction;
     }
 }

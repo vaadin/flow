@@ -16,10 +16,10 @@
 package com.vaadin.flow.nodefeature;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 
 /**
  * Map for model values used in data binding in templates.
@@ -135,8 +135,7 @@ public class ModelMap extends NodeMap {
     private ModelMap getOrCreateModelMap(String key) {
         Serializable value = getValue(key);
         if (value == null) {
-            value = TemplateElementStateProvider
-                    .createSubModelNode(ModelMap.class);
+            value = new StateNode(Collections.singletonList(ModelMap.class));
             setValue(key, value);
         }
 
@@ -158,8 +157,7 @@ public class ModelMap extends NodeMap {
     private ModelList getOrCreateModelList(String key) {
         Serializable value = getValue(key);
         if (value == null) {
-            value = TemplateElementStateProvider
-                    .createSubModelNode(ModelList.class);
+            value = new StateNode(Collections.singletonList(ModelList.class));
             setValue(key, value);
         }
 

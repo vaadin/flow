@@ -36,16 +36,6 @@ public class VirtualChildrenList extends StateNodeNodeList {
         super(node);
     }
 
-    @Override
-    public void add(int index, StateNode node) {
-        assert node != null;
-        assert !node.hasFeature(ParentGeneratorHolder.class)
-                || !node.getFeature(ParentGeneratorHolder.class)
-                        .getParentGenerator().isPresent();
-
-        super.add(index, node);
-    }
-
     /**
      * Appends an item as last in the list.
      * 
@@ -54,6 +44,13 @@ public class VirtualChildrenList extends StateNodeNodeList {
      */
     public void append(StateNode node) {
         add(size(), node);
+    }
+
+    @Override
+    public void add(int index, StateNode node) {
+        assert node != null;
+
+        super.add(index, node);
     }
 
     @Override

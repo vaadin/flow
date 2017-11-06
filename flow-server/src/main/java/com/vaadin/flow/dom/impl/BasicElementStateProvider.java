@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -43,13 +42,11 @@ import com.vaadin.flow.nodefeature.ElementListenerMap;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.nodefeature.NodeFeature;
-import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
 import com.vaadin.flow.nodefeature.PolymerEventListenerMap;
 import com.vaadin.flow.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.flow.template.angular.AbstractControlTemplateNode;
 import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeListener;
@@ -77,9 +74,9 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             ElementListenerMap.class, ElementClassList.class,
             ElementStylePropertyMap.class, SynchronizedPropertiesList.class,
             SynchronizedPropertyEventsList.class, ComponentMapping.class,
-            ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
-            ClientDelegateHandlers.class, PolymerEventListenerMap.class,
-            ShadowRootData.class, AttachExistingElementFeature.class,
+            PolymerServerEventHandlers.class, ClientDelegateHandlers.class,
+            PolymerEventListenerMap.class, ShadowRootData.class,
+            AttachExistingElementFeature.class,
             AttachTemplateChildFeature.class };
 
     private BasicElementStateProvider() {
@@ -196,25 +193,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
         return getAttributeFeature(node).attributes();
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    public Node getParent(StateNode node) {
-        StateNode parentNode = node.getParent();
-        if (parentNode == null) {
-            return null;
-        }
-
-        // Parent finding for all different state providers eventually delegate
-        // here, so we can do shared magic here
-        Optional<AbstractControlTemplateNode> parentGenerator = node
-                .getFeature(ParentGeneratorHolder.class).getParentGenerator();
-        if (parentGenerator.isPresent()) {
-            return parentGenerator.get().getParentElement(node);
-        }
-
-        return super.getParent(node);
     }
 
     @Override

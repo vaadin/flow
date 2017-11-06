@@ -15,36 +15,7 @@
  */
 package com.vaadin.flow.nodefeature;
 
-import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
-import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
-import com.vaadin.flow.nodefeature.BasicTypeValue;
-import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
-import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.flow.nodefeature.ElementAttributeMap;
-import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.ElementClassList;
-import com.vaadin.flow.nodefeature.ElementData;
-import com.vaadin.flow.nodefeature.ElementListenerMap;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.nodefeature.OverrideElementData;
-import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
-import com.vaadin.flow.nodefeature.PollConfigurationMap;
-import com.vaadin.flow.nodefeature.PolymerEventListenerMap;
-import com.vaadin.flow.nodefeature.PolymerServerEventHandlers;
-import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
-import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.nodefeature.ShadowRootData;
-import com.vaadin.flow.nodefeature.ShadowRootHost;
-import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
-import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.nodefeature.TemplateOverridesMap;
-import com.vaadin.flow.nodefeature.TextNodeMap;
-import com.vaadin.flow.nodefeature.VirtualChildrenList;
 
 /**
  * Registry of node feature id numbers and map keys shared between server and
@@ -122,74 +93,58 @@ public final class NodeFeatures {
      */
     public static final int COMPONENT_MAPPING = 15;
     /**
-     * Id for {@link TemplateMap}.
-     */
-    public static final int TEMPLATE = 16;
-    /**
      * Id for {@link ModelMap}.
      */
-    public static final int TEMPLATE_MODELMAP = 17;
-    /**
-     * Id for {@link TemplateOverridesMap}.
-     */
-    public static final int TEMPLATE_OVERRIDES = 18;
-    /**
-     * Id for {@link OverrideElementData}.
-     */
-    public static final int OVERRIDE_DATA = 19;
-    /**
-     * Id for {@link ParentGeneratorHolder}.
-     */
-    public static final int PARENT_GENERATOR = 20;
+    public static final int TEMPLATE_MODELMAP = 16;
     /**
      * Id for {@link ModelList}.
      */
-    public static final int TEMPLATE_MODELLIST = 21;
+    public static final int TEMPLATE_MODELLIST = 17;
 
     /**
      * Id for {@link PolymerServerEventHandlers}.
      */
-    public static final int POLYMER_SERVER_EVENT_HANDLERS = 22;
+    public static final int POLYMER_SERVER_EVENT_HANDLERS = 18;
 
     /**
      * Id for {@link PolymerEventListenerMap}.
      */
-    public static final int POLYMER_EVENT_LISTENERS = 23;
+    public static final int POLYMER_EVENT_LISTENERS = 19;
 
     /**
      * Id for {@link ClientDelegateHandlers}.
      */
-    public static final int CLIENT_DELEGATE_HANDLERS = 24;
+    public static final int CLIENT_DELEGATE_HANDLERS = 20;
 
     /**
      * Id for {@link ShadowRootData}.
      */
-    public static final int SHADOW_ROOT_DATA = 25;
+    public static final int SHADOW_ROOT_DATA = 21;
 
     /**
      * Id for {@link ShadowRootHost}.
      */
-    public static final int SHADOW_ROOT_HOST = 26;
+    public static final int SHADOW_ROOT_HOST = 22;
 
     /**
      * Id for {@link AttachExistingElementFeature}.
      */
-    public static final int ATTACH_EXISTING_ELEMENT = 27;
+    public static final int ATTACH_EXISTING_ELEMENT = 23;
 
     /**
      * Id for {@link AttachTemplateChildFeature}.
      */
-    public static final int ATTACH_TEMPLATE_CHILD_ELEMENT = 28;
+    public static final int ATTACH_TEMPLATE_CHILD_ELEMENT = 24;
 
     /**
      * Id for {@link VirtualChildrenList}.
      */
-    public static final int VIRTUAL_CHILD_ELEMENTS = 29;
+    public static final int VIRTUAL_CHILD_ELEMENTS = 25;
 
     /**
      * Id for {@link BasicTypeValue}.
      */
-    public static final int BASIC_TYPE_VALUE = 30;
+    public static final int BASIC_TYPE_VALUE = 26;
 
     private NodeFeatures() {
         // Only static

@@ -18,14 +18,7 @@ package com.vaadin.flow.dom;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.TemplateElementStateProviderTest.NullTemplateResolver;
-import com.vaadin.flow.dom.impl.TemplateTextElementStateProvider;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.nodefeature.TextNodeMap;
-import com.vaadin.flow.template.angular.TextTemplateNode;
-import com.vaadin.flow.template.angular.parser.TemplateParser;
 
 public class TextElementStateProviderTest {
     private Element element = Element.createText("foo");
@@ -124,16 +117,5 @@ public class TextElementStateProviderTest {
         element.removeFromParent();
         Assert.assertNull(element.getParent());
         Assert.assertEquals(0, parent.getChildCount());
-    }
-
-    @Test
-    public void testSupports() {
-        TemplateTextElementStateProvider provider = new TemplateTextElementStateProvider(
-                (TextTemplateNode) TemplateParser.parse("<div>{{value}}</div>",
-                        new NullTemplateResolver()).getChild(0));
-
-        Assert.assertTrue(provider.supports(new StateNode(ModelMap.class)));
-        Assert.assertFalse(provider.supports(new StateNode(TemplateMap.class)));
-        Assert.assertFalse(provider.supports(new StateNode()));
     }
 }

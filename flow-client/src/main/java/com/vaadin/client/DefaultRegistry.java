@@ -29,7 +29,6 @@ import com.vaadin.client.communication.XhrConnection;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateTree;
-import com.vaadin.client.flow.template.TemplateRegistry;
 
 /**
  * A registry implementation used by {@link ApplicationConnection}.
@@ -71,7 +70,6 @@ public class DefaultRegistry extends Registry {
         set(ServerConnector.class, new ServerConnector(this));
         set(ExecuteJavaScriptProcessor.class,
                 new ExecuteJavaScriptProcessor(this));
-        set(TemplateRegistry.class, new TemplateRegistry());
         set(ConstantPool.class, new ConstantPool());
         set(ExistingElementMap.class, new ExistingElementMap());
         set(InitialPropertiesHandler.class, new InitialPropertiesHandler(this));

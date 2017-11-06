@@ -34,11 +34,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.nodefeature.ElementData;
-import com.vaadin.flow.nodefeature.OverrideElementData;
-import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.nodefeature.TextNodeMap;
-import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
-import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;
 import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.server.StreamResource;
@@ -141,19 +137,6 @@ public class Element extends Node<Element> {
             return get(node, BasicTextElementStateProvider.get());
         } else if (node.hasFeature(ElementData.class)) {
             return get(node, BasicElementStateProvider.get());
-        } else if (node.hasFeature(TemplateMap.class)) {
-            TemplateNode rootTemplate = node.getFeature(TemplateMap.class)
-                    .getRootTemplate();
-            assert rootTemplate instanceof AbstractElementTemplateNode;
-            return rootTemplate.getElement(0, node);
-        } else if (node.hasFeature(OverrideElementData.class)) {
-            // provided node is an override: get real state node + template node
-            StateNode templateStateNode = node.getParent();
-            TemplateNode templateNode = node
-                    .getFeature(OverrideElementData.class).getTemplateNode();
-
-            assert templateNode instanceof AbstractElementTemplateNode;
-            return templateNode.getElement(0, templateStateNode);
         } else {
             throw new IllegalArgumentException(
                     "Node is not valid as an element");

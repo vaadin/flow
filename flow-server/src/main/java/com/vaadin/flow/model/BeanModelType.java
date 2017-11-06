@@ -48,6 +48,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     private final Class<T> proxyType;
 
     private transient ReflectionCache<Object, Map<String, Method>> beanPropertyCache;
+    private transient PropertyFilter propertyFilter = PropertyFilter.ACCEPT_ALL;
 
     /**
      * Creates a new bean model type from the given class and properties.
@@ -382,6 +383,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
          * Can't use Collectors.toMap() since it disallows null values.
          */
         Map<String, Object> values = new HashMap<>();
+        this.propertyFilter = propertyFilter;
 
         beanPropertyCache.get(beanClass).forEach((propertyName, getter) -> {
             if (!propertyFilter.test(propertyName)) {
@@ -510,7 +512,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         Map<String, Method> getters = new HashMap<>();
         ReflectTools.getGetterMethods(beanType).forEach(getter -> {
             String propertyName = ReflectTools.getPropertyName(getter);
-            if (!properties.containsKey(propertyName)) {
+            if (!properties.containsKey(propertyName) || !propertyFilter.test(propertyName)) {
                 return;
             }
 

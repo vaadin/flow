@@ -145,8 +145,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     @Override
     public boolean isApplicable(StateNode node) {
-        if (node.hasFeature(NodeFeatures.ELEMENT_DATA)
-                || node.hasFeature(NodeFeatures.OVERRIDE_DATA)) {
+        if (node.hasFeature(NodeFeatures.ELEMENT_DATA)) {
             return true;
         }
         return node.getTree() != null

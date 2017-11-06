@@ -16,6 +16,7 @@
 
 package com.vaadin.server.communication;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,25 +35,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateTree;
-import com.vaadin.flow.change.MapPutChange;
 import com.vaadin.flow.change.NodeAttachChange;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.nodefeature.NodeProperties;
-import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.server.DependencyFilter;
 import com.vaadin.server.DependencyFilter.FilterContext;
@@ -66,10 +60,10 @@ import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
+import com.vaadin.ui.common.DependencyList;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -132,9 +126,8 @@ public class UidlWriter implements Serializable {
         }
 
         JsonArray stateChanges = Json.createArray();
-        JsonObject templates = Json.createObject();
 
-        encodeChanges(ui, stateChanges, templates);
+        encodeChanges(ui, stateChanges);
 
         populateDependencies(response, session,
                 uiInternals.getDependencyList());
@@ -145,9 +138,6 @@ public class UidlWriter implements Serializable {
         }
         if (stateChanges.length() != 0) {
             response.put("changes", stateChanges);
-        }
-        if (templates.keys().length > 0) {
-            response.put("templates", templates);
         }
 
         List<JavaScriptInvocation> executeJavaScriptList = uiInternals
@@ -239,12 +229,12 @@ public class UidlWriter implements Serializable {
                 .getResourceAsStream(resolvedPath);
 
         if (stream == null) {
-            getLogger().warning(
-                    () -> String.format("The path '%s' for inline resource "
+            getLogger().warning(() -> String.format(
+                    "The path '%s' for inline resource "
                             + "has been resolved to '%s'. "
                             + "But resource is not available via the servlet context. "
-                            + "Trying to load '%s' as a URL", url, resolvedPath,
-                            url));
+                            + "Trying to load '%s' as a URL",
+                    url, resolvedPath, url));
             try {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (MalformedURLException exception) {
@@ -257,10 +247,10 @@ public class UidlWriter implements Serializable {
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else {
-            getLogger().config(
-                    () -> String.format("The path '%s' for inline resource "
+            getLogger().config(() -> String.format(
+                    "The path '%s' for inline resource "
                             + "has been sucessfully resolved to resource URL '%s'",
-                            url, resolvedPath));
+                    url, resolvedPath));
         }
         return stream;
     }
@@ -296,34 +286,16 @@ public class UidlWriter implements Serializable {
      *            the UI
      * @param stateChanges
      *            a JSON array to put state changes into
-     * @param templates
-     *            a JSON object to put new template nodes into
      * @see StateTree#runExecutionsBeforeClientResponse()
      */
-    private void encodeChanges(UI ui, JsonArray stateChanges,
-            JsonObject templates) {
+    private void encodeChanges(UI ui, JsonArray stateChanges) {
         UIInternals uiInternals = ui.getInternals();
         StateTree stateTree = uiInternals.getStateTree();
 
         stateTree.runExecutionsBeforeClientResponse();
 
-        Consumer<TemplateNode> templateEncoder = new Consumer<TemplateNode>() {
-            @Override
-            public void accept(TemplateNode templateNode) {
-                // Send to client if it's a new template
-                if (!uiInternals.isTemplateSent(templateNode)) {
-                    uiInternals.setTemplateSent(templateNode);
-                    templates.put(Integer.toString(templateNode.getId()),
-                            templateNode.toJson(this));
-                }
-            }
-        };
-
         Set<Class<? extends Component>> componentsWithDependencies = new LinkedHashSet<>();
         stateTree.collectChanges(change -> {
-            // Ensure new templates are sent to the client
-            runIfNewTemplateChange(change, templateEncoder);
-
             if (attachesComponent(change)) {
                 change.getNode().getFeature(ComponentMapping.class)
                         .getComponent()
@@ -356,7 +328,8 @@ public class UidlWriter implements Serializable {
 
     private List<Class<? extends HasChildView>> getParentViews(UI ui,
             Component component) {
-        if (!ui.getRouterInterface().isPresent() || !(component instanceof View)) {
+        if (!ui.getRouterInterface().isPresent()
+                || !(component instanceof View)) {
             return Collections.emptyList();
         }
         List<Class<? extends HasChildView>> parentViewsAscending = ui
@@ -369,20 +342,6 @@ public class UidlWriter implements Serializable {
             Collections.reverse(parentViewsAscending);
         }
         return parentViewsAscending;
-    }
-
-    private static void runIfNewTemplateChange(NodeChange change,
-            Consumer<TemplateNode> consumer) {
-        if (change instanceof MapPutChange) {
-            MapPutChange put = (MapPutChange) change;
-            if (put.getFeature() == TemplateMap.class
-                    && put.getKey().equals(NodeProperties.ROOT_TEMPLATE_ID)) {
-                Integer id = (Integer) put.getValue();
-                TemplateNode templateNode = TemplateNode.get(id.intValue());
-
-                consumer.accept(templateNode);
-            }
-        }
     }
 
     /**

@@ -39,7 +39,6 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.client.flow.template.TemplateRegistry;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.ui.LoadMode;
@@ -361,12 +360,6 @@ public class MessageHandler {
             double processUidlStart = Duration.currentTimeMillis();
 
             JsonObject json = valueMap.cast();
-
-            if (json.hasKey("templates")) {
-                TemplateRegistry templates = registry.getTemplateRegistry();
-                JsonObject templatesJson = json.getObject("templates");
-                templates.importFromJson(templatesJson);
-            }
 
             if (json.hasKey("constants")) {
                 ConstantPool constantPool = registry.getConstantPool();

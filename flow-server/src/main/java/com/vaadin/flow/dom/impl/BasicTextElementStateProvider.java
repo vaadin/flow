@@ -20,7 +20,6 @@ import java.util.Collections;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
 import com.vaadin.flow.nodefeature.TextNodeMap;
 
 /**
@@ -49,7 +48,7 @@ public class BasicTextElementStateProvider
 
         StateNode node = new StateNode(
                 Collections.singletonList(TextNodeMap.class),
-                ComponentMapping.class, ParentGeneratorHolder.class);
+                ComponentMapping.class);
         node.getFeature(TextNodeMap.class).setText(text);
 
         return node;

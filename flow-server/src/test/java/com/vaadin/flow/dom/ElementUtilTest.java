@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.dom;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Node;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.ui.Component;
 
 public class ElementUtilTest {
@@ -85,20 +82,6 @@ public class ElementUtilTest {
         Component c2 = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
         ElementUtil.setComponent(e, c2);
-    }
-
-    @Test
-    public void includesScriptTags() {
-        InlineTemplate template = new InlineTemplate(
-                "<div><script>window.alert('shazbot');</script></div>");
-        Node jsoupNode = ElementUtil.toJsoup(new Document(""),
-                template.getElement());
-
-        Assert.assertEquals(1, jsoupNode.childNodeSize());
-
-        Node child = jsoupNode.childNode(0);
-        Assert.assertEquals("<script>window.alert('shazbot');</script>",
-                child.outerHtml());
     }
 
 }

@@ -22,10 +22,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.TemplateElementStateProviderTest;
-import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.UI;
 
@@ -37,34 +34,6 @@ import elemental.json.JsonObject;
  *
  */
 public class EventRpcHandlerTest {
-
-    @Test
-    public void templateRootElementEventListener() throws Exception {
-        UI ui = new UI();
-        AngularTemplate t = new InlineTemplate("<root><child></child></root>");
-        Element element = t.getElement();
-        ui.add(t);
-        AtomicInteger invoked = new AtomicInteger(0);
-        element.addEventListener("test-event", e -> {
-            invoked.incrementAndGet();
-        });
-        sendElementEvent(element, ui, "test-event", null);
-        Assert.assertEquals(1, invoked.get());
-    }
-
-    @Test
-    public void templateChildElementEventListener() throws Exception {
-        UI ui = new UI();
-        AngularTemplate t = new InlineTemplate("<root><child></child></root>");
-        Element element = t.getElement().getChild(0);
-        ui.add(t);
-        AtomicInteger invoked = new AtomicInteger(0);
-        element.addEventListener("test-event", e -> {
-            invoked.incrementAndGet();
-        });
-        sendElementEvent(element, ui, "test-event", null);
-        Assert.assertEquals(1, invoked.get());
-    }
 
     @Test
     public void testElementEventNoData() throws Exception {
@@ -97,8 +66,7 @@ public class EventRpcHandlerTest {
     }
 
     public static StateNode getInvocationNode(Element element) {
-        return TemplateElementStateProviderTest.getOverrideNode(element)
-                .orElse(element.getNode());
+        return element.getNode();
     }
 
     private static JsonObject createElementEventInvocation(Element element,
