@@ -82,7 +82,7 @@ window.gridConnector = {
                 lastRequestedRange = [first, last];
                 var count = 1 + last - first;
                 // setTimeout to avoid race condition in ServerRpcQueue
-                setTimeout(() => grid.$server.setRequestedRange(first * grid.pageSize, count * grid.pageSize), 0);
+                grid.$server.setRequestedRange(first * grid.pageSize, count * grid.pageSize);
             }
         }
 
@@ -90,10 +90,7 @@ window.gridConnector = {
             var items = cache[page];
             // Force update unless there's a callback waiting
             if (!pageCallbacks[page]) {
-                if (items) {
-                    // Replace existing cache page
-                    grid._cache[page] = items;
-                } else {
+                if (!items) {
                     delete grid._cache[page];
                     // Fake page to pass to _updateItems
                     items = new Array(grid.pageSize);

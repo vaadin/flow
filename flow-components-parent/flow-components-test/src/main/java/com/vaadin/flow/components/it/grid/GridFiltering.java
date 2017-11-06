@@ -29,8 +29,6 @@ public class GridFiltering extends TestView {
         ConfigurableFilterDataProvider<String, Void, String> filteredDataProvider = dataProvider
                 .withConfigurableFilter();
 
-        filteredDataProvider.setFilter("");
-
         grid.setDataProvider(filteredDataProvider);
 
         grid.addColumn("Data", item -> item);
