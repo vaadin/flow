@@ -81,7 +81,6 @@ window.gridConnector = {
             if (lastRequestedRange[0] != first || lastRequestedRange[1] != last) {
                 lastRequestedRange = [first, last];
                 var count = 1 + last - first;
-                // setTimeout to avoid race condition in ServerRpcQueue
                 grid.$server.setRequestedRange(first * grid.pageSize, count * grid.pageSize);
             }
         }
