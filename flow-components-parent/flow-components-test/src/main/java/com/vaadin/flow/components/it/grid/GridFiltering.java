@@ -21,6 +21,7 @@ public class GridFiltering extends TestView {
 
     public GridFiltering() {
         Grid<String> grid = new Grid<>();
+        grid.setId("data-grid");
 
         DataProvider<String, String> dataProvider = new CallbackDataProvider<>(
                 query -> findAnyMatching(query.getFilter()).stream(),
@@ -34,6 +35,7 @@ public class GridFiltering extends TestView {
         grid.addColumn("Data", item -> item);
 
         TextField field = new TextField();
+        field.setId("filter");
         field.addValueChangeListener(
                 event -> filteredDataProvider.setFilter(field.getValue()));
 
