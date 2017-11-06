@@ -81,6 +81,11 @@
                 <artifactId>vaadin-progress-bar</artifactId>
                 <version>1.0.0-alpha6</version>
             </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>vaadin-tabs</artifactId>
+                <version>1.0.0-beta1</version>
+            </dependency>
 
             <!-- WebJars' transitive dependencies resolutions -->
             <dependency>
