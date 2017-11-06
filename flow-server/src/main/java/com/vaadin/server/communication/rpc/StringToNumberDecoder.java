@@ -51,15 +51,15 @@ public class StringToNumberDecoder implements RpcDecoder {
             throws RpcDecodeException {
         String stringValue = value.asString();
         try {
-            Number number = NumberFormat.getInstance(Locale.ENGLISH)
-                    .parse(stringValue);
+            Number number = parseNumber(stringValue);
             Field requiredType = type.getField("TYPE");
             Class<?> primitiveRequiredType = (Class<?>) requiredType.get(null);
             Method method = Number.class
                     .getMethod(primitiveRequiredType + "Value");
             T result = type.cast(method.invoke(number));
-            if (number.equals(NumberFormat.getInstance(Locale.ENGLISH)
-                    .parse(result.toString()))) {
+            if (number.equals(parseNumber(result.toString()))) {
+                // check whether the number is the same after the projection
+                // (applying the "xxxValue" method)
                 return result;
             } else {
                 throw new RpcDecodeException(
@@ -74,6 +74,10 @@ public class StringToNumberDecoder implements RpcDecoder {
             // can't happen
             throw new RuntimeException(exception);
         }
+    }
+
+    private Number parseNumber(String value) throws ParseException {
+        return NumberFormat.getInstance(Locale.ENGLISH).parse(value);
     }
 
 }
