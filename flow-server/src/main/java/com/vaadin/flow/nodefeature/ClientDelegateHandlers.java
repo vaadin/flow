@@ -17,11 +17,10 @@ package com.vaadin.flow.nodefeature;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.stream.Stream;
 
-import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.flow.StateNode;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.common.ClientDelegate;
 
 /**
  * Methods which are published as <code>element.$server.&lt;name&gt;</code> on
@@ -49,11 +48,8 @@ public class ClientDelegateHandlers extends AbstractServerHandlers<Component> {
 
     @Override
     protected void ensureSupportedParameterTypes(Method method) {
-        if (method.getParameterCount() == 0) {
-            return;
-        }
-        Stream.of(method.getParameterTypes())
-                .forEach(type -> ensureSupportedParameterType(method, type));
+        // decoder may be able to convert any value to any type so no need to
+        // limit supported types
     }
 
 }
