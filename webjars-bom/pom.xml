@@ -69,12 +69,22 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-valo-theme</artifactId>
-                <version>2.0.0-alpha3</version>
+                <version>2.0.0-alpha4</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-upload</artifactId>
                 <version>2.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>vaadin-progress-bar</artifactId>
+                <version>1.0.0-alpha6</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>vaadin-tabs</artifactId>
+                <version>1.0.0-beta1</version>
             </dependency>
 
             <!-- WebJars' transitive dependencies resolutions -->
