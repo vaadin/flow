@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.ui.grid;
 
 import java.util.Objects;
@@ -15,6 +30,14 @@ import com.vaadin.ui.grid.Grid.AbstractGridExtension;
 
 import elemental.json.JsonObject;
 
+/**
+ * Abstract implementation of a GridSingleSelectionModel.
+ * 
+ * @author Vaadin Ltd.
+ *
+ * @param <T>
+ *            the grid type
+ */
 public abstract class AbstractGridSingleSelectionModel<T>
         extends AbstractGridExtension<T>
         implements GridSingleSelectionModel<T>, DataGenerator<T> {
@@ -22,6 +45,13 @@ public abstract class AbstractGridSingleSelectionModel<T>
     private T selectedItem = null;
     private boolean deselectAllowed = true;
 
+    /**
+     * Constructor for passing a reference of the grid to this implementation.
+     * 
+     * @param grid
+     *            reference to the grid for which this selection model is
+     *            created
+     */
     public AbstractGridSingleSelectionModel(Grid<T> grid) {
         super(grid);
     }
