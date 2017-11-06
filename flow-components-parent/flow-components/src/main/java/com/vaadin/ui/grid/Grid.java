@@ -471,7 +471,7 @@ public class Grid<T> extends AbstractListing<T>
      * @param <T>
      *            the grid bean type
      */
-    public static abstract class AbstractGridExtension<T>
+    public abstract static class AbstractGridExtension<T>
             implements DataGenerator<T> {
 
         private Grid<T> grid;
@@ -995,12 +995,10 @@ public class Grid<T> extends AbstractListing<T>
     private void setupTemplateRenderer(TemplateRenderer<T> renderer,
             Element contentTemplate, Element templateDataHost) {
 
-        renderer.getValueProviders().forEach((key, provider) -> {
-            getDataGenerator().addDataGenerator((item, jsonObject) -> {
-                jsonObject.put(key,
-                        JsonSerializer.toJson(provider.apply(item)));
-            });
-        });
+        renderer.getValueProviders()
+                .forEach((key, provider) -> getDataGenerator().addDataGenerator(
+                        (item, jsonObject) -> jsonObject.put(key,
+                                JsonSerializer.toJson(provider.apply(item)))));
 
         Map<String, SerializableConsumer<T>> eventConsumers = renderer
                 .getEventHandlers();

@@ -42,7 +42,7 @@ public abstract class AbstractGridSingleSelectionModel<T>
         extends AbstractGridExtension<T>
         implements GridSingleSelectionModel<T>, DataGenerator<T> {
 
-    private T selectedItem = null;
+    private T selectedItem;
     private boolean deselectAllowed = true;
 
     /**
