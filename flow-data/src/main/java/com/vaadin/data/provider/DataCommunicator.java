@@ -37,6 +37,7 @@ import com.vaadin.function.SerializableConsumer;
 import com.vaadin.shared.Registration;
 import com.vaadin.util.Range;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -52,7 +53,7 @@ import elemental.json.JsonValue;
  *
  */
 public class DataCommunicator<T> {
-    private final BiFunction<String, T, JsonValue> dataGenerator;
+    private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
     private final SerializableConsumer<JsonArray> dataUpdater;
     private final StateNode stateNode;
@@ -103,7 +104,7 @@ public class DataCommunicator<T> {
      * @param stateNode
      *            the state node used to communicate for
      */
-    public DataCommunicator(BiFunction<String, T, JsonValue> dataGenerator,
+    public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater,
             StateNode stateNode) {
@@ -285,6 +286,7 @@ public class DataCommunicator<T> {
     }
 
     private void handleDetach() {
+        dataGenerator.destroyAllData();
         if (dataProviderUpdateRegistration != null) {
             dataProviderUpdateRegistration.remove();
             dataProviderUpdateRegistration = null;
@@ -504,6 +506,9 @@ public class DataCommunicator<T> {
     }
 
     private JsonValue generateJson(T item) {
-        return dataGenerator.apply(keyMapper.key(item), item);
+        JsonObject json = Json.createObject();
+        json.put("key", getKeyMapper().key(item));
+        dataGenerator.generateData(item, json);
+        return json;
     }
 }
