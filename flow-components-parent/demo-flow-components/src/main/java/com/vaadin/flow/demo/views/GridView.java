@@ -511,7 +511,8 @@ public class GridView extends DemoView {
         // begin-source-example
         // source-example-heading: Grid with a details row
         Grid<Person> grid = new Grid<>();
-        grid.setItems(createItems());
+        List<Person> people = createItems();
+        grid.setItems(people);
 
         grid.addColumn("Name", Person::getName);
         grid.addColumn("Age", Person::getAge);
@@ -527,9 +528,16 @@ public class GridView extends DemoView {
                     person.setName(person.getName() + " Updated");
                     grid.getDataCommunicator().refresh(person);
                 }));
+
+        Button toggleDetails = new Button("Toggle details open for second row");
+        toggleDetails.addClickListener(event -> {
+            grid.setDetailsVisible(people.get(1),
+                    !grid.isDetailsVisible(people.get(1)));
+        });
         // end-source-example
         grid.setId("grid-with-details-row");
-        addCard("Grid with a details row", grid);
+        toggleDetails.setId("toggle-details-button");
+        addCard("Grid with a details row", grid, toggleDetails);
     }
 
     private void createColumnGroup() {

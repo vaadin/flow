@@ -253,6 +253,21 @@ public class GridViewIT extends ComponentDemoTest {
     }
 
     @Test
+    public void gridDetailsRowServerAPI() {
+        WebElement grid = findElement(By.id("grid-with-details-row"));
+        scrollToElement(grid);
+
+        Assert.assertEquals(0,
+                grid.findElements(By.className("custom-details")).size());
+        clickElementWithJs(findElement(By.id("toggle-details-button")));
+        Assert.assertEquals(1,
+                grid.findElements(By.className("custom-details")).size());
+        Assert.assertTrue(grid.findElement(By.className("custom-details"))
+                .getAttribute("innerHTML")
+                .contains("Hi! My name is Person 2!"));
+    }
+
+    @Test
     public void groupedColumns() {
         WebElement grid = findElement(By.id("grid-column-grouping"));
         scrollToElement(grid);

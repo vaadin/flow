@@ -56,6 +56,7 @@ window.gridConnector = {
 
         grid.__activeItemChangedDetails = function(newVal, oldVal) {
             grid.detailsOpenedItems = [newVal];
+            grid.$server.setDetailsVisible(newVal ? newVal.key : null);
         }
         grid._createPropertyObserver('activeItem', '__activeItemChangedDetails', true);
 
@@ -85,6 +86,19 @@ window.gridConnector = {
             }
         }
 
+        var itemsUpdated = function(items) {
+            if (!items || !(items instanceof Array)) {
+                throw 'Attempted to call itemsUpdated with an invalid value';
+            }
+            var detailsOpenedItems = [];
+            for (var i = 0; i < items.length; ++i) {
+                if (items[i].detailsOpened) {
+                    detailsOpenedItems.push(items[i]);
+                }
+            }
+            grid.detailsOpenedItems = detailsOpenedItems;
+        }
+
         var updateGridCache = function(page) {
             var items = cache[page];
             // Force update unless there's a callback waiting
@@ -97,8 +111,8 @@ window.gridConnector = {
                 else if (grid._cache[page]){
                     grid._cache[page] = items;
                 }
-
                 grid._updateItems(page, items);
+                itemsUpdated(items);
             }
         }
 
