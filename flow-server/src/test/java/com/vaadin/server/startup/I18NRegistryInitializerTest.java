@@ -57,26 +57,26 @@ public class I18NRegistryInitializerTest {
 
     public static class LangProvider implements I18NProvider {
         @Override
-        public String getTranslation(String key, String... params) {
+        public String getTranslation(String key, Object... params) {
             return key;
         }
 
         @Override
         public String getTranslation(String key, Locale locale,
-                String... params) {
+                Object... params) {
             return key;
         }
     }
 
     public static class SecondLangProvider implements I18NProvider {
         @Override
-        public String getTranslation(String key, String... params) {
+        public String getTranslation(String key, Object... params) {
             return key;
         }
 
         @Override
         public String getTranslation(String key, Locale locale,
-                String... params) {
+                Object... params) {
             return key;
         }
     }

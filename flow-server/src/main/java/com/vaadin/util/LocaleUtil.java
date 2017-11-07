@@ -27,6 +27,9 @@ import com.vaadin.server.VaadinRequest;
  */
 public final class LocaleUtil {
 
+    private LocaleUtil() {
+    }
+
     /**
      * Get the exact locale match for the given request in the provided locales.
      * 

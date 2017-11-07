@@ -49,7 +49,7 @@ public interface I18NProvider {
      * @return translation for key if found (implementation should not return
      *         null)
      */
-    String getTranslation(String key, String... params);
+    String getTranslation(String key, Object... params);
 
     /**
      * Get the translation for key with given locale.
@@ -65,8 +65,16 @@ public interface I18NProvider {
      *            parameters used in translation string
      * @return translation for key if found
      */
-    String getTranslation(String key, Locale locale, String... params);
+    String getTranslation(String key, Locale locale, Object... params);
 
+    /**
+     * Get the current locale to use.
+     * <p>
+     * If UI.getCurrent returns null then we use the same scheme to determine
+     * locale as we use on startup when no locale matches.
+     * 
+     * @return current locale
+     */
     default Locale getLocale() {
         UI currentUi = UI.getCurrent();
         Locale locale = currentUi == null ? null : currentUi.getLocale();

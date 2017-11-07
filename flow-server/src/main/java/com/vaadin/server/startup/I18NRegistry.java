@@ -19,6 +19,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.ui.i18n.I18NProvider;
 
+/**
+ * Registry for holding the I18NProvider that is used for translations and to
+ * determine initial locale.
+ */
 public class I18NRegistry {
     private final AtomicReference<I18NProvider> i18nProvider = new AtomicReference<>();
 
@@ -47,12 +51,19 @@ public class I18NRegistry {
 
     /**
      * Get the registered I18N provider if registered.
+     * 
      * @return registered I18N provider or null if none.
      */
     public I18NProvider getProvider() {
         return i18nProvider.get();
     }
 
+    /**
+     * Set the I18N provider.
+     * 
+     * @param provider
+     *            I18N provider
+     */
     public void setProvider(final I18NProvider provider) {
         i18nProvider.set(provider);
     }

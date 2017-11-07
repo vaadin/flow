@@ -62,14 +62,14 @@ public class I18NRegistryInitializer implements ServletContainerInitializer {
      */
     private static class DefaultProvider implements I18NProvider {
         @Override
-        public String getTranslation(String key, String... params) {
+        public String getTranslation(String key, Object... params) {
             throw new UnsupportedOperationException(
                     "Implement an I18NProvider to get translation support.");
         }
 
         @Override
         public String getTranslation(String key, Locale locale,
-                String... params) {
+                Object... params) {
             throw new UnsupportedOperationException(
                     "Implement an I18NProvider to get translation support.");
         }
