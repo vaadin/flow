@@ -94,6 +94,9 @@ window.gridConnector = {
                     // Fake page to pass to _updateItems
                     items = new Array(grid.pageSize);
                 }
+                else if (grid._cache[page]){
+                    grid._cache[page] = items;
+                }
 
                 grid._updateItems(page, items);
             }
