@@ -70,6 +70,8 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     private DeploymentConfiguration configuration;
 
+    private List<Object> executionOrder = new ArrayList<>();
+
     private static class TestTemplateParser implements TemplateParser {
 
         private final Function<String, String> templateProducer;
@@ -124,6 +126,11 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @Tag(Tag.DIV)
     public static class CustomComponent extends Component {
+
+        public CustomComponent() {
+            getElement().getNode().runWhenAttached(
+                    ui -> ui.getPage().executeJavaScript("foo"));
+        }
 
     }
 
@@ -325,9 +332,32 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     }
 
+    @Tag("execution-child")
+    public static class ExecutionChild extends PolymerTemplate<ModelClass> {
+        public ExecutionChild() {
+            super(new SimpleTemplateParser());
+            getElement().getNode().runWhenAttached(
+                    ui -> ui.getPage().executeJavaScript("bar"));
+        }
+    }
+
+    @Tag("template-initializer-test")
+    public class ExecutionOrder extends PolymerTemplate<TemplateModel> {
+        @Id("div")
+        public CustomComponent element;
+
+        public ExecutionOrder() {
+            super(new TestTemplateParser(tag -> "<dom-module id='" + tag
+                    + "'><template><div id='div'></div><execution-child></execution-child></template></dom-module>"));
+        }
+    }
+
+    @SuppressWarnings("serial")
     @Before
     public void setUp() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
+        executionOrder.clear();
+
         Field customElements = CustomElementRegistry.class
                 .getDeclaredField("customElements");
         customElements.setAccessible(true);
@@ -337,13 +367,29 @@ public class PolymerTemplateTest extends HasCurrentService {
         Map<String, Class<? extends Component>> map = new HashMap<>();
         map.put("child-template", TemplateChild.class);
         map.put("ffs", TestPolymerTemplate.class);
+        map.put("execution-child", ExecutionChild.class);
         CustomElementRegistry.getInstance().setCustomElements(map);
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
         UI ui = new UI() {
+            private Page page = new Page(this) {
+
+                @Override
+                public ExecutionCanceler executeJavaScript(String expression,
+                        Serializable[] parameters) {
+                    executionOrder.add(expression);
+                    return () -> true;
+                }
+            };
+
             @Override
             public VaadinSession getSession() {
                 return session;
+            }
+
+            @Override
+            public Page getPage() {
+                return page;
             }
         };
         VaadinService service = Mockito.mock(VaadinService.class);
@@ -646,6 +692,28 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         assertEquals(template.child,
                 template.child.getElement().getComponent().get());
+    }
+
+    @Test
+    public void executionOrder_attachByIdInvokedBeforeComponentIsCreated() {
+        ExecutionOrder template = new ExecutionOrder();
+
+        UI.getCurrent().add(template);
+
+        Assert.assertEquals(4, executionOrder.size());
+
+        // The order is important: "attachXXX" methods must be called before any
+        // other JS execution for the same component.
+
+        int index = executionOrder
+                .indexOf("this.attachCustomElement($0, $1, $2, $3);");
+        Assert.assertNotEquals(-1, index);
+
+        Assert.assertEquals("bar", executionOrder.get(index + 1));
+
+        index = executionOrder
+                .indexOf("this.attachExistingElementById($0, $1, $2, $3);");
+        Assert.assertEquals("foo", executionOrder.get(index + 1));
     }
 
     private List<Integer> convertIntArray(JsonArray array) {
