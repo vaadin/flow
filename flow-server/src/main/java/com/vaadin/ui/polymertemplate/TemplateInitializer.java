@@ -205,25 +205,28 @@ public class TemplateInitializer {
 
     private void doRequestAttachCustomElement(String id, String tag,
             JsonArray path) {
-        StateNode customNode = BasicElementStateProvider.createStateNode(tag);
-        Element customElement = Element.get(customNode);
-        CustomElementRegistry.getInstance().wrapElementIfNeeded(customElement);
-
-        if (id != null) {
-            registeredElementIdToCustomElement.put(id, customElement);
-        }
-
         // make sure that shadow root is available
         getShadowRoot();
 
         StateNode stateNode = getElement().getNode();
 
+        StateNode customNode = BasicElementStateProvider.createStateNode(tag);
         customNode.runWhenAttached(ui -> ui.getPage().executeJavaScript(
                 "this.attachCustomElement($0, $1, $2, $3);", getElement(), tag,
                 customNode.getId(), path));
 
         stateNode.getFeature(AttachTemplateChildFeature.class)
                 .register(getElement(), customNode);
+
+        // The Component should be created only after the code above which
+        // guarantees that "attachCustomElement" JS call is executed before
+        // anything else
+        Element customElement = Element.get(customNode);
+        CustomElementRegistry.getInstance().wrapElementIfNeeded(customElement);
+
+        if (id != null) {
+            registeredElementIdToCustomElement.put(id, customElement);
+        }
     }
 
     private JsonArray getPath(org.jsoup.nodes.Element element,

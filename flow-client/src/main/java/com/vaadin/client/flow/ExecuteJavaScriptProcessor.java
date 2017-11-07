@@ -153,6 +153,7 @@ public class ExecuteJavaScriptProcessor {
 
     private boolean handleRemoveExistingNode(Integer removedId, int nodeId,
             JsonArray invocation) {
+        Console.error("XXXXXXXXXXX " + removedId + " , " + nodeId);
         if (removedId.intValue() == nodeId) {
             Reactive.addPostFlushListener(() -> handleInvocation(invocation));
             return true;
