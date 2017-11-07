@@ -97,14 +97,16 @@ window.gridConnector = {
           }
         }
         else {
-          let itemIdx = -1;
           for (let idx = rangeStart; idx < rangeEnd; idx++) {
-            itemIdx++;
             if (grid._cache.items[idx]) {
-              grid._cache.items[idx] = items[itemIdx];
+              grid._cache.items[idx] = items[idx - rangeStart];
             }
           }
         }
+        /**
+         * Calls the _assignModels function from GridScrollerElement, that triggers
+         * the internal revalidation of the items based on the _cache of the DataProviderMixin.
+         */
         grid._assignModels();
       }
     }
