@@ -905,7 +905,7 @@ public abstract class VaadinService implements Serializable {
 
             // Set locale by match found in I18N provider, first provided locale
             // or else leave as default locale
-            if (!foundLocale.isPresent()) {
+            if (foundLocale.isPresent()) {
                 session.setLocale(foundLocale.get());
             } else if (!providedLocales.isEmpty()) {
                 session.setLocale(providedLocales.get(0));
