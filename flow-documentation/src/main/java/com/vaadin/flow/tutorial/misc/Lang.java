@@ -1,45 +1,40 @@
----
-title: Localization
-order: 8
-layout: page
----
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.tutorial.misc;
 
-ifdef::env-github[:outfilesuffix: .asciidoc]
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-= I18N localization
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
-To use localization and translation strings the application only needs to implement
-`I18NProvider` which is then automatically used by the application to determine the
-initial locale to use in the ui.
+import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.i18n.I18NProvider;
 
-[NOTE]
-Only one `I18NProvider` implementation should be available if localization is used.
-
-The initial locale is decided by matching the locales provided by the `I18NProvider`
-against the `Accept-Language` header in the initial response from the client.
-
-If an exact match (language + country) is found that will then be used, else we
-will try to match on only language. If neither is found the locale will be set
-to the first 'supported' locale from `I18NProvider.getProvidedLocales()` and if
-that is empty `Locale.getDefault()` will be used.
-
-== Provider sample for translation
-
-For this example we enable Finnish and English to be used with Finnish being the
-*"default"* that is used if the user client doesn't specify english as an accepted language.
-
-In this sample the language `.properties` files start with *"translate"* e.g.
-`translate.properties` (for default), `translate_fi_FI.properties` and `translate_en_GB.properties`
-
-The translation properties files are in the example loaded using the class loader
-so they should be located on the classpath for example in the resources folder
-e.g. `src/main/resources` for a default maven setup.
-
-The `LoadingCache` used in the implementation is from the Google Guava package.
-
-.Sample i18n provider implementation
-[source, java]
-----
+@CodeFor("miscellaneous/tutorial-i18n-localization.asciidoc")
 public class Lang implements I18NProvider {
 
     public static final String BUNDLE_PREFIX = "translate";
@@ -131,4 +126,3 @@ public class Lang implements I18NProvider {
         return locale;
     }
 }
-----

@@ -18,6 +18,8 @@ package com.vaadin.server.startup;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -57,6 +59,11 @@ public class I18NRegistryInitializerTest {
 
     public static class LangProvider implements I18NProvider {
         @Override
+        public List<Locale> getProvidedLocales() {
+            return Arrays.asList(Locale.getDefault());
+        }
+
+        @Override
         public String getTranslation(String key, Object... params) {
             return key;
         }
@@ -69,6 +76,11 @@ public class I18NRegistryInitializerTest {
     }
 
     public static class SecondLangProvider implements I18NProvider {
+        @Override
+        public List<Locale> getProvidedLocales() {
+            return Arrays.asList(Locale.getDefault());
+        }
+
         @Override
         public String getTranslation(String key, Object... params) {
             return key;
@@ -99,18 +111,6 @@ public class I18NRegistryInitializerTest {
                     "I18NRegistryInitializer.onStartup should not throw with null arguments. "
                             + e.getMessage());
         }
-    }
-
-    @Test
-    public void onStartUp_with_null_arguments_default_implementation_is_used()
-            throws ServletException {
-        expectedEx.expect(UnsupportedOperationException.class);
-        expectedEx.expectMessage(
-                "Implement an I18NProvider to get translation support.");
-
-        registry.onStartup(null, servletContext);
-
-        I18NRegistry.getInstance().getProvider().getTranslation("my_key");
     }
 
     @Test

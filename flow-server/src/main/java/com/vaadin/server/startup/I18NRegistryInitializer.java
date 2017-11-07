@@ -19,7 +19,6 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.util.Locale;
 import java.util.Set;
 
 import com.vaadin.ui.i18n.I18NProvider;
@@ -35,11 +34,8 @@ public class I18NRegistryInitializer implements ServletContainerInitializer {
     public void onStartup(Set<Class<?>> i18nProviders, ServletContext ctx)
             throws ServletException {
         if (i18nProviders == null) {
-            I18NRegistry.getInstance().setProvider(new DefaultProvider());
             return;
         }
-
-        i18nProviders.remove(DefaultProvider.class);
 
         if (i18nProviders.size() > 1) {
             throw new IllegalStateException(
@@ -51,27 +47,6 @@ public class I18NRegistryInitializer implements ServletContainerInitializer {
                     .iterator().next();
             I18NRegistry.getInstance()
                     .setProvider(ReflectTools.createInstance(provider));
-        } else {
-            I18NRegistry.getInstance().setProvider(new DefaultProvider());
-        }
-
-    }
-
-    /**
-     * Default no-op provider if no i18n provider exists.
-     */
-    private static class DefaultProvider implements I18NProvider {
-        @Override
-        public String getTranslation(String key, Object... params) {
-            throw new UnsupportedOperationException(
-                    "Implement an I18NProvider to get translation support.");
-        }
-
-        @Override
-        public String getTranslation(String key, Locale locale,
-                Object... params) {
-            throw new UnsupportedOperationException(
-                    "Implement an I18NProvider to get translation support.");
         }
     }
 }

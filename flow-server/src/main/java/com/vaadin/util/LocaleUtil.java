@@ -39,7 +39,7 @@ public final class LocaleUtil {
      *            application provided locales
      * @return found locale or null if no exact matches
      */
-    public static Locale getExactLocaleMatch(VaadinRequest request,
+    public static Optional<Locale> getExactLocaleMatch(VaadinRequest request,
             List<Locale> providedLocales) {
         Locale foundLocale = null;
         Enumeration<Locale> locales = request.getLocales();
@@ -50,7 +50,7 @@ public final class LocaleUtil {
                 break;
             }
         }
-        return foundLocale;
+        return Optional.ofNullable(foundLocale);
     }
 
     /**
@@ -63,7 +63,7 @@ public final class LocaleUtil {
      *            application provided locales
      * @return found locale or null if no matches by language
      */
-    public static Locale getLocaleMatchByLanguage(VaadinRequest request,
+    public static Optional<Locale> getLocaleMatchByLanguage(VaadinRequest request,
             List<Locale> providedLocales) {
         Locale foundLocale = null;
         Enumeration<Locale> locales = request.getLocales();
@@ -78,6 +78,6 @@ public final class LocaleUtil {
                 break;
             }
         }
-        return foundLocale;
+        return Optional.ofNullable(foundLocale);
     }
 }

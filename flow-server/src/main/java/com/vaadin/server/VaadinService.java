@@ -895,18 +895,18 @@ public abstract class VaadinService implements Serializable {
         if (providedLocales.size() == 1) {
             session.setLocale(providedLocales.get(0));
         } else {
-            Locale foundLocale = LocaleUtil.getExactLocaleMatch(request,
-                    providedLocales);
+            Optional<Locale> foundLocale = LocaleUtil
+                    .getExactLocaleMatch(request, providedLocales);
 
-            if (foundLocale == null) {
+            if (!foundLocale.isPresent()) {
                 foundLocale = LocaleUtil.getLocaleMatchByLanguage(request,
                         providedLocales);
             }
 
             // Set locale by match found in I18N provider, first provided locale
             // or else leave as default locale
-            if (foundLocale != null) {
-                session.setLocale(foundLocale);
+            if (!foundLocale.isPresent()) {
+                session.setLocale(foundLocale.get());
             } else if (!providedLocales.isEmpty()) {
                 session.setLocale(providedLocales.get(0));
             }

@@ -15,7 +15,6 @@
  */
 package com.vaadin.ui.i18n;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -32,9 +31,7 @@ public interface I18NProvider {
      * 
      * @return provided locales
      */
-    default List<Locale> getProvidedLocales() {
-        return Arrays.asList(Locale.getDefault());
-    }
+    List<Locale> getProvidedLocales();
 
     /**
      * Get the translation for current {@link com.vaadin.ui.UI} locale.
@@ -66,26 +63,4 @@ public interface I18NProvider {
      * @return translation for key if found
      */
     String getTranslation(String key, Locale locale, Object... params);
-
-    /**
-     * Get the current locale to use.
-     * <p>
-     * If UI.getCurrent returns null then we use the same scheme to determine
-     * locale as we use on startup when no locale matches.
-     * 
-     * @return current locale
-     */
-    default Locale getLocale() {
-        UI currentUi = UI.getCurrent();
-        Locale locale = currentUi == null ? null : currentUi.getLocale();
-        if (locale == null) {
-            List<Locale> locales = getProvidedLocales();
-            if (locales != null && !locales.isEmpty()) {
-                locale = locales.get(0);
-            } else {
-                locale = Locale.getDefault();
-            }
-        }
-        return locale;
-    }
 }
