@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
 import com.vaadin.util.ReflectTools;
 
@@ -80,7 +79,7 @@ public abstract class AbstractServerHandlers<T>
 
     /**
      * Collect methods annotated with the handler annotation for given class.
-     * 
+     *
      * @param classWithAnnotations
      *            Class to collect methods for
      */
@@ -125,7 +124,7 @@ public abstract class AbstractServerHandlers<T>
 
     /**
      * Add a handler to the NodeList.
-     * 
+     *
      * @param method
      *            Method to verify and add
      * @param methods
@@ -160,35 +159,10 @@ public abstract class AbstractServerHandlers<T>
 
     /**
      * Gets the annotation which is used to mark methods as handlers.
-     * 
+     *
      * @return the handler marker annotation
      */
     protected abstract Class<? extends Annotation> getHandlerAnnotation();
-
-    /**
-     * Ensure that method parameter type is supported e.g. parameter types of
-     * handler methods must be serializable to JSON.
-     * 
-     * @param method
-     *            Method we are checking
-     * @param type
-     *            The parameter type
-     */
-    protected void ensureSupportedParameterType(Method method, Class<?> type) {
-        Class<?> parameterType = ReflectTools.convertPrimitiveType(type);
-        if (parameterType.isArray()) {
-            ensureSupportedParameterType(method,
-                    parameterType.getComponentType());
-        } else if (!JsonCodec.canEncodeWithoutTypeInfo(parameterType)) {
-            String msg = String.format(Locale.ENGLISH,
-                    "The parameter types of handler methods must be serializable to JSON."
-                            + " Component %s has method '%s' and annotated with %s "
-                            + "which declares parameter with non serializable to JSON type '%s'",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    getHandlerAnnotation().getName(), type.getName());
-            throw new IllegalStateException(msg);
-        }
-    }
 
     private final Class<T> getType() {
         Type type = GenericTypeReflector.getTypeParameter(
