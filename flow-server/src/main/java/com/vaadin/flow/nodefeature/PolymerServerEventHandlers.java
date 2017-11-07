@@ -22,14 +22,12 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.StateNode;
 import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.ModelItem;
-import com.vaadin.ui.polymertemplate.RepeatIndex;
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.polymertemplate.RepeatIndex;
 
 /**
  * Methods which are published as event-handlers on the client side.
@@ -84,9 +82,7 @@ public class PolymerServerEventHandlers
                     "EventHandler method '%s' should have the parameter with index %s annotated either with @EventData annotation (to get any particular data from the event)"
                             + " or have 'int' or 'Integer' type and be annotated with @RepeatIndex annotation (to get element index in dom-repeat)",
                     method.getName(), getParameterIndex(parameter)));
-        } else if (hasEventDataAnnotation) {
-            ensureSupportedParameterType(method, parameter.getType());
-        } else {
+        } else if (!hasEventDataAnnotation) {
             Class<?> parameterType = parameter.getType();
             if (!parameterType.equals(int.class)
                     && !parameterType.equals(Integer.class)) {
@@ -95,17 +91,6 @@ public class PolymerServerEventHandlers
                         method.getName(), getParameterIndex(parameter),
                         parameterType));
             }
-        }
-    }
-
-    @Override
-    protected void ensureSupportedParameterType(Method method, Class<?> type) {
-        Optional<Component> polymerTemplate = Element.get(getNode())
-                .getComponent();
-        assert polymerTemplate.isPresent();
-        if (!((PolymerTemplate<?>) polymerTemplate.get())
-                .isSupportedClass(type)) {
-            super.ensureSupportedParameterType(method, type);
         }
     }
 
@@ -119,17 +104,13 @@ public class PolymerServerEventHandlers
     }
 
     private String[] getParameters(Method method) {
-        return Stream.of(method.getParameters()).flatMap(
-                parameter -> Stream.of(
-                        Optional.ofNullable(
-                                parameter.getAnnotation(EventData.class))
-                                .map(EventData::value),
-                        Optional.ofNullable(
-                                parameter.getAnnotation(RepeatIndex.class))
-                                .map(annotation -> REPEAT_INDEX_VALUE),
-                        Optional.ofNullable(
-                                parameter.getAnnotation(ModelItem.class))
-                                .map(ModelItem::value)))
+        return Stream.of(method.getParameters()).flatMap(parameter -> Stream.of(
+                Optional.ofNullable(parameter.getAnnotation(EventData.class))
+                        .map(EventData::value),
+                Optional.ofNullable(parameter.getAnnotation(RepeatIndex.class))
+                        .map(annotation -> REPEAT_INDEX_VALUE),
+                Optional.ofNullable(parameter.getAnnotation(ModelItem.class))
+                        .map(ModelItem::value)))
                 .filter(Optional::isPresent).map(Optional::get)
                 .toArray(String[]::new);
     }

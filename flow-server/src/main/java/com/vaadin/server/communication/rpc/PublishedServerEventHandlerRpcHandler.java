@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -27,15 +28,14 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.ui.common.ClientDelegate;
-import com.vaadin.ui.polymertemplate.EventHandler;
-import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.ModelType;
+import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
@@ -55,6 +55,8 @@ import elemental.json.JsonValue;
  */
 public class PublishedServerEventHandlerRpcHandler
         extends AbstractRpcInvocationHandler {
+
+    private static final Collection<RpcDecoder> DECODERS = loadDecoders();
 
     @Override
     public String getRpcType() {
@@ -103,9 +105,8 @@ public class PublishedServerEventHandlerRpcHandler
                         || method.isAnnotationPresent(ClientDelegate.class))
                 .collect(Collectors.toList());
         if (methods.size() > 1) {
-            String msg = String.format(
-                    "Class '%s' contains "
-                            + "several event handler method with the same name '%s'",
+            String msg = String.format("Class '%s' contains "
+                    + "several event handler method with the same name '%s'",
                     instance.getClass().getName(), methodName);
             throw new IllegalStateException(msg);
         } else if (methods.size() == 1) {
@@ -113,9 +114,8 @@ public class PublishedServerEventHandlerRpcHandler
         } else if (!Component.class.equals(clazz)) {
             invokeMethod(instance, clazz.getSuperclass(), methodName, args);
         } else {
-            String msg = String.format(
-                    "Neither class '%s' "
-                            + "nor its super classes declare event handler method '%s'",
+            String msg = String.format("Neither class '%s' "
+                    + "nor its super classes declare event handler method '%s'",
                     instance.getClass().getName(), methodName);
             throw new IllegalStateException(msg);
         }
@@ -226,16 +226,27 @@ public class PublishedServerEventHandlerRpcHandler
                         method.getGenericParameterTypes()[index]);
             }
 
-            if (!JsonCodec.canEncodeWithoutTypeInfo(convertedType)) {
-                String msg = String.format(
-                        "Class '%s' has the method '%s' "
-                                + "whose parameter %d refers to unsupported type '%s'",
-                        method.getDeclaringClass().getName(), method.getName(),
-                        index, type.getName());
-                throw new IllegalArgumentException(msg);
+            Optional<RpcDecoder> decoder = getDecoder(argValue, convertedType);
+            if (decoder.isPresent()) {
+                try {
+                    return decoder.get().decode(argValue, convertedType);
+                } catch (RpcDecodeException exception) {
+                    throw new IllegalArgumentException(exception);
+                }
             }
-            return JsonCodec.decodeAs(argValue, convertedType);
+            String msg = String.format("Class '%s' has the method '%s' "
+                    + "whose parameter %d refers to unsupported type '%s'",
+                    method.getDeclaringClass().getName(), method.getName(),
+                    index, type.getName());
+            throw new IllegalArgumentException(msg);
         }
+    }
+
+    private static Optional<RpcDecoder> getDecoder(JsonValue value,
+            Class<?> type) {
+        return DECODERS.stream()
+                .filter(decoder -> decoder.isApplicable(value, type))
+                .findFirst();
     }
 
     private static boolean isTemplateModelValue(Component instance,
@@ -260,10 +271,9 @@ public class PublishedServerEventHandlerRpcHandler
     private static Object decodeArray(Method method, Class<?> type, int index,
             JsonValue argValue) {
         if (argValue.getType() != JsonType.ARRAY) {
-            String msg = String.format(
-                    "Class '%s' has the method '%s' "
-                            + "whose parameter %d refers to the array type '%s' "
-                            + "but received value is not an array, its type is '%s'",
+            String msg = String.format("Class '%s' has the method '%s' "
+                    + "whose parameter %d refers to the array type '%s' "
+                    + "but received value is not an array, its type is '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     index, type.getName(), argValue.getType().name());
             throw new IllegalArgumentException(msg);
@@ -278,4 +288,11 @@ public class PublishedServerEventHandlerRpcHandler
         return result;
     }
 
+    private static Collection<RpcDecoder> loadDecoders() {
+        List<RpcDecoder> decoders = new ArrayList<>();
+        decoders.add(new StringToNumberDecoder());
+        decoders.add(new StringToEnumDecoder());
+        decoders.add(new DefaultRpcDecoder());
+        return decoders;
+    }
 }

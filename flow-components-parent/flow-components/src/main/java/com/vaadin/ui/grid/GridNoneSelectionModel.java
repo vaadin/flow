@@ -56,11 +56,6 @@ public class GridNoneSelectionModel<T> implements GridSelectionModel<T> {
     }
 
     @Override
-    public void remove() {
-        // NO-OP
-    }
-
-    @Override
     public void selectFromClient(T item) {
         throw new IllegalStateException("Client tried to update selection"
                 + " even though selection mode is currently set to NONE.");
