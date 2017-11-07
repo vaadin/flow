@@ -28,11 +28,15 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/InjectsJsTemplate.html")
 public class InjectsJsTemplateView extends PolymerTemplate<TemplateModel> {
 
-    @Id("injected")
+    @Id("injected-template")
     private JsInjectedElement injectedTemplate;
+
+    @Id("injected-div")
+    private JsInjectedDiv div;
 
     public InjectsJsTemplateView() {
         injectedTemplate.getElement().setProperty("baz", "setFromParent");
+        div.addClassName("setFromParent");
     }
 
 }
