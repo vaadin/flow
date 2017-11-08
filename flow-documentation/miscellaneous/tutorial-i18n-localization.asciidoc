@@ -9,12 +9,60 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 = I18N localization
 
 To use localization and translation strings the application only needs to implement
-`I18NProvider` which is then automatically used by the application to determine the
-initial locale to use in the ui.
+`I18NProvider` and define the fully qualified class name in the property `i18n.provider`.
 
-[NOTE]
-Only one `I18NProvider` implementation should be available if localization is used.
+==== Defining the i18n provider property
 
+The `i18n.provider` property can be set from the command line as a system property,
+as a Servlet init parameter in the `web.xml` or using the `@WebServlet` annotation.
+
+As a system property the parameter needs the `vaadin` prefix e.g.:
+[source,bash]
+----
+mvn jetty:run -Dvaadin.i18n.provider=com.vaadin.example.ui.TranslationProvider
+----
+
+When using the annotation you could have the servlet class as:
+[source,java]
+----
+@WebServlet(urlPatterns = "/*", name = "slot", asyncSupported = true, initParams = {
+        @WebInitParam(name = Constants.I18N_PROVIDER, value = "com.vaadin.example.ui.TranslationProvider") })
+public class ApplicationServlet extends VaadinServlet {
+}
+----
+
+Or when using the `web.xml` file:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+  id="WebApp_ID" version="3.0"
+  xmlns="http://java.sun.com/xml/ns/j2ee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+      http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+
+  <servlet>
+    <servlet-name>myservlet</servlet-name>
+    <servlet-class>
+        com.vaadin.server.VaadinServlet
+    </servlet-class>
+
+    <init-param>
+      <param-name>i18n.provider</param-name>
+      <param-value>com.vaadin.example.ui.TranslationProvider</param-value>
+    </init-param>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>myservlet</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
+</web-app>
+----
+
+==== Locale selection for new session
 The initial locale is decided by matching the locales provided by the `I18NProvider`
 against the `Accept-Language` header in the initial response from the client.
 
@@ -40,7 +88,7 @@ The `LoadingCache` used in the implementation is from the Google Guava package.
 .Sample i18n provider implementation
 [source, java]
 ----
-public class Lang implements I18NProvider {
+public class TranslationProvider implements I18NProvider {
 
     public static final String BUNDLE_PREFIX = "translate";
 
@@ -68,7 +116,7 @@ public class Lang implements I18NProvider {
     @Override
     public String getTranslation(String key, Object... params) {
         if (key == null) {
-            Logger.getLogger(Lang.class.getName()).log(Level.WARNING,
+            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
                     "Got lang request for key with null value!");
             return "";
         }
@@ -78,7 +126,7 @@ public class Lang implements I18NProvider {
     @Override
     public String getTranslation(String key, Locale locale, Object... params) {
         if (key == null) {
-            Logger.getLogger(Lang.class.getName()).log(Level.WARNING,
+            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
                     "Got lang request for key with null value!");
             return "";
         }
@@ -89,7 +137,7 @@ public class Lang implements I18NProvider {
         try {
             value = bundle.getString(key);
         } catch (final MissingResourceException e) {
-            Logger.getLogger(Lang.class.getName()).log(Level.WARNING,
+            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
                     "Missing resource", e);
             return "!" + locale.getLanguage() + ": " + key;
         }
@@ -104,14 +152,14 @@ public class Lang implements I18NProvider {
     }
 
     protected static ResourceBundle readProperties(final Locale locale) {
-        final ClassLoader cl = Lang.class.getClassLoader();
+        final ClassLoader cl = TranslationProvider.class.getClassLoader();
 
         ResourceBundle propertiesBundle = null;
         try {
             propertiesBundle = ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
                     cl);
         } catch (final MissingResourceException e) {
-            Logger.getLogger(Lang.class.getName()).log(Level.WARNING,
+            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
                     "Missing resource", e);
         }
         return propertiesBundle;

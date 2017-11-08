@@ -61,7 +61,6 @@ import com.vaadin.server.communication.HeartbeatHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
 import com.vaadin.server.communication.StreamRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
-import com.vaadin.server.startup.I18NRegistry;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
@@ -878,11 +877,12 @@ public abstract class VaadinService implements Serializable {
         // Initial WebBrowser data comes from the request
         session.getBrowser().updateRequestDetails(request);
 
+        session.setConfiguration(getDeploymentConfiguration());
+
         // Initial locale comes from the request
-        if (I18NRegistry.getInstance().isInitialized()) {
+        if (I18NRegistry.getInstance().hasProvider()) {
             setLocale(request, session);
         }
-        session.setConfiguration(getDeploymentConfiguration());
 
         onVaadinSessionStarted(request, session);
 

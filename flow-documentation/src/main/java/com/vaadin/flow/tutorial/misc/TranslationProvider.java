@@ -35,7 +35,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.i18n.I18NProvider;
 
 @CodeFor("miscellaneous/tutorial-i18n-localization.asciidoc")
-public class Lang implements I18NProvider {
+public class TranslationProvider implements I18NProvider {
 
     public static final String BUNDLE_PREFIX = "translate";
 
@@ -63,7 +63,7 @@ public class Lang implements I18NProvider {
     @Override
     public String getTranslation(String key, Object... params) {
         if (key == null) {
-            Logger.getLogger(Lang.class.getName()).log(Level.WARNING,
+            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
                     "Got lang request for key with null value!");
             return "";
         }
@@ -73,7 +73,7 @@ public class Lang implements I18NProvider {
     @Override
     public String getTranslation(String key, Locale locale, Object... params) {
         if (key == null) {
-            Logger.getLogger(Lang.class.getName()).log(Level.WARNING,
+            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
                     "Got lang request for key with null value!");
             return "";
         }
@@ -84,7 +84,7 @@ public class Lang implements I18NProvider {
         try {
             value = bundle.getString(key);
         } catch (final MissingResourceException e) {
-            Logger.getLogger(Lang.class.getName()).log(Level.WARNING,
+            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
                     "Missing resource", e);
             return "!" + locale.getLanguage() + ": " + key;
         }
@@ -99,14 +99,14 @@ public class Lang implements I18NProvider {
     }
 
     protected static ResourceBundle readProperties(final Locale locale) {
-        final ClassLoader cl = Lang.class.getClassLoader();
+        final ClassLoader cl = TranslationProvider.class.getClassLoader();
 
         ResourceBundle propertiesBundle = null;
         try {
             propertiesBundle = ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
                     cl);
         } catch (final MissingResourceException e) {
-            Logger.getLogger(Lang.class.getName()).log(Level.WARNING,
+            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
                     "Missing resource", e);
         }
         return propertiesBundle;
