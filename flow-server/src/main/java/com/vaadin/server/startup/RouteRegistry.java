@@ -15,11 +15,12 @@
  */
 package com.vaadin.server.startup;
 
-import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +30,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import javax.servlet.ServletContext;
 
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
@@ -116,8 +119,7 @@ public class RouteRegistry implements Serializable {
             throw new InvalidRouteConfigurationException(
                     "Routes have already been initialized");
         }
-        validateNavigationTargets(navigationTargets);
-        doRegisterNavigationTargets(navigationTargets);
+        registerNavigationTargets(navigationTargets);
     }
 
     /**
@@ -143,8 +145,8 @@ public class RouteRegistry implements Serializable {
     }
 
     private Class<?> getExceptionType(Class<? extends Component> target) {
-        Class<?> exceptionType = (Class<?>) ReflectTools
-                .getGenericInterfaceType(target, HasErrorParameter.class);
+        Class<?> exceptionType = ReflectTools.getGenericInterfaceType(target,
+                HasErrorParameter.class);
 
         if (exceptionType == null) {
             return getExceptionType(
@@ -332,14 +334,16 @@ public class RouteRegistry implements Serializable {
      */
     private String collectRequiredParameters(
             Class<? extends Component> navigationTarget) {
-        String route = targetRoutes.get().get(navigationTarget);
+        StringBuilder route = new StringBuilder(
+                targetRoutes.get().get(navigationTarget));
         if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             Class<?> genericInterfaceType = ReflectTools
                     .getGenericInterfaceType(navigationTarget,
                             HasUrlParameter.class);
-            route = route + "/{" + genericInterfaceType.getSimpleName() + "}";
+            route.append("/{").append(genericInterfaceType.getSimpleName())
+                    .append("}");
         }
-        return route;
+        return route.toString();
     }
 
     /**
@@ -364,7 +368,7 @@ public class RouteRegistry implements Serializable {
                                 + "navigation target component '%s'.",
                         navigationTarget.getName()));
             }
-            String route = getNavigationRoute(navigationTarget);
+            String route = getNavigationRoute(navigationTarget, null);
             targetRoutesMap.put(navigationTarget, route);
             // Further validation is performed inside addRoute()
             if (navigationTargetMap.containsKey(route)) {
@@ -387,23 +391,30 @@ public class RouteRegistry implements Serializable {
      *            navigation target to get chain route for
      * @return full navigation route
      */
-    private String getNavigationRoute(Class<?> navigationTarget) {
+    private String getNavigationRoute(Class<?> navigationTarget,
+            Collection<String> aliases) {
         Route annotation = navigationTarget.getAnnotation(Route.class);
         if (annotation.absolute()) {
             return annotation.value();
         }
 
-        List<String> parentRoutePrefixes = getParentRoutePrefixes(
-                navigationTarget);
-        Collections.reverse(parentRoutePrefixes);
+        Collection<List<String>> aliasPaths = new ArrayList<>();
+        List<String> mainPath = new ArrayList<>();
+        collectParentRoutePrefixes(navigationTarget, mainPath, aliasPaths);
+        // aliasPaths.stream().peek(Collections::reverse)
+        // .map(alias -> alias.stream().collect(Collectors.joining("/")))
+        // .forEach(aliases::add);
+
+        Collections.reverse(mainPath);
         if (!annotation.value().isEmpty()) {
-            parentRoutePrefixes.add(annotation.value());
+            mainPath.add(annotation.value());
         }
 
-        return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
+        return mainPath.stream().collect(Collectors.joining("/"));
     }
 
-    private List<String> getParentRoutePrefixes(Class<?> component) {
+    private void collectParentRoutePrefixes(Class<?> component,
+            List<String> mainPath, Collection<List<String>> aliasRoutes) {
         List<String> list = new ArrayList<>();
 
         Optional<Route> router = AnnotationReader.getAnnotationFor(component,
@@ -430,26 +441,26 @@ public class RouteRegistry implements Serializable {
         return list;
     }
 
-    private void doRegisterNavigationTargets(
+    private void registerNavigationTargets(
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
-        Logger logger = Logger.getLogger(RouteRegistry.class.getName());
-
         Map<String, RouteTarget> routesMap = new HashMap<>();
         Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
         for (Class<? extends Component> navigationTarget : navigationTargets) {
-            String route = getNavigationRoute(navigationTarget);
-            targetRoutesMap.put(navigationTarget, route);
-            if (routesMap.containsKey(route)) {
-                routesMap.get(route).addRoute(navigationTarget);
-            } else {
-                String message = String.format(
-                        "Registering route '%s' to navigation target '%s'.",
-                        route, navigationTarget.getName());
-                logger.log(Level.FINE, message);
-
-                routesMap.put(route, new RouteTarget(navigationTarget));
+            if (!navigationTarget.isAnnotationPresent(Route.class)) {
+                throw new InvalidRouteConfigurationException(String.format(
+                        "No Route annotation is present for the given "
+                                + "navigation target component '%s'.",
+                        navigationTarget.getName()));
             }
+
+            Set<String> aliases = new HashSet<>();
+            String route = getNavigationRoute(navigationTarget, aliases);
+            aliases.add(route);
+
+            targetRoutesMap.put(navigationTarget, route);
+
+            addRoute(routesMap, navigationTarget, aliases);
         }
         if (!routes.compareAndSet(null,
                 Collections.unmodifiableMap(routesMap))) {
@@ -460,6 +471,25 @@ public class RouteRegistry implements Serializable {
                 Collections.unmodifiableMap(targetRoutesMap))) {
             throw new IllegalStateException(
                     "Route registry has been already initialized");
+        }
+    }
+
+    private void addRoute(Map<String, RouteTarget> routesMap,
+            Class<? extends Component> navigationTarget,
+            Collection<String> aliases)
+            throws InvalidRouteConfigurationException {
+        Logger logger = Logger.getLogger(RouteRegistry.class.getName());
+        for (String alias : aliases) {
+            if (routesMap.containsKey(alias)) {
+                routesMap.get(alias).addRoute(navigationTarget);
+            } else {
+                String message = String.format(
+                        "Registering route '%s' to navigation target '%s'.",
+                        alias, navigationTarget.getName());
+                logger.log(Level.FINE, message);
+
+                routesMap.put(alias, new RouteTarget(navigationTarget));
+            }
         }
     }
 
