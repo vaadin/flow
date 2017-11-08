@@ -18,7 +18,6 @@ package com.vaadin.server;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.ui.i18n.I18NProvider;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Registry for holding the I18NProvider that is used for translations and to
@@ -39,9 +38,9 @@ public class I18NRegistry {
      * @return singleton instance of the registry
      */
     public static I18NRegistry getInstance() {
-        if (!INSTANCE.isInitialized()) {
-            INSTANCE.loadProvider();
-        }
+        // if (!INSTANCE.isInitialized()) {
+        // INSTANCE.loadProvider();
+        // }
         return INSTANCE;
     }
 
@@ -72,45 +71,17 @@ public class I18NRegistry {
         return i18nProvider.get();
     }
 
-    private void loadProvider() {
-        if (VaadinSession.getCurrent() == null) {
-            // If we try to initialize the provider before we have a servlet
-            // we should postpone the initialization.
-            return;
-        }
-
-        initialized.set(true);
-
-        String property = VaadinSession.getCurrent().getConfiguration()
-                .getStringProperty(Constants.I18N_PROVIDER, null);
-
-        if (property == null) {
-            return;
-        }
-
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            // Get i18n provider class if found in application properties
-            Class<?> providerClass = classLoader.loadClass(property);
-            if (I18NProvider.class.isAssignableFrom(providerClass)) {
-                setProvider(ReflectTools.createInstance(
-                        (Class<? extends I18NProvider>) providerClass));
-            }
-        } catch (ClassNotFoundException e) {
-            throw new InvalidI18NConfigurationException(
-                    "Failed to load given provider class '" + property
-                            + "' as it was not found by the class loader.",
-                    e);
-        }
-    }
-
     /**
      * Set the I18N provider.
      * 
      * @param provider
      *            I18N provider
      */
-    private void setProvider(final I18NProvider provider) {
+    public void setProvider(final I18NProvider provider) {
         i18nProvider.set(provider);
+    }
+
+    public void markInitialized() {
+        this.initialized.set(true);
     }
 }

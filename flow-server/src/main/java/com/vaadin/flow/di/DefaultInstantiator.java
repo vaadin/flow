@@ -15,15 +15,23 @@
  */
 package com.vaadin.flow.di;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.server.Constants;
+import com.vaadin.server.I18NRegistry;
+import com.vaadin.server.InvalidI18NConfigurationException;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
+import com.vaadin.ui.i18n.I18NProvider;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -79,5 +87,63 @@ public class DefaultInstantiator implements Instantiator {
     @Override
     public <T extends Component> T createComponent(Class<T> componentClass) {
         return ReflectTools.createInstance(componentClass);
+    }
+
+    @Override
+    public I18NProvider getI18NProvider() {
+        if (!I18NRegistry.getInstance().isInitialized()) {
+            String property = getI18NProviderProperty();
+
+            if (property != null) {
+                try {
+                    // Get i18n provider class if found in application
+                    // properties
+                    Class<?> providerClass = service.getClassLoader()
+                            .loadClass(property);
+                    if (I18NProvider.class.isAssignableFrom(providerClass)) {
+                        I18NRegistry.getInstance()
+                                .setProvider(ReflectTools.createInstance(
+                                        (Class<? extends I18NProvider>) providerClass));
+                    }
+                } catch (ClassNotFoundException e) {
+                    throw new InvalidI18NConfigurationException(
+                            "Failed to load given provider class '" + property
+                                    + "' as it was not found by the class loader.",
+                            e);
+                }
+            }
+            I18NRegistry.getInstance().markInitialized();
+        }
+        return I18NRegistry.getInstance().getProvider();
+    }
+
+    /**
+     * Get the I18NProvider property from the session configurator or try to
+     * load it from application.properties property file.
+     * 
+     * @return I18NProvider parameter or null if not found
+     */
+    private String getI18NProviderProperty() {
+        String property = VaadinSession.getCurrent().getConfiguration()
+                .getStringProperty(Constants.I18N_PROVIDER, null);
+        if (property == null) {
+            Properties properties = new Properties();
+            try (InputStream is = service.getClassLoader()
+                    .getResourceAsStream("application.properties")) {
+                if (is == null) {
+                    return null;
+                }
+
+                // load application properties.
+                properties.load(is);
+            } catch (IOException e) {
+                throw new InvalidI18NConfigurationException(
+                        "Failed to load 'application.properties' file as Properties.",
+                        e);
+            }
+
+            return properties.getProperty(Constants.I18N_PROVIDER);
+        }
+        return property;
     }
 }

@@ -880,7 +880,7 @@ public abstract class VaadinService implements Serializable {
         session.setConfiguration(getDeploymentConfiguration());
 
         // Initial locale comes from the request
-        if (I18NRegistry.getInstance().hasProvider()) {
+        if (getInstantiator().getI18NProvider() != null) {
             setLocale(request, session);
         }
 
@@ -890,7 +890,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     private void setLocale(VaadinRequest request, VaadinSession session) {
-        I18NProvider provider = I18NRegistry.getInstance().getProvider();
+        I18NProvider provider = getInstantiator().getI18NProvider();
         List<Locale> providedLocales = provider.getProvidedLocales();
         if (providedLocales.size() == 1) {
             session.setLocale(providedLocales.get(0));
