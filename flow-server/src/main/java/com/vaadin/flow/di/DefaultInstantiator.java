@@ -102,7 +102,7 @@ public class DefaultInstantiator implements Instantiator {
 
     private Optional<I18NProvider> getI18NProviderInstance() {
         String property = getI18NProviderProperty();
-        if (property != null) {
+        if (property == null) {
             return Optional.empty();
         }
         try {
