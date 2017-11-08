@@ -14,12 +14,23 @@ To use localization and translation strings the application only needs to implem
 ==== Defining the i18n provider property
 
 The `i18n.provider` property can be set from the command line as a system property,
-as a Servlet init parameter in the `web.xml` or using the `@WebServlet` annotation.
+as a Servlet init parameter in the `web.xml`, using the `@WebServlet` annotation or
+adding the property to `application.properties`.
+
 
 As a system property the parameter needs the `vaadin` prefix e.g.:
 [source,bash]
 ----
 mvn jetty:run -Dvaadin.i18n.provider=com.vaadin.example.ui.TranslationProvider
+----
+
+Using `application.properties`, the properties file should be located in `src/main/resources` with the content:
+
+.src/main/resources/application.properties
+[source,text]
+----
+i18n.provider=com.vaadin.example.ui.TranslationProvider
+
 ----
 
 When using the annotation you could have the servlet class as:
