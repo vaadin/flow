@@ -85,6 +85,19 @@ window.gridConnector = {
       }
     }
 
+    const itemsUpdated = function(items) {
+      if (!items || !(items instanceof Array)) {
+        throw 'Attempted to call itemsUpdated with an invalid value';
+      }
+      const detailsOpenedItems = [];
+      for (let i = 0; i < items.length; ++i) {
+        if (items[i].detailsOpened) {
+          detailsOpenedItems.push(items[i]);
+        }
+      }
+      grid.detailsOpenedItems = detailsOpenedItems;
+    }
+
     const updateGridCache = function(page) {
       const items = cache[page];
       // Force update unless there's a callback waiting
@@ -108,6 +121,7 @@ window.gridConnector = {
          * the internal revalidation of the items based on the _cache of the DataProviderMixin.
          */
         grid._assignModels();
+        itemsUpdated(items);
       }
     }
 

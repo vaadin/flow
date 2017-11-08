@@ -419,6 +419,17 @@ public class Grid<T> extends AbstractListing<T>
         }
 
         /**
+         * A helper method for refreshing the client-side representation of a
+         * single data item.
+         *
+         * @param item
+         *            the item to refresh
+         */
+        protected void refresh(T item) {
+            getGrid().getDataCommunicator().refresh(item);
+        }
+
+        /**
          * Adds this extension to the given grid.
          * 
          * @param grid
@@ -501,6 +512,84 @@ public class Grid<T> extends AbstractListing<T>
         }
     }
 
+    /**
+     * Class for managing visible details rows.
+     *
+     * @param <T>
+     *            the grid bean type
+     */
+    private class DetailsManager<T> extends AbstractGridExtension<T> {
+
+        private final Set<T> detailsVisible = new HashSet<>();
+
+        /**
+         * Constructs a new details manager for the given grid.
+         *
+         * @param grid
+         *            the grid whose details are to be managed
+         */
+        public DetailsManager(Grid<T> grid) {
+            super(grid);
+        }
+
+        /**
+         * Sets the visibility of details for given item.
+         *
+         * @param item
+         *            the item to show details for
+         * @param visible
+         *            {@code true} if details component should be visible;
+         *            {@code false} if it should be hidden
+         */
+        public void setDetailsVisible(T item, boolean visible) {
+            boolean refresh = false;
+            if (!visible) {
+                refresh = detailsVisible.remove(item);
+            } else {
+                refresh = detailsVisible.add(item);
+            }
+
+            if (refresh) {
+                refresh(item);
+            }
+        }
+
+        /**
+         * Returns the visibility of the details component for the given item.
+         *
+         * @param item
+         *            the item to check
+         *
+         * @return {@code true} if details component should be visible;
+         *         {@code false} if it should be hidden
+         */
+        public boolean isDetailsVisible(T item) {
+            return detailsVisible.contains(item);
+        }
+
+        @Override
+        public void generateData(T item, JsonObject jsonObject) {
+            if (isDetailsVisible(item)) {
+                jsonObject.put("detailsOpened", true);
+            }
+        }
+
+        @Override
+        public void destroyData(T item) {
+            detailsVisible.remove(item);
+        }
+
+        @Override
+        public void destroyAllData() {
+            detailsVisible.clear();
+        }
+
+        private void setDetailsVisibleFromClient(Set<T> items) {
+            detailsVisible.clear();
+            detailsVisible.addAll(items);
+        }
+    }
+
     private final ArrayUpdater arrayUpdater = UpdateQueue::new;
 
     private final GridDataGenerator<T> gridDataGenerator = new GridDataGenerator<>();
@@ -515,6 +604,7 @@ public class Grid<T> extends AbstractListing<T>
 
     private GridSelectionModel<T> selectionModel;
 
+    private final DetailsManager<T> detailsManager = new DetailsManager<>(this);
     private Element detailsTemplate;
     private Map<String, RendereredComponent<T>> renderedDetailComponents;
 
@@ -982,6 +1072,32 @@ public class Grid<T> extends AbstractListing<T>
         return Collections.unmodifiableList(ret);
     }
 
+    /**
+     * Sets the visibility of details component for given item.
+     *
+     * @param item
+     *            the item to show details for
+     * @param visible
+     *            {@code true} if details component should be visible;
+     *            {@code false} if it should be hidden
+     */
+    public void setDetailsVisible(T item, boolean visible) {
+        detailsManager.setDetailsVisible(item, visible);
+    }
+
+    /**
+     * Returns the visibility of details component for given item.
+     *
+     * @param item
+     *            the item to show details for
+     *
+     * @return {@code true} if details component should be visible;
+     *         {@code false} if it should be hidden
+     */
+    public boolean isDetailsVisible(T item) {
+        return detailsManager.isDetailsVisible(item);
+    }
+
     private List<Column<T>> fetchChildColumns(ColumnGroup columnGroup) {
         List<Column<T>> ret = new ArrayList<>();
         columnGroup.getChildColumns()
@@ -1024,6 +1140,16 @@ public class Grid<T> extends AbstractListing<T>
     @ClientDelegate
     private void setRequestedRange(int start, int length) {
         getDataCommunicator().setRequestedRange(start, length);
+    }
+
+    @ClientDelegate
+    private void setDetailsVisible(String key) {
+        if (key == null) {
+            detailsManager.setDetailsVisibleFromClient(Collections.emptySet());
+        } else {
+            detailsManager.setDetailsVisibleFromClient(Collections
+                    .singleton(getDataCommunicator().getKeyMapper().get(key)));
+        }
     }
 
     private void setupTemplateRenderer(TemplateRenderer<T> renderer,
