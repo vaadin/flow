@@ -86,6 +86,11 @@
                 <artifactId>vaadin-tabs</artifactId>
                 <version>1.0.0-beta1</version>
             </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>vaadin-item</artifactId>
+                <version>1.0.0-alpha6</version>
+            </dependency>
 
             <!-- WebJars' transitive dependencies resolutions -->
             <dependency>
@@ -143,6 +148,11 @@
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-vaadin-vaadin-themable-mixin</artifactId>
                 <version>v1.1.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>github-com-vaadin-vaadin-list-mixin</artifactId>
+                <version>v1.4.1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
