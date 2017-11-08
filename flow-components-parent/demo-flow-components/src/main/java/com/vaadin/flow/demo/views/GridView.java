@@ -530,10 +530,8 @@ public class GridView extends DemoView {
                 }));
 
         Button toggleDetails = new Button("Toggle details open for second row");
-        toggleDetails.addClickListener(event -> {
-            grid.setDetailsVisible(people.get(1),
-                    !grid.isDetailsVisible(people.get(1)));
-        });
+        toggleDetails.addClickListener(event ->
+            grid.setDetailsVisible(people.get(1), !grid.isDetailsVisible(people.get(1))));
         // end-source-example
         grid.setId("grid-with-details-row");
         toggleDetails.setId("toggle-details-button");
