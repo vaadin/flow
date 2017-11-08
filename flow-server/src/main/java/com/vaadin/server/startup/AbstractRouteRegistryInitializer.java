@@ -23,6 +23,7 @@ import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
+import com.vaadin.router.RouteAlias;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
 
@@ -56,6 +57,18 @@ public abstract class AbstractRouteRegistryInitializer {
     }
 
     private void checkForConflictingAnnotations(Class<?> route) {
+        if (route.isAnnotationPresent(RouteAlias.class)
+                && !route.isAnnotationPresent(Route.class)) {
+            throw new InvalidRouteLayoutConfigurationException(String.format(
+                    "'%s'" + " declares '@%s' but doesn't declare '@%s'. "
+                            + "The '%s' may not be used without '%s'",
+                    route.getCanonicalName(), RouteAlias.class.getSimpleName(),
+                    Route.class.getSimpleName(),
+                    RouteAlias.class.getSimpleName(),
+                    Route.class.getSimpleName()));
+
+        }
+
         if (route.isAnnotationPresent(ParentLayout.class)) {
             throw new InvalidRouteLayoutConfigurationException(route
                     .getCanonicalName()
