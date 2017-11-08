@@ -239,6 +239,7 @@ public class GridView extends DemoView {
         createDetailsRow();
         createColumnGroup();
         createColumnComponentRenderer();
+        createSorting();
 
         addCard("Grid example model",
                 new Label("These objects are used in the examples above"));
@@ -570,6 +571,28 @@ public class GridView extends DemoView {
         // end-source-example
         grid.setId("grid-column-grouping");
         addCard("Configuring columns", "Column grouping example", grid);
+    }
+
+    private void createSorting() {
+        // begin-source-example
+        // source-example-heading: Grid with sortable columns
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(createItems());
+
+        grid.addColumn("Name", Person::getName, "name");
+        grid.addColumn("Age", Person::getAge, "age");
+
+        grid.addColumn("Address",
+                TemplateRenderer
+                        .<Person> of("<div>[[item.street]], number [[item.number]]<br><small>[[item.postalCode]]</small></div>")
+                        .withProperty("street", person -> person.getAddress().getStreet())
+                        .withProperty("number", person -> person.getAddress().getNumber()),
+                "street", "number");
+
+        grid.setSelectionMode(SelectionMode.NONE);
+        // end-source-example
+        grid.setId("template-renderer");
+        addCard("Grid with sortable columns", grid);
     }
 
     private List<Person> getItems() {
