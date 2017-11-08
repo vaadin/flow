@@ -17,6 +17,7 @@ package com.vaadin.flow.di;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
@@ -92,29 +93,35 @@ public class DefaultInstantiator implements Instantiator {
     @Override
     public I18NProvider getI18NProvider() {
         if (!I18NRegistry.getInstance().isInitialized()) {
-            String property = getI18NProviderProperty();
-
-            if (property != null) {
-                try {
-                    // Get i18n provider class if found in application
-                    // properties
-                    Class<?> providerClass = service.getClassLoader()
-                            .loadClass(property);
-                    if (I18NProvider.class.isAssignableFrom(providerClass)) {
-                        I18NRegistry.getInstance()
-                                .setProvider(ReflectTools.createInstance(
-                                        (Class<? extends I18NProvider>) providerClass));
-                    }
-                } catch (ClassNotFoundException e) {
-                    throw new InvalidI18NConfigurationException(
-                            "Failed to load given provider class '" + property
-                                    + "' as it was not found by the class loader.",
-                            e);
-                }
-            }
+            getI18NProviderInstance()
+                    .ifPresent(I18NRegistry.getInstance()::setProvider);
             I18NRegistry.getInstance().markInitialized();
         }
         return I18NRegistry.getInstance().getProvider();
+    }
+
+    private Optional<I18NProvider> getI18NProviderInstance() {
+        String property = getI18NProviderProperty();
+        if (property != null) {
+            return Optional.empty();
+        }
+        try {
+            // Get i18n provider class if found in application
+            // properties
+            Class<?> providerClass = service.getClassLoader()
+                    .loadClass(property);
+            if (I18NProvider.class.isAssignableFrom(providerClass)) {
+
+                return Optional.of(ReflectTools.createInstance(
+                        (Class<? extends I18NProvider>) providerClass));
+            }
+        } catch (ClassNotFoundException e) {
+            throw new InvalidI18NConfigurationException(
+                    "Failed to load given provider class '" + property
+                            + "' as it was not found by the class loader.",
+                    e);
+        }
+        return Optional.empty();
     }
 
     /**

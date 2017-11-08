@@ -38,9 +38,6 @@ public class I18NRegistry {
      * @return singleton instance of the registry
      */
     public static I18NRegistry getInstance() {
-        // if (!INSTANCE.isInitialized()) {
-        // INSTANCE.loadProvider();
-        // }
         return INSTANCE;
     }
 
@@ -81,6 +78,10 @@ public class I18NRegistry {
         i18nProvider.set(provider);
     }
 
+    /**
+     * Flag the registry as initialized so we do not try to fetch a new
+     * provider.
+     */
     public void markInitialized() {
         this.initialized.set(true);
     }
