@@ -741,6 +741,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         // Initialize some fields for a newly created UI
         ui.getInternals().setSession(session);
+        ui.setLocale(session.getLocale());
 
         PushMode pushMode = AnnotationReader.getPushMode(uiClass).orElseGet(
                 session.getService().getDeploymentConfiguration()::getPushMode);

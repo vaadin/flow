@@ -94,6 +94,11 @@ public final class Constants implements Serializable {
      */
     public static final String DISABLE_WEBJARS = "disable.webjars";
 
+    /**
+     * I18N provider property.
+     */
+    public static final String I18N_PROVIDER = "i18n.provider";
+
     private Constants() {
         // prevent instantiation constants class only
     }
