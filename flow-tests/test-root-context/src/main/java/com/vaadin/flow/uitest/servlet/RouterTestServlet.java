@@ -21,7 +21,6 @@ import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.NativeButton;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/new-router-session/*" })
-@VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
 public class RouterTestServlet extends VaadinServlet {
 
     public static class ClassNameDiv extends Div {

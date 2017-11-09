@@ -20,7 +20,6 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.server.VaadinServletConfiguration;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view-production/*" })
-@VaadinServletConfiguration(productionMode = true, usingNewRouting = true)
 public class ProductionModeViewTestServlet extends ViewTestServlet {
 
 }
