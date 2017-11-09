@@ -50,7 +50,6 @@ public class DefaultInstantiator implements Instantiator {
      */
     public DefaultInstantiator(VaadinService service) {
         this.service = service;
-        i18nProvider.compareAndSet(null, getI18NProviderInstance());
     }
 
     @Override
@@ -90,6 +89,9 @@ public class DefaultInstantiator implements Instantiator {
 
     @Override
     public I18NProvider getI18NProvider() {
+        if (i18nProvider.get() == null) {
+            i18nProvider.compareAndSet(null, getI18NProviderInstance());
+        }
         return i18nProvider.get();
     }
 
