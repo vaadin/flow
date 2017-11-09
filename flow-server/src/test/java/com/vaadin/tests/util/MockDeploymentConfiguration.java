@@ -109,4 +109,8 @@ public class MockDeploymentConfiguration
         return Optional.empty();
     }
 
+    @Override
+    public boolean isUsingNewRouting() {
+        return false;
+    }
 }

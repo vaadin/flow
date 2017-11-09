@@ -22,6 +22,7 @@ import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.i18n.I18NProvider;
+import com.vaadin.util.ReflectTools;
 
 public class MockInstantiator implements Instantiator {
 
@@ -44,7 +45,7 @@ public class MockInstantiator implements Instantiator {
     @Override
     public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
             NavigationEvent event) {
-        throw new UnsupportedOperationException();
+        return ReflectTools.createInstance(routeTargetType);
     }
 
     @Override

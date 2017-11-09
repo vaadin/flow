@@ -15,8 +15,12 @@
  */
 package com.vaadin.server;
 
+import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
+
+import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.function.DeploymentConfiguration;
@@ -42,6 +46,12 @@ public class MockVaadinServletService extends VaadinServletService {
     public MockVaadinServletService(VaadinServlet servlet,
             DeploymentConfiguration deploymentConfiguration) {
         super(servlet, deploymentConfiguration);
+
+        try {
+            servlet.init(new MockServletConfig());
+        } catch (ServletException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

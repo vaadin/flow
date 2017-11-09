@@ -100,7 +100,7 @@ class TestServlet extends VaadinServlet {
 
 }
 
-@VaadinServletConfiguration(productionMode = true)
+@VaadinServletConfiguration(productionMode = true, usingNewRouting = false)
 class MissingConfigurationServlet extends VaadinServlet {
     // Should have either ui or routerConfigurator defined
 }
