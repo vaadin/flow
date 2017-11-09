@@ -18,6 +18,7 @@ package com.vaadin.flow.demo;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.openqa.selenium.WebElement;
@@ -47,14 +48,17 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
         checkLogsForErrors();
     }
 
-    private void checkLogsForErrors() {
-        driver.manage().logs().get(LogType.BROWSER).getAll().stream()
+    protected Stream<LogEntry> getLogErrors() {
+        return driver.manage().logs().get(LogType.BROWSER).getAll().stream()
                 .filter(logEntry -> logEntry.getLevel().intValue() > Level.INFO
                         .intValue())
                 // we always have this error
                 .filter(logEntry -> !logEntry.getMessage()
-                        .contains("favicon.ico"))
-                .forEach(this::processWarningOrError);
+                        .contains("favicon.ico"));
+    }
+
+    private void checkLogsForErrors() {
+        getLogErrors().forEach(this::processWarningOrError);
     }
 
     private void processWarningOrError(LogEntry logEntry) {

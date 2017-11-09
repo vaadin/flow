@@ -109,7 +109,7 @@ public class GridViewIT extends ComponentDemoTest {
                 getSelectionMessage(null, GridView.items.get(0), false),
                 messageDiv.getText());
 
-        Assert.assertFalse(isElementPresent(By.className("v-system-error")));
+        Assert.assertFalse(getLogErrors().findAny().isPresent());
     }
 
     @Test
