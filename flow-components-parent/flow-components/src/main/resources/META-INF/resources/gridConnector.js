@@ -43,7 +43,13 @@ window.gridConnector = {
     };
 
     grid.__activeItemChanged = function(newVal, oldVal) {
-      if (!newVal || selectionMode != 'SINGLE') {
+      if (selectionMode != 'SINGLE') {
+        return;
+      }
+      if (!newVal) {
+        if (oldVal && selectedKeys[oldVal.key]) {
+          grid.$connector.doDeselection(oldVal, true);
+        }
         return;
       }
       if (!selectedKeys[newVal.key]) {
@@ -115,13 +121,13 @@ window.gridConnector = {
               grid._cache.items[idx] = items[idx - rangeStart];
             }
           }
+          itemsUpdated(items);
         }
         /**
          * Calls the _assignModels function from GridScrollerElement, that triggers
          * the internal revalidation of the items based on the _cache of the DataProviderMixin.
          */
         grid._assignModels();
-        itemsUpdated(items);
       }
     }
 
@@ -224,6 +230,7 @@ window.gridConnector = {
       if ((typeof mode === 'string' || mode instanceof String)
       && validSelectionModes.indexOf(mode) >= 0) {
         selectionMode = mode;
+        selectedKeys = {};
       } else {
         throw 'Attempted to set an invalid selection mode';
       }

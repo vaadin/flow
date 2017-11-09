@@ -17,6 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -84,6 +85,10 @@ public class GridViewIT extends ComponentDemoTest {
         Assert.assertEquals(
                 getSelectionMessage(null, GridView.items.get(1), true),
                 messageDiv.getText());
+        getCell(grid, "Person 2").click();
+        Assert.assertFalse(isRowSelected(grid, 1));
+
+        getCell(grid, "Person 2").click();
         toggleButton.click();
         Assert.assertTrue(isRowSelected(grid, 0));
         Assert.assertFalse(isRowSelected(grid, 1));
@@ -104,6 +109,8 @@ public class GridViewIT extends ComponentDemoTest {
         Assert.assertEquals(
                 getSelectionMessage(null, GridView.items.get(0), false),
                 messageDiv.getText());
+
+        Assert.assertFalse(getLogEntries(Level.SEVERE).findAny().isPresent());
     }
 
     @Test
