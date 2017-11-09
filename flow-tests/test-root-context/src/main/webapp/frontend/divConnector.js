@@ -4,3 +4,4 @@ window.divConnector = {
             divComponent.$server.handleClientCall("foo");
         }
 }
+
