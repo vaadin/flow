@@ -362,7 +362,7 @@ public class DefaultDeploymentConfiguration
 
     private void checkUsingNewRouting() {
         usingNewRouting = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_USING_NEW_ROUTING, false);
+                Constants.SERVLET_PARAMETER_USING_NEW_ROUTING, true);
     }
 
     private Logger getLogger() {
