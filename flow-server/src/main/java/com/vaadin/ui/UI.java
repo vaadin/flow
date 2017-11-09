@@ -37,6 +37,7 @@ import com.vaadin.router.QueryParameters;
 import com.vaadin.router.Router;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.router.RouterLayout;
+import com.vaadin.router.event.EventUtil;
 import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingCommand;
@@ -605,6 +606,7 @@ public class UI extends Component
      */
     public void setLocale(Locale locale) {
         this.locale = locale;
+        EventUtil.informLocaleChangeObservers(this);
     }
 
     /**

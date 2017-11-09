@@ -37,6 +37,7 @@ import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
+import com.vaadin.ui.i18n.LocaleChangeEvent;
 
 /**
  * Handles navigation events by rendering a contained NavigationState in the
@@ -141,6 +142,9 @@ public class NavigationStateRenderer implements NavigationHandler {
             hasUrlParameter.setParameter(beforeNavigationActivating,
                     hasUrlParameter.deserializeUrlParameters(urlParameters));
         });
+
+        EventUtil.informLocaleChangeObservers(ui, chain);
+
         if (beforeNavigationActivating.hasRerouteTarget()) {
             return reroute(event, beforeNavigationActivating);
         }
