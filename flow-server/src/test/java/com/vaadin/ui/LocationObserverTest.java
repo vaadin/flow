@@ -30,6 +30,7 @@ import com.vaadin.router.Router;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.router.RouterTest;
 import com.vaadin.router.TestRouteRegistry;
+import com.vaadin.server.Command;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.MockVaadinServletService;
 import com.vaadin.server.MockVaadinSession;
@@ -74,6 +75,12 @@ public class LocationObserverTest {
         @Override
         public Optional<RouterInterface> getRouterInterface() {
             return Optional.of(router);
+        }
+
+        @Override
+        public void accessSynchronously(Command command)
+                throws UIDetachedException {
+            // NOOP
         }
     }
 
