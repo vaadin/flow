@@ -81,7 +81,7 @@ public class LocationObserverTest {
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         router = new Router(new TestRouteRegistry());
-        ui = new RouterTest.RouterTestUI(router);
+        ui = new RouterTestUI(router);
         eventCollector.clear();
     }
 
