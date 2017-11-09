@@ -17,6 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -109,7 +110,7 @@ public class GridViewIT extends ComponentDemoTest {
                 getSelectionMessage(null, GridView.items.get(0), false),
                 messageDiv.getText());
 
-        Assert.assertFalse(isElementPresent(By.className("v-system-error")));
+        Assert.assertFalse(getLogEntries(Level.SEVERE).findAny().isPresent());
     }
 
     @Test
