@@ -76,8 +76,8 @@ public final class EventUtil {
         Stream<Element> elements = components.stream()
                 .flatMap(component -> flattenChildren(component.getElement()));
 
-        return getImplementingComponents(elements, BeforeNavigationObserver.class)
-                .collect(Collectors.toList());
+        return getImplementingComponents(elements,
+                BeforeNavigationObserver.class).collect(Collectors.toList());
     }
 
     /**
@@ -110,8 +110,8 @@ public final class EventUtil {
         Stream<Element> elements = components.stream()
                 .flatMap(component -> flattenChildren(component.getElement()));
 
-        return getImplementingComponents(elements, AfterNavigationObserver.class)
-                .collect(Collectors.toList());
+        return getImplementingComponents(elements,
+                AfterNavigationObserver.class).collect(Collectors.toList());
     }
 
     /**
@@ -151,7 +151,6 @@ public final class EventUtil {
      *
      * @param ui
      *            UI for locale change
-     * @return navigation listeners
      */
     public static void informLocaleChangeObservers(UI ui) {
         LocaleChangeEvent localeChangeEvent = new LocaleChangeEvent(ui,
@@ -168,7 +167,6 @@ public final class EventUtil {
      *            UI for locale change
      * @param components
      *            components to search
-     * @return navigation listeners
      */
     public static void informLocaleChangeObservers(UI ui,
             List<HasElement> components) {
