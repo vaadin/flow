@@ -194,5 +194,30 @@ This observer will also be notified on navigation in the attach phase of before
 navigation after any url parameters are set, so that the state from a url parameter
 can be used.
 
-!! Small sample here !!
+[source,java]
+----
+public class LocaleObserver extends Div implements LocaleChangeObserver {
 
+    @Override
+    public void localeChange(LocaleChangeEvent event) {
+        setText(getProvider().getTranslation("my.translation",
+                "My parameter!"));
+    }
+}
+----
+
+==== Using localization without using LocaleChangeObserver
+
+.I18NProvider without LocaleChangeObserver
+[source,java]
+----
+public class MyLocale extends Div {
+
+    public MyLocale() {
+        I18NProvider provider = VaadinService.getCurrent().getInstantiator()
+                .getI18NProvider();
+
+        setText(provider.getTranslation("my.translation", "My parameter!"));
+    }
+}
+----
