@@ -19,36 +19,18 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.ui.i18n.I18NProvider;
 
-public class I18NRegistryTest {
-
-    @Before
-    public void init() throws NoSuchFieldException, IllegalAccessException {
-        Field initialized = I18NRegistry.class.getDeclaredField("initialized");
-        initialized.setAccessible(true);
-        initialized.set(I18NRegistry.getInstance(), new AtomicReference<>());
-    }
-
-    @Test
-    public void no_property_defined_should_init_registy()
-            throws ServletException, ServiceException {
-        initServletAndService(new Properties());
-
-        Assert.assertTrue("Registry should have been initialized",
-                I18NRegistry.getInstance().isInitialized());
-    }
+public class I18NProviderTest {
 
     @Test
     public void no_property_defined_should_leave_with_default_locale()
@@ -68,11 +50,9 @@ public class I18NRegistryTest {
 
         initServletAndService(initParams);
 
-        Assert.assertTrue("Registry should have been initialized",
-                I18NRegistry.getInstance().isInitialized());
-
         Assert.assertEquals("Found wrong registry", TestProvider.class,
-                I18NRegistry.getInstance().getProvider().getClass());
+                VaadinService.getCurrent().getInstantiator().getI18NProvider()
+                        .getClass());
     }
 
     @Test
@@ -84,12 +64,12 @@ public class I18NRegistryTest {
 
         initServletAndService(initParams);
 
-        Assert.assertNotNull("No provider for ",
-                I18NRegistry.getInstance().getProvider());
+        I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator()
+                .getI18NProvider();
+        Assert.assertNotNull("No provider for ", i18NProvider);
 
-        Assert.assertEquals(
-                "Locale was not the defined locale", I18NRegistry.getInstance()
-                        .getProvider().getProvidedLocales().get(0),
+        Assert.assertEquals("Locale was not the defined locale",
+                i18NProvider.getProvidedLocales().get(0),
                 VaadinSession.getCurrent().getLocale());
 
     }
@@ -148,6 +128,7 @@ public class I18NRegistryTest {
         }
 
         service.init();
+        VaadinService.setCurrent(service);
 
         return servlet;
     }

@@ -14,23 +14,12 @@ To use localization and translation strings the application only needs to implem
 ==== Defining the i18n provider property
 
 The `i18n.provider` property can be set from the command line as a system property,
-as a Servlet init parameter in the `web.xml`, using the `@WebServlet` annotation or
-adding the property to `application.properties`.
-
+as a Servlet init parameter in the `web.xml` or using the `@WebServlet` annotation.
 
 As a system property the parameter needs the `vaadin` prefix e.g.:
 [source,bash]
 ----
 mvn jetty:run -Dvaadin.i18n.provider=com.vaadin.example.ui.TranslationProvider
-----
-
-Using `application.properties`, the properties file should be located in `src/main/resources` with the content:
-
-.src/main/resources/application.properties
-[source,text]
-----
-i18n.provider=com.vaadin.example.ui.TranslationProvider
-
 ----
 
 When using the annotation you could have the servlet class as:
@@ -191,3 +180,19 @@ public class TranslationProvider implements I18NProvider {
     }
 }
 ----
+
+=== Using localization in the application
+
+Using the internationalization in the application is a combination of using the
+I18NProvider and updating the translations on locale change.
+
+To make this simple the application classes that control the captions and texts
+that are localized can implement the `LocaleChangeObserver` to receive events
+for locale change.
+
+This observer will also be notified on navigation in the attach phase of before
+navigation after any url parameters are set, so that the state from a url parameter
+can be used.
+
+!! Small sample here !!
+

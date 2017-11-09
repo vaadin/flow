@@ -73,8 +73,9 @@ public class EventUtilTest {
         };
         VaadinService service = Mockito.mock(VaadinService.class);
         when(session.getService()).thenReturn(service);
+        DefaultInstantiator instantiator = new DefaultInstantiator(service);
         when(service.getInstantiator())
-                .thenReturn(new DefaultInstantiator(service));
+                .thenReturn(instantiator);
         UI.setCurrent(ui);
     }
 

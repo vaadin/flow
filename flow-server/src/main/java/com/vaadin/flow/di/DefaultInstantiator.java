@@ -15,21 +15,17 @@
  */
 package com.vaadin.flow.di;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Optional;
-import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.Constants;
-import com.vaadin.server.I18NRegistry;
 import com.vaadin.server.InvalidI18NConfigurationException;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.i18n.I18NProvider;
@@ -44,6 +40,7 @@ import com.vaadin.util.ReflectTools;
  */
 public class DefaultInstantiator implements Instantiator {
     private VaadinService service;
+    private static final AtomicReference<I18NProvider> i18nProvider = new AtomicReference<>();
 
     /**
      * Creates a new instantiator for the given service.
@@ -53,6 +50,7 @@ public class DefaultInstantiator implements Instantiator {
      */
     public DefaultInstantiator(VaadinService service) {
         this.service = service;
+        i18nProvider.compareAndSet(null, getI18NProviderInstance());
     }
 
     @Override
@@ -92,28 +90,23 @@ public class DefaultInstantiator implements Instantiator {
 
     @Override
     public I18NProvider getI18NProvider() {
-        if (!I18NRegistry.getInstance().isInitialized()) {
-            getI18NProviderInstance()
-                    .ifPresent(I18NRegistry.getInstance()::setProvider);
-            I18NRegistry.getInstance().markInitialized();
-        }
-        return I18NRegistry.getInstance().getProvider();
+        return i18nProvider.get();
     }
 
-    private Optional<I18NProvider> getI18NProviderInstance() {
+    private I18NProvider getI18NProviderInstance() {
         String property = getI18NProviderProperty();
         if (property == null) {
-            return Optional.empty();
+            return null;
         }
         try {
             // Get i18n provider class if found in application
             // properties
-            Class<?> providerClass = service.getClassLoader()
+            Class<?> providerClass = DefaultInstantiator.class.getClassLoader()
                     .loadClass(property);
             if (I18NProvider.class.isAssignableFrom(providerClass)) {
 
-                return Optional.of(ReflectTools.createInstance(
-                        (Class<? extends I18NProvider>) providerClass));
+                return ReflectTools.createInstance(
+                        (Class<? extends I18NProvider>) providerClass);
             }
         } catch (ClassNotFoundException e) {
             throw new InvalidI18NConfigurationException(
@@ -121,7 +114,7 @@ public class DefaultInstantiator implements Instantiator {
                             + "' as it was not found by the class loader.",
                     e);
         }
-        return Optional.empty();
+        return null;
     }
 
     /**
@@ -131,26 +124,12 @@ public class DefaultInstantiator implements Instantiator {
      * @return I18NProvider parameter or null if not found
      */
     private String getI18NProviderProperty() {
-        String property = VaadinSession.getCurrent().getConfiguration()
-                .getStringProperty(Constants.I18N_PROVIDER, null);
-        if (property == null) {
-            Properties properties = new Properties();
-            try (InputStream is = service.getClassLoader()
-                    .getResourceAsStream("application.properties")) {
-                if (is == null) {
-                    return null;
-                }
-
-                // load application properties.
-                properties.load(is);
-            } catch (IOException e) {
-                throw new InvalidI18NConfigurationException(
-                        "Failed to load 'application.properties' file as Properties.",
-                        e);
-            }
-
-            return properties.getProperty(Constants.I18N_PROVIDER);
+        DeploymentConfiguration deploymentConfiguration = service
+                .getDeploymentConfiguration();
+        if (deploymentConfiguration == null) {
+            return null;
         }
-        return property;
+        return deploymentConfiguration
+                .getStringProperty(Constants.I18N_PROVIDER, null);
     }
 }
