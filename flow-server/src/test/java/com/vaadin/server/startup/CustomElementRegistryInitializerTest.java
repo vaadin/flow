@@ -15,15 +15,12 @@
  */
 package com.vaadin.server.startup;
 
-import static org.mockito.Mockito.when;
-
+import javax.servlet.ServletException;
 import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletException;
 
 import org.jsoup.Jsoup;
 import org.junit.After;
@@ -44,6 +41,8 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.polymertemplate.TemplateParser;
 import com.vaadin.util.HasCurrentService;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Test that correct @Tag custom elements get loaded by the initializer loader.
@@ -86,8 +85,8 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
         };
         VaadinService service = Mockito.mock(VaadinService.class);
         when(session.getService()).thenReturn(service);
-        when(service.getInstantiator())
-                .thenReturn(new DefaultInstantiator(service));
+        DefaultInstantiator instantiator = new DefaultInstantiator(service);
+        when(service.getInstantiator()).thenReturn(instantiator);
         UI.setCurrent(ui);
     }
 
