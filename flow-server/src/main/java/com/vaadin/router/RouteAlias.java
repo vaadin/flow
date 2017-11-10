@@ -30,11 +30,11 @@ import com.vaadin.ui.UI;
  * routing.
  * <p>
  * The route alias allows to declare several route paths in addition to the path
- * declared by the {@link @Route #Route} annotation. Component has to have at
- * least one {@link @Route #Route} annotation which is considered as a primary
- * route and its route path will be used if {@link Router#getUrl(Class)} is
- * called. Thus {@code @RouteAlias} route path is used only to resolve the
- * component during navigation.
+ * declared by the {@link Route} annotation. Component has to have at least one
+ * {@literal @Route} annotation which is considered as a primary route and its
+ * route path will be used if {@link Router#getUrl(Class)} is called. Thus
+ * {@code @RouteAlias} route path is used only to resolve the component during
+ * navigation.
  * <p>
  * This annotation is repeatable so you can use this annotation multiple times.
  *

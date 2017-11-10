@@ -28,8 +28,8 @@ import com.vaadin.ui.UI;
  * Defines the route for components that function as navigation targets in
  * routing.
  * <p>
- * There is also {@link RouteAlias @RouteAlias} annotation which may be declared
- * in addition to this annotation and may be used mutiple times.
+ * There is also {@link RouteAlias} annotation which may be declared in addition
+ * to this annotation and may be used mutiple times.
  *
  * @see RouteAlias
  */
