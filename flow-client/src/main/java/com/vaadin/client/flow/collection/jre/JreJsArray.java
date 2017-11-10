@@ -58,6 +58,9 @@ public class JreJsArray<T> extends JsArray<T> {
      * @return the value at the index
      */
     public T doGet(int index) {
+        if (index >= values.size()) {
+            return null;
+        }
         return values.get(index);
     }
 

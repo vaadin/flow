@@ -52,6 +52,9 @@ public class StringToNumberDecoder implements RpcDecoder {
         String stringValue = value.asString();
         try {
             Number number = parseNumber(stringValue);
+            if (Number.class.equals(type)) {
+                return type.cast(number);
+            }
             Field requiredType = type.getField("TYPE");
             Class<?> primitiveRequiredType = (Class<?>) requiredType.get(null);
             Method method = Number.class

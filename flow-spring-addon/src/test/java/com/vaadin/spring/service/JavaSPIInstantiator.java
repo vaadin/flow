@@ -23,6 +23,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
+import com.vaadin.ui.i18n.I18NProvider;
 
 public class JavaSPIInstantiator implements Instantiator {
 
@@ -48,6 +49,11 @@ public class JavaSPIInstantiator implements Instantiator {
 
     @Override
     public <T extends Component> T createComponent(Class<T> componentClass) {
+        return null;
+    }
+
+    @Override
+    public I18NProvider getI18NProvider() {
         return null;
     }
 
