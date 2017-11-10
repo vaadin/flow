@@ -16,6 +16,9 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.dialog.Dialog;
@@ -25,14 +28,15 @@ import com.vaadin.ui.layout.HorizontalLayout;
 /**
  * View for {@link Dialog} demo.
  */
+@Route(value = "vaadin-dialog", layout = MainLayout.class)
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
-@ComponentDemo(name = "Dialog", href = "vaadin-dialog")
+@ComponentDemo(name = "Dialog")
 public class DialogView extends DemoView {
 
     private static final String BUTTON_CAPTION = "Open dialog";
 
     @Override
-    void initView() {
+    protected void initView() {
         addBasicDialog();
         addDialogWithOpenedChangedListener();
         addDialogWithHTML();
