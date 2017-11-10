@@ -37,6 +37,9 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.UI;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class CurrentInstanceTest {
 
     @Before
@@ -151,8 +154,7 @@ public class CurrentInstanceTest {
                 .setCurrent(session2);
 
         // Use weak ref to verify object is collected
-        WeakReference<VaadinSession> ref = new WeakReference<>(
-                session1);
+        WeakReference<VaadinSession> ref = new WeakReference<>(session1);
 
         session1 = null;
         Assert.assertTrue(TestUtil.isGarbageCollected(ref));

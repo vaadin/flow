@@ -75,7 +75,9 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import net.jcip.annotations.NotThreadSafe;
 
+@NotThreadSafe
 public class UidlWriterTest {
     private static final String JS_TYPE_NAME = Dependency.Type.JAVASCRIPT
             .name();
@@ -210,10 +212,9 @@ public class UidlWriterTest {
         JsonArray json = UidlWriter
                 .encodeExecuteJavaScriptList(executeJavaScriptList);
 
-        JsonArray expectedJson = JsonUtils.createArray(
-                JsonUtils.createArray(
-                        // Null since element is not attached
-                        Json.createNull(), Json.create("$0.focus()")),
+        JsonArray expectedJson = JsonUtils.createArray(JsonUtils.createArray(
+                // Null since element is not attached
+                Json.createNull(), Json.create("$0.focus()")),
                 JsonUtils.createArray(Json.create("Lives remaining:"),
                         Json.create(3), Json.create("console.log($0, $1)")));
 

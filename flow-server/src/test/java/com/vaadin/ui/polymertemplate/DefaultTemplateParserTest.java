@@ -55,6 +55,9 @@ import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.PolymerTemplateTest.ModelClass;
 import com.vaadin.util.CurrentInstance;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class DefaultTemplateParserTest {
 
     @Tag("foo")
