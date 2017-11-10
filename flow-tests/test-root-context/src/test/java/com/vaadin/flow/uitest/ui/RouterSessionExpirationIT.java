@@ -78,7 +78,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     private void navigateTo(String linkText) {
         findElement(By.linkText(linkText)).click();
         Assert.assertNotNull(
-                findElement(By.xpath("//strong[text()='" + linkText + "']")));
+                findElement(By.xpath("//a[text()='" + linkText + "']")));
 
     }
 }
