@@ -25,6 +25,11 @@
             <artifactId>flow-components</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-component-demo-helpers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -113,7 +118,11 @@
             <groupId>org.webjars.bower</groupId>
             <artifactId>iron-icons</artifactId>
             <version>2.0.1</version>
-        </dependency>
+        </dependency><dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-testbench-core</artifactId>
+        <version>5.1.0.alpha1</version>
+    </dependency>
     </dependencies>
 
     <build>

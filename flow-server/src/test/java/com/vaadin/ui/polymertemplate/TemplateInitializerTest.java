@@ -32,9 +32,12 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Tag;
 import com.vaadin.util.HasCurrentService;
 
+import net.jcip.annotations.NotThreadSafe;
+
 /**
  * @author Vaadin Ltd.
  */
+@NotThreadSafe
 public class TemplateInitializerTest extends HasCurrentService {
     private TemplateParser templateParser;
 

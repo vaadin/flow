@@ -36,10 +36,13 @@ import org.junit.Test;
 import com.vaadin.server.communication.StreamRequestHandler;
 import com.vaadin.util.CurrentInstance;
 
+import net.jcip.annotations.NotThreadSafe;
+
 /**
  *
  * @author Vaadin Ltd
  */
+@NotThreadSafe
 public class VaadinServiceTest {
 
     private class TestSessionDestroyListener implements SessionDestroyListener {
@@ -156,8 +159,8 @@ public class VaadinServiceTest {
         servlet.init(servletConfig);
         VaadinService service = servlet.getService();
         Assert.assertTrue(service.createRequestHandlers().stream()
-                .filter(StreamRequestHandler.class::isInstance)
-                .findAny().isPresent());
+                .filter(StreamRequestHandler.class::isInstance).findAny()
+                .isPresent());
     }
 
     @Test

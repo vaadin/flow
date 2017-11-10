@@ -19,6 +19,9 @@ import java.time.LocalDate;
 import java.util.Arrays;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.datepicker.DatePicker;
 import com.vaadin.ui.datepicker.DatePicker.DatePickerI18n;
@@ -27,12 +30,13 @@ import com.vaadin.ui.html.Div;
 /**
  * View for {@link DatePicker} demo.
  */
+@Route(value = "vaadin-date-picker", layout = MainLayout.class)
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-date-picker.html")
-@ComponentDemo(name = "Date Picker", href = "vaadin-date-picker")
+@ComponentDemo(name = "Date Picker")
 public class DatePickerView extends DemoView {
 
     @Override
-    void initView() {
+    protected void initView() {
         createSimpleDatePicker();
         createMinAndMaxDatePicker();
         createFinnishDatePicker();

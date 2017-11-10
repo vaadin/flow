@@ -38,9 +38,12 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
+import net.jcip.annotations.NotThreadSafe;
+
 /**
  * Test event util functionality.
  */
+@NotThreadSafe
 public class EventUtilTest {
 
     @Tag(Tag.DIV)
@@ -74,8 +77,7 @@ public class EventUtilTest {
         VaadinService service = Mockito.mock(VaadinService.class);
         when(session.getService()).thenReturn(service);
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
-        when(service.getInstantiator())
-                .thenReturn(instantiator);
+        when(service.getInstantiator()).thenReturn(instantiator);
         UI.setCurrent(ui);
     }
 

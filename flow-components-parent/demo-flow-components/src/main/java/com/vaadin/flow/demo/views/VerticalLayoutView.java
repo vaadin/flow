@@ -16,6 +16,9 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
@@ -27,12 +30,13 @@ import com.vaadin.ui.layout.VerticalLayout;
 /**
  * View for the {@link VerticalLayout} component.
  */
+@Route(value = "vertical-layout", layout = MainLayout.class)
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
-@ComponentDemo(name = "Vertical Layout", href = "vertical-layout", subcategory = "Layouts")
+@ComponentDemo(name = "Vertical Layout", subcategory = "Layouts")
 public class VerticalLayoutView extends DemoView {
 
     @Override
-    void initView() {
+    protected void initView() {
         createDefaultLayout();
         createLayoutWithSpacing();
         createLayoutWithDefaultAlignment();

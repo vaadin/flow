@@ -25,17 +25,18 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.ComponentDemoTest;
-import org.openqa.selenium.By;
+import com.vaadin.flow.demo.TabbedComponentDemoTest;
+import com.vaadin.testbench.By;
 
 /**
  * Integration tests for the {@link GridView}.
  *
  */
-public class GridViewIT extends ComponentDemoTest {
+public class GridViewIT extends TabbedComponentDemoTest {
 
     @Test
     public void dataIsShown() throws InterruptedException {
+        openDemoPageAndCheckForErrors("");
         WebElement grid = findElement(By.id("basic"));
 
         Assert.assertTrue(hasCell(grid, "Name"));
@@ -49,6 +50,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void lazyDataIsShown() throws InterruptedException {
+        openDemoPageAndCheckForErrors("");
         WebElement grid = findElement(By.id("lazy-loading"));
 
         scrollToElement(grid);
@@ -62,6 +64,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void gridAsSingleSelect() {
+        openDemoPageAndCheckForErrors("selection");
         WebElement grid = findElement(By.id("single-selection"));
         scrollToElement(grid);
 
@@ -115,6 +118,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void gridAsMultiSelect() {
+        openDemoPageAndCheckForErrors("selection");
         WebElement grid = findElement(By.id("multi-selection"));
         scrollToElement(grid);
 
@@ -150,6 +154,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void gridWithDisabledSelection() {
+        openDemoPageAndCheckForErrors("selection");
         WebElement grid = findElement(By.id("none-selection"));
         scrollToElement(grid);
         grid.findElements(By.tagName("vaadin-grid-cell-content")).get(3)
@@ -159,6 +164,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void gridWithColumnTemplate() {
+        openDemoPageAndCheckForErrors("using-templates");
         WebElement grid = findElement(By.id("template-renderer"));
         scrollToElement(grid);
         Assert.assertTrue(hasHtmlCell(grid, "0"));
@@ -188,6 +194,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void gridColumnApiTests() {
+        openDemoPageAndCheckForErrors("configuring-columns");
         WebElement grid = findElement(By.id("column-api-example"));
         scrollToElement(grid);
 
@@ -242,6 +249,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void gridDetailsRowTests() {
+        openDemoPageAndCheckForErrors("using-templates");
         WebElement grid = findElement(By.id("grid-with-details-row"));
         scrollToElement(grid);
 
@@ -261,6 +269,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void gridDetailsRowServerAPI() {
+        openDemoPageAndCheckForErrors("using-templates");
         WebElement grid = findElement(By.id("grid-with-details-row"));
         scrollToElement(grid);
 
@@ -276,6 +285,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void groupedColumns() {
+        openDemoPageAndCheckForErrors("configuring-columns");
         WebElement grid = findElement(By.id("grid-column-grouping"));
         scrollToElement(grid);
 
@@ -294,6 +304,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void gridWithComponentRenderer_cellsAreRenderered() {
+        openDemoPageAndCheckForErrors("using-components");
         WebElement grid = findElement(By.id("component-renderer"));
         scrollToElement(grid);
 
@@ -327,6 +338,7 @@ public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void gridWithComponentRenderer_detailsAreRenderered() {
+        openDemoPageAndCheckForErrors("using-components");
         WebElement grid = findElement(By.id("component-renderer"));
         scrollToElement(grid);
 
