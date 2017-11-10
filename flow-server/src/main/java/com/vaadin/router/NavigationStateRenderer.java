@@ -143,8 +143,6 @@ public class NavigationStateRenderer implements NavigationHandler {
                     hasUrlParameter.deserializeUrlParameters(urlParameters));
         });
 
-        EventUtil.informLocaleChangeObservers(ui, chain);
-
         if (beforeNavigationActivating.hasRerouteTarget()) {
             return reroute(event, beforeNavigationActivating);
         }

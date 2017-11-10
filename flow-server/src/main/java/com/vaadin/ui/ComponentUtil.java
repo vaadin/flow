@@ -33,6 +33,8 @@ import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.common.Uses;
 import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.DetachEvent;
+import com.vaadin.ui.i18n.LocaleChangeEvent;
+import com.vaadin.ui.i18n.LocaleChangeObserver;
 
 /**
  * Utility methods for {@link Component}.
@@ -208,6 +210,13 @@ public class ComponentUtil {
         if (component instanceof Composite) {
             onComponentAttach(((Composite<?>) component).getContent(),
                     initialAttach);
+        }
+
+        if (initialAttach && component instanceof LocaleChangeObserver) {
+            UI ui = UI.getCurrent();
+            LocaleChangeEvent localeChangeEvent = new LocaleChangeEvent(ui,
+                    ui.getLocale());
+            ((LocaleChangeObserver) component).localeChange(localeChangeEvent);
         }
 
         AttachEvent attachEvent = new AttachEvent(component, initialAttach);

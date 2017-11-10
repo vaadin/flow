@@ -28,7 +28,6 @@ import org.junit.Test;
 import com.vaadin.router.Route;
 import com.vaadin.router.Router;
 import com.vaadin.router.RouterInterface;
-import com.vaadin.router.RouterTest;
 import com.vaadin.router.TestRouteRegistry;
 import com.vaadin.server.Command;
 import com.vaadin.server.InvalidRouteConfigurationException;
@@ -56,6 +55,11 @@ public class LocationObserverTest {
             eventCollector.add("Received locale change event for locale: "
                     + event.getLocale().getDisplayName());
         }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class RootComponent extends Component {
     }
 
     public static class RouterTestUI extends MockUI {
@@ -139,12 +143,32 @@ public class LocationObserverTest {
 
         ui.setLocale(Locale.FRENCH);
 
-
         Assert.assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
         Assert.assertEquals(
                 "Received locale change event for locale: "
                         + Locale.FRENCH.getDisplayName(),
                 eventCollector.get(1));
+    }
+
+    @Test
+    public void location_change_should_be_fired_also_on_component_attach()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(RootComponent.class));
+
+        ui.navigateTo("");
+
+        Assert.assertEquals("Expected event amount was wrong", 0,
+                eventCollector.size());
+
+        ui.getElement().appendChild(new Translations().getElement());
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals(
+                "Received locale change event for locale: "
+                        + Locale.getDefault().getDisplayName(),
+                eventCollector.get(0));
     }
 }
