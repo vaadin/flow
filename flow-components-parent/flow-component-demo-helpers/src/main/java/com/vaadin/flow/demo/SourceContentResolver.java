@@ -88,22 +88,30 @@ public class SourceContentResolver {
 
     private static String getResourcePath(
             Class<? extends DemoView> demoViewClass) {
-        String resourcePath = "../test-classes/"
-                + demoViewClass.getPackage().getName().replaceAll("\\.", "/")
-                + "/" + demoViewClass.getSimpleName() + ".java";
-        if (SourceContentResolver.class.getClassLoader()
-                .getResource(resourcePath) == null) {
+        String javaFile = demoViewClass.getSimpleName() + ".java";
+        String formattedPackageName = demoViewClass.getPackage().getName()
+                .replaceAll("\\.", "/");
+        String resourcePath = "../test-classes/" + formattedPackageName + "/"
+                + javaFile;
+        if (!isAvailable(resourcePath)) {
             resourcePath = "../test-classes/"
-                    + demoViewClass.getPackage().getName() + "/"
-                    + demoViewClass.getSimpleName() + ".java";
-            if (SourceContentResolver.class.getClassLoader()
-                    .getResource(resourcePath) == null) {
-                throw new IllegalArgumentException(
-                        "Could not find file resources for '"
-                                + demoViewClass.getName() + "'!");
+                    + demoViewClass.getPackage().getName() + "/" + javaFile;
+            if (!isAvailable(resourcePath)) {
+                resourcePath = "/" + formattedPackageName + "/" + javaFile;
+
+                if (!isAvailable(resourcePath)) {
+                    throw new IllegalArgumentException(
+                            "Could not find file resources for '"
+                                    + demoViewClass.getName() + "'!");
+                }
             }
         }
         return resourcePath;
+    }
+
+    private static boolean isAvailable(String resourcePath) {
+        return SourceContentResolver.class.getClassLoader()
+                .getResource(resourcePath) != null;
     }
 
     private static List<SourceCodeExample> parseSourceCodeExamples(

@@ -18,7 +18,6 @@ package com.vaadin.flow.demo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,8 +25,6 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-
-import com.vaadin.flow.demo.views.DemoView;
 
 /**
  * Registration initializer that collects all the demo views available
@@ -56,21 +53,5 @@ public class ComponentDemoRegister implements ServletContainerInitializer {
      */
     public static List<Class<? extends DemoView>> getAvailableViews() {
         return new ArrayList<>(availableViews);
-    }
-
-    /**
-     * Gets a specific view based on the {@link ComponentDemo#href()} of the
-     * demo.
-     *
-     * @param componentName
-     *            the href of the demo
-     * @return an optional with the view, or empty if the view wasn't found
-     */
-    public static Optional<Class<? extends DemoView>> getViewFor(
-            String componentName) {
-        return availableViews.stream()
-                .filter(view -> view.getAnnotation(ComponentDemo.class).href()
-                        .equals(componentName))
-                .findFirst();
     }
 }
