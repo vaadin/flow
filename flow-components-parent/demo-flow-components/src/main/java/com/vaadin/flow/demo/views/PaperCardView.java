@@ -17,6 +17,9 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.paper.button.GeneratedPaperButton;
 import com.vaadin.ui.paper.card.GeneratedPaperCard;
@@ -24,7 +27,8 @@ import com.vaadin.ui.paper.card.GeneratedPaperCard;
 /**
  * View for {@link GeneratedPaperCard} demo.
  */
-@ComponentDemo(name = "Paper Card", href = "paper-card", category = DemoCategory.PAPER)
+@Route(value = "paper-card", layout = MainLayout.class)
+@ComponentDemo(name = "Paper Card", category = DemoCategory.PAPER)
 public class PaperCardView extends DemoView {
 
     @Override

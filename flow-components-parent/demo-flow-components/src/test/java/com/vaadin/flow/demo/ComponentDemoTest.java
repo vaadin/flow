@@ -57,7 +57,7 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
                         .contains("favicon.ico"));
     }
 
-    private void checkLogsForErrors() {
+    protected void checkLogsForErrors() {
         getLogEntries(Level.WARNING).forEach(this::processWarningOrError);
     }
 

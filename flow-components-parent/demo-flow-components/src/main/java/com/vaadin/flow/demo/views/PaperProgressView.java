@@ -17,6 +17,9 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.paper.progress.GeneratedPaperProgress;
@@ -24,7 +27,8 @@ import com.vaadin.ui.paper.progress.GeneratedPaperProgress;
 /**
  * View for {@link GeneratedPaperProgress} demo.
  */
-@ComponentDemo(name = "Paper Progress", href = "paper-progress", category = DemoCategory.PAPER)
+@Route(value = "paper-progress", layout = MainLayout.class)
+@ComponentDemo(name = "Paper Progress", category = DemoCategory.PAPER)
 @StyleSheet("src/css/progress.css")
 public class PaperProgressView extends DemoView {
 
