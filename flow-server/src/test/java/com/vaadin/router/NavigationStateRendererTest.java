@@ -28,8 +28,12 @@ import com.vaadin.server.ServiceException;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Text;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class NavigationStateRendererTest {
 
     @Test
@@ -98,6 +102,8 @@ public class NavigationStateRendererTest {
         Component routeTarget = renderer.getRouteTarget(Component.class, event);
 
         Assert.assertEquals(Text.class, routeTarget.getClass());
+
+        UI.setCurrent(null);
     }
 
     @Route("parent")

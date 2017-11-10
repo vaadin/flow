@@ -61,10 +61,12 @@ import com.vaadin.ui.UI;
 import com.vaadin.util.HasCurrentService;
 
 import elemental.json.JsonArray;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * @author Vaadin Ltd.
  */
+@NotThreadSafe
 public class PolymerTemplateTest extends HasCurrentService {
     private static final String TAG = "FFS";
 
@@ -395,8 +397,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         VaadinService service = Mockito.mock(VaadinService.class);
         when(session.getService()).thenReturn(service);
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
-        when(service.getInstantiator())
-                .thenReturn(instantiator);
+        when(service.getInstantiator()).thenReturn(instantiator);
         UI.setCurrent(ui);
     }
 

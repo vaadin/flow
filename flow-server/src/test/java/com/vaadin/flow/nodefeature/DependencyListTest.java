@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,11 +32,14 @@ import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.Dependency.Type;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.common.DependencyList;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import net.jcip.annotations.NotThreadSafe;
 
+@NotThreadSafe
 public class DependencyListTest {
     private static final String URL = "https://example.net/";
 
@@ -48,6 +52,11 @@ public class DependencyListTest {
         deps = ui.getInternals().getDependencyList();
 
         assertEquals(0, deps.getPendingSendToClient().size());
+    }
+
+    @After
+    public void after() {
+        UI.setCurrent(null);
     }
 
     @Test
@@ -131,12 +140,10 @@ public class DependencyListTest {
 
         assertEquals("Expected to receive exactly one dependency", 1,
                 deps.getPendingSendToClient().size());
-        assertTrue(
-                String.format(
-                        "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
-                        expectedJson.toJson(),
-                        deps.getPendingSendToClient().iterator().next()
-                                .toJson()),
+        assertTrue(String.format(
+                "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
+                expectedJson.toJson(),
+                deps.getPendingSendToClient().iterator().next().toJson()),
                 JsonUtils.jsonEquals(expectedJson, deps.getPendingSendToClient()
                         .iterator().next().toJson()));
     }

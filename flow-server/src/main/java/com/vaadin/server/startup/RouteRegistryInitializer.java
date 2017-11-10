@@ -15,21 +15,23 @@
  */
 package com.vaadin.server.startup;
 
+import java.util.Collections;
+import java.util.Set;
+
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.util.Collections;
-import java.util.Set;
 
 import com.vaadin.router.Route;
+import com.vaadin.router.RouteAlias;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.
  */
-@HandlesTypes(Route.class)
+@HandlesTypes({ Route.class, RouteAlias.class })
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         implements ServletContainerInitializer {
 
