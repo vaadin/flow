@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * Annotation enabling using multiple {@link RouteAlias @RouteAlias}
  * annotations.
  * <p>
- * <b>NOT meant to be used</b>, for multiple style sheet dependencies,
+ * <b>NOT meant to be used directly</b>, for multiple style sheet dependencies,
  * {@link RouteAlias @RouteAlias} should be used instead.
  *
  * @author Vaadin Ltd

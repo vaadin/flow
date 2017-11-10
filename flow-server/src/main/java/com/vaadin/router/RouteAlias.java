@@ -29,14 +29,14 @@ import com.vaadin.ui.UI;
  * Defines the route alias for components that function as navigation targets in
  * routing.
  * <p>
- * The route alias allows to declare several route paths in addition to the path
- * declared by the {@link Route} annotation. Component has to have at least one
- * {@literal @Route} annotation which is considered as a primary route and its
- * route path will be used if {@link Router#getUrl(Class)} is called. Thus
+ * The route alias allows declaring several route paths in addition to the path
+ * declared by the {@link Route} annotation. The component has to have at least
+ * one {@literal @Route} annotation which is considered as a primary route and
+ * its route path will be used if {@link Router#getUrl(Class)} is called. Thus
  * {@code @RouteAlias} route path is used only to resolve the component during
  * navigation.
  * <p>
- * This annotation is repeatable so you can use this annotation multiple times.
+ * This annotation can be used multiple times on the same class.
  *
  * @see Route
  */
@@ -66,7 +66,7 @@ public @interface RouteAlias {
     Class<? extends RouterLayout> layout() default UI.class;
 
     /**
-     * Have the rout chain break on defined class and not take into notice any
+     * Have the route chain break on defined class and not take into notice any
      * more parent layout route prefixes.
      *
      * @return route up to here should be absolute
