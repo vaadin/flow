@@ -160,7 +160,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void headHasmetaTags() throws Exception {
+    public void headHasMetaTags() throws Exception {
         initUI(testUI, createVaadinRequest());
 
         Document page = BootstrapHandler.getBootstrapPage(
