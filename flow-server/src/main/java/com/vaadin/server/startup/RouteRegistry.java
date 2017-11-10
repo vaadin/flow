@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -40,8 +41,10 @@ import com.vaadin.router.Location;
 import com.vaadin.router.NotFoundException;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
+import com.vaadin.router.RouteAlias;
 import com.vaadin.router.RouteNotFoundError;
 import com.vaadin.router.RoutePrefix;
+import com.vaadin.router.RouterLayout;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
@@ -356,31 +359,6 @@ public class RouteRegistry implements Serializable {
         return routes.get() != null;
     }
 
-    private Map<Class<? extends Component>, String> validateNavigationTargets(
-            Set<Class<? extends Component>> navigationTargets)
-            throws InvalidRouteConfigurationException {
-        Map<String, RouteTarget> navigationTargetMap = new HashMap<>();
-        Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
-        for (Class<? extends Component> navigationTarget : navigationTargets) {
-            if (!navigationTarget.isAnnotationPresent(Route.class)) {
-                throw new InvalidRouteConfigurationException(String.format(
-                        "No Route annotation is present for the given "
-                                + "navigation target component '%s'.",
-                        navigationTarget.getName()));
-            }
-            String route = getNavigationRoute(navigationTarget, null);
-            targetRoutesMap.put(navigationTarget, route);
-            // Further validation is performed inside addRoute()
-            if (navigationTargetMap.containsKey(route)) {
-                navigationTargetMap.get(route).addRoute(navigationTarget);
-            } else {
-                navigationTargetMap.put(route,
-                        new RouteTarget(navigationTarget));
-            }
-        }
-        return targetRoutesMap;
-    }
-
     /**
      * Collect the whole route for the navigation target.
      * <p>
@@ -394,31 +372,47 @@ public class RouteRegistry implements Serializable {
     private String getNavigationRoute(Class<?> navigationTarget,
             Collection<String> aliases) {
         Route annotation = navigationTarget.getAnnotation(Route.class);
+
+        List<String> parentRoutePrefixes = getParentRoutePrefixes(
+                navigationTarget, () -> annotation.layout());
+        Collections.reverse(parentRoutePrefixes);
+
+        aliases.addAll(getRouteAliases(navigationTarget));
+
         if (annotation.absolute()) {
             return annotation.value();
         }
 
-        Collection<List<String>> aliasPaths = new ArrayList<>();
-        List<String> mainPath = new ArrayList<>();
-        collectParentRoutePrefixes(navigationTarget, mainPath, aliasPaths);
-        // aliasPaths.stream().peek(Collections::reverse)
-        // .map(alias -> alias.stream().collect(Collectors.joining("/")))
-        // .forEach(aliases::add);
-
-        Collections.reverse(mainPath);
         if (!annotation.value().isEmpty()) {
-            mainPath.add(annotation.value());
+            parentRoutePrefixes.add(annotation.value());
         }
 
-        return mainPath.stream().collect(Collectors.joining("/"));
+        return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
-    private void collectParentRoutePrefixes(Class<?> component,
-            List<String> mainPath, Collection<List<String>> aliasRoutes) {
+    private Collection<String> getRouteAliases(Class<?> navigationTarget) {
+        List<String> aliases = new ArrayList<>();
+        for (RouteAlias alias : navigationTarget
+                .getAnnotationsByType(RouteAlias.class)) {
+            if (alias.absolute()) {
+                aliases.add(alias.value());
+            } else {
+                List<String> prefixes = getParentRoutePrefixes(navigationTarget,
+                        () -> alias.layout());
+                Collections.reverse(prefixes);
+                if (!alias.value().isEmpty()) {
+                    prefixes.add(alias.value());
+                }
+                aliases.add(prefixes.stream().collect(Collectors.joining("/")));
+            }
+        }
+        return aliases;
+    }
+
+    private List<String> getParentRoutePrefixes(Class<?> component,
+            Supplier<Class<? extends RouterLayout>> routerLayoutSupplier) {
         List<String> list = new ArrayList<>();
 
-        Optional<Route> router = AnnotationReader.getAnnotationFor(component,
-                Route.class);
         Optional<ParentLayout> parentLayout = AnnotationReader
                 .getAnnotationFor(component, ParentLayout.class);
         Optional<RoutePrefix> routePrefix = AnnotationReader
@@ -427,15 +421,16 @@ public class RouteRegistry implements Serializable {
         routePrefix.ifPresent(prefix -> list.add(prefix.value()));
 
         // break chain on an absolute RoutePrefix or Route
-        if ((routePrefix.isPresent() && routePrefix.get().absolute())
-                || (router.isPresent() && router.get().absolute())) {
+        if ((routePrefix.isPresent() && routePrefix.get().absolute())) {
             return list;
         }
 
-        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
-            list.addAll(getParentRoutePrefixes(router.get().layout()));
+        Class<? extends RouterLayout> routerLayout = routerLayoutSupplier.get();
+        if (routerLayout != null && !routerLayout.equals(UI.class)) {
+            list.addAll(getParentRoutePrefixes(routerLayout, () -> null));
         } else if (parentLayout.isPresent()) {
-            list.addAll(getParentRoutePrefixes(parentLayout.get().value()));
+            list.addAll(getParentRoutePrefixes(parentLayout.get().value(),
+                    () -> null));
         }
 
         return list;

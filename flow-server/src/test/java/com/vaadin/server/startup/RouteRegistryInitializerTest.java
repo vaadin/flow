@@ -15,13 +15,14 @@
  */
 package com.vaadin.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,6 +36,7 @@ import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
+import com.vaadin.router.RouteAlias;
 import com.vaadin.router.RoutePrefix;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.TestRouteRegistry;
@@ -101,6 +103,15 @@ public class RouteRegistryInitializerTest {
                 servletContext);
     }
 
+    @Test(expected = ServletException.class)
+    public void onStartUp_duplicate_routesViaAlias_throws()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(NavigationTargetBar.class, NavigationTargetBar2.class)
+                        .collect(Collectors.toSet()),
+                servletContext);
+    }
+
     @Test(expected = InvalidRouteConfigurationException.class)
     public void routeRegistry_routes_can_only_be_set_once()
             throws InvalidRouteConfigurationException {
@@ -118,6 +129,15 @@ public class RouteRegistryInitializerTest {
         routeRegistryInitializer.onStartup(
                 Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
                         FaultyConfiguration.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test(expected = InvalidRouteLayoutConfigurationException.class)
+    public void routeRegistry_fails_on_aloneRouteAlias()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
+                        RouteAliasAlone.class).collect(Collectors.toSet()),
                 servletContext);
     }
 
@@ -161,14 +181,67 @@ public class RouteRegistryInitializerTest {
                 Stream.of(MultiLevelRoute.class).collect(Collectors.toSet()),
                 servletContext);
 
-        Optional<Class<? extends Component>> navigationTarget = registry
-                .getNavigationTarget("absolute/levels");
+        assertRouteTarget(MultiLevelRoute.class, "absolute/levels",
+                "Route 'absolute' was not registered correctly");
+    }
 
-        Assert.assertTrue(
-                "Could not find navigation target for `absolute/levels`",
-                navigationTarget.isPresent());
-        Assert.assertEquals("Route 'absolute' was not registered correctly",
-                MultiLevelRoute.class, navigationTarget.get());
+    @Test
+    public void routeRegistry_routeWithAlias_parentRoutePrefix()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+                .collect(Collectors.toSet()), servletContext);
+
+        assertRouteTarget(MultiLevelRouteAlias.class, "absolute/levels",
+                "Route 'absolute' was not registered correctly");
+
+        Optional<String> url = registry
+                .getTargetUrl(MultiLevelRouteAlias.class);
+
+        Assert.assertTrue(url.isPresent());
+
+        Assert.assertEquals("absolute/levels", url.get());
+
+        assertRouteTarget(MultiLevelRouteAlias.class, "parent/alias1",
+                "RouteAlias 'alias1' was not registered correctly");
+    }
+
+    @Test
+    public void routeRegistry_routeWithAlias_parent_prefix_ignores_remaining_parent_route_prefixes()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+                .collect(Collectors.toSet()), servletContext);
+        assertRouteTarget(MultiLevelRouteAlias.class, "absolute/alias2",
+                "RouteAlias 'alias2' was not registered correctly");
+    }
+
+    @Test
+    public void routeRegistry_routeWithAlias_absoluteRoute()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+                .collect(Collectors.toSet()), servletContext);
+
+        assertRouteTarget(MultiLevelRouteAlias.class, "alias3",
+                "RouteAlias 'alias3' was not registered correctly");
+    }
+
+    @Test
+    public void routeRegistry_routeWithAlias_noParent()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+                .collect(Collectors.toSet()), servletContext);
+
+        assertRouteTarget(MultiLevelRouteAlias.class, "alias4",
+                "RouteAlias 'alias4' was not registered correctly");
+    }
+
+    @Test
+    public void routeRegistry_routeWithAlias_twoParentLevels()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+                .collect(Collectors.toSet()), servletContext);
+
+        assertRouteTarget(MultiLevelRouteAlias.class, "parent/middle/alias5",
+                "RouteAlias 'alias5' was not registered correctly");
     }
 
     @Test
@@ -269,6 +342,11 @@ public class RouteRegistryInitializerTest {
     private static class NavigationTargetBar extends Component {
     }
 
+    @Route("bar2")
+    @RouteAlias("bar")
+    private static class NavigationTargetBar2 extends Component {
+    }
+
     private static class RouteParentLayout extends Component
             implements RouterLayout {
     }
@@ -280,6 +358,10 @@ public class RouteRegistryInitializerTest {
     @ParentLayout(RouteParentLayout.class)
     @Route(value = "wrong")
     private static class FaultyConfiguration extends Component {
+    }
+
+    @RouteAlias(value = "wrong")
+    private static class RouteAliasAlone extends Component {
     }
 
     @RoutePrefix("parent")
@@ -301,8 +383,23 @@ public class RouteRegistryInitializerTest {
             implements RouterLayout {
     }
 
+    @RoutePrefix(value = "middle")
+    @ParentLayout(ParentWithRoutePrefix.class)
+    private static class MiddleParent extends Component
+            implements RouterLayout {
+    }
+
     @Route(value = "levels", layout = AbsoluteMiddleParent.class)
     private static class MultiLevelRoute extends Component {
+    }
+
+    @Route(value = "levels", layout = AbsoluteMiddleParent.class)
+    @RouteAlias(value = "alias1", layout = ParentWithRoutePrefix.class)
+    @RouteAlias(value = "alias2", layout = AbsoluteMiddleParent.class)
+    @RouteAlias(value = "alias3", absolute = true, layout = ParentWithRoutePrefix.class)
+    @RouteAlias(value = "alias4")
+    @RouteAlias(value = "alias5", layout = MiddleParent.class)
+    private static class MultiLevelRouteAlias extends Component {
     }
 
     @Route("parameter")
@@ -366,13 +463,22 @@ public class RouteRegistryInitializerTest {
     }
 
     @Route("bar")
-    private static class ChildWithDynamicTitle
-            extends ParentWithTitleAnnotation
+    private static class ChildWithDynamicTitle extends ParentWithTitleAnnotation
             implements HasDynamicTitle {
 
         @Override
         public String getPageTitle() {
             return "Child View";
         }
+    }
+
+    private void assertRouteTarget(Class<?> routeClass, String path,
+            String errorMessage) {
+        Optional<Class<? extends Component>> navigationTarget = registry
+                .getNavigationTarget(path);
+
+        Assert.assertTrue("Could not find navigation target for `" + path + "`",
+                navigationTarget.isPresent());
+        Assert.assertEquals(errorMessage, routeClass, navigationTarget.get());
     }
 }
