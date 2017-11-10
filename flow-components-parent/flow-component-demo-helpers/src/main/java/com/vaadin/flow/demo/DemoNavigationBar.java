@@ -46,7 +46,7 @@ public class DemoNavigationBar extends HtmlContainer {
     /**
      * Adds a menu item inside the navigation bar.
      * 
-     * @param name
+     * @param text
      *            the text shown for the anchor
      * @param href
      *            the href of the anchor
