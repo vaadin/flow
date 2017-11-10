@@ -18,10 +18,12 @@ package com.vaadin.client.flow;
 import java.util.Arrays;
 
 import com.vaadin.client.Console;
+import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
+import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.ClientJsonCodec;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.ui.Page;
@@ -83,6 +85,23 @@ public class ExecuteJavaScriptProcessor {
             StateNode stateNode = ClientJsonCodec.decodeStateNode(tree,
                     parameterJson);
             if (stateNode != null) {
+                /*
+                 * The statNode might be not yet bound (and initialized with
+                 * DomNode). It happens for the nodes that are attached to
+                 * existing elements. If such node is an execution parameter its
+                 * execution is not possible at the moment and it should be
+                 * postponed.
+                 */
+                ExistingElementMap existingMap = tree.getRegistry()
+                        .getExistingElementMap();
+                if (existingMap.getElement(stateNode.getId()) != null) {
+                    existingMap.addNodeRemoveListener(
+                            id -> handleRemoveExistingNode(id,
+                                    stateNode.getId(), invocation));
+                    // stop all processing, postpone the whole invocation
+                    // execution and return
+                    return;
+                }
                 map.set(parameter, stateNode);
             }
         }
@@ -130,6 +149,15 @@ public class ExecuteJavaScriptProcessor {
                         + "'");
             }
         }
+    }
+
+    private boolean handleRemoveExistingNode(Integer removedId, int nodeId,
+            JsonArray invocation) {
+        if (removedId.intValue() == nodeId) {
+            Reactive.addPostFlushListener(() -> handleInvocation(invocation));
+            return true;
+        }
+        return false;
     }
 
     private static native JsonObject getContextExecutionObject(
