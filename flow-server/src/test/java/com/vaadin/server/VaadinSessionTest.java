@@ -43,6 +43,9 @@ import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class VaadinSessionTest {
 
     /**

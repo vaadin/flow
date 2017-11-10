@@ -50,10 +50,12 @@ import com.vaadin.util.HasCurrentService;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JreJsonArray;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * @author Vaadin Ltd.
  */
+@NotThreadSafe
 public class PolymerServerEventHandlersTest extends HasCurrentService {
     private StateNode stateNode;
     private PolymerServerEventHandlers handlers;
