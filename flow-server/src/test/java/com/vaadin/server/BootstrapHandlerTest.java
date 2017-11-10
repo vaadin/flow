@@ -1,6 +1,8 @@
 package com.vaadin.server;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -8,6 +10,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.io.IOUtils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.router.PageTitle;
@@ -23,19 +38,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
-import org.apache.commons.io.IOUtils;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 public class BootstrapHandlerTest {
 
@@ -154,6 +156,26 @@ public class BootstrapHandlerTest {
         assertEquals("body", body.tagName());
         assertEquals("html", body.parent().tagName());
         assertEquals(2, body.parent().childNodeSize());
+    }
+
+    @Test
+    public void headHasmetaTags() throws Exception {
+        initUI(testUI, createVaadinRequest());
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Element head = page.head();
+        Elements metas = head.getElementsByTag("meta");
+
+        Assert.assertEquals(2, metas.size());
+        Element meta = metas.get(0);
+        assertEquals("Content-Type", meta.attr("http-equiv"));
+        assertEquals("text/html; charset=utf-8", meta.attr("content"));
+
+        meta = metas.get(1);
+        assertEquals("X-UA-Compatible", meta.attr("http-equiv"));
+        assertEquals("IE=edge", meta.attr("content"));
     }
 
     @Test

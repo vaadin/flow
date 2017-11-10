@@ -408,12 +408,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
                 .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
 
+        head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible")
+                .attr(CONTENT_ATTRIBUTE, "IE=edge");
+
         head.appendElement("base").attr("href", getServiceUrl(context));
 
         getViewportContent(context.getUI().getClass(), context.getRequest())
                 .ifPresent(content -> head.appendElement(META_TAG)
-                        .attr("name", "viewport").attr(CONTENT_ATTRIBUTE,
-                                content));
+                        .attr("name", "viewport")
+                        .attr(CONTENT_ATTRIBUTE, content));
 
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
@@ -478,8 +481,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element createDependencyElement(VaadinUriResolver resolver,
             LoadMode loadMode, JsonObject dependency, Dependency.Type type) {
         boolean inlineElement = loadMode == LoadMode.INLINE;
-        String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
-                .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
+        String url = dependency.hasKey(Dependency.KEY_URL)
+                ? resolver.resolveVaadinUri(
+                        dependency.getString(Dependency.KEY_URL))
                 : null;
 
         final Element dependencyElement;
