@@ -12,9 +12,10 @@ import com.vaadin.shared.communication.PushMode;
 public class MockDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
+    private final String webComponentsPolyfillBase;
+
     private boolean productionMode = false;
     private boolean xsrfProtectionEnabled = true;
-
     private int heartbeatInterval = 300;
     private boolean closeIdleSessions = false;
     private PushMode pushMode = PushMode.DISABLED;
@@ -22,6 +23,14 @@ public class MockDeploymentConfiguration
     private Map<String, String> applicationOrSystemProperty = new HashMap<>();
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
+
+    public MockDeploymentConfiguration() {
+        this(null);
+    }
+
+    public MockDeploymentConfiguration(String webComponentsPolyfillBase) {
+        this.webComponentsPolyfillBase = webComponentsPolyfillBase;
+    }
 
     @Override
     public boolean isProductionMode() {
@@ -106,7 +115,7 @@ public class MockDeploymentConfiguration
 
     @Override
     public Optional<String> getWebComponentsPolyfillBase() {
-        return Optional.empty();
+        return Optional.ofNullable(webComponentsPolyfillBase);
     }
 
 }

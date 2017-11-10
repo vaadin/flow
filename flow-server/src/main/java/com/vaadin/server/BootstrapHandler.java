@@ -87,6 +87,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             .compile("</(script)", Pattern.CASE_INSENSITIVE);
     private static final String BOOTSTRAP_JS = readResource(
             "BootstrapHandler.js");
+    private static final String BABEL_HELPERS_JS = readResource(
+            "babel-helpers.min.js");
     private static final String ES6_COLLECTIONS = "//<![CDATA[\n"
             + readResource("es6-collections.js") + "//]]>";
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
@@ -355,7 +357,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void setupFrameworkLibraries(Element head,
             JsonObject initialUIDL, BootstrapContext context) {
         inlineEs6Collections(head, context);
-        appendWebComponentsElements(head, context);
+        appendWebComponentsPolyfills(head, context);
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
@@ -368,10 +370,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void inlineEs6Collections(Element head,
             BootstrapContext context) {
         if (!context.getSession().getBrowser().isEs6Supported()) {
-            Element collectionsScript = createJavaScriptElement(null, false);
-            collectionsScript.appendChild(
-                    new DataNode(ES6_COLLECTIONS, collectionsScript.baseUri()));
-            head.appendChild(collectionsScript);
+            head.appendChild(createInlineJavaScriptElement(ES6_COLLECTIONS));
         }
     }
 
@@ -412,8 +411,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         getViewportContent(context.getUI().getClass(), context.getRequest())
                 .ifPresent(content -> head.appendElement(META_TAG)
-                        .attr("name", "viewport").attr(CONTENT_ATTRIBUTE,
-                                content));
+                        .attr("name", "viewport")
+                        .attr(CONTENT_ATTRIBUTE, content));
 
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
@@ -422,7 +421,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         });
     }
 
-    private static void appendWebComponentsElements(Element head,
+    private static void appendWebComponentsPolyfills(Element head,
             BootstrapContext context) {
         Optional<WebComponents> webComponents = AnnotationReader
                 .getAnnotationFor(context.getUI().getClass(),
@@ -433,21 +432,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
                 .orElse(null);
-        if (null == webComponentsPolyfillBase) {
+        if (webComponentsPolyfillBase == null) {
             return;
         }
-
         assert webComponentsPolyfillBase.endsWith("/");
 
-        boolean forceShadyDom = config.getBooleanProperty(
-                Constants.FORCE_SHADY_DOM, webComponents.isPresent()
-                        && webComponents.get().forceShadyDom());
-
         boolean loadEs5Adapter = config.getBooleanProperty(
-                Constants.LOAD_ES5_ADAPTER, webComponents.isPresent()
-                        && webComponents.get().loadEs5Adapter());
-
-        if (loadEs5Adapter) {
+                Constants.LOAD_ES5_ADAPTERS,
+                webComponents.map(WebComponents::loadEs5Adapter).orElse(true));
+        if (loadEs5Adapter
+                && !context.getSession().getBrowser().isEs6Supported()) {
+            head.appendChild(createInlineJavaScriptElement(BABEL_HELPERS_JS));
             head.appendChild(createJavaScriptElement(
                     context.getUriResolver()
                             .resolveVaadinUri(webComponentsPolyfillBase
@@ -455,10 +450,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     false));
         }
 
+        boolean forceShadyDom = config.getBooleanProperty(
+                Constants.FORCE_SHADY_DOM, webComponents.isPresent()
+                        && webComponents.get().forceShadyDom());
         head.appendChild(createJavaScriptElement(
                 context.getUriResolver().resolveVaadinUri(
                         webComponentsPolyfillBase + "webcomponents-loader.js"),
                 false).attr("shadydom", forceShadyDom));
+    }
+
+    private static Element createInlineJavaScriptElement(
+            String javaScriptContents) {
+        // defer makes no sense without src:
+        // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
+        Element wrapper = createJavaScriptElement(null, false);
+        wrapper.appendChild(
+                new DataNode(javaScriptContents, wrapper.baseUri()));
+        return wrapper;
     }
 
     private static Element createJavaScriptElement(String sourceUrl,
@@ -478,8 +486,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element createDependencyElement(VaadinUriResolver resolver,
             LoadMode loadMode, JsonObject dependency, Dependency.Type type) {
         boolean inlineElement = loadMode == LoadMode.INLINE;
-        String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
-                .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
+        String url = dependency.hasKey(Dependency.KEY_URL)
+                ? resolver.resolveVaadinUri(
+                        dependency.getString(Dependency.KEY_URL))
                 : null;
 
         final Element dependencyElement;
@@ -560,13 +569,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static Element getBootstrapScript(JsonValue initialUIDL,
             BootstrapContext context) {
-        String scriptData = "//<![CDATA[\n"
-                + getBootstrapJS(initialUIDL, context) + "//]]>";
-        // defer makes no sense without src:
-        // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
-        Element mainScript = createJavaScriptElement(null, false);
-        mainScript.appendChild(new DataNode(scriptData, mainScript.baseUri()));
-        return mainScript;
+        return createInlineJavaScriptElement("//<![CDATA[\n"
+                + getBootstrapJS(initialUIDL, context) + "//]]>");
     }
 
     private static String getBootstrapJS(JsonValue initialUIDL,
@@ -805,7 +809,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static String getBootstrapJS() {
-        if (BOOTSTRAP_JS == null) {
+        if (BOOTSTRAP_JS.isEmpty()) {
             throw new BootstrapException(
                     "BootstrapHandler.js has not been loaded during initialization");
         }
