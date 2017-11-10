@@ -18,6 +18,7 @@ package com.vaadin.router;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -25,22 +26,29 @@ import java.lang.annotation.Target;
 import com.vaadin.ui.UI;
 
 /**
- * Defines the route for components that function as navigation targets in
+ * Defines the route alias for components that function as navigation targets in
  * routing.
  * <p>
- * There is also {@link RouteAlias} annotation which may be declared in addition
- * to this annotation and may be used mutiple times.
+ * The route alias allows declaring several route paths in addition to the path
+ * declared by the {@link Route} annotation. The component has to have at least
+ * one {@literal @Route} annotation which is considered as a primary route and
+ * its route path will be used if {@link Router#getUrl(Class)} is called. Thus
+ * {@code @RouteAlias} route path is used only to resolve the component during
+ * navigation.
+ * <p>
+ * This annotation can be used multiple times on the same class.
  *
- * @see RouteAlias
+ * @see Route
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
 @Documented
-public @interface Route {
+@Repeatable(InternalContainerAnnotationForRoute.class)
+public @interface RouteAlias {
 
     /**
-     * Gets the route path value of the annotated class.
+     * Gets the route alias path value of the annotated class.
      *
      * @return the path value of this route
      */
@@ -58,7 +66,7 @@ public @interface Route {
     Class<? extends RouterLayout> layout() default UI.class;
 
     /**
-     * Have the rout chain break on defined class and not take into notice any
+     * Have the route chain break on defined class and not take into notice any
      * more parent layout route prefixes.
      *
      * @return route up to here should be absolute

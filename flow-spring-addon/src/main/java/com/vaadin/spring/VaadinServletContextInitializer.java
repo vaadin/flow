@@ -40,6 +40,7 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.Route;
+import com.vaadin.router.RouteAlias;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.startup.AbstractCustomElementRegistryInitializer;
 import com.vaadin.server.startup.AbstractRouteRegistryInitializer;
@@ -71,6 +72,7 @@ public class VaadinServletContextInitializer
     private class RouteServletContextListener extends
             AbstractRouteRegistryInitializer implements ServletContextListener {
 
+        @SuppressWarnings("unchecked")
         @Override
         public void contextInitialized(ServletContextEvent event) {
             RouteRegistry registry = RouteRegistry
@@ -81,7 +83,8 @@ public class VaadinServletContextInitializer
 
             try {
                 Set<Class<? extends Component>> navigationTargets = validateRouteClasses(
-                        findByAnnotation(getRoutePackages(), Route.class));
+                        findByAnnotation(getRoutePackages(), Route.class,
+                                RouteAlias.class));
 
                 registry.setNavigationTargets(navigationTargets);
             } catch (InvalidRouteConfigurationException e) {
@@ -101,6 +104,7 @@ public class VaadinServletContextInitializer
             implements ServletContextListener {
 
         @Override
+        @SuppressWarnings("unchecked")
         public void contextInitialized(ServletContextEvent event) {
             CustomElementRegistry registry = CustomElementRegistry
                     .getInstance();
@@ -194,12 +198,14 @@ public class VaadinServletContextInitializer
 
     }
 
+    @SuppressWarnings("unchecked")
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
-            Class<? extends Annotation> annotation) {
+            Class<? extends Annotation>... annotations) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         scanner.setResourceLoader(appContext);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(annotation));
+        Stream.of(annotations).forEach(annotation -> scanner
+                .addIncludeFilter(new AnnotationTypeFilter(annotation)));
 
         return packages.stream().map(scanner::findCandidateComponents)
                 .flatMap(set -> set.stream()).map(this::getBeanClass);
