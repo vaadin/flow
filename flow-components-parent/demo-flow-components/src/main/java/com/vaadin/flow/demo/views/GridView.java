@@ -510,8 +510,9 @@ public class GridView extends DemoView {
         idColumnVisibility.setId("toggle-id-column-visibility");
         userReordering.setId("toggle-user-reordering");
         freezeIdColumn.setId("toggle-id-column-frozen");
-        addCard("Column API", "Column API example", grid, new VerticalLayout(
-                idColumnVisibility, userReordering, freezeIdColumn, merge));
+        addCard("Configuring columns", "Column API example", grid,
+                new VerticalLayout(idColumnVisibility, userReordering,
+                        freezeIdColumn, merge));
     }
 
     private void createDetailsRow() {
@@ -568,7 +569,7 @@ public class GridView extends DemoView {
                 addressColumnGroup);
         // end-source-example
         grid.setId("grid-column-grouping");
-        addCard("Column grouping example", grid);
+        addCard("Configuring columns", "Column grouping example", grid);
     }
 
     private List<Person> getItems() {
