@@ -116,4 +116,35 @@ public class LocationObserverTest {
                         + Locale.CANADA.getDisplayName(),
                 eventCollector.get(1));
     }
+
+    @Test
+    public void location_change_should_only_fire_if_location_actually_changed()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(Translations.class));
+
+        ui.navigateTo("");
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals(
+                "Received locale change event for locale: "
+                        + Locale.getDefault().getDisplayName(),
+                eventCollector.get(0));
+
+        ui.setLocale(ui.getLocale());
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+
+        ui.setLocale(Locale.FRENCH);
+
+
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals(
+                "Received locale change event for locale: "
+                        + Locale.FRENCH.getDisplayName(),
+                eventCollector.get(1));
+    }
 }

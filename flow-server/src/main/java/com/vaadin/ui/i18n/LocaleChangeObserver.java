@@ -15,8 +15,6 @@
  */
 package com.vaadin.ui.i18n;
 
-import com.vaadin.server.VaadinService;
-
 /**
  * Any {@code com.vaadin.ui.Component} implementing this interface will be
  * informed when the UI locale is changed and on attach.
@@ -25,14 +23,11 @@ import com.vaadin.server.VaadinService;
  */
 public interface LocaleChangeObserver {
 
-    void localeChange(LocaleChangeEvent event);
-
     /**
-     * Get the registered I18N provider.
-     * 
-     * @return I18N provider
+     * Method called when the UI locale is changed.
+     *
+     * @param event
+     *            locale change event with event details
      */
-    default I18NProvider getProvider() {
-        return VaadinService.getCurrent().getInstantiator().getI18NProvider();
-    }
+    void localeChange(LocaleChangeEvent event);
 }

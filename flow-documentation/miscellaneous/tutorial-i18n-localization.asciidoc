@@ -201,7 +201,7 @@ public class LocaleObserver extends Div implements LocaleChangeObserver {
     @Override
     public void localeChange(LocaleChangeEvent event) {
         setText(getProvider().getTranslation("my.translation",
-                "My parameter!"));
+                getUserId()));
     }
 }
 ----
@@ -217,7 +217,7 @@ public class MyLocale extends Div {
         I18NProvider provider = VaadinService.getCurrent().getInstantiator()
                 .getI18NProvider();
 
-        setText(provider.getTranslation("my.translation", "My parameter!"));
+        setText(provider.getTranslation("my.translation", getUserId()));
     }
 }
 ----

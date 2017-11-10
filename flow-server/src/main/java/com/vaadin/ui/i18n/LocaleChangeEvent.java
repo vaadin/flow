@@ -22,7 +22,7 @@ import com.vaadin.ui.UI;
 
 public class LocaleChangeEvent extends EventObject {
 
-    private Locale locale;
+    private final Locale locale;
 
     /**
      * Locale change event constructor.

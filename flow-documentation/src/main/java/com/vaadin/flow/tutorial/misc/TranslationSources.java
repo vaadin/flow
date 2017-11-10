@@ -29,7 +29,7 @@ public class TranslationSources {
         @Override
         public void localeChange(LocaleChangeEvent event) {
             setText(getProvider().getTranslation("my.translation",
-                    "My parameter!"));
+                    getUserId()));
         }
     }
 
@@ -39,7 +39,11 @@ public class TranslationSources {
             I18NProvider provider = VaadinService.getCurrent().getInstantiator()
                     .getI18NProvider();
 
-            setText(provider.getTranslation("my.translation", "My parameter!"));
+            setText(provider.getTranslation("my.translation", getUserId()));
         }
+    }
+
+    public int getUserId() {
+        return 5;
     }
 }

@@ -54,7 +54,7 @@ public class EventUtilTest {
     }
 
     @Tag("nested")
-    public static class Listener extends Component
+    public static class Observer extends Component
             implements BeforeNavigationObserver {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -100,7 +100,7 @@ public class EventUtilTest {
                 new Element("nested-child-2"));
 
         node.appendChild(nested);
-        Component.from(nested, Listener.class);
+        Component.from(nested, Observer.class);
 
         List<BeforeNavigationObserver> beforeNavigationObservers = EventUtil
                 .collectBeforeNavigationObservers(node);
@@ -113,12 +113,12 @@ public class EventUtilTest {
     public void collectBeforeNavigationObserversFromComponentList()
             throws Exception {
         Foo foo = new Foo();
-        foo.getElement().appendChild(new Listener().getElement());
+        foo.getElement().appendChild(new Observer().getElement());
         Bar bar = new Bar();
 
         Element nested = new Element("nested");
         nested.appendChild(new Element("nested-child"),
-                new Listener().getElement());
+                new Observer().getElement());
 
         bar.getElement().appendChild(new Foo().getElement(), nested);
 
@@ -154,7 +154,7 @@ public class EventUtilTest {
                 new Element("nested-child-2"));
 
         node.appendChild(nested);
-        Component.from(nested, Listener.class);
+        Component.from(nested, Observer.class);
 
         List<BeforeNavigationObserver> listenerComponents = EventUtil
                 .getImplementingComponents(EventUtil.flattenChildren(node),

@@ -602,11 +602,14 @@ public class UI extends Component
      * Sets the locale for this UI.
      *
      * @param locale
-     *            the locale to use
+     *            the locale to use, not null
      */
     public void setLocale(Locale locale) {
-        this.locale = locale;
-        EventUtil.informLocaleChangeObservers(this);
+        assert locale != null : "Null locale is not supported!";
+        if (!this.locale.equals(locale)) {
+            this.locale = locale;
+            EventUtil.informLocaleChangeObservers(this);
+        }
     }
 
     /**
