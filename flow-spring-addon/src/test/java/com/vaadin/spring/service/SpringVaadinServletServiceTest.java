@@ -37,6 +37,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.spring.instantiator.SpringInstantiatorTest;
 import com.vaadin.ui.common.HasElement;
+import com.vaadin.ui.i18n.I18NProvider;
 
 @RunWith(SpringRunner.class)
 @Import(SpringVaadinServletServiceTest.TestServletConfiguration.class)
@@ -79,6 +80,11 @@ public class SpringVaadinServletServiceTest {
         @Override
         public <T extends com.vaadin.ui.Component> T createComponent(
                 Class<T> componentClass) {
+            return null;
+        }
+
+        @Override
+        public I18NProvider getI18NProvider() {
             return null;
         }
 

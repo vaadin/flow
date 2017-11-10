@@ -205,4 +205,13 @@ public class StringToNumberDecoderTest {
             throws RpcDecodeException {
         decoder.decode(Json.create("abc"), Double.class);
     }
+
+    @Test
+    public void stringToNumber_convertableString_valueIsConverted()
+            throws RpcDecodeException {
+        Double expected = 823.6349d;
+        Number value = decoder.decode(Json.create(String.valueOf(expected)),
+                Number.class);
+        Assert.assertEquals(expected, value);
+    }
 }

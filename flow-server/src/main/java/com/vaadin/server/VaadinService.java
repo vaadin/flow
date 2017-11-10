@@ -67,7 +67,9 @@ import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Registration;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.i18n.I18NProvider;
 import com.vaadin.util.CurrentInstance;
+import com.vaadin.util.LocaleUtil;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
@@ -875,14 +877,40 @@ public abstract class VaadinService implements Serializable {
         // Initial WebBrowser data comes from the request
         session.getBrowser().updateRequestDetails(request);
 
-        // Initial locale comes from the request
-        Locale locale = request.getLocale();
-        session.setLocale(locale);
         session.setConfiguration(getDeploymentConfiguration());
+
+        // Initial locale comes from the request
+        if (getInstantiator().getI18NProvider() != null) {
+            setLocale(request, session);
+        }
 
         onVaadinSessionStarted(request, session);
 
         return session;
+    }
+
+    private void setLocale(VaadinRequest request, VaadinSession session) {
+        I18NProvider provider = getInstantiator().getI18NProvider();
+        List<Locale> providedLocales = provider.getProvidedLocales();
+        if (providedLocales.size() == 1) {
+            session.setLocale(providedLocales.get(0));
+        } else {
+            Optional<Locale> foundLocale = LocaleUtil
+                    .getExactLocaleMatch(request, providedLocales);
+
+            if (!foundLocale.isPresent()) {
+                foundLocale = LocaleUtil.getLocaleMatchByLanguage(request,
+                        providedLocales);
+            }
+
+            // Set locale by match found in I18N provider, first provided locale
+            // or else leave as default locale
+            if (foundLocale.isPresent()) {
+                session.setLocale(foundLocale.get());
+            } else if (!providedLocales.isEmpty()) {
+                session.setLocale(providedLocales.get(0));
+            }
+        }
     }
 
     /**
@@ -1347,9 +1375,10 @@ public abstract class VaadinService implements Serializable {
     /**
      * Returns whether the given session is active or whether it can be closed.
      * <p>
-     * A session is active if and only if its {@link #isClosing} returns false
-     * and {@link #getUidlRequestTimeout(VaadinSession) getUidlRequestTimeout}
-     * is negative or has not yet expired.
+     * A session is active if and only if its {@link VaadinSession#getState()}
+     * returns {@link VaadinSessionState#OPEN} and
+     * {@link #getUidlRequestTimeout(VaadinSession) getUidlRequestTimeout} is
+     * negative or has not yet expired.
      *
      * @param session
      *            The session whose status to check

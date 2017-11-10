@@ -43,7 +43,13 @@ window.gridConnector = {
     };
 
     grid.__activeItemChanged = function(newVal, oldVal) {
-      if (!newVal || selectionMode != 'SINGLE') {
+      if (selectionMode != 'SINGLE') {
+        return;
+      }
+      if (!newVal) {
+        if (oldVal && selectedKeys[oldVal.key]) {
+          grid.$connector.doDeselection(oldVal, true);
+        }
         return;
       }
       if (!selectedKeys[newVal.key]) {
@@ -85,6 +91,19 @@ window.gridConnector = {
       }
     }
 
+    const itemsUpdated = function(items) {
+      if (!items || !(items instanceof Array)) {
+        throw 'Attempted to call itemsUpdated with an invalid value';
+      }
+      const detailsOpenedItems = [];
+      for (let i = 0; i < items.length; ++i) {
+        if (items[i].detailsOpened) {
+          detailsOpenedItems.push(items[i]);
+        }
+      }
+      grid.detailsOpenedItems = detailsOpenedItems;
+    }
+
     const updateGridCache = function(page) {
       const items = cache[page];
       // Force update unless there's a callback waiting
@@ -102,6 +121,7 @@ window.gridConnector = {
               grid._cache.items[idx] = items[idx - rangeStart];
             }
           }
+          itemsUpdated(items);
         }
         /**
          * Calls the _assignModels function from GridScrollerElement, that triggers
@@ -210,6 +230,7 @@ window.gridConnector = {
       if ((typeof mode === 'string' || mode instanceof String)
       && validSelectionModes.indexOf(mode) >= 0) {
         selectionMode = mode;
+        selectedKeys = {};
       } else {
         throw 'Attempted to set an invalid selection mode';
       }

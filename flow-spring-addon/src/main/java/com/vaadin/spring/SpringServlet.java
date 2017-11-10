@@ -86,6 +86,8 @@ public class SpringServlet extends VaadinServlet {
         setProperty(Constants.FRONTEND_URL_DEV, properties);
         setProperty(Constants.FORCE_SHADY_DOM, properties);
 
+        setProperty(Constants.I18N_PROVIDER, properties);
+
         properties.put(Constants.SERVLET_PARAMETER_USING_NEW_ROUTING,
                 Boolean.TRUE.toString());
     }
