@@ -212,10 +212,10 @@ public class ComponentUtil {
                     initialAttach);
         }
 
-        if (initialAttach && component instanceof LocaleChangeObserver) {
-            UI ui = UI.getCurrent();
-            LocaleChangeEvent localeChangeEvent = new LocaleChangeEvent(ui,
-                    ui.getLocale());
+        Optional<UI> ui = component.getUI();
+        if (ui.isPresent() && component instanceof LocaleChangeObserver) {
+            LocaleChangeEvent localeChangeEvent = new LocaleChangeEvent(
+                    ui.get(), ui.get().getLocale());
             ((LocaleChangeObserver) component).localeChange(localeChangeEvent);
         }
 

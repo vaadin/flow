@@ -91,14 +91,16 @@ public class LocationObserverTest {
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
-        router = new Router(new TestRouteRegistry());
-        ui = new RouterTestUI(router);
+        ui = new UI();
         eventCollector.clear();
     }
 
     @Test
     public void navigation_and_locale_change_should_fire_locale_change_observer()
             throws InvalidRouteConfigurationException {
+        router = new Router(new TestRouteRegistry());
+        ui = new RouterTestUI(router);
+
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(Translations.class));
 
@@ -122,12 +124,8 @@ public class LocationObserverTest {
     }
 
     @Test
-    public void location_change_should_only_fire_if_location_actually_changed()
-            throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(Translations.class));
-
-        ui.navigateTo("");
+    public void location_change_should_only_fire_if_location_actually_changed() {
+        ui.add(new Translations());
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
@@ -152,17 +150,15 @@ public class LocationObserverTest {
     }
 
     @Test
-    public void location_change_should_be_fired_also_on_component_attach()
-            throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(RootComponent.class));
+    public void location_change_should_be_fired_also_on_component_attach() {
+        RootComponent root = new RootComponent();
 
-        ui.navigateTo("");
+        ui.add(root);
 
         Assert.assertEquals("Expected event amount was wrong", 0,
                 eventCollector.size());
 
-        ui.getElement().appendChild(new Translations().getElement());
+        root.getElement().appendChild(new Translations().getElement());
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
@@ -170,5 +166,31 @@ public class LocationObserverTest {
                 "Received locale change event for locale: "
                         + Locale.getDefault().getDisplayName(),
                 eventCollector.get(0));
+    }
+
+    @Test
+    public void location_change_should_be_fired_also_on_consequent_component_attach() {
+        RootComponent root = new RootComponent();
+
+        ui.add(root);
+
+        Assert.assertEquals("No change observers so no events should be gotten.", 0,
+                eventCollector.size());
+
+        Translations translations = new Translations();
+        root.getElement().appendChild(translations.getElement());
+
+        Assert.assertEquals("Observer should have been notified on attach", 1,
+                eventCollector.size());
+
+        translations.getElement().removeFromParent();
+
+        Assert.assertEquals("No event should have been gotten for removal", 1,
+                eventCollector.size());
+
+        root.getElement().appendChild(translations.getElement());
+        Assert.assertEquals("Reattach should have given an event", 2,
+                eventCollector.size());
+
     }
 }
