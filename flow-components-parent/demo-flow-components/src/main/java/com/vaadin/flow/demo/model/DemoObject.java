@@ -18,6 +18,8 @@ package com.vaadin.flow.demo.model;
 import java.io.Serializable;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.router.Route;
 
 /**
  * Object that defines a demo to be shown at the application.
@@ -44,8 +46,11 @@ public class DemoObject implements Serializable {
      *            the annotation that contains the href, name and subcategory of
      *            the demo
      */
-    public DemoObject(ComponentDemo componentDemo) {
-        setHref(componentDemo.href()).setName(componentDemo.name())
+    public DemoObject(Class<? extends DemoView> clazz) {
+        ComponentDemo componentDemo = clazz.getAnnotation(ComponentDemo.class);
+        Route route = clazz.getAnnotation(Route.class);
+
+        setHref(route.value()).setName(componentDemo.name())
                 .setSubcategory(componentDemo.subcategory());
     }
 

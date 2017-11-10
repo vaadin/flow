@@ -17,13 +17,17 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.paper.button.GeneratedPaperButton;
 
 /**
  * View for {@link GeneratedPaperButton} demo.
  */
-@ComponentDemo(name = "Paper Button", href = "paper-button", category = DemoCategory.PAPER)
+@Route(value = "paper-button", layout = MainLayout.class)
+@ComponentDemo(name = "Paper Button", category = DemoCategory.PAPER)
 public class PaperButtonView extends DemoView {
 
     @Override

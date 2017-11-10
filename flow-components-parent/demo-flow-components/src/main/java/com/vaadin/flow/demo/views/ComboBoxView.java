@@ -19,7 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
 import com.vaadin.flow.dom.ElementConstants;
+import com.vaadin.router.Route;
 import com.vaadin.ui.combobox.ComboBox;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Div;
@@ -27,8 +30,9 @@ import com.vaadin.ui.html.Div;
 /**
  * View for {@link ComboBox} demo.
  */
+@Route(value = "vaadin-combo-box", layout = MainLayout.class)
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-combo-box.html")
-@ComponentDemo(name = "ComboBox", href = "vaadin-combo-box")
+@ComponentDemo(name = "ComboBox")
 public class ComboBoxView extends DemoView {
     /**
      * Example object.
@@ -88,7 +92,7 @@ public class ComboBoxView extends DemoView {
     private static final String WIDTH_STRING = "250px";
 
     @Override
-    void initView() {
+    protected void initView() {
         createStringComboBox();
         createObjectComboBox();
         createComboBoxWithObjectStringSimpleValue();

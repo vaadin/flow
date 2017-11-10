@@ -25,6 +25,9 @@ import java.util.stream.IntStream;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HtmlImport;
@@ -45,7 +48,8 @@ import com.vaadin.ui.textfield.TextField;
 /**
  * View for {@link Grid} demo.
  */
-@ComponentDemo(name = "Grid", href = "vaadin-grid")
+@Route(value = "vaadin-grid", layout = MainLayout.class)
+@ComponentDemo(name = "Grid")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-grid.html")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-text-field.html")
@@ -224,7 +228,7 @@ public class GridView extends DemoView {
     // end-source-example
 
     @Override
-    void initView() {
+    protected void initView() {
         createBasicUsage();
         createCallBackDataProvider();
         createSingleSelect();
@@ -317,7 +321,8 @@ public class GridView extends DemoView {
         grid.setId("single-selection");
         toggleSelect.setId("single-selection-toggle");
         messageDiv.setId("single-selection-message");
-        addCard("Grid Single Selection", grid, toggleSelect, messageDiv);
+        addCard("Selection", "Grid Single Selection", grid, toggleSelect,
+                messageDiv);
     }
 
     private void createMultiSelect() {
@@ -350,7 +355,7 @@ public class GridView extends DemoView {
         grid.setId("multi-selection");
         selectBtn.setId("multi-selection-button");
         messageDiv.setId("multi-selection-message");
-        addCard("Grid Multi Selection", grid,
+        addCard("Selection", "Grid Multi Selection", grid,
                 new HorizontalLayout(selectBtn, selectAllBtn), messageDiv);
     }
 
@@ -366,7 +371,7 @@ public class GridView extends DemoView {
         grid.setSelectionMode(SelectionMode.NONE);
         // end-source-example
         grid.setId("none-selection");
-        addCard("Grid with No Selection Enabled", grid);
+        addCard("Selection", "Grid with No Selection Enabled", grid);
     }
 
     private void createColumnTemplate() {
@@ -410,7 +415,8 @@ public class GridView extends DemoView {
         grid.setSelectionMode(SelectionMode.NONE);
         // end-source-example
         grid.setId("template-renderer");
-        addCard("Grid with columns using template renderer", grid);
+        addCard("Using templates", "Grid with columns using template renderer",
+                grid);
     }
 
     private void createColumnComponentRenderer() {
@@ -461,7 +467,8 @@ public class GridView extends DemoView {
         idField.setId("component-renderer-id-field");
         nameField.setId("component-renderer-name-field");
         updateButton.setId("component-renderer-update-button");
-        addCard("Grid with columns using component renderer", grid, idField,
+        addCard("Using components",
+                "Grid with columns using component renderer", grid, idField,
                 nameField, updateButton);
     }
 
@@ -503,7 +510,7 @@ public class GridView extends DemoView {
         idColumnVisibility.setId("toggle-id-column-visibility");
         userReordering.setId("toggle-user-reordering");
         freezeIdColumn.setId("toggle-id-column-frozen");
-        addCard("Column API example", grid, new VerticalLayout(
+        addCard("Column API", "Column API example", grid, new VerticalLayout(
                 idColumnVisibility, userReordering, freezeIdColumn, merge));
     }
 
@@ -530,12 +537,14 @@ public class GridView extends DemoView {
                 }));
 
         Button toggleDetails = new Button("Toggle details open for second row");
-        toggleDetails.addClickListener(event ->
-            grid.setDetailsVisible(people.get(1), !grid.isDetailsVisible(people.get(1))));
+        toggleDetails
+                .addClickListener(event -> grid.setDetailsVisible(people.get(1),
+                        !grid.isDetailsVisible(people.get(1))));
         // end-source-example
         grid.setId("grid-with-details-row");
         toggleDetails.setId("toggle-details-button");
-        addCard("Grid with a details row", grid, toggleDetails);
+        addCard("Using templates", "Grid with a details row", grid,
+                toggleDetails);
     }
 
     private void createColumnGroup() {

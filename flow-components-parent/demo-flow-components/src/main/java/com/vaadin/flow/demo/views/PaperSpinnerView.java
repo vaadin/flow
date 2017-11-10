@@ -17,12 +17,16 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.paper.spinner.GeneratedPaperSpinner;
 
 /**
  * View for {@link GeneratedPaperSpinner} demo.
  */
-@ComponentDemo(name = "Paper Spinner", href = "paper-spinner", category = DemoCategory.PAPER)
+@Route(value = "paper-spinner", layout = MainLayout.class)
+@ComponentDemo(name = "Paper Spinner", category = DemoCategory.PAPER)
 public class PaperSpinnerView extends DemoView {
 
     @Override

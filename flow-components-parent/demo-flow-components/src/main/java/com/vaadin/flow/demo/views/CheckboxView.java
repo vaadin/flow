@@ -16,6 +16,9 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.checkbox.Checkbox;
 import com.vaadin.ui.common.HtmlImport;
@@ -24,12 +27,13 @@ import com.vaadin.ui.html.Div;
 /**
  * View for {@link Checkbox} demo.
  */
+@Route(value = "vaadin-checkbox", layout = MainLayout.class)
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-checkbox.html")
-@ComponentDemo(name = "Checkbox", href = "vaadin-checkbox")
+@ComponentDemo(name = "Checkbox")
 public class CheckboxView extends DemoView {
 
     @Override
-    void initView() {
+    protected void initView() {
         addDefaultCheckbox();
         addDisabledCheckbox();
         addIndeterminateCheckbox();
