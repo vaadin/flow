@@ -13,9 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.router.Route;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Label;
 import com.vaadin.server.VaadinRequest;
@@ -24,7 +26,8 @@ import com.vaadin.ui.UI;
 /**
  * @author Vaadin Ltd.
  */
-public class RequestParametersHistoryUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.RequestParametersHistoryView")
+public class RequestParametersHistoryView extends AbstractDivView {
     static final String REQUEST_PARAM_NAME = "testRequestParam";
     static final String NO_INPUT_TEXT = "No input";
     static final String REQUEST_PARAM_ID = "requestParamDisplayLabel";
@@ -32,19 +35,15 @@ public class RequestParametersHistoryUI extends UI {
 
     private final Label requestParamLabel;
 
-    public RequestParametersHistoryUI() {
+    public RequestParametersHistoryView() {
         NativeButton backwardButton = new NativeButton("Go back", event -> getPage().getHistory().back());
         backwardButton.setId(BACK_BUTTON_ID);
 
         requestParamLabel = new Label(NO_INPUT_TEXT);
         requestParamLabel.setId(REQUEST_PARAM_ID);
         add(requestParamLabel, backwardButton);
-    }
 
-    @Override
-    protected void init(VaadinRequest request) {
-        super.init(request);
-        String[] params = request.getParameterMap()
+        String[] params = VaadinService.getCurrentRequest().getParameterMap()
                 .getOrDefault(REQUEST_PARAM_NAME, new String[0]);
         if (params == null || params.length == 0) {
             requestParamLabel.setText(NO_INPUT_TEXT);

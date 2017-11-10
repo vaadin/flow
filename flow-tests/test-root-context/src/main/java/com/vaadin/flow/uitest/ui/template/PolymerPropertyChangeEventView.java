@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
@@ -23,7 +25,8 @@ import com.vaadin.ui.event.PropertyChangeEvent;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-public class PolymerPropertyChangeEventUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.template.PolymerPropertyChangeEventView")
+public class PolymerPropertyChangeEventView extends AbstractDivView {
 
     @Tag("property-change")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerPropertyChange.html")
@@ -31,8 +34,7 @@ public class PolymerPropertyChangeEventUI extends UI {
 
     }
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public PolymerPropertyChangeEventView() {
         PolymerPropertyChange template = new PolymerPropertyChange();
         template.setId("template");
         template.getElement().addPropertyChangeListener("text",

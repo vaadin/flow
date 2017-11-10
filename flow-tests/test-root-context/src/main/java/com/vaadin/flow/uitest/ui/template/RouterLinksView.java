@@ -15,14 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-public class SubPropertyModelUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.template.RouterLinksView")
+public class RouterLinksView extends AbstractDivView {
 
-    @Override
-    protected void init(VaadinRequest request) {
-        SubPropertyModelTemplate template = new SubPropertyModelTemplate();
+    public RouterLinksView() {
+        RouterLinksTemplate template = new RouterLinksTemplate();
         template.setId("template");
         add(template);
     }

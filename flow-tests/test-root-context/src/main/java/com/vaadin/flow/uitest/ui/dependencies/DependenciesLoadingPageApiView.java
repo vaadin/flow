@@ -1,20 +1,22 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import com.vaadin.server.VaadinRequest;
+import com.vaadin.router.Route;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Page;
 
 /**
- * See {@link DependenciesLoadingAnnotationsUI} for more details about the test.
+ * See {@link DependenciesLoadingAnnotationsView} for more details about the
+ * test.
  * 
  * @author Vaadin Ltd.
- * @see DependenciesLoadingAnnotationsUI
+ * @see DependenciesLoadingAnnotationsView
  */
-public class DependenciesLoadingPageApiUI extends DependenciesLoadingBaseUI {
-    @Override
-    protected void init(VaadinRequest request) {
-        super.init(request);
+@Route("com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingPageApiView")
+public class DependenciesLoadingPageApiView
+        extends DependenciesLoadingBaseView {
 
+    public DependenciesLoadingPageApiView() {
+        super();
         Page page = getUI().get().getPage();
         page.addJavaScript(
                 "frontend:///com/vaadin/flow/uitest/ui/dependencies/inline.js",

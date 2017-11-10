@@ -2,8 +2,10 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.router.Route;
 
-public class PopStateHandlerUI extends RouterLinkUI {
+@Route("com.vaadin.flow.uitest.ui.PopStateHandlerView")
+public class PopStateHandlerView extends RouterLinkView {
 
     @Override
     protected void addLinks() {

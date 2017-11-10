@@ -16,9 +16,9 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.server.VaadinRequest;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.ui.Tag;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.PropertyDescriptor;
 import com.vaadin.ui.common.PropertyDescriptors;
@@ -27,7 +27,8 @@ import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-public class PolymerDefaultPropertyValueUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.template.PolymerDefaultPropertyValueView")
+public class PolymerDefaultPropertyValueView extends AbstractDivView {
 
     private static final PropertyDescriptor<String, String> msgDescriptor = PropertyDescriptors
             .propertyWithDefault("message", "");
@@ -63,8 +64,7 @@ public class PolymerDefaultPropertyValueUI extends UI {
 
     }
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public PolymerDefaultPropertyValueView() {
         MyTemplate template = new MyTemplate();
         template.setId("template");
         add(template);

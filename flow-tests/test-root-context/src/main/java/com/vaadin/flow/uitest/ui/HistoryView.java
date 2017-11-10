@@ -19,24 +19,23 @@ import java.util.function.BiConsumer;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.router.Route;
+import com.vaadin.server.Command;
+import com.vaadin.ui.History;
+import com.vaadin.ui.event.ClickEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.event.ClickEvent;
-import com.vaadin.server.Command;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.History;
-import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-public class HistoryUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.HistoryView")
+public class HistoryView extends AbstractDivView {
 
     private final Element stateJsonInput = createSynchronizedInput("state");
     private final Element locationInput = createSynchronizedInput("location");
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public HistoryView() {
         History history = getPage().getHistory();
 
         addRow(Element.createText("State to set (JSON) "), stateJsonInput);

@@ -20,17 +20,19 @@ import java.nio.charset.StandardCharsets;
 
 import org.jsoup.Jsoup;
 
-import com.vaadin.server.StreamResource;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.server.StreamRegistration;
-import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Tag;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-public class LazyLoadingTemplateUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.template.LazyLoadingTemplateView")
+public class LazyLoadingTemplateView extends AbstractDivView {
 
     @Tag("lazy-widget")
     public static class LazyWidget extends PolymerTemplate<Message> {
@@ -48,8 +50,7 @@ public class LazyLoadingTemplateUI extends UI {
         }
     }
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public LazyLoadingTemplateView() {
         Div div = new Div();
         div.setText("Plain Div Component");
         div.setId("initial-div");
@@ -61,8 +62,7 @@ public class LazyLoadingTemplateUI extends UI {
         template.setId("template");
         a.add(template);
 
-        StreamRegistration registration = getSession()
-                .getResourceRegistry()
+        StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry()
                 .registerResource(getHtmlImportResource());
         getPage().addHtmlImport(
                 "base://" + registration.getResourceUri().toString(),

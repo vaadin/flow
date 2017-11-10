@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.NativeButton;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
 
-public class UIElementUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.UIElementView")
+public class UIElementView extends AbstractDivView {
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public UIElementView() {
         getPage().executeJavaScript(getJs(), getElement());
 
         NativeButton attachElement = new NativeButton("Attach Element via JS",

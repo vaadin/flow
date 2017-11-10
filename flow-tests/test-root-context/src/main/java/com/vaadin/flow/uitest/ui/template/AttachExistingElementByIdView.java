@@ -15,12 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlImport;
 
-public class AttachExistingElementByIdUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.template.AttachExistingElementByIdView")
+public class AttachExistingElementByIdView extends AbstractDivView {
 
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/AttachExistingElementById.html")
     @Tag("existing-element")
@@ -52,8 +55,7 @@ public class AttachExistingElementByIdUI extends UI {
         }
     }
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public AttachExistingElementByIdView() {
         add(new AttachExistingElementByIdTemplate(),
                 new ContextAttachExistingElementByIdTemplate(),
                 new FrontendAttachExistingElementByIdTemplate());

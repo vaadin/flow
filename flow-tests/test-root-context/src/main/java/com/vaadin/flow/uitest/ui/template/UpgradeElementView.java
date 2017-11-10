@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
@@ -24,7 +26,8 @@ import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-public class UpgradeElementUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.template.UpgradeElementView")
+public class UpgradeElementView extends AbstractDivView {
 
     @Tag("upgrade-element")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/UpgradeElement.html")
@@ -38,8 +41,7 @@ public class UpgradeElementUI extends UI {
         }
     }
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public UpgradeElementView() {
         UpgradeElement template = new UpgradeElement();
         template.setId("template");
 

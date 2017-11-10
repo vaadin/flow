@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
@@ -26,7 +28,8 @@ import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-public class BasicTypeInListUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.template.BasicTypeInListView")
+public class BasicTypeInListView extends AbstractDivView {
 
     @Tag("basic-type-list")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/BasicTypeList.html")
@@ -48,8 +51,7 @@ public class BasicTypeInListUI extends UI {
         List<String> getItems();
     }
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public BasicTypeInListView() {
         BasicTypeList list = new BasicTypeList();
         list.setId("template");
         add(list);

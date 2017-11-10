@@ -20,13 +20,16 @@ import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-public class EmptyListsUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.template.EmptyListsView")
+public class EmptyListsView extends AbstractDivView {
 
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/EmptyLists.html")
     @com.vaadin.ui.Tag("empty-list")
@@ -79,8 +82,7 @@ public class EmptyListsUI extends UI {
         void setItems(List<Item> items);
     }
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public EmptyListsView() {
         EmptyLists template = new EmptyLists();
         template.setId("template");
         add(template);

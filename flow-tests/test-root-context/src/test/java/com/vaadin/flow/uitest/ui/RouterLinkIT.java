@@ -21,7 +21,7 @@ public class RouterLinkIT extends ChromeBrowserTest {
         testInsideServlet("./foobar?what=not", "foobar", "what=not",
                 "foobar?what=not");
 
-        testInsideServlet("/run/baz", "baz", "", "baz");
+        testInsideServlet("/view/baz", "baz", "", "baz");
 
         testInsideServlet("./foobar?what=not#fragment", "foobar", "what=not",
                 "foobar?what=not#fragment");
@@ -84,7 +84,7 @@ public class RouterLinkIT extends ChromeBrowserTest {
 
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
         Assert.assertEquals("Invalid URL",
-                getRootURL() + "/run/" + pathAfterServletMapping,
+                getRootURL() + "/view/" + pathAfterServletMapping,
                 getDriver().getCurrentUrl());
     }
 

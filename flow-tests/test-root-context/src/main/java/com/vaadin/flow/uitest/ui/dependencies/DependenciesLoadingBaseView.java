@@ -1,24 +1,22 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import com.vaadin.ui.html.Div;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.ui.event.AttachEvent;
+import com.vaadin.ui.html.Div;
 
 /**
  * This class provides test base for IT test that check dependencies being
  * loaded correctly.
  *
  * @author Vaadin Ltd.
- * @see DependenciesLoadingAnnotationsUI
+ * @see DependenciesLoadingAnnotationsView
  */
-class DependenciesLoadingBaseUI extends UI {
+class DependenciesLoadingBaseView extends AbstractDivView {
     static final String PRELOADED_DIV_ID = "preloadedDiv";
     static final String INLINE_CSS_TEST_DIV_ID = "inlineCssTestDiv";
     static final String DOM_CHANGE_TEXT = "I appear after inline and eager dependencies and before lazy";
 
-    @Override
-    protected void init(VaadinRequest request) {
+    protected DependenciesLoadingBaseView() {
         add(
             createDiv(PRELOADED_DIV_ID, "Preloaded div"),
             createDiv(INLINE_CSS_TEST_DIV_ID, "A div for testing inline css")
