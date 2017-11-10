@@ -39,12 +39,12 @@ public class DemoObject implements Serializable {
     }
 
     /**
-     * Creates a DemoObject taking the values from the {@link ComponentDemo}
-     * annotation.
+     * Creates a DemoObject taking the values from the {@link ComponentDemo} and
+     * {@link Route} annotations from the input class.
      * 
-     * @param componentDemo
-     *            the annotation that contains the href, name and subcategory of
-     *            the demo
+     * @param clazz
+     *            the class that contains the {@link ComponentDemo} and
+     *            {@link Route} annotations
      */
     public DemoObject(Class<? extends DemoView> clazz) {
         ComponentDemo componentDemo = clazz.getAnnotation(ComponentDemo.class);
