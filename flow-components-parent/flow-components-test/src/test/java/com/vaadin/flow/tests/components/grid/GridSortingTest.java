@@ -1,0 +1,273 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.tests.components.grid;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.vaadin.data.event.SortEvent;
+import com.vaadin.data.provider.ListDataProvider;
+import com.vaadin.data.provider.Query;
+import com.vaadin.data.provider.QuerySortOrder;
+import com.vaadin.data.provider.SortOrder;
+import com.vaadin.function.SerializablePredicate;
+import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.grid.Grid;
+import com.vaadin.ui.grid.Grid.Column;
+import com.vaadin.ui.grid.Grid.SelectionMode;
+import com.vaadin.ui.grid.GridSortOrder;
+import com.vaadin.ui.renderers.TemplateRenderer;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+
+public class GridSortingTest {
+
+    public static class Person {
+        private int id;
+        private String name;
+        private int age;
+        private Address address;
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }
+
+        public Address getAddress() {
+            return address;
+        }
+
+        public void setAddress(Address address) {
+            this.address = address;
+        }
+
+        @Override
+        public int hashCode() {
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (!(obj instanceof Person)) {
+                return false;
+            }
+            Person other = (Person) obj;
+            return id == other.id;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Person [name=%s, age=%s]", name, age);
+        }
+    }
+
+    public static class Address {
+        private String street;
+        private int number;
+        private String postalCode;
+
+        public String getStreet() {
+            return street;
+        }
+
+        public void setStreet(String street) {
+            this.street = street;
+        }
+
+        public int getNumber() {
+            return number;
+        }
+
+        public void setNumber(int number) {
+            this.number = number;
+        }
+
+        public String getPostalCode() {
+            return postalCode;
+        }
+
+        public void setPostalCode(String postalCode) {
+            this.postalCode = postalCode;
+        }
+    }
+
+    private static class TestDataProvider<T> extends ListDataProvider<T> {
+
+        public Query<T, SerializablePredicate<T>> lastQuery;
+
+        public TestDataProvider(Collection<T> items) {
+            super(items);
+        }
+
+        @Override
+        public Stream<T> fetch(Query<T, SerializablePredicate<T>> query) {
+            lastQuery = query;
+            return super.fetch(query);
+        }
+    }
+
+    private static class TestSortListener<T> implements
+            ComponentEventListener<SortEvent<Grid<T>, GridSortOrder<T>>> {
+
+        public List<SortEvent<Grid<T>, GridSortOrder<T>>> events = new ArrayList<>();
+
+        @Override
+        public void onComponentEvent(
+                SortEvent<Grid<T>, GridSortOrder<T>> event) {
+            events.add(event);
+        }
+    }
+
+    private Grid<Person> grid;
+    private Column<Person> nameColumn;
+    private Column<Person> ageColumn;
+    private Column<Person> templateColumn;
+
+    private TestDataProvider<Person> testDataProvider;
+    private TestSortListener<Person> testSortListener;
+
+    @Before
+    public void init() {
+        testDataProvider = new TestDataProvider<>(new ArrayList<>());
+        testSortListener = new TestSortListener<>();
+
+        grid = new Grid<>();
+        grid.setDataProvider(testDataProvider);
+        grid.setSelectionMode(SelectionMode.NONE);
+        grid.addSortListener(testSortListener);
+
+        nameColumn = grid.addColumn("Name", Person::getName, "name");
+        ageColumn = grid.addColumn("Age", Person::getAge, "age");
+
+        templateColumn = grid.addColumn("Address",
+                TemplateRenderer
+                        .<Person> of(
+                                "<div>[[item.street]], number [[item.number]]<br><small>[[item.postalCode]]</small></div>")
+                        .withProperty("street",
+                                person -> person.getAddress().getStreet())
+                        .withProperty("number",
+                                person -> person.getAddress().getNumber()),
+                "street", "number");
+    }
+
+    @Test
+    public void gridSorting() {
+        JsonArray sortersArray = Json.createArray();
+        sortersArray.set(0, createSortObject(nameColumn.getColumnId(), "asc"));
+        sortersArray.set(1, createSortObject(ageColumn.getColumnId(), "desc"));
+        sortersArray.set(2,
+                createSortObject(templateColumn.getColumnId(), "asc"));
+        callSortersChanged(sortersArray);
+
+        Assert.assertEquals(1, testSortListener.events.size());
+        assertSortOrdersEquals(
+                GridSortOrder.asc(nameColumn).thenDesc(ageColumn)
+                        .thenAsc(templateColumn).build(),
+                testSortListener.events.get(0).getSortOrder());
+        Assert.assertTrue(testSortListener.events.get(0).isFromClient());
+
+        Assert.assertEquals(grid.getDataCommunicator().getInMemorySorting(),
+                testDataProvider.lastQuery.getInMemorySorting());
+        Assert.assertEquals(grid.getDataCommunicator().getBackEndSorting(),
+                testDataProvider.lastQuery.getSortOrders());
+        assertSortOrdersEquals(
+                QuerySortOrder.asc("name").thenAsc("age").thenAsc("street")
+                        .thenAsc("number").build(),
+                grid.getDataCommunicator().getBackEndSorting());
+
+        JsonArray secondSortersArray = Json.createArray();
+        secondSortersArray.set(0,
+                createSortObject(nameColumn.getColumnId(), "desc"));
+        callSortersChanged(secondSortersArray);
+
+        Assert.assertEquals(2, testSortListener.events.size());
+        assertSortOrdersEquals(GridSortOrder.desc(nameColumn).build(),
+                testSortListener.events.get(1).getSortOrder());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void callSortersChanged_invalid_column_id() {
+        JsonArray sortOrders = Json.createArray();
+        sortOrders.set(0, createSortObject("column that doesn't exist", "asc"));
+        callSortersChanged(sortOrders);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void callSortersChanged_invalid_direction() {
+        JsonArray sortOrders = Json.createArray();
+        sortOrders.set(0, createSortObject(nameColumn.getColumnId(),
+                "invalid direction"));
+        callSortersChanged(sortOrders);
+    }
+
+    private void callSortersChanged(JsonArray json) {
+        try {
+            Method method = Grid.class.getDeclaredMethod("sortersChanged",
+                    JsonArray.class);
+            method.setAccessible(true);
+            method.invoke(grid, json);
+        } catch (NoSuchMethodException | SecurityException
+                | IllegalAccessException | InvocationTargetException e) {
+            Assert.fail("Failed to call sortersChanged");
+        }
+    }
+
+    private JsonObject createSortObject(String columnId, String direction) {
+        JsonObject json = Json.createObject();
+        json.put("path", columnId);
+        json.put("direction", direction);
+        return json;
+    }
+
+    private <T, V extends SortOrder<T>> void assertSortOrdersEquals(List<V> o1, List<V> o2) {
+        Assert.assertEquals(o1.size(), o2.size());
+        for (int i = 0; i < o1.size(); ++i) {
+            Assert.assertEquals(o1.get(i).getDirection(), o2.get(i).getDirection());
+            Assert.assertEquals(o1.get(i).getSorted(), o2.get(i).getSorted());
+        }
+    }
+}

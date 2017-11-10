@@ -557,6 +557,15 @@ public class Grid<T> extends AbstractListing<T>
         }
 
         /**
+         * TODO
+         *
+         * @return
+         */
+        public String getColumnId() {
+            return columnId;
+        }
+
+        /**
          * Gets the grid that this column belongs to.
          *
          * @return the grid that this column belongs to
@@ -841,10 +850,7 @@ public class Grid<T> extends AbstractListing<T>
     public <V extends Comparable<? super V>> Column<T> addColumn(
             String header, ValueProvider<T, V> valueProvider,
             String... sortingProperties) {
-        String columnKey = getColumnKey(false);
-        Column<T> column = addColumn(header,
-                TemplateRenderer.<T> of("[[item." + columnKey + "]]")
-                        .withProperty(columnKey, valueProvider));
+        Column<T> column = addColumn(header, valueProvider);
         column.setComparator(valueProvider);
         column.setSortProperty(sortingProperties);
         return column;
@@ -1607,7 +1613,8 @@ public class Grid<T> extends AbstractListing<T>
             boolean userOriginated) {
         Objects.requireNonNull(order, "Sort order list cannot be null");
 
-        // TODO: if !userOriginated update client state to display sort order.
+        // TODO: if !userOriginated update client sort indicators. Should be
+        // implemented together with server side sorting (issue #2818).
 
         sortOrder.clear();
         if (order.isEmpty()) {

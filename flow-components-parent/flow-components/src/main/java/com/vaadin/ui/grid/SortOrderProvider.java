@@ -27,7 +27,6 @@ import com.vaadin.ui.grid.Grid.Column;
  *
  * @see Column#setSortOrderProvider
  *
- * @since 8.0
  * @author Vaadin Ltd
  */
 @FunctionalInterface

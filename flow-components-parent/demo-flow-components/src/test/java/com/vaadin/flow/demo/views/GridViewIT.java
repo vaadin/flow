@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.flow.demo.TabbedComponentDemoTest;
 import com.vaadin.testbench.By;
 
@@ -369,6 +370,53 @@ public class GridViewIT extends TabbedComponentDemoTest {
 
         getRow(grid, 1).click();
         assertComponentRendereredDetails(grid, "2", "SomeOtherName2");
+    }
+
+    @Test
+    public void gridWidthSorting() {
+        openDemoPageAndCheckForErrors("sorting");
+        WebElement grid = findElement(By.id("grid-sortable-columns"));
+        scrollToElement(grid);
+
+        WebElement nameColumnSorter = getCell(grid, "Name")
+                .findElement(By.tagName("vaadin-grid-sorter"));
+        WebElement ageColumnSorter = getCell(grid, "Age")
+                .findElement(By.tagName("vaadin-grid-sorter"));
+        WebElement addressColumnSorter = getCell(grid, "Address")
+                .findElement(By.tagName("vaadin-grid-sorter"));
+
+        nameColumnSorter.click();
+        assertSortMessageEquals(QuerySortOrder.asc("name").build(), true);
+        addressColumnSorter.click();
+        assertSortMessageEquals(
+                QuerySortOrder.asc("street").thenAsc("number").build(), true);
+        addressColumnSorter.click();
+        assertSortMessageEquals(
+                QuerySortOrder.desc("street").thenDesc("number").build(), true);
+        addressColumnSorter.click();
+        assertSortMessageEquals(Collections.emptyList(), true);
+
+        // enable multi sort
+        clickElementWithJs(findElement(By.id("grid-multi-sort-toggle")));
+        nameColumnSorter.click();
+        ageColumnSorter.click();
+        assertSortMessageEquals(
+                QuerySortOrder.asc("age").thenAsc("name").build(), true);
+    }
+
+    private void assertSortMessageEquals(List<QuerySortOrder> querySortOrders,
+            boolean fromClient) {
+        String sortOrdersString = querySortOrders.stream()
+                .map(querySortOrder -> String.format(
+                        "{sort property: %s, direction: %s}",
+                        querySortOrder.getSorted(),
+                        querySortOrder.getDirection()))
+                .collect(Collectors.joining(", "));
+        Assert.assertEquals(
+                String.format(
+                        "Current sort order: %s. Sort originates from the client: %s.",
+                        sortOrdersString, fromClient),
+                findElement(By.id("grid-sortable-columns-message")).getText());
     }
 
     private static String getSelectionMessage(Object oldSelection,

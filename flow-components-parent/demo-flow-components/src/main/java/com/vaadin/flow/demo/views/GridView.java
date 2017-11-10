@@ -575,10 +575,12 @@ public class GridView extends DemoView {
     }
 
     private void createSorting() {
+        Div messageDiv = new Div();
         // begin-source-example
         // source-example-heading: Grid with sortable columns
         Grid<Person> grid = new Grid<>();
-        grid.setItems(createItems());
+        grid.setItems(getItems());
+        grid.setSelectionMode(SelectionMode.NONE);
 
         grid.addColumn("Name", Person::getName, "name");
         grid.addColumn("Age", Person::getAge, "age");
@@ -587,17 +589,31 @@ public class GridView extends DemoView {
                 TemplateRenderer
                         .<Person> of("<div>[[item.street]], number [[item.number]]<br><small>[[item.postalCode]]</small></div>")
                         .withProperty("street", person -> person.getAddress().getStreet())
-                        .withProperty("number", person -> person.getAddress().getNumber()),
+                        .withProperty("number", person -> person.getAddress().getNumber())
+                        .withProperty("postalCode", person -> person.getAddress().getPostalCode()),
                 "street", "number");
-
-        grid.setSelectionMode(SelectionMode.NONE);
 
         Checkbox multiSort = new Checkbox("Multiple column sorting enabled");
         multiSort.addValueChangeListener(
                 event -> grid.setMultiSort(event.getValue()));
+        grid.addSortListener(event -> {
+            String currentSortOrder = grid.getDataCommunicator()
+                    .getBackEndSorting().stream()
+                    .map(querySortOrder -> String.format(
+                            "{sort property: %s, direction: %s}",
+                            querySortOrder.getSorted(),
+                            querySortOrder.getDirection()))
+                    .collect(Collectors.joining(", "));
+            messageDiv.setText(String.format(
+                    "Current sort order: %s. Sort originates from the client: %s.",
+                    currentSortOrder, event.isFromClient()));
+        });
         // end-source-example
-        grid.setId("template-renderer");
-        addCard("Grid with sortable columns", grid, multiSort);
+        grid.setId("grid-sortable-columns");
+        multiSort.setId("grid-multi-sort-toggle");
+        messageDiv.setId("grid-sortable-columns-message");
+        addCard("Sorting", "Grid with sortable columns", grid, multiSort,
+                messageDiv);
     }
 
     private List<Person> getItems() {
