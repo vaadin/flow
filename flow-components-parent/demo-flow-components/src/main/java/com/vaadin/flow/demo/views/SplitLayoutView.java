@@ -18,6 +18,9 @@ package com.vaadin.flow.demo.views;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.splitlayout.SplitLayout;
@@ -25,7 +28,8 @@ import com.vaadin.ui.splitlayout.SplitLayout;
 /**
  * View for {@link SplitLayout} demo.
  */
-@ComponentDemo(name = "Split Layout", href = "vaadin-split-layout", subcategory = "Layouts")
+@Route(value = "vaadin-split-layout", layout = MainLayout.class)
+@ComponentDemo(name = "Split Layout", subcategory = "Layouts")
 public class SplitLayoutView extends DemoView {
 
     private static final String FIRST_CONTENT_TEXT = "First content component";

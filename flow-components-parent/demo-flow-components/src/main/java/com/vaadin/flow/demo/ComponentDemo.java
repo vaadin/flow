@@ -48,13 +48,6 @@ public @interface ComponentDemo {
     String name();
 
     /**
-     * The link value that should be used for this demo
-     * 
-     * @return link value
-     */
-    String href();
-
-    /**
      * Which category this demo belongs in, default is
      * {@code DemoCategory.VAADIN}.
      * 

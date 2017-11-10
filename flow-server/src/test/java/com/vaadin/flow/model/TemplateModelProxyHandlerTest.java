@@ -11,6 +11,9 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.ui.UI;
 import com.vaadin.util.HasCurrentService;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class TemplateModelProxyHandlerTest extends HasCurrentService {
 
     public static class Model {
