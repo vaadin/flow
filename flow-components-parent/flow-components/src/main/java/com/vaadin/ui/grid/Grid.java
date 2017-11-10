@@ -420,7 +420,7 @@ public class Grid<T> extends AbstractListing<T>
          * {@link Column#setSortProperty(String...)}.
          * <p>
          * <strong>Note:<strong> calling this method automatically sets the
-         * column as sortable with {@link #setSortingEnabled(boolean)}.
+         * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param comparator
          *            the comparator to use when sorting data in this column
@@ -428,7 +428,7 @@ public class Grid<T> extends AbstractListing<T>
          */
         public Column<T> setComparator(Comparator<T> comparator) {
             Objects.requireNonNull(comparator, "Comparator can't be null");
-            setSortingEnabled(true);
+            setSortable(true);
             this.comparator = (a, b) -> comparator.compare(a, b);
             return this;
         }
@@ -437,7 +437,7 @@ public class Grid<T> extends AbstractListing<T>
          * TODO
          * <p>
          * <strong>Note:<strong> calling this method automatically sets the
-         * column as sortable with {@link #setSortingEnabled(boolean)}.
+         * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param keyExtractor
          * @return
@@ -454,7 +454,7 @@ public class Grid<T> extends AbstractListing<T>
          * when sorting in the given direction.
          * <p>
          * <strong>Note:<strong> calling this method automatically sets the
-         * column as sortable with {@link #setSortingEnabled(boolean)}.
+         * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param sortDirection
          *            the direction this column is sorted by
@@ -464,7 +464,7 @@ public class Grid<T> extends AbstractListing<T>
                 SortDirection sortDirection) {
             Objects.requireNonNull(comparator,
                     "No comparator defined for sorted column.");
-            setSortingEnabled(true);
+            setSortable(true);
             boolean reverse = sortDirection != SortDirection.ASCENDING;
             return reverse ? (t1, t2) -> comparator.reversed().compare(t1, t2)
                     : comparator;
@@ -475,7 +475,7 @@ public class Grid<T> extends AbstractListing<T>
          * this column.
          * <p>
          * <strong>Note:<strong> calling this method automatically sets the
-         * column as sortable with {@link #setSortingEnabled(boolean)}.
+         * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param properties
          *            the array of strings describing backend properties
@@ -483,7 +483,7 @@ public class Grid<T> extends AbstractListing<T>
          */
         public Column<T> setSortProperty(String... properties) {
             Objects.requireNonNull(properties, "Sort properties can't be null");
-            setSortingEnabled(true);
+            setSortable(true);
             sortOrderProvider = dir -> Arrays.stream(properties)
                     .map(s -> new QuerySortOrder(s, dir));
             return this;
@@ -498,7 +498,7 @@ public class Grid<T> extends AbstractListing<T>
          * {@link #setSortProperty(String...)}.
          * <p>
          * <strong>Note:<strong> calling this method automatically sets the
-         * column as sortable with {@link #setSortingEnabled(boolean)}.
+         * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param provider
          *            the function to use when generating sort orders with the
@@ -508,7 +508,7 @@ public class Grid<T> extends AbstractListing<T>
         public Column<T> setSortOrderProvider(SortOrderProvider provider) {
             Objects.requireNonNull(provider,
                     "Sort order provider can't be null");
-            setSortingEnabled(true);
+            setSortable(true);
             sortOrderProvider = provider;
             return this;
         }
@@ -530,17 +530,20 @@ public class Grid<T> extends AbstractListing<T>
         }
 
         /**
-         * TODO
+         * Sets whether the user can sort this column or not.
          *
-         * @param sortingEnabled
+         * @param sortable
+         *            {@code true} if the column can be sorted by the user;
+         *            {@code false} if not
+         * @return this column
          */
-        public void setSortingEnabled(boolean sortingEnabled) {
-            if (this.sortingEnabled == sortingEnabled) {
+        public void setSortable(boolean sortable) {
+            if (this.sortingEnabled == sortable) {
                 return;
             }
-            this.sortingEnabled = sortingEnabled;
+            this.sortingEnabled = sortable;
 
-            String innerHTML = sortingEnabled
+            String innerHTML = sortable
                     ? String.format(
                             "<vaadin-grid-sorter path='%s'>%s</vaadin-grid-sorter>",
                             columnId, HtmlUtils.escape(header))
@@ -778,6 +781,7 @@ public class Grid<T> extends AbstractListing<T>
     private List<ColumnBase<?>> parentColumns = new ArrayList<>();
 
     private final List<GridSortOrder<T>> sortOrder = new ArrayList<>();
+    private boolean multiSort = false;
 
     /**
      * Creates a new instance, with page size of 50.
@@ -805,7 +809,6 @@ public class Grid<T> extends AbstractListing<T>
         getElement().getNode()
                 .runWhenAttached(ui -> ui.getPage().executeJavaScript(
                         "window.gridConnector.initLazy($0)", getElement()));
-        getElement().setAttribute("multi-sort", true);
     }
 
     /**
@@ -1324,6 +1327,25 @@ public class Grid<T> extends AbstractListing<T>
     public Registration addSortListener(
             ComponentEventListener<SortEvent<Grid<T>, GridSortOrder<T>>> listener) {
         return addListener(SortEvent.class, (ComponentEventListener) listener);
+    }
+
+    /**
+     * TODO
+     * 
+     * @param multiSort
+     */
+    public void setMultiSort(boolean multiSort) {
+        this.multiSort = multiSort;
+        getElement().setAttribute("multi-sort", multiSort);
+    }
+
+    /**
+     * TODO
+     * 
+     * @return
+     */
+    public boolean isMultiSort() {
+        return multiSort;
     }
 
     private List<Column<T>> fetchChildColumns(ColumnGroup columnGroup) {

@@ -29,6 +29,7 @@ import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
 import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
+import com.vaadin.ui.checkbox.Checkbox;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.ColumnGroup;
@@ -590,9 +591,13 @@ public class GridView extends DemoView {
                 "street", "number");
 
         grid.setSelectionMode(SelectionMode.NONE);
+
+        Checkbox multiSort = new Checkbox("Multiple column sorting enabled");
+        multiSort.addValueChangeListener(
+                event -> grid.setMultiSort(event.getValue()));
         // end-source-example
         grid.setId("template-renderer");
-        addCard("Grid with sortable columns", grid);
+        addCard("Grid with sortable columns", grid, multiSort);
     }
 
     private List<Person> getItems() {
