@@ -15,12 +15,15 @@
  */
 package com.vaadin.server.startup;
 
-import javax.servlet.ServletException;
+import static org.mockito.Mockito.when;
+
 import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletException;
 
 import org.jsoup.Jsoup;
 import org.junit.After;
@@ -42,11 +45,12 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.polymertemplate.TemplateParser;
 import com.vaadin.util.HasCurrentService;
 
-import static org.mockito.Mockito.when;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Test that correct @Tag custom elements get loaded by the initializer loader.
  */
+@NotThreadSafe
 public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
     private static final TemplateParser TEST_PARSER = (clazz, tag) -> Jsoup

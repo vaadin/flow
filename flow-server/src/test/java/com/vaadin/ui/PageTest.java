@@ -15,15 +15,24 @@
  */
 package com.vaadin.ui;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Page.ExecutionCanceler;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class PageTest {
     private MockUI ui = new MockUI();
     private Page page = ui.getPage();
+
+    @After
+    public void tearDown() {
+        UI.setCurrent(null);
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddNullStyleSheet() {

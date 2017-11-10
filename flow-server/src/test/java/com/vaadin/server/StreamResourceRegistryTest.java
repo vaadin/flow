@@ -32,6 +32,9 @@ import org.mockito.Mockito;
 
 import com.vaadin.ui.UI;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class StreamResourceRegistryTest {
 
     private VaadinServlet servlet = new VaadinServlet();
@@ -59,13 +62,13 @@ public class StreamResourceRegistryTest {
 
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamRegistration registration = registry
-                .registerResource(resource);
+        StreamRegistration registration = registry.registerResource(resource);
         Assert.assertNotNull(registration);
 
         URI uri = registration.getResourceUri();
 
-        Optional<StreamResource> stored = registry.getResource(StreamResource.class, uri);
+        Optional<StreamResource> stored = registry
+                .getResource(StreamResource.class, uri);
         Assert.assertSame(
                 "Unexpected stored resource is returned for registered URI",
                 resource, stored.get());
@@ -81,15 +84,15 @@ public class StreamResourceRegistryTest {
 
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamRegistration registration = registry
-                .registerResource(resource);
+        StreamRegistration registration = registry.registerResource(resource);
         Assert.assertNotNull(registration);
 
         URI uri = registration.getResourceUri();
 
         registration.unregister();
 
-        Optional<StreamResource> stored = registry.getResource(StreamResource.class, uri);
+        Optional<StreamResource> stored = registry
+                .getResource(StreamResource.class, uri);
         Assert.assertFalse(
                 "Unexpected stored resource is found after unregister()",
                 stored.isPresent());
@@ -104,13 +107,11 @@ public class StreamResourceRegistryTest {
 
         StreamResource resource1 = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamRegistration registration1 = registry
-                .registerResource(resource1);
+        StreamRegistration registration1 = registry.registerResource(resource1);
 
         StreamResource resource2 = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamRegistration registration2 = registry
-                .registerResource(resource2);
+        StreamRegistration registration2 = registry.registerResource(resource2);
 
         Assert.assertNotEquals(
                 "Two different resource are registered to the same URI",
@@ -130,8 +131,7 @@ public class StreamResourceRegistryTest {
 
         StreamResource resource = new StreamResource("a?b=c d&e",
                 () -> makeEmptyStream());
-        StreamRegistration registration = registry
-                .registerResource(resource);
+        StreamRegistration registration = registry.registerResource(resource);
 
         URI url = registration.getResourceUri();
         String suffix = URLEncoder.encode(resource.getName(),
