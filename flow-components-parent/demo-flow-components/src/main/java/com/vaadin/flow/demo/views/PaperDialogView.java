@@ -17,6 +17,9 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.common.HtmlComponent;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Div;
@@ -27,7 +30,8 @@ import com.vaadin.ui.paper.dialog.GeneratedPaperDialog;
 /**
  * View for {@link GeneratedPaperDialog} demo.
  */
-@ComponentDemo(name = "Paper Dialog", href = "paper-dialog", category = DemoCategory.PAPER)
+@Route(value = "paper-dialog", layout = MainLayout.class)
+@ComponentDemo(name = "Paper Dialog", category = DemoCategory.PAPER)
 @HtmlImport("bower_components/neon-animation/neon-animations.html")
 @HtmlImport("bower_components/neon-animation/web-animations.html")
 public class PaperDialogView extends DemoView {
@@ -35,7 +39,7 @@ public class PaperDialogView extends DemoView {
     private Div message;
 
     @Override
-    void initView() {
+    protected void initView() {
         createPlainDialog();
         createModalDialog();
         createNestedDialogs();
@@ -161,8 +165,9 @@ public class PaperDialogView extends DemoView {
         HtmlComponent p = new HtmlComponent("p");
         p.getElement().setText(text);
         dialog.add(p);
-        dialog.addOpenedChangeListener(evt -> message.setText(dialog.isOpened()
-                ? (title + " was opened") : (title + " was closed")));
+        dialog.addOpenedChangeListener(evt -> message
+                .setText(dialog.isOpened() ? (title + " was opened")
+                        : (title + " was closed")));
         return dialog;
     }
 
