@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -72,6 +73,11 @@ public class I18NProviderTest {
                 i18NProvider.getProvidedLocales().get(0),
                 VaadinSession.getCurrent().getLocale());
 
+    }
+
+    @After
+    public void clearCurrentService() {
+        VaadinService.setCurrent(null);
     }
 
     private VaadinServlet initServletAndService(Properties initParams)
