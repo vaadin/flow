@@ -45,9 +45,12 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.polymertemplate.TemplateParser;
 import com.vaadin.util.HasCurrentService;
 
+import net.jcip.annotations.NotThreadSafe;
+
 /**
  * Test that correct @Tag custom elements get loaded by the initializer loader.
  */
+@NotThreadSafe
 public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
     private static final TemplateParser TEST_PARSER = (clazz, tag) -> Jsoup
@@ -86,8 +89,8 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
         };
         VaadinService service = Mockito.mock(VaadinService.class);
         when(session.getService()).thenReturn(service);
-        when(service.getInstantiator())
-                .thenReturn(new DefaultInstantiator(service));
+        DefaultInstantiator instantiator = new DefaultInstantiator(service);
+        when(service.getInstantiator()).thenReturn(instantiator);
         UI.setCurrent(ui);
     }
 

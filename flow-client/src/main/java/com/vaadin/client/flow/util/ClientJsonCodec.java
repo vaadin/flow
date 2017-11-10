@@ -23,6 +23,7 @@ import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.flow.JsonCodec;
 
+import elemental.dom.Node;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonType;
@@ -92,7 +93,20 @@ public class ClientJsonCodec {
             switch (typeId) {
             case JsonCodec.NODE_TYPE: {
                 int nodeId = (int) array.getNumber(1);
-                return tree.getNode(nodeId).getDomNode();
+                Node domNode = tree.getNode(nodeId).getDomNode();
+                if (domNode == null) {
+                    /*
+                     * If an existing element is addressed from the server side
+                     * then it might be not yet set for the StateNode identified
+                     * by <code>nodeId</code>. But it's available via the
+                     * ExistingElementMap instance. Since we don't need anything
+                     * else from the StateNode except the DOM Element it's OK to
+                     * return it here without waiting server round-trip.
+                     */
+                    domNode = tree.getRegistry().getExistingElementMap()
+                            .getElement(nodeId);
+                }
+                return domNode;
             }
             case JsonCodec.ARRAY_TYPE:
                 return jsonArrayAsJsArray(array.getArray(1));

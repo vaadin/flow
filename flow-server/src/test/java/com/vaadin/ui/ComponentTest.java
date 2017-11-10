@@ -56,6 +56,9 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.DetachEvent;
 import com.vaadin.ui.event.Synchronize;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class ComponentTest {
 
     @After
@@ -260,8 +263,8 @@ public class ComponentTest {
         };
         VaadinService service = Mockito.mock(VaadinService.class);
         when(session.getService()).thenReturn(service);
-        when(service.getInstantiator())
-                .thenReturn(new DefaultInstantiator(service));
+        DefaultInstantiator instantiator = new DefaultInstantiator(service);
+        when(service.getInstantiator()).thenReturn(instantiator);
         UI.setCurrent(ui);
     }
 

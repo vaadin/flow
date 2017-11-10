@@ -22,9 +22,11 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsMap;
+import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.util.JsonUtils;
 
@@ -96,6 +98,7 @@ public class ExecuteJavaScriptProcessorTest {
             {
                 StateTree tree = new StateTree(this);
                 set(StateTree.class, tree);
+                set(ExistingElementMap.class, new ExistingElementMap());
             }
 
         };
@@ -116,7 +119,60 @@ public class ExecuteJavaScriptProcessorTest {
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
 
+        // JRE impl of the array uses
+
         processor.execute(JsonUtils.createArray(invocation));
+
+        Assert.assertEquals(1, processor.nodeParametersList.size());
+
+        Assert.assertEquals(1, processor.nodeParametersList.get(0).size());
+
+        JsMap<Object, StateNode> map = processor.nodeParametersList.get(0);
+
+        StateNode stateNode = map.get(element);
+        Assert.assertEquals(node, stateNode);
+    }
+
+    @Test
+    public void execute_nodeParameterIsInExistingElementMap() {
+        Registry registry = new Registry() {
+            {
+                StateTree tree = new StateTree(this);
+                set(StateTree.class, tree);
+                set(ExistingElementMap.class, new ExistingElementMap());
+            }
+
+        };
+        CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor(
+                registry);
+
+        StateNode node = new StateNode(11, registry.getStateTree());
+        registry.getStateTree().registerNode(node);
+
+        JsElement element = new JsElement() {
+
+        };
+
+        registry.getExistingElementMap().add(node.getId(), element);
+
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+                Json.create(node.getId()));
+
+        JsonArray invocation = Stream.of(json, Json.create("$0"))
+                .collect(JsonUtils.asArray());
+
+        // JRE impl of the array uses
+
+        processor.execute(JsonUtils.createArray(invocation));
+
+        // The invocation has not been executed
+        Assert.assertEquals(0, processor.nodeParametersList.size());
+
+        // now remove the node from the map
+        registry.getExistingElementMap().remove(node.getId());
+        // emulate binding
+        node.setDomNode(element);
+        Reactive.flush();
 
         Assert.assertEquals(1, processor.nodeParametersList.size());
 
