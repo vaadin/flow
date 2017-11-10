@@ -30,6 +30,7 @@ import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
+import com.vaadin.ui.i18n.I18NProvider;
 
 /**
  * Delegate for discovering, creating and managing instances of various types
@@ -160,4 +161,11 @@ public interface Instantiator extends Serializable {
 
         return session.getService().getInstantiator();
     }
+
+    /**
+     * Get the I18NProvider if on has been defined.
+     * 
+     * @return I18NProvier instance
+     */
+    I18NProvider getI18NProvider();
 }

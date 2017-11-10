@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.template.angular.InlineTemplate;
@@ -33,6 +32,7 @@ import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.ClientDelegate;
 
 import elemental.json.JsonValue;
 
@@ -45,14 +45,6 @@ public class ClientDelegteHandlersTest {
 
         @ClientDelegate
         protected void method() {
-
-        }
-    }
-
-    static class TemplateWithBadParametersMethod extends Template1 {
-
-        @ClientDelegate
-        protected void method1(char arg) {
 
         }
     }
@@ -150,16 +142,6 @@ public class ClientDelegteHandlersTest {
         }
     }
 
-    static class ChildTemplateOfIncorrectTemplate
-            extends TemplateWithBadParametersMethod {
-
-        @Override
-        @ClientDelegate
-        protected void method() {
-
-        }
-    }
-
     static class ChildTemplateWithOverloadedMethod extends Template1 {
 
         @ClientDelegate
@@ -206,14 +188,6 @@ public class ClientDelegteHandlersTest {
         Assert.assertEquals(
                 getDeclaredMethods(Template1.class).findFirst().get(),
                 feature.get(0));
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void attach_methodHasBadArg_ExceptionIsThrown() {
-        UI ui = new UI();
-
-        AngularTemplate template = new TemplateWithBadParametersMethod();
-        ui.add(template);
     }
 
     @Test
@@ -318,14 +292,6 @@ public class ClientDelegteHandlersTest {
                 getDeclaredMethods(ChildTemplateWithOverriddenMethod.class)
                         .findFirst().get(),
                 feature.get(0));
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void attach_methodReturnTypeInSuperClass_ExceptionIsThrown() {
-        UI ui = new UI();
-
-        AngularTemplate template = new ChildTemplateOfIncorrectTemplate();
-        ui.add(template);
     }
 
     @Test(expected = IllegalStateException.class)

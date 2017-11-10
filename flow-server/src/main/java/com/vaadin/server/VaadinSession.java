@@ -73,7 +73,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Default locale of the session.
      */
-    private Locale locale;
+    private Locale locale = Locale.getDefault();
 
     /**
      * Session wide error handler which is used by default if an error is left
@@ -320,10 +320,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public Locale getLocale() {
         assert hasLock();
-        if (locale != null) {
-            return locale;
-        }
-        return Locale.getDefault();
+        return locale;
     }
 
     /**
