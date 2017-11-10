@@ -28,7 +28,7 @@ public class TranslationSources {
 
         @Override
         public void localeChange(LocaleChangeEvent event) {
-            setText(getProvider().getTranslation("my.translation",
+            setText(getI18NProvider().getTranslation("my.translation",
                     getUserId()));
         }
     }
@@ -36,10 +36,7 @@ public class TranslationSources {
     public class MyLocale extends Div {
 
         public MyLocale() {
-            I18NProvider provider = VaadinService.getCurrent().getInstantiator()
-                    .getI18NProvider();
-
-            setText(provider.getTranslation("my.translation", getUserId()));
+            setText(getI18NProvider().getTranslation("my.translation", getUserId()));
         }
     }
 
