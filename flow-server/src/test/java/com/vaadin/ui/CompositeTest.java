@@ -27,6 +27,9 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.DetachEvent;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class CompositeTest {
 
     // layoutWithSingleComponentComposite (TestLayout)
