@@ -17,6 +17,9 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.paper.spinner.GeneratedPaperSpinner;
 import com.vaadin.ui.paper.swatchpicker.GeneratedPaperSwatchPicker;
@@ -24,7 +27,8 @@ import com.vaadin.ui.paper.swatchpicker.GeneratedPaperSwatchPicker;
 /**
  * View for {@link GeneratedPaperSpinner} demo.
  */
-@ComponentDemo(name = "Paper Swatch Picker", href = "paper-swatch-picker", category = DemoCategory.PAPER)
+@Route(value = "paper-swatch-picker", layout = MainLayout.class)
+@ComponentDemo(name = "Paper Swatch Picker", category = DemoCategory.PAPER)
 public class PaperSwatchPickerView extends DemoView {
 
     @Override

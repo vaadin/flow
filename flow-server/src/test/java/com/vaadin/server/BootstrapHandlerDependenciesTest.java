@@ -1,30 +1,5 @@
 package com.vaadin.server;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.server.BootstrapHandler.BootstrapContext;
-import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.either;
@@ -40,6 +15,36 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
+
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class BootstrapHandlerDependenciesTest {
     private static final String BOOTSTRAP_SCRIPT_CONTENTS = "//<![CDATA[\n";
 
@@ -514,11 +519,9 @@ public class BootstrapHandlerDependenciesTest {
                     }
                 }
 
-                assertThat(
-                        String.format(
-                                "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
-                                element.attr("src")),
-                        element.attr("async"), is(""));
+                assertThat(String.format(
+                        "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
+                        element.attr("src")), element.attr("async"), is(""));
             }
 
             assertThat(
@@ -715,10 +718,9 @@ public class BootstrapHandlerDependenciesTest {
         assertNotEquals(String.format("Could not find url %s in uidl",
                 secondDependencyUrl), -1, secondPosition);
 
-        assertTrue(
-                String.format(
-                        "Expected url %s to be contained before url %s in the uidl, because it is expected to be first to be imported",
-                        firstDependencyUrl, secondDependencyUrl),
+        assertTrue(String.format(
+                "Expected url %s to be contained before url %s in the uidl, because it is expected to be first to be imported",
+                firstDependencyUrl, secondDependencyUrl),
                 firstPosition < secondPosition);
     }
 }

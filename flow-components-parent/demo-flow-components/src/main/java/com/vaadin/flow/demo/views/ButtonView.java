@@ -16,6 +16,9 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HasClickListeners.ClickEvent;
@@ -28,14 +31,15 @@ import com.vaadin.ui.icon.VaadinIcons;
 /**
  * View for {@link Button} demo.
  */
+@Route(value = "vaadin-button", layout = MainLayout.class)
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
-@ComponentDemo(name = "Button", href = "vaadin-button")
+@ComponentDemo(name = "Button")
 public class ButtonView extends DemoView {
 
     private Div message;
 
     @Override
-    void initView() {
+    protected void initView() {
         createDefaultButton();
         createButtonsWithIcons();
         createImageButtonWithAutofocus();

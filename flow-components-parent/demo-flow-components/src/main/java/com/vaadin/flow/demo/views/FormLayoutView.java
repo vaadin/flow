@@ -27,7 +27,10 @@ import com.vaadin.data.BindingValidationStatus;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
 import com.vaadin.function.SerializablePredicate;
+import com.vaadin.router.Route;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
 import com.vaadin.ui.button.Button;
@@ -47,16 +50,17 @@ import com.vaadin.ui.textfield.TextField;
  *
  * @author Vaadin Ltd
  */
+@Route(value = "vaadin-form-layout", layout = MainLayout.class)
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-text-field.html")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-form-layout.html")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-date-picker.html")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-checkbox.html")
-@ComponentDemo(name = "Form Layout", href = "vaadin-form-layout", subcategory = "Layouts")
+@ComponentDemo(name = "Form Layout", subcategory = "Layouts")
 public class FormLayoutView extends DemoView {
 
     @Override
-    void initView() {
+    protected void initView() {
         createResponsiveLayout();
         createFormLayoutWithItems();
         createFormLayoutWithBinder();

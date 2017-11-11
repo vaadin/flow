@@ -20,31 +20,39 @@ import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.util.HasCurrentService;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class TemplateModelWithConvertersTest extends HasCurrentService {
 
     public static class TemplateWithConverters extends
-    EmptyDivTemplate<TemplateWithConverters.TemplateModelWithConverters> {
+            EmptyDivTemplate<TemplateWithConverters.TemplateModelWithConverters> {
 
         public interface TemplateModelWithConverters extends TemplateModel {
             @Convert(value = LongToStringConverter.class)
             void setLongValue(long longValue);
+
             long getLongValue();
 
             @Convert(value = DateToStringConverter.class)
             void setDate(Date date);
+
             Date getDate();
 
             @Convert(value = DateToBeanWithStringConverter.class)
             void setDateString(Date date);
+
             Date getDateString();
 
             @Convert(value = StringToBeanWithStringConverter.class)
             void setString(String string);
+
             String getString();
 
             @Convert(value = LongToStringConverter.class, path = "longValue")
             @Convert(value = DateToStringConverter.class, path = "date")
             void setTestBean(TestBean bean);
+
             TestBean getTestBean();
         }
 
@@ -55,10 +63,10 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class TemplateWithIncompatibleConverter extends
-    EmptyDivTemplate<TemplateWithIncompatibleConverter.TemplateModelWithIncompatibleConverter> {
+            EmptyDivTemplate<TemplateWithIncompatibleConverter.TemplateModelWithIncompatibleConverter> {
 
         public interface TemplateModelWithIncompatibleConverter
-        extends TemplateModel {
+                extends TemplateModel {
 
             @Convert(value = LongToStringConverter.class)
             void setIntValue(int intValue);
@@ -71,10 +79,10 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class TemplateWithConverterOnParameterizedType extends
-    EmptyDivTemplate<TemplateWithConverterOnParameterizedType.TemplateModelWithConverterOnParameterizedType> {
+            EmptyDivTemplate<TemplateWithConverterOnParameterizedType.TemplateModelWithConverterOnParameterizedType> {
 
         public interface TemplateModelWithConverterOnParameterizedType
-        extends TemplateModel {
+                extends TemplateModel {
 
             @Convert(value = LongToStringConverter.class)
             void setList(List<String> list);
@@ -87,10 +95,10 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class TemplateWithSamePathInConverters extends
-    EmptyDivTemplate<TemplateWithSamePathInConverters.TemplateModelWithSamePathInConverters> {
+            EmptyDivTemplate<TemplateWithSamePathInConverters.TemplateModelWithSamePathInConverters> {
 
         public interface TemplateModelWithSamePathInConverters
-        extends TemplateModel {
+                extends TemplateModel {
 
             @Convert(value = LongToStringConverter.class, path = "same")
             @Convert(value = LongToStringConverter.class, path = "same")
@@ -104,9 +112,9 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class TemplateWithConverterOnConvertedType extends
-    EmptyDivTemplate<TemplateWithConverterOnConvertedType.TemplateModelWithConverterOnConvertedType> {
+            EmptyDivTemplate<TemplateWithConverterOnConvertedType.TemplateModelWithConverterOnConvertedType> {
         public interface TemplateModelWithConverterOnConvertedType
-        extends TemplateModel {
+                extends TemplateModel {
 
             @Convert(value = LongToBeanWithLongConverter.class)
             @Convert(value = LongToStringConverter.class, path = "longValue")
@@ -122,9 +130,9 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class TemplateWithUnsupportedConverterModel extends
-    EmptyDivTemplate<TemplateWithUnsupportedConverterModel.TemplateModelWithUnsupportedConverterModel> {
+            EmptyDivTemplate<TemplateWithUnsupportedConverterModel.TemplateModelWithUnsupportedConverterModel> {
         public interface TemplateModelWithUnsupportedConverterModel
-        extends TemplateModel {
+                extends TemplateModel {
 
             @Convert(value = UnsupportedModelConverter.class)
             void setString(String string);
@@ -137,9 +145,9 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class TemplateWithConvertedReadOnlyBean extends
-    EmptyDivTemplate<TemplateWithConvertedReadOnlyBean.TemplateModelWithConvertedReadOnlyBean> {
+            EmptyDivTemplate<TemplateWithConvertedReadOnlyBean.TemplateModelWithConvertedReadOnlyBean> {
         public interface TemplateModelWithConvertedReadOnlyBean
-        extends TemplateModel {
+                extends TemplateModel {
 
             @Convert(value = LongToStringConverter.class, path = "id")
             void setReadOnlyBean(ReadOnlyBean readOnlyBean);
@@ -154,7 +162,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class TemplateWithDate
-    extends EmptyDivTemplate<TemplateWithDate.TemplateModelWithDate> {
+            extends EmptyDivTemplate<TemplateWithDate.TemplateModelWithDate> {
         public interface TemplateModelWithDate extends TemplateModel {
 
             @Convert(value = DateToDateBeanConverter.class)
@@ -170,7 +178,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class TemplateWithListOfBeans extends
-    EmptyDivTemplate<TemplateWithListOfBeans.TemplateModelWithListOfBeans> {
+            EmptyDivTemplate<TemplateWithListOfBeans.TemplateModelWithListOfBeans> {
         public interface TemplateModelWithListOfBeans extends TemplateModel {
 
             @Convert(value = LongToStringConverter.class, path = "longValue")
@@ -187,7 +195,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class LongToStringConverter
-    implements ModelConverter<Long, String> {
+            implements ModelConverter<Long, String> {
 
         @Override
         public Class<Long> getModelType() {
@@ -206,7 +214,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class DateToStringConverter
-    implements ModelConverter<Date, String> {
+            implements ModelConverter<Date, String> {
 
         @Override
         public String toPresentation(Date applicationValue) {
@@ -220,7 +228,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class StringToBeanWithStringConverter
-    implements ModelConverter<String, BeanWithString> {
+            implements ModelConverter<String, BeanWithString> {
 
         @Override
         public BeanWithString toPresentation(String applicationValue) {
@@ -234,7 +242,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class LongToBeanWithLongConverter
-    implements ModelConverter<Long, BeanWithLong> {
+            implements ModelConverter<Long, BeanWithLong> {
 
         @Override
         public Class<Long> getModelType() {
@@ -253,7 +261,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class DateToBeanWithStringConverter
-    implements ModelConverter<Date, BeanWithString> {
+            implements ModelConverter<Date, BeanWithString> {
 
         @Override
         public BeanWithString toPresentation(Date applicationValue) {
@@ -274,7 +282,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class UnsupportedModelConverter
-    implements ModelConverter<String, Long> {
+            implements ModelConverter<String, Long> {
 
         @Override
         public Class<Long> getPresentationType() {
@@ -293,7 +301,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class DateToDateBeanConverter
-    implements ModelConverter<Date, DateBean> {
+            implements ModelConverter<Date, DateBean> {
 
         @Override
         public DateBean toPresentation(Date applicationValue) {
@@ -430,26 +438,31 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class ConvertersOnGetters
-    extends EmptyDivTemplate<ConvertersOnGetters.Model> {
+            extends EmptyDivTemplate<ConvertersOnGetters.Model> {
 
         public interface Model extends TemplateModel {
             void setLongValue(long longValue);
+
             @Convert(value = LongToStringConverter.class)
             long getLongValue();
 
             void setDate(Date date);
+
             @Convert(value = DateToStringConverter.class)
             Date getDate();
 
             void setDateString(Date date);
+
             @Convert(value = DateToBeanWithStringConverter.class)
             Date getDateString();
 
             void setString(String string);
+
             @Convert(value = StringToBeanWithStringConverter.class)
             String getString();
 
             void setTestBean(TestBean bean);
+
             @Convert(value = LongToStringConverter.class, path = "longValue")
             @Convert(value = DateToStringConverter.class, path = "date")
             TestBean getTestBean();
@@ -462,32 +475,37 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class SameConvertersOnAllMethods
-    extends EmptyDivTemplate<SameConvertersOnAllMethods.Model> {
+            extends EmptyDivTemplate<SameConvertersOnAllMethods.Model> {
 
         public interface Model extends TemplateModel {
             @Convert(value = LongToStringConverter.class)
             void setLongValue(long longValue);
+
             @Convert(value = LongToStringConverter.class)
             long getLongValue();
 
             @Convert(value = DateToStringConverter.class)
             void setDate(Date date);
+
             @Convert(value = DateToStringConverter.class)
             Date getDate();
 
             @Convert(value = DateToBeanWithStringConverter.class)
             void setDateString(Date date);
+
             @Convert(value = DateToBeanWithStringConverter.class)
             Date getDateString();
 
             @Convert(value = StringToBeanWithStringConverter.class)
             void setString(String string);
+
             @Convert(value = StringToBeanWithStringConverter.class)
             String getString();
 
             @Convert(value = LongToStringConverter.class, path = "longValue")
             @Convert(value = DateToStringConverter.class, path = "date")
             void setTestBean(TestBean bean);
+
             @Convert(value = LongToStringConverter.class, path = "longValue")
             @Convert(value = DateToStringConverter.class, path = "date")
             TestBean getTestBean();

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.demo;
+package com.vaadin.router;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,43 +23,25 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines a view as being a component demo view
+ * Annotation enabling using multiple {@link RouteAlias @RouteAlias}
+ * annotations.
+ * <p>
+ * <b>NOT meant to be used directly</b>, for multiple style sheet dependencies,
+ * {@link RouteAlias @RouteAlias} should be used instead.
  *
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Inherited
 @Documented
-public @interface ComponentDemo {
+@Inherited
+public @interface InternalContainerAnnotationForRoute {
 
     /**
-     * Enum for describing the category a DemoView belongs in.
+     * Not to be used, instead multiple {@link RouteAlias @RouteAlias}
+     * annotations should be used.
+     *
+     * @return an array of the RouteAlias annotations
      */
-    enum DemoCategory {
-        VAADIN, PAPER
-    }
-
-    /**
-     * Name of the component demo
-     * 
-     * @return component demo name
-     */
-    String name();
-
-    /**
-     * Which category this demo belongs in, default is
-     * {@code DemoCategory.VAADIN}.
-     * 
-     * @return the demo category
-     */
-    DemoCategory category() default DemoCategory.VAADIN;
-
-    /**
-     * Which subcategory this demo belongs in, default is empty (no
-     * subcategory).
-     * 
-     * @return the demo subcategory
-     */
-    String subcategory() default "";
+    RouteAlias[] value();
 }

@@ -15,7 +15,11 @@
  */
 package com.vaadin.router;
 
-import javax.servlet.http.HttpServletResponse;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,6 +29,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,11 +58,9 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.i18n.LocaleChangeEvent;
 import com.vaadin.ui.i18n.LocaleChangeObserver;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import net.jcip.annotations.NotThreadSafe;
 
+@NotThreadSafe
 public class RouterTest extends RoutingTestBase {
 
     private static final String DYNAMIC_TITLE = "I am dynamic!";
@@ -822,6 +827,11 @@ public class RouterTest extends RoutingTestBase {
         super.init();
         ui = new RouterTestUI(router);
         eventCollector.clear();
+    }
+
+    @After
+    public void tearDown() {
+        UI.setCurrent(null);
     }
 
     @Rule
