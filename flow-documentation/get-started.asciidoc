@@ -54,7 +54,7 @@ optimizing the result for mobile support.
 
 [[figure.flow.tutorial.final-ui]]
 .UI to be built in the tutorial
-image::img/TODO.jpg[]
+image::images/FinishedUI.png[]
 
 If you do not want to do the exercise at all, you can also just
 https://github.com/vaadin/TODO/[download the final application] and play around
@@ -82,6 +82,7 @@ from http://www.eclipse.org/downloads/[eclipse.org].
 
 // TODO / Alejandro
 The following video shows how to do this step of the tutorial:
+
 video::Alejandro[youtube, width="640", height="400"]
 
 As the starting point for the application, we use a Vaadin App Starter called
@@ -231,14 +232,14 @@ input and `jetty:run` to the [guilabel]#Goals# input.
 
 [[figure.flow.tutorial.jetty-run]]
 .Generating a Maven launch for `jetty:run` target
-image::img/debugAsMavenBuild2.jpg[]
+image::images/DebugAsMavenBuild.png[]
 
 Before clicking debug, to make sure debugging works properly, add your Java
 project to the source lookup path from the [guilabel]#Source# tab:
 
 [[figure.tutorial.creating.add-sources]]
 .Adding sources for debugging
-image::img/debugAsMavenBuildAddSources.jpg[]
+image::images/DebugAsMavenProjectAddSources.png[]
 
 Now click [guibutton]#Debug# to continue. This will download Jetty, a small Java
 web server (if not cached to your local Maven repository), and use it to host your
@@ -275,7 +276,7 @@ breakpoint.
 
 [[figure.flow.tutorial.breakpoint]]
 .Execution in a break point in the button click listener
-image::img/debugInBreakPointVariable.jpg[]
+image::images/DebugInBreakPointVariable.png[]
 
 Clicking the red square in the [guilabel]#Console# view will terminate the Jetty
 server process. You can restart it easily form the run/debug history. You can
@@ -288,9 +289,6 @@ Java web app code, click the [guibutton]#Java EE# button in the toolbar.
 
 [[flow.tutorial.backend]]
 == Adding a demo "backend"
-
-// TODO
-TIP: Starting from this step directly? https://github.com/vaadin/tutorial/archive/v8-step2.zip[Download the project] for this step, extract the zip file and choose "Import... > Maven > Existing Maven project".
 
 Before getting more into real Vaadin development, let us introduce some domain
 objects and a dummy backend. In a real-world application, you will most likely
@@ -311,11 +309,11 @@ clipboard. Select the text content of the whole class from your browser, choose
 Java package in Eclipse's Java Resources view and choose "Edit > Paste". Eclipse
 is smart enough to automatically create a properly named Java file for the class.
 
- * https://raw.githubusercontent.com/vaadin/tutorial/master/src/main/java/my/vaadin/app/CustomerStatus.java[CustomerStatus] -
+ * https://raw.githubusercontent.com/hezamu/flow-tutorial/master/src/main/java/com/vaadin/flow/demo/helloworld/CustomerStatus.java[CustomerStatus.java] -
  this is a simple enum class
- * https://raw.githubusercontent.com/vaadin/tutorial/master/src/main/java/my/vaadin/app/Customer.java[Customer] -
+ * https://raw.githubusercontent.com/hezamu/flow-tutorial/master/src/main/java/com/vaadin/flow/demo/helloworld/Customer.java[Customer.java] -
  this is the main domain object, a basic Java bean that we will be using in our example
- * https://raw.githubusercontent.com/vaadin/tutorial/master/src/main/java/my/vaadin/app/CustomerService.java[CustomerService] -
+ * https://raw.githubusercontent.com/hezamu/flow-tutorial/master/src/main/java/com/vaadin/flow/demo/helloworld/CustomerService.java[CustomerService.java] -
  this is a simple facade via which you can request and modify [classname]#Customer#
  instances. You can think of this class as your entry point to your dummy database.
 
@@ -325,8 +323,6 @@ free to have a look around.
 
 [[flow.tutorial.grid]]
 == Listing entities in a Grid
-
-TIP: Starting from this step directly? https://github.com/vaadin/tutorial/archive/v8-step3.zip[Download the project] for this step, extract the zip file and choose "Import... > Maven > Existing Maven project".
 
 Often when you start building a UI for a data-centric application, the first
 thing you want to do is to list your data from your back-end. There are several
@@ -434,9 +430,6 @@ do this at any point during the rest of the tutorial as well.
 
 [[flow.tutorial.filtering]]
 == Creating live filtering for entities
-
-// TODO
-TIP: Starting from this step directly? https://github.com/vaadin/tutorial/archive/v8-step4.zip[Download the project] for this step, extract the zip file and choose menu:Import...[Maven>Existing Maven project].
 
 A search functionality is expected in every modern application and it is also a
 nice Vaadin development exercise. Let's add a filtering functionality to our
@@ -680,8 +673,8 @@ the following methods to the [classname]#CustomerForm# class:
 ----
 private void delete() {
     service.delete(customer);
-	  view.updateList();
-	  setCustomer(null);
+    view.updateList();
+    setCustomer(null);
 }
 
 private void save() {
@@ -708,9 +701,6 @@ simplicity.
 
 [[framework.tutorial.form-connection]]
 == Connecting the form to the application
-
-// TODO
-// TIP: Starting from this step directly? https://github.com/vaadin/tutorial/archive/v8-step6.zip[Download the project] for this step, extract the zip file and choose menu:Import...[Maven>Existing Maven project].
 
 In this part, we'll use the [classname]#CustomerForm# class, which we created in
 the previous step, from the [classname]#MainView# class. We will use it for both
@@ -775,8 +765,8 @@ add(toolbar, main);
 ----
 
 All planned features are now done. You can save the changes and play around with
-the application. You can also download an example of
-https://github.com/vaadin/tutorial[the final application] from Github.
+the application. You can also download
+https://github.com/hezamuy/flow-tutorial[the final application] from Github.
 
 [[framework.tutorial.next]]
 == It works! What next?
