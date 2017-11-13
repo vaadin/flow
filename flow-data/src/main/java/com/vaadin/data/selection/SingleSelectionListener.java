@@ -18,7 +18,7 @@ package com.vaadin.data.selection;
 import java.io.Serializable;
 import java.util.EventListener;
 
-import com.vaadin.data.AbstractListing;
+import com.vaadin.ui.Component;
 
 /**
  * A listener for listening to selection changes on a single selection
@@ -26,8 +26,8 @@ import com.vaadin.data.AbstractListing;
  *
  * @author Vaadin Ltd.
  *
- * @param <L>
- *            the listing component type
+ * @param <C>
+ *            the selection component type
  * @param <T>
  *            the type of the selected item
  *
@@ -35,7 +35,7 @@ import com.vaadin.data.AbstractListing;
  * @see SingleSelectionEvent
  */
 @FunctionalInterface
-public interface SingleSelectionListener<L extends AbstractListing<T>, T>
+public interface SingleSelectionListener<C extends Component, T>
         extends Serializable, EventListener {
 
     /**
@@ -44,5 +44,5 @@ public interface SingleSelectionListener<L extends AbstractListing<T>, T>
      * @param event
      *            the single selection event
      */
-    void selectionChange(SingleSelectionEvent<L, T> event);
+    void selectionChange(SingleSelectionEvent<C, T> event);
 }

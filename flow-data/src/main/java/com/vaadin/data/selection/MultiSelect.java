@@ -17,7 +17,7 @@ package com.vaadin.data.selection;
 
 import java.util.Set;
 
-import com.vaadin.data.AbstractListing;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasValue;
 
 
@@ -26,12 +26,12 @@ import com.vaadin.ui.common.HasValue;
  *
  * @author Vaadin Ltd
  *
- * @param <L>
- *            the listing component type
+ * @param <C>
+ *            the selection component type
  * @param <T>
  *            the type of the items to select
  */
-public interface MultiSelect<L extends AbstractListing<T>, T>
-        extends HasValue<L, Set<T>> {
+public interface MultiSelect<C extends Component, T>
+        extends HasValue<C, Set<T>> {
 
 }
