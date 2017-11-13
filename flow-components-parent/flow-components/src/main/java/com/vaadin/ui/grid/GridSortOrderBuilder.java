@@ -28,6 +28,8 @@ import com.vaadin.ui.grid.Grid.Column;
  * @see #thenAsc(Column)
  * @see #thenDesc(Column)
  * @see #build()
+ * 
+ * @author Vaadin Ltd.
  *
  * @param <T>
  *            the type of the grid

@@ -427,7 +427,7 @@ public class Grid<T> extends AbstractListing<T>
          * @return this column
          */
         public Column<T> setComparator(Comparator<T> comparator) {
-            Objects.requireNonNull(comparator, "Comparator can't be null");
+            Objects.requireNonNull(comparator, "Comparator must not be null");
             setSortable(true);
             this.comparator = (a, b) -> comparator.compare(a, b);
             return this;
@@ -447,7 +447,8 @@ public class Grid<T> extends AbstractListing<T>
          */
         public <V extends Comparable<? super V>> Column<T> setComparator(
                 ValueProvider<T, V> keyExtractor) {
-            Objects.requireNonNull(comparator, "Key extractor can't be null");
+            Objects.requireNonNull(keyExtractor,
+                    "Key extractor must not be null");
             setComparator(Comparator.comparing(keyExtractor));
             return this;
         }
@@ -485,7 +486,8 @@ public class Grid<T> extends AbstractListing<T>
          * @return this column
          */
         public Column<T> setSortProperty(String... properties) {
-            Objects.requireNonNull(properties, "Sort properties can't be null");
+            Objects.requireNonNull(properties,
+                    "Sort properties must not be null");
             setSortable(true);
             sortOrderProvider = dir -> Arrays.stream(properties)
                     .map(s -> new QuerySortOrder(s, dir));
@@ -510,7 +512,7 @@ public class Grid<T> extends AbstractListing<T>
          */
         public Column<T> setSortOrderProvider(SortOrderProvider provider) {
             Objects.requireNonNull(provider,
-                    "Sort order provider can't be null");
+                    "Sort order provider must not be null");
             setSortable(true);
             sortOrderProvider = provider;
             return this;
@@ -546,11 +548,12 @@ public class Grid<T> extends AbstractListing<T>
             }
             this.sortingEnabled = sortable;
 
+            String escapedHeader = HtmlUtils.escape(header);
             String innerHTML = sortable
                     ? String.format(
                             "<vaadin-grid-sorter path='%s'>%s</vaadin-grid-sorter>",
-                            columnId, HtmlUtils.escape(header))
-                    : HtmlUtils.escape(header);
+                            columnId, escapedHeader)
+                    : escapedHeader;
 
             headerTemplate.removeFromParent();
             headerTemplate = new Element("template")
@@ -920,10 +923,9 @@ public class Grid<T> extends AbstractListing<T>
 
         Map<String, ValueProvider<T, ?>> valueProviders = renderer
                 .getValueProviders();
-        Set<String> valueProvidersKeySet = renderer.getValueProviders()
-                .keySet();
+        Set<String> valueProvidersKeySet = valueProviders.keySet();
         List<String> matchingSortingProperties = Arrays
-                .asList(sortingProperties).stream()
+                .stream(sortingProperties)
                 .filter(valueProvidersKeySet::contains)
                 .collect(Collectors.toList());
 
@@ -1389,20 +1391,19 @@ public class Grid<T> extends AbstractListing<T>
      *            client-side, {@code false} to disable
      */
     public void setMultiSort(boolean multiSort) {
-        this.multiSort = multiSort;
-        getElement().setAttribute("multi-sort", multiSort);
+        getElement().setProperty("multi-sort", multiSort);
     }
 
     /**
      * Gets whether multiple column sorting is enabled on the client-side.
      * 
      * @see #setMultiSort(boolean)
-     * 
+     *
      * @return {@code true} if sorting of multiple columns is enabled,
      *         {@code false} otherwise
      */
     public boolean isMultiSort() {
-        return multiSort;
+        return getElement().getProperty("multi-sort", false);
     }
 
     private List<Column<T>> fetchChildColumns(ColumnGroup columnGroup) {
