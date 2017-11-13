@@ -15,9 +15,10 @@
  */
 package com.vaadin.ui.common;
 
-import java.util.HashSet;
 import java.util.Set;
 
+import com.vaadin.flow.dom.ClassList;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.ui.Component;
 
@@ -36,7 +37,7 @@ public interface HasStyle extends HasElement {
      *            the CSS class name to add, not <code>null</code>
      */
     default void addClassName(String className) {
-        getElement().getClassList().add(className);
+        getClassNames().add(className);
     }
 
     /**
@@ -49,7 +50,7 @@ public interface HasStyle extends HasElement {
      *         name
      */
     default boolean removeClassName(String className) {
-        return getElement().getClassList().remove(className);
+        return getClassNames().remove(className);
     }
 
     /**
@@ -75,15 +76,20 @@ public interface HasStyle extends HasElement {
     }
 
     /**
-     * Gets the CSS class names for this component.
+     * Gets the set of CSS class names used for this element. The returned set
+     * can be modified to add or remove class names. The contents of the set is
+     * also reflected in the value of the <code>class</code> attribute.
      * <p>
-     * Note that classes cannot be added or removed through the returned
-     * collection.
-     * 
-     * @return a set of class names, never <code>null</code>
+     * Despite the name implying a list being returned, the return type is
+     * actually a {@link Set} since the the in-browser return value behaves like
+     * a <code>Set</code> in Java.
+     *
+     * @see Element#getClassList()
+     *
+     * @return a list of class names, never <code>null</code>
      */
-    default Set<String> getClassNames() {
-         return new HashSet<>(getElement().getClassList());
+    default ClassList getClassNames() {
+        return getElement().getClassList();
     }
 
     /**
@@ -96,7 +102,7 @@ public interface HasStyle extends HasElement {
      *            remove it
      */
     default void setClassName(String className, boolean set) {
-        getElement().getClassList().set(className, set);
+        getClassNames().set(className, set);
     }
 
     /**
@@ -108,7 +114,7 @@ public interface HasStyle extends HasElement {
      *         <code>false</code> otherwise
      */
     default boolean hasClassName(String className) {
-        return getElement().getClassList().contains(className);
+        return getClassNames().contains(className);
     }
 
     /**
