@@ -191,6 +191,20 @@ public final class ExecuteJavaScriptElementUtils {
 
     }
 
+    public static void populateModelProperties(StateNode node,
+            JsArray<String> properties) {
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        for (int i = 0; i < properties.length(); i++) {
+            String property = properties.get(i);
+            if (!isPropertyDefined(node.getDomNode(), property)) {
+                map.getProperty(property).setValue(null);
+            } else {
+                map.getProperty(property).syncToServer(
+                        WidgetUtil.getJsProperty(node.getDomNode(), property));
+            }
+        }
+    }
+
     private static void respondExistingElement(StateNode parent, String tagName,
             int serverSideId, String id, Element existingElement) {
         if (existingElement != null && hasTag(existingElement, tagName)) {
@@ -293,5 +307,11 @@ public final class ExecuteJavaScriptElementUtils {
             function () {
                 runnable.@java.lang.Runnable::run(*)();
             });
+    }-*/;
+
+    private static native boolean isPropertyDefined(Node node, String property)
+    /*-{
+        return node["constructor"] && node["constructor"]["properties"] &&
+            node["constructor"]["properties"][property] && node["constructor"]["properties"][property]["value"];
     }-*/;
 }

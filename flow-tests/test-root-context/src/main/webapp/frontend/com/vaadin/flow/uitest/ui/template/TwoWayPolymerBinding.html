@@ -25,6 +25,16 @@
     <script>
         class MyTemplate extends Polymer.Element {
             static get is() { return 'my-template' }
+            
+            static get properties(){
+                return {
+                   value: {
+                     type: String,
+                     value: "foo",
+                     notify: true
+                   }
+                }
+              }
         }
         customElements.define(MyTemplate.is, MyTemplate);
     </script>

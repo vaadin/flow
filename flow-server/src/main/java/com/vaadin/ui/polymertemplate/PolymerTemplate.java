@@ -19,13 +19,18 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.flow.StateNode;
 import com.vaadin.flow.model.ListModelType;
 import com.vaadin.flow.model.ModelDescriptor;
 import com.vaadin.flow.model.ModelType;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.model.TemplateModelProxyHandler;
+import com.vaadin.flow.nodefeature.ElementPropertyMap;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
@@ -56,10 +61,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     public PolymerTemplate(TemplateParser parser) {
         new TemplateInitializer(this, parser).initChildElements();
 
-        // This a workaround to propagate model to a Polymer template.
-        // Correct implementation will follow in
-        // https://github.com/vaadin/flow/issues/1371
-        getModel();
+        initModelProperties();
     }
 
     /**
@@ -142,19 +144,19 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     @Override
     protected M getModel() {
         if (model == null) {
-            model = createTemplateModelInstance();
+            model = createTemplateModelInstance(getStateNode());
         }
         return model;
     }
 
-    private M createTemplateModelInstance() {
+    private M createTemplateModelInstance(StateNode node) {
         ModelDescriptor<? extends M> descriptor = ModelDescriptor
                 .get(getModelType());
-        return TemplateModelProxyHandler.createModelProxy(getStateNode(),
-                descriptor);
+        return TemplateModelProxyHandler.createModelProxy(node, descriptor);
     }
 
-    private static ModelType getModelTypeForListModel(Type type, ModelType mtype) {
+    private static ModelType getModelTypeForListModel(Type type,
+            ModelType mtype) {
         ModelType modelType = mtype;
         while (modelType instanceof ListModelType) {
             if (type.equals(modelType.getJavaType())) {
@@ -168,6 +170,46 @@ public abstract class PolymerTemplate<M extends TemplateModel>
             return modelType;
         }
         return null;
+    }
+
+    private JsonArray filterUnsetProperties(List<String> properties) {
+        JsonArray array = Json.createArray();
+        ElementPropertyMap map = getStateNode()
+                .getFeature(ElementPropertyMap.class);
+        int i = 0;
+        for (String property : properties) {
+            if (!map.hasProperty(property)) {
+                array.set(i, property);
+                i++;
+            }
+        }
+        return array;
+    }
+
+    private void initModelProperties() {
+        getModel();
+        ElementPropertyMap properties = getStateNode()
+                .getFeature(ElementPropertyMap.class);
+        List<String> propertyNames = properties.getPropertyNames()
+                .collect(Collectors.toList());
+
+        removeSimpleProperties();
+
+        getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
+                .beforeClientResponse(getStateNode(),
+                        () -> ui.getPage().executeJavaScript(
+                                "this.populateModelProperties($0, $1)",
+                                getElement(),
+                                filterUnsetProperties(propertyNames))));
+    }
+
+    private void removeSimpleProperties() {
+        ElementPropertyMap map = getStateNode()
+                .getFeature(ElementPropertyMap.class);
+        List<String> props = map.getPropertyNames()
+                .filter(name -> !(map.getProperty(name) instanceof StateNode))
+                .collect(Collectors.toList());
+        props.forEach(map::removeProperty);
     }
 
 }

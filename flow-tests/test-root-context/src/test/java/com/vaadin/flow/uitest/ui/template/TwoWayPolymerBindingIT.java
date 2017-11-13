@@ -33,6 +33,7 @@ public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
         WebElement template = findElement(By.id("template"));
         WebElement input = getInShadowRoot(template, By.id("input"));
 
+        input.clear();
         input.sendKeys("a");
         Assert.assertEquals("Value: a", getStatusMessage());
 
