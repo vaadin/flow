@@ -29,7 +29,6 @@ import com.vaadin.ui.event.ComponentEventListener;
  * Event describing a change in sorting of a {@link DataProvider}. Fired by
  * {@link SortNotifier SortNotifiers}.
  *
- * @see SortListener
  * @see SortOrder
  * @param <T>
  *            the event source type
