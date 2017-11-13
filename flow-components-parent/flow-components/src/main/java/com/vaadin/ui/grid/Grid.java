@@ -434,7 +434,10 @@ public class Grid<T> extends AbstractListing<T>
         }
 
         /**
-         * TODO
+         * Sets a comparator to use with in-memory sorting with this column
+         * based on the return type of the given {@link ValueProvider}. Sorting
+         * with a back-end is done using
+         * {@link Column#setSortProperty(String...)}.
          * <p>
          * <strong>Note:<strong> calling this method automatically sets the
          * column as sortable with {@link #setSortable(boolean)}.
@@ -557,7 +560,7 @@ public class Grid<T> extends AbstractListing<T>
         }
 
         /**
-         * TODO
+         * Gets the generated unique identifier of this column.
          *
          * @return
          */
@@ -840,12 +843,23 @@ public class Grid<T> extends AbstractListing<T>
     }
 
     /**
-     * TODO
+     * Adds a new text column to this {@link Grid} with a value provider and
+     * sorting properties. The value is converted to a JSON value by using
+     * {@link JsonSerializer#toJson(Object)}. The sorting properties are used to
+     * configure backend sorting for this column. In-memory sorting is
+     * automatically configured using the return type of the given
+     * {@link ValueProvider}.
+     *
+     * @see Column#setComparator(ValueProvider)
+     * @see Column#setSortProperty(String...)
      *
      * @param header
+     *            the column header name
      * @param valueProvider
+     *            the value provider
      * @param sortingProperties
-     * @return
+     *            the sorting properties to use with this column
+     * @return the created column
      */
     public <V extends Comparable<? super V>> Column<T> addColumn(
             String header, ValueProvider<T, V> valueProvider,
@@ -882,6 +896,23 @@ public class Grid<T> extends AbstractListing<T>
         return column;
     }
 
+    /**
+     * Adds a new text column to this {@link Grid} with a template renderer and
+     * sorting properties. The values inside the renderer are converted to JSON
+     * values by using {@link JsonSerializer#toJson(Object)}.
+     * <p>
+     * This constructor attempts to automatically configure both in-memory and
+     * backend sorting using the given sorting properties and matching those
+     * with the property names used in the given renderer.
+     *
+     * @param header
+     *            the column header name
+     * @param renderer
+     *            the renderer used to create the grid cell structure
+     * @param sortingProperties
+     *            the sorting properties to use for this column
+     * @return the created column
+     */
     public <V extends Comparable<? super V>> Column<T> addColumn(String header,
             TemplateRenderer<T> renderer, String... sortingProperties) {
         Column<T> column = addColumn(header, renderer);
@@ -905,7 +936,7 @@ public class Grid<T> extends AbstractListing<T>
                 comparator = comparator
                         .thenComparing(Comparator.comparing(provider));
             } catch (ClassCastException cce) {
-                // TODO: ignore or rethrow?
+                // TODO: Happens if V is not comparable, ignore or rethrow?
             }
         }
         column.setComparator(comparator);
@@ -1303,6 +1334,20 @@ public class Grid<T> extends AbstractListing<T>
     }
 
     /**
+     * Gets a {@link Column} of this grid by its identifying string.
+     *
+     * @see Column#getColumnId()
+     *
+     * @param columnId
+     *            the identifier of the column to get
+     * @return the column corresponding to the given column identifier, or
+     *         {@code null} if there is no such column
+     */
+    public Column<T> getColumn(String columnId) {
+        return idToColumnMap.get(columnId);
+    }
+
+    /**
      * Sets the visibility of details component for given item.
      *
      * @param item
@@ -1336,9 +1381,11 @@ public class Grid<T> extends AbstractListing<T>
     }
 
     /**
-     * TODO
-     * 
+     * Sets whether multiple column sorting is enabled on the client-side.
+     *
      * @param multiSort
+     *            {@code true} to enable sorting of multiple columns on the
+     *            client-side, {@code false} to disable
      */
     public void setMultiSort(boolean multiSort) {
         this.multiSort = multiSort;
@@ -1346,9 +1393,12 @@ public class Grid<T> extends AbstractListing<T>
     }
 
     /**
-     * TODO
+     * Gets whether multiple column sorting is enabled on the client-side.
      * 
-     * @return
+     * @see #setMultiSort(boolean)
+     * 
+     * @return {@code true} if sorting of multiple columns is enabled,
+     *         {@code false} otherwise
      */
     public boolean isMultiSort() {
         return multiSort;
@@ -1415,7 +1465,8 @@ public class Grid<T> extends AbstractListing<T>
             JsonObject sorter = sorters.getObject(i);
             Column<T> column = idToColumnMap.get(sorter.getString("path"));
             if (column == null) {
-                throw new IllegalStateException("TODO");
+                throw new IllegalStateException(
+                        "Received a sorters changed call from the client for a non-existent column");
             }
             switch (sorter.getString("direction")) {
             case "asc":
@@ -1425,7 +1476,8 @@ public class Grid<T> extends AbstractListing<T>
                 sortOrderBuilder.thenDesc(column);
                 break;
             default:
-                throw new IllegalStateException("TODO");
+                throw new IllegalStateException(
+                        "Received a sorters changed call from the client containing an invalid sorting direction");
             }
         }
         setSortOrder(sortOrderBuilder.build(), true);
