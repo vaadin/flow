@@ -317,8 +317,7 @@ add a new column to display that.
 ----
 grid.addColumn("Age",
         TemplateRenderer.<Person> of("[[item.age]] years old")
-                .withProperty("age", person ->
-                        Year.now().getValue()
+                .withProperty("age", person -> Year.now().getValue()
                         - person.getYearOfBirth()));
 ----
 
