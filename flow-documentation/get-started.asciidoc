@@ -782,6 +782,7 @@ example, to make the UI feel a bit more airy, add the following lines just befor
 ----
 vaadin-vertical-layout, vaadin-form-layout {
     margin: 7px;
+    padding-right: 7px;
 }
 ----
 
