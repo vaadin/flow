@@ -43,24 +43,22 @@ skills are required.
 
 You'll have your first Vaadin Flow app running in your IDE in a couple of minutes. To
 complete the whole tutorial, you'll need about 20 to 60 minutes, depending on your
-existing experience. Naturally, you can just do the beginning of the exercise or
-pick any of the steps you want. To start from a specific step, we have prepared
-the example code after each step to be downloaded as a zip file.
+existing experience.
 
 In this tutorial, we build a simple customer management system. It is not a real
 application; we use an in-memory "back-end", so that you can understand how to
-hook it to an existing Java based back-end. We cover the basic Vaadin development
-and you can use the result as a basis for more experiments with Vaadin, such as
-using add-ons, your own custom look-and- feel (aka. theme), adding new views, or
-optimizing the result for mobile support.
+hook it to an existing Java based back-end. We cover the basic Vaadin Flow
+development and you can use the result as a basis for more experiments with Vaadin
+Flow, such as using add-ons, your own custom look-and-feel (aka. theme), adding
+new views, or optimizing the result for mobile support.
 
 [[figure.flow.tutorial.final-ui]]
 .UI to be built in the tutorial
 image::images/FinishedUI.png[]
 
 If you do not want to do the exercise at all, you can also just
-https://github.com/vaadin/TODO/[download the final application] and play around
-with it.
+https://github.com/hezamu/flow-tutorial/[download the final application] and play
+around with it.
 
 // TODO / Alejandro
 TIP: In addition to this written tutorial, we have recorded the steps as
@@ -88,14 +86,14 @@ The following video shows how to do this step of the tutorial:
 video::Alejandro[youtube, width="640", height="400"]
 
 As the starting point for the application, we use a Vaadin App Starter called
-Application Skeleton. App Starters are project stubs that have dependencies set
+Skeleton Starter App. App Starters are project stubs that have dependencies set
 up, and may include some example code.
 
 . Start by pointing your browser at https://vaadin.com/start[Vaadin Start]
 
 . Pick Vaadin 10 as the version
 
-. Select the Application Skeleton app starter by clicking it
+. Select the Skeleton Starter App by clicking it
 
 . Enter the following values to as application parameters. You may have to
 scroll down a bit to see the fields.
