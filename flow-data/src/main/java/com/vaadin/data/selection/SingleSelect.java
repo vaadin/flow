@@ -15,7 +15,7 @@
  */
 package com.vaadin.data.selection;
 
-import com.vaadin.data.AbstractListing;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasValue;
 
 /**
@@ -23,13 +23,13 @@ import com.vaadin.ui.common.HasValue;
  *
  * @author Vaadin Ltd
  *
- * @param <L>
- *            the listing component type
+ * @param <C>
+ *            the selection component type
  * @param <T>
  *            the selection value type
  *
  */
-public interface SingleSelect<L extends AbstractListing<T>, T>
-        extends HasValue<L, T> {
+public interface SingleSelect<C extends Component, T>
+        extends HasValue<C, T> {
 
 }
