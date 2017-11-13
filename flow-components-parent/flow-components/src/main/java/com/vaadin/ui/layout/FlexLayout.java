@@ -295,4 +295,19 @@ public class FlexLayout extends Component
         return justifyContentMode;
     }
 
+    @Override
+    public void replace(Component oldComponent, Component newComponent) {
+        Alignment alignSelf = null;
+        double flexGrow = 0;
+        if (oldComponent != null) {
+            alignSelf = getAlignSelf(oldComponent);
+            flexGrow = getFlexGrow(oldComponent);
+        }
+        HasOrderedComponents.super.replace(oldComponent, newComponent);
+        if (newComponent != null && oldComponent != null) {
+            setAlignSelf(alignSelf, newComponent);
+            setFlexGrow(flexGrow, newComponent);
+        }
+    }
+
 }
