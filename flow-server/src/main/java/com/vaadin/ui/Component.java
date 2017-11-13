@@ -23,6 +23,7 @@ import java.util.stream.Stream.Builder;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.server.VaadinService;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.AttachNotifier;
 import com.vaadin.ui.common.DetachNotifier;
@@ -35,6 +36,7 @@ import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.ComponentEventNotifier;
 import com.vaadin.ui.event.DetachEvent;
+import com.vaadin.ui.i18n.I18NProvider;
 import com.vaadin.util.AnnotationReader;
 
 /**
@@ -472,6 +474,15 @@ public abstract class Component implements HasElement, Serializable,
     public static <T extends Component> T from(Element element,
             Class<T> componentType) {
         return ComponentUtil.componentFromElement(element, componentType, true);
+    }
+
+    /**
+     * Get the registered I18N provider.
+     *
+     * @return I18N provider
+     */
+    public I18NProvider getI18NProvider() {
+        return VaadinService.getCurrent().getInstantiator().getI18NProvider();
     }
 
 }
