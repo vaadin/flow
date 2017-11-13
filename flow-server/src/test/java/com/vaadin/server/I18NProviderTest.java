@@ -24,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -76,6 +77,11 @@ public class I18NProviderTest {
                 i18NProvider.getProvidedLocales().get(0),
                 VaadinSession.getCurrent().getLocale());
 
+    }
+
+    @After
+    public void clearCurrentService() {
+        VaadinService.setCurrent(null);
     }
 
     private VaadinServlet initServletAndService(Properties initParams)
