@@ -52,9 +52,9 @@ development and you can use the result as a basis for more experiments with Vaad
 Flow, such as using add-ons, your own custom look-and-feel (aka. theme), adding
 new views, or optimizing the result for mobile support.
 
-[[figure.flow.tutorial.final-ui]]
-.UI to be built in the tutorial
-image::images/FinishedUI.png[]
+//[[figure.flow.tutorial.final-ui]]
+//.UI to be built in the tutorial
+image:images/FinishedUI.png[UI to be built in the tutorial]
 
 If you do not want to do the exercise at all, you can also just
 https://github.com/hezamu/flow-tutorial/[download the final application] and play
@@ -83,7 +83,7 @@ from http://www.eclipse.org/downloads/[eclipse.org].
 // TODO / Alejandro
 The following video shows how to do this step of the tutorial:
 
-video::Alejandro[youtube, width="640", height="400"]
+// video::Alejandro[youtube, width="640", height="400"]
 
 As the starting point for the application, we use a Vaadin App Starter called
 Skeleton Starter App. App Starters are project stubs that have dependencies set
@@ -232,14 +232,14 @@ input and `jetty:run` to the [guilabel]#Goals# input.
 
 [[figure.flow.tutorial.jetty-run]]
 .Generating a Maven launch for `jetty:run` target
-image::images/DebugAsMavenBuild.png[]
+image:images/DebugAsMavenBuild.png[Generating a Maven launch for `jetty:run` target]
 
 Before clicking debug, to make sure debugging works properly, add your Java
 project to the source lookup path from the [guilabel]#Source# tab:
 
 [[figure.tutorial.creating.add-sources]]
 .Adding sources for debugging
-image::images/DebugAsMavenProjectAddSources.png[]
+image:images/DebugAsMavenProjectAddSources.png[Adding sources for debugging]
 
 Now click [guibutton]#Debug# to continue. This will download Jetty, a small Java
 web server (if not cached to your local Maven repository), and use it to host your
@@ -250,11 +250,12 @@ If you make changes to the code, Jetty will notice the changes and in a couple o
 seconds most changes are automatically deployed. Reloading the page in your browser
 will show the changes.
 
-TIP: In some cases your JVM might not allow injecting changes on the fly.
-In these cases, Eclipse will complain about "Hot code replacement error".
-Just choose to restart the server to get the latest changes.
-Many Java developers use a commercial tool called http://zeroturnaround.com/software/jrebel/[JRebel]
-to make code replacement work better.
+[TIP]
+In some cases your JVM might not allow injecting changes on the fly. In these
+cases, Eclipse will complain about "Hot code replacement error". Just choose to
+restart the server to get the latest changes. Many Java developers use a
+commercial tool called http://zeroturnaround.com/software/jrebel/[JRebel] to make
+code replacement work better.
 
 Mastering the usage of the Java debugger is also handy to better understand how
 your application actually works and fixing bugs that all developers write at some
@@ -276,7 +277,7 @@ breakpoint.
 
 [[figure.flow.tutorial.breakpoint]]
 .Execution in a break point in the button click listener
-image::images/DebugInBreakPointVariable.png[]
+image:images/DebugInBreakPointVariable.png[Execution in a break point in the button click listener]
 
 Clicking the red square in the [guilabel]#Console# view will terminate the Jetty
 server process. You can restart it easily form the run/debug history. You can
@@ -385,7 +386,7 @@ listing from other classes. The method looks like this:
 
 [source,java]
 ----
-private void updateList() {
+public void updateList() {
     grid.setItems(service.findAll());
 }
 ----
@@ -485,7 +486,7 @@ to the init method, for example right after your `filterText` configuration:
 
 [source,java]
 ----
-Button clearFilterTextBtn = new Button(new Icon(VaadinIcons.EXIT));
+Button clearFilterTextBtn = new Button(new Icon(VaadinIcons.CLOSE_CIRCLE));
 clearFilterTextBtn.addClickListener(e -> filterText.clear());
 ----
 
