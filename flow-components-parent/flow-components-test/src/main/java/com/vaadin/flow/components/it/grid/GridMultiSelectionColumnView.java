@@ -60,8 +60,9 @@ public class GridMultiSelectionColumnView extends TestView {
 
     private void setUp(Grid<String> grid) {
         grid.setSelectionMode(SelectionMode.MULTI);
-        grid.addColumn("text", i -> i);
-        grid.addColumn("length", i -> String.valueOf(i.length()));
+        grid.addColumn(i -> i).setHeaderLabel("text");
+        grid.addColumn(i -> String.valueOf(i.length()))
+                .setHeaderLabel("length");
         grid.addSelectionListener(event -> message.setText(
                 "Selected item count: " + event.getAllSelectedItems().size()));
     }
