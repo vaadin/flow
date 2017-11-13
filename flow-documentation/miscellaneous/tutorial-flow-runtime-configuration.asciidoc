@@ -15,7 +15,7 @@ Parameters can be set the following way:
 
 * by setting the system property
 
-In this case, `vaadin.` prefix is recommended to avoid name collisions.
+In this case, `vaadin.` prefix is needed to be specified before the parameter names.
 For instance, Spring Boot can be configured in
 https://github.com/netgloo/spring-boot-samples/blob/master/spring-boot-mysql-springdatajpa-hibernate/src/main/resources/application.properties[application.properties] file.
 For more details, refer to <<../spring/tutorial-spring-configuration#,Flow Spring configuration>>
@@ -92,7 +92,7 @@ allowing Flow to use external source of web components' files.
 [NOTE]
 Webjars are enabled for development mode and disabled for production mode by default,
 unless explicitly overridden by parameter specified.
-In future, webjars should be expected to be enabled always.
+Suggestion: In the future, webjars are expected to the always enabled by default.
 
 Next group of parameters are paths to external web component's locations in development and production modes.
 
@@ -100,8 +100,6 @@ Development mode:
 
 * frontend.url.dev (default value is `context://frontend`) – a location Flow searches web components' files in development mode.
 Supports changes reload on a working application and should be set as a directory, containing `bower.json` file.
-By default, Flow looks for files in `frontend` directory,
-located in https://docs.jboss.org/jbossas/guides/webguide/r2/en/html/ch06.html[context root] of the application
 
 Production mode:
 

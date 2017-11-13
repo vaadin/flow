@@ -442,7 +442,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 webComponents.map(WebComponents::loadEs5Adapter).orElse(true));
         if (loadEs5Adapter
                 && !context.getSession().getBrowser().isEs6Supported()) {
+            // This adapter is required since lots of our current customers use polymer-cli to transpile sources,
+            // this tool adds babel-helpers dependency into each file, see:
+            // https://github.com/Polymer/polymer-cli/blob/master/src/build/build.ts#L64
+            // and
+            // https://github.com/Polymer/polymer-cli/blob/master/src/build/optimize-streams.ts#L119
             head.appendChild(createInlineJavaScriptElement(BABEL_HELPERS_JS));
+            // This adapter is required by all webcomponents in order to work correctly in ES5 mode, comes in webcomponentsjs distribution
             head.appendChild(createJavaScriptElement(
                     context.getUriResolver()
                             .resolveVaadinUri(webComponentsPolyfillBase
