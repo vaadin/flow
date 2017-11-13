@@ -18,24 +18,22 @@ package com.vaadin.flow.tests.components.grid;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.data.event.SortEvent;
-import com.vaadin.data.provider.ListDataProvider;
-import com.vaadin.data.provider.Query;
 import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.data.provider.SortOrder;
-import com.vaadin.function.SerializablePredicate;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.Grid.Column;
-import com.vaadin.ui.grid.Grid.SelectionMode;
 import com.vaadin.ui.grid.GridSortOrder;
 import com.vaadin.ui.renderers.TemplateRenderer;
 
@@ -135,21 +133,6 @@ public class GridSortingTest {
         }
     }
 
-    private static class TestDataProvider<T> extends ListDataProvider<T> {
-
-        public Query<T, SerializablePredicate<T>> lastQuery;
-
-        public TestDataProvider(Collection<T> items) {
-            super(items);
-        }
-
-        @Override
-        public Stream<T> fetch(Query<T, SerializablePredicate<T>> query) {
-            lastQuery = query;
-            return super.fetch(query);
-        }
-    }
-
     private static class TestSortListener<T> implements
             ComponentEventListener<SortEvent<Grid<T>, GridSortOrder<T>>> {
 
@@ -167,17 +150,14 @@ public class GridSortingTest {
     private Column<Person> ageColumn;
     private Column<Person> templateColumn;
 
-    private TestDataProvider<Person> testDataProvider;
     private TestSortListener<Person> testSortListener;
 
     @Before
     public void init() {
-        testDataProvider = new TestDataProvider<>(new ArrayList<>());
         testSortListener = new TestSortListener<>();
 
         grid = new Grid<>();
-        grid.setDataProvider(testDataProvider);
-        grid.setSelectionMode(SelectionMode.NONE);
+        grid.setItems(new ArrayList<>());
         grid.addSortListener(testSortListener);
 
         nameColumn = grid.addColumn("Name", Person::getName, "name");
@@ -210,12 +190,17 @@ public class GridSortingTest {
                 testSortListener.events.get(0).getSortOrder());
         Assert.assertTrue(testSortListener.events.get(0).isFromClient());
 
-        Assert.assertEquals(grid.getDataCommunicator().getInMemorySorting(),
-                testDataProvider.lastQuery.getInMemorySorting());
-        Assert.assertEquals(grid.getDataCommunicator().getBackEndSorting(),
-                testDataProvider.lastQuery.getSortOrders());
+        List<Person> expectedOrder = createItems();
+        expectedOrder.sort(Comparator.comparing(Person::getName)
+                .thenComparing(Comparator.comparing(Person::getAge).reversed())
+                .thenComparing(person -> person.getAddress().getStreet())
+                .thenComparing(person -> person.getAddress().getNumber()));
+        List<Person> actualOrder = createItems();
+        actualOrder.sort(grid.getDataCommunicator().getInMemorySorting());
+        Assert.assertEquals(expectedOrder, actualOrder);
+
         assertSortOrdersEquals(
-                QuerySortOrder.asc("name").thenAsc("age").thenAsc("street")
+                QuerySortOrder.asc("name").thenDesc("age").thenAsc("street")
                         .thenAsc("number").build(),
                 grid.getDataCommunicator().getBackEndSorting());
 
@@ -229,21 +214,6 @@ public class GridSortingTest {
                 testSortListener.events.get(1).getSortOrder());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void callSortersChanged_invalid_column_id() {
-        JsonArray sortOrders = Json.createArray();
-        sortOrders.set(0, createSortObject("column that doesn't exist", "asc"));
-        callSortersChanged(sortOrders);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void callSortersChanged_invalid_direction() {
-        JsonArray sortOrders = Json.createArray();
-        sortOrders.set(0, createSortObject(nameColumn.getColumnId(),
-                "invalid direction"));
-        callSortersChanged(sortOrders);
-    }
-
     private void callSortersChanged(JsonArray json) {
         try {
             Method method = Grid.class.getDeclaredMethod("sortersChanged",
@@ -251,8 +221,9 @@ public class GridSortingTest {
             method.setAccessible(true);
             method.invoke(grid, json);
         } catch (NoSuchMethodException | SecurityException
-                | IllegalAccessException | InvocationTargetException e) {
-            Assert.fail("Failed to call sortersChanged");
+                | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            Assert.fail("Could not call Grid.sortersChanged");
         }
     }
 
@@ -266,8 +237,31 @@ public class GridSortingTest {
     private <T, V extends SortOrder<T>> void assertSortOrdersEquals(List<V> o1, List<V> o2) {
         Assert.assertEquals(o1.size(), o2.size());
         for (int i = 0; i < o1.size(); ++i) {
-            Assert.assertEquals(o1.get(i).getDirection(), o2.get(i).getDirection());
+            Assert.assertEquals(o1.get(i).getDirection(),
+                    o2.get(i).getDirection());
             Assert.assertEquals(o1.get(i).getSorted(), o2.get(i).getSorted());
         }
+    }
+
+    private static List<Person> createItems() {
+        Random random = new Random(0);
+        return IntStream.range(1, 500)
+                .mapToObj(index -> createPerson(index, random))
+                .collect(Collectors.toList());
+    }
+
+    private static Person createPerson(int index, Random random) {
+        Person person = new Person();
+        person.setId(index);
+        person.setName("Person " + index);
+        person.setAge(13 + random.nextInt(50));
+
+        Address address = new Address();
+        address.setStreet("Street " + ((char) ('A' + random.nextInt(26))));
+        address.setNumber(1 + random.nextInt(50));
+        address.setPostalCode(String.valueOf(10000 + random.nextInt(8999)));
+        person.setAddress(address);
+
+        return person;
     }
 }

@@ -1465,7 +1465,7 @@ public class Grid<T> extends AbstractListing<T>
             JsonObject sorter = sorters.getObject(i);
             Column<T> column = idToColumnMap.get(sorter.getString("path"));
             if (column == null) {
-                throw new IllegalStateException(
+                throw new IllegalArgumentException(
                         "Received a sorters changed call from the client for a non-existent column");
             }
             switch (sorter.getString("direction")) {
@@ -1476,7 +1476,7 @@ public class Grid<T> extends AbstractListing<T>
                 sortOrderBuilder.thenDesc(column);
                 break;
             default:
-                throw new IllegalStateException(
+                throw new IllegalArgumentException(
                         "Received a sorters changed call from the client containing an invalid sorting direction");
             }
         }
