@@ -21,6 +21,7 @@ package com.vaadin.ui.i18n;
  *
  * @author Vaadin Ltd
  */
+@FunctionalInterface
 public interface LocaleChangeObserver {
 
     /**

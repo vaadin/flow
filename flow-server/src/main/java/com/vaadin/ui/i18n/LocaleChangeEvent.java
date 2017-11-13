@@ -20,6 +20,11 @@ import java.util.Locale;
 
 import com.vaadin.ui.UI;
 
+/**
+ * Event object with data related to locale change.
+ *
+ * @author Vaadin Ltd
+ */
 public class LocaleChangeEvent extends EventObject {
 
     private final Locale locale;
@@ -29,12 +34,19 @@ public class LocaleChangeEvent extends EventObject {
      *
      * @param ui
      *            The object on which the Event initially occurred.
+     * @param locale
+     *            new locale that was set
      */
     public LocaleChangeEvent(UI ui, Locale locale) {
         super(ui);
         this.locale = locale;
     }
 
+    /**
+     * Get the new locale that was set.
+     * 
+     * @return set locale
+     */
     public Locale getLocale() {
         return locale;
     }

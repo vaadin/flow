@@ -37,7 +37,6 @@ import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
-import com.vaadin.ui.i18n.LocaleChangeEvent;
 
 /**
  * Handles navigation events by rendering a contained NavigationState in the
