@@ -16,7 +16,6 @@
 package com.vaadin.ui;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,11 +34,108 @@ public class HasStyleTest {
 
     @Test
     public void addClassName() {
-        HasStyleComponent c = new HasStyleComponent();
-        c.addClassName("foo");
-        assertClasses(c, "foo");
-        c.addClassName("bar");
-        assertClasses(c, "foo", "bar");
+        HasStyleComponent component = new HasStyleComponent();
+        component.addClassName("foo");
+        assertClasses(component, "foo");
+        component.addClassName("bar");
+        assertClasses(component, "foo", "bar");
+
+        // use ClassList
+
+        component.getClassNames().add("baz");
+        assertClasses(component, "foo", "bar", "baz");
+    }
+
+    @Test
+    public void setClassName_useClassList() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.setClassName("foo bar");
+
+        component.getClassNames().set("bar", false);
+        assertClasses(component, "foo");
+    }
+
+    @Test
+    public void removeClassName() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.setClassName("foo Bar baz");
+        component.removeClassName("foo");
+        assertClasses(component, "Bar", "baz");
+        component.removeClassName("bar");
+        assertClasses(component, "Bar", "baz");
+        component.removeClassName("Bar");
+        assertClasses(component, "baz");
+        component.removeClassName("baz");
+        assertClasses(component);
+
+        // use ClassList
+        component.setClassName("foo");
+
+        component.getClassNames().remove("foo");
+        assertClasses(component);
+    }
+
+    @Test
+    public void setClassName() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.setClassName("foo");
+        assertClasses(component, "foo");
+        component.setClassName("bar");
+        assertClasses(component, "bar");
+        component.setClassName("bar foo");
+        assertClasses(component, "bar", "foo");
+        component.setClassName(" ");
+        assertClasses(component);
+        component.setClassName("");
+        assertClasses(component);
+    }
+
+    @Test
+    public void getClassName() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.setClassName("foo");
+        Assert.assertEquals("foo", component.getClassName());
+        component.setClassName(" ");
+        Assert.assertNull(component.getClassName());
+    }
+
+    @Test
+    public void setClassNameToggle() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.setClassName("foo", false);
+        assertClasses(component);
+        component.setClassName("foo", true);
+        assertClasses(component, "foo");
+        component.setClassName("foo", false);
+        assertClasses(component);
+        component.setClassName("foo", true);
+        component.setClassName("bar", true);
+        component.setClassName("baz", true);
+        assertClasses(component, "foo", "bar", "baz");
+        component.setClassName("baz", false);
+        assertClasses(component, "foo", "bar");
+
+    }
+
+    @Test
+    public void hasClassName() {
+        HasStyleComponent component = new HasStyleComponent();
+        Assert.assertFalse(component.hasClassName("foo"));
+        component.setClassName("foo");
+        Assert.assertTrue(component.hasClassName("foo"));
+        Assert.assertFalse(component.hasClassName("fo"));
+        component.setClassName("foo bar");
+        Assert.assertTrue(component.hasClassName("foo"));
+        Assert.assertTrue(component.hasClassName("bar"));
+
+    }
+
+    @Test
+    public void getClassList_elementClassList() {
+        HasStyleComponent component = new HasStyleComponent();
+
+        Assert.assertEquals(component.getElement().getClassList(),
+                component.getClassNames());
     }
 
     private void assertClasses(HasStyleComponent c, String... expectedClasses) {
@@ -47,90 +143,5 @@ public class HasStyleTest {
         HashSet<String> expected = new HashSet<String>(
                 Arrays.asList(expectedClasses));
         Assert.assertEquals(expected, actual);
-    }
-
-    @Test
-    public void getClassNamesNotLive() {
-        HasStyleComponent c = new HasStyleComponent();
-        c.addClassName("componentStyle1");
-        Set<String> classNames = c.getClassNames();
-
-        // Adding to component does not updated stored set
-        c.addClassName("componentStyle2");
-        Assert.assertEquals(Collections.singleton("componentStyle1"),
-                classNames);
-
-        // Adding to stored set does not update component
-        classNames.add("inSetOnly");
-        assertClasses(c, "componentStyle1", "componentStyle2");
-    }
-
-    @Test
-    public void removeClassName() {
-        HasStyleComponent c = new HasStyleComponent();
-        c.setClassName("foo Bar baz");
-        c.removeClassName("foo");
-        assertClasses(c, "Bar", "baz");
-        c.removeClassName("bar");
-        assertClasses(c, "Bar", "baz");
-        c.removeClassName("Bar");
-        assertClasses(c, "baz");
-        c.removeClassName("baz");
-        assertClasses(c);
-    }
-
-    @Test
-    public void setClassName() {
-        HasStyleComponent c = new HasStyleComponent();
-        c.setClassName("foo");
-        assertClasses(c, "foo");
-        c.setClassName("bar");
-        assertClasses(c, "bar");
-        c.setClassName("bar foo");
-        assertClasses(c, "bar", "foo");
-        c.setClassName(" ");
-        assertClasses(c);
-        c.setClassName("");
-        assertClasses(c);
-    }
-
-    @Test
-    public void getClassName() {
-        HasStyleComponent c = new HasStyleComponent();
-        c.setClassName("foo");
-        Assert.assertEquals("foo", c.getClassName());
-        c.setClassName(" ");
-        Assert.assertNull(c.getClassName());
-    }
-
-    @Test
-    public void setClassNameToggle() {
-        HasStyleComponent c = new HasStyleComponent();
-        c.setClassName("foo", false);
-        assertClasses(c);
-        c.setClassName("foo", true);
-        assertClasses(c, "foo");
-        c.setClassName("foo", false);
-        assertClasses(c);
-        c.setClassName("foo", true);
-        c.setClassName("bar", true);
-        c.setClassName("baz", true);
-        assertClasses(c, "foo", "bar", "baz");
-        c.setClassName("baz", false);
-        assertClasses(c, "foo", "bar");
-
-    }
-
-    @Test
-    public void hasClassName() {
-        HasStyleComponent c = new HasStyleComponent();
-        Assert.assertFalse(c.hasClassName("foo"));
-        c.setClassName("foo");
-        Assert.assertTrue(c.hasClassName("foo"));
-        Assert.assertFalse(c.hasClassName("fo"));
-        c.setClassName("foo bar");
-        Assert.assertTrue(c.hasClassName("foo"));
-        Assert.assertTrue(c.hasClassName("bar"));
-
     }
 }
