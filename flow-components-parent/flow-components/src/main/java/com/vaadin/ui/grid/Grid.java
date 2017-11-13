@@ -419,7 +419,7 @@ public class Grid<T> extends AbstractListing<T>
          * Sorting with a back-end is done using
          * {@link Column#setSortProperty(String...)}.
          * <p>
-         * <strong>Note:<strong> calling this method automatically sets the
+         * <strong>Note:</strong> calling this method automatically sets the
          * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param comparator
@@ -439,7 +439,7 @@ public class Grid<T> extends AbstractListing<T>
          * with a back-end is done using
          * {@link Column#setSortProperty(String...)}.
          * <p>
-         * <strong>Note:<strong> calling this method automatically sets the
+         * <strong>Note:</strong> calling this method automatically sets the
          * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param keyExtractor
@@ -456,7 +456,7 @@ public class Grid<T> extends AbstractListing<T>
          * Gets the comparator to use with in-memory sorting for this column
          * when sorting in the given direction.
          * <p>
-         * <strong>Note:<strong> calling this method automatically sets the
+         * <strong>Note:</strong> calling this method automatically sets the
          * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param sortDirection
@@ -477,7 +477,7 @@ public class Grid<T> extends AbstractListing<T>
          * Sets strings describing back end properties to be used when sorting
          * this column.
          * <p>
-         * <strong>Note:<strong> calling this method automatically sets the
+         * <strong>Note:</strong> calling this method automatically sets the
          * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param properties
@@ -500,7 +500,7 @@ public class Grid<T> extends AbstractListing<T>
          * The default provider uses the sort properties set with
          * {@link #setSortProperty(String...)}.
          * <p>
-         * <strong>Note:<strong> calling this method automatically sets the
+         * <strong>Note:</strong> calling this method automatically sets the
          * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param provider
@@ -540,9 +540,9 @@ public class Grid<T> extends AbstractListing<T>
          *            {@code false} if not
          * @return this column
          */
-        public void setSortable(boolean sortable) {
+        public Column<T> setSortable(boolean sortable) {
             if (this.sortingEnabled == sortable) {
-                return;
+                return this;
             }
             this.sortingEnabled = sortable;
 
@@ -557,6 +557,7 @@ public class Grid<T> extends AbstractListing<T>
                     .setAttribute("class", "header")
                     .setProperty("innerHTML", innerHTML);
             getElement().appendChild(headerTemplate);
+            return this;
         }
 
         /**
