@@ -46,9 +46,9 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_USING_NEW_ROUTING = "usingNewRouting";
 
     /**
-     * Configuration name for loading the ES5 adapter.
+     * Configuration name for loading the ES5 adapters.
      */
-    public static final String LOAD_ES5_ADAPTER = "load.es5.adapter";
+    public static final String LOAD_ES5_ADAPTERS = "load.es5.adapters";
 
     /**
      * Configuration name for forcing the ShadyDOM polyfill.

@@ -19,7 +19,7 @@ In the future, https://www.polymer-project.org/blog/2017-08-23-hands-on-30-previ
 will migrate to https://yarnpkg.com/lang/en/[yarn] instead.
 
 Flow does not need to know anything about `bower` or `yarn`: it has defaults that can be overridden with
-runtime configuration (more details in <<tutorial-flow-components-setup#,Flow components setup>>)
+runtime configuration (more details in <<../miscellaneous/tutorial-flow-runtime-configuration#,Flow runtime configuration>>)
 
 Although Flow does not need to know about those tools, it is possible to integrate this workflow as part of Flow and
 do not force users to familiarise themselves with another tool.

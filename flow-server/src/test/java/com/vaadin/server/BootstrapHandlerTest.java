@@ -9,6 +9,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.io.IOUtils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
+
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.router.PageTitle;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
@@ -23,19 +34,10 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
-import org.apache.commons.io.IOUtils;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class BootstrapHandlerTest {
 
@@ -74,7 +76,7 @@ public class BootstrapHandlerTest {
         BootstrapHandler.clientEngineFile = "foobar";
         testUI = new TestUI();
 
-        deploymentConfiguration = new MockDeploymentConfiguration();
+        deploymentConfiguration = new MockDeploymentConfiguration("test/");
 
         service = Mockito
                 .spy(new MockVaadinServletService(deploymentConfiguration));
@@ -349,12 +351,6 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void es6IsNotSupported_es6CollectionsAreInlined()
-            throws IOException {
-        Assert.assertTrue(hasEs6Inlined());
-    }
-
-    @Test
     public void bootstrapPage_configJsonPatternIsReplacedBeforeInitialUidl() {
         TestUI anotherUI = new TestUI();
         initUI(testUI);
@@ -382,9 +378,40 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void es6IsSupported_noEs6ScriptInlined() throws IOException {
+    public void es6NotSupported_webcomponentsPolyfillBasePresent_polyfillsLoaded() {
+        Mockito.when(browser.isEs6Supported()).thenReturn(false);
+
+        Element head = initTestUI();
+
+        checkInlinedScript(head, "es6-collections.js", true);
+        assertTrue(
+                "Webcomponent adapter is expected to be included to a bootstrap page when ES6 is not supported",
+                head.toString().contains("custom-elements-es5-adapter.js"));
+        checkInlinedScript(head, "babel-helpers.min.js", true);
+    }
+
+    @Test
+    public void es6IsSupported_noPolyfillsLoaded() {
         Mockito.when(browser.isEs6Supported()).thenReturn(true);
-        Assert.assertFalse(hasEs6Inlined());
+
+        Element head = initTestUI();
+
+        checkInlinedScript(head, "es6-collections.js", false);
+        checkInlinedScript(head, "babel-helpers.min.js", false);
+        assertFalse(
+                "Webcomponent adapter should NOT be included to a bootstrap page when ES6 is not supported",
+                head.toString().contains("custom-elements-es5-adapter.js"));
+    }
+
+    private Element initTestUI() {
+        TestUI anotherUI = new TestUI();
+        initUI(testUI);
+        anotherUI.getInternals().setSession(session);
+        VaadinRequest vaadinRequest = createVaadinRequest();
+        anotherUI.doInit(vaadinRequest, 0);
+        BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
+                null, session, anotherUI);
+        return BootstrapHandler.getBootstrapPage(bootstrapContext).head();
     }
 
     private VaadinRequest createVaadinRequest() {
@@ -398,27 +425,26 @@ public class BootstrapHandlerTest {
         return request;
     }
 
-    private boolean hasEs6Inlined() throws IOException {
-        TestUI anotherUI = new TestUI();
-        initUI(testUI);
-        anotherUI.getInternals().setSession(session);
-        VaadinRequest vaadinRequest = createVaadinRequest();
-        anotherUI.doInit(vaadinRequest, 0);
-        BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
-                null, session, anotherUI);
-
-        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
-        Element head = page.head();
-
+    private void checkInlinedScript(Element head, String scriptName,
+            boolean shouldBeInlined) {
         StringBuilder builder = new StringBuilder();
-        try (InputStream stream = getClass()
-                .getResourceAsStream("es6-collections.js")) {
-            IOUtils.readLines(stream, StandardCharsets.UTF_8).stream()
+        try (InputStream stream = getClass().getResourceAsStream(scriptName)) {
+            IOUtils.readLines(stream, StandardCharsets.UTF_8)
                     .forEach(builder::append);
-
+        } catch (IOException ioe) {
+            throw new AssertionError(ioe);
         }
-        boolean hasEs6Inlined = head.getElementsByTag("script").stream()
+
+        boolean inlined = head.getElementsByTag("script").stream()
                 .anyMatch(script -> script.data().contains(builder.toString()));
-        return hasEs6Inlined;
+        if (shouldBeInlined) {
+            assertTrue(String.format(
+                    "Expect the script '%s' to be inlined in document head",
+                    scriptName), inlined);
+        } else {
+            assertFalse(String.format(
+                    "Expect document head NOT to contain script '%s'",
+                    scriptName), inlined);
+        }
     }
 }

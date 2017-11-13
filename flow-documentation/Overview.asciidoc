@@ -92,6 +92,7 @@ These tutorials show how the different features are used.
 ** <<miscellaneous/tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
 ** <<miscellaneous/tutorial-service-init-listener#,Configure RequestHandlers, BootstrapListeners and DependencyFilters using VaadinServiceInitListener>>
 ** <<miscellaneous/tutorial-stream-resources#,Using stream resources>>
+** <<miscellaneous/tutorial-flow-runtime-configuration#,Flow runtime configuration>>
 
 The rest of this document gives a high-level overview of the features and explains how they fit together.
 
