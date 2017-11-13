@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,6 +55,8 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.i18n.LocaleChangeEvent;
+import com.vaadin.ui.i18n.LocaleChangeObserver;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -802,6 +805,18 @@ public class RouterTest extends RoutingTestBase {
                 String parameter) {
             // NOTE! Expects RootParameter.class to be registered!
             event.rerouteTo("", parameter);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class Translations extends Component
+            implements LocaleChangeObserver {
+
+        @Override
+        public void localeChange(LocaleChangeEvent event) {
+            eventCollector.add("Received locale change event for locale: "
+                    + event.getLocale().getDisplayName());
         }
     }
 
@@ -1954,6 +1969,45 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Postponed", eventCollector.get(2));
         Assert.assertEquals("Resuming", eventCollector.get(3));
         Assert.assertEquals("ChildListener notified", eventCollector.get(4));
+    }
+
+    @Test
+    public void navigation_should_fire_locale_change_observer()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(Translations.class));
+
+        ui.navigateTo("");
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals(
+                "Received locale change event for locale: "
+                        + Locale.getDefault().getDisplayName(),
+                eventCollector.get(0));
+    }
+
+    @Test
+    public void away_navigation_should_not_inform_observer()
+            throws InvalidRouteConfigurationException, InterruptedException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(FooNavigationTarget.class, Translations.class)
+                        .collect(Collectors.toSet()));
+
+
+        ui.navigateTo("");
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals(
+                "Received locale change event for locale: "
+                        + Locale.getDefault().getDisplayName(),
+                eventCollector.get(0));
+
+        ui.navigateTo("foo");
+
+        Assert.assertEquals("Recorded event amount should have stayed the same", 1,
+                eventCollector.size());
     }
 
     private Class<? extends Component> getUIComponent() {

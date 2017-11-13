@@ -20,7 +20,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
+import com.vaadin.ui.i18n.LocaleChangeEvent;
+import com.vaadin.ui.i18n.LocaleChangeObserver;
 
 /**
  * Event handling utilities.
@@ -33,8 +36,8 @@ public final class EventUtil {
     }
 
     /**
-     * Collect all Components implementing {@link BeforeNavigationObserver} connected to
-     * the given element tree.
+     * Collect all Components implementing {@link BeforeNavigationObserver}
+     * connected to the given element tree.
      * 
      * @param element
      *            element to search from
@@ -42,14 +45,13 @@ public final class EventUtil {
      */
     public static List<BeforeNavigationObserver> collectBeforeNavigationObservers(
             Element element) {
-        return getListenerComponents(flattenChildren(element),
+        return getImplementingComponents(flattenChildren(element),
                 BeforeNavigationObserver.class).collect(Collectors.toList());
     }
 
-
     /**
-     * Collect all Components implementing {@link BeforeLeaveObserver} connected to
-     * the given element tree.
+     * Collect all Components implementing {@link BeforeLeaveObserver} connected
+     * to the given element tree.
      *
      * @param element
      *            element to search from
@@ -57,13 +59,13 @@ public final class EventUtil {
      */
     public static List<BeforeLeaveObserver> collectBeforeLeaveObservers(
             Element element) {
-        return getListenerComponents(flattenChildren(element),
+        return getImplementingComponents(flattenChildren(element),
                 BeforeLeaveObserver.class).collect(Collectors.toList());
     }
 
     /**
-     * Collect all Components implementing {@link BeforeNavigationObserver} connected to
-     * the tree of all given Components in list.
+     * Collect all Components implementing {@link BeforeNavigationObserver}
+     * connected to the tree of all given Components in list.
      *
      * @param components
      *            components to search
@@ -74,13 +76,13 @@ public final class EventUtil {
         Stream<Element> elements = components.stream()
                 .flatMap(component -> flattenChildren(component.getElement()));
 
-        return getListenerComponents(elements, BeforeNavigationObserver.class)
-                .collect(Collectors.toList());
+        return getImplementingComponents(elements,
+                BeforeNavigationObserver.class).collect(Collectors.toList());
     }
 
     /**
-     * Collect all Components implementing {@link BeforeEnterObserver} connected to
-     * the tree of all given Components in list.
+     * Collect all Components implementing {@link BeforeEnterObserver} connected
+     * to the tree of all given Components in list.
      *
      * @param components
      *            components to search
@@ -91,13 +93,13 @@ public final class EventUtil {
         Stream<Element> elements = components.stream()
                 .flatMap(component -> flattenChildren(component.getElement()));
 
-        return getListenerComponents(elements, BeforeEnterObserver.class)
+        return getImplementingComponents(elements, BeforeEnterObserver.class)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Collect all Components implementing {@link AfterNavigationObserver} that are
-     * found in the trees of given Components.
+     * Collect all Components implementing {@link AfterNavigationObserver} that
+     * are found in the trees of given Components.
      *
      * @param components
      *            components to search
@@ -108,8 +110,70 @@ public final class EventUtil {
         Stream<Element> elements = components.stream()
                 .flatMap(component -> flattenChildren(component.getElement()));
 
-        return getListenerComponents(elements, AfterNavigationObserver.class)
+        return getImplementingComponents(elements,
+                AfterNavigationObserver.class).collect(Collectors.toList());
+    }
+
+    /**
+     * Collect all Components implementing {@link LocaleChangeObserver}
+     * connected to the given element tree.
+     *
+     * @param element
+     *            element to search from
+     * @return navigation listeners
+     */
+    public static List<LocaleChangeObserver> collectLocaleChangeObservers(
+            Element element) {
+        return getImplementingComponents(flattenChildren(element),
+                LocaleChangeObserver.class).collect(Collectors.toList());
+    }
+
+    /**
+     * Collect all Components implementing {@link LocaleChangeObserver}
+     * connected to the tree of all given Components in list.
+     *
+     * @param components
+     *            components to search
+     * @return navigation listeners
+     */
+    public static List<LocaleChangeObserver> collectLocaleChangeObservers(
+            List<HasElement> components) {
+        Stream<Element> elements = components.stream()
+                .flatMap(component -> flattenChildren(component.getElement()));
+
+        return getImplementingComponents(elements, LocaleChangeObserver.class)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Inform components connected to the given ui that implement
+     * {@link LocaleChangeObserver} about locale change.
+     *
+     * @param ui
+     *            UI for locale change
+     */
+    public static void informLocaleChangeObservers(UI ui) {
+        LocaleChangeEvent localeChangeEvent = new LocaleChangeEvent(ui,
+                ui.getLocale());
+        collectLocaleChangeObservers(ui.getElement())
+                .forEach(observer -> observer.localeChange(localeChangeEvent));
+    }
+
+    /**
+     * Inform components implementing {@link LocaleChangeObserver} about locale
+     * change.
+     *
+     * @param ui
+     *            UI for locale change
+     * @param components
+     *            components to search
+     */
+    public static void informLocaleChangeObservers(UI ui,
+            List<HasElement> components) {
+        LocaleChangeEvent localeChangeEvent = new LocaleChangeEvent(ui,
+                ui.getLocale());
+        collectLocaleChangeObservers(components)
+                .forEach(observer -> observer.localeChange(localeChangeEvent));
     }
 
     /**
@@ -133,7 +197,7 @@ public final class EventUtil {
      *            class type to filter by
      * @return stream of components implementing T
      */
-    public static <T> Stream<T> getListenerComponents(
+    public static <T> Stream<T> getImplementingComponents(
             Stream<Element> elementStream, Class<T> type) {
         return elementStream.flatMap(
                 o -> o.getComponent().map(Stream::of).orElseGet(Stream::empty))
