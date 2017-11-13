@@ -279,3 +279,94 @@ Additionally, user reordering of frozen columns is disabled.
 ----
 nameColumn.setFrozen(true);
 ----
+
+== Using Templates
+
+You can define the contents of the grid cells with HTML markup and use Polymer notation for data binding
+and event handling. This is done by providing a `TemplateRenderer` for the appropriate `Column`.
+
+The following example simply bolds the names of the persons.
+
+[source, java]
+----
+Grid<Person> grid = new Grid<>();
+grid.setItems(people);
+
+grid.addColumn("Name",
+        TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
+                .withProperty("name", Person::getName));
+----
+
+As you can see, the template-string is passed for the static `TemplateRenderer.of()` method,
+and every property used in that template needs to be defined with the `withProperty()` method.
+
+[NOTE]
+The `\[[item.name]]` is Polymer syntax for binding properties for a list of items.
+Using this notation in this context is pretty straightforward, but you can refer to
+https://www.polymer-project.org/2.0/docs/api/elements/Polymer.DomRepeat[Polymer documentation]
+for more details.
+
+=== Using Custom Properties
+
+You can also create and display new properties that the item doesn't originally contain.
+
+For example, based on the year of birth, you could roughly compute the age of each person and
+add a new column to display that.
+
+[source, java]
+----
+grid.addColumn("Age",
+        TemplateRenderer.<Person> of("[[item.age]] years old")
+                .withProperty("age", person ->
+                        Year.now().getValue()
+                        - person.getYearOfBirth()));
+----
+
+=== Binding Beans
+
+If the object contains a bean property that has properties of it's own, you only need to make the bean
+accessible by calling `withProperty()`, and the sub-properties become accessible as well.
+
+For example, suppose that `Person` has a field for `Address` bean, and `Address` has fields `street`,
+`number` and `postalCode` with corresponding getter and setter methods. You can use all of those
+properties in your template with only one `withProperty()` call, as you can see in the following snippet.
+
+[source, java]
+----
+grid.addColumn("Address", TemplateRenderer.<Person> of(
+        "<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")
+        .withProperty("address", Person::getAddress));
+----
+
+=== Handling Events
+
+You can define event handlers for the elements inside your template, and hook them to server-side code by
+calling `withEventHandler()` method on your `TemplateRenderer`. This is useful for editing the items in the
+grid.
+
+The following example adds a new column with two buttons: one for editing a property of the item, and another
+one for removing the item. Both buttons define a method to call for `on-click` events, and `withEventHandler()`
+is used to map those method-names to server-side code. After editing the server-side data used by the grid,
+you need to reset the grid's `DataCommunicator` to make those changes show up in the element.
+
+[source, java]
+----
+grid.addColumn("Actions", TemplateRenderer.<Person> of(
+        "<button on-click='handleUpdate'>Update</button><button on-click='handleRemove'>Remove</button>")
+        .withEventHandler("handleUpdate", person -> {
+            person.setName(person.getName() + " Updated");
+            grid.getDataCommunicator().reset();
+        }).withEventHandler("handleRemove", person -> {
+            ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
+                    .getDataProvider();
+            dataProvider.getItems().remove(person);
+            grid.getDataCommunicator().reset();
+        }));
+----
+
+[NOTE]
+You need to use Polymer notation for event handlers, so `on-click` (with a dash) instead of the native `onclick`.
+
+[NOTE]
+`TemplateRenderer` has fluent API, so you can chain the commands, like
+`TemplateRenderer.of().withProperty().withProperty().withEventHandler()...`
