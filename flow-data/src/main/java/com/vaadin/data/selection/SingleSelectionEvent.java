@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
-import com.vaadin.data.AbstractListing;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasValue;
 
 /**
@@ -27,13 +27,13 @@ import com.vaadin.ui.common.HasValue;
  *
  * @author Vaadin Ltd.
  *
- * @param <L>
- *            the listing component type
+ * @param <C>
+ *            the selection component type
  * @param <T>
  *            the type of the selected item
  */
-public class SingleSelectionEvent<L extends AbstractListing<T>, T>
-        extends HasValue.ValueChangeEvent<L, T> implements SelectionEvent<T> {
+public class SingleSelectionEvent<C extends Component, T>
+        extends HasValue.ValueChangeEvent<C, T> implements SelectionEvent<T> {
 
     /**
      * Creates a new selection change event in a component.
@@ -48,7 +48,7 @@ public class SingleSelectionEvent<L extends AbstractListing<T>, T>
      *            {@code true} if this event originates from the client,
      *            {@code false} otherwise.
      */
-    public SingleSelectionEvent(L listing, SingleSelect<L, T> source,
+    public SingleSelectionEvent(C listing, SingleSelect<C, T> source,
             T oldSelection, boolean userOriginated) {
         super(listing, source, oldSelection, userOriginated);
     }
@@ -73,7 +73,7 @@ public class SingleSelectionEvent<L extends AbstractListing<T>, T>
      * @return The listing component on which the Event initially occurred.
      */
     @Override
-    public L getSource() {
+    public C getSource() {
         return super.getSource();
     }
 
