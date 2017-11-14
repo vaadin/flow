@@ -44,6 +44,9 @@ import com.vaadin.ui.Tag;
 import com.vaadin.util.CurrentInstance;
 import com.vaadin.util.HasCurrentService;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class RouterLinkTest extends HasCurrentService {
 
     private RouteRegistry registry;

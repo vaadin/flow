@@ -15,14 +15,16 @@
  */
 package com.vaadin.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -30,6 +32,9 @@ import org.mockito.Mockito;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.i18n.I18NProvider;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class I18NProviderTest {
 
     @Test
@@ -72,6 +77,11 @@ public class I18NProviderTest {
                 i18NProvider.getProvidedLocales().get(0),
                 VaadinSession.getCurrent().getLocale());
 
+    }
+
+    @After
+    public void clearCurrentService() {
+        VaadinService.setCurrent(null);
     }
 
     private VaadinServlet initServletAndService(Properties initParams)

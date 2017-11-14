@@ -460,74 +460,14 @@ If you want to serve your files from other directory, or even from other servers
 (like a CDN), you can change a couple of system properties without changing your
 code. You just need to set:
 
-* `frontend.url.es6` for the ES6 files URL
-* `frontend.url.es5` for the ES5 files URL
+* `vaadin.frontend.url.es6` for the ES6 files URL
+* `vaadin.frontend.url.es5` for the ES5 files URL
 
-When setting those properties from the command line, you have to use the `vaadin`
-prefix. For example:
-
-[source,bash]
-----
-mvn jetty:run -Dvaadin.frontend.url.es6=http://mydomain.com/es6/ -Dvaadin.frontend.url.es5=http://mydomain.com/es5/
-----
-
-You can also set those properties as Servlet init params. You can use the
-traditional `web.xml` file or the Servlet 3.0 `@WebServlet` annotation:
-
-[source,java]
-----
-@WebServlet(urlPatterns = "/*", name = "myservlet", asyncSupported = true, initParams = {
-        @WebInitParam(name = "frontend.url.es6", value = "http://mydomain.com/es6/"),
-        @WebInitParam(name = "frontend.url.es5", value = "http://mydomain.com/es5/") })
-@VaadinServletConfiguration(ui = MyUI.class, productionMode = false)
-public class MyServlet extends VaadinServlet {
-}
-----
-
-Or when using the `web.xml` file:
-
-[source,xml]
-----
-<?xml version="1.0" encoding="UTF-8"?>
-<web-app
-  id="WebApp_ID" version="3.0"
-  xmlns="http://java.sun.com/xml/ns/j2ee"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-      http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-
-  <servlet>
-    <servlet-name>myservlet</servlet-name>
-    <servlet-class>
-        com.vaadin.server.VaadinServlet
-    </servlet-class>
-
-    <init-param>
-      <param-name>UI</param-name>
-      <param-value>com.ex.myprj.MyUI</param-value>
-    </init-param>
-
-    <init-param>
-      <param-name>frontend.url.es6</param-name>
-      <param-value>http://mydomain.com/es6/</param-value>
-    </init-param>
-
-    <init-param>
-      <param-name>frontend.url.es5</param-name>
-      <param-value>http://mydomain.com/es5/</param-value>
-    </init-param>
-  </servlet>
-
-  <servlet-mapping>
-    <servlet-name>myservlet</servlet-name>
-    <url-pattern>/*</url-pattern>
-  </servlet-mapping>
-</web-app>
-----
+More details on parameters can be found in <<../miscellaneous/tutorial-flow-runtime-configuration#,Flow runtime configuration>>
 
 When you set, for example, your `frontend.url.es6` property to
 `http://mydomain.com/es6/`, the resulting URL for a component annotated with
-`@HTMLImport("components/my-component.html")` or 
+`@HTMLImport("components/my-component.html")` or
 `@HTMLImport("frontend://components/my-component.html")` will be
 `http://mydomain.com/es6/components/my-component.html`.
 

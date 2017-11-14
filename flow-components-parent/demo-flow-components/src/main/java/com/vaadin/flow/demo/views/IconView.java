@@ -16,6 +16,9 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.DemoView;
+import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.icon.Icon;
@@ -27,12 +30,13 @@ import com.vaadin.ui.layout.VerticalLayout;
 /**
  * View for {@link Icon} demo.
  */
-@ComponentDemo(name = "Icon", href = "icon")
+@Route(value = "icon", layout = MainLayout.class)
+@ComponentDemo(name = "Icon")
 @StyleSheet("styles.css")
 public class IconView extends DemoView {
 
     @Override
-    void initView() {
+    protected void initView() {
         createBasicIconsView();
         createStyledIconView();
         createAllIconsView();

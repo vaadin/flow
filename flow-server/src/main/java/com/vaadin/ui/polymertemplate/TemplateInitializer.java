@@ -80,7 +80,7 @@ public class TemplateInitializer {
     }
 
     private static class ParserData
-    implements Function<String, Optional<String>> {
+            implements Function<String, Optional<String>> {
         private final Map<String, String> tagById = new HashMap<>();
         private final Collection<SubTemplateData> subTemplates = new ArrayList<>();
 
@@ -143,8 +143,7 @@ public class TemplateInitializer {
         mapComponents(templateClass);
     }
 
-    private void inspectCustomElements(
-            org.jsoup.nodes.Element childElement,
+    private void inspectCustomElements(org.jsoup.nodes.Element childElement,
             org.jsoup.nodes.Element templateRoot) {
         if (isInsideTemplate(childElement, templateRoot)) {
             storeNotInjectableElementId(childElement);
@@ -152,11 +151,10 @@ public class TemplateInitializer {
 
         requestAttachCustomElement(childElement, templateRoot);
         childElement.children()
-        .forEach(child -> inspectCustomElements(child, templateRoot));
+                .forEach(child -> inspectCustomElements(child, templateRoot));
     }
 
-    private void storeNotInjectableElementId(
-            org.jsoup.nodes.Element element) {
+    private void storeNotInjectableElementId(org.jsoup.nodes.Element element) {
         String id = element.id();
         if (id != null && !id.isEmpty()) {
             notInjectableElementIds.add(id);
@@ -174,8 +172,7 @@ public class TemplateInitializer {
         }
     }
 
-    private boolean isInsideTemplate(
-            org.jsoup.nodes.Element element,
+    private boolean isInsideTemplate(org.jsoup.nodes.Element element,
             org.jsoup.nodes.Element templateRoot) {
         if (element == templateRoot) {
             return false;
@@ -186,8 +183,7 @@ public class TemplateInitializer {
         return isInsideTemplate(element.parent(), templateRoot);
     }
 
-    private void requestAttachCustomElement(
-            org.jsoup.nodes.Element element,
+    private void requestAttachCustomElement(org.jsoup.nodes.Element element,
             org.jsoup.nodes.Element templateRoot) {
         String tag = element.tagName();
 
@@ -209,26 +205,28 @@ public class TemplateInitializer {
 
     private void doRequestAttachCustomElement(String id, String tag,
             JsonArray path) {
+        // make sure that shadow root is available
+        getShadowRoot();
+
+        StateNode stateNode = getElement().getNode();
+
         StateNode customNode = BasicElementStateProvider.createStateNode(tag);
+        customNode.runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                "this.attachCustomElement($0, $1, $2, $3);", getElement(), tag,
+                customNode.getId(), path));
+
+        stateNode.getFeature(AttachTemplateChildFeature.class)
+                .register(getElement(), customNode);
+
+        // The Component should be created only after the code above which
+        // guarantees that "attachCustomElement" JS call is executed before
+        // anything else
         Element customElement = Element.get(customNode);
         CustomElementRegistry.getInstance().wrapElementIfNeeded(customElement);
 
         if (id != null) {
             registeredElementIdToCustomElement.put(id, customElement);
         }
-
-        // make sure that shadow root is available
-        getShadowRoot();
-
-        StateNode stateNode = getElement().getNode();
-
-        stateNode.runWhenAttached(ui -> {
-            stateNode.getFeature(AttachTemplateChildFeature.class)
-            .register(getElement(), customNode);
-            ui.getPage().executeJavaScript(
-                    "this.attachCustomElement($0, $1, $2, $3);", getElement(),
-                    tag, customNode.getId(), path);
-        });
     }
 
     private JsonArray getPath(org.jsoup.nodes.Element element,
@@ -249,8 +247,8 @@ public class TemplateInitializer {
 
     /**
      * Returns the index of the {@code child} in the collection of
-     * {@link org.jsoup.nodes.Element} children of the
-     * {@code parent} ignoring "style" elements.
+     * {@link org.jsoup.nodes.Element} children of the {@code parent} ignoring
+     * "style" elements.
      * <p>
      * "style" elements are handled differently depending on ES5/ES6. Also
      * "style" tag can be moved on the top in the resulting client side DOM
@@ -291,8 +289,8 @@ public class TemplateInitializer {
         }
 
         Stream.of(cls.getDeclaredFields()).filter(field -> !field.isSynthetic())
-        .forEach(field -> tryMapComponentOrElement(field,
-                registeredElementIdToCustomElement));
+                .forEach(field -> tryMapComponentOrElement(field,
+                        registeredElementIdToCustomElement));
     }
 
     private void tryMapComponentOrElement(Field field,
@@ -307,7 +305,7 @@ public class TemplateInitializer {
             throw new IllegalStateException(String.format(
                     "Class '%s' contains field '%s' annotated with @Id('%s'). "
                             + "Corresponding element was found in a sub template, for which injection is not supported",
-                            templateClass.getName(), field.getName(), id));
+                    templateClass.getName(), field.getName(), id));
         }
 
         Optional<String> tagName = getTagName(id);
@@ -315,7 +313,7 @@ public class TemplateInitializer {
             throw new IllegalStateException(String.format(
                     "There is no element with "
                             + "id='%s' in the template file. Cannot map it using @%s",
-                            id, Id.class.getSimpleName()));
+                    id, Id.class.getSimpleName()));
         }
 
         Element element = getElementById(id).orElse(null);
@@ -363,8 +361,8 @@ public class TemplateInitializer {
                     "Class '%s' has field '%s' whose type '%s' is annotated with "
                             + "tag '%s' but the element defined in the HTML "
                             + "template with id '%s' has tag name '%s'",
-                            templateClass.getName(), field.getName(),
-                            fieldType.getName(), tag.value(), id, tagName);
+                    templateClass.getName(), field.getName(),
+                    fieldType.getName(), tag.value(), id, tagName);
             throw new IllegalStateException(msg);
         }
         attachExistingElementById(tagName, id, field, registeredCustomElements);
@@ -414,13 +412,12 @@ public class TemplateInitializer {
             element = Element.get(proposedNode);
             element.setAttribute(NodeProperties.ID, id);
             StateNode templateNode = getElement().getNode();
-            templateNode.runWhenAttached(ui -> {
-                templateNode.getFeature(AttachTemplateChildFeature.class)
-                .register(getElement(), proposedNode);
-                ui.getPage().executeJavaScript(
-                        "this.attachExistingElementById($0, $1, $2, $3);",
-                        getElement(), tagName, proposedNode.getId(), id);
-            });
+
+            proposedNode.runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                    "this.attachExistingElementById($0, $1, $2, $3);",
+                    getElement(), tagName, proposedNode.getId(), id));
+            templateNode.getFeature(AttachTemplateChildFeature.class)
+                    .register(getElement(), proposedNode);
         }
         injectTemplateElement(element, field);
     }
@@ -451,10 +448,10 @@ public class TemplateInitializer {
                     "The field '%s' in '%s' has an @'%s' "
                             + "annotation but the field type '%s' "
                             + "does not extend neither '%s' nor '%s'",
-                            field.getName(), templateClass.getName(),
-                            Id.class.getSimpleName(), fieldType.getName(),
-                            Component.class.getSimpleName(),
-                            Element.class.getSimpleName());
+                    field.getName(), templateClass.getName(),
+                    Id.class.getSimpleName(), fieldType.getName(),
+                    Component.class.getSimpleName(),
+                    Element.class.getSimpleName());
 
             throw new IllegalArgumentException(msg);
         }
@@ -462,8 +459,8 @@ public class TemplateInitializer {
 
     private void createSubTemplates() {
         parserData.subTemplates
-        .forEach(data -> doRequestAttachCustomElement(data.id, data.tag,
-                data.path));
+                .forEach(data -> doRequestAttachCustomElement(data.id, data.tag,
+                        data.path));
     }
 
 }

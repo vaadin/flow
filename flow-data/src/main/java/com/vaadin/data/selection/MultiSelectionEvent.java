@@ -20,7 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import com.vaadin.data.AbstractListing;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasValue;
 
 /**
@@ -29,13 +29,13 @@ import com.vaadin.ui.common.HasValue;
  *
  * @author Vaadin Ltd.
  *
- * @param <L>
- *            the listing component type
+ * @param <C>
+ *            the selection component type
  * @param <T>
  *            the type of the selected item
  */
-public class MultiSelectionEvent<L extends AbstractListing<T>, T> extends
-        HasValue.ValueChangeEvent<L, Set<T>> implements SelectionEvent<T> {
+public class MultiSelectionEvent<C extends Component, T> extends
+        HasValue.ValueChangeEvent<C, Set<T>> implements SelectionEvent<T> {
 
     /**
      * Creates a new multi selection change event in a component.
@@ -50,7 +50,7 @@ public class MultiSelectionEvent<L extends AbstractListing<T>, T> extends
      *            {@code true} if this event originates from the client,
      *            {@code false} otherwise.
      */
-    public MultiSelectionEvent(L listing, HasValue<L, Set<T>> source,
+    public MultiSelectionEvent(C listing, HasValue<C, Set<T>> source,
             Set<T> oldSelection, boolean userOriginated) {
         super(listing, source, oldSelection, userOriginated);
     }

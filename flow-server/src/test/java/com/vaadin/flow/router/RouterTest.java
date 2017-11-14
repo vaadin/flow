@@ -46,6 +46,9 @@ import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class RouterTest {
 
     public static class RouterTestUI extends UI {

@@ -22,12 +22,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.router.RouterLayout;
 import com.vaadin.ui.UI;
 
 /**
  * Defines the route for components that function as navigation targets in
  * routing.
+ * <p>
+ * There is also {@link RouteAlias} annotation which may be declared in addition
+ * to this annotation and may be used mutiple times.
+ *
+ * @see RouteAlias
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

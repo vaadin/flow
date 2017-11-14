@@ -26,6 +26,9 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.util.HasCurrentService;
 import com.vaadin.util.ReflectTools;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class TemplateModelTest extends HasCurrentService {
     public interface EmptyModel extends TemplateModel {
     }
@@ -211,7 +214,7 @@ public class TemplateModelTest extends HasCurrentService {
 
     @Tag("div")
     public static class EmptyDivTemplate<M extends TemplateModel>
-    extends PolymerTemplate<M> {
+            extends PolymerTemplate<M> {
         public EmptyDivTemplate() {
             super((clazz, tag) -> Jsoup
                     .parse("<dom-module id='div'></dom-module>"));
@@ -220,7 +223,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class TemplateWithExclude
-    extends EmptyDivTemplate<TemplateWithExclude.ModelWithExclude> {
+            extends EmptyDivTemplate<TemplateWithExclude.ModelWithExclude> {
 
         public interface ModelWithExclude extends TemplateModel {
             Bean getBean();
@@ -237,7 +240,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class TemplateWithExcludeAndInclude<M extends TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude>
-    extends EmptyDivTemplate<M> {
+            extends EmptyDivTemplate<M> {
 
         public interface ModelWithExcludeAndInclude extends TemplateModel {
             Bean getBean();
@@ -255,15 +258,15 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class TemplateWithExcludeAndIncludeImpl extends
-    TemplateWithExcludeAndInclude<TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude> {
+            TemplateWithExcludeAndInclude<TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude> {
 
     }
 
     public static class TemplateWithExcludeAndIncludeSubclassOverrides extends
-    TemplateWithExcludeAndInclude<TemplateWithExcludeAndIncludeSubclassOverrides.ModelWithExcludeAndIncludeSubclass> {
+            TemplateWithExcludeAndInclude<TemplateWithExcludeAndIncludeSubclassOverrides.ModelWithExcludeAndIncludeSubclass> {
 
         public interface ModelWithExcludeAndIncludeSubclass extends
-        TemplateModelTest.TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude {
+                TemplateModelTest.TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude {
 
             /*
              * Super class has annotations for this method to only include
@@ -278,10 +281,9 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class TemplateWithExcludeForSubBean extends
-    EmptyDivTemplate<TemplateWithExcludeForSubBean.ModelWithExcludeForSubBean> {
+            EmptyDivTemplate<TemplateWithExcludeForSubBean.ModelWithExcludeForSubBean> {
 
-        public interface ModelWithExcludeForSubBean
-        extends TemplateModel {
+        public interface ModelWithExcludeForSubBean extends TemplateModel {
             BeanContainingBeans getBeanContainingBeans();
 
             @Exclude({ "bean1.booleanObject", "bean2" })
@@ -297,7 +299,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class TemplateWithExcludeOnList extends
-    EmptyDivTemplate<TemplateWithExcludeOnList.ModelWithExcludeOnList> {
+            EmptyDivTemplate<TemplateWithExcludeOnList.ModelWithExcludeOnList> {
 
         public interface ModelWithExcludeOnList extends TemplateModel {
             @Exclude("intValue")
@@ -313,7 +315,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class TemplateWithInclude
-    extends EmptyDivTemplate<TemplateWithInclude.ModelWithInclude> {
+            extends EmptyDivTemplate<TemplateWithInclude.ModelWithInclude> {
         public interface ModelWithInclude extends TemplateModel {
             Bean getBean();
 
@@ -329,7 +331,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class TemplateWithIncludeForSubBean extends
-    EmptyDivTemplate<TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean> {
+            EmptyDivTemplate<TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean> {
 
         public interface ModelWithIncludeForSubBean extends TemplateModel {
             BeanContainingBeans getBeanContainingBeans();
@@ -346,7 +348,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class TemplateWithIncludeOnList extends
-    EmptyDivTemplate<TemplateWithIncludeOnList.ModelWithIncludeOnList> {
+            EmptyDivTemplate<TemplateWithIncludeOnList.ModelWithIncludeOnList> {
 
         public interface ModelWithIncludeOnList extends TemplateModel {
             @Include("intValue")
@@ -362,7 +364,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class NoModelTemplate<M extends TemplateModel>
-    extends EmptyDivTemplate<M> {
+            extends EmptyDivTemplate<M> {
 
     }
 
@@ -375,7 +377,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class BasicTypeModelTemplate
-    extends NoModelTemplate<BasicTypeModel> {
+            extends NoModelTemplate<BasicTypeModel> {
         @Override
         public BasicTypeModel getModel() {
             return super.getModel();
@@ -390,7 +392,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class NotSupportedModelTemplate
-    extends NoModelTemplate<NotSupportedModel> {
+            extends NoModelTemplate<NotSupportedModel> {
         @Override
         public NotSupportedModel getModel() {
             return super.getModel();
@@ -398,7 +400,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class SubBeansTemplate
-    extends EmptyDivTemplate<SubBeansModel> {
+            extends EmptyDivTemplate<SubBeansModel> {
 
         @Override
         protected SubBeansModel getModel() {
@@ -407,7 +409,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class ListBeanModelTemplate
-    extends NoModelTemplate<ListBeanModel> {
+            extends NoModelTemplate<ListBeanModel> {
         @Override
         public ListBeanModel getModel() {
             return super.getModel();
@@ -415,7 +417,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class StringListModelTemplate
-    extends NoModelTemplate<StringListModel> {
+            extends NoModelTemplate<StringListModel> {
         @Override
         public StringListModel getModel() {
             return super.getModel();
@@ -429,12 +431,12 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public static class TemplateWithExcludeAndIncludeSubclass extends
-    TemplateWithExcludeAndInclude<TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude> {
+            TemplateWithExcludeAndInclude<TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude> {
         // Should work exactly the same way as the parent class
     }
 
     public static class TemplateWithIncludeOnListSubBean extends
-    EmptyDivTemplate<TemplateWithIncludeOnListSubBean.ModelWithIncludeOnListSubBean> {
+            EmptyDivTemplate<TemplateWithIncludeOnListSubBean.ModelWithIncludeOnListSubBean> {
 
         public interface ModelWithIncludeOnListSubBean extends TemplateModel {
             @Include({ "bean1.intValue", "bean2.booleanValue" })
@@ -532,7 +534,7 @@ public class TemplateModelTest extends HasCurrentService {
         Assert.assertEquals(null, model.getBoolean());
 
         template.getElement().getNode().getFeature(ElementPropertyMap.class)
-        .setProperty("boolean", "True");
+                .setProperty("boolean", "True");
 
         model.getBoolean();
     }
@@ -545,7 +547,7 @@ public class TemplateModelTest extends HasCurrentService {
         Assert.assertEquals(Boolean.FALSE, model.isBooleanPrimitive());
 
         template.getElement().getNode().getFeature(ElementPropertyMap.class)
-        .setProperty("booleanPrimitive", "TRUE");
+                .setProperty("booleanPrimitive", "TRUE");
 
         model.getBooleanPrimitive();
     }
@@ -1002,15 +1004,15 @@ public class TemplateModelTest extends HasCurrentService {
         }
 
         ReflectTools.getSetterMethods(Bean.class)
-        .map(method -> ReflectTools.getPropertyName(method))
-        .forEach(propertyName -> {
-            if (!excluded.contains(propertyName)) {
-                Assert.assertTrue(
-                        "Model should contain the property '"
-                                + propertyName + "'",
+                .map(method -> ReflectTools.getPropertyName(method))
+                .forEach(propertyName -> {
+                    if (!excluded.contains(propertyName)) {
+                        Assert.assertTrue(
+                                "Model should contain the property '"
+                                        + propertyName + "'",
                                 mapKeys.remove(propertyName));
-            }
-        });
+                    }
+                });
         Assert.assertTrue("model should be empty but contains: " + mapKeys,
                 mapKeys.isEmpty());
     }
@@ -1152,7 +1154,7 @@ public class TemplateModelTest extends HasCurrentService {
         TemplateWithIncludeOnListSubBean template = new TemplateWithIncludeOnListSubBean();
         List<BeanContainingBeans> beanContainingBeans = new ArrayList<>();
         beanContainingBeans
-        .add(new BeanContainingBeans(new Bean(11), new Bean(12)));
+                .add(new BeanContainingBeans(new Bean(11), new Bean(12)));
         beanContainingBeans.add(new BeanContainingBeans(null, new Bean(22)));
         template.getModel().setBeanContainingBeans(beanContainingBeans);
 

@@ -25,6 +25,11 @@
             <artifactId>flow-components</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-component-demo-helpers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -207,13 +212,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <excludes>
-                        <!-- Demo website does not need Servlet.{class,java} file -->
-                        <!-- it's not used anywhere else, so it's ok to remove it just like that -->
-                        <exclude>**/Servlet.*</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
 
             <plugin>
