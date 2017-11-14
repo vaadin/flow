@@ -323,6 +323,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
          * @see #setWidth(String)
          *
          * @param flexGrow
+         *            the flex grow ratio
          * @return this column, for method chaining
          */
         public Column<T> setFlexGrow(int flexGrow) {
@@ -1211,8 +1212,6 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     /**
      * Merges two or more columns into a {@link ColumnGroup}.
      *
-     * @param header
-     *            the header text of the resulting column group
      * @param firstColumn
      *            the first column to merge
      * @param secondColumn
@@ -1233,8 +1232,6 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     /**
      * Merges two or more columns into a {@link ColumnGroup}.
      *
-     * @param header
-     *            the header text of the resulting column group
      * @param columnsToMerge
      *            the columns to merge, not {@code null} and size must be
      *            greater than 1
