@@ -404,12 +404,12 @@ public class GridView extends DemoView {
                 "<button on-click='handleUpdate'>Update</button><button on-click='handleRemove'>Remove</button>")
                 .withEventHandler("handleUpdate", person -> {
                     person.setName(person.getName() + " Updated");
-                    grid.getDataCommunicator().reset();
+                    grid.getDataProvider().refreshItem(person);
                 }).withEventHandler("handleRemove", person -> {
                     ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
                             .getDataProvider();
                     dataProvider.getItems().remove(person);
-                    grid.getDataCommunicator().reset();
+                    dataProvider.refreshAll();
                 }));
 
         grid.setSelectionMode(SelectionMode.NONE);
@@ -534,7 +534,7 @@ public class GridView extends DemoView {
                 .withProperty("name", Person::getName)
                 .withEventHandler("handleClick", person -> {
                     person.setName(person.getName() + " Updated");
-                    grid.getDataCommunicator().refresh(person);
+                    grid.getDataProvider().refreshItem(person);
                 }));
 
         Button toggleDetails = new Button("Toggle details open for second row");
