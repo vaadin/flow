@@ -175,13 +175,28 @@ public class GridSortingTest {
     }
 
     @Test
-    public void gridSorting() {
-        JsonArray sortersArray = Json.createArray();
-        sortersArray.set(0, createSortObject(nameColumn.getColumnId(), "asc"));
-        sortersArray.set(1, createSortObject(ageColumn.getColumnId(), "desc"));
-        sortersArray.set(2,
-                createSortObject(templateColumn.getColumnId(), "asc"));
-        callSortersChanged(sortersArray);
+    public void in_memory_sorting_applied_correctly() {
+        setTestSorting();
+        assertInMemorySorting(Comparator.comparing(Person::getName)
+                .thenComparing(Comparator.comparing(Person::getAge).reversed())
+                .thenComparing(person -> person.getAddress().getStreet())
+                .thenComparing(person -> person.getAddress().getNumber()));
+    }
+
+    @Test
+    public void backend_sorting_applied_correctly() {
+        setTestSorting();
+        assertSortOrdersEquals(
+                QuerySortOrder.asc("name").thenDesc("age").thenAsc("street")
+                        .thenAsc("number").build(),
+                grid.getDataCommunicator().getBackEndSorting());
+    }
+
+    @Test
+    public void sort_event_correct() {
+        Assert.assertEquals(0, testSortListener.events.size());
+        setTestSorting();
+        Assert.assertEquals(1, testSortListener.events.size());
 
         Assert.assertEquals(1, testSortListener.events.size());
         assertSortOrdersEquals(
@@ -189,20 +204,11 @@ public class GridSortingTest {
                         .thenAsc(templateColumn).build(),
                 testSortListener.events.get(0).getSortOrder());
         Assert.assertTrue(testSortListener.events.get(0).isFromClient());
+    }
 
-        List<Person> expectedOrder = createItems();
-        expectedOrder.sort(Comparator.comparing(Person::getName)
-                .thenComparing(Comparator.comparing(Person::getAge).reversed())
-                .thenComparing(person -> person.getAddress().getStreet())
-                .thenComparing(person -> person.getAddress().getNumber()));
-        List<Person> actualOrder = createItems();
-        actualOrder.sort(grid.getDataCommunicator().getInMemorySorting());
-        Assert.assertEquals(expectedOrder, actualOrder);
-
-        assertSortOrdersEquals(
-                QuerySortOrder.asc("name").thenDesc("age").thenAsc("street")
-                        .thenAsc("number").build(),
-                grid.getDataCommunicator().getBackEndSorting());
+    @Test
+    public void changing_sorters() {
+        setTestSorting();
 
         JsonArray secondSortersArray = Json.createArray();
         secondSortersArray.set(0,
@@ -210,8 +216,34 @@ public class GridSortingTest {
         callSortersChanged(secondSortersArray);
 
         Assert.assertEquals(2, testSortListener.events.size());
+
         assertSortOrdersEquals(GridSortOrder.desc(nameColumn).build(),
                 testSortListener.events.get(1).getSortOrder());
+    }
+
+    @Test
+    public void template_renderer_non_comparable_property() {
+        Column<Person> column = grid.addColumn("", TemplateRenderer
+                .<Person> of("").withProperty("address", Person::getAddress),
+                "address");
+        JsonArray sortersArray = Json.createArray();
+        sortersArray.set(0, createSortObject(column.getColumnId(), "asc"));
+        callSortersChanged(sortersArray);
+
+        // No in-memory sorting applied
+        assertInMemorySorting((a, b) -> 0);
+        // Backend sorting set correctly
+        assertSortOrdersEquals(QuerySortOrder.asc("address").build(),
+                grid.getDataCommunicator().getBackEndSorting());
+    }
+
+    private void setTestSorting() {
+        JsonArray sortersArray = Json.createArray();
+        sortersArray.set(0, createSortObject(nameColumn.getColumnId(), "asc"));
+        sortersArray.set(1, createSortObject(ageColumn.getColumnId(), "desc"));
+        sortersArray.set(2,
+                createSortObject(templateColumn.getColumnId(), "asc"));
+        callSortersChanged(sortersArray);
     }
 
     private void callSortersChanged(JsonArray json) {
@@ -263,5 +295,15 @@ public class GridSortingTest {
         person.setAddress(address);
 
         return person;
+    }
+
+    private void assertInMemorySorting(Comparator<Person> comparator) {
+        List<Person> expectedOrder = createItems();
+        List<Person> actualOrder = new ArrayList<>(expectedOrder);
+
+        expectedOrder.sort(comparator);
+        actualOrder.sort(grid.getDataCommunicator().getInMemorySorting());
+
+        Assert.assertEquals(expectedOrder, actualOrder);
     }
 }

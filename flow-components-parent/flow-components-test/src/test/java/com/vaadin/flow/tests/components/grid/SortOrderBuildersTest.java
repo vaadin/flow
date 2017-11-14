@@ -65,6 +65,11 @@ public class SortOrderBuildersTest {
                         new QuerySortOrder("b", SortDirection.DESCENDING),
                         new QuerySortOrder("c", SortDirection.ASCENDING)),
                 QuerySortOrder.desc("a").thenDesc("b").thenAsc("c").build());
+        verifySortOrders(
+                Arrays.asList(new QuerySortOrder("b", SortDirection.DESCENDING),
+                        new QuerySortOrder("a", SortDirection.DESCENDING),
+                        new QuerySortOrder("c", SortDirection.ASCENDING)),
+                QuerySortOrder.desc("b").thenDesc("a").thenAsc("c").build());
     }
 
     private <T extends SortOrder<?>> void verifySortOrders(List<T> order1,

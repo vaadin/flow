@@ -345,7 +345,7 @@ public class Grid<T> extends AbstractListing<T>
             Element contentTemplate = new Element("template")
                     .setProperty("innerHTML", renderer.getTemplate());
 
-            getElement().setAttribute("id", columnId)
+            getElement().setAttribute("id", HtmlUtils.escape(columnId))
                     .appendChild(headerTemplate, contentTemplate);
 
             getGrid().setupTemplateRenderer(renderer, contentTemplate,
@@ -429,7 +429,7 @@ public class Grid<T> extends AbstractListing<T>
         public Column<T> setComparator(Comparator<T> comparator) {
             Objects.requireNonNull(comparator, "Comparator must not be null");
             setSortable(true);
-            this.comparator = (a, b) -> comparator.compare(a, b);
+            this.comparator = comparator::compare;
             return this;
         }
 
@@ -793,11 +793,10 @@ public class Grid<T> extends AbstractListing<T>
     private Element detailsTemplate;
     private Map<String, RendereredComponent<T>> renderedDetailComponents;
 
-    private Map<String, Column<T>> idToColumnMap = new HashMap();
+    private Map<String, Column<T>> idToColumnMap = new HashMap<>();
     private List<ColumnBase<?>> parentColumns = new ArrayList<>();
 
     private final List<GridSortOrder<T>> sortOrder = new ArrayList<>();
-    private boolean multiSort = false;
 
     /**
      * Creates a new instance, with page size of 50.
@@ -908,6 +907,10 @@ public class Grid<T> extends AbstractListing<T>
      * This constructor attempts to automatically configure both in-memory and
      * backend sorting using the given sorting properties and matching those
      * with the property names used in the given renderer.
+     * <p>
+     * <strong>Note:</strong> if a property of the renderer that is used as a
+     * sorting property does not extend Comparable no in-memory sorting is
+     * configured for it.
      *
      * @param header
      *            the column header name
@@ -917,8 +920,7 @@ public class Grid<T> extends AbstractListing<T>
      *            the sorting properties to use for this column
      * @return the created column
      */
-    public <V extends Comparable<? super V>> Column<T> addColumn(String header,
-            TemplateRenderer<T> renderer, String... sortingProperties) {
+    public Column<T> addColumn(String header, TemplateRenderer<T> renderer, String... sortingProperties) {
         Column<T> column = addColumn(header, renderer);
 
         Map<String, ValueProvider<T, ?>> valueProviders = renderer
@@ -931,18 +933,20 @@ public class Grid<T> extends AbstractListing<T>
 
         column.setSortProperty(matchingSortingProperties
                 .toArray(new String[matchingSortingProperties.size()]));
-        Comparator<T> comparator = (a, b) -> 0;
+        Comparator<T> combinedComparator = (a, b) -> 0;
+        Comparator nullsLastComparator = Comparator.nullsLast(Comparator.naturalOrder());
         for (String sortProperty : matchingSortingProperties) {
-            try {
-                ValueProvider<T, V> provider = (ValueProvider<T, V>) valueProviders
-                        .get(sortProperty);
-                comparator = comparator
-                        .thenComparing(Comparator.comparing(provider));
-            } catch (ClassCastException cce) {
-                // TODO: Happens if V is not comparable, ignore or rethrow?
-            }
+            ValueProvider<T, ?> provider = valueProviders.get(sortProperty);
+            combinedComparator = combinedComparator.thenComparing((a, b) -> {
+                Object aa = provider.apply(a);
+                if (!(aa instanceof Comparable)) {
+                    return 0;
+                }
+                Object bb = provider.apply(b);
+                return nullsLastComparator.compare(aa, bb);
+            });
         }
-        column.setComparator(comparator);
+        column.setComparator(combinedComparator);
         return column;
     }
 
