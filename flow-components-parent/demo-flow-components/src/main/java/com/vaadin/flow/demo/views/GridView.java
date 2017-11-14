@@ -435,7 +435,7 @@ public class GridView extends DemoView {
                     ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
                             .getDataProvider();
                     dataProvider.getItems().remove(item);
-                    grid.getDataCommunicator().reset();
+                    dataProvider.refreshAll();
                 })));
 
         // Item details can also use components
@@ -534,7 +534,7 @@ public class GridView extends DemoView {
                 .withProperty("name", Person::getName)
                 .withEventHandler("handleClick", person -> {
                     person.setName(person.getName() + " Updated");
-                    grid.getDataCommunicator().refresh(person);
+                    grid.getDataProvider().refreshItem(person);
                 }));
 
         Button toggleDetails = new Button("Toggle details open for second row");
