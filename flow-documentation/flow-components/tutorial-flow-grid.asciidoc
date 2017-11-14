@@ -41,9 +41,9 @@ List<Person> people = Arrays.asList(
 // Create a grid bound to the list
 Grid<Person> grid = new Grid<>();
 grid.setItems(people);
-grid.addColumn("Name", Person::getName);
-grid.addColumn("Year of birth",
-        person -> Integer.toString(person.getYearOfBirth()));
+grid.addColumn(Person::getName).setHeaderLabel("Name");
+grid.addColumn(person -> Integer.toString(person.getYearOfBirth()))
+    .setHeaderLabel("Year of birth");
 
 layout.add(grid);
 ----
@@ -190,7 +190,8 @@ The setter methods in `Column` have _fluent API_, so you can easily chain the co
 
 [source, java]
 ----
-Column<Person> nameColumn = grid.addColumn("Name", Person::getName)
+Column<Person> nameColumn = grid.addColumn(Person::getName)
+    .setHeaderLabel("Name")
     .setFlexGrow(0)
     .setWidth("100px")
     .setResizable(false);
@@ -241,26 +242,24 @@ you can call `addColumn()`.
 
 ////
 
-////
-NOT IMPLEMENTED YET
+[[components.grid.columns.header]]
+=== Column Header and Footer
 
-=== Column Captions
-
-Column captions are displayed in the grid header. You can set the header caption
-explicitly through the column object with `setCaption()`.
+Column labels are displayed in the grid header. You can set the header label
+explicitly through the column object with `setHeaderLabel()`.
 
 [source, java]
 ----
-Column<Date> bornColumn = grid.addColumn(Person::getBirthDate);
-bornColumn.setCaption("Born date");
+Column<Person> bornColumn = grid.addColumn(Person::getYearOfBirth);
+bornColumn.setHeaderLabel("Born date");
 ----
 
-This is equivalent to setting it with `setText()` for the header
-cell; the `HeaderCell` also allows setting the caption in HTML or as
-a component, as well as styling it, as described later in
-<<components.grid.headerfooter>>.
-////
+You can set the footer for a column in the same way:
 
+[source, java]
+----
+bornColumn.setFooterLabel("Summary");
+----
 
 [[components.grid.columns.width]]
 === Column Widths

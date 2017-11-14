@@ -432,14 +432,14 @@ public class GridViewIT extends TabbedComponentDemoTest {
                 "There should be a cell with the renderered 'Basic Information' header",
                 topLevelColumn.getAttribute("innerHTML").contains(
                         "<span style=\"color:orange\" title=\"Basic Information\">Basic Information</span>"));
-
+        
         Assert.assertTrue("There should be a cell with the renderered footer",
                 topLevelColumn.getAttribute("innerHTML").contains(
                         "<span style=\"color:red\">Total: 499 people</span>"));
 
         List<WebElement> secondLevelColumns = topLevelColumn
                 .findElements(By.tagName("vaadin-grid-column"));
-
+        
         Assert.assertTrue(
                 "There should be a cell with the renderered 'Name' header",
                 secondLevelColumns.get(0).getAttribute("innerHTML").contains(

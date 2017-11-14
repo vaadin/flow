@@ -16,6 +16,7 @@
 package com.vaadin.flow.tutorial.component;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -29,6 +30,7 @@ import com.vaadin.ui.grid.GridMultiSelectionModel;
 import com.vaadin.ui.grid.GridSingleSelectionModel;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.layout.HorizontalLayout;
+import com.vaadin.ui.renderers.TemplateRenderer;
 
 @CodeFor("flow-components/tutorial-flow-grid.asciidoc")
 public class GridBasic {
@@ -129,14 +131,19 @@ public class GridBasic {
         nameColumn.setFrozen(true);
     }
     
+    public void gridHeaderAndFooter() {
+        Grid<Person> grid = new Grid<>();
+        
+        Column<Person> bornColumn = grid.addColumn(Person::getYearOfBirth);
+        bornColumn.setHeaderLabel("Born date");
+        
+        bornColumn.setFooterLabel("Summary");
+    }
+    
     /* code of commented lines
 
      grid.setColumnOrder(firstnameColumn, lastnameColumn,
                     bornColumn, birthplaceColumn,
                     diedColumn);
-     
-     Column<Date> bornColumn = grid.addColumn(Person::getBirthDate);
-     bornColumn.setCaption("Born date");
-     
      */
 }
