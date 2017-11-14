@@ -344,7 +344,7 @@ public class Grid<T> extends Component
             Element contentTemplate = new Element("template")
                     .setProperty("innerHTML", renderer.getTemplate());
 
-            getElement().setAttribute("id", HtmlUtils.escape(columnId))
+            getElement().setAttribute("id", columnId)
                     .appendChild(headerTemplate, contentTemplate);
 
             getGrid().setupTemplateRenderer(renderer, contentTemplate,
@@ -548,10 +548,11 @@ public class Grid<T> extends Component
             this.sortingEnabled = sortable;
 
             String escapedHeader = HtmlUtils.escape(header);
+            String escapedColumnId = HtmlUtils.escape(columnId);
             String innerHTML = sortable
                     ? String.format(
                             "<vaadin-grid-sorter path='%s'>%s</vaadin-grid-sorter>",
-                            columnId, escapedHeader)
+                            escapedColumnId, escapedHeader)
                     : escapedHeader;
 
             headerTemplate.removeFromParent();
