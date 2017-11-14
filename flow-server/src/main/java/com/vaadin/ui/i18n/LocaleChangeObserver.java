@@ -13,25 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data.selection;
-
-import java.util.Set;
-
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasValue;
-
+package com.vaadin.ui.i18n;
 
 /**
- * Multi selection component which allows to select and deselect multiple items.
+ * Any {@code com.vaadin.ui.Component} implementing this interface will be
+ * informed when the UI locale is changed and on attach.
  *
  * @author Vaadin Ltd
- *
- * @param <C>
- *            the selection component type
- * @param <T>
- *            the type of the items to select
  */
-public interface MultiSelect<C extends Component, T>
-        extends HasValue<C, Set<T>> {
+@FunctionalInterface
+public interface LocaleChangeObserver {
 
+    /**
+     * Method called when the UI locale is changed.
+     *
+     * @param event
+     *            locale change event with event details
+     */
+    void localeChange(LocaleChangeEvent event);
 }

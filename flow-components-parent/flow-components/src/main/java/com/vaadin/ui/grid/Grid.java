@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.data.AbstractListing;
 import com.vaadin.data.Binder;
 import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.event.SortEvent;
@@ -104,7 +103,7 @@ import elemental.json.JsonValue;
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 @HtmlImport("context://flow-component-renderer.html")
 @JavaScript("context://gridConnector.js")
-public class Grid<T> extends AbstractListing<T>
+public class Grid<T> extends Component
         implements HasDataProvider<T>, HasStyle, HasSize, Focusable<Grid<T>>,
         SortNotifier<Grid<T>, GridSortOrder<T>> {
 
@@ -974,7 +973,11 @@ public class Grid<T> extends AbstractListing<T>
         return getDataCommunicator().getDataProvider();
     }
 
-    @Override
+    /**
+     * Returns the data communicator of this Grid.
+     *
+     * @return the data communicator, not {@code null}
+     */
     public DataCommunicator<T> getDataCommunicator() {
         return dataCommunicator;
     }

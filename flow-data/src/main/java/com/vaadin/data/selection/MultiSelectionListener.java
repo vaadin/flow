@@ -18,7 +18,7 @@ package com.vaadin.data.selection;
 import java.io.Serializable;
 import java.util.EventListener;
 
-import com.vaadin.data.AbstractListing;
+import com.vaadin.ui.Component;
 
 /**
  * A listener for listening for selection changes from a multiselection
@@ -26,8 +26,8 @@ import com.vaadin.data.AbstractListing;
  *
  * @author Vaadin Ltd.
  *
- * @param <L>
- *            the listing component type
+ * @param <C>
+ *            the selection component type
  * @param <T>
  *            the type of the selected item
  *
@@ -35,7 +35,7 @@ import com.vaadin.data.AbstractListing;
  * @see MultiSelectionEvent
  */
 @FunctionalInterface
-public interface MultiSelectionListener<L extends AbstractListing<T>, T>
+public interface MultiSelectionListener<C extends Component, T>
         extends Serializable, EventListener {
 
     /**
@@ -44,5 +44,5 @@ public interface MultiSelectionListener<L extends AbstractListing<T>, T>
      * @param event
      *            the selection event, never {@code null}
      */
-    void selectionChange(MultiSelectionEvent<L, T> event);
+    void selectionChange(MultiSelectionEvent<C, T> event);
 }

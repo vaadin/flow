@@ -54,7 +54,7 @@ public class ValueContextTest extends UI {
 
     @Test
     public void default_locale() {
-        setLocale(null);
+        setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
@@ -64,14 +64,14 @@ public class ValueContextTest extends UI {
 
     @Test
     public void testHasValue1() {
-        setLocale(null);
+        setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(textField);
         Assert.assertEquals(textField, fromComponent.getHasValue().get());
     }
 
     @Test
     public void testHasValue2() {
-        setLocale(null);
+        setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(new DatePicker(),
                 textField);
         Assert.assertEquals(textField, fromComponent.getHasValue().get());
@@ -79,7 +79,7 @@ public class ValueContextTest extends UI {
 
     @Test
     public void testHasValue3() {
-        setLocale(null);
+        setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(new DatePicker(),
                 textField, Locale.CANADA);
         Assert.assertEquals(textField, fromComponent.getHasValue().get());
