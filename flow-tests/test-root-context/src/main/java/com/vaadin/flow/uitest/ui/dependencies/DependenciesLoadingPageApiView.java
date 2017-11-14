@@ -3,6 +3,7 @@ package com.vaadin.flow.uitest.ui.dependencies;
 import com.vaadin.router.Route;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Page;
+import com.vaadin.ui.UI;
 
 /**
  * See {@link DependenciesLoadingAnnotationsView} for more details about the
@@ -17,7 +18,7 @@ public class DependenciesLoadingPageApiView
 
     public DependenciesLoadingPageApiView() {
         super();
-        Page page = getUI().get().getPage();
+        Page page = UI.getCurrent().getPage();
         page.addJavaScript(
                 "frontend:///com/vaadin/flow/uitest/ui/dependencies/inline.js",
                 LoadMode.INLINE);
