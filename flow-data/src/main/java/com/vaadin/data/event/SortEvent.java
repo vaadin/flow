@@ -72,6 +72,8 @@ public class SortEvent<T extends Component, S extends SortOrder<?>>
      * SortEvents}.
      *
      * @param <T>
+     *            the event source type
+     * @param <S>
      *            the type of the sorting information
      */
     @FunctionalInterface

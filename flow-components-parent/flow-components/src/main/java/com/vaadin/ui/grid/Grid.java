@@ -908,7 +908,7 @@ public class Grid<T> extends Component
      * with the property names used in the given renderer.
      * <p>
      * <strong>Note:</strong> if a property of the renderer that is used as a
-     * sorting property does not extend Comparable no in-memory sorting is
+     * sorting property does not extend Comparable, no in-memory sorting is
      * configured for it.
      *
      * @param header

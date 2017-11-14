@@ -42,5 +42,5 @@ public interface SortOrderProvider
      * @return sort information
      */
     @Override
-    public Stream<QuerySortOrder> apply(SortDirection sortDirection);
+    Stream<QuerySortOrder> apply(SortDirection sortDirection);
 }
