@@ -717,7 +717,7 @@ public class GridView extends DemoView {
         grid.mergeColumns(informationColumnGroup, addressColumnGroup);
 
         // end-source-example
-        grid.setId("grid-header-with-templates");
+        grid.setId("grid-header-with-components");
         addCard("Using components", "Column header and footer using components",
                 grid);
     }
