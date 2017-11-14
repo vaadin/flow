@@ -60,11 +60,10 @@ If you do not want to do the exercise at all, you can also just
 https://github.com/hezamu/flow-tutorial/[download the final application] and play
 around with it.
 
-// TODO / Alejandro
-TIP: In addition to this written tutorial, we have recorded the steps as
-https://www.youtube.com/playlist?list=Alejandro[a series of videos]. You can just
-watch all the videos or watch the video of each step before you do the same step
-yourself.
+//TIP: In addition to this written tutorial, we have recorded the steps as
+//https://www.youtube.com/playlist?list=Alejandro[a series of videos]. You can just
+//watch all the videos or watch the video of each step before you do the same step
+//yourself.
 
 [[flow.tutorial.overview.tools]]
 === Installing the Development Tools
@@ -80,8 +79,7 @@ from http://www.eclipse.org/downloads/[eclipse.org].
 [[flow.tutorial.archetype]]
 == Creating a Project from an App Starter
 
-// TODO / Alejandro
-The following video shows how to do this step of the tutorial:
+// The following video shows how to do this step of the tutorial:
 
 // video::Alejandro[youtube, width="640", height="400"]
 
@@ -296,10 +294,9 @@ objects and a dummy backend. In a real-world application, you will most likely
 have something similar, implemented with, for example, JPA and EJB or a
 Spring-based service.
 
-The following video shows how to do this step of the tutorial:
+// The following video shows how to do this step of the tutorial:
 
-// TODO / Alejandro
-video::Alejandro[youtube, width="640", height="400"]
+// video::Alejandro[youtube, width="640", height="400"]
 
 Copy the following three classes from github to your project. Class names point
 to the classes hosted in Github. Copying classes can be done in many ways.
@@ -330,9 +327,9 @@ thing you want to do is to list your data from your back-end. There are several
 components and ways in Vaadin to do this. In this example, we will use the Grid
 component for tabular presentation of our customers.
 
-The following video shows how to do this step of the tutorial:
+// The following video shows how to do this step of the tutorial:
 
-video::Alejandro[youtube, width="640", height="400"]
+// video::Alejandro[youtube, width="640", height="400"]
 
 We start by introducing a [classname]#Grid# to the [classname]#MyUI# class. We
 could of course just introduce the Grid as a variable in the [methodname]#init()#
@@ -436,9 +433,9 @@ A search functionality is expected in every modern application and it is also a
 nice Vaadin development exercise. Let's add a filtering functionality to our
 Customer listing we created in the previous step.
 
-The following video shows how to do this step of the tutorial:
+// The following video shows how to do this step of the tutorial:
 
-video::Alejandro[youtube, width="640", height="400"]
+// video::Alejandro[youtube, width="640", height="400"]
 
 We'll start by introducing a [classname]#TextField# component as a field to our
 [classname]#MainView# class:
@@ -528,10 +525,9 @@ Now it is a good time to save your changes and try them out in your browser!
 To edit and add Customer objects we need to create a form that edits the
 values in our domain objects.
 
-The following video shows how to create a form using plain Java:
+// The following video shows how to create a form using plain Java:
 
-// TODO / Alejandro
-video::Alejandro[youtube, width="640", height="400"]
+// video::Alejandro[youtube, width="640", height="400"]
 
 Start by creating a new Java class with the name CustomerForm. In Eclipse right
 click on the "com.vaadin.flow.demo.helloworld" package and choose menu:New[Class].
@@ -707,10 +703,9 @@ In this part, we'll use the [classname]#CustomerForm# class, which we created in
 the previous step, from the [classname]#MainView# class. We will use it for both
 editing the existing customers and creating new ones.
 
-The following video shows how to do this step of the tutorial:
+// The following video shows how to do this step of the tutorial:
 
-// TODO
-video::Alejandro[youtube, width="640", height="400"]
+// video::Alejandro[youtube, width="640", height="400"]
 
 To edit the customer chosen from the grid, add the following selection listener to
 the end of the [classname]#MainView# constructor:
