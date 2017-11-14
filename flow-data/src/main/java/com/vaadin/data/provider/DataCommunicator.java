@@ -239,6 +239,47 @@ public class DataCommunicator<T> {
     }
 
     /**
+     * Sets the {@link Comparator} to use with in-memory sorting.
+     *
+     * @param comparator
+     *            comparator used to sort data
+     */
+    public void setInMemorySorting(Comparator<T> comparator) {
+        inMemorySorting = comparator;
+        reset();
+    }
+
+    /**
+     * Returns the {@link Comparator} to use with in-memory sorting.
+     *
+     * @return comparator used to sort data
+     */
+    public Comparator<T> getInMemorySorting() {
+        return inMemorySorting;
+    }
+
+    /**
+     * Sets the {@link QuerySortOrder}s to use with backend sorting.
+     *
+     * @param sortOrder
+     *            list of sort order information to pass to a query
+     */
+    public void setBackEndSorting(List<QuerySortOrder> sortOrder) {
+        backEndSorting.clear();
+        backEndSorting.addAll(sortOrder);
+        reset();
+    }
+
+    /**
+     * Returns the {@link QuerySortOrder} to use with backend sorting.
+     *
+     * @return an unmodifiable list of sort order information to pass to a query
+     */
+    public List<QuerySortOrder> getBackEndSorting() {
+        return Collections.unmodifiableList(backEndSorting);
+    }
+
+    /**
      * Getter method for finding the size of DataProvider. Can be overridden by
      * a subclass that uses a specific type of DataProvider and/or query.
      *

@@ -91,6 +91,16 @@ window.gridConnector = {
       }
     }
 
+    const sorterChangeListener = function(event) {
+      grid.$server.sortersChanged(grid._sorters.map(function(sorter) {
+        return {
+          path: sorter.path,
+          direction: sorter.direction
+        };
+      }));
+    }
+    grid.addEventListener('sorter-changed', sorterChangeListener);
+
     const itemsUpdated = function(items) {
       if (!items || !(items instanceof Array)) {
         throw 'Attempted to call itemsUpdated with an invalid value';
