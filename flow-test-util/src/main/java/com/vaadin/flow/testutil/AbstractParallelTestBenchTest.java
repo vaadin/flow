@@ -18,9 +18,14 @@ package com.vaadin.flow.testutil;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Optional;
 
+import org.openqa.selenium.remote.DesiredCapabilities;
+
+import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunLocally;
 import com.vaadin.testbench.annotations.RunOnHub;
@@ -141,4 +146,53 @@ public class AbstractParallelTestBenchTest extends ParallelTest {
         return Optional.empty();
     }
 
+    /**
+     * Produces a collection of browsers to run the test on. This method is
+     * executed by the test runner when determining how many test methods to
+     * invoke and with what parameters. For each returned value a test method is
+     * ran and before running that,
+     * {@link #setDesiredCapabilities(DesiredCapabilities)} is invoked with the
+     * value returned by this method.
+     *
+     * @return The browsers to run the test on
+     */
+    @BrowserConfiguration
+    public List<DesiredCapabilities> getBrowsersToTest() {
+        if (getRunLocallyBrowser() != null) {
+            return getBrowserCapabilities(getRunLocallyBrowser());
+        }
+        return getHubBrowsersToTest();
+    }
+
+    /**
+     * Gets the browsers capabilities list to execute test on the tests Hub.
+     * <p>
+     * This list will be used only for the tests Hub. Local test execution is
+     * managed by {@link LocalExecution} annotation.
+     * <p>
+     * The method {@link #getBrowsersToTest()} delegates the logic to this
+     * method in case {@link #getRunLocallyBrowser()} returns null (i.e. the
+     * tests Hub is used).
+     *
+     * @return the browsers capabilities list to execute test on the tests Hub
+     */
+    protected List<DesiredCapabilities> getHubBrowsersToTest() {
+        return getBrowserCapabilities(Browser.CHROME);
+    }
+
+    /**
+     * Gets browser capabilities for the provided <code>browsers</code>.
+     *
+     * @param browsers
+     *            a browsers list
+     * @return the capabilities for the given <code>browsers</code>
+     */
+    protected List<DesiredCapabilities> getBrowserCapabilities(
+            Browser... browsers) {
+        List<DesiredCapabilities> capabilities = new ArrayList<>();
+        for (Browser browser : browsers) {
+            capabilities.add(browser.getDesiredCapabilities());
+        }
+        return capabilities;
+    }
 }
