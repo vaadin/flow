@@ -37,8 +37,9 @@ import com.vaadin.testbench.parallel.ParallelTest;
  * Abstract base class for parallel flow TestBench tests.
  */
 @RunOnHub
-@BrowserFactory(DefaultBrowserFactory.class)
 @RunLocally
+@BrowserFactory(DefaultBrowserFactory.class)
+@LocalExecution
 public class AbstractParallelTestBenchTest extends ParallelTest {
 
     /**
@@ -80,6 +81,27 @@ public class AbstractParallelTestBenchTest extends ParallelTest {
         return SERVER_PORT;
     }
 
+    /**
+     * Gets local execution ({@link LocalExecution}) configuration for the test.
+     * <p>
+     * If this method return an empty optional then test with be run on the test
+     * Hub
+     *
+     * @see LocalExecution
+     *
+     * @return an optional configuration, or an empty optional if configuration
+     *         is disabled or not available
+     *
+     */
+    protected Optional<LocalExecution> getLocalExecution() {
+        if (USE_HUB) {
+            return Optional.empty();
+        }
+        return Optional
+                .ofNullable(getClass().getAnnotation(LocalExecution.class))
+                .filter(LocalExecution::active);
+    }
+
     @Override
     protected Browser getRunLocallyBrowser() {
         if (USE_HUB) {
@@ -94,7 +116,7 @@ public class AbstractParallelTestBenchTest extends ParallelTest {
      * @return the host name of development server
      */
     protected String getDeploymentHostname() {
-        if (getRunLocallyBrowser() != null) {
+        if (getLocalExecution().isPresent()) {
             return "localhost";
         }
         return getCurrentHostAddress();
@@ -158,8 +180,8 @@ public class AbstractParallelTestBenchTest extends ParallelTest {
      */
     @BrowserConfiguration
     public List<DesiredCapabilities> getBrowsersToTest() {
-        if (getRunLocallyBrowser() != null) {
-            return getBrowserCapabilities(getRunLocallyBrowser());
+        if (getLocalExecution().isPresent()) {
+            return getBrowserCapabilities(getLocalExecution().get().value());
         }
         return getHubBrowsersToTest();
     }
@@ -171,8 +193,8 @@ public class AbstractParallelTestBenchTest extends ParallelTest {
      * managed by {@link LocalExecution} annotation.
      * <p>
      * The method {@link #getBrowsersToTest()} delegates the logic to this
-     * method in case {@link #getRunLocallyBrowser()} returns null (i.e. the
-     * tests Hub is used).
+     * method in case {@link #getLocalExecution()} return value is an empty
+     * optional (i.e. the tests Hub is used).
      *
      * @return the browsers capabilities list to execute test on the tests Hub
      */
@@ -195,4 +217,5 @@ public class AbstractParallelTestBenchTest extends ParallelTest {
         }
         return capabilities;
     }
+
 }
