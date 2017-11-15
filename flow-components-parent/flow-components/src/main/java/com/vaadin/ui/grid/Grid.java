@@ -497,7 +497,6 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
                                         : rawHeaderTemplate);
                 getElement().appendChild(headerTemplate);
             }
-
             return this;
         }
 
@@ -858,17 +857,15 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
      * sorting property does not extend Comparable, no in-memory sorting is
      * configured for it.
      *
-     * @param header
-     *            the column header name
      * @param renderer
      *            the renderer used to create the grid cell structure
      * @param sortingProperties
      *            the sorting properties to use for this column
      * @return the created column
      */
-    public Column<T> addColumn(String header, TemplateRenderer<T> renderer,
+    public Column<T> addColumn(TemplateRenderer<T> renderer,
             String... sortingProperties) {
-        Column<T> column = addColumn(header, renderer);
+        Column<T> column = addColumn(renderer);
 
         Map<String, ValueProvider<T, ?>> valueProviders = renderer
                 .getValueProviders();

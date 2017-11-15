@@ -160,18 +160,17 @@ public class GridSortingTest {
         grid.setItems(new ArrayList<>());
         grid.addSortListener(testSortListener);
 
-        nameColumn = grid.addColumn("Name", Person::getName, "name");
-        ageColumn = grid.addColumn("Age", Person::getAge, "age");
+        nameColumn = grid.addColumn(Person::getName, "name")
+                .setHeaderLabel("Name");
+        ageColumn = grid.addColumn(Person::getAge, "age").setHeaderLabel("Age");
 
-        templateColumn = grid.addColumn("Address",
-                TemplateRenderer
-                        .<Person> of(
-                                "<div>[[item.street]], number [[item.number]]<br><small>[[item.postalCode]]</small></div>")
-                        .withProperty("street",
-                                person -> person.getAddress().getStreet())
-                        .withProperty("number",
-                                person -> person.getAddress().getNumber()),
-                "street", "number");
+        templateColumn = grid.addColumn(TemplateRenderer.<Person> of(
+                "<div>[[item.street]], number [[item.number]]<br><small>[[item.postalCode]]</small></div>")
+                .withProperty("street",
+                        person -> person.getAddress().getStreet())
+                .withProperty("number",
+                        person -> person.getAddress().getNumber()),
+                "street", "number").setHeaderLabel("Address");
     }
 
     @Test
@@ -223,9 +222,10 @@ public class GridSortingTest {
 
     @Test
     public void template_renderer_non_comparable_property() {
-        Column<Person> column = grid.addColumn("", TemplateRenderer
-                .<Person> of("").withProperty("address", Person::getAddress),
-                "address");
+        Column<Person> column = grid
+                .addColumn(TemplateRenderer.<Person> of("")
+                        .withProperty("address", Person::getAddress), "address")
+                .setHeaderLabel("");
         JsonArray sortersArray = Json.createArray();
         sortersArray.set(0, createSortObject(column.getColumnId(), "asc"));
         callSortersChanged(sortersArray);
@@ -266,7 +266,8 @@ public class GridSortingTest {
         return json;
     }
 
-    private <T, V extends SortOrder<T>> void assertSortOrdersEquals(List<V> o1, List<V> o2) {
+    private <T, V extends SortOrder<T>> void assertSortOrdersEquals(List<V> o1,
+            List<V> o2) {
         Assert.assertEquals(o1.size(), o2.size());
         for (int i = 0; i < o1.size(); ++i) {
             Assert.assertEquals(o1.get(i).getDirection(),

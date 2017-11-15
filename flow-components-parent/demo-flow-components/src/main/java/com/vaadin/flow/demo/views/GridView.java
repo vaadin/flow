@@ -596,7 +596,7 @@ public class GridView extends DemoView {
         grid.addColumn(Person::getName, "name").setHeaderLabel("Name");
         grid.addColumn(Person::getAge, "age").setHeaderLabel("Age");
 
-        grid.addColumn("Address", TemplateRenderer.<Person> of(
+        grid.addColumn(TemplateRenderer.<Person> of(
                 "<div>[[item.street]], number [[item.number]]<br><small>[[item.postalCode]]</small></div>")
                 .withProperty("street",
                         person -> person.getAddress().getStreet())
@@ -604,7 +604,7 @@ public class GridView extends DemoView {
                         person -> person.getAddress().getNumber())
                 .withProperty("postalCode",
                         person -> person.getAddress().getPostalCode()),
-                "street", "number");
+                "street", "number").setHeaderLabel("Address");
 
         Checkbox multiSort = new Checkbox("Multiple column sorting enabled");
         multiSort.addValueChangeListener(
@@ -637,8 +637,10 @@ public class GridView extends DemoView {
 
         Column<Person> nameColumn = grid.addColumn(Person::getName)
                 .setHeaderLabel(TemplateRenderer.of(
-                        "<span style='color:green' title='Name'>Name</span>"));
-        Column<Person> ageColumn = grid.addColumn(Person::getAge)
+                        "<span style='color:green' title='Name'>Name</span>"))
+                .setComparator((p1, p2) -> p1.getName()
+                        .compareToIgnoreCase(p2.getName()));
+        Column<Person> ageColumn = grid.addColumn(Person::getAge, "age")
                 .setHeaderLabel(TemplateRenderer
                         .of("<span style='color:blue' title='Age'>Age</span>"));
         Column<Person> streetColumn = grid
@@ -679,8 +681,9 @@ public class GridView extends DemoView {
                     label.getStyle().set("color", "green");
                     label.setTitle("Name");
                     return label;
-                }));
-        Column<Person> ageColumn = grid.addColumn(Person::getAge)
+                })).setComparator((p1, p2) -> p1.getName()
+                        .compareToIgnoreCase(p2.getName()));
+        Column<Person> ageColumn = grid.addColumn(Person::getAge, "age")
                 .setHeaderLabel(new ComponentRenderer<>(() -> {
                     Label label = new Label("Age");
                     label.getStyle().set("color", "blue");
@@ -717,9 +720,14 @@ public class GridView extends DemoView {
         grid.mergeColumns(informationColumnGroup, addressColumnGroup);
 
         // end-source-example
+        Checkbox toggleSortable = new Checkbox("Toggle sorting for the Grid",
+                event -> grid.getColumns().forEach(
+                        column -> column.setSortable(event.getValue())));
+        toggleSortable.setValue(true);
+
         grid.setId("grid-header-with-components");
         addCard("Using components", "Column header and footer using components",
-                grid);
+                grid, new HorizontalLayout(toggleSortable));
     }
 
     private List<Person> getItems() {

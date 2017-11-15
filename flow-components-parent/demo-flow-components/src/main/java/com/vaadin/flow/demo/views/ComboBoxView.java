@@ -133,6 +133,7 @@ public class ComboBoxView extends DemoView {
         List<Song> listOfSongs = createListOfSongs();
 
         comboBox.setItems(listOfSongs);
+        comboBox.setValue(listOfSongs.get(1));
         comboBox.addValueChangeListener(event -> {
             Song song = comboBox.getValue();
             if (song != null) {

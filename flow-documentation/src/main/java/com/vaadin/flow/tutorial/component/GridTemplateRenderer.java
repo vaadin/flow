@@ -33,32 +33,33 @@ public class GridTemplateRenderer {
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
 
-        grid.addColumn("Name",
-                TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
-                        .withProperty("name", Person::getName));
+        grid.addColumn(TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
+                .withProperty("name", Person::getName)).setHeaderLabel("Name");
     }
 
     public void customProperties() {
         Grid<Person> grid = new Grid<>();
 
-        grid.addColumn("Age",
-                TemplateRenderer.<Person> of("[[item.age]] years old")
-                        .withProperty("age", person -> Year.now().getValue()
-                                - person.getYearOfBirth()));
+        grid.addColumn(TemplateRenderer.<Person> of("[[item.age]] years old")
+                .withProperty("age",
+                        person -> Year.now().getValue()
+                                - person.getYearOfBirth()))
+                .setHeaderLabel("Age");
     }
 
     public void bindingBeans() {
         Grid<Person> grid = new Grid<>();
 
-        grid.addColumn("Address", TemplateRenderer.<Person> of(
+        grid.addColumn(TemplateRenderer.<Person> of(
                 "<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")
-                .withProperty("address", Person::getAddress));
+                .withProperty("address", Person::getAddress))
+                .setHeaderLabel("Address");
     }
 
     public void handlingEvents() {
         Grid<Person> grid = new Grid<>();
 
-        grid.addColumn("Actions", TemplateRenderer.<Person> of(
+        grid.addColumn(TemplateRenderer.<Person> of(
                 "<button on-click='handleUpdate'>Update</button><button on-click='handleRemove'>Remove</button>")
                 .withEventHandler("handleUpdate", person -> {
                     person.setName(person.getName() + " Updated");
@@ -68,7 +69,7 @@ public class GridTemplateRenderer {
                             .getDataProvider();
                     dataProvider.getItems().remove(person);
                     dataProvider.refreshAll();
-                }));
+                })).setHeaderLabel("Actions");
     }
 
     public static class Person {
