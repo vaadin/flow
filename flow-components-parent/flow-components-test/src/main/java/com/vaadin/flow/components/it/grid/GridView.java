@@ -45,9 +45,9 @@ public class GridView extends TestView {
         grid = new Grid<>();
 
         grid.setDataProvider(dataProvider1);
-        grid.addColumn(i -> i).setHeaderLabel("text");
+        grid.addColumn(i -> i).setHeader("text");
         grid.addColumn(i -> String.valueOf(i.length()))
-                .setHeaderLabel("length");
+                .setHeader("length");
 
         add(grid);
 

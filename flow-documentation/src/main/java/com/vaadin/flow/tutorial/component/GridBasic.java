@@ -47,9 +47,9 @@ public class GridBasic {
         // Create a grid bound to the list
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
-        grid.addColumn(Person::getName).setHeaderLabel("Name");
+        grid.addColumn(Person::getName).setHeader("Name");
         grid.addColumn(person -> Integer.toString(person.getYearOfBirth()))
-                .setHeaderLabel("Year of birth");
+                .setHeader("Year of birth");
 
         layout.add(grid);
     }
@@ -121,7 +121,7 @@ public class GridBasic {
         Grid<Person> grid = new Grid<>();
         
         Column<Person> nameColumn = grid.addColumn(Person::getName)
-            .setHeaderLabel("Name")
+            .setHeader("Name")
             .setFlexGrow(0)
             .setWidth("100px")
             .setResizable(false);
@@ -135,9 +135,9 @@ public class GridBasic {
         Grid<Person> grid = new Grid<>();
         
         Column<Person> bornColumn = grid.addColumn(Person::getYearOfBirth);
-        bornColumn.setHeaderLabel("Born date");
+        bornColumn.setHeader("Born date");
         
-        bornColumn.setFooterLabel("Summary");
+        bornColumn.setFooter("Summary");
     }
     
     /* code of commented lines

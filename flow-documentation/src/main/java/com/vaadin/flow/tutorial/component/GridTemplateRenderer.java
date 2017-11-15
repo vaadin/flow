@@ -34,7 +34,7 @@ public class GridTemplateRenderer {
         grid.setItems(people);
 
         grid.addColumn(TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
-                .withProperty("name", Person::getName)).setHeaderLabel("Name");
+                .withProperty("name", Person::getName)).setHeader("Name");
     }
 
     public void customProperties() {
@@ -44,7 +44,7 @@ public class GridTemplateRenderer {
                 .withProperty("age",
                         person -> Year.now().getValue()
                                 - person.getYearOfBirth()))
-                .setHeaderLabel("Age");
+                .setHeader("Age");
     }
 
     public void bindingBeans() {
@@ -53,7 +53,7 @@ public class GridTemplateRenderer {
         grid.addColumn(TemplateRenderer.<Person> of(
                 "<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")
                 .withProperty("address", Person::getAddress))
-                .setHeaderLabel("Address");
+                .setHeader("Address");
     }
 
     public void handlingEvents() {
@@ -69,7 +69,7 @@ public class GridTemplateRenderer {
                             .getDataProvider();
                     dataProvider.getItems().remove(person);
                     dataProvider.refreshAll();
-                })).setHeaderLabel("Actions");
+                })).setHeader("Actions");
     }
 
     public static class Person {

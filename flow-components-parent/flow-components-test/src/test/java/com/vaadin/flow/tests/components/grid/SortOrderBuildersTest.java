@@ -34,11 +34,11 @@ public class SortOrderBuildersTest {
     public void gridSortOrderBuilder() {
         Grid<String> grid = new Grid<>();
         Column<String> col1 = grid.addColumn(string -> string)
-                .setHeaderLabel("");
+                .setHeader("");
         Column<String> col2 = grid.addColumn(string -> string)
-                .setHeaderLabel("");
+                .setHeader("");
         Column<String> col3 = grid.addColumn(string -> string)
-                .setHeaderLabel("");
+                .setHeader("");
 
         // construct with asc
         verifySortOrders(

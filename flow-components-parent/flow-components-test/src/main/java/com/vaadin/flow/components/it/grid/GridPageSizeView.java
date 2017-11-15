@@ -41,9 +41,9 @@ public class GridPageSizeView extends TestView {
         Grid<String> grid = new Grid<>(10);
 
         grid.setDataProvider(dataProvider);
-        grid.addColumn(i -> i).setHeaderLabel("text");
+        grid.addColumn(i -> i).setHeader("text");
         grid.addColumn(i -> String.valueOf(i.length()))
-                .setHeaderLabel("length");
+                .setHeader("length");
 
         info = new Label();
         info.setId("query-info");

@@ -110,8 +110,8 @@ public interface ColumnBase<T extends ColumnBase<T>> extends HasElement {
      *            the text to be shown at the column header
      * @return this column, for method chaining
      */
-    default T setHeaderLabel(String labelText) {
-        setHeaderLabel(TemplateRenderer.of(HtmlUtils.escape(labelText)));
+    default T setHeader(String labelText) {
+        setHeader(TemplateRenderer.of(HtmlUtils.escape(labelText)));
         return (T) this;
     }
 
@@ -123,7 +123,7 @@ public interface ColumnBase<T extends ColumnBase<T>> extends HasElement {
      *            column
      * @return this column, for method chaining
      */
-    T setHeaderLabel(TemplateRenderer<?> renderer);
+    T setHeader(TemplateRenderer<?> renderer);
 
     /**
      * Sets a footer text to the column.
@@ -132,8 +132,8 @@ public interface ColumnBase<T extends ColumnBase<T>> extends HasElement {
      *            the text to be shown at the column footer
      * @return this column, for method chaining
      */
-    default T setFooterLabel(String labelText) {
-        setFooterLabel(TemplateRenderer.of(HtmlUtils.escape(labelText)));
+    default T setFooter(String labelText) {
+        setFooter(TemplateRenderer.of(HtmlUtils.escape(labelText)));
         return (T) this;
     }
 
@@ -145,7 +145,7 @@ public interface ColumnBase<T extends ColumnBase<T>> extends HasElement {
      *            column
      * @return this column, for method chaining
      */
-    T setFooterLabel(TemplateRenderer<?> renderer);
+    T setFooter(TemplateRenderer<?> renderer);
 
     /**
      * Gets the underlying column element.

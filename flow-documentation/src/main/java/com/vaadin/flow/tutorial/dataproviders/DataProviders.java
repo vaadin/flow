@@ -124,9 +124,9 @@ public class DataProviders {
 
     public void grid() {
         Grid<Person> grid = new Grid<>();
-        grid.addColumn(Person::getName).setHeaderLabel("Name");
+        grid.addColumn(Person::getName).setHeader("Name");
         grid.addColumn(person -> Integer.toString(person.getYearOfBirth()))
-                .setHeaderLabel("Year of birth");
+                .setHeader("Year of birth");
     }
 
     public void setItems() {
@@ -276,7 +276,7 @@ public class DataProviders {
 
         Grid<Person> grid = new Grid<>();
         grid.setDataProvider(personProvider);
-        grid.addColumn(Person::getName).setHeaderLabel("Name");
+        grid.addColumn(Person::getName).setHeader("Name");
 
         searchField.addValueChangeListener(event -> {
           String filter = event.getValue();
@@ -378,7 +378,7 @@ public class DataProviders {
 
         Grid<Person> persons = new Grid<>();
         persons.setDataProvider(allPersonsWithId);
-        persons.addColumn(Person::getName).setHeaderLabel("Name");
+        persons.addColumn(Person::getName).setHeader("Name");
 
         Button modifyPersonButton = new Button("Modify person", clickEvent -> {
             Person personToChange = allPersonsWithId.fetch(

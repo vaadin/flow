@@ -22,9 +22,9 @@ In the following example, a `Grid` is configured with one column from the person
 [source, java]
 ----
 Grid<Person> grid = new Grid<>();
-grid.addColumn(Person::getName).setHeaderLabel("Name");
+grid.addColumn(Person::getName).setHeader("Name");
 grid.addColumn(person -> Integer.toString(person.getYearOfBirth()))
-    .setHeaderLabel("Year of birth");
+    .setHeader("Year of birth");
 ----
 
 After we have told the component how the data should be shown, we only need to give it some data to actually show. The easiest way of doing that is to directly pass the values to show to `setItems`.
@@ -254,7 +254,7 @@ ConfigurableFilterDataProvider<Person, Void, String> wrapper =
 
 Grid<Person> grid = new Grid<>();
 grid.setDataProvider(personProvider);
-grid.addColumn(Person::getName).setHeaderLabel("Name");
+grid.addColumn(Person::getName).setHeader("Name");
 
 searchField.addValueChangeListener(event -> {
   String filter = event.getValue();
@@ -468,7 +468,7 @@ DataProvider<Person, String> allPersonsWithId = new CallbackDataProvider<>(
 
 Grid<Person> persons = new Grid<>();
 persons.setDataProvider(allPersonsWithId);
-persons.addColumn(Person::getName).setHeaderLabel("Name");
+persons.addColumn(Person::getName).setHeader("Name");
 
 Button modifyPersonButton = new Button("Modify person", clickEvent -> {
     Person personToChange = allPersonsWithId.fetch(

@@ -56,7 +56,7 @@ public class AbstractColumn<T extends AbstractColumn<T>> extends Component
     }
 
     @Override
-    public T setHeaderLabel(TemplateRenderer<?> renderer) {
+    public T setHeader(TemplateRenderer<?> renderer) {
         if (headerTemplate == null) {
             headerTemplate = new Element("template").setAttribute("class",
                     "header");
@@ -68,7 +68,7 @@ public class AbstractColumn<T extends AbstractColumn<T>> extends Component
     }
 
     @Override
-    public T setFooterLabel(TemplateRenderer<?> renderer) {
+    public T setFooter(TemplateRenderer<?> renderer) {
         if (footerTemplate == null) {
             footerTemplate = new Element("template").setAttribute("class",
                     "footer");

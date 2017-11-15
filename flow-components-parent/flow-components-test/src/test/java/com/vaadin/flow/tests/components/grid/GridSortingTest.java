@@ -161,8 +161,8 @@ public class GridSortingTest {
         grid.addSortListener(testSortListener);
 
         nameColumn = grid.addColumn(Person::getName, "name")
-                .setHeaderLabel("Name");
-        ageColumn = grid.addColumn(Person::getAge, "age").setHeaderLabel("Age");
+                .setHeader("Name");
+        ageColumn = grid.addColumn(Person::getAge, "age").setHeader("Age");
 
         templateColumn = grid.addColumn(TemplateRenderer.<Person> of(
                 "<div>[[item.street]], number [[item.number]]<br><small>[[item.postalCode]]</small></div>")
@@ -170,7 +170,7 @@ public class GridSortingTest {
                         person -> person.getAddress().getStreet())
                 .withProperty("number",
                         person -> person.getAddress().getNumber()),
-                "street", "number").setHeaderLabel("Address");
+                "street", "number").setHeader("Address");
     }
 
     @Test
@@ -225,7 +225,7 @@ public class GridSortingTest {
         Column<Person> column = grid
                 .addColumn(TemplateRenderer.<Person> of("")
                         .withProperty("address", Person::getAddress), "address")
-                .setHeaderLabel("");
+                .setHeader("");
         JsonArray sortersArray = Json.createArray();
         sortersArray.set(0, createSortObject(column.getColumnId(), "asc"));
         callSortersChanged(sortersArray);
