@@ -18,6 +18,7 @@ package com.vaadin.ui.grid;
 import com.vaadin.data.provider.DataKeyMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.renderers.ComponentRenderer;
 import com.vaadin.ui.renderers.TemplateRenderer;
 
@@ -30,7 +31,7 @@ import com.vaadin.ui.renderers.TemplateRenderer;
  *            the subclass type
  */
 public class AbstractColumn<T extends AbstractColumn<T>> extends Component
-        implements ColumnBase<T> {
+        implements ColumnBase<T>, HasStyle {
 
     protected Grid<?> grid;
     protected Element headerTemplate;
