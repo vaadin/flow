@@ -23,6 +23,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.Before;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.testbench.annotations.BrowserConfiguration;
@@ -61,6 +62,14 @@ public class AbstractParallelTestBenchTest extends ParallelTest {
 
     public static final boolean USE_HUB = Boolean.TRUE.toString()
             .equals(System.getProperty(USE_HUB_PROPERTY, "false"));
+
+    @Before
+    public void setup() throws Exception {
+        if(USE_HUB) {
+            setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
+        }
+        super.setup();
+    }
 
     /**
      * Returns the URL to the root of the server, e.g. "http://localhost:8888"
