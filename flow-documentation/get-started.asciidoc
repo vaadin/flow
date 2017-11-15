@@ -60,7 +60,8 @@ If you do not want to do the exercise at all, you can also just
 https://github.com/hezamu/flow-tutorial/[download the final application] and play
 around with it.
 
-//TIP: In addition to this written tutorial, we have recorded the steps as
+//[TIP]
+//In addition to this written tutorial, we have recorded the steps as
 //https://www.youtube.com/playlist?list=Alejandro[a series of videos]. You can just
 //watch all the videos or watch the video of each step before you do the same step
 //yourself.
@@ -121,7 +122,8 @@ the [filename]#target# directory. You can deploy the WAR file to your applicatio
 server. The first build might take a while, as Maven might need to download
 some additional modules.
 
-TIP: For the Maven compilation to work you need a JDK to be configured in your
+[TIP]
+For the Maven compilation to work you need a JDK to be configured in your
 Eclipse in "Window > Preferences > Java > Installed JREs > Add...".
 This step is necessary at least on Windows, if you are using a fresh installation
 of Eclipse or for some other reason haven't configured a JDK to your Eclipse.
@@ -136,7 +138,8 @@ settings for building your project and declares the used dependencies. Open
 directory, and [packagename]#com.vaadin.flow.demo.helloworkd#, the main Java
 package that will contain your Vaadin UI code.
 
-TIP: Eclipse shows all project files in the Project Explorer. In this case, you
+[TIP]
+Eclipse shows all project files in the Project Explorer. In this case, you
 can also find your [filename]#.java# files from under the top-level [filename]#src#
 node. However, the suggested method is to access them from under the
 [guilabel]#Java Resources# node, which is optimized for editing Java source code.
@@ -163,8 +166,8 @@ The [classname]#@HtmlImport("styles.html")# annotation specifies the HTML file w
 includes the look and feel of the application. You can find this file in the folder
 [filename]#src/main/webapp/frontend#. There is also a second annotation,
 [classname]#@Route("")#, which tells Vaadin Flow to direct all requests to this view.
-A default servlet is also generated behind the scenes based on this annotation.
-You can define your own servlet if you need one, but the generated one is usually
+A default Vaadin servlet is registered behind the scenes based on this annotation.
+You can define your own servlet if you need one, but the default one is usually
 sufficient.
 
 The servlet instantiates this class when a user enters your web app. When this
@@ -178,7 +181,8 @@ template. The logic is attached to the button with a simple Java 8 lambda
 expression, and finally both the button and the template are added into the
 main view.
 
-TIP: Vaadin Flow is allows you to use and mix HTML templates and Java-generated
+[TIP]
+Vaadin Flow is allows you to use and mix HTML templates and Java-generated
 UI components as you wish. It would be equally easy to build our UI completely
 with templates or just with Java components.
 
@@ -301,7 +305,8 @@ Spring-based service.
 Copy the following three classes from github to your project. Class names point
 to the classes hosted in Github. Copying classes can be done in many ways.
 
-TIP: The fastest way to copy classes using Eclipse is to use your good old
+[TIP]
+The fastest way to copy classes using Eclipse is to use your good old
 clipboard. Select the text content of the whole class from your browser, choose
 "Edit > Copy", focus the node representing the [packagename]#com.vaadin.flow.demo.helloworld#
 Java package in Eclipse's Java Resources view and choose "Edit > Paste". Eclipse
@@ -331,10 +336,10 @@ component for tabular presentation of our customers.
 
 // video::Alejandro[youtube, width="640", height="400"]
 
-We start by introducing a [classname]#Grid# to the [classname]#MyUI# class. We
-could of course just introduce the Grid as a variable in the [methodname]#init()#
-method, but we most likely want to refer to it later. Also, let us get a
-reference to the [classname]#CustomerService#.
+We start by introducing a [classname]#Grid# in [classname]#MainView#. We could of
+course just introduce the grid as a variable in the constructor, but we most
+likely want to refer to it later. Also, let us get a reference to our
+[classname]#CustomerService#.
 
 [source, java]
 ----
@@ -349,7 +354,8 @@ public class MainView extends VerticalLayout {
     public MainView() {
 ----
 
-TIP: If you are new to Java development, you probably do not feel comfortable
+[TIP]
+If you are new to Java development, you probably do not feel comfortable
 with the red compilation error for the line where the [classname]#Grid# got
 introduced, because of a missing import. This is easily fixed in Eclipse by using
 the menu:Source[Organize Imports] command. Learn its shortcut (kbd:[Ctrl-Shift-O]
@@ -455,7 +461,8 @@ filterText.setPlaceholder("filter by name...");
 filterText.addValueChangeListener(e -> updateList());
 ----
 
-TIP: To keep your code more readable, you can use autoformat after you write or
+[TIP]
+To keep your code more readable, you can use autoformat after you write or
 copy paste code snippets. The default keyboard shortcut in Eclipse is
 kbd:[Ctrl+Shift+F] or kbd:[Cmd+Shift+F]
 
@@ -656,7 +663,8 @@ are calling the `Binder.setBean` method. This will initialise all fields in the
 form and automatically update the values in the domain objects as the corresponding
 field value changes in the user interface.
 
-TIP: If the naming convention based databinding doesn't fit your needs, you can
+[TIP]
+If the naming convention based databinding doesn't fit your needs, you can
 use https://www.vaadin.com/api/com/vaadin/annotations/PropertyId.html[PropertyId]
 annotation on fields to explicitly declare the edited property.
 
@@ -690,7 +698,8 @@ save.addClickListener(e -> this.save());
 delete.addClickListener(e -> this.delete());
 ----
 
-TIP: For a truly re-usable form component in a real life project, you'd want to
+[TIP]
+For a truly re-usable form component in a real life project, you'd want to
 introduce an interface to replace the MainView field or, event better, use an event
 system like https://vaadin.com/wiki/-/wiki/main/Events+and+contexts[CDI events]
 to completely decouple the components. We'll leave that out of this tutorial for
