@@ -224,8 +224,7 @@ public class GridSortingTest {
     public void template_renderer_non_comparable_property() {
         Column<Person> column = grid
                 .addColumn(TemplateRenderer.<Person> of("")
-                        .withProperty("address", Person::getAddress), "address")
-                .setHeader("");
+                        .withProperty("address", Person::getAddress), "address");
         JsonArray sortersArray = Json.createArray();
         sortersArray.set(0, createSortObject(column.getColumnId(), "asc"));
         callSortersChanged(sortersArray);

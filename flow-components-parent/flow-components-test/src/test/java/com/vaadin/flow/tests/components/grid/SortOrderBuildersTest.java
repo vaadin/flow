@@ -33,12 +33,10 @@ public class SortOrderBuildersTest {
     @Test
     public void gridSortOrderBuilder() {
         Grid<String> grid = new Grid<>();
-        Column<String> col1 = grid.addColumn(string -> string)
-                .setHeader("");
-        Column<String> col2 = grid.addColumn(string -> string)
-                .setHeader("");
-        Column<String> col3 = grid.addColumn(string -> string)
-                .setHeader("");
+        Column<String> col1 = grid.addColumn(string -> string);
+        Column<String> col2 = grid.addColumn(string -> string);
+        Column<String> col3 = grid.addColumn(string -> string);
+                
 
         // construct with asc
         verifySortOrders(

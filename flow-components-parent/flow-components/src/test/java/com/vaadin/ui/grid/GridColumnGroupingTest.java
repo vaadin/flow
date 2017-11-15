@@ -43,12 +43,10 @@ public class GridColumnGroupingTest {
         Assert.assertEquals(
                 Arrays.asList(firstColumn, secondColumn, thirdColumn),
                 grid.getParentColumns());
-        ColumnGroup<String> merged = grid.mergeColumns(firstColumn,
-                thirdColumn);
+        ColumnGroup merged = grid.mergeColumns(firstColumn, thirdColumn);
         Assert.assertEquals(Arrays.asList(merged, secondColumn),
                 grid.getParentColumns());
-        ColumnGroup<String> secondMerge = grid.mergeColumns(merged,
-                secondColumn);
+        ColumnGroup secondMerge = grid.mergeColumns(merged, secondColumn);
         Assert.assertEquals(Arrays.asList(secondMerge),
                 grid.getParentColumns());
         Assert.assertEquals(

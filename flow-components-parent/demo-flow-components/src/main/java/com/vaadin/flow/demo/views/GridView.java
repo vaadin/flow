@@ -572,11 +572,11 @@ public class GridView extends DemoView {
                 .addColumn(person -> person.getAddress().getPostalCode())
                 .setHeader("Postal Code");
 
-        ColumnGroup<Person> informationColumnGroup = grid
+        ColumnGroup informationColumnGroup = grid
                 .mergeColumns(nameColumn, ageColumn)
                 .setHeader("Basic Information")
                 .setFooter("Total: " + getItems().size() + " people");
-        ColumnGroup<Person> addressColumnGroup = grid
+        ColumnGroup addressColumnGroup = grid
                 .mergeColumns(streetColumn, postalCodeColumn)
                 .setHeader("Address Information");
         grid.mergeColumns(informationColumnGroup, addressColumnGroup);
@@ -650,13 +650,13 @@ public class GridView extends DemoView {
                 .addColumn(person -> person.getAddress().getPostalCode())
                 .setHeader("Postal Code");
 
-        ColumnGroup<Person> informationColumnGroup = grid
+        ColumnGroup informationColumnGroup = grid
                 .mergeColumns(nameColumn, ageColumn)
                 .setHeader(TemplateRenderer.of(
                         "<span style='color:orange' title='Basic Information'>Basic Information</span>"))
                 .setFooter(TemplateRenderer.of("<span style='color:red'>Total: "
                         + getItems().size() + " people</span>"));
-        ColumnGroup<Person> addressColumnGroup = grid
+        ColumnGroup addressColumnGroup = grid
                 .mergeColumns(streetColumn, postalCodeColumn)
                 .setHeader(TemplateRenderer.of(
                         "<span title='Address Information'>Address Information</span>"));
@@ -696,7 +696,7 @@ public class GridView extends DemoView {
                 .addColumn(person -> person.getAddress().getPostalCode())
                 .setHeader("Postal Code");
 
-        ColumnGroup<Person> informationColumnGroup = grid
+        ColumnGroup informationColumnGroup = grid
                 .mergeColumns(nameColumn, ageColumn)
                 .setHeader(new ComponentRenderer<>(() -> {
                     Label label = new Label("Basic Information");
@@ -709,7 +709,7 @@ public class GridView extends DemoView {
                     label.getStyle().set("color", "red");
                     return label;
                 }));
-        ColumnGroup<Person> addressColumnGroup = grid
+        ColumnGroup addressColumnGroup = grid
                 .mergeColumns(streetColumn, postalCodeColumn)
                 .setHeader(new ComponentRenderer<>(() -> {
                     Label label = new Label("Address Information");

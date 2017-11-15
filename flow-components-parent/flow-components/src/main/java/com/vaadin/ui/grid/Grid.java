@@ -1216,7 +1216,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
      *            optional additional columns to merge
      * @return the column group that contains the merged columns
      */
-    public ColumnGroup<T> mergeColumns(ColumnBase<?> firstColumn,
+    public ColumnGroup mergeColumns(ColumnBase<?> firstColumn,
             ColumnBase<?> secondColumn, ColumnBase<?>... additionalColumns) {
         List<ColumnBase<?>> toMerge = new ArrayList<>();
         toMerge.add(firstColumn);
@@ -1233,8 +1233,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
      *            greater than 1
      * @return the column group that contains the merged columns
      */
-    public ColumnGroup<T> mergeColumns(
-            Collection<ColumnBase<?>> columnsToMerge) {
+    public ColumnGroup mergeColumns(Collection<ColumnBase<?>> columnsToMerge) {
         Objects.requireNonNull(columnsToMerge,
                 "Columns to merge cannot be null");
         if (columnsToMerge.size() < 2) {
@@ -1255,7 +1254,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
             parentColumns.remove(column);
         });
 
-        ColumnGroup<T> columnGroup = new ColumnGroup<>(this, columnsToMerge);
+        ColumnGroup columnGroup = new ColumnGroup(this, columnsToMerge);
 
         getElement().insertChild(insertIndex, columnGroup.getElement());
         parentColumns.add(insertIndex, columnGroup);
@@ -1356,7 +1355,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
         return getElement().getProperty("multiSort", false);
     }
 
-    private List<Column<T>> fetchChildColumns(ColumnGroup<?> columnGroup) {
+    private List<Column<T>> fetchChildColumns(ColumnGroup columnGroup) {
         List<Column<T>> ret = new ArrayList<>();
         columnGroup.getChildColumns()
                 .forEach(column -> appendChildColumns(ret, column));
