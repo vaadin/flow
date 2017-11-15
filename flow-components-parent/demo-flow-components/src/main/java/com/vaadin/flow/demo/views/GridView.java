@@ -484,8 +484,8 @@ public class GridView extends DemoView {
         Grid<Person> grid = new Grid<>();
         grid.setItems(getItems());
 
-        Column<Person> idColumn = grid.addColumn(Person::getId)
-                .setHeader("ID").setFlexGrow(0).setWidth("75px");
+        Column<Person> idColumn = grid.addColumn(Person::getId).setHeader("ID")
+                .setFlexGrow(0).setWidth("75px");
         Column<Person> nameColumn = grid.addColumn(Person::getName)
                 .setHeader("Name").setResizable(true);
         grid.addColumn(Person::getAge).setHeader("Age").setResizable(true);
@@ -654,9 +654,8 @@ public class GridView extends DemoView {
                 .mergeColumns(nameColumn, ageColumn)
                 .setHeader(TemplateRenderer.of(
                         "<span style='color:orange' title='Basic Information'>Basic Information</span>"))
-                .setFooter(
-                        TemplateRenderer.of("<span style='color:red'>Total: "
-                                + getItems().size() + " people</span>"));
+                .setFooter(TemplateRenderer.of("<span style='color:red'>Total: "
+                        + getItems().size() + " people</span>"));
         ColumnGroup<Person> addressColumnGroup = grid
                 .mergeColumns(streetColumn, postalCodeColumn)
                 .setHeader(TemplateRenderer.of(
@@ -720,14 +719,9 @@ public class GridView extends DemoView {
         grid.mergeColumns(informationColumnGroup, addressColumnGroup);
 
         // end-source-example
-        Checkbox toggleSortable = new Checkbox("Toggle sorting for the Grid",
-                event -> grid.getColumns().forEach(
-                        column -> column.setSortable(event.getValue())));
-        toggleSortable.setValue(true);
-
         grid.setId("grid-header-with-components");
         addCard("Using components", "Column header and footer using components",
-                grid, new HorizontalLayout(toggleSortable));
+                grid);
     }
 
     private List<Person> getItems() {
