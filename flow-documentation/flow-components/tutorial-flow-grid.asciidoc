@@ -445,7 +445,7 @@ grid.addColumn("Actions", new ComponentRenderer<>(person -> {
 
 [NOTE]
 Editing the grid's items requires refreshing it's `DataProvider`, like explained above in the
-<<Handling Events,"template tutorial">>. More information about `DataProvider` can be found
+<<Handling Events,template tutorial>>. More information about `DataProvider` can be found
 <<../data-provider/tutorial-flow-data-provider#,here>>.
 
 == Showing Item Details
