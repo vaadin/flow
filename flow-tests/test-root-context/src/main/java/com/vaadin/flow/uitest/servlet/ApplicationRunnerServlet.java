@@ -15,9 +15,16 @@
  */
 package com.vaadin.flow.uitest.servlet;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -36,19 +43,13 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
-import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.router.Router;
+import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.SystemMessages;
-import com.vaadin.server.SystemMessagesInfo;
 import com.vaadin.server.SystemMessagesProvider;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
@@ -81,9 +82,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         }
         URL url = getService().getClassLoader().getResource(".");
         if ("file".equals(url.getProtocol())) {
-            String path = url.getPath();
             try {
-                path = new URI(path).getPath();
+                new URI(url.getPath()).getPath();
             } catch (URISyntaxException e) {
                 getLogger().log(Level.FINE, "Failed to decode url", e);
             }
@@ -145,7 +145,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         try {
             return getClassToRun().getName();
         } catch (ClassNotFoundException e) {
-            return getApplicationRunnerURIs(request).applicationClassname;
+            return getApplicationRunnerURIs(request);
         }
     }
 
@@ -173,16 +173,6 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         }
     }
 
-    // TODO Don't need to use a data object now that there's only one field
-    private static class URIS {
-        // String staticFilesPath;
-        // String applicationURI;
-        // String context;
-        // String runner;
-        String applicationClassname;
-
-    }
-
     /**
      * Parses application runner URIs.
      *
@@ -198,48 +188,30 @@ public class ApplicationRunnerServlet extends VaadinServlet {
      * @return string array containing widgetset URI, application URI and
      *         context, runner, application classname
      */
-    private static URIS getApplicationRunnerURIs(HttpServletRequest request) {
+    private static String getApplicationRunnerURIs(HttpServletRequest request) {
         final String[] urlParts = request.getRequestURI().toString()
                 .split("\\/");
-        // String runner = null;
-        URIS uris = new URIS();
-        String applicationClassname = null;
         String contextPath = request.getContextPath();
         if (urlParts[1].equals(contextPath.replaceAll("\\/", ""))) {
             // class name comes after web context and runner application
-            // runner = urlParts[2];
             if (urlParts.length == 3) {
                 throw new IllegalArgumentException("No application specified");
             }
-            applicationClassname = urlParts[3];
+            return urlParts[3];
 
-            // uris.applicationURI = "/" + context + "/" + runner + "/"
-            // + applicationClassname;
-            // uris.context = context;
-            // uris.runner = runner;
-            uris.applicationClassname = applicationClassname;
         } else {
             // no context
-            // runner = urlParts[1];
             if (urlParts.length == 2) {
                 throw new IllegalArgumentException("No application specified");
             }
-            applicationClassname = urlParts[2];
-
-            // uris.applicationURI = "/" + runner + "/" + applicationClassname;
-            // uris.context = context;
-            // uris.runner = runner;
-            uris.applicationClassname = applicationClassname;
+            return urlParts[2];
         }
-
-        return uris;
     }
 
     private Class<?> getClassToRun() throws ClassNotFoundException {
         Class<?> appClass = null;
 
-        String baseName = getApplicationRunnerURIs(
-                request.get()).applicationClassname;
+        String baseName = getApplicationRunnerURIs(request.get());
         try {
             appClass = getClass().getClassLoader().loadClass(baseName);
             return appClass;
@@ -298,25 +270,37 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             throws ServiceException {
         VaadinServletService service = super.createServletService(
                 deploymentConfiguration);
+
+        
+        try {
+            Field customElements = Router.class
+                    .getDeclaredField("configuration");
+            customElements.setAccessible(true);
+            customElements.set(service.getRouter(), new RouterConfiguration() {
+                @Override
+                public boolean isConfigured() {
+                    return false;
+                }
+            });
+            customElements.setAccessible(false);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
         final SystemMessagesProvider provider = service
                 .getSystemMessagesProvider();
-        service.setSystemMessagesProvider(new SystemMessagesProvider() {
-
-            @Override
-            public SystemMessages getSystemMessages(
-                    SystemMessagesInfo systemMessagesInfo) {
-                if (systemMessagesInfo.getRequest() == null) {
+        service.setSystemMessagesProvider(
+                (SystemMessagesProvider) systemMessagesInfo -> {
+                    if (systemMessagesInfo.getRequest() == null) {
+                        return provider.getSystemMessages(systemMessagesInfo);
+                    }
+                    Object messages = systemMessagesInfo.getRequest()
+                            .getAttribute(CUSTOM_SYSTEM_MESSAGES_PROPERTY);
+                    if (messages instanceof SystemMessages) {
+                        return (SystemMessages) messages;
+                    }
                     return provider.getSystemMessages(systemMessagesInfo);
-                }
-                Object messages = systemMessagesInfo.getRequest()
-                        .getAttribute(CUSTOM_SYSTEM_MESSAGES_PROPERTY);
-                if (messages instanceof SystemMessages) {
-                    return (SystemMessages) messages;
-                }
-                return provider.getSystemMessages(systemMessagesInfo);
-            }
-
-        });
+                });
         return service;
     }
 

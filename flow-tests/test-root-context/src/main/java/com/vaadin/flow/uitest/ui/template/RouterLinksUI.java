@@ -15,15 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.router.Route;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-@Route("com.vaadin.flow.uitest.ui.template.RouterLinksView")
-public class RouterLinksView extends AbstractDivView {
+public class RouterLinksUI extends UI {
 
-    public RouterLinksView() {
+    public RouterLinksUI() {
         RouterLinksTemplate template = new RouterLinksTemplate();
         template.setId("template");
         add(template);
