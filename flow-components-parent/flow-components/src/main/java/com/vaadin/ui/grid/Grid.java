@@ -383,7 +383,10 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
          * column as sortable with {@link #setSortable(boolean)}.
          *
          * @param keyExtractor
-         * @return
+         *            the value provider used to extract the {@link Comparable}
+         *            sort key
+         * @return this column
+         * @see Comparator#comparing(java.util.function.Function)
          */
         public <V extends Comparable<? super V>> Column<T> setComparator(
                 ValueProvider<T, V> keyExtractor) {
@@ -507,7 +510,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
         /**
          * Gets the generated unique identifier of this column.
          *
-         * @return
+         * @return the unique id of the column, not <code>null</code>
          */
         public String getColumnId() {
             return columnId;
@@ -804,8 +807,6 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
      * @see Column#setComparator(ValueProvider)
      * @see Column#setSortProperty(String...)
      *
-     * @param header
-     *            the column header name
      * @param valueProvider
      *            the value provider
      * @param sortingProperties
