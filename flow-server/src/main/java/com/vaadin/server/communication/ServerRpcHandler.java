@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.Version;
 import com.vaadin.server.communication.rpc.AttachExistingElementRpcHandler;
 import com.vaadin.server.communication.rpc.AttachTemplateChildRpcHandler;
 import com.vaadin.server.communication.rpc.EventRpcHandler;
@@ -40,7 +41,6 @@ import com.vaadin.server.communication.rpc.PublishedServerEventHandlerRpcHandler
 import com.vaadin.server.communication.rpc.RpcInvocationHandler;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.shared.Version;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonArray;
@@ -79,7 +79,6 @@ public class ServerRpcHandler implements Serializable {
         private final JsonObject json;
         private final boolean resynchronize;
         private final int clientToServerMessageId;
-        private String widgetsetVersion = null;
 
         /**
          * Creates an instance based on the given JSON received through the
@@ -117,10 +116,6 @@ public class ServerRpcHandler implements Serializable {
                         .getBoolean(ApplicationConstants.RESYNCHRONIZE_ID);
             } else {
                 resynchronize = false;
-            }
-            if (json.hasKey(ApplicationConstants.WIDGETSET_VERSION_ID)) {
-                widgetsetVersion = json
-                        .getString(ApplicationConstants.WIDGETSET_VERSION_ID);
             }
 
             if (json.hasKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
@@ -196,16 +191,6 @@ public class ServerRpcHandler implements Serializable {
             return json;
         }
 
-        /**
-         * Gets the widget set version reported by the client
-         *
-         * @since 7.6
-         * @return The widget set version reported by the client or null if the
-         *         message did not contain a widget set version
-         */
-        public String getWidgetsetVersion() {
-            return widgetsetVersion;
-        }
     }
 
     private static final int MAX_BUFFER_SIZE = 64 * 1024;
@@ -262,8 +247,6 @@ public class ServerRpcHandler implements Serializable {
                 rpcRequest.getCsrfToken())) {
             throw new InvalidUIDLSecurityKeyException();
         }
-
-        checkWidgetsetVersion(rpcRequest.getWidgetsetVersion());
 
         int expectedId = ui.getInternals().getLastProcessedClientToServerId()
                 + 1;
@@ -326,27 +309,6 @@ public class ServerRpcHandler implements Serializable {
      */
     protected Map<String, RpcInvocationHandler> getInvocationHandlers() {
         return Collections.unmodifiableMap(LazyInvocationHandlers.HANDLERS);
-    }
-
-    /**
-     * Checks that the version reported by the client (widgetset) matches that
-     * of the server.
-     *
-     * @param widgetsetVersion
-     *            the widget set version reported by the client or null
-     */
-    private void checkWidgetsetVersion(String widgetsetVersion) {
-        if (widgetsetVersion == null) {
-            // Only check when the widgetset version is reported. It is reported
-            // in the first UIDL request (not the initial request as it is a
-            // plain GET /)
-            return;
-        }
-
-        if (!Version.getFullVersion().equals(widgetsetVersion)) {
-            getLogger().warning(String.format(WIDGETSET_MISMATCH_INFO,
-                    Version.getFullVersion(), widgetsetVersion));
-        }
     }
 
     /**

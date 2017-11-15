@@ -17,8 +17,8 @@ package com.vaadin.client.communication;
 
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.server.Version;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.Version;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -102,11 +102,6 @@ public class MessageSender {
         }
 
         JsonObject extraJson = Json.createObject();
-        if (!registry.getApplicationConfiguration().isWidgetsetVersionSent()) {
-            extraJson.put(ApplicationConstants.WIDGETSET_VERSION_ID,
-                    Version.getFullVersion());
-            registry.getApplicationConfiguration().setWidgetsetVersionSent();
-        }
         if (showLoadingIndicator) {
             registry.getLoadingIndicator().trigger();
         }

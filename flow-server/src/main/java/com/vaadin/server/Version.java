@@ -13,9 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.shared;
+package com.vaadin.server;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides information about the current version of the framework.
@@ -52,26 +56,37 @@ public class Version implements Serializable {
 
     /* Initialize version numbers from string replaced by build-script. */
     static {
-        if ("@VERSION@".equals("@" + "VERSION" + "@")) {
-            VERSION = "9.9.9.INTERNAL-DEBUG-BUILD";
-        } else {
-            VERSION = "@VERSION@";
+        String flowVersion = "9.9.9.INTERNAL-DEBUG-BUILD";
+        Properties properties = new Properties();
+        try {
+            properties.load(
+                    Version.class.getResourceAsStream("version.properties"));
+            flowVersion = properties.getProperty("flow.version");
+        } catch (IOException e) {
+            Logger.getLogger(Version.class.getName()).log(Level.WARNING,
+                    "Unable to determine Flow version number", e);
         }
+
+        VERSION = flowVersion;
         final String[] digits = VERSION.split("[-.]", 4);
         VERSION_MAJOR = Integer.parseInt(digits[0]);
         VERSION_MINOR = Integer.parseInt(digits[1]);
         int revision;
+        String build = "";
         try {
             revision = Integer.parseInt(digits[2]);
+            if (digits.length == 4) {
+                build = digits[3];
+            }
         } catch (NumberFormatException e) {
+            // 1.0-SNAPSHOT -> 1.0.0-SNAPSHOT
             revision = 0;
+            if (digits.length >= 3) {
+                build = digits[2];
+            }
         }
         VERSION_REVISION = revision;
-        if (digits.length == 4) {
-            VERSION_BUILD = digits[3];
-        } else {
-            VERSION_BUILD = "";
-        }
+        VERSION_BUILD = build;
     }
 
     /**
