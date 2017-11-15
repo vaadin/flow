@@ -198,6 +198,25 @@ Column<Person> nameColumn = grid.addColumn("Name", Person::getName)
 
 In the following, we describe the basic column configuration.
 
+=== Column Header and Footer Labels
+
+By default, no header or footer is present for a column.
+These must be set explicitly using the methods `setHeaderLabel` and `setFooterLabel` through the API of a column.
+The methods have two overloads, one which accepts a plain string as a label and one that accepts a `TemplateRenderer`.
+Template renderers are covered later in this tutorial.
+
+[source, java]
+----
+// Sets a simple text header
+nameColumn.setHeaderLabel("");
+// Sets a header containing a custom template
+nameColumn.setHeaderLabel(TemplateRenderer.<Person> of());
+
+// Similarly for the footer
+nameColumn.setFooterLabel("");
+nameColumn.setFooterLabel(TemplateRenderer.<Person> of());
+----
+
 === Column Order
 
 You can enable drag and drop user reordering of columns with `setColumnReorderingAllowed()`.
@@ -241,27 +260,6 @@ you can call `addColumn()`.
 
 ////
 
-////
-NOT IMPLEMENTED YET
-
-=== Column Captions
-
-Column captions are displayed in the grid header. You can set the header caption
-explicitly through the column object with `setCaption()`.
-
-[source, java]
-----
-Column<Date> bornColumn = grid.addColumn(Person::getBirthDate);
-bornColumn.setCaption("Born date");
-----
-
-This is equivalent to setting it with `setText()` for the header
-cell; the `HeaderCell` also allows setting the caption in HTML or as
-a component, as well as styling it, as described later in
-<<components.grid.headerfooter>>.
-////
-
-
 [[components.grid.columns.width]]
 === Column Widths
 
@@ -278,6 +276,29 @@ Additionally, user reordering of frozen columns is disabled.
 [source, java]
 ----
 nameColumn.setFrozen(true);
+----
+
+=== Grouping Columns
+
+Multiple columns can be grouped together by calling `mergeColumns` on the grid and supplying it two or more columns.
+Merging columns returns a `ColumnGroup` object, which shares a subset of the `Column` API for basic configuration, for instance setting the header and footer labels.
+In addition to merging columns, column groups can also be merged to create deeper hierarchies of columns.
+
+[source, java]
+----
+// Group two columns, nameColumn and ageColumn,
+// in a ColumnGroup and set the header label text
+ColumnGroup informationColumnGroup = grid
+        .mergeColumns(nameColumn, ageColumn)
+        .setHeaderLabel("Basic Information");
+
+ColumnGroup addressColumnGroup = grid
+        .mergeColumns(streetColumn, postalCodeColumn)
+        .setHeaderLabel("Address information");
+
+// Group two ColumnGroups
+grid.mergeColumns(informationColumnGroup, addressColumnGroup)
+        .setHeaderLabel("Person Information");
 ----
 
 == Using Templates
