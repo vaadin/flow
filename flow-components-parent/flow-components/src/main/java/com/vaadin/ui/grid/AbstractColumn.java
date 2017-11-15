@@ -48,7 +48,7 @@ public class AbstractColumn<T extends AbstractColumn<T>> extends Component
     }
 
     /**
-     * Gets the owner of this column
+     * Gets the owner of this column.
      * 
      * @return the grid which owns this column
      */
@@ -88,15 +88,19 @@ public class AbstractColumn<T extends AbstractColumn<T>> extends Component
         }
 
         headerOrFooter.setProperty("innerHTML",
-                getRendererTemplate(header, renderer));
+                header ? getHeaderRendererTemplate(renderer)
+                        : getFooterRendererTemplate(renderer));
         GridTemplateRendererUtil.setupTemplateRenderer(
                 (TemplateRenderer) renderer, headerOrFooter, getElement(),
                 getGrid().getDataGenerator(), () -> (DataKeyMapper) getGrid()
                         .getDataCommunicator().getKeyMapper());
     }
 
-    protected String getRendererTemplate(boolean header,
-            TemplateRenderer<?> renderer) {
+    protected String getHeaderRendererTemplate(TemplateRenderer<?> renderer) {
+        return renderer.getTemplate();
+    }
+
+    protected String getFooterRendererTemplate(TemplateRenderer<?> renderer) {
         return renderer.getTemplate();
     }
 

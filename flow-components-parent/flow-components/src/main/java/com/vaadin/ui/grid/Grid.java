@@ -517,14 +517,12 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
         }
 
         @Override
-        protected String getRendererTemplate(boolean header,
+        protected String getHeaderRendererTemplate(
                 TemplateRenderer<?> renderer) {
-            String template = super.getRendererTemplate(header, renderer);
-            if (header) {
-                rawHeaderTemplate = template;
-                if (isSortable()) {
-                    template = addGridSorter(template);
-                }
+            String template = super.getHeaderRendererTemplate(renderer);
+            rawHeaderTemplate = template;
+            if (isSortable()) {
+                template = addGridSorter(template);
             }
             return template;
         }

@@ -26,7 +26,10 @@ import com.vaadin.ui.common.HtmlImport;
 
 /**
  * Server-side component for the {@code <vaadin-grid-column-group>} element.
- *
+ * 
+ * @param <T>
+ *            type of the underlying grid this column group is compatible with
+ * 
  * @author Vaadin Ltd.
  */
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column-group.html")
