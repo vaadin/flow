@@ -32,7 +32,7 @@ public class CustomerService {
 	/**
 	 * @return a reference to an example facade for Customer objects.
 	 */
-	public static CustomerService getInstance() {
+	public synchronized static CustomerService getInstance() {
 		if (instance == null) {
 			instance = new CustomerService();
 			instance.ensureTestData();
