@@ -50,6 +50,7 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.router.RouterInterface;
 import com.vaadin.server.DependencyFilter;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinResponse;
@@ -446,11 +447,19 @@ public class UidlWriterTest {
     private UI initializeUIForDependenciesTest(UI ui) {
         VaadinServletService service = new VaadinServletService(
                 new VaadinServlet(), new MockDeploymentConfiguration()) {
+            RouterInterface router = new com.vaadin.flow.router.Router();
+
+            @Override
+            public RouterInterface getRouter() {
+                return router;
+            }
+
             @Override
             public Iterable<DependencyFilter> getDependencyFilters() {
                 return Collections.emptyList();
             }
         };
+
         service.getRouter().reconfigure(conf -> {
             conf.setRoute("", BaseClass.class);
             conf.setParentView(BaseClass.class, ParentClass.class);
