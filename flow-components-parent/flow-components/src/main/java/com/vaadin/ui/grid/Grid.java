@@ -20,18 +20,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.data.Binder;
 import com.vaadin.data.HasDataProvider;
+import com.vaadin.data.event.SortEvent;
+import com.vaadin.data.event.SortEvent.SortNotifier;
 import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
 import com.vaadin.data.provider.DataChangeEvent;
@@ -41,6 +47,8 @@ import com.vaadin.data.provider.DataGenerator;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.DataProviderListener;
 import com.vaadin.data.provider.Query;
+import com.vaadin.data.provider.QuerySortOrder;
+import com.vaadin.data.provider.SortDirection;
 import com.vaadin.data.selection.MultiSelect;
 import com.vaadin.data.selection.MultiSelectionListener;
 import com.vaadin.data.selection.SelectionEvent;
@@ -53,6 +61,7 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.function.SerializableComparator;
 import com.vaadin.function.SerializableConsumer;
 import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
@@ -67,12 +76,14 @@ import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.renderers.ComponentRenderer;
 import com.vaadin.ui.renderers.ComponentRendererUtil;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
 
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -88,11 +99,13 @@ import elemental.json.JsonValue;
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid.html")
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column.html")
+@HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-sorter.html")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 @HtmlImport("context://flow-component-renderer.html")
 @JavaScript("context://gridConnector.js")
 public class Grid<T> extends Component
-        implements HasDataProvider<T>, HasStyle, HasSize, Focusable<Grid<T>> {
+        implements HasDataProvider<T>, HasStyle, HasSize, Focusable<Grid<T>>,
+        SortNotifier<Grid<T>, GridSortOrder<T>> {
 
     private final class UpdateQueue implements Update {
         private List<Runnable> queue = new ArrayList<>();
@@ -287,6 +300,15 @@ public class Grid<T> extends Component
         private final Grid<T> grid;
         private Map<String, RendereredComponent<T>> renderedComponents;
 
+        private String columnId;
+        private String header;
+
+        private boolean sortingEnabled;
+        private SortOrderProvider sortOrderProvider;
+        private SerializableComparator<T> comparator;
+
+        private Element headerTemplate;
+
         /**
          * Constructs a new Column for use inside a Grid.
          *
@@ -302,6 +324,11 @@ public class Grid<T> extends Component
         public Column(Grid<T> grid, String columnId, String header,
                 TemplateRenderer<T> renderer) {
             this.grid = grid;
+            this.header = header;
+            this.columnId = columnId;
+
+            comparator = (a, b) -> 0;
+            sortOrderProvider = direction -> Stream.empty();
 
             if (renderer instanceof ComponentRenderer) {
                 renderedComponents = new HashMap<>();
@@ -310,7 +337,7 @@ public class Grid<T> extends Component
                         renderedComponents);
             }
 
-            Element headerTemplate = new Element("template")
+            headerTemplate = new Element("template")
                     .setAttribute("class", "header")
                     .setProperty("innerHTML", HtmlUtils.escape(header));
 
@@ -384,6 +411,165 @@ public class Grid<T> extends Component
         @Override
         public Element getElement() {
             return super.getElement();
+        }
+
+        /**
+         * Sets a comparator to use with in-memory sorting with this column.
+         * Sorting with a back-end is done using
+         * {@link Column#setSortProperty(String...)}.
+         * <p>
+         * <strong>Note:</strong> calling this method automatically sets the
+         * column as sortable with {@link #setSortable(boolean)}.
+         *
+         * @param comparator
+         *            the comparator to use when sorting data in this column
+         * @return this column
+         */
+        public Column<T> setComparator(Comparator<T> comparator) {
+            Objects.requireNonNull(comparator, "Comparator must not be null");
+            setSortable(true);
+            this.comparator = comparator::compare;
+            return this;
+        }
+
+        /**
+         * Sets a comparator to use with in-memory sorting with this column
+         * based on the return type of the given {@link ValueProvider}. Sorting
+         * with a back-end is done using
+         * {@link Column#setSortProperty(String...)}.
+         * <p>
+         * <strong>Note:</strong> calling this method automatically sets the
+         * column as sortable with {@link #setSortable(boolean)}.
+         *
+         * @param keyExtractor
+         * @return
+         */
+        public <V extends Comparable<? super V>> Column<T> setComparator(
+                ValueProvider<T, V> keyExtractor) {
+            Objects.requireNonNull(keyExtractor,
+                    "Key extractor must not be null");
+            setComparator(Comparator.comparing(keyExtractor));
+            return this;
+        }
+
+        /**
+         * Gets the comparator to use with in-memory sorting for this column
+         * when sorting in the given direction.
+         * <p>
+         * <strong>Note:</strong> calling this method automatically sets the
+         * column as sortable with {@link #setSortable(boolean)}.
+         *
+         * @param sortDirection
+         *            the direction this column is sorted by
+         * @return comparator for this column
+         */
+        public SerializableComparator<T> getComparator(
+                SortDirection sortDirection) {
+            Objects.requireNonNull(comparator,
+                    "No comparator defined for sorted column.");
+            setSortable(true);
+            boolean reverse = sortDirection != SortDirection.ASCENDING;
+            return reverse ? (t1, t2) -> comparator.reversed().compare(t1, t2)
+                    : comparator;
+        }
+
+        /**
+         * Sets strings describing back end properties to be used when sorting
+         * this column.
+         * <p>
+         * <strong>Note:</strong> calling this method automatically sets the
+         * column as sortable with {@link #setSortable(boolean)}.
+         *
+         * @param properties
+         *            the array of strings describing backend properties
+         * @return this column
+         */
+        public Column<T> setSortProperty(String... properties) {
+            Objects.requireNonNull(properties,
+                    "Sort properties must not be null");
+            setSortable(true);
+            sortOrderProvider = dir -> Arrays.stream(properties)
+                    .map(s -> new QuerySortOrder(s, dir));
+            return this;
+        }
+
+        /**
+         * Sets the sort orders when sorting this column. The sort order
+         * provider is a function which provides {@link QuerySortOrder} objects
+         * to describe how to sort by this column.
+         * <p>
+         * The default provider uses the sort properties set with
+         * {@link #setSortProperty(String...)}.
+         * <p>
+         * <strong>Note:</strong> calling this method automatically sets the
+         * column as sortable with {@link #setSortable(boolean)}.
+         *
+         * @param provider
+         *            the function to use when generating sort orders with the
+         *            given direction
+         * @return this column
+         */
+        public Column<T> setSortOrderProvider(SortOrderProvider provider) {
+            Objects.requireNonNull(provider,
+                    "Sort order provider must not be null");
+            setSortable(true);
+            sortOrderProvider = provider;
+            return this;
+        }
+
+        /**
+         * Gets the sort orders to use with back-end sorting for this column
+         * when sorting in the given direction.
+         *
+         * @see #setSortProperty(String...)
+         * @see #setId(String)
+         * @see #setSortOrderProvider(SortOrderProvider)
+         *
+         * @param direction
+         *            the sorting direction
+         * @return stream of sort orders
+         */
+        public Stream<QuerySortOrder> getSortOrder(SortDirection direction) {
+            return sortOrderProvider.apply(direction);
+        }
+
+        /**
+         * Sets whether the user can sort this column or not.
+         *
+         * @param sortable
+         *            {@code true} if the column can be sorted by the user;
+         *            {@code false} if not
+         * @return this column
+         */
+        public Column<T> setSortable(boolean sortable) {
+            if (this.sortingEnabled == sortable) {
+                return this;
+            }
+            this.sortingEnabled = sortable;
+
+            String escapedHeader = HtmlUtils.escape(header);
+            String escapedColumnId = HtmlUtils.escape(columnId);
+            String innerHTML = sortable
+                    ? String.format(
+                            "<vaadin-grid-sorter path='%s'>%s</vaadin-grid-sorter>",
+                            escapedColumnId, escapedHeader)
+                    : escapedHeader;
+
+            headerTemplate.removeFromParent();
+            headerTemplate = new Element("template")
+                    .setAttribute("class", "header")
+                    .setProperty("innerHTML", innerHTML);
+            getElement().appendChild(headerTemplate);
+            return this;
+        }
+
+        /**
+         * Gets the generated unique identifier of this column.
+         *
+         * @return
+         */
+        public String getColumnId() {
+            return columnId;
         }
 
         /**
@@ -607,7 +793,10 @@ public class Grid<T> extends Component
     private Element detailsTemplate;
     private Map<String, RendereredComponent<T>> renderedDetailComponents;
 
+    private Map<String, Column<T>> idToColumnMap = new HashMap<>();
     private List<ColumnBase<?>> parentColumns = new ArrayList<>();
+
+    private final List<GridSortOrder<T>> sortOrder = new ArrayList<>();
 
     /**
      * Creates a new instance, with page size of 50.
@@ -657,6 +846,34 @@ public class Grid<T> extends Component
     }
 
     /**
+     * Adds a new text column to this {@link Grid} with a value provider and
+     * sorting properties. The value is converted to a JSON value by using
+     * {@link JsonSerializer#toJson(Object)}. The sorting properties are used to
+     * configure backend sorting for this column. In-memory sorting is
+     * automatically configured using the return type of the given
+     * {@link ValueProvider}.
+     *
+     * @see Column#setComparator(ValueProvider)
+     * @see Column#setSortProperty(String...)
+     *
+     * @param header
+     *            the column header name
+     * @param valueProvider
+     *            the value provider
+     * @param sortingProperties
+     *            the sorting properties to use with this column
+     * @return the created column
+     */
+    public <V extends Comparable<? super V>> Column<T> addColumn(
+            String header, ValueProvider<T, V> valueProvider,
+            String... sortingProperties) {
+        Column<T> column = addColumn(header, valueProvider);
+        column.setComparator(valueProvider);
+        column.setSortProperty(sortingProperties);
+        return column;
+    }
+
+    /**
      * Adds a new text column to this {@link Grid} with a template renderer. The
      * values inside the renderer are converted to JSON values by using
      * {@link JsonSerializer#toJson(Object)}.
@@ -675,9 +892,61 @@ public class Grid<T> extends Component
         getDataCommunicator().reset();
 
         Column<T> column = new Column<>(this, columnKey, header, renderer);
+        idToColumnMap.put(columnKey, column);
         parentColumns.add(column);
         getElement().appendChild(column.getElement());
 
+        return column;
+    }
+
+    /**
+     * Adds a new text column to this {@link Grid} with a template renderer and
+     * sorting properties. The values inside the renderer are converted to JSON
+     * values by using {@link JsonSerializer#toJson(Object)}.
+     * <p>
+     * This constructor attempts to automatically configure both in-memory and
+     * backend sorting using the given sorting properties and matching those
+     * with the property names used in the given renderer.
+     * <p>
+     * <strong>Note:</strong> if a property of the renderer that is used as a
+     * sorting property does not extend Comparable, no in-memory sorting is
+     * configured for it.
+     *
+     * @param header
+     *            the column header name
+     * @param renderer
+     *            the renderer used to create the grid cell structure
+     * @param sortingProperties
+     *            the sorting properties to use for this column
+     * @return the created column
+     */
+    public Column<T> addColumn(String header, TemplateRenderer<T> renderer, String... sortingProperties) {
+        Column<T> column = addColumn(header, renderer);
+
+        Map<String, ValueProvider<T, ?>> valueProviders = renderer
+                .getValueProviders();
+        Set<String> valueProvidersKeySet = valueProviders.keySet();
+        List<String> matchingSortingProperties = Arrays
+                .stream(sortingProperties)
+                .filter(valueProvidersKeySet::contains)
+                .collect(Collectors.toList());
+
+        column.setSortProperty(matchingSortingProperties
+                .toArray(new String[matchingSortingProperties.size()]));
+        Comparator<T> combinedComparator = (a, b) -> 0;
+        Comparator nullsLastComparator = Comparator.nullsLast(Comparator.naturalOrder());
+        for (String sortProperty : matchingSortingProperties) {
+            ValueProvider<T, ?> provider = valueProviders.get(sortProperty);
+            combinedComparator = combinedComparator.thenComparing((a, b) -> {
+                Object aa = provider.apply(a);
+                if (!(aa instanceof Comparable)) {
+                    return 0;
+                }
+                Object bb = provider.apply(b);
+                return nullsLastComparator.compare(aa, bb);
+            });
+        }
+        column.setComparator(combinedComparator);
         return column;
     }
 
@@ -1076,6 +1345,20 @@ public class Grid<T> extends Component
     }
 
     /**
+     * Gets a {@link Column} of this grid by its identifying string.
+     *
+     * @see Column#getColumnId()
+     *
+     * @param columnId
+     *            the identifier of the column to get
+     * @return the column corresponding to the given column identifier, or
+     *         {@code null} if there is no such column
+     */
+    public Column<T> getColumn(String columnId) {
+        return idToColumnMap.get(columnId);
+    }
+
+    /**
      * Sets the visibility of details component for given item.
      *
      * @param item
@@ -1099,6 +1382,36 @@ public class Grid<T> extends Component
      */
     public boolean isDetailsVisible(T item) {
         return detailsManager.isDetailsVisible(item);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public Registration addSortListener(
+            ComponentEventListener<SortEvent<Grid<T>, GridSortOrder<T>>> listener) {
+        return addListener(SortEvent.class, (ComponentEventListener) listener);
+    }
+
+    /**
+     * Sets whether multiple column sorting is enabled on the client-side.
+     *
+     * @param multiSort
+     *            {@code true} to enable sorting of multiple columns on the
+     *            client-side, {@code false} to disable
+     */
+    public void setMultiSort(boolean multiSort) {
+        getElement().setProperty("multiSort", multiSort);
+    }
+
+    /**
+     * Gets whether multiple column sorting is enabled on the client-side.
+     * 
+     * @see #setMultiSort(boolean)
+     *
+     * @return {@code true} if sorting of multiple columns is enabled,
+     *         {@code false} otherwise
+     */
+    public boolean isMultiSort() {
+        return getElement().getProperty("multiSort", false);
     }
 
     private List<Column<T>> fetchChildColumns(ColumnGroup columnGroup) {
@@ -1153,6 +1466,31 @@ public class Grid<T> extends Component
             detailsManager.setDetailsVisibleFromClient(Collections
                     .singleton(getDataCommunicator().getKeyMapper().get(key)));
         }
+    }
+
+    @ClientDelegate
+    private void sortersChanged(JsonArray sorters) {
+        GridSortOrderBuilder<T> sortOrderBuilder = new GridSortOrderBuilder<>();
+        for (int i = 0; i < sorters.length(); ++i) {
+            JsonObject sorter = sorters.getObject(i);
+            Column<T> column = idToColumnMap.get(sorter.getString("path"));
+            if (column == null) {
+                throw new IllegalArgumentException(
+                        "Received a sorters changed call from the client for a non-existent column");
+            }
+            switch (sorter.getString("direction")) {
+            case "asc":
+                sortOrderBuilder.thenAsc(column);
+                break;
+            case "desc":
+                sortOrderBuilder.thenDesc(column);
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Received a sorters changed call from the client containing an invalid sorting direction");
+            }
+        }
+        setSortOrder(sortOrderBuilder.build(), true);
     }
 
     private void setupTemplateRenderer(TemplateRenderer<T> renderer,
@@ -1331,5 +1669,60 @@ public class Grid<T> extends Component
 
     private GridDataGenerator<T> getDataGenerator() {
         return gridDataGenerator;
+    }
+
+    private void setSortOrder(List<GridSortOrder<T>> order,
+            boolean userOriginated) {
+        Objects.requireNonNull(order, "Sort order list cannot be null");
+
+        // TODO: if !userOriginated update client sort indicators. Should be
+        // implemented together with server side sorting (issue #2818).
+
+        sortOrder.clear();
+        if (order.isEmpty()) {
+            // Grid is not sorted anymore.
+            getDataCommunicator().setBackEndSorting(Collections.emptyList());
+            getDataCommunicator().setInMemorySorting(null);
+            fireEvent(new SortEvent<>(this, new ArrayList<>(sortOrder),
+                    userOriginated));
+            return;
+        }
+        sortOrder.addAll(order);
+        sort(userOriginated);
+    }
+
+    private void sort(boolean userOriginated) {
+        // Set sort orders
+        // In-memory comparator
+        getDataCommunicator().setInMemorySorting(createSortingComparator());
+
+        // Back-end sort properties
+        List<QuerySortOrder> sortProperties = new ArrayList<>();
+        sortOrder.stream().map(
+                order -> order.getSorted().getSortOrder(order.getDirection()))
+                .forEach(s -> s.forEach(sortProperties::add));
+        getDataCommunicator().setBackEndSorting(sortProperties);
+
+        fireEvent(new SortEvent<>(this, new ArrayList<>(sortOrder),
+                userOriginated));
+    }
+
+    /**
+     * Creates a comparator for grid to sort rows.
+     *
+     * @return the comparator based on column sorting information.
+     */
+    protected SerializableComparator<T> createSortingComparator() {
+        BinaryOperator<SerializableComparator<T>> operator = (comparator1,
+                comparator2) -> {
+            /*
+             * thenComparing is defined to return a serializable comparator as
+             * long as both original comparators are also serializable
+             */
+            return comparator1.thenComparing(comparator2)::compare;
+        };
+        return sortOrder.stream().map(
+                order -> order.getSorted().getComparator(order.getDirection()))
+                .reduce((x, y) -> 0, operator);
     }
 }

@@ -29,6 +29,7 @@ import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
 import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
+import com.vaadin.ui.checkbox.Checkbox;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.ColumnGroup;
@@ -239,6 +240,7 @@ public class GridView extends DemoView {
         createDetailsRow();
         createColumnGroup();
         createColumnComponentRenderer();
+        createSorting();
 
         addCard("Grid example model",
                 new Label("These objects are used in the examples above"));
@@ -570,6 +572,48 @@ public class GridView extends DemoView {
         // end-source-example
         grid.setId("grid-column-grouping");
         addCard("Configuring columns", "Column grouping example", grid);
+    }
+
+    private void createSorting() {
+        Div messageDiv = new Div();
+        // begin-source-example
+        // source-example-heading: Grid with sortable columns
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(getItems());
+        grid.setSelectionMode(SelectionMode.NONE);
+
+        grid.addColumn("Name", Person::getName, "name");
+        grid.addColumn("Age", Person::getAge, "age");
+
+        grid.addColumn("Address",
+                TemplateRenderer
+                        .<Person> of("<div>[[item.street]], number [[item.number]]<br><small>[[item.postalCode]]</small></div>")
+                        .withProperty("street", person -> person.getAddress().getStreet())
+                        .withProperty("number", person -> person.getAddress().getNumber())
+                        .withProperty("postalCode", person -> person.getAddress().getPostalCode()),
+                "street", "number");
+
+        Checkbox multiSort = new Checkbox("Multiple column sorting enabled");
+        multiSort.addValueChangeListener(
+                event -> grid.setMultiSort(event.getValue()));
+        grid.addSortListener(event -> {
+            String currentSortOrder = grid.getDataCommunicator()
+                    .getBackEndSorting().stream()
+                    .map(querySortOrder -> String.format(
+                            "{sort property: %s, direction: %s}",
+                            querySortOrder.getSorted(),
+                            querySortOrder.getDirection()))
+                    .collect(Collectors.joining(", "));
+            messageDiv.setText(String.format(
+                    "Current sort order: %s. Sort originates from the client: %s.",
+                    currentSortOrder, event.isFromClient()));
+        });
+        // end-source-example
+        grid.setId("grid-sortable-columns");
+        multiSort.setId("grid-multi-sort-toggle");
+        messageDiv.setId("grid-sortable-columns-message");
+        addCard("Sorting", "Grid with sortable columns", grid, multiSort,
+                messageDiv);
     }
 
     private List<Person> getItems() {
