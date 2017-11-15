@@ -24,9 +24,9 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
+import com.vaadin.server.Version;
 import com.vaadin.client.ValueMap;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushConstants;
 import com.vaadin.shared.util.SharedUtil;
 
@@ -758,8 +758,6 @@ public class AtmospherePushConnection implements PushConnection {
         } else {
             pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
-        // Parameter appended to bypass caches after version upgrade.
-        pushJs += "?v=" + Version.getFullVersion();
         return pushJs;
     }
 
