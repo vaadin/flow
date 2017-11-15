@@ -16,10 +16,13 @@
 package com.vaadin.flow.contexttest.ui;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.RouterConfiguration;
+import com.vaadin.router.Router;
 import com.vaadin.server.StreamRegistration;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinRequest;
@@ -53,6 +56,22 @@ public class DependencyUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
+        // Don't try to use router just display the
+        try {
+            Field customElements = Router.class
+                    .getDeclaredField("configuration");
+            customElements.setAccessible(true);
+            customElements.set(getSession().getService().getRouter(), new RouterConfiguration() {
+                @Override
+                public boolean isConfigured() {
+                    return false;
+                }
+            });
+            customElements.setAccessible(false);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
         getElement().appendChild(ElementFactory.createDiv(
                 "This test initially loads a stylesheet which makes all text red and a JavaScript which listens to body clicks"));
         getElement().appendChild(ElementFactory.createHr());

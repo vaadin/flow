@@ -271,7 +271,6 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         VaadinServletService service = super.createServletService(
                 deploymentConfiguration);
 
-        
         try {
             Field customElements = Router.class
                     .getDeclaredField("configuration");
