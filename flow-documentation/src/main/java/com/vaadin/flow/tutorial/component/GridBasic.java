@@ -143,7 +143,7 @@ public class GridBasic {
                 ValueProvider.identity());
 
         // Group two columns, nameColumn and ageColumn,
-        // in a ColumnGroup and set the header label text
+        // in a ColumnGroup and set the header text
         ColumnGroup informationColumnGroup = grid
                 .mergeColumns(nameColumn, ageColumn)
                 .setHeader("Basic Information");
@@ -155,6 +155,7 @@ public class GridBasic {
         // Group two ColumnGroups
         grid.mergeColumns(informationColumnGroup, addressColumnGroup)
                 .setHeader("Person Information");
+
     }
 
     public void gridHeadersAndFooters() {
