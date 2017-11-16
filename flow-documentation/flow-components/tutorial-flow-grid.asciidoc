@@ -466,9 +466,11 @@ grid.setItemDetailsRenderer(new ComponentRenderer<>(person -> {
     return layout;
 }));
 ----
-After this you can expand any row simply by clicking on it. Clicking on the same row again or expanding another
-row collapses the currently expanded row. You can also expand and collapse rows programmatically with the
-`setDetailsVisible()` method, and test whether an item is expanded with `isDetailsVisible()`.
+
+After this you can open the details for the row simply by clicking on it. Clicking on the same row
+again or opening the details for another row closes the currently opened one. You can also show and
+hide row details programmatically with the `setDetailsVisible()` method, and test whether the details
+for an item is visible with `isDetailsVisible()`.
 
 [NOTE]
 By default, items are selected by clicking them. If you want clicking just to show the item details without
