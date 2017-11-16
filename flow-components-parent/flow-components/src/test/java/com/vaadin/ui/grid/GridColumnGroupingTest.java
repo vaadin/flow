@@ -33,9 +33,9 @@ public class GridColumnGroupingTest {
     @Before
     public void init() {
         grid = new Grid<>();
-        firstColumn = grid.addColumn("", str -> str);
-        secondColumn = grid.addColumn("", str -> str);
-        thirdColumn = grid.addColumn("", str -> str);
+        firstColumn = grid.addColumn(str -> str);
+        secondColumn = grid.addColumn(str -> str);
+        thirdColumn = grid.addColumn(str -> str);
     }
 
     @Test
@@ -43,10 +43,10 @@ public class GridColumnGroupingTest {
         Assert.assertEquals(
                 Arrays.asList(firstColumn, secondColumn, thirdColumn),
                 grid.getParentColumns());
-        ColumnGroup merged = grid.mergeColumns("", firstColumn, thirdColumn);
+        ColumnGroup merged = grid.mergeColumns(firstColumn, thirdColumn);
         Assert.assertEquals(Arrays.asList(merged, secondColumn),
                 grid.getParentColumns());
-        ColumnGroup secondMerge = grid.mergeColumns("", merged, secondColumn);
+        ColumnGroup secondMerge = grid.mergeColumns(merged, secondColumn);
         Assert.assertEquals(Arrays.asList(secondMerge),
                 grid.getParentColumns());
         Assert.assertEquals(
@@ -56,14 +56,13 @@ public class GridColumnGroupingTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void cant_merge_columns_not_in_grid() {
-        Column<String> otherColumn = new Grid<String>().addColumn("",
-                str -> str);
-        grid.mergeColumns("", firstColumn, otherColumn);
+        Column<String> otherColumn = new Grid<String>().addColumn(str -> str);
+        grid.mergeColumns(firstColumn, otherColumn);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void cant_merge_already_merged_columns() {
-        grid.mergeColumns("", firstColumn, secondColumn);
-        grid.mergeColumns("", firstColumn, thirdColumn);
+        grid.mergeColumns(firstColumn, secondColumn);
+        grid.mergeColumns(firstColumn, thirdColumn);
     }
 }

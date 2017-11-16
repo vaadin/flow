@@ -30,6 +30,7 @@ import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.dialog.Dialog;
 import com.vaadin.ui.formlayout.FormLayout.FormItem;
+import com.vaadin.ui.grid.AbstractColumn;
 import com.vaadin.ui.grid.ColumnGroup;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.GridSelectionColumn;
@@ -46,15 +47,13 @@ public class MixinTest {
     private static final Set<Class<?>> REQUIRED_INTERFACES = new HashSet<>();
 
     static {
-        PACKAGE_WHITELIST.addAll(
-                Arrays.asList("com.vaadin.ui.common", "com.vaadin.ui.html",
-                        "com.vaadin.ui.polymertemplate"));
-        CLASS_WHITELIST
-                .addAll(Arrays.asList(Icon.class, FormItem.class,
-                        GridSelectionColumn.class, Dialog.class,
-                        Grid.Column.class, ColumnGroup.class));
-        REQUIRED_INTERFACES.addAll(
-                Arrays.asList(HasSize.class, HasStyle.class));
+        PACKAGE_WHITELIST.addAll(Arrays.asList("com.vaadin.ui.common",
+                "com.vaadin.ui.html", "com.vaadin.ui.polymertemplate"));
+        CLASS_WHITELIST.addAll(Arrays.asList(Icon.class, FormItem.class,
+                GridSelectionColumn.class, Dialog.class, Grid.Column.class,
+                ColumnGroup.class, AbstractColumn.class));
+        REQUIRED_INTERFACES
+                .addAll(Arrays.asList(HasSize.class, HasStyle.class));
     }
 
     @Test
