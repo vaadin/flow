@@ -110,11 +110,16 @@ import com.vaadin.shared.Registration;
  * <td>Set when the element is keyboard focused</td>
  * <td>:host</td>
  * </tr>
+ * <tr>
+ * <td>{@code readonly}</td>
+ * <td>Set to a readonly text field</td>
+ * <td>:host</td>
+ * </tr>
  * </tbody>
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#1.2.0-alpha1",
+        "WebComponent: Vaadin.TextFieldElement#1.2.0-alpha2",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")

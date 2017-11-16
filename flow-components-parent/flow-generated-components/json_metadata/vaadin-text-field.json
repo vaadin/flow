@@ -2,7 +2,7 @@
   "name": "Vaadin.TextFieldElement",
   "tag": "vaadin-text-field",
   "baseUrl": "vaadin-text-field/vaadin-text-field.html",
-  "version": "1.2.0-alpha1",
+  "version": "1.2.0-alpha2",
   "properties": [
     {
       "name": "autofocus",
@@ -195,5 +195,5 @@
     "Vaadin.ControlStateMixin",
     "Vaadin.FormElementMixin"
   ],
-  "description": "`<vaadin-text-field>` is a Polymer 2 element for text field control in forms.\n\n```html\n<vaadin-text-field label=\"First Name\">\n</vaadin-text-field>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`value` | The input element\n`error-message` | The error message element\n`input-field` | The element that wraps prefix, value and suffix\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host"
+  "description": "`<vaadin-text-field>` is a Polymer 2 element for text field control in forms.\n\n```html\n<vaadin-text-field label=\"First Name\">\n</vaadin-text-field>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`value` | The input element\n`error-message` | The error message element\n`input-field` | The element that wraps prefix, value and suffix\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`readonly` | Set to a readonly text field | :host"
 }

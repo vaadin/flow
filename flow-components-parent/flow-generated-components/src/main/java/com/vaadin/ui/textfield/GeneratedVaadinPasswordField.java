@@ -78,7 +78,7 @@ import com.vaadin.ui.common.HtmlImport;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.PasswordFieldElement#1.2.0-alpha1",
+        "WebComponent: Vaadin.PasswordFieldElement#1.2.0-alpha2",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-password-field.html")
