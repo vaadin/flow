@@ -29,7 +29,6 @@ import com.vaadin.shared.ApplicationConstants;
  * {@link Constants#FRONTEND_URL_ES6} is set.
  */
 @WebServlet(asyncSupported = true, urlPatterns = { "/view-es6-url/*" })
-@VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
 public class Es6UrlViewTestServlet extends ViewTestServlet {
 
     @Override

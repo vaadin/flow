@@ -785,6 +785,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (session.getConfiguration().isXsrfProtectionEnabled()) {
             writeSecurityKeyUIDL(json, session);
         }
+        writePushIdUIDL(json, session);
         if (getLogger().isLoggable(Level.FINE)) {
             getLogger().fine("Initial UIDL:" + json.asString());
         }
@@ -804,6 +805,21 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinSession session) {
         String seckey = session.getCsrfToken();
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
+    }
+
+    /**
+     * Writes the push id (and generates one if needed) to the given JSON
+     * object.
+     *
+     * @param response
+     *            the response JSON object to write security key into
+     * @param session
+     *            the vaadin session to which the security key belongs
+     */
+    private static void writePushIdUIDL(JsonObject response,
+            VaadinSession session) {
+        String pushId = session.getPushId();
+        response.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
     }
 
     private static void putValueOrNull(JsonObject object, String key,

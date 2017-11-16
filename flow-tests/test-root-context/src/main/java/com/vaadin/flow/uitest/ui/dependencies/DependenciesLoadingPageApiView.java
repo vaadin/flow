@@ -1,0 +1,47 @@
+package com.vaadin.flow.uitest.ui.dependencies;
+
+import com.vaadin.router.Route;
+import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.ui.Page;
+import com.vaadin.ui.UI;
+
+/**
+ * See {@link DependenciesLoadingAnnotationsView} for more details about the
+ * test.
+ * 
+ * @author Vaadin Ltd.
+ * @see DependenciesLoadingAnnotationsView
+ */
+@Route("com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingPageApiView")
+public class DependenciesLoadingPageApiView
+        extends DependenciesLoadingBaseView {
+
+    public DependenciesLoadingPageApiView() {
+        super();
+        Page page = UI.getCurrent().getPage();
+        page.addJavaScript(
+                "frontend:///com/vaadin/flow/uitest/ui/dependencies/inline.js",
+                LoadMode.INLINE);
+        page.addStyleSheet(
+                "frontend:///com/vaadin/flow/uitest/ui/dependencies/inline.css",
+                LoadMode.INLINE);
+        page.addHtmlImport(
+                "frontend:///com/vaadin/flow/uitest/ui/dependencies/inline.html",
+                LoadMode.INLINE);
+        page.addJavaScript(
+                "frontend:///com/vaadin/flow/uitest/ui/dependencies/lazy.js",
+                LoadMode.LAZY);
+        page.addStyleSheet(
+                "frontend:///com/vaadin/flow/uitest/ui/dependencies/lazy.css",
+                LoadMode.LAZY);
+        page.addHtmlImport(
+                "frontend:///com/vaadin/flow/uitest/ui/dependencies/lazy.html",
+                LoadMode.LAZY);
+        page.addJavaScript(
+                "frontend:///com/vaadin/flow/uitest/ui/dependencies/eager.js");
+        page.addStyleSheet(
+                "frontend:///com/vaadin/flow/uitest/ui/dependencies/eager.css");
+        page.addHtmlImport(
+                "frontend:///com/vaadin/flow/uitest/ui/dependencies/eager.html");
+    }
+}

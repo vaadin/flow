@@ -15,6 +15,7 @@
     <modules>
         <module>test-resources</module>
         <module>test-root-context</module>
+        <module>test-root-ui-context</module>
         <module>test-subcontext</module>
         <module>test-scalability</module>
         <module>test-memory-leaks</module>

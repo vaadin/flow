@@ -41,9 +41,9 @@ List<Person> people = Arrays.asList(
 // Create a grid bound to the list
 Grid<Person> grid = new Grid<>();
 grid.setItems(people);
-grid.addColumn("Name", Person::getName);
-grid.addColumn("Year of birth",
-        person -> Integer.toString(person.getYearOfBirth()));
+grid.addColumn(Person::getName).setHeader("Name");
+grid.addColumn(person -> Integer.toString(person.getYearOfBirth()))
+    .setHeader("Year of birth");
 
 layout.add(grid);
 ----
@@ -190,7 +190,8 @@ The setter methods in `Column` have _fluent API_, so you can easily chain the co
 
 [source, java]
 ----
-Column<Person> nameColumn = grid.addColumn("Name", Person::getName)
+Column<Person> nameColumn = grid.addColumn(Person::getName)
+    .setHeader("Name")
     .setFlexGrow(0)
     .setWidth("100px")
     .setResizable(false);
@@ -241,26 +242,24 @@ you can call `addColumn()`.
 
 ////
 
-////
-NOT IMPLEMENTED YET
+[[components.grid.columns.header]]
+=== Column Header and Footer
 
-=== Column Captions
-
-Column captions are displayed in the grid header. You can set the header caption
-explicitly through the column object with `setCaption()`.
+Column labels are displayed in the grid header. You can set the header label
+explicitly through the column object with `setHeader()`.
 
 [source, java]
 ----
-Column<Date> bornColumn = grid.addColumn(Person::getBirthDate);
-bornColumn.setCaption("Born date");
+Column<Person> bornColumn = grid.addColumn(Person::getYearOfBirth);
+bornColumn.setHeader("Born date");
 ----
 
-This is equivalent to setting it with `setText()` for the header
-cell; the `HeaderCell` also allows setting the caption in HTML or as
-a component, as well as styling it, as described later in
-<<components.grid.headerfooter>>.
-////
+You can set the footer for a column in the same way:
 
+[source, java]
+----
+bornColumn.setFooter("Summary");
+----
 
 [[components.grid.columns.width]]
 === Column Widths
@@ -292,9 +291,8 @@ The following example simply bolds the names of the persons.
 Grid<Person> grid = new Grid<>();
 grid.setItems(people);
 
-grid.addColumn("Name",
-        TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
-                .withProperty("name", Person::getName));
+grid.addColumn(TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
+                .withProperty("name", Person::getName)).setHeader("Name");
 ----
 
 As you can see, the template-string is passed for the static `TemplateRenderer.of()` method,
@@ -315,10 +313,11 @@ add a new column to display that.
 
 [source, java]
 ----
-grid.addColumn("Age",
-        TemplateRenderer.<Person> of("[[item.age]] years old")
-                .withProperty("age", person -> Year.now().getValue()
-                        - person.getYearOfBirth()));
+grid.addColumn(TemplateRenderer.<Person> of("[[item.age]] years old")
+                .withProperty("age",
+                        person -> Year.now().getValue()
+                                - person.getYearOfBirth()))
+                .setHeader("Age");
 ----
 
 === Binding Beans
@@ -332,9 +331,10 @@ properties in your template with only one `withProperty()` call, as you can see 
 
 [source, java]
 ----
-grid.addColumn("Address", TemplateRenderer.<Person> of(
+grid.addColumn(TemplateRenderer.<Person> of(
         "<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")
-        .withProperty("address", Person::getAddress));
+        .withProperty("address", Person::getAddress))
+        .setHeader("Address");
 ----
 
 === Handling Events
@@ -349,17 +349,17 @@ is used to map those method-names to server-side code.
 
 [source, java]
 ----
-grid.addColumn("Actions", TemplateRenderer.<Person> of(
-        "<button on-click='handleUpdate'>Update</button><button on-click='handleRemove'>Remove</button>")
-        .withEventHandler("handleUpdate", person -> {
-            person.setName(person.getName() + " Updated");
-            grid.getDataProvider().refreshItem(person);
-        }).withEventHandler("handleRemove", person -> {
-            ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
-                    .getDataProvider();
-            dataProvider.getItems().remove(person);
-            dataProvider.refreshAll();
-        }));
+grid.addColumn(TemplateRenderer.<Person> of(
+                "<button on-click='handleUpdate'>Update</button><button on-click='handleRemove'>Remove</button>")
+                .withEventHandler("handleUpdate", person -> {
+                    person.setName(person.getName() + " Updated");
+                    grid.getDataProvider().refreshItem(person);
+                }).withEventHandler("handleRemove", person -> {
+                    ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
+                            .getDataProvider();
+                    dataProvider.getItems().remove(person);
+                    dataProvider.refreshAll();
+                })).setHeader("Actions");
 ----
 
 After editing the server-side data used by the grid, you need to refresh the grid's `DataProvider` to make
@@ -386,13 +386,13 @@ The following example adds a column that contains an icon for each person, that 
 Grid<Person> grid = new Grid();
 grid.setItems(people);
 
-grid.addColumn("Gender", new ComponentRenderer<>(person -> {
+grid.addColumn(new ComponentRenderer<>(person -> {
     if (person.getGender() == Gender.MALE) {
         return new Icon(VaadinIcons.MALE);
     } else {
         return new Icon(VaadinIcons.FEMALE);
     }
-}));
+})).setHeader("Gender");
 ----
 
 You can also separately provide a `Supplier` for creating the component and a `Consumer` for configuring
@@ -400,15 +400,16 @@ it for each item.
 
 [source, java]
 ----
-grid.addColumn("Name", new ComponentRenderer<>(Div::new,
-        (div, person) -> div.setText(person.getName())));
+grid.addColumn(new ComponentRenderer<>(Div::new,
+        (div, person) -> div.setText(person.getName())))
+        .setHeader("Name");
 ----
 
 Or if the component is the same for every item, you only need to provide the `Supplier`.
 
 [source, java]
 ----
-grid.addColumn("", new ComponentRenderer<>(
+grid.addColumn(new ComponentRenderer<>(
         () -> new Icon(VaadinIcons.ARROW_LEFT)));
 ----
 
@@ -417,7 +418,7 @@ layouts, so you can create complex contents for the grid cells.
 
 [source, java]
 ----
-grid.addColumn("Actions", new ComponentRenderer<>(person -> {
+grid.addColumn(new ComponentRenderer<>(person -> {
 
     // text field for entering a new name for the person
     TextField name = new TextField("Name");
@@ -440,7 +441,7 @@ grid.addColumn("Actions", new ComponentRenderer<>(person -> {
     // layouts for placing the text field on top of the buttons
     HorizontalLayout buttons = new HorizontalLayout(update, remove);
     return new VerticalLayout(name, buttons);
-}));
+})).setHeader("Actions");
 ----
 
 [NOTE]

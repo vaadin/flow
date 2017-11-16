@@ -23,10 +23,12 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.Before;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
+import com.vaadin.testbench.annotations.RunLocally;
 import com.vaadin.testbench.annotations.RunOnHub;
 import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
@@ -36,6 +38,7 @@ import com.vaadin.testbench.parallel.ParallelTest;
  * Abstract base class for parallel flow TestBench tests.
  */
 @RunOnHub
+@RunLocally
 @BrowserFactory(DefaultBrowserFactory.class)
 @LocalExecution
 public class AbstractParallelTestBenchTest extends ParallelTest {
@@ -59,6 +62,15 @@ public class AbstractParallelTestBenchTest extends ParallelTest {
 
     public static final boolean USE_HUB = Boolean.TRUE.toString()
             .equals(System.getProperty(USE_HUB_PROPERTY, "false"));
+
+    @Before
+    @Override
+    public void setup() throws Exception {
+        if(USE_HUB) {
+            setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
+        }
+        super.setup();
+    }
 
     /**
      * Returns the URL to the root of the server, e.g. "http://localhost:8888"
@@ -98,6 +110,14 @@ public class AbstractParallelTestBenchTest extends ParallelTest {
         return Optional
                 .ofNullable(getClass().getAnnotation(LocalExecution.class))
                 .filter(LocalExecution::active);
+    }
+
+    @Override
+    protected Browser getRunLocallyBrowser() {
+        if (USE_HUB) {
+            return null;
+        }
+        return Browser.CHROME;
     }
 
     /**

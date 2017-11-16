@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -24,6 +25,7 @@ import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.QueryParameters;
+import com.vaadin.server.Constants;
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinRequest;
@@ -101,7 +103,10 @@ public class UITest {
             }
             Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
-            ServletConfig servletConfig = new MockServletConfig();
+            Properties initParams = new Properties();
+            initParams.setProperty(Constants.SERVLET_PARAMETER_USING_NEW_ROUTING,
+                    "false");
+            ServletConfig servletConfig = new MockServletConfig(initParams);
             VaadinServlet servlet = new VaadinServlet();
             servlet.init(servletConfig);
             VaadinService service = servlet.getService();

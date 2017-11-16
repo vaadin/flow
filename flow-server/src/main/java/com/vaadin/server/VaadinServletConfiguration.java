@@ -123,5 +123,5 @@ public @interface VaadinServletConfiguration {
      * @return whether to use the new annotation based routing implementation
      */
     @InitParameterName(Constants.SERVLET_PARAMETER_USING_NEW_ROUTING)
-    boolean usingNewRouting() default false;
+    boolean usingNewRouting() default true;
 }

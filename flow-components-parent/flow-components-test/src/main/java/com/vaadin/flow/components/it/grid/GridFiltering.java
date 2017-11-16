@@ -32,7 +32,7 @@ public class GridFiltering extends TestView {
 
         grid.setDataProvider(filteredDataProvider);
 
-        grid.addColumn("Data", item -> item);
+        grid.addColumn(item -> item).setHeader("Data");
 
         TextField field = new TextField();
         field.setId("filter");

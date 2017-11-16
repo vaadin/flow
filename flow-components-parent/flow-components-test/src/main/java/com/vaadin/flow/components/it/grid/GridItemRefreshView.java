@@ -56,8 +56,8 @@ public class GridItemRefreshView extends TestView {
 
     public GridItemRefreshView() {
         Grid<Bean> grid = new Grid<>();
-        grid.addColumn("First Field", Bean::getFirstField);
-        grid.addColumn("Second Field", Bean::getSecondField);
+        grid.addColumn(Bean::getFirstField).setHeader("First Field");
+        grid.addColumn(Bean::getSecondField).setHeader("Second Field");
         List<Bean> items = createItems(1000);
         grid.setItems(items);
 

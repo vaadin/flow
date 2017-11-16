@@ -56,7 +56,7 @@ public class HistoryIT extends ChromeBrowserTest {
         Assert.assertEquals(baseUrl, getCurrentUrl());
         Assert.assertEquals(
                 Arrays.asList(
-                        "New location: com.vaadin.flow.uitest.ui.HistoryUI"),
+                        "New location: com.vaadin.flow.uitest.ui.HistoryView"),
                 getStatusMessages());
         clearButton.click();
 

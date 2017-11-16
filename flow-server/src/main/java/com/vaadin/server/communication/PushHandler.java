@@ -90,10 +90,10 @@ public class PushHandler {
             }
 
             String requestToken = resource.getRequest()
-                    .getParameter(ApplicationConstants.CSRF_TOKEN_PARAMETER);
-            if (!VaadinService.isCsrfTokenValid(session, requestToken)) {
+                    .getParameter(ApplicationConstants.PUSH_ID_PARAMETER);
+            if (!isPushIdValid(session, requestToken)) {
                 getLogger().log(Level.WARNING,
-                        "Invalid CSRF token in new connection received from {0}",
+                        "Invalid identifier in new connection received from {0}",
                         resource.getRequest().getRemoteHost());
                 // Refresh on client side, create connection just for
                 // sending a message
@@ -301,11 +301,21 @@ public class PushHandler {
     }
 
     void connectionLost(AtmosphereResourceEvent event) {
+        if (event == null) {
+            getLogger().log(Level.SEVERE,
+                    "Could not get event. This should never happen.");
+            return;
+        }
         // We don't want to use callWithUi here, as it assumes there's a client
         // request active and does requestStart and requestEnd among other
         // things.
 
         AtmosphereResource resource = event.getResource();
+        if (resource == null) {
+            getLogger().log(Level.SEVERE,
+                    "Could not get resource. This should never happen.");
+            return;
+        }
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
                 resource.getRequest(), service);
         VaadinSession session = null;
@@ -462,6 +472,25 @@ public class PushHandler {
 
     private static final Logger getLogger() {
         return Logger.getLogger(PushHandler.class.getName());
+    }
+
+    /**
+     * Checks whether a given push id matches the session's push id.
+     *
+     * @param session
+     *            the vaadin session for which the check should be done
+     * @param requestPushId
+     *            the push id provided in the request
+     * @return {@code true} if the id is valid, {@code false} otherwise
+     */
+    private static boolean isPushIdValid(VaadinSession session,
+            String requestPushId) {
+
+        String sessionPushId = session.getPushId();
+        if (requestPushId == null || !requestPushId.equals(sessionPushId)) {
+            return false;
+        }
+        return true;
     }
 
     /**

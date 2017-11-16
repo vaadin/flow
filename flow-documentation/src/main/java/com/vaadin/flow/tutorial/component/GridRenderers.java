@@ -39,24 +39,25 @@ public class GridRenderers {
 
     private List<Person> people = Arrays.asList(new Person(), new Person());
 
-    public void templateRendererBasics() {
+    public void templateRenderer() {
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
 
-        grid.addColumn("Name",
-                TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
-                        .withProperty("name", Person::getName));
+        grid.addColumn(TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
+                .withProperty("name", Person::getName)).setHeader("Name");
 
-        grid.addColumn("Age",
-                TemplateRenderer.<Person> of("[[item.age]] years old")
-                        .withProperty("age", person -> Year.now().getValue()
-                                - person.getYearOfBirth()));
+        grid.addColumn(TemplateRenderer.<Person> of("[[item.age]] years old")
+                        .withProperty("age",
+                                person -> Year.now().getValue()
+                                        - person.getYearOfBirth()))
+                .setHeader("Age");
 
-        grid.addColumn("Address", TemplateRenderer.<Person> of(
+        grid.addColumn(TemplateRenderer.<Person> of(
                 "<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")
-                .withProperty("address", Person::getAddress));
+                .withProperty("address", Person::getAddress))
+                .setHeader("Address");
 
-        grid.addColumn("Actions", TemplateRenderer.<Person> of(
+        grid.addColumn(TemplateRenderer.<Person> of(
                 "<button on-click='handleUpdate'>Update</button><button on-click='handleRemove'>Remove</button>")
                 .withEventHandler("handleUpdate", person -> {
                     person.setName(person.getName() + " Updated");
@@ -66,28 +67,29 @@ public class GridRenderers {
                             .getDataProvider();
                     dataProvider.getItems().remove(person);
                     dataProvider.refreshAll();
-                }));
+                })).setHeader("Actions");
     }
 
     public void componentRenderer() {
         Grid<Person> grid = new Grid();
         grid.setItems(people);
 
-        grid.addColumn("Gender", new ComponentRenderer<>(person -> {
+        grid.addColumn(new ComponentRenderer<>(person -> {
             if (person.getGender() == Gender.MALE) {
                 return new Icon(VaadinIcons.MALE);
             } else {
                 return new Icon(VaadinIcons.FEMALE);
             }
-        }));
+        })).setHeader("Gender");
 
-        grid.addColumn("Name", new ComponentRenderer<>(Div::new,
-                (div, person) -> div.setText(person.getName())));
+        grid.addColumn(new ComponentRenderer<>(Div::new,
+                (div, person) -> div.setText(person.getName())))
+                .setHeader("Name");
 
-        grid.addColumn("", new ComponentRenderer<>(
+        grid.addColumn(new ComponentRenderer<>(
                 () -> new Icon(VaadinIcons.ARROW_LEFT)));
 
-        grid.addColumn("Actions", new ComponentRenderer<>(person -> {
+        grid.addColumn(new ComponentRenderer<>(person -> {
 
             // text field for entering a new name for the person
             TextField name = new TextField("Name");
@@ -110,10 +112,10 @@ public class GridRenderers {
             // layouts for placing the text field on top of the buttons
             HorizontalLayout buttons = new HorizontalLayout(update, remove);
             return new VerticalLayout(name, buttons);
-        }));
+        })).setHeader("Actions");
     }
 
-    public void expandingItems() {
+    public void showingItemDetails() {
         Grid<Person> grid = new Grid();
 
         grid.setItemDetailsRenderer(new ComponentRenderer<>(person -> {

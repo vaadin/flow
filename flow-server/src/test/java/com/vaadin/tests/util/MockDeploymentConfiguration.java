@@ -118,4 +118,8 @@ public class MockDeploymentConfiguration
         return Optional.ofNullable(webComponentsPolyfillBase);
     }
 
+    @Override
+    public boolean isUsingNewRouting() {
+        return false;
+    }
 }

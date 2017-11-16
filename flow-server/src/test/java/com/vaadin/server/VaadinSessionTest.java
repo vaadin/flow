@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -144,6 +146,10 @@ public class VaadinSessionTest {
                 return mockWrappedSession;
             }
 
+            @Override
+            public Map<String, String[]> getParameterMap() {
+                return new HashMap<>();
+            }
         };
 
         ui.getInternals().setSession(session);
