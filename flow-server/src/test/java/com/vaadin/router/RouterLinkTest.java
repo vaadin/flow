@@ -15,10 +15,10 @@
  */
 package com.vaadin.router;
 
+import javax.servlet.ServletException;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,6 +32,7 @@ import com.vaadin.flow.router.RouterTest.RouterTestUI;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.router.ViewRendererTest.TestView;
 import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.server.Constants;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.VaadinService;
@@ -280,7 +281,10 @@ public class RouterLinkTest extends HasCurrentService {
     @Test(expected = IllegalArgumentException.class)
     public void invalidRouteWhenConstructing() throws ServletException {
         VaadinServlet servlet = new VaadinServlet();
-        servlet.init(new MockServletConfig());
+        Properties initParams = new Properties();
+        initParams.setProperty(Constants.SERVLET_PARAMETER_USING_NEW_ROUTING,
+                "false");
+        servlet.init(new MockServletConfig(initParams));
 
         try {
             VaadinService.setCurrent(servlet.getService());

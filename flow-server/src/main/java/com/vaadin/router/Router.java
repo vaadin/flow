@@ -48,7 +48,7 @@ public class Router implements RouterInterface {
     private final RouterConfiguration configuration = new RouterConfiguration() {
         @Override
         public boolean isConfigured() {
-            return true;
+            return registry.hasRoutes();
         }
     };
 

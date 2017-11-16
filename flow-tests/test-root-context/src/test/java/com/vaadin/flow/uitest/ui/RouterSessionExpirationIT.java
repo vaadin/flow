@@ -49,6 +49,8 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
         navigateToAnotherView();
         String sessionId = getSessionId();
         navigateToInternalErrorView();
+
+        waitUntil(webDriver -> findElements(By.id("sessionId")).isEmpty());
         // Navigate back as we are on the error view.
         getDriver().navigate().back();
         Assert.assertEquals(sessionId, getSessionId());

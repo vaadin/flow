@@ -23,7 +23,6 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletConfiguration;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
-@VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;

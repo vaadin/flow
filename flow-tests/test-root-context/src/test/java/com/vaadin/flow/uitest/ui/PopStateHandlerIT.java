@@ -18,7 +18,7 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     public void testDifferentPath_ServerSideEvent() {
         open();
         verifyNoServerVisit();
-        verifyInsideServletLocation(getUIClass().getName());
+        verifyInsideServletLocation(getViewClass().getName());
 
         pushState(FORUM);
 
@@ -37,15 +37,15 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
 
         goBack();
 
-        verifyPopStateEvent(getUIClass().getName());
-        verifyInsideServletLocation(getUIClass().getName());
+        verifyPopStateEvent(getViewClass().getName());
+        verifyInsideServletLocation(getViewClass().getName());
     }
 
     @Test
     public void testSamePathHashChanges_noServerSideEvent() {
         open();
         verifyNoServerVisit();
-        verifyInsideServletLocation(getUIClass().getName());
+        verifyInsideServletLocation(getViewClass().getName());
 
         pushState(FORUM);
 
@@ -74,15 +74,15 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
 
         goBack();
 
-        verifyPopStateEvent(getUIClass().getName());
-        verifyInsideServletLocation(getUIClass().getName());
+        verifyPopStateEvent(getViewClass().getName());
+        verifyInsideServletLocation(getViewClass().getName());
     }
 
     @Test
     public void testEmptyHash_noHashServerToServer() {
         open();
         verifyNoServerVisit();
-        verifyInsideServletLocation(getUIClass().getName());
+        verifyInsideServletLocation(getViewClass().getName());
 
         pushState(EMPTY_HASH);
 
@@ -121,8 +121,8 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
 
         goBack();
 
-        verifyPopStateEvent(getUIClass().getName());
-        verifyInsideServletLocation(getUIClass().getName());
+        verifyPopStateEvent(getViewClass().getName());
+        verifyInsideServletLocation(getViewClass().getName());
     }
 
     private void goBack() {
@@ -135,7 +135,7 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
 
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
         Assert.assertEquals("Invalid URL",
-                getRootURL() + "/run/" + pathAfterServletMapping,
+                getRootURL() + "/view/" + pathAfterServletMapping,
                 getDriver().getCurrentUrl());
     }
 

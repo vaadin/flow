@@ -177,7 +177,7 @@ public abstract class VaadinService implements Serializable {
      */
     private boolean initialized = false;
 
-    private RouterInterface router = new com.vaadin.flow.router.Router();
+    private RouterInterface router;
 
     private Instantiator instantiator;
 
@@ -249,6 +249,7 @@ public abstract class VaadinService implements Serializable {
         if (deploymentConf.isUsingNewRouting()) {
             router = new Router(getRouteRegistry());
         } else {
+            router = new com.vaadin.flow.router.Router();
             String routerConfiguratorClassName = deploymentConf
                     .getRouterConfiguratorClassName();
             if (routerConfiguratorClassName != null && !RouterConfigurator.class

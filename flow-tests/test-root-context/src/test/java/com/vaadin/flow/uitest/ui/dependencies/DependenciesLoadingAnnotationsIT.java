@@ -1,7 +1,7 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseUI.DOM_CHANGE_TEXT;
-import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseUI.PRELOADED_DIV_ID;
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.DOM_CHANGE_TEXT;
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.PRELOADED_DIV_ID;
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.either;
@@ -26,17 +26,17 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * A test that ensures correct order of dependencies loaded. Test corresponds to
- * {@link DependenciesLoadingAnnotationsUI}, which uses annotations to add
+ * {@link DependenciesLoadingAnnotationsView}, which uses annotations to add
  * dependencies. There is a related pair of classes,
- * {@link DependenciesLoadingPageApiUI} and
+ * {@link DependenciesLoadingPageApiView} and
  * {@link DependenciesLoadingPageApiIT}, designed to test exactly the same
  * dependency loading functionality (hence reusing all methods and constants),
  * but using {@link com.vaadin.ui.Page} api to add dependencies.
  *
  * @author Vaadin Ltd.
- * @see DependenciesLoadingBaseUI
- * @see DependenciesLoadingAnnotationsUI
- * @see DependenciesLoadingPageApiUI
+ * @see DependenciesLoadingBaseView
+ * @see DependenciesLoadingAnnotationsView
+ * @see DependenciesLoadingPageApiView
  * @see DependenciesLoadingPageApiIT
  */
 public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
@@ -106,7 +106,8 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 "One of the inlined css should be our dependency containing `inline.css` string inside",
                 inlinedCss.isPresent(), is(true));
 
-        WebElement inlineCssTestDiv = findElement(By.id(DependenciesLoadingBaseUI.INLINE_CSS_TEST_DIV_ID));
+        WebElement inlineCssTestDiv = findElement(By.id(
+                DependenciesLoadingBaseView.INLINE_CSS_TEST_DIV_ID));
         Assert.assertEquals(
                 "Incorrect color for the div that should be styled with inline.css",
                 "rgba(255, 255, 0, 1)", inlineCssTestDiv.getCssValue("color"));
