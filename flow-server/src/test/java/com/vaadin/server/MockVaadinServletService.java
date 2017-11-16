@@ -50,7 +50,7 @@ public class MockVaadinServletService extends VaadinServletService {
         try {
             servlet.init(new MockServletConfig());
         } catch (ServletException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

@@ -64,6 +64,7 @@ public class AbstractParallelTestBenchTest extends ParallelTest {
             .equals(System.getProperty(USE_HUB_PROPERTY, "false"));
 
     @Before
+    @Override
     public void setup() throws Exception {
         if(USE_HUB) {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
