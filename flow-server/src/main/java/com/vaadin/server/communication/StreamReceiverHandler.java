@@ -46,6 +46,7 @@ import com.vaadin.server.communication.streaming.StreamingEndEventImpl;
 import com.vaadin.server.communication.streaming.StreamingErrorEventImpl;
 import com.vaadin.server.communication.streaming.StreamingProgressEventImpl;
 import com.vaadin.server.communication.streaming.StreamingStartEventImpl;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
 /**
@@ -55,8 +56,6 @@ import com.vaadin.ui.UI;
  *
  */
 public class StreamReceiverHandler implements Serializable {
-
-    public static final String CONTENT_TYPE_TEXT_HTML_UTF_8 = "text/html; charset=utf-8";
 
     private static final int MAX_UPLOAD_BUFFER_SIZE = 4 * 1024;
 
@@ -309,7 +308,8 @@ public class StreamReceiverHandler implements Serializable {
      */
     private void sendUploadResponse(VaadinResponse response)
             throws IOException {
-        response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
+        response.setContentType(
+                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
         try (OutputStream out = response.getOutputStream()) {
             final PrintWriter outWriter = new PrintWriter(
                     new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));

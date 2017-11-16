@@ -287,7 +287,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static void writeBootstrapPage(VaadinResponse response, String html)
             throws IOException {
-        response.setContentType("text/html");
+        response.setContentType(
+                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), "UTF-8"))) {
             writer.append(html);
@@ -405,7 +406,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void setupMetaAndTitle(Element head,
             BootstrapContext context) {
         head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
-                .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
+                .attr(CONTENT_ATTRIBUTE, ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible")
                 .attr(CONTENT_ATTRIBUTE, "IE=edge");
