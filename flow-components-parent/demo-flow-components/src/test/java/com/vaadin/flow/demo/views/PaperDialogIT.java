@@ -25,7 +25,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.demo.ComponentDemoTest;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 public class PaperDialogIT extends ComponentDemoTest {
     @Before

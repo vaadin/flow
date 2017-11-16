@@ -70,7 +70,7 @@ public class ScrollIT extends ChromeBrowserTest {
         final int yScrollAmount = 400;
 
         Point anchorElementLocation = findElement(
-                com.vaadin.testbench.By.id(ScrollView.ANCHOR_DIV_ID)).getLocation();
+                By.id(ScrollView.ANCHOR_DIV_ID)).getLocation();
 
         scrollBy(xScrollAmount, yScrollAmount);
         checkPageScroll(xScrollAmount, yScrollAmount);
@@ -114,7 +114,7 @@ public class ScrollIT extends ChromeBrowserTest {
         open();
 
         Point anchorElementLocation = findElement(
-                com.vaadin.testbench.By.id(ScrollView.ANCHOR_DIV_ID)).getLocation();
+                By.id(ScrollView.ANCHOR_DIV_ID)).getLocation();
         scrollBy(0, 400);
 
         clickElementWithJs(ScrollView.TRANSITION_URL_ID);

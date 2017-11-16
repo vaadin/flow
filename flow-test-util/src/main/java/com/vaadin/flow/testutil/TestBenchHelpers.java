@@ -26,7 +26,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.internal.WrapsElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.vaadin.testbench.parallel.ParallelTest;
 
@@ -34,33 +33,16 @@ import com.vaadin.testbench.parallel.ParallelTest;
  * Helpers for running testbench tests.
  */
 public class TestBenchHelpers extends ParallelTest {
-    /**
-     * Waits up to 10s for the given condition to become true. Use e.g. as
-     * {@link #waitUntil(ExpectedCondition)}.
-     *
-     * @param condition
-     *            the condition to wait for to become true
-     * @param <T>
-     *            the return type of the expected condition
-     */
-    protected <T> void waitUntil(ExpectedCondition<T> condition) {
-        waitUntil(condition, 10);
-    }
 
     /**
-     * Waits the given number of seconds for the given condition to become true.
-     * Use e.g. as {@link #waitUntil(ExpectedCondition)}.
+     * Returns true if a component can be found with given By selector.
      *
-     * @param condition
-     *            the condition to wait for to become true
-     * @param timeoutInSeconds
-     *            the number of seconds to wait
-     * @param <T>
-     *            the return type of the expected condition
+     * @param by
+     *            the selector used to find element
+     * @return true if the component can be found
      */
-    protected <T> void waitUntil(ExpectedCondition<T> condition,
-            long timeoutInSeconds) {
-        new WebDriverWait(driver, timeoutInSeconds).until(condition);
+    protected boolean isElementPresent(By by) {
+        return !getContext().findElements(by).isEmpty();
     }
 
     /**

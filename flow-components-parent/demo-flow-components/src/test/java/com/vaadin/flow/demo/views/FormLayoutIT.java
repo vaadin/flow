@@ -24,7 +24,7 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.ComponentDemoTest;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 /**
  * Integration tests for the {@link FormLayoutView}.

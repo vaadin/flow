@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.components.it.ValidationTestView;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 import com.vaadin.ui.common.HasValidation;
 
 /**
