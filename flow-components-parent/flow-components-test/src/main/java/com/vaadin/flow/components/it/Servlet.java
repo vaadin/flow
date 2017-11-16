@@ -29,7 +29,7 @@ import com.vaadin.server.VaadinServlet;
  * The test application servlet.
  */
 @WebServlet(urlPatterns = "/*", name = "TestServlet", asyncSupported = true)
-@VaadinServletConfiguration(routerConfigurator = TestRouterConfigurator.class, productionMode = false)
+@VaadinServletConfiguration(routerConfigurator = TestRouterConfigurator.class, productionMode = false, usingNewRouting = false)
 public class Servlet extends VaadinServlet {
 
     /**
