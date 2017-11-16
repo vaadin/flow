@@ -199,6 +199,26 @@ Column<Person> nameColumn = grid.addColumn(Person::getName)
 
 In the following, we describe the basic column configuration.
 
+=== Column Headers and Footers
+
+By default, no header or footer is present for a column.
+These must be set explicitly using the methods `setHeader` and `setFooter` through the API of a column.
+The methods have two overloads, one which accepts a plain string and one that accepts a `TemplateRenderer`.
+Template renderers are covered later in this tutorial.
+
+[source, java]
+----
+// Sets a simple text header
+nameColumn.setHeader("Name");
+// Sets a header containing a custom template,
+// in this case simply bolding the caption "Name"
+nameColumn.setHeader(TemplateRenderer.<Person> of("<b>Name</b>"));
+
+// Similarly for the footer
+nameColumn.setFooter("Name");
+nameColumn.setFooter(TemplateRenderer.<Person> of("<b>Name</b>"));
+----
+
 === Column Order
 
 You can enable drag and drop user reordering of columns with `setColumnReorderingAllowed()`.
@@ -227,7 +247,7 @@ Note that the method can not be used to hide columns. You can hide columns with
 the `removeColumn()`, as described later.
 ////
 
-=== Hiding and Removing Columns
+=== Hiding Columns
 
 Columns can be hidden by calling `setHidden()` in `Column`.
 Furthermore, you can set the columns user hidable using method `setHidable()`.
@@ -241,25 +261,6 @@ Columns can be removed with `removeColumn()` and
 you can call `addColumn()`.
 
 ////
-
-[[components.grid.columns.header]]
-=== Column Header and Footer
-
-Column labels are displayed in the grid header. You can set the header label
-explicitly through the column object with `setHeader()`.
-
-[source, java]
-----
-Column<Person> bornColumn = grid.addColumn(Person::getYearOfBirth);
-bornColumn.setHeader("Born date");
-----
-
-You can set the footer for a column in the same way:
-
-[source, java]
-----
-bornColumn.setFooter("Summary");
-----
 
 [[components.grid.columns.width]]
 === Column Widths
@@ -277,6 +278,29 @@ Additionally, user reordering of frozen columns is disabled.
 [source, java]
 ----
 nameColumn.setFrozen(true);
+----
+
+=== Grouping Columns
+
+Multiple columns can be grouped together by calling `mergeColumns` on the grid and supplying it two or more columns.
+Merging columns returns a `ColumnGroup` object, which shares a subset of the `Column` API for basic configuration, for instance setting the header and footer.
+In addition to merging columns, column groups can also be merged to create deeper hierarchies of columns.
+
+[source, java]
+----
+// Group two columns, nameColumn and ageColumn,
+// in a ColumnGroup and set the header text
+ColumnGroup informationColumnGroup = grid
+        .mergeColumns(nameColumn, ageColumn)
+        .setHeader("Basic Information");
+
+ColumnGroup addressColumnGroup = grid
+        .mergeColumns(streetColumn, postalCodeColumn)
+        .setHeader("Address information");
+
+// Group two ColumnGroups
+grid.mergeColumns(informationColumnGroup, addressColumnGroup)
+        .setHeader("Person Information");
 ----
 
 == Using Templates

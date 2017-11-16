@@ -16,13 +16,14 @@
 package com.vaadin.flow.tutorial.component;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person;
+import com.vaadin.function.ValueProvider;
 import com.vaadin.ui.button.Button;
+import com.vaadin.ui.grid.ColumnGroup;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.Grid.Column;
 import com.vaadin.ui.grid.Grid.SelectionMode;
@@ -130,16 +131,49 @@ public class GridBasic {
         
         nameColumn.setFrozen(true);
     }
-    
-    public void gridHeaderAndFooter() {
+
+    public void gridColumnMerging() {
         Grid<Person> grid = new Grid<>();
-        
-        Column<Person> bornColumn = grid.addColumn(Person::getYearOfBirth);
-        bornColumn.setHeader("Born date");
-        
-        bornColumn.setFooter("Summary");
+        Column<Person> nameColumn = grid.addColumn(
+                ValueProvider.identity());
+        Column<Person> ageColumn = grid.addColumn(ValueProvider.identity());
+        Column<Person> streetColumn = grid.addColumn(
+                ValueProvider.identity());
+        Column<Person> postalCodeColumn = grid.addColumn(
+                ValueProvider.identity());
+
+        // Group two columns, nameColumn and ageColumn,
+        // in a ColumnGroup and set the header text
+        ColumnGroup informationColumnGroup = grid
+                .mergeColumns(nameColumn, ageColumn)
+                .setHeader("Basic Information");
+
+        ColumnGroup addressColumnGroup = grid
+                .mergeColumns(streetColumn, postalCodeColumn)
+                .setHeader("Address information");
+
+        // Group two ColumnGroups
+        grid.mergeColumns(informationColumnGroup, addressColumnGroup)
+                .setHeader("Person Information");
+
     }
-    
+
+    public void gridHeadersAndFooters() {
+        Grid<Person> grid = new Grid<>();
+        Column<Person> nameColumn = grid.addColumn(
+                ValueProvider.identity());
+
+        // Sets a simple text header
+        nameColumn.setHeader("Name");
+        // Sets a header containing a custom template,
+        // in this case simply bolding the caption "Name"
+        nameColumn.setHeader(TemplateRenderer.<Person> of("<b>Name</b>"));
+
+        // Similarly for the footer
+        nameColumn.setFooter("Name");
+        nameColumn.setFooter(TemplateRenderer.<Person> of("<b>Name</b>"));
+    }
+
     /* code of commented lines
 
      grid.setColumnOrder(firstnameColumn, lastnameColumn,
