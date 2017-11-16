@@ -33,12 +33,12 @@ import com.vaadin.shared.Registration;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-text-field>} is a Polymer 2 element for text field control in
+ * {@code <vaadin-text-area>} is a Polymer 2 element for text area control in
  * forms.
  * </p>
  * <p>
  * {@code }
- * <code>html &lt;vaadin-text-field label=&quot;First Name&quot;&gt; &lt;/vaadin-text-field&gt; {@code }</code>
+ * <code>html &lt;vaadin-text-area label=&quot;Add description&quot;&gt; &lt;/vaadin-text-area&gt; {@code }</code>
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -62,14 +62,14 @@ import com.vaadin.shared.Registration;
  * </tr>
  * <tr>
  * <td>{@code value}</td>
- * <td>The input element</td>
+ * <td>The textarea element</td>
  * </tr>
  * <tr>
  * <td>{@code error-message}</td>
  * <td>The error message element</td>
  * </tr>
  * <tr>
- * <td>{@code input-field}</td>
+ * <td>{@code text-area}</td>
  * <td>The element that wraps prefix, value and suffix</td>
  * </tr>
  * </tbody>
@@ -114,11 +114,11 @@ import com.vaadin.shared.Registration;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#1.2.0-alpha1",
+        "WebComponent: Vaadin.TextAreaElement#1.2.0-alpha1",
         "Flow#1.0-SNAPSHOT" })
-@Tag("vaadin-text-field")
-@HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
-public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
+@Tag("vaadin-text-area")
+@HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-area.html")
+public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
         extends Component
         implements ComponentSupplier<R>, HasStyle, Focusable<R> {
 
@@ -612,145 +612,6 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * This is a property supported by Safari that is used to control whether
-     * autocorrection should be enabled when the user is entering/editing the
-     * text. Possible values are: on: Enable autocorrection. off: Disable
-     * autocorrection.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code autocorrect} property from the webcomponent
-     */
-    public String getAutocorrect() {
-        return getElement().getProperty("autocorrect");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * This is a property supported by Safari that is used to control whether
-     * autocorrection should be enabled when the user is entering/editing the
-     * text. Possible values are: on: Enable autocorrection. off: Disable
-     * autocorrection.
-     * </p>
-     * 
-     * @param autocorrect
-     *            the String value to set
-     */
-    public void setAutocorrect(java.lang.String autocorrect) {
-        getElement().setProperty("autocorrect",
-                autocorrect == null ? "" : autocorrect);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Identifies a list of pre-defined options to suggest to the user. The
-     * value must be the id of a <datalist> element in the same document.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code list} property from the webcomponent
-     */
-    public String getList() {
-        return getElement().getProperty("list");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Identifies a list of pre-defined options to suggest to the user. The
-     * value must be the id of a <datalist> element in the same document.
-     * </p>
-     * 
-     * @param list
-     *            the String value to set
-     */
-    public void setList(java.lang.String list) {
-        getElement().setProperty("list", list == null ? "" : list);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * A regular expression that the value is checked against. The pattern must
-     * match the entire value, not just some subset.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code pattern} property from the webcomponent
-     */
-    public String getPattern() {
-        return getElement().getProperty("pattern");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * A regular expression that the value is checked against. The pattern must
-     * match the entire value, not just some subset.
-     * </p>
-     * 
-     * @param pattern
-     *            the String value to set
-     */
-    public void setPattern(java.lang.String pattern) {
-        getElement().setProperty("pattern", pattern == null ? "" : pattern);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Message to show to the user when validation fails.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code title} property from the webcomponent
-     */
-    public String getTitle() {
-        return getElement().getProperty("title");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Message to show to the user when validation fails.
-     * </p>
-     * 
-     * @param title
-     *            the String value to set
-     */
-    public void setTitle(java.lang.String title) {
-        getElement().setProperty("title", title == null ? "" : title);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Returns true if the current input value satisfies all constraints (if
      * any)
      * </p>
@@ -777,7 +638,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
     }
 
     @DomEvent("iron-form-element-register")
-    public static class IronFormElementRegisterEvent<R extends GeneratedVaadinTextField<R>>
+    public static class IronFormElementRegisterEvent<R extends GeneratedVaadinTextArea<R>>
             extends ComponentEvent<R> {
         public IronFormElementRegisterEvent(R source, boolean fromClient) {
             super(source, fromClient);
@@ -791,7 +652,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
     }
 
     @DomEvent("iron-form-element-unregister")
-    public static class IronFormElementUnregisterEvent<R extends GeneratedVaadinTextField<R>>
+    public static class IronFormElementUnregisterEvent<R extends GeneratedVaadinTextArea<R>>
             extends ComponentEvent<R> {
         public IronFormElementUnregisterEvent(R source, boolean fromClient) {
             super(source, fromClient);

@@ -2,7 +2,7 @@
   "name": "Vaadin.TextFieldElement",
   "tag": "vaadin-text-field",
   "baseUrl": "vaadin-text-field/vaadin-text-field.html",
-  "version": "1.1.0",
+  "version": "1.2.0-alpha1",
   "properties": [
     {
       "name": "autofocus",
@@ -26,7 +26,104 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete\n             "
+      "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete\n           "
+    },
+    {
+      "name": "errorMessage",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Error to show when the input value is invalid.\n           "
+    },
+    {
+      "name": "label",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "String used for the label element.\n           "
+    },
+    {
+      "name": "maxlength",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Maximum number of characters (in Unicode code points) that the user can enter.\n           "
+    },
+    {
+      "name": "minlength",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Minimum number of characters (in Unicode code points) that the user can enter.\n           "
+    },
+    {
+      "name": "name",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of the control, which is submitted with the form data.\n           "
+    },
+    {
+      "name": "placeholder",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "A hint to the user of what can be entered in the control.\n           "
+    },
+    {
+      "name": "readonly",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "This attribute indicates that the user cannot modify the value of the control.\n           "
+    },
+    {
+      "name": "required",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Specifies that the user must fill in a value.\n           "
+    },
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The initial value of the control.\nIt can be used for two-way data binding.\n           "
+    },
+    {
+      "name": "invalid",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "This property is set to true when the control value is invalid.\n           "
+    },
+    {
+      "name": "hasValue",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "A read-only property indicating whether this input has a non empty value.\nIt can be used for example in styling of the component.\n           ",
+      "readOnly": true
+    },
+    {
+      "name": "preventInvalidInput",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When set to true, user is prevented from typing a value that\nconflicts with the given `pattern`.\n           "
     },
     {
       "name": "autocorrect",
@@ -37,52 +134,12 @@
       "description": "This is a property supported by Safari that is used to control whether\nautocorrection should be enabled when the user is entering/editing the text.\nPossible values are:\non: Enable autocorrection.\noff: Disable autocorrection.\n             "
     },
     {
-      "name": "errorMessage",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "Error to show when the input value is invalid.\n             "
-    },
-    {
-      "name": "label",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "String used for the label element.\n             "
-    },
-    {
       "name": "list",
       "type": [
         "STRING"
       ],
       "objectType": [],
       "description": "Identifies a list of pre-defined options to suggest to the user.\nThe value must be the id of a <datalist> element in the same document.\n             "
-    },
-    {
-      "name": "maxlength",
-      "type": [
-        "NUMBER"
-      ],
-      "objectType": [],
-      "description": "Maximum number of characters (in Unicode code points) that the user can enter.\n             "
-    },
-    {
-      "name": "minlength",
-      "type": [
-        "NUMBER"
-      ],
-      "objectType": [],
-      "description": "Minimum number of characters (in Unicode code points) that the user can enter.\n             "
-    },
-    {
-      "name": "name",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "The name of the control, which is submitted with the form data.\n             "
     },
     {
       "name": "pattern",
@@ -93,81 +150,18 @@
       "description": "A regular expression that the value is checked against.\nThe pattern must match the entire value, not just some subset.\n             "
     },
     {
-      "name": "placeholder",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "A hint to the user of what can be entered in the control.\n             "
-    },
-    {
-      "name": "readonly",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "This attribute indicates that the user cannot modify the value of the control.\n             "
-    },
-    {
-      "name": "required",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "Specifies that the user must fill in a value.\n             "
-    },
-    {
       "name": "title",
       "type": [
         "STRING"
       ],
       "objectType": [],
       "description": "Message to show to the user when validation fails.\n             "
-    },
-    {
-      "name": "value",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "The initial value of the control.\nIt can be used for two-way data binding.\n             "
-    },
-    {
-      "name": "invalid",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "This property is set to true when the control value is invalid.\n             "
-    },
-    {
-      "name": "hasValue",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "A read-only property indicating whether this input has a non empty value.\nIt can be used for example in styling of the component.\n             ",
-      "readOnly": true
-    },
-    {
-      "name": "preventInvalidInput",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "When set to true, user is prevented from typing a value that\nconflicts with the given `pattern`.\n             "
     }
   ],
   "methods": [
     {
-      "name": "connectedCallback",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "disconnectedCallback",
-      "description": "",
+      "name": "checkValidity",
+      "description": "Returns true if the current input value satisfies all constraints (if any)\n       ",
       "parameters": [],
       "returns": "UNDEFINED"
     },
@@ -176,43 +170,6 @@
       "description": "Returns true if `value` is valid.\n`<iron-form>` uses this to check the validity or all its elements.",
       "parameters": [],
       "returns": "BOOLEAN"
-    },
-    {
-      "name": "checkValidity",
-      "description": "Returns true if the current input value satisfies all constraints (if any)\n         ",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "attributeChangedCallback",
-      "description": "",
-      "parameters": [
-        {
-          "name": "prop",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        },
-        {
-          "name": "oldVal",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        },
-        {
-          "name": "newVal",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        }
-      ],
-      "returns": "UNDEFINED"
     }
   ],
   "events": [
@@ -225,21 +182,6 @@
       "name": "iron-form-element-unregister",
       "description": "iron-form-element-unregister",
       "properties": []
-    },
-    {
-      "name": "value-changed",
-      "description": "Fired when the `value` property changes.",
-      "properties": []
-    },
-    {
-      "name": "invalid-changed",
-      "description": "Fired when the `invalid` property changes.",
-      "properties": []
-    },
-    {
-      "name": "has-value-changed",
-      "description": "Fired when the `hasValue` property changes.",
-      "properties": []
     }
   ],
   "slots": [
@@ -248,9 +190,10 @@
   ],
   "behaviors": [],
   "mixins": [
+    "Vaadin.TextFieldMixin",
+    "Vaadin.ThemableMixin",
     "Vaadin.ControlStateMixin",
-    "Vaadin.FormElementMixin",
-    "Vaadin.ThemableMixin"
+    "Vaadin.FormElementMixin"
   ],
   "description": "`<vaadin-text-field>` is a Polymer 2 element for text field control in forms.\n\n```html\n<vaadin-text-field label=\"First Name\">\n</vaadin-text-field>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`value` | The input element\n`error-message` | The error message element\n`input-field` | The element that wraps prefix, value and suffix\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host"
 }
