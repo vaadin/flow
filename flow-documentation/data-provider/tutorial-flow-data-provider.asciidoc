@@ -4,33 +4,45 @@ order: 1
 layout: page
 ---
 
+[[datamodel.dataproviders]]
 = Data Providers
-
-= Showing Many Items in a Listing
 
 A common pattern in applications is that the user is first presented with a list of items, from which she selects one or several items to continue working with.
 These items could be inventory records to survey, messages to respond to or blog drafts to edit or publish.
 
-Listing components display one or several properties from a list of item, allowing the user to inspect the data, mark items as selected and in some cases even edit the item directly through the component.
+A listing is a component that displays one or several properties from a list of items, allowing the user to inspect the data, mark items as selected and in some cases even edit the item directly through the component.
 While each listing component has it's own API for configuring exactly how the data is represented and how it can be manipulated, they all share the same mechanisms for receiving data to show.
+Namely, all officially supported listing components use a `DataProvider` to fetch items needed for display.
 
 The items are generally either loaded directly from memory or lazy loaded from some kind of backend.
 Regardless of how the items are loaded, the component is configured with one or several callbacks that define how the item should be displayed.
 
-In the following example, a `Grid` is configured with one column from the person's name and another showing the year of birth.
+In the following example, a `ComboBox` that lists status items is configured to use the `Status.getCaption()` method to represent each status.
+There is also a `Grid`, which is configured with one column from the person's name and another showing the year of birth.
 
 [source, java]
 ----
+ComboBox<Status> comboBox = new ComboBox<>();
+comboBox.setItemLabelGenerator(Status::getLabel);
+
 Grid<Person> grid = new Grid<>();
-grid.addColumn(Person::getName).setHeader("Name");
-grid.addColumn(person -> Integer.toString(person.getYearOfBirth()))
-    .setHeader("Year of birth");
+grid.addColumn(Person::getName).setCaption("Name");
+grid.addColumn(Person::getYearOfBirth)
+  .setCaption("Year of birth");
 ----
 
-After we have told the component how the data should be shown, we only need to give it some data to actually show. The easiest way of doing that is to directly pass the values to show to `setItems`.
+[NOTE]
+In this example, it would not even be necessary to define any item caption provider for the combo box if `Status.toString()` would be implemented to return a suitable text.
+`ComboBox` is by default configured to use `toString()` for finding a caption to show.
+
+After we have told the component how the data should be shown, we only need to give it some data to actually show.
+The easiest way of doing that is to directly pass the values to show to `setItems`.
 
 [source, java]
 ----
+// Sets items as a collection
+comboBox.setItems(EnumSet.allOf(Status.class));
+
 // Sets items using varargs
 grid.setItems(
   new Person("George Washington", 1732),
@@ -42,9 +54,39 @@ grid.setItems(
 
 Listing components that allow the user to control the display order of the items are automatically able to sort data by any property as long as the property type implements `Comparable`.
 
+We can also define a custom `Comparator` if we want to customize the way a specific column is sorted.
+The comparator can either be based on the item instances or on the values of the property that is being shown.
+
+[source, java]
+----
+grid.addColumn("Name", Person::getName)
+  // Override default natural sorting
+  .setComparator(Comparator.comparing(
+    person -> person.getName().toLowerCase()));
+----
+
 [NOTE]
 This kind of sorting is only supported for in-memory data.
-Sorting with data that is lazy loaded from a backend is described later in this chapter.
+Sorting with data that is lazy loaded from a backend is described <<lazy-sorting,later in this chapter>>.
+
+////
+NOT IMPLEMENTED
+
+With listing components that let the user filter items, we can in the same way define our own `CaptionFilter` that is used to decide whether a specific item should be shown when the user has entered a specific text into the text field.
+The filter is defined as an additional parameter to `setItems`.
+
+[source, java]
+----
+comboBox.setItems(
+  (itemCaption, filterText) ->
+    itemCaption.startsWith(filterText),
+  itemsToShow);
+----
+
+[NOTE]
+This kind of filtering is only supported for in-memory data.
+Filtering with data that is lazy loaded from a backend is described <<lazy-filtering,later in this chapter>>.
+////
 
 Instead of directly assigning the item collection as the items that a component should be using, we can instead create a `ListDataProvider` that contains the items.
 One list data provider instance can be shared between different components to make them show the same data.
@@ -73,30 +115,58 @@ button.addClickListener(event -> {
 });
 ----
 
-A `ListDataProvider` can also be used to further configure filtering beyond what is possible using `CaptionFilter`.
 You can configure the data provider to always apply some specific filter to limit which items are shown or to make it filter by data that is not included in the displayed item caption.
 
 [source, java]
 ----
-ListDataProvider<Person> dataProvider = DataProvider
-                .ofCollection(persons);
+ListDataProvider<Person> dataProvider =
+  DataProvider.ofCollection(persons);
 
-Grid<Person> grid = new Grid<>();
-grid.setDataProvider(dataProvider);
+ComboBox<Person> comboBox = new ComboBox<>();
+comboBox.setDataProvider(dataProvider);
 
 departmentSelect.addValueChangeListener(event -> {
-    Department selectedDepartment = event.getValue();
-    if (selectedDepartment != null) {
-        dataProvider.setFilterByValue(Person::getDepartment,
-                selectedDepartment);
-    } else {
-        dataProvider.clearFilters();
-    }
+  Department selectedDepartment = event.getValue();
+  if (selectedDepartment != null) {
+    dataProvider.setFilterByValue(
+      Person::getDepartment,
+      selectedDepartment);
+  } else {
+    dataProvider.clearFilters();
+  }
 });
 ----
-In this example, the department selected in the `departmentSelect` component is used to dynamically change which persons are shown in the grid.
+In this example, the department selected in the `departmentSelect` component is used to dynamically change which persons are shown in the combo box.
 In addition to `setFilterByValue`, it is also possible to set a filter based on a predicate that tests each item or the value of some specific property in the item.
 Multiple filters can also be stacked by using `addFilter` methods instead of `setFilter`.
+
+////
+NOT IMPLEMENTED
+
+To configure filtering through a component beyond what is possible with `CaptionFilter`, we can use `withConvertedFilter` or some variant of `filteringBy` to create a data provider wrapper that does something based on the text that the user entered into the component.
+
+[source, java]
+----
+ListDataProvider<Person> dataProvider =
+  DataProvider.ofCollection(persons);
+
+comboBox.setDataProvider(dataProvider.filteringBy(
+  (person, filterText) -> {
+    if (person.getName().contains(filterText)) {
+      return true;
+    }
+
+    if (person.getEmail().contains(filterText)) {
+      return true;
+    }
+
+    return false;
+  }
+));
+----
+When the user types something into the combo box, the lambda expression will be run for each person in the data provider.
+Any person for which `true` is returned will be included.
+////
 
 The listing component cannot automatically know about changes to the list of items or to any individual item.
 We must notify the data provider when items are changed, added or removed so that components using the data will show the new values.
@@ -123,6 +193,7 @@ Button modifyPersonButton = new Button("Modify person",
 });
 ----
 
+[[datamodel.dataproviders.lazy]]
 == Lazy Loading Data to a Listing
 
 All the previous examples have shown cases with a limited amount of data that can be loaded as item instances in memory.
@@ -148,26 +219,28 @@ Information about which items to fetch as well as some additional details are ma
 [source, java]
 ----
 DataProvider<Person, Void> dataProvider = DataProvider.fromCallbacks(
-        // First callback fetches items based on a query
-        query -> {
-            // The index of the first item to load
-            int offset = query.getOffset();
+  // First callback fetches items based on a query
+  query -> {
+    // The index of the first item to load
+    int offset = query.getOffset();
 
-            // The number of items to load
-            int limit = query.getLimit();
+    // The number of items to load
+    int limit = query.getLimit();
 
-            List<Person> persons = getPersonService()
-                    .fetchPersons(offset, limit);
+    List<Person> persons = getPersonService()
+            .fetchPersons(offset, limit);
 
-            return persons.stream();
-        },
-        // Second callback fetches the number of items for a query
-        query -> getPersonService().getPersonCount());
+    return persons.stream();
+  },
+  // Second callback fetches the number of items for a query
+  query -> getPersonService().getPersonCount());
+);
 
 Grid<Person> grid = new Grid<>();
 grid.setDataProvider(dataProvider);
 
 // Columns are configured in the same way as before
+...
 ----
 
 [NOTE]
@@ -176,9 +249,10 @@ The results of the first and second callback must be symmetric so that fetching 
 [NOTE]
 The second type parameter of `DataProvider` defines how the provider can be filtered. In this case the filter type is `Void`, meaning that it doesn't support filtering. Backend filtering will be covered later in this chapter.
 
+[[lazy-sorting]]
 === Sorting
 
-It is not practical to order items based on a `Comparator when the items are loaded on demand, since it would require all items to be loaded and inspected.
+It is not practical to order items based on a `Comparator` when the items are loaded on demand, since it would require all items to be loaded and inspected.
 
 Each backend has its own way of defining how the fetched items should be ordered, but they are in general based on a list of property names and information on whether ordering should be ascending or descending.
 
@@ -201,7 +275,7 @@ public interface PersonService {
 ----
 
 With the above service interface, our data source can be enhanced to convert the provided sorting options into a format expected by the service.
-The sorting options set through the component will be available through `Query.getSortOrders().
+The sorting options set through the component will be available through `Query.getSortOrders()`.
 
 [source, java]
 ----
@@ -221,7 +295,7 @@ DataProvider<Person, Void> dataProvider = DataProvider.fromCallbacks(
         query.getOffset(),
         query.getLimit(),
         sortOrders
-      ).stream();
+      );
   },
   // The number of persons is the same regardless of ordering
   query -> getPersonService().getPersonCount()
@@ -229,7 +303,42 @@ DataProvider<Person, Void> dataProvider = DataProvider.fromCallbacks(
 ----
 
 We also need to configure our grid so that it can know what property name should be included in the query when the user wants to sort by a specific column.
+When a data source that does lazy loading is used, `Grid` and other similar components will only let the user sort by columns for which a sort property name is provided.
 
+[source, java]
+----
+Grid<Person> grid = new Grid<>();
+
+grid.setDataProvider(dataProvider);
+
+// Will be sortable by the user
+// When sorting by this column, the query will have a SortOrder
+// where getSorted() returns "name"
+grid.addColumn(Person::getName)
+    .setHeader("Name")
+    .setSortProperty("name");
+
+// Will not be sortable since no sorting info is given
+grid.addColumn(Person::getYearOfBirth)
+    .setHeader("Year of birth");
+----
+
+There might also be cases where a single property name is not enough for sorting.
+This might be the case if the backend needs to sort by multiple properties for one column in the user interface or if the backend sort order should be inverted compared to the sort order defined by the user.
+In such cases, we can define a callback that generates suitable `SortOrder` values for the given column.
+
+[source, java]
+----
+grid.addColumn(person -> person.getName() + " " + person.getLastName())
+        .setHeader("Name")
+        .setSortOrderProvider(
+            // Sort according to last name, then first name
+            direction -> Stream.of(
+                    new QuerySortOrder("lastName", direction),
+                    new QuerySortOrder("firstName", direction)));
+----
+
+[[lazy-filtering]]
 === Filtering
 
 Different types of backends support filtering in different ways.
@@ -239,8 +348,31 @@ A `DataProvider<Person, String>` accepts one string to filter by through the que
 It's up to the data provider implementation to decide what it does with that filter value.
 It might, for instance, look for all persons with a name beginning with the provided string.
 
+A listing component that lets the user control how the displayed data is filtered has some specific filter type that it uses.
+For `ComboBox`, the filter is the `String` that the user has typed into the search field.
+This means that `ComboBox` can only be used with a data provider whose filtering type is `String`.
+
 To use a data provider that filters by some other type, you need to use the `withConvertedFilter`.
 This method creates a new data provider that uses the same data but a different filter type; converting the filter value before passing it to the original data provider instance.
+
+We might, for instance, have a data provider that finds any person where the name contains any of the strings in a set.
+To use that data provider with a combo box, we need to define a converter that receives a single string from the combo box and creates a set of string that the data provider expects.
+
+[source, java]
+----
+DataProvider<Person, Set<String>> personProvider = getProvider();
+
+ComboBox<Person> comboBox = new ComboBox<>();
+
+DataProvider<Person, String> converted = personProvider
+        .withConvertedFilter(
+                filterText -> Collections.singleton(filterText));
+
+comboBox.setDataProvider(converted);
+----
+
+The filter value passed through the query does typically originate from a component such as `ComboBox` that lets the user filter by some value.
+It is also possible to create a data provider wrapper that allows programmatically setting the filter value to include in the query.
 
 You can use the `withConfigurableFilter` method on a data provider to create a data provider wrapper that allows configuring the filter that is passed through the query.
 All components that use a data provider will refresh their data when a new filter is set.
@@ -267,13 +399,14 @@ searchField.addValueChangeListener(event -> {
 });
 ----
 Note that the filter type of the `wrapper` instance is `Void`, which means that the data provider doesn't support any further filtering through the query.
+It's therefore not possible to use the data provider with a combo box.
 
 There is an overload of `withConfigurableFilter` that uses a callback for combining the configured filter value with a filter value from the query.
-We can thus wrap our data provider that filters by a set of strings to create a data provider that combines a string from a grid with a set of strings that are separately configured.
+We can thus wrap our data provider that filters by a set of strings to create a data provider that combines a string from a combo box with a set of strings that are separately configured.
 
 [source, java]
 ----
-DataProvider<Person, Set<String>> personProvider = getPersonsProvider();
+DataProvider<Person, Set<String>> personProvider = getPersonProvider();
 
 ConfigurableFilterDataProvider<Person, String, Set<String>> wrapper =
   personProvider.withConfigurableFilter(
@@ -287,8 +420,8 @@ ConfigurableFilterDataProvider<Person, String, Set<String>> wrapper =
 
 wrapper.setFilter(Collections.singleton("John"));
 
-Grid<Person> grid = new Grid<>();
-grid.setDataProvider(wrapper);
+ComboBox<Person> comboBox = new ComboBox<>();
+comboBox.setDataProvider(wrapper);
 ----
 In this case, `wrapper` supports a single string as the query filter and `Set<String>` trough `setFilter`. The callback combines both into one `Set<String>` that will be in the query passed to `personProvider`.
 
@@ -313,15 +446,15 @@ It would then look for a string to filter by in the query and pass it to the ser
 [source, java]
 ----
 DataProvider<Person, String> dataProvider = DataProvider
-    .fromFilteringCallbacks(query -> {
-        // getFilter returns Optional<String>
-        String filter = query.getFilter().orElse(null);
-        return getPersonService().fetchPersons(query.getOffset(),
-            query.getLimit(), filter).stream();
-    }, query -> {
-        String filter = query.getFilter().orElse(null);
-        return getPersonService().getPersonCount(filter);
-    });
+        .fromFilteringCallbacks(query -> {
+            // getFilter returns Optional<String>
+            String filter = query.getFilter().orElse(null);
+            return getPersonService().fetchPersons(query.getOffset(),
+                    query.getLimit(), filter).stream();
+        }, query -> {
+            String filter = query.getFilter().orElse(null);
+            return getPersonService().getPersonCount(filter);
+        });
 ----
 
 If we instead have a service that expects multiple different filtering parameters, we can use two different alternatives depending on how the data provider would be used. Both cases would be based on this example service API:
@@ -360,16 +493,16 @@ We can then define a data provider that is natively filtered by `PersonFilter`.
 [source, java]
 ----
 DataProvider<Person, PersonFilter> dataProvider = DataProvider
-    .fromFilteringCallbacks(query -> {
-        PersonFilter filter = query.getFilter().orElse(null);
+        .fromFilteringCallbacks(query -> {
+            PersonFilter filter = query.getFilter().orElse(null);
             return getPersonService()
-                .fetchPersons(query.getOffset(), query.getLimit(),
-                    filter != null ? filter.namePrefix : null,
-                    filter != null ? filter.department : null)
-                .stream();
+                    .fetchPersons(query.getOffset(), query.getLimit(),
+                            filter != null ? filter.namePrefix : null,
+                            filter != null ? filter.department : null)
+                    .stream();
         }, query -> {
             PersonFilter filter = query.getFilter().orElse(null);
-                return getPersonService().getPersonCount(
+            return getPersonService().getPersonCount(
                     filter != null ? filter.namePrefix : null,
                     filter != null ? filter.department : null);
         });
@@ -379,7 +512,7 @@ This data provider can then be used in different ways with `withConvertedFilter`
 
 [source, java]
 ----
-// For use with Grid without any department filter
+// For use with ComboBox without any department filter
 DataProvider<Person, String> onlyString = dataProvider.withConvertedFilter(
   filterString -> new PersonFilter(filterString, null)
 );
@@ -390,7 +523,7 @@ ConfigurableFilterDataProvider<Person, Void, PersonFilter> everythingConfigurabl
 everythingConfigurable.setFilter(
   new PersonFilter(someText, someDepartment));
 
-// For use with Grid and separate department filtering
+// For use with ComboBox and separate department filtering
 ConfigurableFilterDataProvider<Person, String, Department> mixed =
   dataProvider.withConfigurableFilter(
     // Can be shortened as PersonFilter::new
@@ -437,19 +570,20 @@ public class PersonDataProvider
 }
 ----
 
+[[lazy-refresh]]
 === Refreshing
 
 When your application makes changes to the data that is in your backend, you might need to make sure all parts of the application are aware of these changes.
-All data providers have the `refreshAll`and `refreshItem` methods. 
+All data providers have the `refreshAll` and `refreshItem` methods.
 These methods can be used when data in the backend has been updated.
 
 For example Spring Data gives you new instances with every request, and making changes to the repository will make old instances of the same object "stale".
-In these cases you should inform any interested component by calling `dataProvider.refreshItem(newInstance)`. 
+In these cases you should inform any interested component by calling `dataProvider.refreshItem(newInstance)`.
 This can work out of the box, if your beans have equals and hashCode implementations that check if the objects represent the same data.
-Since that is not always the case, the user of a `CallbackDataProvider` can give it a `ValueProvider` that will provide a stable ID for the data objects. 
+Since that is not always the case, the user of a `CallbackDataProvider` can give it a `ValueProvider` that will provide a stable ID for the data objects.
 This is usually a method reference, eg. `Person::getId`.
 
-As an example, our service interface has an update method that returns a new instance of the item. 
+As an example, our service interface has an update method that returns a new instance of the item.
 Other functionality has been omitted to keep focus on the updating.
 
 [source, java]
@@ -464,7 +598,7 @@ Part of the application code wants to update a persons name and save it to the b
 [source, java]
 ----
 DataProvider<Person, String> allPersonsWithId = new CallbackDataProvider<>(
-                fetchCallback, sizeCallback, Person::getId);
+  fetchCallback, sizeCallback, Person::getId);
 
 Grid<Person> persons = new Grid<>();
 persons.setDataProvider(allPersonsWithId);
