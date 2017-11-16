@@ -372,9 +372,9 @@ replace the [classname]#MainView# constructor with the following:
 public MainView() {
     grid.setSizeFull();
 
-    grid.addColumn("First name", Customer::getFirstName);
-    grid.addColumn("Last name", Customer::getLastName);
-    grid.addColumn("Status", Customer::getStatus);
+    grid.addColumn(Customer::getFirstName).setHeader("First name");
+    grid.addColumn(Customer::getLastName).setHeader("Last name");
+    grid.addColumn(Customer::getStatus).setHeader("Status");
 
     add(grid);
 
@@ -415,9 +415,9 @@ private Grid<Customer> grid = new Grid<>();
 public MainView() {
     grid.setSizeFull();
 
-    grid.addColumn("First name", Customer::getFirstName);
-    grid.addColumn("Last name", Customer::getLastName);
-    grid.addColumn("Status", Customer::getStatus);
+    grid.addColumn(Customer::getFirstName).setHeader("First name");
+    grid.addColumn(Customer::getLastName).setHeader("Last name");
+    grid.addColumn(Customer::getStatus).setHeader("Status");
 
     add(grid);
 
