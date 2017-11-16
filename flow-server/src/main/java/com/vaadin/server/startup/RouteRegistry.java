@@ -15,6 +15,7 @@
  */
 package com.vaadin.server.startup;
 
+import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,8 +32,6 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import javax.servlet.ServletContext;
 
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
@@ -504,5 +503,14 @@ public class RouteRegistry implements Serializable {
             return Collections.emptyMap();
         }
         return map;
+    }
+
+    /**
+     * Check if there are any registered routes.
+     * 
+     * @return true if we have registered routes
+     */
+    public boolean hasRoutes() {
+        return navigationTargetsInitialized() && !routes.get().isEmpty();
     }
 }

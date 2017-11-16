@@ -58,7 +58,7 @@ import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.util.CurrentInstance;
 
-@WebServlet(asyncSupported = true, urlPatterns = { "/run/*" })
+@WebServlet(asyncSupported = true, urlPatterns = { "/*" })
 public class ApplicationRunnerServlet extends VaadinServlet {
 
     public static String CUSTOM_SYSTEM_MESSAGES_PROPERTY = "custom-"
@@ -270,21 +270,6 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             throws ServiceException {
         VaadinServletService service = super.createServletService(
                 deploymentConfiguration);
-
-        try {
-            Field customElements = Router.class
-                    .getDeclaredField("configuration");
-            customElements.setAccessible(true);
-            customElements.set(service.getRouter(), new RouterConfiguration() {
-                @Override
-                public boolean isConfigured() {
-                    return false;
-                }
-            });
-            customElements.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
 
         final SystemMessagesProvider provider = service
                 .getSystemMessagesProvider();

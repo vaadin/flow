@@ -56,22 +56,6 @@ public class DependencyUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        // Don't try to use router just display the
-        try {
-            Field customElements = Router.class
-                    .getDeclaredField("configuration");
-            customElements.setAccessible(true);
-            customElements.set(getSession().getService().getRouter(), new RouterConfiguration() {
-                @Override
-                public boolean isConfigured() {
-                    return false;
-                }
-            });
-            customElements.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
         getElement().appendChild(ElementFactory.createDiv(
                 "This test initially loads a stylesheet which makes all text red and a JavaScript which listens to body clicks"));
         getElement().appendChild(ElementFactory.createHr());
