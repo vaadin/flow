@@ -53,6 +53,7 @@ public class ComponentRendererUtil {
     public static Element createContainerForRenderers(Component owner) {
         Element container = new Element(Tag.DIV, false);
         container.getStyle().set("display", "none");
+        container.setAttribute("hidden", true);
 
         String containerId = UUID.randomUUID().toString();
         container.setAttribute("id", containerId);

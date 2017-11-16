@@ -16,8 +16,10 @@
 package com.vaadin.ui.grid;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.renderers.TemplateRenderer;
 
 /**
  * Mixin interface for {@link Grid} columns.
@@ -27,9 +29,7 @@ import com.vaadin.ui.event.Synchronize;
  *
  * @author Vaadin Ltd.
  */
-@FunctionalInterface
-public interface ColumnBase<T extends ColumnBase<T>>
-        extends HasElement {
+public interface ColumnBase<T extends ColumnBase<T>> extends HasElement {
 
     /**
      * When set to {@code true}, the column is user-resizable. By default this
@@ -102,6 +102,50 @@ public interface ColumnBase<T extends ColumnBase<T>>
     default boolean isFrozen() {
         return getElement().getProperty("frozen", false);
     }
+
+    /**
+     * Sets a header text to the column.
+     * 
+     * @param labelText
+     *            the text to be shown at the column header
+     * @return this column, for method chaining
+     */
+    default T setHeader(String labelText) {
+        setHeader(TemplateRenderer.of(HtmlUtils.escape(labelText)));
+        return (T) this;
+    }
+
+    /**
+     * Sets a header template to the column.
+     * 
+     * @param renderer
+     *            the template renderer to be used to render the header of the
+     *            column
+     * @return this column, for method chaining
+     */
+    T setHeader(TemplateRenderer<?> renderer);
+
+    /**
+     * Sets a footer text to the column.
+     * 
+     * @param labelText
+     *            the text to be shown at the column footer
+     * @return this column, for method chaining
+     */
+    default T setFooter(String labelText) {
+        setFooter(TemplateRenderer.of(HtmlUtils.escape(labelText)));
+        return (T) this;
+    }
+
+    /**
+     * Sets a footer template to the column.
+     * 
+     * @param renderer
+     *            the template renderer to be used to render the footer of the
+     *            column
+     * @return this column, for method chaining
+     */
+    T setFooter(TemplateRenderer<?> renderer);
 
     /**
      * Gets the underlying column element.
