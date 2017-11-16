@@ -87,6 +87,9 @@ public class MessageHandler {
     // will hold the CSRF token once received
     private String csrfToken = ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE;
 
+    // holds the push identifier once received
+    private String pushId = null;
+
     /**
      * Holds the time spent rendering the last request.
      */
@@ -299,6 +302,11 @@ public class MessageHandler {
         if (valueMap.containsKey(ApplicationConstants.UIDL_SECURITY_TOKEN_ID)) {
             csrfToken = valueMap
                     .getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
+        }
+
+        // Get push id if present
+        if (valueMap.containsKey(ApplicationConstants.UIDL_PUSH_ID)) {
+            pushId = valueMap.getString(ApplicationConstants.UIDL_PUSH_ID);
         }
 
         handleDependencies(valueMap.cast());
@@ -676,6 +684,16 @@ public class MessageHandler {
      */
     public String getCsrfToken() {
         return csrfToken;
+    }
+
+    /**
+     * Gets the push connection identifier for this session. Used when
+     * establishing a push connection with the client.
+     *
+     * @return the push connection identifier string
+     */
+    public String getPushId() {
+        return pushId;
     }
 
     /**
