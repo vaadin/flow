@@ -49,9 +49,9 @@
     </scm>
 
     <properties>
-        <flow.repo.id>hummingbird-snapshot</flow.repo.id>
+        <flow.repo.id>vaadin-snapshots</flow.repo.id>
         <flow.snapshot.repo.url>
-            https://repo.vaadin.com/nexus/content/repositories/flow-snapshots/
+            https://oss.sonatype.org/content/repositories/vaadin-snapshots/
         </flow.snapshot.repo.url>
         <flow.release.repo.url>
             https://repo.vaadin.com/nexus/content/repositories/flow/
