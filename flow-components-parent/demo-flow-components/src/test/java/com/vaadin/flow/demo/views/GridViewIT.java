@@ -418,7 +418,65 @@ public class GridViewIT extends TabbedComponentDemoTest {
                         sortOrdersString, fromClient),
                 findElement(By.id("grid-sortable-columns-message")).getText());
     }
+    
+    @Test
+    public void gridWithHeaderWithTemplateRenderer_headerAndFooterAreRenderered() {
+        openDemoPageAndCheckForErrors("using-templates");
+        WebElement grid = findElement(By.id("grid-header-with-templates"));
+        scrollToElement(grid);
 
+        WebElement topLevelColumn = grid
+                .findElement(By.tagName("vaadin-grid-column-group"));
+
+        Assert.assertTrue(
+                "There should be a cell with the renderered 'Basic Information' header",
+                topLevelColumn.getAttribute("innerHTML").contains(
+                        "<span style=\"color:orange\" title=\"Basic Information\">Basic Information</span>"));
+        
+        Assert.assertTrue("There should be a cell with the renderered footer",
+                topLevelColumn.getAttribute("innerHTML").contains(
+                        "<span style=\"color:red\">Total: 499 people</span>"));
+
+        List<WebElement> secondLevelColumns = topLevelColumn
+                .findElements(By.tagName("vaadin-grid-column"));
+        
+        Assert.assertTrue(
+                "There should be a cell with the renderered 'Name' header",
+                secondLevelColumns.get(0).getAttribute("innerHTML").contains(
+                        "<span style=\"color:green\" title=\"Name\">Name</span>"));
+
+        Assert.assertTrue(
+                "There should be a cell with the renderered 'Age' header",
+                secondLevelColumns.get(1).getAttribute("innerHTML").contains(
+                        "<span style=\"color:blue\" title=\"Age\">Age</span>"));
+    }
+
+    @Test
+    public void gridWithHeaderWithComponentRenderer_headerAndFooterAreRenderered() {
+        openDemoPageAndCheckForErrors("using-components");
+        WebElement grid = findElement(By.id("grid-header-with-components"));
+        scrollToElement(grid);
+
+        Assert.assertTrue(
+                "There should be a cell with the renderered 'Basic Information' header",
+                hasComponentRendereredCell(grid,
+                        "<label data-flow-renderer-item-key=\"0\" title=\"Basic Information\" style=\"color: orange;\">Basic Information</label>"));
+
+        Assert.assertTrue(
+                "There should be a cell with the renderered 'Name' header",
+                hasComponentRendereredCell(grid,
+                        "<label data-flow-renderer-item-key=\"0\" title=\"Name\" style=\"color: green;\">Name</label>"));
+
+        Assert.assertTrue(
+                "There should be a cell with the renderered 'Age' header",
+                hasComponentRendereredCell(grid,
+                        "<label data-flow-renderer-item-key=\"0\" title=\"Age\" style=\"color: blue;\">Age</label>"));
+
+        Assert.assertTrue("There should be a cell with the renderered footer",
+                hasComponentRendereredCell(grid,
+                        "<label data-flow-renderer-item-key=\"0\" style=\"color: red;\">Total: 499 people</label>"));
+    }
+    
     private static String getSelectionMessage(Object oldSelection,
             Object newSelection, boolean isFromClient) {
         return String.format(

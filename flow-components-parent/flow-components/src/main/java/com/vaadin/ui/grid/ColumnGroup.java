@@ -21,20 +21,17 @@ import java.util.Collection;
 import java.util.List;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.util.HtmlUtils;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 
 /**
  * Server-side component for the {@code <vaadin-grid-column-group>} element.
- *
+ * 
  * @author Vaadin Ltd.
  */
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column-group.html")
 @Tag("vaadin-grid-column-group")
-public class ColumnGroup extends Component
-        implements ColumnBase<ColumnGroup> {
+public class ColumnGroup extends AbstractColumn<ColumnGroup> {
 
     private final Collection<ColumnBase<?>> childColumns;
 
@@ -42,30 +39,27 @@ public class ColumnGroup extends Component
      * Constructs a new column group with the given header and grouping the
      * given columns.
      *
-     * @param header
-     *            the header text of this column group
+     * @param grid
+     *            the owner of this column group
      * @param columns
      *            the columns to group
      */
-    public ColumnGroup(String header, ColumnBase<?>... columns) {
-        this(header, Arrays.asList(columns));
+    public ColumnGroup(Grid<?> grid, ColumnBase<?>... columns) {
+        this(grid, Arrays.asList(columns));
     }
 
     /**
      * Constructs a new column group with the given header and grouping the
      * given columns.
      *
-     * @param header
-     *            the header text of this column group
+     * @param grid
+     *            the owner of this column group
      * @param columns
      *            the columns to group
      */
-    public ColumnGroup(String header, Collection<ColumnBase<?>> columns) {
+    public ColumnGroup(Grid<?> grid, Collection<ColumnBase<?>> columns) {
+        super(grid);
         childColumns = columns;
-        Element headerTemplate = new Element("template")
-                .setAttribute("class", "header")
-                .setProperty("innerHTML", HtmlUtils.escape(header));
-        getElement().appendChild(headerTemplate);
         columns.forEach(
                 column -> getElement().appendChild(column.getElement()));
     }

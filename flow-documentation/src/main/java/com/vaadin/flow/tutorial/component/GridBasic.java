@@ -48,9 +48,9 @@ public class GridBasic {
         // Create a grid bound to the list
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Year of birth",
-                person -> Integer.toString(person.getYearOfBirth()));
+        grid.addColumn(Person::getName).setHeader("Name");
+        grid.addColumn(person -> Integer.toString(person.getYearOfBirth()))
+                .setHeader("Year of birth");
 
         layout.add(grid);
     }
@@ -121,7 +121,8 @@ public class GridBasic {
     public void gridConfiguringColumns() {
         Grid<Person> grid = new Grid<>();
         
-        Column<Person> nameColumn = grid.addColumn("Name", Person::getName)
+        Column<Person> nameColumn = grid.addColumn(Person::getName)
+            .setHeader("Name")
             .setFlexGrow(0)
             .setWidth("100px")
             .setResizable(false);
@@ -130,45 +131,46 @@ public class GridBasic {
         
         nameColumn.setFrozen(true);
     }
-    
+
     public void gridColumnMerging() {
         Grid<Person> grid = new Grid<>();
-        Column<Person> nameColumn = grid.addColumn("",
+        Column<Person> nameColumn = grid.addColumn(
                 ValueProvider.identity());
-        Column<Person> ageColumn = grid.addColumn("", ValueProvider.identity());
-        Column<Person> streetColumn = grid.addColumn("",
+        Column<Person> ageColumn = grid.addColumn(ValueProvider.identity());
+        Column<Person> streetColumn = grid.addColumn(
                 ValueProvider.identity());
-        Column<Person> postalCodeColumn = grid.addColumn("",
+        Column<Person> postalCodeColumn = grid.addColumn(
                 ValueProvider.identity());
 
         // Group two columns, nameColumn and ageColumn,
         // in a ColumnGroup and set the header label text
         ColumnGroup informationColumnGroup = grid
                 .mergeColumns(nameColumn, ageColumn)
-                .setHeaderLabel("Basic Information");
+                .setHeader("Basic Information");
 
         ColumnGroup addressColumnGroup = grid
                 .mergeColumns(streetColumn, postalCodeColumn)
-                .setHeaderLabel("Address information");
+                .setHeader("Address information");
 
         // Group two ColumnGroups
         grid.mergeColumns(informationColumnGroup, addressColumnGroup)
-                .setHeaderLabel("Person Information");
+                .setHeader("Person Information");
     }
 
     public void gridHeadersAndFooters() {
         Grid<Person> grid = new Grid<>();
-        Column<Person> nameColumn = grid.addColumn("",
+        Column<Person> nameColumn = grid.addColumn(
                 ValueProvider.identity());
 
         // Sets a simple text header
-        nameColumn.setHeaderLabel("Name");
-        // Sets a header containing a custom template
-        nameColumn.setHeaderLabel(TemplateRenderer.<Person> of());
+        nameColumn.setHeader("Name");
+        // Sets a header containing a custom template,
+        // in this case simply bolding the caption "Name"
+        nameColumn.setHeader(TemplateRenderer.<Person> of("<b>Name</b>"));
 
         // Similarly for the footer
-        nameColumn.setFooterLabel("Name");
-        nameColumn.setFooterLabel(TemplateRenderer.<Person> of());
+        nameColumn.setFooter("Name");
+        nameColumn.setFooter(TemplateRenderer.<Person> of("<b>Name</b>"));
     }
 
     /* code of commented lines

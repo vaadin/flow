@@ -241,6 +241,8 @@ public class GridView extends DemoView {
         createColumnGroup();
         createColumnComponentRenderer();
         createSorting();
+        createHeaderAndFooterUsingTemplates();
+        createHeaderAndFooterUsingComponents();
 
         addCard("Grid example model",
                 new Label("These objects are used in the examples above"));
@@ -252,8 +254,8 @@ public class GridView extends DemoView {
         Grid<Person> grid = new Grid<>();
         grid.setItems(getItems());
 
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", Person::getAge);
+        grid.addColumn(Person::getName).setHeader("Name");
+        grid.addColumn(Person::getAge).setHeader("Age");
 
         // end-source-example
         grid.setId("basic");
@@ -280,8 +282,8 @@ public class GridView extends DemoView {
                         .mapToObj(index -> createPerson(index, random)),
                 query -> 10000));
 
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", Person::getAge);
+        grid.addColumn(Person::getName).setHeader("Name");
+        grid.addColumn(Person::getAge).setHeader("Age");
 
         // end-source-example
 
@@ -298,8 +300,8 @@ public class GridView extends DemoView {
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
 
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", Person::getAge);
+        grid.addColumn(Person::getName).setHeader("Name");
+        grid.addColumn(Person::getAge).setHeader("Age");
 
         grid.asSingleSelect().addValueChangeListener(
                 event -> messageDiv.setText(String.format(
@@ -335,8 +337,8 @@ public class GridView extends DemoView {
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
 
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", Person::getAge);
+        grid.addColumn(Person::getName).setHeader("Name");
+        grid.addColumn(Person::getAge).setHeader("Age");
 
         grid.setSelectionMode(SelectionMode.MULTI);
 
@@ -367,8 +369,8 @@ public class GridView extends DemoView {
         Grid<Person> grid = new Grid<>();
         grid.setItems(getItems());
 
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", Person::getAge);
+        grid.addColumn(Person::getName).setHeader("Name");
+        grid.addColumn(Person::getAge).setHeader("Age");
 
         grid.setSelectionMode(SelectionMode.NONE);
         // end-source-example
@@ -383,26 +385,28 @@ public class GridView extends DemoView {
         grid.setItems(createItems());
 
         // You can use the [[index]] variable to print the row index (0 based)
-        grid.addColumn("#", TemplateRenderer.of("[[index]]"));
+        grid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#");
 
         // You can set any property by using `withProperty`, including
         // properties not present on the original bean.
-        grid.addColumn("Person", TemplateRenderer.<Person> of(
+        grid.addColumn(TemplateRenderer.<Person> of(
                 "<div title='[[item.name]]'>[[item.name]]<br><small>[[item.yearsOld]]</small></div>")
                 .withProperty("name", Person::getName).withProperty("yearsOld",
                         person -> person.getAge() > 1
                                 ? person.getAge() + " years old"
-                                : person.getAge() + " year old"));
+                                : person.getAge() + " year old"))
+                .setHeader("Person");
 
         // You can also set complex objects directly. Internal properties of the
         // bean are accessible in the template.
-        grid.addColumn("Address", TemplateRenderer.<Person> of(
+        grid.addColumn(TemplateRenderer.<Person> of(
                 "<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")
-                .withProperty("address", Person::getAddress));
+                .withProperty("address", Person::getAddress))
+                .setHeader("Address");
 
         // You can set events handlers associated with the template. The syntax
         // follows the Polymer convention "on-event", such as "on-click".
-        grid.addColumn("Actions", TemplateRenderer.<Person> of(
+        grid.addColumn(TemplateRenderer.<Person> of(
                 "<button on-click='handleUpdate'>Update</button><button on-click='handleRemove'>Remove</button>")
                 .withEventHandler("handleUpdate", person -> {
                     person.setName(person.getName() + " Updated");
@@ -412,7 +416,7 @@ public class GridView extends DemoView {
                             .getDataProvider();
                     dataProvider.getItems().remove(person);
                     dataProvider.refreshAll();
-                }));
+                })).setHeader("Actions");
 
         grid.setSelectionMode(SelectionMode.NONE);
         // end-source-example
@@ -428,17 +432,17 @@ public class GridView extends DemoView {
         grid.setItems(createItems());
 
         // You can use a constructor and a separate setter for the renderer
-        grid.addColumn("Person", new ComponentRenderer<>(PersonComponent::new,
-                PersonComponent::setPerson));
+        grid.addColumn(new ComponentRenderer<>(PersonComponent::new,
+                PersonComponent::setPerson)).setHeader("Person");
 
         // Or you can use an ordinary function to get the component
-        grid.addColumn("Actions",
+        grid.addColumn(
                 new ComponentRenderer<>(item -> new Button("Remove", evt -> {
                     ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
                             .getDataProvider();
                     dataProvider.getItems().remove(item);
                     grid.getDataCommunicator().reset();
-                })));
+                }))).setHeader("Actions");
 
         // Item details can also use components
         grid.setItemDetailsRenderer(new ComponentRenderer<>(PersonCard::new));
@@ -480,11 +484,11 @@ public class GridView extends DemoView {
         Grid<Person> grid = new Grid<>();
         grid.setItems(getItems());
 
-        Column<Person> idColumn = grid.addColumn("ID", Person::getId)
+        Column<Person> idColumn = grid.addColumn(Person::getId).setHeader("ID")
                 .setFlexGrow(0).setWidth("75px");
-        Column<Person> nameColumn = grid.addColumn("Name", Person::getName)
-                .setResizable(true);
-        grid.addColumn("Age", Person::getAge).setResizable(true);
+        Column<Person> nameColumn = grid.addColumn(Person::getName)
+                .setHeader("Name").setResizable(true);
+        grid.addColumn(Person::getAge).setHeader("Age").setResizable(true);
 
         Button idColumnVisibility = new Button(
                 "Toggle visibility of the ID column");
@@ -501,7 +505,8 @@ public class GridView extends DemoView {
 
         Button merge = new Button("Merge ID and name columns");
         merge.addClickListener(event -> {
-            grid.mergeColumns("ID, Name column group", idColumn, nameColumn);
+            grid.mergeColumns(idColumn, nameColumn)
+                    .setHeader("ID, Name column group");
             // Remove this button from the layout
             merge.getParent().ifPresent(
                     component -> ((HasComponents) component).remove(merge));
@@ -524,8 +529,8 @@ public class GridView extends DemoView {
         List<Person> people = createItems();
         grid.setItems(people);
 
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", Person::getAge);
+        grid.addColumn(Person::getName).setHeader("Name");
+        grid.addColumn(Person::getAge).setHeader("Age");
 
         grid.setSelectionMode(SelectionMode.NONE);
         grid.setItemDetailsRenderer(TemplateRenderer
@@ -556,19 +561,25 @@ public class GridView extends DemoView {
         Grid<Person> grid = new Grid<>();
         grid.setItems(getItems());
 
-        Column<Person> nameColumn = grid.addColumn("Name", Person::getName);
-        Column<Person> ageColumn = grid.addColumn("Age", Person::getAge);
-        Column<Person> streetColumn = grid.addColumn("Street",
-                person -> person.getAddress().getStreet());
-        Column<Person> postalCodeColumn = grid.addColumn("Postal Code",
-                person -> person.getAddress().getPostalCode());
+        Column<Person> nameColumn = grid.addColumn(Person::getName)
+                .setHeader("Name");
+        Column<Person> ageColumn = grid.addColumn(Person::getAge)
+                .setHeader("Age");
+        Column<Person> streetColumn = grid
+                .addColumn(person -> person.getAddress().getStreet())
+                .setHeader("Street");
+        Column<Person> postalCodeColumn = grid
+                .addColumn(person -> person.getAddress().getPostalCode())
+                .setHeader("Postal Code");
 
         ColumnGroup informationColumnGroup = grid
-                .mergeColumns("Basic Information", nameColumn, ageColumn);
-        ColumnGroup addressColumnGroup = grid.mergeColumns(
-                "Address information", streetColumn, postalCodeColumn);
-        grid.mergeColumns("Person Information", informationColumnGroup,
-                addressColumnGroup);
+                .mergeColumns(nameColumn, ageColumn)
+                .setHeader("Basic Information")
+                .setFooter("Total: " + getItems().size() + " people");
+        ColumnGroup addressColumnGroup = grid
+                .mergeColumns(streetColumn, postalCodeColumn)
+                .setHeader("Address Information");
+        grid.mergeColumns(informationColumnGroup, addressColumnGroup);
         // end-source-example
         grid.setId("grid-column-grouping");
         addCard("Configuring columns", "Column grouping example", grid);
@@ -582,16 +593,18 @@ public class GridView extends DemoView {
         grid.setItems(getItems());
         grid.setSelectionMode(SelectionMode.NONE);
 
-        grid.addColumn("Name", Person::getName, "name");
-        grid.addColumn("Age", Person::getAge, "age");
+        grid.addColumn(Person::getName, "name").setHeader("Name");
+        grid.addColumn(Person::getAge, "age").setHeader("Age");
 
-        grid.addColumn("Address",
-                TemplateRenderer
-                        .<Person> of("<div>[[item.street]], number [[item.number]]<br><small>[[item.postalCode]]</small></div>")
-                        .withProperty("street", person -> person.getAddress().getStreet())
-                        .withProperty("number", person -> person.getAddress().getNumber())
-                        .withProperty("postalCode", person -> person.getAddress().getPostalCode()),
-                "street", "number");
+        grid.addColumn(TemplateRenderer.<Person> of(
+                "<div>[[item.street]], number [[item.number]]<br><small>[[item.postalCode]]</small></div>")
+                .withProperty("street",
+                        person -> person.getAddress().getStreet())
+                .withProperty("number",
+                        person -> person.getAddress().getNumber())
+                .withProperty("postalCode",
+                        person -> person.getAddress().getPostalCode()),
+                "street", "number").setHeader("Address");
 
         Checkbox multiSort = new Checkbox("Multiple column sorting enabled");
         multiSort.addValueChangeListener(
@@ -614,6 +627,101 @@ public class GridView extends DemoView {
         messageDiv.setId("grid-sortable-columns-message");
         addCard("Sorting", "Grid with sortable columns", grid, multiSort,
                 messageDiv);
+    }
+
+    private void createHeaderAndFooterUsingTemplates() {
+        // begin-source-example
+        // source-example-heading: Column header and footer using templates
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(getItems());
+
+        Column<Person> nameColumn = grid.addColumn(Person::getName)
+                .setHeader(TemplateRenderer.of(
+                        "<span style='color:green' title='Name'>Name</span>"))
+                .setComparator((p1, p2) -> p1.getName()
+                        .compareToIgnoreCase(p2.getName()));
+        Column<Person> ageColumn = grid.addColumn(Person::getAge, "age")
+                .setHeader(TemplateRenderer
+                        .of("<span style='color:blue' title='Age'>Age</span>"));
+        Column<Person> streetColumn = grid
+                .addColumn(person -> person.getAddress().getStreet())
+                .setHeader("Street");
+        Column<Person> postalCodeColumn = grid
+                .addColumn(person -> person.getAddress().getPostalCode())
+                .setHeader("Postal Code");
+
+        ColumnGroup informationColumnGroup = grid
+                .mergeColumns(nameColumn, ageColumn)
+                .setHeader(TemplateRenderer.of(
+                        "<span style='color:orange' title='Basic Information'>Basic Information</span>"))
+                .setFooter(TemplateRenderer.of("<span style='color:red'>Total: "
+                        + getItems().size() + " people</span>"));
+        ColumnGroup addressColumnGroup = grid
+                .mergeColumns(streetColumn, postalCodeColumn)
+                .setHeader(TemplateRenderer.of(
+                        "<span title='Address Information'>Address Information</span>"));
+        grid.mergeColumns(informationColumnGroup, addressColumnGroup);
+
+        // end-source-example
+        grid.setId("grid-header-with-templates");
+        addCard("Using templates", "Column header and footer using templates",
+                grid);
+    }
+
+    private void createHeaderAndFooterUsingComponents() {
+        // begin-source-example
+        // source-example-heading: Column header and footer using components
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(getItems());
+
+        Column<Person> nameColumn = grid.addColumn(Person::getName)
+                .setHeader(new ComponentRenderer<>(() -> {
+                    Label label = new Label("Name");
+                    label.getStyle().set("color", "green");
+                    label.setTitle("Name");
+                    return label;
+                })).setComparator((p1, p2) -> p1.getName()
+                        .compareToIgnoreCase(p2.getName()));
+        Column<Person> ageColumn = grid.addColumn(Person::getAge, "age")
+                .setHeader(new ComponentRenderer<>(() -> {
+                    Label label = new Label("Age");
+                    label.getStyle().set("color", "blue");
+                    label.setTitle("Age");
+                    return label;
+                }));
+        Column<Person> streetColumn = grid
+                .addColumn(person -> person.getAddress().getStreet())
+                .setHeader("Street");
+        Column<Person> postalCodeColumn = grid
+                .addColumn(person -> person.getAddress().getPostalCode())
+                .setHeader("Postal Code");
+
+        ColumnGroup informationColumnGroup = grid
+                .mergeColumns(nameColumn, ageColumn)
+                .setHeader(new ComponentRenderer<>(() -> {
+                    Label label = new Label("Basic Information");
+                    label.getStyle().set("color", "orange");
+                    label.setTitle("Basic Information");
+                    return label;
+                })).setFooter(new ComponentRenderer<>(() -> {
+                    Label label = new Label(
+                            "Total: " + getItems().size() + " people");
+                    label.getStyle().set("color", "red");
+                    return label;
+                }));
+        ColumnGroup addressColumnGroup = grid
+                .mergeColumns(streetColumn, postalCodeColumn)
+                .setHeader(new ComponentRenderer<>(() -> {
+                    Label label = new Label("Address Information");
+                    label.setTitle("Address Information");
+                    return label;
+                }));
+        grid.mergeColumns(informationColumnGroup, addressColumnGroup);
+
+        // end-source-example
+        grid.setId("grid-header-with-components");
+        addCard("Using components", "Column header and footer using components",
+                grid);
     }
 
     private List<Person> getItems() {
