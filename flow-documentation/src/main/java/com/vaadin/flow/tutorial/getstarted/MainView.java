@@ -58,9 +58,9 @@ public class MainView extends VerticalLayout {
 
 		grid.setSizeFull();
 
-		grid.addColumn("First name", Customer::getFirstName);
-		grid.addColumn("Last name", Customer::getLastName);
-		grid.addColumn("Status", Customer::getStatus);
+		grid.addColumn(Customer::getFirstName).setHeader("First name");
+		grid.addColumn(Customer::getLastName).setHeader("Last name");
+		grid.addColumn(Customer::getStatus).setHeader("Status");
 
 		HorizontalLayout main = new HorizontalLayout(grid, form);
 		main.setAlignItems(Alignment.START);
