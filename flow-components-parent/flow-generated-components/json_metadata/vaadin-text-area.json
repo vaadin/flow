@@ -1,0 +1,167 @@
+{
+  "name": "Vaadin.TextAreaElement",
+  "tag": "vaadin-text-area",
+  "baseUrl": "vaadin-text-field/vaadin-text-area.html",
+  "version": "1.2.0-alpha1",
+  "properties": [
+    {
+      "name": "autofocus",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Specify that this control should have input focus when the page loads.\n         "
+    },
+    {
+      "name": "disabled",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the user cannot interact with this element.\n         "
+    },
+    {
+      "name": "autocomplete",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete\n           "
+    },
+    {
+      "name": "errorMessage",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Error to show when the input value is invalid.\n           "
+    },
+    {
+      "name": "label",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "String used for the label element.\n           "
+    },
+    {
+      "name": "maxlength",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Maximum number of characters (in Unicode code points) that the user can enter.\n           "
+    },
+    {
+      "name": "minlength",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Minimum number of characters (in Unicode code points) that the user can enter.\n           "
+    },
+    {
+      "name": "name",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of the control, which is submitted with the form data.\n           "
+    },
+    {
+      "name": "placeholder",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "A hint to the user of what can be entered in the control.\n           "
+    },
+    {
+      "name": "readonly",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "This attribute indicates that the user cannot modify the value of the control.\n           "
+    },
+    {
+      "name": "required",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Specifies that the user must fill in a value.\n           "
+    },
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The initial value of the control.\nIt can be used for two-way data binding.\n           "
+    },
+    {
+      "name": "invalid",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "This property is set to true when the control value is invalid.\n           "
+    },
+    {
+      "name": "hasValue",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "A read-only property indicating whether this input has a non empty value.\nIt can be used for example in styling of the component.\n           ",
+      "readOnly": true
+    },
+    {
+      "name": "preventInvalidInput",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When set to true, user is prevented from typing a value that\nconflicts with the given `pattern`.\n           "
+    }
+  ],
+  "methods": [
+    {
+      "name": "checkValidity",
+      "description": "Returns true if the current input value satisfies all constraints (if any)\n       ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "validate",
+      "description": "Returns true if `value` is valid.\n`<iron-form>` uses this to check the validity or all its elements.",
+      "parameters": [],
+      "returns": "BOOLEAN"
+    }
+  ],
+  "events": [
+    {
+      "name": "iron-form-element-register",
+      "description": "iron-form-element-register",
+      "properties": []
+    },
+    {
+      "name": "iron-form-element-unregister",
+      "description": "iron-form-element-unregister",
+      "properties": []
+    }
+  ],
+  "slots": [
+    "prefix",
+    "suffix"
+  ],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.TextFieldMixin",
+    "Vaadin.ThemableMixin",
+    "Vaadin.ControlStateMixin",
+    "Vaadin.FormElementMixin"
+  ],
+  "description": "`<vaadin-text-area>` is a Polymer 2 element for text area control in forms.\n\n```html\n<vaadin-text-area label=\"Add description\">\n</vaadin-text-area>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`value` | The textarea element\n`error-message` | The error message element\n`text-area` | The element that wraps prefix, value and suffix\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host"
+}
