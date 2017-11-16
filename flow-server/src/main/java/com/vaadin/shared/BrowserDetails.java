@@ -378,6 +378,16 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
+     * Tests if the browser is Safari or runs on IOS (covering also Chrome on
+     * iOS).
+     *
+     * @return true if it is Safari or running on IOS, false otherwise
+     */
+    public boolean isSafariOrIOS() {
+        return isSafari() || isIOS();
+    }
+
+    /**
      * Tests if the browser is Chrome.
      *
      * @return true if it is Chrome, false otherwise
