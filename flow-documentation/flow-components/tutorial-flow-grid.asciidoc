@@ -372,3 +372,107 @@ You need to use Polymer notation for event handlers, so `on-click` (with a dash)
 [NOTE]
 `TemplateRenderer` has fluent API, so you can chain the commands, like
 `TemplateRenderer.of().withProperty().withProperty().withEventHandler()...`
+
+== Using Components
+
+You can use any component inside the grid cells by providing a `ComponentRenderer` for the appropriate `Column`.
+
+To define how the component will be generated for each item, you need to pass a `Function` for the
+`ComponentRenderer`.
+The following example adds a column that contains an icon for each person, that is based on the person's gender.
+
+[source, java]
+----
+Grid<Person> grid = new Grid();
+grid.setItems(people);
+
+grid.addColumn(new ComponentRenderer<>(person -> {
+    if (person.getGender() == Gender.MALE) {
+        return new Icon(VaadinIcons.MALE);
+    } else {
+        return new Icon(VaadinIcons.FEMALE);
+    }
+})).setHeader("Gender");
+----
+
+You can also separately provide a `Supplier` for creating the component and a `Consumer` for configuring
+it for each item.
+
+[source, java]
+----
+grid.addColumn(new ComponentRenderer<>(Div::new,
+        (div, person) -> div.setText(person.getName())))
+        .setHeader("Name");
+----
+
+Or if the component is the same for every item, you only need to provide the `Supplier`.
+
+[source, java]
+----
+grid.addColumn(new ComponentRenderer<>(
+        () -> new Icon(VaadinIcons.ARROW_LEFT)));
+----
+
+Using the component APIs allows you to easily listen for events and wrap multiple components inside
+layouts, so you can create complex contents for the grid cells.
+
+[source, java]
+----
+grid.addColumn(new ComponentRenderer<>(person -> {
+
+    // text field for entering a new name for the person
+    TextField name = new TextField("Name");
+    name.setValue(person.getName());
+
+    // button for saving the name to backend
+    Button update = new Button("Update", event -> {
+        person.setName(name.getValue());
+        grid.getDataProvider().refreshItem(person);
+    });
+
+    // button that removes the item
+    Button remove = new Button("Remove", event -> {
+        ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
+                .getDataProvider();
+        dataProvider.getItems().remove(person);
+        dataProvider.refreshAll();
+    });
+
+    // layouts for placing the text field on top of the buttons
+    HorizontalLayout buttons = new HorizontalLayout(update, remove);
+    return new VerticalLayout(name, buttons);
+})).setHeader("Actions");
+----
+
+[NOTE]
+Editing the grid's items requires refreshing it's `DataProvider`, like explained above in the
+<<Handling Events,template tutorial>>. More information about `DataProvider` can be found
+<<../data-provider/tutorial-flow-data-provider#,here>>.
+
+== Showing Item Details
+
+Often you don't want to overwhelm the user with a complex grid with all the information about each item,
+but instead show just the basic information by default and hide the details. For this purpose, grid supports
+expanding it's rows for showing additional details for the items. This is enabled with the
+`setItemDetailsRenderer()` method. You can pass either a `TemplateRenderer` or a `ComponentRenderer` for the
+method to define how the details are rendered.
+
+[source, java]
+----
+grid.setItemDetailsRenderer(new ComponentRenderer<>(person -> {
+    VerticalLayout layout = new VerticalLayout();
+    layout.add(new Label("Address: " + person.getAddress().getStreet()
+            + " " + person.getAddress().getNumber()));
+    layout.add(new Label("Year of birth: " + person.getYearOfBirth()));
+    return layout;
+}));
+----
+
+After this you can open the details for the row simply by clicking on it. Clicking on the same row
+again or opening the details for another row closes the currently opened one. You can also show and
+hide row details programmatically with the `setDetailsVisible()` method, and test whether the details
+for an item is visible with `isDetailsVisible()`.
+
+[NOTE]
+By default, items are selected by clicking them. If you want clicking just to show the item details without
+selection, you need to call `grid.setSelectionMode(SelectionMode.NONE)`.

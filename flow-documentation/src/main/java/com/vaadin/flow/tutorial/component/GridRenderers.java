@@ -21,43 +21,41 @@ import java.util.List;
 
 import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.flow.tutorial.binder.Person.Gender;
+import com.vaadin.ui.button.Button;
 import com.vaadin.ui.grid.Grid;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
+import com.vaadin.ui.icon.Icon;
+import com.vaadin.ui.icon.VaadinIcons;
+import com.vaadin.ui.layout.HorizontalLayout;
+import com.vaadin.ui.layout.VerticalLayout;
+import com.vaadin.ui.renderers.ComponentRenderer;
 import com.vaadin.ui.renderers.TemplateRenderer;
+import com.vaadin.ui.textfield.TextField;
 
 @CodeFor("flow-components/tutorial-flow-grid.asciidoc")
-public class GridTemplateRenderer {
+public class GridRenderers {
 
-    public void basics() {
-        List<Person> people = Arrays.asList(new Person(), new Person());
+    private List<Person> people = Arrays.asList(new Person(), new Person());
 
+    public void templateRenderer() {
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
 
         grid.addColumn(TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
                 .withProperty("name", Person::getName)).setHeader("Name");
-    }
-
-    public void customProperties() {
-        Grid<Person> grid = new Grid<>();
 
         grid.addColumn(TemplateRenderer.<Person> of("[[item.age]] years old")
-                .withProperty("age",
-                        person -> Year.now().getValue()
-                                - person.getYearOfBirth()))
+                        .withProperty("age",
+                                person -> Year.now().getValue()
+                                        - person.getYearOfBirth()))
                 .setHeader("Age");
-    }
-
-    public void bindingBeans() {
-        Grid<Person> grid = new Grid<>();
 
         grid.addColumn(TemplateRenderer.<Person> of(
                 "<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")
                 .withProperty("address", Person::getAddress))
                 .setHeader("Address");
-    }
-
-    public void handlingEvents() {
-        Grid<Person> grid = new Grid<>();
 
         grid.addColumn(TemplateRenderer.<Person> of(
                 "<button on-click='handleUpdate'>Update</button><button on-click='handleRemove'>Remove</button>")
@@ -72,10 +70,68 @@ public class GridTemplateRenderer {
                 })).setHeader("Actions");
     }
 
+    public void componentRenderer() {
+        Grid<Person> grid = new Grid();
+        grid.setItems(people);
+
+        grid.addColumn(new ComponentRenderer<>(person -> {
+            if (person.getGender() == Gender.MALE) {
+                return new Icon(VaadinIcons.MALE);
+            } else {
+                return new Icon(VaadinIcons.FEMALE);
+            }
+        })).setHeader("Gender");
+
+        grid.addColumn(new ComponentRenderer<>(Div::new,
+                (div, person) -> div.setText(person.getName())))
+                .setHeader("Name");
+
+        grid.addColumn(new ComponentRenderer<>(
+                () -> new Icon(VaadinIcons.ARROW_LEFT)));
+
+        grid.addColumn(new ComponentRenderer<>(person -> {
+
+            // text field for entering a new name for the person
+            TextField name = new TextField("Name");
+            name.setValue(person.getName());
+
+            // button for saving the name to backend
+            Button update = new Button("Update", event -> {
+                person.setName(name.getValue());
+                grid.getDataProvider().refreshItem(person);
+            });
+
+            // button that removes the item
+            Button remove = new Button("Remove", event -> {
+                ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
+                        .getDataProvider();
+                dataProvider.getItems().remove(person);
+                dataProvider.refreshAll();
+            });
+
+            // layouts for placing the text field on top of the buttons
+            HorizontalLayout buttons = new HorizontalLayout(update, remove);
+            return new VerticalLayout(name, buttons);
+        })).setHeader("Actions");
+    }
+
+    public void showingItemDetails() {
+        Grid<Person> grid = new Grid();
+
+        grid.setItemDetailsRenderer(new ComponentRenderer<>(person -> {
+            VerticalLayout layout = new VerticalLayout();
+            layout.add(new Label("Address: " + person.getAddress().getStreet()
+                    + " " + person.getAddress().getNumber()));
+            layout.add(new Label("Year of birth: " + person.getYearOfBirth()));
+            return layout;
+        }));
+    }
+
     public static class Person {
         private String name;
         private int yearOfBirth;
         private Address address;
+        private Gender gender;
 
         public String getName() {
             return name;
@@ -100,6 +156,15 @@ public class GridTemplateRenderer {
         public void setAddress(Address address) {
             this.address = address;
         }
+
+        public Gender getGender() {
+            return gender;
+        }
+
+        public void setGender(Gender gender) {
+            this.gender = gender;
+        }
+
     }
 
     public static class Address {
