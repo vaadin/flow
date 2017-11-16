@@ -138,6 +138,32 @@ public class HasStyleTest {
                 component.getClassNames());
     }
 
+    @Test
+    public void testAddClassNames() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.addClassNames();
+        assertClasses(component);
+        component.addClassNames("foo", "bar");
+        assertClasses(component, "foo", "bar");
+        component.addClassNames("baz1", "baz2");
+        assertClasses(component, "foo", "bar", "baz1", "baz2");
+    }
+
+    @Test
+    public void testRemoveClassNames() {
+        HasStyleComponent component = new HasStyleComponent();
+        component.setClassName("foo bar baz1 baz2 foo2 bar1");
+
+        component.removeClassNames();
+        assertClasses(component, "foo", "bar", "baz1", "baz2", "foo2", "bar1");
+
+        component.removeClassNames("baz2");
+        assertClasses(component, "foo", "bar", "baz1", "foo2", "bar1");
+
+        component.removeClassNames("bar", "foo2", "foo");
+        assertClasses(component, "baz1", "bar1");
+    }
+
     private void assertClasses(HasStyleComponent c, String... expectedClasses) {
         Set<String> actual = c.getClassNames();
         HashSet<String> expected = new HashSet<String>(
