@@ -23,6 +23,7 @@ package com.vaadin.generator.metadata;
 public class ComponentPropertyData extends ComponentPropertyBaseData {
 
     private boolean readOnly;
+    private boolean notify;
 
     /**
      * Gets whether the property is read-only or not. Read-only properties
@@ -45,6 +46,31 @@ public class ComponentPropertyData extends ComponentPropertyBaseData {
      */
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
+    }
+
+    /**
+     * Gets whether the webcomponent automatically fires a
+     * {@code propertyName-changed} event every time the property value changes
+     * on the client-side
+     * 
+     * @return <code>true</code> if the webcomponent fires a changed event for
+     *         this property, <code>false</code> otherwise.
+     */
+    public boolean isNotify() {
+        return notify;
+    }
+
+    /**
+     * Sets whether the webcomponent automatically fires a
+     * {@code propertyName-changed} event everytime the property value changes
+     * on the client-side.
+     * 
+     * @param notify
+     *            <code>true</code> if the webcomponent fires a changed event
+     *            for this property, <code>false</code> otherwise
+     */
+    public void setNotify(boolean notify) {
+        this.notify = notify;
     }
 
 }

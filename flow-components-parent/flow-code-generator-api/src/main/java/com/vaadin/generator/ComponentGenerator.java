@@ -15,6 +15,8 @@
  */
 package com.vaadin.generator;
 
+import javax.annotation.Generated;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,8 +34,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Generated;
-
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -43,9 +46,6 @@ import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
@@ -361,6 +361,7 @@ public class ComponentGenerator {
         addClassAnnotations(metadata, javaClass);
 
         if (metadata.getProperties() != null) {
+            generateEventsForPropertiesWithNotify(metadata);
             generateGettersAndSetters(metadata, javaClass);
         }
 
@@ -392,6 +393,34 @@ public class ComponentGenerator {
         generateConstructors(javaClass);
 
         return javaClass;
+    }
+
+    private void generateEventsForPropertiesWithNotify(
+            ComponentMetadata metadata) {
+        metadata.getProperties().stream()
+                .filter(ComponentPropertyData::isNotify)
+                .forEachOrdered(property -> {
+                    String eventName = property.getName() + "-changed";
+                    List<ComponentEventData> events = metadata.getEvents();
+                    if (events == null) {
+                        events = new ArrayList<>();
+                        metadata.setEvents(events);
+                    }
+                    if (events.stream().anyMatch(event -> event.getName()
+                            .equalsIgnoreCase(eventName)
+                            || event.getName().replace("-", "")
+                                    .equalsIgnoreCase(
+                                            eventName.replace("-", "")))) {
+                        return;
+                    }
+                    ComponentEventData event = new ComponentEventData();
+                    event.setName(eventName);
+                    event.setDescription(String.format(
+                            "Event fired every time the `%s` property is changed.",
+                            property.getName()));
+                    event.setProperties(Collections.singletonList(property));
+                    events.add(event);
+                });
     }
 
     private String getGeneratedClassName(String tagName) {
