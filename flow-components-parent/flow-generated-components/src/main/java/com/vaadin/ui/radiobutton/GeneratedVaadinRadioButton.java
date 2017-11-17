@@ -273,6 +273,13 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code checked-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addCheckedChangeListener(
             ComponentEventListener<CheckedChangeEvent<R>> listener) {
         return addListener(CheckedChangeEvent.class,

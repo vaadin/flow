@@ -407,14 +407,15 @@ public class ComponentGenerator {
 
     private void generateEventForPropertyWithNotify(ComponentMetadata metadata,
             ComponentPropertyData property) {
-        String eventName = property.getName() + "-changed";
+        String eventName = ComponentGeneratorUtils
+                .convertCamelCaseToHyphens(property.getName()) + "-changed";
         List<ComponentEventData> events = metadata.getEvents();
         if (events == null) {
             events = new ArrayList<>();
             metadata.setEvents(events);
         }
-        if (events.stream().anyMatch(
-                event -> areTheSameEvent(event.getName(), eventName))) {
+        if (events.stream()
+                .anyMatch(event -> event.getName().equals(eventName))) {
             return;
         }
         ComponentEventData event = new ComponentEventData();
@@ -424,20 +425,6 @@ public class ComponentGenerator {
                 property.getName()));
         event.setProperties(Collections.singletonList(property));
         events.add(event);
-    }
-
-    private boolean areTheSameEvent(String eventName1, String eventName2) {
-        /*
-         * There are some events that have different names from the properties
-         * that originated them. For instance, some components have the
-         * selectedItem property, but the changed event is
-         * selected-item-changed.
-         * 
-         * This method compares selectedItem-changed and selected-item-changed
-         * events to be semantically equal.
-         */
-        return eventName1.equalsIgnoreCase(eventName2) || eventName1
-                .replace("-", "").equalsIgnoreCase(eventName2.replace("-", ""));
     }
 
     private String getGeneratedClassName(String tagName) {

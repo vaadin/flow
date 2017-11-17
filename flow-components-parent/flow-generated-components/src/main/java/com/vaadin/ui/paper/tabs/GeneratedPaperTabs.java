@@ -100,8 +100,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return the {@code selected} property from the webcomponent
      */
     @Synchronize(property = "selected", value = "selected-changed")
-    public double getSelectedNumber() {
-        return getElement().getProperty("selected", 0.0);
+    public String getSelectedString() {
+        return getElement().getProperty("selected");
     }
 
     /**
@@ -119,24 +119,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return the {@code selected} property from the webcomponent
      */
     @Synchronize(property = "selected", value = "selected-changed")
-    public String getSelectedString() {
-        return getElement().getProperty("selected");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Gets or sets the selected element. The default is to use the index of the
-     * item.
-     * </p>
-     * 
-     * @param selected
-     *            the double value to set
-     */
-    public void setSelected(double selected) {
-        getElement().setProperty("selected", selected);
+    public double getSelectedNumber() {
+        return getElement().getProperty("selected", 0.0);
     }
 
     /**
@@ -153,6 +137,22 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      */
     public void setSelected(java.lang.String selected) {
         getElement().setProperty("selected", selected == null ? "" : selected);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Gets or sets the selected element. The default is to use the index of the
+     * item.
+     * </p>
+     * 
+     * @param selected
+     *            the double value to set
+     */
+    public void setSelected(double selected) {
+        getElement().setProperty("selected", selected);
     }
 
     /**

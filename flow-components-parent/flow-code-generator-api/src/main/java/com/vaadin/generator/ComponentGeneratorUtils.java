@@ -336,4 +336,33 @@ public final class ComponentGeneratorUtils {
         }
     }
 
+    /**
+     * Converts a string in camel-case to a lower case string where each term is
+     * separated by an hyphen.
+     * <p>
+     * For instance: {@code hasValue} would be converted to {@code has-value}.
+     * 
+     * @param text
+     *            the text to be converted
+     * @return the converted text
+     */
+    public static String convertCamelCaseToHyphens(String text) {
+        if (text == null) {
+            return null;
+        }
+        StringBuilder builder = new StringBuilder();
+        char[] charArray = text.toCharArray();
+        for (char character : charArray) {
+            if (Character.isUpperCase(character)) {
+                if (builder.length() > 0) {
+                    builder.append("-");
+                }
+                builder.append(Character.toLowerCase(character));
+            } else {
+                builder.append(character);
+            }
+        }
+        return builder.toString();
+    }
+
 }
