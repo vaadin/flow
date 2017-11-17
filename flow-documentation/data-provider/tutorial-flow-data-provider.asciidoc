@@ -26,9 +26,8 @@ ComboBox<Status> comboBox = new ComboBox<>();
 comboBox.setItemLabelGenerator(Status::getLabel);
 
 Grid<Person> grid = new Grid<>();
-grid.addColumn(Person::getName).setCaption("Name");
-grid.addColumn(Person::getYearOfBirth)
-  .setCaption("Year of birth");
+grid.addColumn(Person::getName).setHeader("Name");
+grid.addColumn(Person::getYearOfBirth).setHeader("Year of birth");
 ----
 
 [NOTE]
@@ -59,7 +58,8 @@ The comparator can either be based on the item instances or on the values of the
 
 [source, java]
 ----
-grid.addColumn("Name", Person::getName)
+grid.addColumn(Person::getName)
+  .setHeader("Name")
   // Override default natural sorting
   .setComparator(Comparator.comparing(
     person -> person.getName().toLowerCase()));
@@ -240,7 +240,6 @@ Grid<Person> grid = new Grid<>();
 grid.setDataProvider(dataProvider);
 
 // Columns are configured in the same way as before
-...
 ----
 
 [NOTE]
@@ -319,8 +318,7 @@ grid.addColumn(Person::getName)
     .setSortProperty("name");
 
 // Will not be sortable since no sorting info is given
-grid.addColumn(Person::getYearOfBirth)
-    .setHeader("Year of birth");
+grid.addColumn(Person::getYearOfBirth).setHeader("Year of birth");
 ----
 
 There might also be cases where a single property name is not enough for sorting.
@@ -406,7 +404,7 @@ We can thus wrap our data provider that filters by a set of strings to create a 
 
 [source, java]
 ----
-DataProvider<Person, Set<String>> personProvider = getPersonProvider();
+DataProvider<Person, Set<String>> personProvider = getPersonsProvider();
 
 ConfigurableFilterDataProvider<Person, String, Set<String>> wrapper =
   personProvider.withConfigurableFilter(
