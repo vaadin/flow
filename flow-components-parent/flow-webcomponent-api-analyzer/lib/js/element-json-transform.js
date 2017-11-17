@@ -186,6 +186,7 @@ module.exports = class ElementJsonTransform extends Transform {
    * {"name": "arrayProperty", "type": "ARRAY"},
    * {"name": "objectProperty", "type": "OBJECT"},
    * {"name": "stringReadOnlyProperty", "type": "STRING", "readOnly": true}
+   * {"name": "propertyWithNotify", "type": "STRING", "notify": true}
    * ]
    *
    * Inherited properties are skipped.
@@ -207,6 +208,9 @@ module.exports = class ElementJsonTransform extends Transform {
         };
         if (property.readOnly) {
           propertyJson.readOnly = true;
+        }
+        if (property.notify) {
+          propertyJson.notify = true;
         }
         propertiesJson.push(propertyJson);
       }
