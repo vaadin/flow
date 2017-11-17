@@ -1,7 +1,7 @@
 {
-  "name": "Vaadin.TextFieldElement",
-  "tag": "vaadin-text-field",
-  "baseUrl": "vaadin-text-field/vaadin-text-field.html",
+  "name": "Vaadin.TextAreaElement",
+  "tag": "vaadin-text-area",
+  "baseUrl": "vaadin-text-field/vaadin-text-area.html",
   "version": "1.2.0-alpha2",
   "properties": [
     {
@@ -124,38 +124,6 @@
       ],
       "objectType": [],
       "description": "When set to true, user is prevented from typing a value that\nconflicts with the given `pattern`.\n           "
-    },
-    {
-      "name": "autocorrect",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "This is a property supported by Safari that is used to control whether\nautocorrection should be enabled when the user is entering/editing the text.\nPossible values are:\non: Enable autocorrection.\noff: Disable autocorrection.\n             "
-    },
-    {
-      "name": "list",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "Identifies a list of pre-defined options to suggest to the user.\nThe value must be the id of a <datalist> element in the same document.\n             "
-    },
-    {
-      "name": "pattern",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "A regular expression that the value is checked against.\nThe pattern must match the entire value, not just some subset.\n             "
-    },
-    {
-      "name": "title",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "Message to show to the user when validation fails.\n             "
     }
   ],
   "methods": [
@@ -195,5 +163,5 @@
     "Vaadin.ControlStateMixin",
     "Vaadin.FormElementMixin"
   ],
-  "description": "`<vaadin-text-field>` is a Polymer 2 element for text field control in forms.\n\n```html\n<vaadin-text-field label=\"First Name\">\n</vaadin-text-field>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`value` | The input element\n`error-message` | The error message element\n`input-field` | The element that wraps prefix, value and suffix\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`readonly` | Set to a readonly text field | :host"
+  "description": "`<vaadin-text-area>` is a Polymer 2 element for text area control in forms.\n\n```html\n<vaadin-text-area label=\"Add description\">\n</vaadin-text-area>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`value` | The textarea element\n`error-message` | The error message element\n`text-area` | The element that wraps prefix, value and suffix\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`readonly` | Set to a readonly text field | :host"
 }

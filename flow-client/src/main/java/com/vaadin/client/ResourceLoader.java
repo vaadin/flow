@@ -530,7 +530,7 @@ public class ResourceLoader {
             linkElement.setType("text/css");
             linkElement.setHref(url);
 
-            if (BrowserInfo.get().isSafari()) {
+            if (BrowserInfo.get().isSafariOrIOS()) {
                 // Safari doesn't fire any events for link elements
                 // See http://www.phpied.com/when-is-a-stylesheet-really-loaded/
                 Scheduler.get().scheduleFixedPeriod(new RepeatingCommand() {
@@ -612,7 +612,7 @@ public class ResourceLoader {
 
     private void addCssLoadHandler(String styleSheetContents,
             ResourceLoadEvent event, StyleElement styleSheetElement) {
-        if (BrowserInfo.get().isSafari() || BrowserInfo.get().isOpera()) {
+        if (BrowserInfo.get().isSafariOrIOS() || BrowserInfo.get().isOpera()) {
             // Safari and Opera don't fire any events for link elements
             // See http://www.phpied.com/when-is-a-stylesheet-really-loaded/
             new Timer() {

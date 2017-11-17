@@ -35,13 +35,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToDoubleConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.NotEmptyValidator;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.textfield.TextField;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
@@ -82,8 +82,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
         assertEquals("No name field value", "Johannes", nameField.getValue());
         assertEquals("No age field value", "32", ageField.getValue());
@@ -98,8 +98,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.readBean(item);
 
         assertEquals("No name field value", "Johannes", nameField.getValue());
@@ -152,8 +152,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
 
         binder.setReadOnly(true);
 
@@ -322,7 +322,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 null);
 
         binder.forField(nameField).withNullRepresentation(nullRepresentation)
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
 
         // Bind a person with null value and check that null representation is
         // used
@@ -379,7 +379,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         String nullRepresentation = "Some arbitrary text";
 
         binder.forField(nameField).withNullRepresentation(nullRepresentation)
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
 
         assertFalse("First name in item should not be null",
                 Objects.isNull(item.getFirstName()));
@@ -393,10 +393,10 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     public void withConverter_disablesDefaulNullRepresentation() {
         Integer customNullConverter = 0;
         binder.forField(ageField).withNullRepresentation("foo")
-        .withConverter(new StringToIntegerConverter(""))
-        .withConverter(age -> age,
-                age -> age == null ? customNullConverter : age)
-        .bind(Person::getSalary, Person::setSalary);
+                .withConverter(new StringToIntegerConverter(""))
+                .withConverter(age -> age,
+                        age -> age == null ? customNullConverter : age)
+                .bind(Person::getSalary, Person::setSalary);
         binder.setBean(item);
 
         Assert.assertEquals(customNullConverter.toString(),
@@ -423,9 +423,10 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         String customNullPointerRepresentation = "foo";
         Binder<Person> binder = new Binder<>(Person.class);
         binder.forField(nameField)
-        .withConverter(value -> value, value -> value == null
-        ? customNullPointerRepresentation : value)
-        .bind("firstName");
+                .withConverter(value -> value,
+                        value -> value == null ? customNullPointerRepresentation
+                                : value)
+                .bind("firstName");
 
         Person person = new Person();
         binder.setBean(person);
@@ -438,8 +439,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     public void withValidator_doesNotDisablesDefaulNullRepresentation() {
         String nullRepresentation = "foo";
         binder.forField(nameField).withNullRepresentation(nullRepresentation)
-        .withValidator(new NotEmptyValidator<>(""))
-        .bind(Person::getFirstName, Person::setFirstName);
+                .withValidator(new NotEmptyValidator<>(""))
+                .bind(Person::getFirstName, Person::setFirstName);
         item.setFirstName(null);
         binder.setBean(item);
 
@@ -477,7 +478,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     public void readNullBeanRemovesError() {
         TextField textField = new TextField();
         binder.forField(textField).asRequired("foobar")
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
         Assert.assertTrue(textField.isRequiredIndicatorVisible());
         Assert.assertNull(componentErrors.get(textField));
 
@@ -532,13 +533,13 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         AtomicInteger invokes = new AtomicInteger();
 
         binder.forField(firstNameField)
-        .withValidator(new NotEmptyValidator<>(""))
-        .withValidationStatusHandler(
-                validationStatus -> invokes.addAndGet(1))
-        .bind(Person::getFirstName, Person::setFirstName);
+                .withValidator(new NotEmptyValidator<>(""))
+                .withValidationStatusHandler(
+                        validationStatus -> invokes.addAndGet(1))
+                .bind(Person::getFirstName, Person::setFirstName);
         binder.forField(lastNameField)
-        .withValidator(new NotEmptyValidator<>(""))
-        .bind(Person::getLastName, Person::setLastName);
+                .withValidator(new NotEmptyValidator<>(""))
+                .bind(Person::getLastName, Person::setLastName);
 
         binder.setBean(item);
         // setting the bean causes 2:
@@ -594,8 +595,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 Person::setFirstName);
 
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
 
         binder.setBean(new Person());
 
@@ -616,8 +617,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 Person::setFirstName);
 
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
 
         binder.readBean(new Person());
 
@@ -635,9 +636,9 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     @Test
     public void isValidTest_bound_binder() {
         binder.forField(nameField)
-        .withValidator(Validator.from(
-                name -> !name.equals("fail field validation"), ""))
-        .bind(Person::getFirstName, Person::setFirstName);
+                .withValidator(Validator.from(
+                        name -> !name.equals("fail field validation"), ""))
+                .bind(Person::getFirstName, Person::setFirstName);
 
         binder.withValidator(Validator.from(
                 person -> !person.getFirstName().equals("fail bean validation"),
@@ -660,9 +661,9 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     @Test
     public void isValidTest_unbound_binder() {
         binder.forField(nameField)
-        .withValidator(Validator.from(
-                name -> !name.equals("fail field validation"), ""))
-        .bind(Person::getFirstName, Person::setFirstName);
+                .withValidator(Validator.from(
+                        name -> !name.equals("fail field validation"), ""))
+                .bind(Person::getFirstName, Person::setFirstName);
 
         Assert.assertTrue(binder.isValid());
 
@@ -690,8 +691,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 Person::setFirstName);
         assertStreamEquals(Stream.of(nameField), binder.getFields());
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         assertStreamEquals(Stream.of(nameField, ageField), binder.getFields());
     }
 

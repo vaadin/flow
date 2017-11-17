@@ -99,6 +99,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return Logger.getLogger(BootstrapHandler.class.getName());
     }
 
+    /**
+     * Provides context information for the bootstrap process.
+     */
     protected static class BootstrapContext {
 
         private final VaadinRequest request;
@@ -111,6 +114,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private JsonObject applicationParameters;
         private VaadinUriResolver uriResolver;
 
+        /**
+         * Creates a new context instance using the given parameters.
+         *
+         * @param request
+         *            the request object
+         * @param response
+         *            the response object
+         * @param session
+         *            the current session
+         * @param ui
+         *            the UI object
+         */
         protected BootstrapContext(VaadinRequest request,
                 VaadinResponse response, VaadinSession session, UI ui) {
             this.request = request;
@@ -119,22 +134,47 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             this.ui = ui;
         }
 
+        /**
+         * Gets the Vaadin/HTTP response.
+         *
+         * @return the Vaadin/HTTP response
+         */
         public VaadinResponse getResponse() {
             return response;
         }
 
+        /**
+         * Gets the Vaadin/HTTP request.
+         *
+         * @return the Vaadin/HTTP request
+         */
         public VaadinRequest getRequest() {
             return request;
         }
 
+        /**
+         * Gets the Vaadin session.
+         *
+         * @return the Vaadin session
+         */
         public VaadinSession getSession() {
             return session;
         }
 
+        /**
+         * Gets the UI.
+         *
+         * @return the UI
+         */
         public UI getUI() {
             return ui;
         }
 
+        /**
+         * Gets the push mode to use.
+         *
+         * @return the desired push mode
+         */
         public PushMode getPushMode() {
             if (pushMode == null) {
 
@@ -156,6 +196,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return pushMode;
         }
 
+        /**
+         * Gets the application id.
+         *
+         * The application id is defined by
+         * {@link VaadinService#getMainDivId(VaadinSession, VaadinRequest)}
+         *
+         * @return the application id
+         */
         public String getAppId() {
             if (appId == null) {
                 appId = getRequest().getService().getMainDivId(getSession(),
@@ -164,6 +212,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return appId;
         }
 
+        /**
+         * Gets the application parameters specified by the BootstrapHandler.
+         *
+         * @return the application parameters that will be written on the page
+         */
         public JsonObject getApplicationParameters() {
             if (applicationParameters == null) {
                 applicationParameters = BootstrapHandler
@@ -173,6 +226,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return applicationParameters;
         }
 
+        /**
+         * Gets the URI resolver to use for bootstrap resources.
+         *
+         * @return the URI resolver
+         */
         public VaadinUriResolver getUriResolver() {
             if (uriResolver == null) {
                 uriResolver = new BootstrapUriResolver(getRequest(),
@@ -195,12 +253,24 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     }
 
+    /**
+     * The URI resolver used in the bootstrap process.
+     */
     private static class BootstrapUriResolver extends VaadinUriResolver {
         private final VaadinSession session;
         private final VaadinRequest request;
         private final String es6FrontendPrefix;
         private final String es5FrontendPrefix;
 
+        /**
+         * Creates a new bootstrap resolver based on the given request and
+         * session.
+         *
+         * @param request
+         *            the Vaadin/HTTP request
+         * @param session
+         *            the current session
+         */
         protected BootstrapUriResolver(VaadinRequest request,
                 VaadinSession session) {
             this.session = session;
