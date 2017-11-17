@@ -268,8 +268,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param from
      *            Source path to link.
      */
-    protected void linkPaths(elemental.json.JsonObject to,
-            java.lang.String from) {
+    public void linkPaths(java.lang.String to, java.lang.String from) {
         getElement().callFunction("linkPaths", to, from);
     }
 
@@ -325,7 +324,8 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param from
      *            Source path to link.
      */
-    public void linkPaths(java.lang.String to, java.lang.String from) {
+    protected void linkPaths(elemental.json.JsonObject to,
+            java.lang.String from) {
         getElement().callFunction("linkPaths", to, from);
     }
 
@@ -682,7 +682,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void splice(elemental.json.JsonObject path, double start,
+    protected void splice(java.lang.String path, double start,
             double deleteCount, elemental.json.JsonObject _Items) {
     }
 
@@ -716,7 +716,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void splice(java.lang.String path, double start,
+    protected void splice(elemental.json.JsonObject path, double start,
             double deleteCount, elemental.json.JsonObject _Items) {
     }
 
