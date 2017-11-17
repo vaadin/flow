@@ -5,6 +5,40 @@
   "version": "2.0.5",
   "properties": [
     {
+      "name": "rootPath",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "importPath",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "root",
+      "type": [
+        "OBJECT",
+        "OBJECT",
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "$",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
       "name": "bufferSize",
       "type": [
         "NUMBER"

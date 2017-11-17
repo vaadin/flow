@@ -30,79 +30,6 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasComponents;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * Material design: <a
- * href="https://www.google.com/design/spec/components/dialogs.html">Dialogs</a>
- * </p>
- * <p>
- * {@code <paper-dialog>} is a dialog with Material Design styling and optional
- * animations when it is opened or closed. It provides styles for a header,
- * content area, and an action area for buttons. You can use the
- * {@code <paper-dialog-scrollable>} element (in its own repository) if you need
- * a scrolling content area. To autofocus a specific child element after opening
- * the dialog, give it the {@code autofocus} attribute. See
- * {@code Polymer.PaperDialogBehavior} and {@code Polymer.IronOverlayBehavior}
- * for specifics.
- * </p>
- * <p>
- * For example, the following code implements a dialog with a header, scrolling
- * content area and buttons. Focus will be given to the {@code dialog-confirm}
- * button when the dialog is opened.
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-dialog&gt;
- *   &lt;h2&gt;Header&lt;/h2&gt;
- *   &lt;paper-dialog-scrollable&gt;
- *     Lorem ipsum...
- *   &lt;/paper-dialog-scrollable&gt;
- *   &lt;div class=&quot;buttons&quot;&gt;
- *     &lt;paper-button dialog-dismiss&gt;Cancel&lt;/paper-button&gt;
- *     &lt;paper-button dialog-confirm autofocus&gt;Accept&lt;/paper-button&gt;
- *   &lt;/div&gt;
- * &lt;/paper-dialog&gt;
- * </code>
- * </pre>
- * 
- * <h3>Styling</h3>
- * <p>
- * See the docs for {@code Polymer.PaperDialogBehavior} for the custom
- * properties available for styling this element.
- * </p>
- * <h3>Animations</h3>
- * <p>
- * Set the {@code entry-animation} and/or {@code exit-animation} attributes to
- * add an animation when the dialog is opened or closed. See the documentation
- * in <a
- * href="https://github.com/PolymerElements/neon-animation">PolymerElements
- * /neon-animation</a> for more info.
- * </p>
- * <p>
- * For example:
- * </p>
- * 
- * <pre>
- * <code>&lt;link rel=&quot;import&quot; href=&quot;components/neon-animation/animations/scale-up-animation.html&quot;&gt;
- * &lt;link rel=&quot;import&quot; href=&quot;components/neon-animation/animations/fade-out-animation.html&quot;&gt;
- * 
- * &lt;paper-dialog entry-animation=&quot;scale-up-animation&quot;
- *               exit-animation=&quot;fade-out-animation&quot;&gt;
- *   &lt;h2&gt;Header&lt;/h2&gt;
- *   &lt;div&gt;Dialog body&lt;/div&gt;
- * &lt;/paper-dialog&gt;
- * </code>
- * </pre>
- * 
- * <h3>Accessibility</h3>
- * <p>
- * See the docs for {@code Polymer.PaperDialogBehavior} for accessibility
- * features implemented by this element.
- * </p>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-dialog#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-dialog")
@@ -831,45 +758,6 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      */
     public void setAlwaysOnTop(boolean alwaysOnTop) {
         getElement().setProperty("alwaysOnTop", alwaysOnTop);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Determines which action to perform when scroll outside an opened overlay
-     * happens. Possible values: lock - blocks scrolling from happening, refit -
-     * computes the new position on the overlay cancel - causes the overlay to
-     * close
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code scrollAction} property from the webcomponent
-     */
-    public String getScrollAction() {
-        return getElement().getProperty("scrollAction");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Determines which action to perform when scroll outside an opened overlay
-     * happens. Possible values: lock - blocks scrolling from happening, refit -
-     * computes the new position on the overlay cancel - causes the overlay to
-     * close
-     * </p>
-     * 
-     * @param scrollAction
-     *            the String value to set
-     */
-    public void setScrollAction(java.lang.String scrollAction) {
-        getElement().setProperty("scrollAction",
-                scrollAction == null ? "" : scrollAction);
     }
 
     /**

@@ -31,35 +31,8 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * {@code <paper-textarea>} is a multi-line text field with Material Design
- * styling.
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-textarea label=&quot;Textarea label&quot;&gt;&lt;/paper-textarea&gt;
- * </code>
- * </pre>
- * <p>
- * See {@code Polymer.PaperInputBehavior} for more API docs.
- * </p>
- * <h3>Validation</h3>
- * <p>
- * Currently only {@code required} and {@code maxlength} validation is
- * supported.
- * </p>
- * <h3>Styling</h3>
- * <p>
- * See {@code Polymer.PaperInputContainer} for a list of custom properties used
- * to style this element.
- * </p>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: paper-textarea#2.0.2", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: paper-textarea#2.0.3", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
@@ -1464,6 +1437,26 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      */
     public void setMaxRows(double maxRows) {
         getElement().setProperty("maxRows", maxRows);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code selectionStart} property from the webcomponent
+     */
+    protected JsonObject protectedGetSelectionStart() {
+        return (JsonObject) getElement().getPropertyRaw("selectionStart");
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code selectionEnd} property from the webcomponent
+     */
+    protected JsonObject protectedGetSelectionEnd() {
+        return (JsonObject) getElement().getPropertyRaw("selectionEnd");
     }
 
     /**

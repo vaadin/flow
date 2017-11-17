@@ -21,8 +21,16 @@ import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
 import elemental.json.JsonObject;
 import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.EventData;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasComponents;
 
 /**
@@ -61,8 +69,8 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
 public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R>>
-        extends Component
-        implements ComponentSupplier<R>, HasStyle, HasComponents {
+        extends Component implements ComponentSupplier<R>, HasStyle,
+        HasValue<R, String>, HasComponents {
 
     /**
      * <p>
@@ -79,12 +87,14 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
      * {@code &quot;-YYYYYY-MM-DD&quot;}
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
+     * This property is synchronized automatically from client side when a
+     * 'value-changed' event happens.</li>
      * </ul>
      * 
      * @return the {@code value} property from the webcomponent
      */
+    @Synchronize(property = "value", value = "value-changed")
+    @Override
     public String getValue() {
         return getElement().getProperty("value");
     }
@@ -108,8 +118,11 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param value
      *            the String value to set
      */
+    @Override
     public void setValue(java.lang.String value) {
-        getElement().setProperty("value", value == null ? "" : value);
+        if (!Objects.equals(value, getValue())) {
+            getElement().setProperty("value", value == null ? "" : value);
+        }
     }
 
     /**
@@ -271,12 +284,13 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * <p>
      * Set true to open the date selector overlay.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'opened-changed' event happens.
      * </p>
      * 
      * @return the {@code opened} property from the webcomponent
      */
+    @Synchronize(property = "opened", value = "opened-changed")
     public boolean isOpened() {
         return getElement().getProperty("opened", false);
     }
@@ -703,6 +717,28 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      */
     protected void checkValidity(elemental.json.JsonObject value) {
         getElement().callFunction("checkValidity", value);
+    }
+
+    @DomEvent("opened-changed")
+    public static class OpenedChangeEvent<R extends GeneratedVaadinDatePickerLight<R>>
+            extends ComponentEvent<R> {
+        private final boolean opened;
+
+        public OpenedChangeEvent(R source, boolean fromClient,
+                @EventData("event.opened") boolean opened) {
+            super(source, fromClient);
+            this.opened = opened;
+        }
+
+        public boolean isOpened() {
+            return opened;
+        }
+    }
+
+    public Registration addOpenedChangeListener(
+            ComponentEventListener<OpenedChangeEvent<R>> listener) {
+        return addListener(OpenedChangeEvent.class,
+                (ComponentEventListener) listener);
     }
 
     /**

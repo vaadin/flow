@@ -50,7 +50,8 @@
         "ARRAY"
       ],
       "objectType": [],
-      "description": "The array of files being processed, or already uploaded.\n\nEach element is a [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)\nobject with a number of extra properties  to track the upload process:\n- `uploadTarget`: The target URL used to upload this file.\n- `elapsed`: Elapsed time since the upload started.\n- `elapsedStr`: Human-readable elapsed time.\n- `remaining`: Number of seconds remaining for the upload to finish.\n- `remainingStr`: Human-readable remaining time for the upload to finish.\n- `progress`: Percentage of the file already uploaded.\n- `speed`: Upload speed in kB/s.\n- `size`: File size in bytes.\n- `totalStr`: Human-readable total size of the file.\n- `loaded`: Bytes transferred so far.\n- `loadedStr`: Human-readable uploaded size at the moment.\n- `status`: Status of the upload process.\n- `error`: Error message in case the upload failed.\n- `abort`: True if the file was canceled by the user.\n- `complete`: True when the file was transferred to the server.\n- `uploading`: True while trasferring data to the server.\n       "
+      "description": "The array of files being processed, or already uploaded.\n\nEach element is a [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)\nobject with a number of extra properties  to track the upload process:\n- `uploadTarget`: The target URL used to upload this file.\n- `elapsed`: Elapsed time since the upload started.\n- `elapsedStr`: Human-readable elapsed time.\n- `remaining`: Number of seconds remaining for the upload to finish.\n- `remainingStr`: Human-readable remaining time for the upload to finish.\n- `progress`: Percentage of the file already uploaded.\n- `speed`: Upload speed in kB/s.\n- `size`: File size in bytes.\n- `totalStr`: Human-readable total size of the file.\n- `loaded`: Bytes transferred so far.\n- `loadedStr`: Human-readable uploaded size at the moment.\n- `status`: Status of the upload process.\n- `error`: Error message in case the upload failed.\n- `abort`: True if the file was canceled by the user.\n- `complete`: True when the file was transferred to the server.\n- `uploading`: True while trasferring data to the server.\n       ",
+      "notify": true
     },
     {
       "name": "maxFiles",
@@ -67,7 +68,8 @@
       ],
       "objectType": [],
       "description": "Specifies if the maximum number of files have been uploaded\n       ",
-      "readOnly": true
+      "readOnly": true,
+      "notify": true
     },
     {
       "name": "accept",
@@ -464,5 +466,5 @@
   ],
   "behaviors": [],
   "mixins": [],
-  "description": "`<vaadin-upload>` is a Polymer element for uploading multiple files with drag and drop support.\n\nExample:\n\n```html\n<vaadin-upload></vaadin-upload>\n```\n\n### Styling\n\nThe following custom properties are available for styling the component.\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--vaadin-upload-drag-ripple`|A mixin that is applied to the ripple animation in the drop area|`{}`\n`--vaadin-upload-drop-label`|A mixin that is applied to the drop label|`{}`\n`--vaadin-upload-drop-label-dragover`|A mixin that is applied to the drop label when overing the component with files|`{}`\n`--vaadin-upload-drop-label-icon`|A mixin that is applied to the drop icon|`{}`\n`--vaadin-upload-file-list`|A mixin that is applied to the file list|`{}`\n`--vaadin-upload-buttons`|A mixin that is applied to the buttons container|`{}`\n`--vaadin-upload-buttons-primary`|A mixin that is applied to the primary buttons container (left side)|`{}`\n`--vaadin-upload-buttons-secondary`|A mixin that is applied to the secondary buttons container (right side)|`{}`\n`--vaadin-upload-button-add-wrapper`|A mixin that is applied to the div wrapping the upload button|`{}`\n`--vaadin-upload-button-add`|A mixin that is applied to the upload button|`{}`\n`--vaadin-upload-button-add-disabled`|A mixin that is applied to the upload button when `maxFiles` limit is reached|`{}`"
+  "description": ""
 }

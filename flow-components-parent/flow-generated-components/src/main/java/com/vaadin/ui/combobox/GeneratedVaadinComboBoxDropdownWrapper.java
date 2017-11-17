@@ -42,6 +42,79 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
         extends Component implements ComponentSupplier<R>, HasStyle {
 
     /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code rootPath} property from the webcomponent
+     */
+    public String getRootPath() {
+        return getElement().getProperty("rootPath");
+    }
+
+    /**
+     * @param rootPath
+     *            the String value to set
+     */
+    public void setRootPath(java.lang.String rootPath) {
+        getElement().setProperty("rootPath", rootPath == null ? "" : rootPath);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code importPath} property from the webcomponent
+     */
+    public String getImportPath() {
+        return getElement().getProperty("importPath");
+    }
+
+    /**
+     * @param importPath
+     *            the String value to set
+     */
+    public void setImportPath(java.lang.String importPath) {
+        getElement().setProperty("importPath",
+                importPath == null ? "" : importPath);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code root} property from the webcomponent
+     */
+    protected JsonObject protectedGetRoot() {
+        return (JsonObject) getElement().getPropertyRaw("root");
+    }
+
+    /**
+     * @param root
+     *            the JsonObject value to set
+     */
+    protected void setRoot(elemental.json.JsonObject root) {
+        getElement().setPropertyJson("root", root);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code $} property from the webcomponent
+     */
+    protected JsonObject protectedGet$() {
+        return (JsonObject) getElement().getPropertyRaw("$");
+    }
+
+    /**
+     * @param $
+     *            the JsonObject value to set
+     */
+    protected void set$(elemental.json.JsonObject $) {
+        getElement().setPropertyJson("$", $);
+    }
+
+    /**
      * <p>
      * Description copied from corresponding location in WebComponent:
      * </p>
@@ -176,9 +249,46 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            default, `setProperties` will not set `readOnly: true` root
      *            properties.
      */
-    protected void setProperties(JsonObject props,
+    protected void setProperties(elemental.json.JsonObject props,
             elemental.json.JsonObject setReadOnly) {
         getElement().callFunction("setProperties", props, setReadOnly);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Aliases one data path as another, such that path notifications from one
+     * are routed to the other.
+     * </p>
+     * 
+     * @param to
+     *            Target path to link.
+     * @param from
+     *            Source path to link.
+     */
+    public void linkPaths(java.lang.String to, java.lang.String from) {
+        getElement().callFunction("linkPaths", to, from);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Aliases one data path as another, such that path notifications from one
+     * are routed to the other.
+     * </p>
+     * 
+     * @param to
+     *            Target path to link.
+     * @param from
+     *            Source path to link.
+     */
+    protected void linkPaths(elemental.json.JsonObject to,
+            java.lang.String from) {
+        getElement().callFunction("linkPaths", to, from);
     }
 
     /**
@@ -216,43 +326,6 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      */
     protected void linkPaths(java.lang.String to,
             elemental.json.JsonObject from) {
-        getElement().callFunction("linkPaths", to, from);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Aliases one data path as another, such that path notifications from one
-     * are routed to the other.
-     * </p>
-     * 
-     * @param to
-     *            Target path to link.
-     * @param from
-     *            Source path to link.
-     */
-    public void linkPaths(java.lang.String to, java.lang.String from) {
-        getElement().callFunction("linkPaths", to, from);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Aliases one data path as another, such that path notifications from one
-     * are routed to the other.
-     * </p>
-     * 
-     * @param to
-     *            Target path to link.
-     * @param from
-     *            Source path to link.
-     */
-    protected void linkPaths(elemental.json.JsonObject to,
-            java.lang.String from) {
         getElement().callFunction("linkPaths", to, from);
     }
 

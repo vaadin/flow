@@ -21,8 +21,8 @@ import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Synchronize;
 import elemental.json.JsonObject;
+import com.vaadin.ui.event.Synchronize;
 import elemental.json.JsonArray;
 import com.vaadin.ui.common.NotSupported;
 import com.vaadin.ui.event.DomEvent;
@@ -60,6 +60,79 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/vaadin-dialog/vaadin-dialog.html")
 public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
         extends Component implements ComponentSupplier<R>, HasStyle {
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code rootPath} property from the webcomponent
+     */
+    public String getRootPath() {
+        return getElement().getProperty("rootPath");
+    }
+
+    /**
+     * @param rootPath
+     *            the String value to set
+     */
+    public void setRootPath(java.lang.String rootPath) {
+        getElement().setProperty("rootPath", rootPath == null ? "" : rootPath);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code importPath} property from the webcomponent
+     */
+    public String getImportPath() {
+        return getElement().getProperty("importPath");
+    }
+
+    /**
+     * @param importPath
+     *            the String value to set
+     */
+    public void setImportPath(java.lang.String importPath) {
+        getElement().setProperty("importPath",
+                importPath == null ? "" : importPath);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code root} property from the webcomponent
+     */
+    protected JsonObject protectedGetRoot() {
+        return (JsonObject) getElement().getPropertyRaw("root");
+    }
+
+    /**
+     * @param root
+     *            the JsonObject value to set
+     */
+    protected void setRoot(elemental.json.JsonObject root) {
+        getElement().setPropertyJson("root", root);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code $} property from the webcomponent
+     */
+    protected JsonObject protectedGet$() {
+        return (JsonObject) getElement().getPropertyRaw("$");
+    }
+
+    /**
+     * @param $
+     *            the JsonObject value to set
+     */
+    protected void set$(elemental.json.JsonObject $) {
+        getElement().setPropertyJson("$", $);
+    }
 
     /**
      * <p>
@@ -180,7 +253,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      *            default, `setProperties` will not set `readOnly: true` root
      *            properties.
      */
-    protected void setProperties(JsonObject props,
+    protected void setProperties(elemental.json.JsonObject props,
             elemental.json.JsonObject setReadOnly) {
         getElement().callFunction("setProperties", props, setReadOnly);
     }
@@ -236,7 +309,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * @param from
      *            Source path to link.
      */
-    protected void linkPaths(java.lang.String to,
+    protected void linkPaths(elemental.json.JsonObject to,
             elemental.json.JsonObject from) {
         getElement().callFunction("linkPaths", to, from);
     }
@@ -255,7 +328,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * @param from
      *            Source path to link.
      */
-    protected void linkPaths(elemental.json.JsonObject to,
+    protected void linkPaths(java.lang.String to,
             elemental.json.JsonObject from) {
         getElement().callFunction("linkPaths", to, from);
     }
@@ -275,7 +348,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * @param path
      *            Target path to unlink.
      */
-    protected void unlinkPaths(elemental.json.JsonObject path) {
+    public void unlinkPaths(java.lang.String path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -294,7 +367,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * @param path
      *            Target path to unlink.
      */
-    public void unlinkPaths(java.lang.String path) {
+    protected void unlinkPaths(elemental.json.JsonObject path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -369,7 +442,8 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      *            Root object from which the path is evaluated.
      */
     @NotSupported
-    protected void get(java.lang.String path, elemental.json.JsonObject root) {
+    protected void get(elemental.json.JsonObject path,
+            elemental.json.JsonObject root) {
     }
 
     /**
@@ -401,41 +475,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      *            Root object from which the path is evaluated.
      */
     @NotSupported
-    protected void get(elemental.json.JsonObject path,
-            elemental.json.JsonObject root) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Convenience method for setting a value to a path and notifying any
-     * elements bound to the same path.
-     * </p>
-     * <p>
-     * Note, if any part in the path except for the last is undefined, this
-     * method does nothing (this method does not throw when dereferencing
-     * undefined paths).
-     * </p>
-     * 
-     * @param path
-     *            Path to the value to write. The path may be specified as a
-     *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
-     *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
-     *            supported; string-based path parts must* be separated by dots.
-     *            Note that when dereferencing array indices, the index may be
-     *            used as a dotted part directly (e.g. `'users.12.name'` or
-     *            `['users', 12, 'name']`).
-     * @param value
-     *            Value to set at the specified path.
-     * @param root
-     *            Root object from which the path is evaluated. When specified,
-     *            no notification will occur.
-     */
-    protected void set(elemental.json.JsonObject path,
-            elemental.json.JsonObject value, elemental.json.JsonObject root) {
-        getElement().callFunction("set", path, value, root);
+    protected void get(java.lang.String path, elemental.json.JsonObject root) {
     }
 
     /**
@@ -476,28 +516,32 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Adds items onto the end of the array at the path specified.
+     * Convenience method for setting a value to a path and notifying any
+     * elements bound to the same path.
      * </p>
      * <p>
-     * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.push}.
+     * Note, if any part in the path except for the last is undefined, this
+     * method does nothing (this method does not throw when dereferencing
+     * undefined paths).
      * </p>
-     * <p>
-     * This method notifies other paths to the same array that a splice occurred
-     * to the array.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>double</code>. Functions with return types different than void are
-     * not supported at this moment.
      * 
      * @param path
-     *            Path to array.
-     * @param ...items Missing documentation!
+     *            Path to the value to write. The path may be specified as a
+     *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
+     *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
+     *            supported; string-based path parts must* be separated by dots.
+     *            Note that when dereferencing array indices, the index may be
+     *            used as a dotted part directly (e.g. `'users.12.name'` or
+     *            `['users', 12, 'name']`).
+     * @param value
+     *            Value to set at the specified path.
+     * @param root
+     *            Root object from which the path is evaluated. When specified,
+     *            no notification will occur.
      */
-    @NotSupported
-    protected void push(java.lang.String path,
-            elemental.json.JsonObject _Items) {
+    protected void set(elemental.json.JsonObject path,
+            elemental.json.JsonObject value, elemental.json.JsonObject root) {
+        getElement().callFunction("set", path, value, root);
     }
 
     /**
@@ -534,11 +578,11 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Removes an item from the end of array at the path specified.
+     * Adds items onto the end of the array at the path specified.
      * </p>
      * <p>
      * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.pop}.
+     * {@code Array.prototype.push}.
      * </p>
      * <p>
      * This method notifies other paths to the same array that a splice occurred
@@ -546,14 +590,16 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * </p>
      * <p>
      * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
-     * different than void are not supported at this moment.
+     * <code>double</code>. Functions with return types different than void are
+     * not supported at this moment.
      * 
      * @param path
      *            Path to array.
+     * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void pop(elemental.json.JsonObject path) {
+    protected void push(java.lang.String path,
+            elemental.json.JsonObject _Items) {
     }
 
     /**
@@ -581,6 +627,33 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      */
     @NotSupported
     protected void pop(java.lang.String path) {
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Removes an item from the end of array at the path specified.
+     * </p>
+     * <p>
+     * The arguments after {@code path} and return value match that of
+     * {@code Array.prototype.pop}.
+     * </p>
+     * <p>
+     * This method notifies other paths to the same array that a splice occurred
+     * to the array.
+     * </p>
+     * <p>
+     * This function is not supported by Flow because it returns a
+     * <code>elemental.json.JsonObject</code>. Functions with return types
+     * different than void are not supported at this moment.
+     * 
+     * @param path
+     *            Path to array.
+     */
+    @NotSupported
+    protected void pop(elemental.json.JsonObject path) {
     }
 
     /**
@@ -675,7 +748,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      *            Path to array.
      */
     @NotSupported
-    protected void shift(elemental.json.JsonObject path) {
+    protected void shift(java.lang.String path) {
     }
 
     /**
@@ -702,36 +775,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      *            Path to array.
      */
     @NotSupported
-    protected void shift(java.lang.String path) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Adds items onto the beginning of the array at the path specified.
-     * </p>
-     * <p>
-     * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.push}.
-     * </p>
-     * <p>
-     * This method notifies other paths to the same array that a splice occurred
-     * to the array.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>double</code>. Functions with return types different than void are
-     * not supported at this moment.
-     * 
-     * @param path
-     *            Path to array.
-     * @param ...items Missing documentation!
-     */
-    @NotSupported
-    protected void unshift(java.lang.String path,
-            elemental.json.JsonObject _Items) {
+    protected void shift(elemental.json.JsonObject path) {
     }
 
     /**
@@ -760,6 +804,35 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      */
     @NotSupported
     protected void unshift(elemental.json.JsonObject path,
+            elemental.json.JsonObject _Items) {
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Adds items onto the beginning of the array at the path specified.
+     * </p>
+     * <p>
+     * The arguments after {@code path} and return value match that of
+     * {@code Array.prototype.push}.
+     * </p>
+     * <p>
+     * This method notifies other paths to the same array that a splice occurred
+     * to the array.
+     * </p>
+     * <p>
+     * This function is not supported by Flow because it returns a
+     * <code>double</code>. Functions with return types different than void are
+     * not supported at this moment.
+     * 
+     * @param path
+     *            Path to array.
+     * @param ...items Missing documentation!
+     */
+    @NotSupported
+    protected void unshift(java.lang.String path,
             elemental.json.JsonObject _Items) {
     }
 

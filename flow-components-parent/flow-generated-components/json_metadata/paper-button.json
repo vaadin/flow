@@ -51,7 +51,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the button is a toggle and is currently in the active state.\n       "
+      "description": "If true, the button is a toggle and is currently in the active state.\n       ",
+      "notify": true
     },
     {
       "name": "pointerDown",
@@ -86,7 +87,8 @@
       ],
       "objectType": [],
       "description": "If true, the element currently has focus.\n       ",
-      "readOnly": true
+      "readOnly": true,
+      "notify": true
     },
     {
       "name": "disabled",
@@ -94,7 +96,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the user cannot interact with this element.\n       "
+      "description": "If true, the user cannot interact with this element.\n       ",
+      "notify": true
     },
     {
       "name": "noink",
@@ -236,5 +239,5 @@
     "Polymer.IronA11yKeysBehavior"
   ],
   "mixins": [],
-  "description": "Material design: [Buttons](https://www.google.com/design/spec/components/buttons.html)\n\n`paper-button` is a button. When the user touches the button, a ripple effect emanates\nfrom the point of contact. It may be flat or raised. A raised button is styled with a\nshadow.\n\nExample:\n\n    <paper-button>Flat button</paper-button>\n    <paper-button raised>Raised button</paper-button>\n    <paper-button noink>No ripple effect</paper-button>\n    <paper-button toggles>Toggle-able button</paper-button>\n\nA button that has `toggles` true will remain `active` after being clicked (and\nwill have an `active` attribute set). For more information, see the `Polymer.IronButtonState`\nbehavior.\n\nYou may use custom DOM in the button body to create a variety of buttons. For example, to\ncreate a button with an icon and some text:\n\n    <paper-button>\n      <iron-icon icon=\"favorite\"></iron-icon>\n      custom button content\n    </paper-button>\n\nTo use `paper-button` as a link, wrap it in an anchor tag. Since `paper-button` will already\nreceive focus, you may want to prevent the anchor tag from receiving focus as well by setting\nits tabindex to -1.\n\n    <a href=\"https://www.polymer-project.org/\" tabindex=\"-1\">\n      <paper-button raised>Polymer Project</paper-button>\n    </a>\n\n### Styling\n\nStyle the button with CSS as you would a normal DOM element.\n\n    paper-button.fancy {\n      background: green;\n      color: yellow;\n    }\n\n    paper-button.fancy:hover {\n      background: lime;\n    }\n\n    paper-button[disabled],\n    paper-button[toggles][active] {\n      background: red;\n    }\n\nBy default, the ripple is the same color as the foreground at 25% opacity. You may\ncustomize the color using the `--paper-button-ink-color` custom property.\n\nThe following custom properties and mixins are also available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-button-ink-color` | Background color of the ripple | `Based on the button's color`\n`--paper-button` | Mixin applied to the button | `{}`\n`--paper-button-disabled` | Mixin applied to the disabled button. Note that you can also use the `paper-button[disabled]` selector | `{}`\n`--paper-button-flat-keyboard-focus` | Mixin applied to a flat button after it's been focused using the keyboard | `{}`\n`--paper-button-raised-keyboard-focus` | Mixin applied to a raised button after it's been focused using the keyboard | `{}`"
+  "description": ""
 }

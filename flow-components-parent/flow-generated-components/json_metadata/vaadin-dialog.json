@@ -4,12 +4,47 @@
   "baseUrl": "vaadin-dialog/vaadin-dialog.html",
   "properties": [
     {
+      "name": "rootPath",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "importPath",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "root",
+      "type": [
+        "OBJECT",
+        "OBJECT",
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "$",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
       "name": "opened",
       "type": [
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the overlay is currently displayed.\n             "
+      "description": "True if the overlay is currently displayed.\n             ",
+      "notify": true
     },
     {
       "name": "noCloseOnOutsideClick",

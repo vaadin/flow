@@ -22,13 +22,14 @@ import com.vaadin.ui.common.HasClickListeners;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import elemental.json.JsonObject;
 import com.vaadin.ui.event.Synchronize;
+import elemental.json.JsonObject;
 import com.vaadin.ui.common.NotSupported;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.event.EventData;
 
 /**
  * <p>
@@ -205,12 +206,13 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
      * {@code &quot;-YYYYYY-MM-DD&quot;}
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
+     * This property is synchronized automatically from client side when a
+     * 'value-changed' event happens.</li>
      * </ul>
      * 
      * @return the {@code value} property from the webcomponent
      */
+    @Synchronize(property = "value", value = "value-changed")
     public String getValueAsString() {
         return getElement().getProperty("value");
     }
@@ -398,12 +400,13 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * Set true to open the date selector overlay.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'opened-changed' event happens.
      * </p>
      * 
      * @return the {@code opened} property from the webcomponent
      */
+    @Synchronize(property = "opened", value = "opened-changed")
     public boolean isOpened() {
         return getElement().getProperty("opened", false);
     }
@@ -973,6 +976,50 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("value-changed")
+    public static class ValueAsStringChangeEvent<R extends GeneratedVaadinDatePicker<R>>
+            extends ComponentEvent<R> {
+        private final String value;
+
+        public ValueAsStringChangeEvent(R source, boolean fromClient,
+                @EventData("event.value") java.lang.String value) {
+            super(source, fromClient);
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    public Registration addValueAsStringChangeListener(
+            ComponentEventListener<ValueAsStringChangeEvent<R>> listener) {
+        return addListener(ValueAsStringChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("opened-changed")
+    public static class OpenedChangeEvent<R extends GeneratedVaadinDatePicker<R>>
+            extends ComponentEvent<R> {
+        private final boolean opened;
+
+        public OpenedChangeEvent(R source, boolean fromClient,
+                @EventData("event.opened") boolean opened) {
+            super(source, fromClient);
+            this.opened = opened;
+        }
+
+        public boolean isOpened() {
+            return opened;
+        }
+    }
+
+    public Registration addOpenedChangeListener(
+            ComponentEventListener<OpenedChangeEvent<R>> listener) {
+        return addListener(OpenedChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 
