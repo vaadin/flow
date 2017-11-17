@@ -17,6 +17,7 @@ package com.vaadin.router;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,6 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
-import com.vaadin.util.ReflectTools;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -42,6 +42,12 @@ import com.vaadin.util.ReflectTools;
  * @see Route
  */
 public class Router implements RouterInterface {
+
+    /* See https://github.com/vaadin/flow/issues/2869 */
+    private static <T> List<String> serializeUrlParameters(List<T> urlParameters) {
+        return urlParameters.stream().filter(Objects::nonNull).map(T::toString)
+                .collect(Collectors.toList());
+    }
 
     private RouteResolver routeResolver;
 
@@ -269,9 +275,7 @@ public class Router implements RouterInterface {
         String routeString = getUrlForTarget(
                 (Class<? extends Component>) navigationTarget);
 
-        List<String> serializedParameters = ReflectTools
-                .createInstance(navigationTarget)
-                .serializeUrlParameters(parameters);
+        List<String> serializedParameters = serializeUrlParameters(parameters);
         if (!parameters.isEmpty()) {
             routeString = routeString.replace(
                     "{" + parameters.get(0).getClass().getSimpleName() + "}",
