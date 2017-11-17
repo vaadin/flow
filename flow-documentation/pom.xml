@@ -19,6 +19,13 @@
 		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
 
+    <repositories>
+        <repository>
+            <id>flow-component-base</id>
+            <url>https://maven.vaadin.com/vaadin-prereleases</url>
+        </repository>
+    </repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.vaadin</groupId>
@@ -49,6 +56,13 @@
             <artifactId>guava</artifactId>
             <version>23.0</version>
         </dependency>
+
+		<!-- Component dependencies -->
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-icons-flow</artifactId>
+			<version>1.0.0.alpha2</version>
+		</dependency>
     </dependencies>
 
 	<build></build>

@@ -17,7 +17,7 @@ package com.vaadin.flow.components.it.textfield;
 
 import com.vaadin.flow.components.it.ValidationTestView;
 import com.vaadin.ui.common.HasValidation;
-import com.vaadin.ui.passwordfield.PasswordField;
+import com.vaadin.ui.textfield.PasswordField;
 
 /**
  * View for testing validation with {@link PasswordField}.
