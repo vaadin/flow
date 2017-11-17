@@ -252,6 +252,16 @@ public class BrowserInfo {
     }
 
     /**
+     * Checks if the browser is Safari or runs on IOS (covering also Chrome on
+     * iOS).
+     *
+     * @return true if the browser is Safari or running on IOS, false otherwise
+     */
+    public boolean isSafariOrIOS() {
+        return browserDetails.isSafariOrIOS();
+    }
+
+    /**
      * Checks if the browser is Chrome.
      *
      * @return true if the browser is Chrome, false otherwise
