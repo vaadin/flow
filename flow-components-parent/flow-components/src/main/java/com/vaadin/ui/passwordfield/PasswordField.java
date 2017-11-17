@@ -16,8 +16,12 @@
 
 package com.vaadin.ui.passwordfield;
 
+import java.util.Objects;
+
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
+import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
 
 /**
@@ -26,7 +30,7 @@ import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
  * @author Vaadin Ltd.
  */
 public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
-        implements HasSize, HasValidation {
+        implements HasSize, HasValidation, HasValue<PasswordField, String> {
 
     /**
      * Constructs an empty {@code PasswordField}.
@@ -119,6 +123,14 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
     }
 
     @Override
+    public void setValue(String value) {
+        if (!Objects.equals(value, getValue())) {
+            super.setValue(value);
+        }
+    }
+
+    @Override
+    @Synchronize("value-changed")
     public String getValue() {
         String value = super.getValue();
         return value == null ? getEmptyValue() : value;
