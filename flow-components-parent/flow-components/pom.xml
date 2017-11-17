@@ -53,97 +53,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Component instances -->
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-button-flow</artifactId>
-            <version>1.0.0.alpha1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-checkbox-flow</artifactId>
-            <version>1.0.0.alpha1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-combo-box-flow</artifactId>
-            <version>1.0.0.alpha1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-date-picker-flow</artifactId>
-            <version>1.0.0.alpha1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-dialog-flow</artifactId>
-            <version>1.0.0.alpha1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-form-layout-flow</artifactId>
-            <version>1.0.0.alpha1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-icons-flow</artifactId>
-            <version>1.0.0.alpha2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-ordered-layout-flow</artifactId>
-            <version>1.0.0.alpha1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-text-field-flow</artifactId>
-            <version>1.0.0.alpha1</version>
-        </dependency>
 
         <!-- webJars -->
         <dependency>
             <groupId>org.webjars.bower</groupId>
             <artifactId>vaadin-grid</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-icons</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-text-field</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-date-picker</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-button</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-dialog</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-combo-box</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-form-layout</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-checkbox</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-split-layout</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-ordered-layout</artifactId>
         </dependency>
         <dependency>
             <groupId>org.webjars.bower</groupId>

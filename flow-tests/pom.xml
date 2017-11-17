@@ -24,6 +24,8 @@
         <module>test-spring-war</module>
         <module>test-spring</module>
         <module>test-spring-common</module>
+        <!-- Enable this when we have possibility to have component SNAPSHOTS -->
+        <!--<module>test-components</module>-->
     </modules>
 
     <properties>
