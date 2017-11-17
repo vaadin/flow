@@ -104,16 +104,11 @@ public class VaadinServletService extends VaadinService {
     }
 
     public static HttpServletRequest getCurrentServletRequest() {
-        VaadinRequest currentRequest = VaadinService.getCurrentRequest();
-        if (currentRequest instanceof VaadinServletRequest) {
-            return (VaadinServletRequest) currentRequest;
-        } else {
-            return null;
-        }
+        return VaadinServletRequest.getCurrent();
     }
 
     public static VaadinServletResponse getCurrentResponse() {
-        return (VaadinServletResponse) VaadinService.getCurrentResponse();
+        return VaadinServletResponse.getCurrent();
     }
 
     @Override
