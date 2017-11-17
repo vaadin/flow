@@ -334,6 +334,12 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code min-changed} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addMinChangeListener(
             ComponentEventListener<MinChangeEvent<R>> listener) {
         return addListener(MinChangeEvent.class,
@@ -348,6 +354,12 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code max-changed} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addMaxChangeListener(
             ComponentEventListener<MaxChangeEvent<R>> listener) {
         return addListener(MaxChangeEvent.class,
@@ -362,6 +374,13 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code step-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addStepChangeListener(
             ComponentEventListener<StepChangeEvent<R>> listener) {
         return addListener(StepChangeEvent.class,
@@ -376,6 +395,13 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code ratio-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addRatioChangeListener(
             ComponentEventListener<RatioChangeEvent<R>> listener) {
         return addListener(RatioChangeEvent.class,

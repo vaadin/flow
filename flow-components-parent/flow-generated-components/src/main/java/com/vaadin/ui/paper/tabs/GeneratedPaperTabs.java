@@ -1181,6 +1181,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-activate} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronActivateListener(
             ComponentEventListener<IronActivateEvent<R>> listener) {
         return addListener(IronActivateEvent.class,
@@ -1195,6 +1202,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-deselect} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronDeselectListener(
             ComponentEventListener<IronDeselectEvent<R>> listener) {
         return addListener(IronDeselectEvent.class,
@@ -1209,6 +1223,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-items-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronItemsChangeListener(
             ComponentEventListener<IronItemsChangeEvent<R>> listener) {
         return addListener(IronItemsChangeEvent.class,
@@ -1223,6 +1244,12 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-select} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronSelectListener(
             ComponentEventListener<IronSelectEvent<R>> listener) {
         return addListener(IronSelectEvent.class,
@@ -1237,6 +1264,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedChangeListener(
             ComponentEventListener<SelectedChangeEvent<R>> listener) {
         return addListener(SelectedChangeEvent.class,
@@ -1251,6 +1285,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-item-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
@@ -1265,6 +1306,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code items-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addItemsChangeListener(
             ComponentEventListener<ItemsChangeEvent<R>> listener) {
         return addListener(ItemsChangeEvent.class,
@@ -1279,6 +1327,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-values-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedValuesChangeListener(
             ComponentEventListener<SelectedValuesChangeEvent<R>> listener) {
         return addListener(SelectedValuesChangeEvent.class,
@@ -1293,6 +1348,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-items-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedItemsChangeListener(
             ComponentEventListener<SelectedItemsChangeEvent<R>> listener) {
         return addListener(SelectedItemsChangeEvent.class,

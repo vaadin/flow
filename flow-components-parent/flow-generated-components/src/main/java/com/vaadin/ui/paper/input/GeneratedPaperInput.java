@@ -32,7 +32,7 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: paper-input#2.0.3", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: paper-input#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input")
 @HtmlImport("frontend://bower_components/paper-input/paper-input.html")
 public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
@@ -1478,6 +1478,13 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code focused-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -1492,6 +1499,13 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code disabled-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -1506,6 +1520,12 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code change} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addChangeListener(
             ComponentEventListener<ChangeEvent<R>> listener) {
         return addListener(ChangeEvent.class,
@@ -1520,6 +1540,13 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code invalid-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -1534,6 +1561,13 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-form-element-register} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -1548,6 +1582,13 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-form-element-unregister} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,

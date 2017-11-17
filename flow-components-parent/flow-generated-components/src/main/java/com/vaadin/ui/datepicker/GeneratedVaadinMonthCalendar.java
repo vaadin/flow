@@ -284,6 +284,13 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-date-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
         return addListener(SelectedDateChangeEvent.class,

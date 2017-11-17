@@ -26,7 +26,7 @@ import com.vaadin.ui.common.JsonSerializable;
 import com.vaadin.ui.common.HasComponents;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: paper-input-error#2.0.3", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: paper-input-error#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
 public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>

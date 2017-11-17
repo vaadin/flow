@@ -973,6 +973,13 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code invalid-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -995,6 +1002,13 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code value-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addValueAsStringChangeListener(
             ComponentEventListener<ValueAsStringChangeEvent<R>> listener) {
         return addListener(ValueAsStringChangeEvent.class,
@@ -1017,6 +1031,13 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,

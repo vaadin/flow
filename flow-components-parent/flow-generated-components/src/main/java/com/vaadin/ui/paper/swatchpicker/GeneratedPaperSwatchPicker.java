@@ -258,6 +258,13 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code color-picker-selected} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addColorPickerSelectedListener(
             ComponentEventListener<ColorPickerSelectedEvent<R>> listener) {
         return addListener(ColorPickerSelectedEvent.class,
@@ -272,6 +279,13 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code color-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addColorChangeListener(
             ComponentEventListener<ColorChangeEvent<R>> listener) {
         return addListener(ColorChangeEvent.class,

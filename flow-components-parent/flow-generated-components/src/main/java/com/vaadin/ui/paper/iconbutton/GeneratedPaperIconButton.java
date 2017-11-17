@@ -577,6 +577,13 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code active-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addActiveChangeListener(
             ComponentEventListener<ActiveChangeEvent<R>> listener) {
         return addListener(ActiveChangeEvent.class,
@@ -591,6 +598,13 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code focused-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -605,6 +619,13 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code disabled-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,

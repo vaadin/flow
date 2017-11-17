@@ -575,25 +575,6 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * A read-only property indicating whether this input has a non empty value.
-     * It can be used for example in styling of the component.
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'hasValue-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code hasValue} property from the webcomponent
-     */
-    @Synchronize(property = "hasValue", value = "hasValue-changed")
-    public boolean hasValue() {
-        return getElement().getProperty("hasValue", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * When set to true, user is prevented from typing a value that conflicts
      * with the given {@code pattern}.
      * <p>
@@ -800,6 +781,13 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-form-element-register} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -814,6 +802,13 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-form-element-unregister} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
@@ -836,31 +831,16 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code invalid-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
-                (ComponentEventListener) listener);
-    }
-
-    @DomEvent("hasValue-changed")
-    public static class HasValueChangeEvent<R extends GeneratedVaadinTextField<R>>
-            extends ComponentEvent<R> {
-        private final boolean hasValue;
-
-        public HasValueChangeEvent(R source, boolean fromClient,
-                @EventData("event.hasValue") boolean hasValue) {
-            super(source, fromClient);
-            this.hasValue = hasValue;
-        }
-
-        public boolean isHasValue() {
-            return hasValue;
-        }
-    }
-
-    public Registration addHasValueChangeListener(
-            ComponentEventListener<HasValueChangeEvent<R>> listener) {
-        return addListener(HasValueChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 

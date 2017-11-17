@@ -42,6 +42,8 @@ public class ExclusionRegistry {
         excludeProperty("vaadin-combo-box", "itemValuePath");
         excludeProperty("vaadin-tabs", "selected");
         excludeProperty("vaadin-tabs", "orientation");
+        excludeProperty("vaadin-text-field", "hasValue");
+        excludeProperty("vaadin-text-area", "hasValue");
         excludeEvent("vaadin-combo-box", "selected-item-changed");
         excludeEvent("vaadin-combo-box", "change");
 

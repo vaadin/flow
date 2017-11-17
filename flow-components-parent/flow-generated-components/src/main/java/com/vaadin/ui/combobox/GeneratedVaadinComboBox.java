@@ -939,6 +939,13 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code custom-value-set} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addCustomValueSetListener(
             ComponentEventListener<CustomValueSetEvent<R>> listener) {
         return addListener(CustomValueSetEvent.class,
@@ -961,6 +968,13 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -983,6 +997,13 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code filter-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFilterChangeListener(
             ComponentEventListener<FilterChangeEvent<R>> listener) {
         return addListener(FilterChangeEvent.class,
@@ -1005,6 +1026,13 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code invalid-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,

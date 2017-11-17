@@ -810,6 +810,13 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code focused-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -824,6 +831,13 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code disabled-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -838,6 +852,13 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code paper-dropdown-close} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addPaperDropdownCloseListener(
             ComponentEventListener<PaperDropdownCloseEvent<R>> listener) {
         return addListener(PaperDropdownCloseEvent.class,
@@ -852,6 +873,13 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code paper-dropdown-open} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addPaperDropdownOpenListener(
             ComponentEventListener<PaperDropdownOpenEvent<R>> listener) {
         return addListener(PaperDropdownOpenEvent.class,
@@ -866,6 +894,13 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -880,6 +915,13 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code horizontal-offset-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addHorizontalOffsetChangeListener(
             ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
         return addListener(HorizontalOffsetChangeEvent.class,
@@ -894,6 +936,13 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code vertical-offset-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addVerticalOffsetChangeListener(
             ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
         return addListener(VerticalOffsetChangeEvent.class,

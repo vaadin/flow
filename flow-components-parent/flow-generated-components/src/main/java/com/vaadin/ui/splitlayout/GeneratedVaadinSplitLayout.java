@@ -220,6 +220,12 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-resize} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronResizeListener(
             ComponentEventListener<IronResizeEvent<R>> listener) {
         return addListener(IronResizeEvent.class,

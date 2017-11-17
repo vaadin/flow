@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -844,9 +845,31 @@ public class ComponentGeneratorTest {
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
                 generatedClass, "MyComponent", HasValue.class);
-        Assert.assertTrue(
-                generatedClass.contains("@Override public String getValue()"));
-        Assert.assertTrue(generatedClass.contains(
+        Assert.assertThat(generatedClass, CoreMatchers
+                .containsString("@Override public String getValue()"));
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "@Override public void setValue(java.lang.String value)"));
+    }
+
+    @Test
+    public void componentContainsValuePropertyWithNotify_generatedClassImplementsHasValue() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setType(Collections.singleton(ComponentBasicType.STRING));
+        property.setNotify(true);
+        componentMetadata.setProperties(Collections.singletonList(property));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent", HasValue.class);
+        Assert.assertThat(generatedClass, CoreMatchers
+                .containsString("@Override public String getValue()"));
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "@Override public void setValue(java.lang.String value)"));
     }
 
@@ -1026,6 +1049,26 @@ public class ComponentGeneratorTest {
                 "protected void callSomethingWithMultiTypes(JsonArray multiParam)"));
         Assert.assertTrue(generatedClass.contains(
                 "protected void callSomethingWithMultiTypes(JsonValue multiParam)"));
+    }
+
+    @Test
+    public void propertyContainsNotify_eventIsGenerated() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("something");
+        property.setType(Collections.singleton(ComponentBasicType.STRING));
+        property.setNotify(true);
+        componentMetadata.setProperties(Collections.singletonList(property));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "public void setSomething(java.lang.String something) {"));
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "public Registration addSomethingChangeListener( ComponentEventListener<SomethingChangeEvent<R>> listener) {"));
     }
 
     private void assertCallBackMethodIsNotGenerated(String callback) {
