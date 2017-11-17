@@ -28,5 +28,5 @@
     "Polymer.PaperSpinnerBehavior"
   ],
   "mixins": [],
-  "description": "Material design: [Progress & activity](https://www.google.com/design/spec/components/progress-activity.html)\n\nElement providing a single color material design circular spinner.\n\n    <paper-spinner-lite active></paper-spinner-lite>\n\nThe default spinner is blue. It can be customized to be a different color.\n\n### Accessibility\n\nAlt attribute should be set to provide adequate context for accessibility. If not provided,\nit defaults to 'loading'.\nEmpty alt can be provided to mark the element as decorative if alternative content is provided\nin another form (e.g. a text block following the spinner).\n\n    <paper-spinner-lite alt=\"Loading contacts list\" active></paper-spinner-lite>\n\n### Styling\n\nThe following custom properties and mixins are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-spinner-color` | Color of the spinner | `--google-blue-500`\n`--paper-spinner-stroke-width` | The width of the spinner stroke | 3px"
+  "description": ""
 }

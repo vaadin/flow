@@ -26,7 +26,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the checkbox is checked.\n             "
+      "description": "True if the checkbox is checked.\n             ",
+      "notify": true
     },
     {
       "name": "indeterminate",
@@ -34,7 +35,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Indeterminate state of the checkbox when it's neither checked nor unchecked, but undetermined.\nhttps://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox#Indeterminate_state_checkboxes\n             "
+      "description": "Indeterminate state of the checkbox when it's neither checked nor unchecked, but undetermined.\nhttps://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox#Indeterminate_state_checkboxes\n             ",
+      "notify": true
     },
     {
       "name": "name",

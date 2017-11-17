@@ -10,7 +10,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": ""
+      "description": "",
+      "notify": true
     },
     {
       "name": "template",
@@ -18,7 +19,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": ""
+      "description": "",
+      "notify": true
     },
     {
       "name": "content",
@@ -26,7 +28,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": ""
+      "description": "",
+      "notify": true
     },
     {
       "name": "withBackdrop",

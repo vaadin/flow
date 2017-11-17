@@ -35,7 +35,8 @@
       ],
       "objectType": [],
       "description": "If true, the element currently has focus.\n       ",
-      "readOnly": true
+      "readOnly": true,
+      "notify": true
     },
     {
       "name": "disabled",
@@ -43,7 +44,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the user cannot interact with this element.\n       "
+      "description": "If true, the user cannot interact with this element.\n       ",
+      "notify": true
     },
     {
       "name": "opened",
@@ -51,7 +53,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the content is currently displayed.\n           "
+      "description": "True if the content is currently displayed.\n           ",
+      "notify": true
     },
     {
       "name": "horizontalAlign",
@@ -83,7 +86,8 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "A pixel value that will be added to the position calculated for the\ngiven `horizontalAlign`. Use a negative value to offset to the\nleft, or a positive value to offset to the right.\n           "
+      "description": "A pixel value that will be added to the position calculated for the\ngiven `horizontalAlign`. Use a negative value to offset to the\nleft, or a positive value to offset to the right.\n           ",
+      "notify": true
     },
     {
       "name": "verticalOffset",
@@ -91,7 +95,8 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "A pixel value that will be added to the position calculated for the\ngiven `verticalAlign`. Use a negative value to offset towards the\ntop, or a positive value to offset towards the bottom.\n           "
+      "description": "A pixel value that will be added to the position calculated for the\ngiven `verticalAlign`. Use a negative value to offset towards the\ntop, or a positive value to offset towards the bottom.\n           ",
+      "notify": true
     },
     {
       "name": "noOverlap",
@@ -284,5 +289,5 @@
     "Polymer.IronControlState"
   ],
   "mixins": [],
-  "description": "Material design: [Dropdown buttons](https://www.google.com/design/spec/components/buttons.html#buttons-dropdown-buttons)\n\n`paper-menu-button` allows one to compose a designated \"trigger\" element with\nanother element that represents \"content\", to create a dropdown menu that\ndisplays the \"content\" when the \"trigger\" is clicked.\n\nThe child element assigned to the `dropdown-trigger` slot will be used as the\n\"trigger\" element. The child element assigned to the `dropdown-content` slot will be\nused as the \"content\" element.\n\nThe `paper-menu-button` is sensitive to its content's `iron-select` events. If\nthe \"content\" element triggers an `iron-select` event, the `paper-menu-button`\nwill close automatically.\n\nExample:\n\n    <paper-menu-button>\n      <paper-icon-button icon=\"menu\" slot=\"dropdown-trigger\"></paper-icon-button>\n      <paper-listbox slot=\"dropdown-content\">\n        <paper-item>Share</paper-item>\n        <paper-item>Settings</paper-item>\n        <paper-item>Help</paper-item>\n      </paper-listbox>\n    </paper-menu-button>\n\n### Styling\n\nThe following custom properties and mixins are also available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-menu-button-dropdown-background` | Background color of the paper-menu-button dropdown | `--primary-background-color`\n`--paper-menu-button` | Mixin applied to the paper-menu-button | `{}`\n`--paper-menu-button-disabled` | Mixin applied to the paper-menu-button when disabled | `{}`\n`--paper-menu-button-dropdown` | Mixin applied to the paper-menu-button dropdown | `{}`\n`--paper-menu-button-content` | Mixin applied to the paper-menu-button content | `{}`"
+  "description": ""
 }

@@ -18,7 +18,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "A `Date` object for the currently selected date.\n             "
+      "description": "A `Date` object for the currently selected date.\n             ",
+      "notify": true
     },
     {
       "name": "focusedDate",

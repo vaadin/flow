@@ -25,51 +25,8 @@ import elemental.json.JsonObject;
 import com.vaadin.ui.common.JsonSerializable;
 import com.vaadin.ui.common.HasComponents;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * {@code <paper-input-error>} is an error message for use with
- * {@code <paper-input-container>}. The error is displayed when the
- * {@code <paper-input-container>} is {@code invalid}.
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-input-container&gt;
- *   &lt;input pattern=&quot;[0-9]*&quot;&gt;
- *   &lt;paper-input-error slot=&quot;add-on&quot;&gt;Only numbers are allowed!&lt;/paper-input-error&gt;
- * &lt;/paper-input-container&gt;
- * </code>
- * </pre>
- * 
- * <h3>Styling</h3>
- * <p>
- * The following custom properties and mixins are available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Custom property</th>
- * <th>Description</th>
- * <th>Default</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code --paper-input-container-invalid-color}</td>
- * <td>The foreground color of the error</td>
- * <td>{@code --error-color}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-input-error}</td>
- * <td>Mixin applied to the error</td>
- * <td>{@code</td>
- * </tr>
- * </tbody>
- * </table>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: paper-input-error#2.0.2", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: paper-input-error#2.0.3", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
 public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>

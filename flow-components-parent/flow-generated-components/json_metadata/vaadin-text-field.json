@@ -98,7 +98,8 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The initial value of the control.\nIt can be used for two-way data binding.\n           "
+      "description": "The initial value of the control.\nIt can be used for two-way data binding.\n           ",
+      "notify": true
     },
     {
       "name": "invalid",
@@ -106,7 +107,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "This property is set to true when the control value is invalid.\n           "
+      "description": "This property is set to true when the control value is invalid.\n           ",
+      "notify": true
     },
     {
       "name": "hasValue",
@@ -115,7 +117,8 @@
       ],
       "objectType": [],
       "description": "A read-only property indicating whether this input has a non empty value.\nIt can be used for example in styling of the component.\n           ",
-      "readOnly": true
+      "readOnly": true,
+      "notify": true
     },
     {
       "name": "preventInvalidInput",

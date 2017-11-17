@@ -22,11 +22,15 @@ import com.vaadin.ui.common.Focusable;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
 import com.vaadin.ui.common.NotSupported;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.event.EventData;
 
 /**
  * <p>
@@ -124,8 +128,8 @@ import com.vaadin.shared.Registration;
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
 public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
-        extends Component
-        implements ComponentSupplier<R>, HasStyle, Focusable<R> {
+        extends Component implements ComponentSupplier<R>, HasStyle,
+        Focusable<R>, HasValue<R, String> {
 
     /**
      * <p>
@@ -502,12 +506,14 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * The initial value of the control. It can be used for two-way data
      * binding.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'value-changed' event happens.
      * </p>
      * 
      * @return the {@code value} property from the webcomponent
      */
+    @Synchronize(property = "value", value = "value-changed")
+    @Override
     public String getValue() {
         return getElement().getProperty("value");
     }
@@ -524,8 +530,11 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @param value
      *            the String value to set
      */
+    @Override
     public void setValue(java.lang.String value) {
-        getElement().setProperty("value", value == null ? "" : value);
+        if (!Objects.equals(value, getValue())) {
+            getElement().setProperty("value", value == null ? "" : value);
+        }
     }
 
     /**
@@ -535,12 +544,13 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * <p>
      * This property is set to true when the control value is invalid.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'invalid-changed' event happens.
      * </p>
      * 
      * @return the {@code invalid} property from the webcomponent
      */
+    @Synchronize(property = "invalid", value = "invalid-changed")
     public boolean isInvalid() {
         return getElement().getProperty("invalid", false);
     }
@@ -568,12 +578,13 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * A read-only property indicating whether this input has a non empty value.
      * It can be used for example in styling of the component.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'hasValue-changed' event happens.
      * </p>
      * 
      * @return the {@code hasValue} property from the webcomponent
      */
+    @Synchronize(property = "hasValue", value = "hasValue-changed")
     public boolean hasValue() {
         return getElement().getProperty("hasValue", false);
     }
@@ -806,6 +817,50 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("invalid-changed")
+    public static class InvalidChangeEvent<R extends GeneratedVaadinTextField<R>>
+            extends ComponentEvent<R> {
+        private final boolean invalid;
+
+        public InvalidChangeEvent(R source, boolean fromClient,
+                @EventData("event.invalid") boolean invalid) {
+            super(source, fromClient);
+            this.invalid = invalid;
+        }
+
+        public boolean isInvalid() {
+            return invalid;
+        }
+    }
+
+    public Registration addInvalidChangeListener(
+            ComponentEventListener<InvalidChangeEvent<R>> listener) {
+        return addListener(InvalidChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("hasValue-changed")
+    public static class HasValueChangeEvent<R extends GeneratedVaadinTextField<R>>
+            extends ComponentEvent<R> {
+        private final boolean hasValue;
+
+        public HasValueChangeEvent(R source, boolean fromClient,
+                @EventData("event.hasValue") boolean hasValue) {
+            super(source, fromClient);
+            this.hasValue = hasValue;
+        }
+
+        public boolean isHasValue() {
+            return hasValue;
+        }
+    }
+
+    public Registration addHasValueChangeListener(
+            ComponentEventListener<HasValueChangeEvent<R>> listener) {
+        return addListener(HasValueChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 
