@@ -233,38 +233,6 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
         getElement().setProperty("checked", checked);
     }
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The value for this element.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code value} property from the webcomponent
-     */
-    public String getValue() {
-        return getElement().getProperty("value");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The value for this element.
-     * </p>
-     * 
-     * @param value
-     *            the String value to set
-     */
-    public void setValue(java.lang.String value) {
-        getElement().setProperty("value", value == null ? "" : value);
-    }
-
     @DomEvent("checked-changed")
     public static class CheckedChangeEvent<R extends GeneratedVaadinRadioButton<R>>
             extends ComponentEvent<R> {
