@@ -29,12 +29,13 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import com.vaadin.util.CurrentInstance;
+
 /**
  * A generic request to the server, wrapping a more specific request type, e.g.
  * HttpServletReqest.
  *
  * @author Vaadin Ltd
- * @since 7.0.0
  */
 public interface VaadinRequest {
     /**
@@ -459,4 +460,17 @@ public interface VaadinRequest {
      */
     Enumeration<String> getHeaders(String name);
 
+
+    /**
+     * Gets the currently processed Vaadin request. The current request is
+     * automatically defined when the request is started. The current request
+     * can not be used in e.g. background threads because of the way server
+     * implementations reuse request instances.
+     *
+     * @return the current Vaadin request instance if available, otherwise
+     *         <code>null</code>
+     */
+    static VaadinRequest getCurrent() {
+        return CurrentInstance.get(VaadinRequest.class);
+    }
 }

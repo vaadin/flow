@@ -1070,7 +1070,7 @@ public abstract class VaadinService implements Serializable {
      * @see #setCurrentInstances(VaadinRequest, VaadinResponse)
      */
     public static VaadinRequest getCurrentRequest() {
-        return CurrentInstance.get(VaadinRequest.class);
+        return VaadinRequest.getCurrent();
     }
 
     /**
@@ -1085,7 +1085,7 @@ public abstract class VaadinService implements Serializable {
      * @see #setCurrentInstances(VaadinRequest, VaadinResponse)
      */
     public static VaadinResponse getCurrentResponse() {
-        return CurrentInstance.get(VaadinResponse.class);
+        return VaadinResponse.getCurrent();
     }
 
     /**
