@@ -1,0 +1,40 @@
+{
+  "name": "Vaadin.RadioGroupElement",
+  "tag": "vaadin-radio-group",
+  "baseUrl": "vaadin-radio-button/vaadin-radio-group.html",
+  "version": "1.0.0-alpha8",
+  "properties": [
+    {
+      "name": "disabled",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "The current disabled state of the radio group. True if group and all internal radio buttons are disabled.\n             "
+    },
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Value of the radio group.\n             "
+    }
+  ],
+  "methods": [],
+  "events": [
+    {
+      "name": "value-changed",
+      "description": "Fired when the `value` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [
+    ""
+  ],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.ThemableMixin"
+  ],
+  "description": "`<vaadin-radio-group>` is a Polymer element for grouping vaadin-radio-buttons.\n\n```html\n<vaadin-radio-group>\n  <vaadin-radio-button name=\"foo\">Foo</vaadin-radio-button>\n  <vaadin-radio-button name=\"bar\">Bar</vaadin-radio-button>\n  <vaadin-radio-button name=\"baz\">Baz</vaadin-radio-button>\n</vaadin-radio-group>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the radio group and its children are disabled. | :host"
+}
