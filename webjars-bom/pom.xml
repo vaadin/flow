@@ -91,6 +91,11 @@
                 <artifactId>vaadin-item</artifactId>
                 <version>1.0.0-alpha6</version>
             </dependency>
+             <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>vaadin-radio-button</artifactId>
+                <version>1.0.0-alpha8</version>
+            </dependency>
 
             <!-- WebJars' transitive dependencies resolutions -->
             <dependency>
