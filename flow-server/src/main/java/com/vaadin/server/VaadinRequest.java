@@ -36,7 +36,6 @@ import com.vaadin.util.CurrentInstance;
  * HttpServletReqest.
  *
  * @author Vaadin Ltd
- * @since 7.0.0
  */
 public interface VaadinRequest {
     /**
@@ -470,7 +469,6 @@ public interface VaadinRequest {
      *
      * @return the current Vaadin request instance if available, otherwise
      *         <code>null</code>
-     * @since 8.1
      */
     static VaadinRequest getCurrent() {
         return CurrentInstance.get(VaadinRequest.class);

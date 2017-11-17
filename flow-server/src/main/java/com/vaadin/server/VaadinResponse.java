@@ -30,7 +30,7 @@ import com.vaadin.util.CurrentInstance;
  * A generic response from the server, wrapping a more specific response type,
  * e.g. HttpServletResponse.
  *
- * @since 7.0
+ * @author Vaadin Ltd
  */
 public interface VaadinResponse {
 
@@ -169,7 +169,6 @@ public interface VaadinResponse {
      * @param len
      *            an integer specifying the length of the content being returned
      *            to the client
-     * @since 7.3.8
      */
     void setContentLength(int len);
 
@@ -181,7 +180,6 @@ public interface VaadinResponse {
      *
      * @return the current Vaadin response instance if available, otherwise
      *         <code>null</code>
-     * @since 8.1
      */
     static VaadinResponse getCurrent() {
         return CurrentInstance.get(VaadinResponse.class);

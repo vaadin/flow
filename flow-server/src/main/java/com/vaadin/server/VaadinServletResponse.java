@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * Wrapper for {@link HttpServletResponse}.
  *
  * @author Vaadin Ltd.
- * @since 7.0
  *
  * @see VaadinResponse
  * @see VaadinServletRequest
@@ -90,7 +89,6 @@ public class VaadinServletResponse extends HttpServletResponseWrapper
      *
      * @return the current Vaadin servlet response instance if available,
      *         otherwise <code>null</code>
-     * @since 8.1
      */
     public static VaadinServletResponse getCurrent() {
         VaadinResponse currentResponse = VaadinResponse.getCurrent();
