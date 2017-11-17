@@ -99,11 +99,6 @@
             <artifactId>vaadin-text-field-flow</artifactId>
             <version>1.0.0.alpha1</version>
         </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-split-layout-flow</artifactId>
-            <version>1.0.0.alpha1</version>
-        </dependency>
 
         <!-- webJars -->
         <dependency>
