@@ -140,11 +140,6 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     }
 
     @Override
-    public boolean hasValue() {
-        return !isEmpty();
-    }
-
-    @Override
     public void setValue(String value) {
         if (!Objects.equals(value, getValue())) {
             super.setValue(value);
