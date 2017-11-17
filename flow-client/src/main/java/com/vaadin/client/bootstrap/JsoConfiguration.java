@@ -123,24 +123,14 @@ public final class JsoConfiguration extends JavaScriptObject {
     }-*/;
 
     /**
-     * Returns a native javascript object containing version information from
-     * the server.
-     *
-     * @return a javascript object with the version information
-     */
-    public native JavaScriptObject getVersionInfoJSObject()
-    /*-{
-        return this.getConfig("versionInfo");
-    }-*/;
-
-    /**
      * Gets the version of the Vaadin framework used on the server.
      *
      * @return a string with the version
      */
     public native String getVaadinVersion()
     /*-{
-        return this.getConfig("versionInfo").vaadinVersion;
+        var info = this.getConfig("versionInfo");
+        return info ? info.vaadinVersion : null;
     }-*/;
 
     /**
@@ -150,7 +140,8 @@ public final class JsoConfiguration extends JavaScriptObject {
      */
     public native String getAtmosphereVersion()
     /*-{
-        return this.getConfig("versionInfo").atmosphereVersion;
+        var info = this.getConfig("versionInfo");
+        return info ? info.atmosphereVersion : null;
     }-*/;
 
     /**

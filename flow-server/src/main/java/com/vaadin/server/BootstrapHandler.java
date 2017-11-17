@@ -46,7 +46,6 @@ import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
-import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
@@ -475,8 +474,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static void setupMetaAndTitle(Element head,
             BootstrapContext context) {
-        head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
-                .attr(CONTENT_ATTRIBUTE, ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
+        head.appendElement(META_TAG).attr("http-equiv", "Content-Type").attr(
+                CONTENT_ATTRIBUTE,
+                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible")
                 .attr(CONTENT_ATTRIBUTE, "IE=edge");
@@ -516,13 +516,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 webComponents.map(WebComponents::loadEs5Adapter).orElse(true));
         if (loadEs5Adapter
                 && !context.getSession().getBrowser().isEs6Supported()) {
-            // This adapter is required since lots of our current customers use polymer-cli to transpile sources,
+            // This adapter is required since lots of our current customers use
+            // polymer-cli to transpile sources,
             // this tool adds babel-helpers dependency into each file, see:
             // https://github.com/Polymer/polymer-cli/blob/master/src/build/build.ts#L64
             // and
             // https://github.com/Polymer/polymer-cli/blob/master/src/build/optimize-streams.ts#L119
             head.appendChild(createInlineJavaScriptElement(BABEL_HELPERS_JS));
-            // This adapter is required by all webcomponents in order to work correctly in ES5 mode, comes in webcomponentsjs distribution
+            // This adapter is required by all webcomponents in order to work
+            // correctly in ES5 mode, comes in webcomponentsjs distribution
             head.appendChild(createJavaScriptElement(
                     context.getUriResolver()
                             .resolveVaadinUri(webComponentsPolyfillBase
@@ -710,15 +712,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
                 session.getConfiguration().getEs5FrontendPrefix());
 
-        JsonObject versionInfo = Json.createObject();
-        versionInfo.put("vaadinVersion", Version.getFullVersion());
-        String atmosphereVersion = AtmospherePushConnection
-                .getAtmosphereVersion();
-        if (atmosphereVersion != null) {
-            versionInfo.put("atmosphereVersion", atmosphereVersion);
+        if (!productionMode) {
+            JsonObject versionInfo = Json.createObject();
+            versionInfo.put("vaadinVersion", Version.getFullVersion());
+            String atmosphereVersion = AtmospherePushConnection
+                    .getAtmosphereVersion();
+            if (atmosphereVersion != null) {
+                versionInfo.put("atmosphereVersion", atmosphereVersion);
+            }
+            appConfig.put("versionInfo", versionInfo);
         }
-
-        appConfig.put("versionInfo", versionInfo);
 
         // Use locale from session if set, else from the request
         Locale locale = ServletHelper.findLocale(session, request);

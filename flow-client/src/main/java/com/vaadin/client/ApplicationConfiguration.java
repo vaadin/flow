@@ -36,8 +36,6 @@ public class ApplicationConfiguration {
     private ErrorMessage sessionExpiredError;
     private int heartbeatInterval;
 
-    private boolean widgetsetVersionSent;
-
     private boolean productionMode;
     private String servletVersion;
     private String atmosphereVersion;
@@ -289,23 +287,6 @@ public class ApplicationConfiguration {
     public void setProductionMode(boolean productionMode) {
         this.productionMode = productionMode;
         Console.setProductionMode(productionMode);
-    }
-
-    /**
-     * Checks whether the widget set version has been sent to the server. It is
-     * sent in the first UIDL request.
-     *
-     * @return <code>true</code> if browser information has already been sent
-     */
-    public boolean isWidgetsetVersionSent() {
-        return widgetsetVersionSent;
-    }
-
-    /**
-     * Registers that the widget set version has been sent to the server.
-     */
-    public void setWidgetsetVersionSent() {
-        widgetsetVersionSent = true;
     }
 
     /**
