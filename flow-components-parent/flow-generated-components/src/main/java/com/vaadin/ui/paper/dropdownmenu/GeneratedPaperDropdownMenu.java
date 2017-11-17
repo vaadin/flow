@@ -29,107 +29,6 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * Material design: <a href=
- * "https://www.google.com/design/spec/components/buttons.html#buttons-dropdown-buttons"
- * >Dropdown menus</a>
- * </p>
- * <p>
- * {@code paper-dropdown-menu} is similar to a native browser select element.
- * {@code paper-dropdown-menu} works with selectable content. The currently
- * selected item is displayed in the control. If no item is selected, the
- * {@code label} is displayed instead.
- * </p>
- * <p>
- * Example:
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-dropdown-menu label=&quot;Your favourite pastry&quot;&gt;
- *   &lt;paper-listbox slot=&quot;dropdown-content&quot;&gt;
- *     &lt;paper-item&gt;Croissant&lt;/paper-item&gt;
- *     &lt;paper-item&gt;Donut&lt;/paper-item&gt;
- *     &lt;paper-item&gt;Financier&lt;/paper-item&gt;
- *     &lt;paper-item&gt;Madeleine&lt;/paper-item&gt;
- *   &lt;/paper-listbox&gt;
- * &lt;/paper-dropdown-menu&gt;
- * </code>
- * </pre>
- * <p>
- * This example renders a dropdown menu with 4 options.
- * </p>
- * <p>
- * The child element with the slot {@code dropdown-content} is used as the
- * dropdown menu. This can be a <a href="paper-listbox">{@code paper-listbox}
- * </a>, or any other or element that acts like an <a href="iron-selector">
- * {@code iron-selector}</a>.
- * </p>
- * <p>
- * Specifically, the menu child must fire an <a
- * href="iron-selector#event-iron-select">{@code iron-select}</a> event when one
- * of its children is selected, and an <a
- * href="iron-selector#event-iron-deselect">{@code iron-deselect}</a> event when
- * a child is deselected. The selected or deselected item must be passed as the
- * event's {@code detail.item} property.
- * </p>
- * <p>
- * Applications can listen for the {@code iron-select} and {@code iron-deselect}
- * events to react when options are selected and deselected.
- * </p>
- * <h3>Styling</h3>
- * <p>
- * The following custom properties and mixins are also available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Custom property</th>
- * <th>Description</th>
- * <th>Default</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code --paper-dropdown-menu}</td>
- * <td>A mixin that is applied to the element host</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-dropdown-menu-disabled}</td>
- * <td>A mixin that is applied to the element host when disabled</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-dropdown-menu-ripple}</td>
- * <td>A mixin that is applied to the internal ripple</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-dropdown-menu-button}</td>
- * <td>A mixin that is applied to the internal menu button</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-dropdown-menu-input}</td>
- * <td>A mixin that is applied to the internal paper input</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-dropdown-menu-icon}</td>
- * <td>A mixin that is applied to the internal icon</td>
- * <td>{@code</td>
- * </tr>
- * </tbody>
- * </table>
- * <p>
- * You can also use any of the {@code paper-input-container} and
- * {@code paper-menu-button} style mixins and custom properties to style the
- * internal input and menu button respectively.
- * </p>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-dropdown-menu#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-dropdown-menu")
@@ -1192,6 +1091,13 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code active-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addActiveChangeListener(
             ComponentEventListener<ActiveChangeEvent<R>> listener) {
         return addListener(ActiveChangeEvent.class,
@@ -1206,6 +1112,13 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code focused-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -1220,6 +1133,13 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code disabled-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -1234,6 +1154,13 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-form-element-register} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -1248,6 +1175,13 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-form-element-unregister} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
@@ -1262,6 +1196,13 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code value-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return addListener(ValueChangeEvent.class,
@@ -1276,6 +1217,13 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code invalid-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -1290,6 +1238,13 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-item-label-changed} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedItemLabelChangeListener(
             ComponentEventListener<SelectedItemLabelChangeEvent<R>> listener) {
         return addListener(SelectedItemLabelChangeEvent.class,
@@ -1304,6 +1259,13 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-item-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
@@ -1318,6 +1280,13 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,

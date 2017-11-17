@@ -18,7 +18,8 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "Value of the radio group.\n             "
+      "description": "Value of the radio group.\n             ",
+      "notify": true
     }
   ],
   "methods": [],

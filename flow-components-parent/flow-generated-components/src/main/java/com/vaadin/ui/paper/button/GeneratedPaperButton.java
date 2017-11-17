@@ -33,128 +33,6 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasComponents;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * Material design: <a
- * href="https://www.google.com/design/spec/components/buttons.html">Buttons</a>
- * </p>
- * <p>
- * {@code paper-button} is a button. When the user touches the button, a ripple
- * effect emanates from the point of contact. It may be flat or raised. A raised
- * button is styled with a shadow.
- * </p>
- * <p>
- * Example:
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-button&gt;Flat button&lt;/paper-button&gt;
- * &lt;paper-button raised&gt;Raised button&lt;/paper-button&gt;
- * &lt;paper-button noink&gt;No ripple effect&lt;/paper-button&gt;
- * &lt;paper-button toggles&gt;Toggle-able button&lt;/paper-button&gt;
- * </code>
- * </pre>
- * <p>
- * A button that has {@code toggles} true will remain {@code active} after being
- * clicked (and will have an {@code active} attribute set). For more
- * information, see the {@code Polymer.IronButtonState} behavior.
- * </p>
- * <p>
- * You may use custom DOM in the button body to create a variety of buttons. For
- * example, to create a button with an icon and some text:
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-button&gt;
- *   &lt;iron-icon icon=&quot;favorite&quot;&gt;&lt;/iron-icon&gt;
- *   custom button content
- * &lt;/paper-button&gt;
- * </code>
- * </pre>
- * <p>
- * To use {@code paper-button} as a link, wrap it in an anchor tag. Since
- * {@code paper-button} will already receive focus, you may want to prevent the
- * anchor tag from receiving focus as well by setting its tabindex to -1.
- * </p>
- * 
- * <pre>
- * <code>&lt;a href=&quot;https://www.polymer-project.org/&quot; tabindex=&quot;-1&quot;&gt;
- *   &lt;paper-button raised&gt;Polymer Project&lt;/paper-button&gt;
- * &lt;/a&gt;
- * </code>
- * </pre>
- * 
- * <h3>Styling</h3>
- * <p>
- * Style the button with CSS as you would a normal DOM element.
- * </p>
- * 
- * <pre>
- * <code>paper-button.fancy {
- *   background: green;
- *   color: yellow;
- * }
- * 
- * paper-button.fancy:hover {
- *   background: lime;
- * }
- * 
- * paper-button[disabled],
- * paper-button[toggles][active] {
- *   background: red;
- * }
- * </code>
- * </pre>
- * <p>
- * By default, the ripple is the same color as the foreground at 25% opacity.
- * You may customize the color using the {@code --paper-button-ink-color} custom
- * property.
- * </p>
- * <p>
- * The following custom properties and mixins are also available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Custom property</th>
- * <th>Description</th>
- * <th>Default</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code --paper-button-ink-color}</td>
- * <td>Background color of the ripple</td>
- * <td>{@code Based on the button's color}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-button}</td>
- * <td>Mixin applied to the button</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-button-disabled}</td>
- * <td>Mixin applied to the disabled button. Note that you can also use the
- * {@code paper-button[disabled]} selector</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-button-flat-keyboard-focus}</td>
- * <td>Mixin applied to a flat button after it's been focused using the keyboard
- * </td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-button-raised-keyboard-focus}</td>
- * <td>Mixin applied to a raised button after it's been focused using the
- * keyboard</td>
- * <td>{@code</td>
- * </tr>
- * </tbody>
- * </table>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-button#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-button")
@@ -653,6 +531,13 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code active-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addActiveChangeListener(
             ComponentEventListener<ActiveChangeEvent<R>> listener) {
         return addListener(ActiveChangeEvent.class,
@@ -667,6 +552,13 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code focused-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -681,6 +573,13 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code disabled-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -695,6 +594,13 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code transitionend} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addTransitionendListener(
             ComponentEventListener<TransitionendEvent<R>> listener) {
         return addListener(TransitionendEvent.class,

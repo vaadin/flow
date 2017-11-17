@@ -31,127 +31,6 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasComponents;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * Material design: <a
- * href="https://www.google.com/design/spec/components/tabs.html">Tabs</a>
- * </p>
- * <p>
- * {@code paper-tabs} makes it easy to explore and switch between different
- * views or functional aspects of an app, or to browse categorized data sets.
- * </p>
- * <p>
- * Use {@code selected} property to get or set the selected tab.
- * </p>
- * <p>
- * Example:
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-tabs selected=&quot;0&quot;&gt;
- *   &lt;paper-tab&gt;TAB 1&lt;/paper-tab&gt;
- *   &lt;paper-tab&gt;TAB 2&lt;/paper-tab&gt;
- *   &lt;paper-tab&gt;TAB 3&lt;/paper-tab&gt;
- * &lt;/paper-tabs&gt;
- * </code>
- * </pre>
- * <p>
- * See <a href="?active=paper-tab">paper-tab</a> for more information about
- * {@code paper-tab}.
- * </p>
- * <p>
- * A common usage for {@code paper-tabs} is to use it along with
- * {@code iron-pages} to switch between different views.
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-tabs selected=&quot;{{selected}}&quot;&gt;
- *   &lt;paper-tab&gt;Tab 1&lt;/paper-tab&gt;
- *   &lt;paper-tab&gt;Tab 2&lt;/paper-tab&gt;
- *   &lt;paper-tab&gt;Tab 3&lt;/paper-tab&gt;
- * &lt;/paper-tabs&gt;
- * 
- * &lt;iron-pages selected=&quot;{{selected}}&quot;&gt;
- *   &lt;div&gt;Page 1&lt;/div&gt;
- *   &lt;div&gt;Page 2&lt;/div&gt;
- *   &lt;div&gt;Page 3&lt;/div&gt;
- * &lt;/iron-pages&gt;
- * </code>
- * </pre>
- * <p>
- * To use links in tabs, add {@code link} attribute to {@code paper-tab} and put
- * an {@code <a>} element in {@code paper-tab} with a {@code tabindex} of -1.
- * </p>
- * <p>
- * Example:
- * </p>
- * 
- * <pre>
- * <code>
- * &lt;style is="custom-style">
- *   .link {
- *     &#64;apply --layout-horizontal;
- *     &#64;apply --layout-center-center;
- *   }
- * &lt;/style>
- * 
- * &lt;paper-tabs selected="0">
- *   &lt;paper-tab link>
- *     &lt;a href="#link1" class="link" tabindex="-1">TAB ONE&lt;/a>
- *   &lt;/paper-tab>
- *   &lt;paper-tab link>
- *     &lt;a href="#link2" class="link" tabindex="-1">TAB TWO&lt;/a>
- *   &lt;/paper-tab>
- *   &lt;paper-tab link>
- *     &lt;a href="#link3" class="link" tabindex="-1">TAB THREE&lt;/a>
- *   &lt;/paper-tab>
- * &lt;/paper-tabs>
- * </code>
- * </pre>
- * 
- * <h3>Styling</h3>
- * <p>
- * The following custom properties and mixins are available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Custom property</th>
- * <th>Description</th>
- * <th>Default</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code --paper-tabs-selection-bar-color}</td>
- * <td>Color for the selection bar</td>
- * <td>{@code --paper-yellow-a100}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-tabs-selection-bar}</td>
- * <td>Mixin applied to the selection bar</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-tabs}</td>
- * <td>Mixin applied to the tabs</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-tabs-content}</td>
- * <td>Mixin applied to the content container of tabs</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-tabs-container}</td>
- * <td>Mixin applied to the layout container of tabs</td>
- * <td>{@code</td>
- * </tr>
- * </tbody>
- * </table>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-tabs#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-tabs")
@@ -1302,6 +1181,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-activate} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronActivateListener(
             ComponentEventListener<IronActivateEvent<R>> listener) {
         return addListener(IronActivateEvent.class,
@@ -1316,6 +1202,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-deselect} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronDeselectListener(
             ComponentEventListener<IronDeselectEvent<R>> listener) {
         return addListener(IronDeselectEvent.class,
@@ -1330,6 +1223,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-items-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronItemsChangeListener(
             ComponentEventListener<IronItemsChangeEvent<R>> listener) {
         return addListener(IronItemsChangeEvent.class,
@@ -1344,6 +1244,12 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-select} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronSelectListener(
             ComponentEventListener<IronSelectEvent<R>> listener) {
         return addListener(IronSelectEvent.class,
@@ -1358,6 +1264,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedChangeListener(
             ComponentEventListener<SelectedChangeEvent<R>> listener) {
         return addListener(SelectedChangeEvent.class,
@@ -1372,6 +1285,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-item-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
@@ -1386,6 +1306,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code items-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addItemsChangeListener(
             ComponentEventListener<ItemsChangeEvent<R>> listener) {
         return addListener(ItemsChangeEvent.class,
@@ -1400,6 +1327,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-values-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedValuesChangeListener(
             ComponentEventListener<SelectedValuesChangeEvent<R>> listener) {
         return addListener(SelectedValuesChangeEvent.class,
@@ -1414,6 +1348,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-items-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedItemsChangeListener(
             ComponentEventListener<SelectedItemsChangeEvent<R>> listener) {
         return addListener(SelectedItemsChangeEvent.class,

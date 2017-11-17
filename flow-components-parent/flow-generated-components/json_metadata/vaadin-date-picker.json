@@ -10,7 +10,8 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The value for this element.\n\nSupported date formats:\n- ISO 8601 `\"YYYY-MM-DD\"` (default)\n- 6-digit extended ISO 8601 `\"+YYYYYY-MM-DD\"`, `\"-YYYYYY-MM-DD\"`"
+      "description": "The value for this element.\n\nSupported date formats:\n- ISO 8601 `\"YYYY-MM-DD\"` (default)\n- 6-digit extended ISO 8601 `\"+YYYYYY-MM-DD\"`, `\"-YYYYYY-MM-DD\"`",
+      "notify": true
     },
     {
       "name": "required",
@@ -59,7 +60,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Set true to open the date selector overlay.\n         "
+      "description": "Set true to open the date selector overlay.\n         ",
+      "notify": true
     },
     {
       "name": "showWeekNumbers",
@@ -131,7 +133,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "This property is set to true when the control value invalid.\n             "
+      "description": "This property is set to true when the control value invalid.\n             ",
+      "notify": true
     }
   ],
   "methods": [

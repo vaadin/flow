@@ -11,7 +11,8 @@
       ],
       "objectType": [],
       "description": "If true, the element currently has focus.\n       ",
-      "readOnly": true
+      "readOnly": true,
+      "notify": true
     },
     {
       "name": "disabled",
@@ -59,7 +60,8 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The value for this element.\n       "
+      "description": "The value for this element.\n       ",
+      "notify": true
     },
     {
       "name": "invalid",
@@ -67,7 +69,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Returns true if the value is invalid. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to both the\n`<paper-input-container>`'s and the input's `invalid` property.\n\nIf `autoValidate` is true, the `invalid` attribute is managed automatically,\nwhich can clobber attempts to manage it manually.\n       "
+      "description": "Returns true if the value is invalid. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to both the\n`<paper-input-container>`'s and the input's `invalid` property.\n\nIf `autoValidate` is true, the `invalid` attribute is managed automatically,\nwhich can clobber attempts to manage it manually.\n       ",
+      "notify": true
     },
     {
       "name": "allowedPattern",
@@ -444,5 +447,5 @@
     "Polymer.IronA11yKeysBehavior"
   ],
   "mixins": [],
-  "description": "`<paper-textarea>` is a multi-line text field with Material Design styling.\n\n    <paper-textarea label=\"Textarea label\"></paper-textarea>\n\nSee `Polymer.PaperInputBehavior` for more API docs.\n\n### Validation\n\nCurrently only `required` and `maxlength` validation is supported.\n\n### Styling\n\nSee `Polymer.PaperInputContainer` for a list of custom properties used to\nstyle this element."
+  "description": ""
 }

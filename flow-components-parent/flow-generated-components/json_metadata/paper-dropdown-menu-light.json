@@ -51,7 +51,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the button is a toggle and is currently in the active state.\n       "
+      "description": "If true, the button is a toggle and is currently in the active state.\n       ",
+      "notify": true
     },
     {
       "name": "pointerDown",
@@ -86,7 +87,8 @@
       ],
       "objectType": [],
       "description": "If true, the element currently has focus.\n       ",
-      "readOnly": true
+      "readOnly": true,
+      "notify": true
     },
     {
       "name": "disabled",
@@ -94,7 +96,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the user cannot interact with this element.\n       "
+      "description": "If true, the user cannot interact with this element.\n       ",
+      "notify": true
     },
     {
       "name": "noink",
@@ -119,7 +122,8 @@
       ],
       "objectType": [],
       "description": "The value for this element that will be used when submitting in\na form. It is read only, and will always have the same value\nas `selectedItemLabel`.\n           ",
-      "readOnly": true
+      "readOnly": true,
+      "notify": true
     },
     {
       "name": "required",
@@ -143,7 +147,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the last call to `validate` is invalid.\n       "
+      "description": "True if the last call to `validate` is invalid.\n       ",
+      "notify": true
     },
     {
       "name": "selectedItemLabel",
@@ -152,7 +157,8 @@
       ],
       "objectType": [],
       "description": "The derived \"label\" of the currently selected item. This value\nis the `label` property on the selected item if set, or else the\ntrimmed text content of the selected item.\n           ",
-      "readOnly": true
+      "readOnly": true,
+      "notify": true
     },
     {
       "name": "selectedItem",
@@ -161,7 +167,8 @@
       ],
       "objectType": [],
       "description": "The last selected item. An item is selected if the dropdown menu has\na child with class `dropdown-content`, and that child triggers an\n`iron-select` event with the selected `item` in the `detail`.",
-      "readOnly": true
+      "readOnly": true,
+      "notify": true
     },
     {
       "name": "label",
@@ -185,7 +192,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the dropdown is open. Otherwise, false.\n           "
+      "description": "True if the dropdown is open. Otherwise, false.\n           ",
+      "notify": true
     },
     {
       "name": "allowOutsideScroll",
@@ -431,5 +439,5 @@
     "Polymer.IronA11yKeysBehavior"
   ],
   "mixins": [],
-  "description": "Material design: [Dropdown menus](https://www.google.com/design/spec/components/buttons.html#buttons-dropdown-buttons)\n\nThis is a faster, lighter version of `paper-dropdown-menu`, that does not\nuse a `<paper-input>` internally. Use this element if you're concerned about\nthe performance of this element, i.e., if you plan on using many dropdowns on\nthe same page. Note that this element has a slightly different styling API\nthan `paper-dropdown-menu`.\n\n`paper-dropdown-menu-light` is similar to a native browser select element.\n`paper-dropdown-menu-light` works with selectable content. The currently selected\nitem is displayed in the control. If no item is selected, the `label` is\ndisplayed instead.\n\nExample:\n\n    <paper-dropdown-menu-light label=\"Your favourite pastry\">\n      <paper-listbox slot=\"dropdown-content\">\n        <paper-item>Croissant</paper-item>\n        <paper-item>Donut</paper-item>\n        <paper-item>Financier</paper-item>\n        <paper-item>Madeleine</paper-item>\n      </paper-listbox>\n    </paper-dropdown-menu-light>\n\nThis example renders a dropdown menu with 4 options.\n\nThe child element with the slot `dropdown-content` is used as the dropdown\nmenu. This can be a [`paper-listbox`](paper-listbox), or any other or\nelement that acts like an [`iron-selector`](iron-selector).\n\nSpecifically, the menu child must fire an\n[`iron-select`](iron-selector#event-iron-select) event when one of its\nchildren is selected, and an [`iron-deselect`](iron-selector#event-iron-deselect)\nevent when a child is deselected. The selected or deselected item must\nbe passed as the event's `detail.item` property.\n\nApplications can listen for the `iron-select` and `iron-deselect` events\nto react when options are selected and deselected.\n\n### Styling\n\nThe following custom properties and mixins are also available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-dropdown-menu` | A mixin that is applied to the element host | `{}`\n`--paper-dropdown-menu-disabled` | A mixin that is applied to the element host when disabled | `{}`\n`--paper-dropdown-menu-ripple` | A mixin that is applied to the internal ripple | `{}`\n`--paper-dropdown-menu-button` | A mixin that is applied to the internal menu button | `{}`\n`--paper-dropdown-menu-icon` | A mixin that is applied to the internal icon | `{}`\n`--paper-dropdown-menu-disabled-opacity` | The opacity of the dropdown when disabled  | `0.33`\n`--paper-dropdown-menu-color` | The color of the input/label/underline when the dropdown is unfocused | `--primary-text-color`\n`--paper-dropdown-menu-focus-color` | The color of the label/underline when the dropdown is focused  | `--primary-color`\n`--paper-dropdown-error-color` | The color of the label/underline when the dropdown is invalid  | `--error-color`\n`--paper-dropdown-menu-label` | Mixin applied to the label | `{}`\n`--paper-dropdown-menu-input` | Mixin appled to the input | `{}`\n\nNote that in this element, the underline is just the bottom border of the \"input\".\nTo style it:\n\n    <style is=custom-style>\n      paper-dropdown-menu-light.custom {\n        --paper-dropdown-menu-input: {\n          border-bottom: 2px dashed lavender;\n        };\n    </style>"
+  "description": ""
 }

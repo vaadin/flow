@@ -21,8 +21,8 @@ import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import elemental.json.JsonArray;
 import com.vaadin.ui.event.Synchronize;
+import elemental.json.JsonArray;
 import com.vaadin.ui.common.HasValue;
 import java.util.Objects;
 import elemental.json.JsonObject;
@@ -91,12 +91,13 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * <p>
      * True if the dropdown is open, false otherwise.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'opened-changed' event happens.
      * </p>
      * 
      * @return the {@code opened} property from the webcomponent
      */
+    @Synchronize(property = "opened", value = "opened-changed")
     public boolean isOpened() {
         return getElement().getProperty("opened", false);
     }
@@ -400,12 +401,13 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * <p>
      * Filtering string the user has typed into the input field.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'filter-changed' event happens.
      * </p>
      * 
      * @return the {@code filter} property from the webcomponent
      */
+    @Synchronize(property = "filter", value = "filter-changed")
     public String getFilter() {
         return getElement().getProperty("filter");
     }
@@ -628,12 +630,13 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * <p>
      * Set to true if the value is invalid.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'invalid-changed' event happens.
      * </p>
      * 
      * @return the {@code invalid} property from the webcomponent
      */
+    @Synchronize(property = "invalid", value = "invalid-changed")
     public boolean isInvalid() {
         return getElement().getProperty("invalid", false);
     }
@@ -816,6 +819,12 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
         }
     }
 
+    /**
+     * Adds a listener for {@code change} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addChangeListener(
             ComponentEventListener<ChangeEvent<R>> listener) {
         return addListener(ChangeEvent.class,
@@ -838,6 +847,13 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
         }
     }
 
+    /**
+     * Adds a listener for {@code custom-value-set} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addCustomValueSetListener(
             ComponentEventListener<CustomValueSetEvent<R>> listener) {
         return addListener(CustomValueSetEvent.class,
@@ -848,11 +864,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
     public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
             extends ComponentEvent<R> {
         private final JsonObject detail;
-        private final JsonObject detailValue;
+        private final String detailValue;
 
         public SelectedItemChangeEvent(R source, boolean fromClient,
                 @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.value") elemental.json.JsonObject detailValue) {
+                @EventData("event.detail.value") java.lang.String detailValue) {
             super(source, fromClient);
             this.detail = detail;
             this.detailValue = detailValue;
@@ -862,14 +878,108 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
             return detail;
         }
 
-        public JsonObject getDetailValue() {
+        public String getDetailValue() {
             return detailValue;
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-item-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("opened-changed")
+    public static class OpenedChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
+            extends ComponentEvent<R> {
+        private final boolean opened;
+
+        public OpenedChangeEvent(R source, boolean fromClient,
+                @EventData("event.opened") boolean opened) {
+            super(source, fromClient);
+            this.opened = opened;
+        }
+
+        public boolean isOpened() {
+            return opened;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
+    public Registration addOpenedChangeListener(
+            ComponentEventListener<OpenedChangeEvent<R>> listener) {
+        return addListener(OpenedChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("filter-changed")
+    public static class FilterChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
+            extends ComponentEvent<R> {
+        private final String filter;
+
+        public FilterChangeEvent(R source, boolean fromClient,
+                @EventData("event.filter") java.lang.String filter) {
+            super(source, fromClient);
+            this.filter = filter;
+        }
+
+        public String getFilter() {
+            return filter;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code filter-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
+    public Registration addFilterChangeListener(
+            ComponentEventListener<FilterChangeEvent<R>> listener) {
+        return addListener(FilterChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("invalid-changed")
+    public static class InvalidChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
+            extends ComponentEvent<R> {
+        private final boolean invalid;
+
+        public InvalidChangeEvent(R source, boolean fromClient,
+                @EventData("event.invalid") boolean invalid) {
+            super(source, fromClient);
+            this.invalid = invalid;
+        }
+
+        public boolean isInvalid() {
+            return invalid;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code invalid-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
+    public Registration addInvalidChangeListener(
+            ComponentEventListener<InvalidChangeEvent<R>> listener) {
+        return addListener(InvalidChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 

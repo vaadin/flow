@@ -30,79 +30,6 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasComponents;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * Material design: <a
- * href="https://www.google.com/design/spec/components/dialogs.html">Dialogs</a>
- * </p>
- * <p>
- * {@code <paper-dialog>} is a dialog with Material Design styling and optional
- * animations when it is opened or closed. It provides styles for a header,
- * content area, and an action area for buttons. You can use the
- * {@code <paper-dialog-scrollable>} element (in its own repository) if you need
- * a scrolling content area. To autofocus a specific child element after opening
- * the dialog, give it the {@code autofocus} attribute. See
- * {@code Polymer.PaperDialogBehavior} and {@code Polymer.IronOverlayBehavior}
- * for specifics.
- * </p>
- * <p>
- * For example, the following code implements a dialog with a header, scrolling
- * content area and buttons. Focus will be given to the {@code dialog-confirm}
- * button when the dialog is opened.
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-dialog&gt;
- *   &lt;h2&gt;Header&lt;/h2&gt;
- *   &lt;paper-dialog-scrollable&gt;
- *     Lorem ipsum...
- *   &lt;/paper-dialog-scrollable&gt;
- *   &lt;div class=&quot;buttons&quot;&gt;
- *     &lt;paper-button dialog-dismiss&gt;Cancel&lt;/paper-button&gt;
- *     &lt;paper-button dialog-confirm autofocus&gt;Accept&lt;/paper-button&gt;
- *   &lt;/div&gt;
- * &lt;/paper-dialog&gt;
- * </code>
- * </pre>
- * 
- * <h3>Styling</h3>
- * <p>
- * See the docs for {@code Polymer.PaperDialogBehavior} for the custom
- * properties available for styling this element.
- * </p>
- * <h3>Animations</h3>
- * <p>
- * Set the {@code entry-animation} and/or {@code exit-animation} attributes to
- * add an animation when the dialog is opened or closed. See the documentation
- * in <a
- * href="https://github.com/PolymerElements/neon-animation">PolymerElements
- * /neon-animation</a> for more info.
- * </p>
- * <p>
- * For example:
- * </p>
- * 
- * <pre>
- * <code>&lt;link rel=&quot;import&quot; href=&quot;components/neon-animation/animations/scale-up-animation.html&quot;&gt;
- * &lt;link rel=&quot;import&quot; href=&quot;components/neon-animation/animations/fade-out-animation.html&quot;&gt;
- * 
- * &lt;paper-dialog entry-animation=&quot;scale-up-animation&quot;
- *               exit-animation=&quot;fade-out-animation&quot;&gt;
- *   &lt;h2&gt;Header&lt;/h2&gt;
- *   &lt;div&gt;Dialog body&lt;/div&gt;
- * &lt;/paper-dialog&gt;
- * </code>
- * </pre>
- * 
- * <h3>Accessibility</h3>
- * <p>
- * See the docs for {@code Polymer.PaperDialogBehavior} for accessibility
- * features implemented by this element.
- * </p>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-dialog#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-dialog")
@@ -1293,6 +1220,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code horizontal-offset-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addHorizontalOffsetChangeListener(
             ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
         return addListener(HorizontalOffsetChangeEvent.class,
@@ -1307,6 +1241,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code vertical-offset-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addVerticalOffsetChangeListener(
             ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
         return addListener(VerticalOffsetChangeEvent.class,
@@ -1321,6 +1262,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -1335,6 +1283,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-overlay-canceled} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronOverlayCanceledListener(
             ComponentEventListener<IronOverlayCanceledEvent<R>> listener) {
         return addListener(IronOverlayCanceledEvent.class,
@@ -1349,6 +1304,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-overlay-closed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronOverlayClosedListener(
             ComponentEventListener<IronOverlayClosedEvent<R>> listener) {
         return addListener(IronOverlayClosedEvent.class,
@@ -1363,6 +1325,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-overlay-opened} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronOverlayOpenedListener(
             ComponentEventListener<IronOverlayOpenedEvent<R>> listener) {
         return addListener(IronOverlayOpenedEvent.class,

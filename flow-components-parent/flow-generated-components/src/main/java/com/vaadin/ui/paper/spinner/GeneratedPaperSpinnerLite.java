@@ -22,64 +22,6 @@ import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * Material design: <a
- * href="https://www.google.com/design/spec/components/progress-activity.html"
- * >Progress &amp; activity</a>
- * </p>
- * <p>
- * Element providing a single color material design circular spinner.
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-spinner-lite active&gt;&lt;/paper-spinner-lite&gt;
- * </code>
- * </pre>
- * <p>
- * The default spinner is blue. It can be customized to be a different color.
- * </p>
- * <h3>Accessibility</h3>
- * <p>
- * Alt attribute should be set to provide adequate context for accessibility. If
- * not provided, it defaults to 'loading'. Empty alt can be provided to mark the
- * element as decorative if alternative content is provided in another form
- * (e.g. a text block following the spinner).
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-spinner-lite alt=&quot;Loading contacts list&quot; active&gt;&lt;/paper-spinner-lite&gt;
- * </code>
- * </pre>
- * 
- * <h3>Styling</h3>
- * <p>
- * The following custom properties and mixins are available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Custom property</th>
- * <th>Description</th>
- * <th>Default</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code --paper-spinner-color}</td>
- * <td>Color of the spinner</td>
- * <td>{@code --google-blue-500}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-spinner-stroke-width}</td>
- * <td>The width of the spinner stroke</td>
- * <td>3px</td>
- * </tr>
- * </tbody>
- * </table>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-spinner-lite#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-spinner-lite")

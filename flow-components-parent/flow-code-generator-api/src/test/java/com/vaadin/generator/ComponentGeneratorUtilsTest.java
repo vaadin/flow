@@ -165,7 +165,30 @@ public class ComponentGeneratorUtilsTest {
 
         Assert.assertEquals("",
                 ComponentGeneratorUtils.convertFilePathToPackage("/ / / /"));
+    }
 
+    @Test
+    public void convertCamelCaseToHyphens() {
+        Assert.assertNull(
+                ComponentGeneratorUtils.convertCamelCaseToHyphens(null));
+
+        Assert.assertEquals("some-thing",
+                ComponentGeneratorUtils.convertCamelCaseToHyphens("someThing"));
+
+        Assert.assertEquals("some-thing",
+                ComponentGeneratorUtils.convertCamelCaseToHyphens("SomeThing"));
+
+        Assert.assertEquals("s-o-m-e-t-h-i-n-g",
+                ComponentGeneratorUtils.convertCamelCaseToHyphens("SOMETHING"));
+
+        Assert.assertEquals("",
+                ComponentGeneratorUtils.convertCamelCaseToHyphens(""));
+
+        Assert.assertEquals("i",
+                ComponentGeneratorUtils.convertCamelCaseToHyphens("I"));
+
+        Assert.assertEquals("am-i",
+                ComponentGeneratorUtils.convertCamelCaseToHyphens("AmI"));
     }
 
     @Test(expected = AssertionError.class)

@@ -63,5 +63,5 @@
     "Polymer.PaperInputAddonBehavior"
   ],
   "mixins": [],
-  "description": "`<paper-input-error>` is an error message for use with `<paper-input-container>`. The error is\ndisplayed when the `<paper-input-container>` is `invalid`.\n\n    <paper-input-container>\n      <input pattern=\"[0-9]*\">\n      <paper-input-error slot=\"add-on\">Only numbers are allowed!</paper-input-error>\n    </paper-input-container>\n\n### Styling\n\nThe following custom properties and mixins are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-input-container-invalid-color` | The foreground color of the error | `--error-color`\n`--paper-input-error`                   | Mixin applied to the error        | `{}`"
+  "description": ""
 }

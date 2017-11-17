@@ -34,7 +34,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the radio button is checked.\n             "
+      "description": "True if the radio button is checked.\n             ",
+      "notify": true
     },
     {
       "name": "value",

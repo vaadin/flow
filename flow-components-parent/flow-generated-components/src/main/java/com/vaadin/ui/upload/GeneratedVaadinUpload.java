@@ -31,92 +31,6 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasComponents;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * {@code <vaadin-upload>} is a Polymer element for uploading multiple files
- * with drag and drop support.
- * </p>
- * <p>
- * Example:
- * </p>
- * <p>
- * {@code }<code>html &lt;vaadin-upload&gt;&lt;/vaadin-upload&gt; {@code }</code>
- * </p>
- * <h3>Styling</h3>
- * <p>
- * The following custom properties are available for styling the component.
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Custom property</th>
- * <th>Description</th>
- * <th>Default</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code --vaadin-upload-drag-ripple}</td>
- * <td>A mixin that is applied to the ripple animation in the drop area</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --vaadin-upload-drop-label}</td>
- * <td>A mixin that is applied to the drop label</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --vaadin-upload-drop-label-dragover}</td>
- * <td>A mixin that is applied to the drop label when overing the component with
- * files</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --vaadin-upload-drop-label-icon}</td>
- * <td>A mixin that is applied to the drop icon</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --vaadin-upload-file-list}</td>
- * <td>A mixin that is applied to the file list</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --vaadin-upload-buttons}</td>
- * <td>A mixin that is applied to the buttons container</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --vaadin-upload-buttons-primary}</td>
- * <td>A mixin that is applied to the primary buttons container (left side)</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --vaadin-upload-buttons-secondary}</td>
- * <td>A mixin that is applied to the secondary buttons container (right side)</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --vaadin-upload-button-add-wrapper}</td>
- * <td>A mixin that is applied to the div wrapping the upload button</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --vaadin-upload-button-add}</td>
- * <td>A mixin that is applied to the upload button</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --vaadin-upload-button-add-disabled}</td>
- * <td>A mixin that is applied to the upload button when {@code maxFiles} limit
- * is reached</td>
- * <td>{@code</td>
- * </tr>
- * </tbody>
- * </table>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: vaadin-upload#2.1.2", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-upload")
@@ -763,6 +677,12 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code file-reject} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFileRejectListener(
             ComponentEventListener<FileRejectEvent<R>> listener) {
         return addListener(FileRejectEvent.class,
@@ -799,6 +719,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code upload-abort} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addUploadAbortListener(
             ComponentEventListener<UploadAbortEvent<R>> listener) {
         return addListener(UploadAbortEvent.class,
@@ -842,6 +769,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code upload-before} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addUploadBeforeListener(
             ComponentEventListener<UploadBeforeEvent<R>> listener) {
         return addListener(UploadBeforeEvent.class,
@@ -878,6 +812,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code upload-error} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addUploadErrorListener(
             ComponentEventListener<UploadErrorEvent<R>> listener) {
         return addListener(UploadErrorEvent.class,
@@ -914,6 +855,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code upload-progress} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addUploadProgressListener(
             ComponentEventListener<UploadProgressEvent<R>> listener) {
         return addListener(UploadProgressEvent.class,
@@ -957,6 +905,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code upload-request} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addUploadRequestListener(
             ComponentEventListener<UploadRequestEvent<R>> listener) {
         return addListener(UploadRequestEvent.class,
@@ -993,6 +948,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code upload-response} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addUploadResponseListener(
             ComponentEventListener<UploadResponseEvent<R>> listener) {
         return addListener(UploadResponseEvent.class,
@@ -1029,6 +991,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code upload-retry} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addUploadRetryListener(
             ComponentEventListener<UploadRetryEvent<R>> listener) {
         return addListener(UploadRetryEvent.class,
@@ -1065,6 +1034,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code upload-start} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addUploadStartListener(
             ComponentEventListener<UploadStartEvent<R>> listener) {
         return addListener(UploadStartEvent.class,
@@ -1101,6 +1077,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code upload-success} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addUploadSuccessListener(
             ComponentEventListener<UploadSuccessEvent<R>> listener) {
         return addListener(UploadSuccessEvent.class,
@@ -1115,6 +1098,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code files-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFilesChangeListener(
             ComponentEventListener<FilesChangeEvent<R>> listener) {
         return addListener(FilesChangeEvent.class,
@@ -1129,6 +1119,13 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code max-files-reached-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addMaxFilesReachedChangeListener(
             ComponentEventListener<MaxFilesReachedChangeEvent<R>> listener) {
         return addListener(MaxFilesReachedChangeEvent.class,

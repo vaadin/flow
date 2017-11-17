@@ -42,6 +42,79 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
         extends Component implements ComponentSupplier<R>, HasStyle {
 
     /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code rootPath} property from the webcomponent
+     */
+    public String getRootPath() {
+        return getElement().getProperty("rootPath");
+    }
+
+    /**
+     * @param rootPath
+     *            the String value to set
+     */
+    public void setRootPath(java.lang.String rootPath) {
+        getElement().setProperty("rootPath", rootPath == null ? "" : rootPath);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code importPath} property from the webcomponent
+     */
+    public String getImportPath() {
+        return getElement().getProperty("importPath");
+    }
+
+    /**
+     * @param importPath
+     *            the String value to set
+     */
+    public void setImportPath(java.lang.String importPath) {
+        getElement().setProperty("importPath",
+                importPath == null ? "" : importPath);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code root} property from the webcomponent
+     */
+    protected JsonObject protectedGetRoot() {
+        return (JsonObject) getElement().getPropertyRaw("root");
+    }
+
+    /**
+     * @param root
+     *            the JsonObject value to set
+     */
+    protected void setRoot(elemental.json.JsonObject root) {
+        getElement().setPropertyJson("root", root);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code $} property from the webcomponent
+     */
+    protected JsonObject protectedGet$() {
+        return (JsonObject) getElement().getPropertyRaw("$");
+    }
+
+    /**
+     * @param $
+     *            the JsonObject value to set
+     */
+    protected void set$(elemental.json.JsonObject $) {
+        getElement().setPropertyJson("$", $);
+    }
+
+    /**
      * <p>
      * Description copied from corresponding location in WebComponent:
      * </p>
@@ -176,7 +249,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            default, `setProperties` will not set `readOnly: true` root
      *            properties.
      */
-    protected void setProperties(JsonObject props,
+    protected void setProperties(elemental.json.JsonObject props,
             elemental.json.JsonObject setReadOnly) {
         getElement().callFunction("setProperties", props, setReadOnly);
     }
@@ -195,8 +268,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param from
      *            Source path to link.
      */
-    protected void linkPaths(elemental.json.JsonObject to,
-            elemental.json.JsonObject from) {
+    public void linkPaths(java.lang.String to, java.lang.String from) {
         getElement().callFunction("linkPaths", to, from);
     }
 
@@ -233,7 +305,8 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param from
      *            Source path to link.
      */
-    public void linkPaths(java.lang.String to, java.lang.String from) {
+    protected void linkPaths(elemental.json.JsonObject to,
+            elemental.json.JsonObject from) {
         getElement().callFunction("linkPaths", to, from);
     }
 
@@ -271,7 +344,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param path
      *            Target path to unlink.
      */
-    public void unlinkPaths(java.lang.String path) {
+    protected void unlinkPaths(elemental.json.JsonObject path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -290,7 +363,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param path
      *            Target path to unlink.
      */
-    protected void unlinkPaths(elemental.json.JsonObject path) {
+    public void unlinkPaths(java.lang.String path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -365,8 +438,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Root object from which the path is evaluated.
      */
     @NotSupported
-    protected void get(elemental.json.JsonObject path,
-            elemental.json.JsonObject root) {
+    protected void get(java.lang.String path, elemental.json.JsonObject root) {
     }
 
     /**
@@ -398,40 +470,8 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Root object from which the path is evaluated.
      */
     @NotSupported
-    protected void get(java.lang.String path, elemental.json.JsonObject root) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Convenience method for setting a value to a path and notifying any
-     * elements bound to the same path.
-     * </p>
-     * <p>
-     * Note, if any part in the path except for the last is undefined, this
-     * method does nothing (this method does not throw when dereferencing
-     * undefined paths).
-     * </p>
-     * 
-     * @param path
-     *            Path to the value to write. The path may be specified as a
-     *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
-     *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
-     *            supported; string-based path parts must* be separated by dots.
-     *            Note that when dereferencing array indices, the index may be
-     *            used as a dotted part directly (e.g. `'users.12.name'` or
-     *            `['users', 12, 'name']`).
-     * @param value
-     *            Value to set at the specified path.
-     * @param root
-     *            Root object from which the path is evaluated. When specified,
-     *            no notification will occur.
-     */
-    protected void set(java.lang.String path, elemental.json.JsonObject value,
+    protected void get(elemental.json.JsonObject path,
             elemental.json.JsonObject root) {
-        getElement().callFunction("set", path, value, root);
     }
 
     /**
@@ -472,28 +512,32 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Adds items onto the end of the array at the path specified.
+     * Convenience method for setting a value to a path and notifying any
+     * elements bound to the same path.
      * </p>
      * <p>
-     * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.push}.
+     * Note, if any part in the path except for the last is undefined, this
+     * method does nothing (this method does not throw when dereferencing
+     * undefined paths).
      * </p>
-     * <p>
-     * This method notifies other paths to the same array that a splice occurred
-     * to the array.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>double</code>. Functions with return types different than void are
-     * not supported at this moment.
      * 
      * @param path
-     *            Path to array.
-     * @param ...items Missing documentation!
+     *            Path to the value to write. The path may be specified as a
+     *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
+     *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
+     *            supported; string-based path parts must* be separated by dots.
+     *            Note that when dereferencing array indices, the index may be
+     *            used as a dotted part directly (e.g. `'users.12.name'` or
+     *            `['users', 12, 'name']`).
+     * @param value
+     *            Value to set at the specified path.
+     * @param root
+     *            Root object from which the path is evaluated. When specified,
+     *            no notification will occur.
      */
-    @NotSupported
-    protected void push(elemental.json.JsonObject path,
-            elemental.json.JsonObject _Items) {
+    protected void set(java.lang.String path, elemental.json.JsonObject value,
+            elemental.json.JsonObject root) {
+        getElement().callFunction("set", path, value, root);
     }
 
     /**
@@ -530,11 +574,11 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Removes an item from the end of array at the path specified.
+     * Adds items onto the end of the array at the path specified.
      * </p>
      * <p>
      * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.pop}.
+     * {@code Array.prototype.push}.
      * </p>
      * <p>
      * This method notifies other paths to the same array that a splice occurred
@@ -542,14 +586,16 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * </p>
      * <p>
      * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
-     * different than void are not supported at this moment.
+     * <code>double</code>. Functions with return types different than void are
+     * not supported at this moment.
      * 
      * @param path
      *            Path to array.
+     * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void pop(java.lang.String path) {
+    protected void push(elemental.json.JsonObject path,
+            elemental.json.JsonObject _Items) {
     }
 
     /**
@@ -584,12 +630,11 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Starting from the start index specified, removes 0 or more items from the
-     * array and inserts 0 or more new items in their place.
+     * Removes an item from the end of array at the path specified.
      * </p>
      * <p>
      * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.splice}.
+     * {@code Array.prototype.pop}.
      * </p>
      * <p>
      * This method notifies other paths to the same array that a splice occurred
@@ -597,20 +642,14 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * </p>
      * <p>
      * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonArray</code>. Functions with return types
+     * <code>elemental.json.JsonObject</code>. Functions with return types
      * different than void are not supported at this moment.
      * 
      * @param path
      *            Path to array.
-     * @param start
-     *            Index from which to start removing/inserting.
-     * @param deleteCount
-     *            Number of items to remove.
-     * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void splice(elemental.json.JsonObject path, double start,
-            double deleteCount, elemental.json.JsonObject _Items) {
+    protected void pop(java.lang.String path) {
     }
 
     /**
@@ -652,11 +691,12 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Removes an item from the beginning of array at the path specified.
+     * Starting from the start index specified, removes 0 or more items from the
+     * array and inserts 0 or more new items in their place.
      * </p>
      * <p>
      * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.pop}.
+     * {@code Array.prototype.splice}.
      * </p>
      * <p>
      * This method notifies other paths to the same array that a splice occurred
@@ -664,14 +704,20 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * </p>
      * <p>
      * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
+     * <code>elemental.json.JsonArray</code>. Functions with return types
      * different than void are not supported at this moment.
      * 
      * @param path
      *            Path to array.
+     * @param start
+     *            Index from which to start removing/inserting.
+     * @param deleteCount
+     *            Number of items to remove.
+     * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void shift(java.lang.String path) {
+    protected void splice(elemental.json.JsonObject path, double start,
+            double deleteCount, elemental.json.JsonObject _Items) {
     }
 
     /**
@@ -706,11 +752,11 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Adds items onto the beginning of the array at the path specified.
+     * Removes an item from the beginning of array at the path specified.
      * </p>
      * <p>
      * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.push}.
+     * {@code Array.prototype.pop}.
      * </p>
      * <p>
      * This method notifies other paths to the same array that a splice occurred
@@ -718,16 +764,14 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * </p>
      * <p>
      * This function is not supported by Flow because it returns a
-     * <code>double</code>. Functions with return types different than void are
-     * not supported at this moment.
+     * <code>elemental.json.JsonObject</code>. Functions with return types
+     * different than void are not supported at this moment.
      * 
      * @param path
      *            Path to array.
-     * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void unshift(elemental.json.JsonObject path,
-            elemental.json.JsonObject _Items) {
+    protected void shift(java.lang.String path) {
     }
 
     /**
@@ -756,6 +800,35 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      */
     @NotSupported
     protected void unshift(java.lang.String path,
+            elemental.json.JsonObject _Items) {
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Adds items onto the beginning of the array at the path specified.
+     * </p>
+     * <p>
+     * The arguments after {@code path} and return value match that of
+     * {@code Array.prototype.push}.
+     * </p>
+     * <p>
+     * This method notifies other paths to the same array that a splice occurred
+     * to the array.
+     * </p>
+     * <p>
+     * This function is not supported by Flow because it returns a
+     * <code>double</code>. Functions with return types different than void are
+     * not supported at this moment.
+     * 
+     * @param path
+     *            Path to array.
+     * @param ...items Missing documentation!
+     */
+    @NotSupported
+    protected void unshift(elemental.json.JsonObject path,
             elemental.json.JsonObject _Items) {
     }
 
