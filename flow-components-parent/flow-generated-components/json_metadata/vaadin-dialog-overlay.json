@@ -40,6 +40,14 @@
       "description": ""
     },
     {
+      "name": "modeless",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When true the overlay won't disable the main content, showing\nit doesn’t change the functionality of the user interface.\n           "
+    },
+    {
       "name": "focusTrap",
       "type": [
         "BOOLEAN"

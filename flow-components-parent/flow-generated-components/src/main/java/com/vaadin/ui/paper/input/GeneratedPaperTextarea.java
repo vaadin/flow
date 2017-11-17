@@ -32,7 +32,7 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: paper-textarea#2.0.3", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: paper-textarea#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
@@ -1440,26 +1440,6 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
     }
 
     /**
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * 
-     * @return the {@code selectionStart} property from the webcomponent
-     */
-    protected JsonObject protectedGetSelectionStart() {
-        return (JsonObject) getElement().getPropertyRaw("selectionStart");
-    }
-
-    /**
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * 
-     * @return the {@code selectionEnd} property from the webcomponent
-     */
-    protected JsonObject protectedGetSelectionEnd() {
-        return (JsonObject) getElement().getPropertyRaw("selectionEnd");
-    }
-
-    /**
      * <p>
      * Description copied from corresponding location in WebComponent:
      * </p>
@@ -1564,6 +1544,13 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code focused-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -1578,6 +1565,13 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code disabled-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -1592,6 +1586,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code change} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addChangeListener(
             ComponentEventListener<ChangeEvent<R>> listener) {
         return addListener(ChangeEvent.class,
@@ -1606,6 +1606,13 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code invalid-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -1620,6 +1627,13 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-form-element-register} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -1634,6 +1648,13 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-form-element-unregister} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,

@@ -2,7 +2,7 @@
   "name": "paper-input-container",
   "tag": "paper-input-container",
   "baseUrl": "paper-input/paper-input-container.html",
-  "version": "2.0.3",
+  "version": "2.0.2",
   "properties": [
     {
       "name": "noLabelFloat",

@@ -765,6 +765,45 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * Determines which action to perform when scroll outside an opened overlay
+     * happens. Possible values: lock - blocks scrolling from happening, refit -
+     * computes the new position on the overlay cancel - causes the overlay to
+     * close
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code scrollAction} property from the webcomponent
+     */
+    public String getScrollAction() {
+        return getElement().getProperty("scrollAction");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Determines which action to perform when scroll outside an opened overlay
+     * happens. Possible values: lock - blocks scrolling from happening, refit -
+     * computes the new position on the overlay cancel - causes the overlay to
+     * close
+     * </p>
+     * 
+     * @param scrollAction
+     *            the String value to set
+     */
+    public void setScrollAction(java.lang.String scrollAction) {
+        getElement().setProperty("scrollAction",
+                scrollAction == null ? "" : scrollAction);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * If {@code modal} is true, this implies {@code no-cancel-on-outside-click}, {@code no-cancel-on-esc-key} and {@code with-backdrop}.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -1181,6 +1220,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code horizontal-offset-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addHorizontalOffsetChangeListener(
             ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
         return addListener(HorizontalOffsetChangeEvent.class,
@@ -1195,6 +1241,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code vertical-offset-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addVerticalOffsetChangeListener(
             ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
         return addListener(VerticalOffsetChangeEvent.class,
@@ -1209,6 +1262,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -1223,6 +1283,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-overlay-canceled} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronOverlayCanceledListener(
             ComponentEventListener<IronOverlayCanceledEvent<R>> listener) {
         return addListener(IronOverlayCanceledEvent.class,
@@ -1237,6 +1304,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-overlay-closed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronOverlayClosedListener(
             ComponentEventListener<IronOverlayClosedEvent<R>> listener) {
         return addListener(IronOverlayClosedEvent.class,
@@ -1251,6 +1325,13 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-overlay-opened} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronOverlayOpenedListener(
             ComponentEventListener<IronOverlayOpenedEvent<R>> listener) {
         return addListener(IronOverlayOpenedEvent.class,

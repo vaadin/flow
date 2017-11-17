@@ -131,6 +131,40 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * When true the overlay won't disable the main content, showing it doesn’t
+     * change the functionality of the user interface.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code modeless} property from the webcomponent
+     */
+    public boolean isModeless() {
+        return getElement().getProperty("modeless", false);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * When true the overlay won't disable the main content, showing it doesn’t
+     * change the functionality of the user interface.
+     * </p>
+     * 
+     * @param modeless
+     *            the boolean value to set
+     */
+    public void setModeless(boolean modeless) {
+        getElement().setProperty("modeless", modeless);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * When true move focus to the first focusable element in the overlay, or to
      * the overlay if there are no focusable elements.
      * <p>
@@ -176,6 +210,13 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
         }
     }
 
+    /**
+     * Adds a listener for {@code vaadin-overlay-close} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addVaadinOverlayCloseListener(
             ComponentEventListener<VaadinOverlayCloseEvent<R>> listener) {
         return addListener(VaadinOverlayCloseEvent.class,
@@ -190,6 +231,13 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
         }
     }
 
+    /**
+     * Adds a listener for {@code vaadin-overlay-escape-press} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addVaadinOverlayEscapePressListener(
             ComponentEventListener<VaadinOverlayEscapePressEvent<R>> listener) {
         return addListener(VaadinOverlayEscapePressEvent.class,
@@ -204,6 +252,13 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
         }
     }
 
+    /**
+     * Adds a listener for {@code vaadin-overlay-open} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addVaadinOverlayOpenListener(
             ComponentEventListener<VaadinOverlayOpenEvent<R>> listener) {
         return addListener(VaadinOverlayOpenEvent.class,
@@ -218,6 +273,13 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
         }
     }
 
+    /**
+     * Adds a listener for {@code vaadin-overlay-outside-click} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addVaadinOverlayOutsideClickListener(
             ComponentEventListener<VaadinOverlayOutsideClickEvent<R>> listener) {
         return addListener(VaadinOverlayOutsideClickEvent.class,
@@ -232,6 +294,13 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
         }
     }
 
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -246,6 +315,13 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
         }
     }
 
+    /**
+     * Adds a listener for {@code template-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addTemplateChangeListener(
             ComponentEventListener<TemplateChangeEvent<R>> listener) {
         return addListener(TemplateChangeEvent.class,
@@ -260,6 +336,13 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
         }
     }
 
+    /**
+     * Adds a listener for {@code content-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addContentChangeListener(
             ComponentEventListener<ContentChangeEvent<R>> listener) {
         return addListener(ContentChangeEvent.class,

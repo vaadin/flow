@@ -2,7 +2,7 @@
   "name": "paper-input-char-counter",
   "tag": "paper-input-char-counter",
   "baseUrl": "paper-input/paper-input-char-counter.html",
-  "version": "2.0.3",
+  "version": "2.0.2",
   "properties": [],
   "methods": [
     {

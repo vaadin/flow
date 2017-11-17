@@ -169,6 +169,14 @@
       "description": "Set to true to keep overlay always on top.\n       "
     },
     {
+      "name": "scrollAction",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Determines which action to perform when scroll outside an opened overlay happens.\nPossible values:\nlock - blocks scrolling from happening,\nrefit - computes the new position on the overlay\ncancel - causes the overlay to close\n       "
+    },
+    {
       "name": "modal",
       "type": [
         "BOOLEAN"

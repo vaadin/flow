@@ -90,6 +90,12 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code file-abort} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFileAbortListener(
             ComponentEventListener<FileAbortEvent<R>> listener) {
         return addListener(FileAbortEvent.class,
@@ -119,6 +125,12 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code file-remove} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFileRemoveListener(
             ComponentEventListener<FileRemoveEvent<R>> listener) {
         return addListener(FileRemoveEvent.class,
@@ -148,6 +160,12 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code file-retry} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFileRetryListener(
             ComponentEventListener<FileRetryEvent<R>> listener) {
         return addListener(FileRetryEvent.class,
@@ -177,6 +195,12 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code file-start} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFileStartListener(
             ComponentEventListener<FileStartEvent<R>> listener) {
         return addListener(FileStartEvent.class,

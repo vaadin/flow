@@ -29,7 +29,7 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: paper-input-container#2.0.3", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: paper-input-container#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input-container")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-container.html")
 public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer<R>>
@@ -243,6 +243,13 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
         }
     }
 
+    /**
+     * Adds a listener for {@code focused-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,

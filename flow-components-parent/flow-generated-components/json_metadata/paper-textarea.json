@@ -2,7 +2,7 @@
   "name": "paper-textarea",
   "tag": "paper-textarea",
   "baseUrl": "paper-input/paper-textarea.html",
-  "version": "2.0.3",
+  "version": "2.0.2",
   "properties": [
     {
       "name": "focused",
@@ -319,24 +319,6 @@
       ],
       "objectType": [],
       "description": "The maximum number of rows this element can grow to until it\nscrolls. 0 means no maximum."
-    },
-    {
-      "name": "selectionStart",
-      "type": [
-        "OBJECT"
-      ],
-      "objectType": [],
-      "description": "",
-      "readOnly": true
-    },
-    {
-      "name": "selectionEnd",
-      "type": [
-        "OBJECT"
-      ],
-      "objectType": [],
-      "description": "",
-      "readOnly": true
     }
   ],
   "methods": [

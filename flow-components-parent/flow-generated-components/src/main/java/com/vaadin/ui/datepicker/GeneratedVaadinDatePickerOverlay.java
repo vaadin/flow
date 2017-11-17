@@ -338,6 +338,13 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
         }
     }
 
+    /**
+     * Adds a listener for {@code scroll-animation-finished} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addScrollAnimationFinishedListener(
             ComponentEventListener<ScrollAnimationFinishedEvent<R>> listener) {
         return addListener(ScrollAnimationFinishedEvent.class,
@@ -352,6 +359,13 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-date-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
         return addListener(SelectedDateChangeEvent.class,
@@ -366,6 +380,13 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
         }
     }
 
+    /**
+     * Adds a listener for {@code focused-date-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFocusedDateChangeListener(
             ComponentEventListener<FocusedDateChangeEvent<R>> listener) {
         return addListener(FocusedDateChangeEvent.class,

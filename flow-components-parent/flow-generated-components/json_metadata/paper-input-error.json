@@ -2,7 +2,7 @@
   "name": "paper-input-error",
   "tag": "paper-input-error",
   "baseUrl": "paper-input/paper-input-error.html",
-  "version": "2.0.3",
+  "version": "2.0.2",
   "properties": [
     {
       "name": "invalid",

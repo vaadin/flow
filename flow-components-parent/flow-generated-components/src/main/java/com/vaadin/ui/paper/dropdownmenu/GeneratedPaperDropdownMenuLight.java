@@ -1078,6 +1078,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
         }
     }
 
+    /**
+     * Adds a listener for {@code active-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addActiveChangeListener(
             ComponentEventListener<ActiveChangeEvent<R>> listener) {
         return addListener(ActiveChangeEvent.class,
@@ -1092,6 +1099,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
         }
     }
 
+    /**
+     * Adds a listener for {@code focused-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -1106,6 +1120,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
         }
     }
 
+    /**
+     * Adds a listener for {@code disabled-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -1120,6 +1141,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-form-element-register} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -1134,6 +1162,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
         }
     }
 
+    /**
+     * Adds a listener for {@code iron-form-element-unregister} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
@@ -1148,6 +1183,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
         }
     }
 
+    /**
+     * Adds a listener for {@code value-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return addListener(ValueChangeEvent.class,
@@ -1162,6 +1204,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
         }
     }
 
+    /**
+     * Adds a listener for {@code invalid-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -1176,6 +1225,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-item-label-changed} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedItemLabelChangeListener(
             ComponentEventListener<SelectedItemLabelChangeEvent<R>> listener) {
         return addListener(SelectedItemLabelChangeEvent.class,
@@ -1190,6 +1246,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
         }
     }
 
+    /**
+     * Adds a listener for {@code selected-item-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
@@ -1204,6 +1267,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
         }
     }
 
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
