@@ -144,15 +144,16 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     @Override
     protected M getModel() {
         if (model == null) {
-            model = createTemplateModelInstance(getStateNode());
+            model = createTemplateModelInstance();
         }
         return model;
     }
 
-    private M createTemplateModelInstance(StateNode node) {
+    private M createTemplateModelInstance() {
         ModelDescriptor<? extends M> descriptor = ModelDescriptor
                 .get(getModelType());
-        return TemplateModelProxyHandler.createModelProxy(node, descriptor);
+        return TemplateModelProxyHandler.createModelProxy(getStateNode(),
+                descriptor);
     }
 
     private static ModelType getModelTypeForListModel(Type type,
@@ -187,14 +188,28 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     }
 
     private void initModelProperties() {
+        // initialize model: fill all model properties with their initial value
         getModel();
+        // now collect all property names
         ElementPropertyMap properties = getStateNode()
                 .getFeature(ElementPropertyMap.class);
         List<String> propertyNames = properties.getPropertyNames()
                 .collect(Collectors.toList());
 
+        // remove properties whose values are not StateNode from the property
+        // map
         removeSimpleProperties();
 
+        /*
+         * Now populate model properties on the client side. Only explicitly set
+         * by the developer properties are in the map at the moment of execution
+         * since all simple properties have been removed from the map above.
+         * Such properties are excluded from the argument list and won't be
+         * populated on the client side.
+         *
+         * All explicitly set model properties will be sent from the server as
+         * usual and will take precedence over the client side values.
+         */
         getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
                 .beforeClientResponse(getStateNode(),
                         () -> ui.getPage().executeJavaScript(
