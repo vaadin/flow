@@ -22,8 +22,6 @@ import java.util.List;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.router.Route;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;

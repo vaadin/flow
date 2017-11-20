@@ -18,9 +18,6 @@ package com.vaadin.server;
 import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
-
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.function.DeploymentConfiguration;

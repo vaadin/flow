@@ -1,8 +1,5 @@
 package com.vaadin.flow.uitest.ui;
 
-import java.util.regex.Matcher;
-
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;

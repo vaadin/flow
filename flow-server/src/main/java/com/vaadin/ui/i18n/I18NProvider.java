@@ -18,8 +18,6 @@ package com.vaadin.ui.i18n;
 import java.util.List;
 import java.util.Locale;
 
-import com.vaadin.ui.UI;
-
 /**
  * I18N provider interface for internationalization usage.
  */

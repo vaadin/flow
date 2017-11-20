@@ -22,7 +22,6 @@ import com.vaadin.ui.event.ClickNotifier;
 
 import java.util.stream.Stream;
 
-import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
 /**
