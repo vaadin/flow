@@ -24,7 +24,6 @@ import com.vaadin.server.StreamRegistration;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.html.Div;
@@ -33,8 +32,7 @@ import com.vaadin.ui.html.Div;
 public class DependencyUI extends UI {
 
     @StyleSheet("context://test-files/css/allblueimportant.css")
-    public static class AllBlueImportantComponent extends Div
-            implements HasText {
+    public static class AllBlueImportantComponent extends Div {
 
         public AllBlueImportantComponent() {
             setText("allblueimportant.css component");
@@ -43,7 +41,7 @@ public class DependencyUI extends UI {
     }
 
     @JavaScript("context://test-files/js/body-click-listener.js")
-    public static class JsResourceComponent extends Div implements HasText {
+    public static class JsResourceComponent extends Div {
 
         public JsResourceComponent() {
             setText("Hello, click the body please");

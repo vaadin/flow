@@ -35,7 +35,6 @@ import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
 
 import com.vaadin.server.Constants;
-import com.vaadin.server.RequestHandler;
 import com.vaadin.server.ServiceDestroyEvent;
 import com.vaadin.server.ServiceDestroyListener;
 import com.vaadin.server.ServiceException;
@@ -59,8 +58,7 @@ import com.vaadin.shared.communication.PushConstants;
  * @author Vaadin Ltd
  * @since 7.1
  */
-public class PushRequestHandler
-        implements RequestHandler, SessionExpiredHandler {
+public class PushRequestHandler implements SessionExpiredHandler {
 
     private AtmosphereFramework atmosphere;
     private PushHandler pushHandler;
