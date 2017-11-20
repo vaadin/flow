@@ -17,6 +17,8 @@ package com.vaadin.flow.tutorial.dataproviders;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +32,7 @@ import com.vaadin.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.data.provider.Query;
+import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.data.provider.SortDirection;
 import com.vaadin.data.provider.SortOrder;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
@@ -54,6 +57,13 @@ public class DataProviders {
         public PersonFilter(String namePrefix, Department department) {
             this.namePrefix = namePrefix;
             this.department = department;
+        }
+    }
+
+    public enum Status {
+        OK, ERROR;
+        public String getLabel() {
+            return "";
         }
     }
 
@@ -122,15 +132,28 @@ public class DataProviders {
       }
     // @formatter:on
 
+    public void combobox() {
+        ComboBox<Status> comboBox = new ComboBox<>();
+        comboBox.setItemLabelGenerator(Status::getLabel);
+
+        // Sets items as a collection
+        comboBox.setItems(EnumSet.allOf(Status.class));
+        
+        List<Status> itemsToShow = null;
+        
+        /* Not implemented
+        comboBox.setItems(
+                (itemCaption, filterText) ->
+                  itemCaption.startsWith(filterText),
+                itemsToShow);
+        */
+    }
+
     public void grid() {
         Grid<Person> grid = new Grid<>();
         grid.addColumn(Person::getName).setHeader("Name");
         grid.addColumn(person -> Integer.toString(person.getYearOfBirth()))
                 .setHeader("Year of birth");
-    }
-
-    public void setItems() {
-        Grid<Person> grid = new Grid<>();
 
         // Sets items using varargs
         // @formatter:off
@@ -141,6 +164,12 @@ public class DataProviders {
                 new Person("James Madison", 1751)
               );
         // @formatter:on
+        
+        grid.addColumn(Person::getName)
+        .setHeader("Name")
+        // Override default natural sorting
+        .setComparator(Comparator.comparing(
+          person -> person.getName().toLowerCase()));
     }
 
     public void listDataProvider() {
@@ -174,13 +203,14 @@ public class DataProviders {
         ListDataProvider<Person> dataProvider = DataProvider
                 .ofCollection(persons);
 
-        Grid<Person> grid = new Grid<>();
-        grid.setDataProvider(dataProvider);
+        ComboBox<Person> comboBox = new ComboBox<>();
+        comboBox.setDataProvider(dataProvider);
 
         departmentSelect.addValueChangeListener(event -> {
             Department selectedDepartment = event.getValue();
             if (selectedDepartment != null) {
-                dataProvider.setFilterByValue(Person::getDepartment,
+                dataProvider.setFilterByValue(
+                        Person::getDepartment,
                         selectedDepartment);
             } else {
                 dataProvider.clearFilters();
@@ -306,8 +336,8 @@ public class DataProviders {
 
         wrapper.setFilter(Collections.singleton("John"));
 
-        Grid<Person> grid = new Grid<>();
-        grid.setDataProvider(wrapper);
+        ComboBox<Person> comboBox = new ComboBox<>();
+        comboBox.setDataProvider(wrapper);
       //@formatter:on
     }
 
@@ -343,7 +373,7 @@ public class DataProviders {
                             filter != null ? filter.department : null);
                 });
 
-        // For use with Grid without any department filter
+        // For use with ComboBox without any department filter
         // @formatter:off
         DataProvider<Person, String> onlyString = dataProvider.withConvertedFilter(
           filterString -> new PersonFilter(filterString, null)
@@ -355,7 +385,7 @@ public class DataProviders {
         everythingConfigurable.setFilter(
           new PersonFilter(someText, someDepartment));
 
-        // For use with Grid and separate department filtering
+        // For use with ComboBox and separate department filtering
         ConfigurableFilterDataProvider<Person, String, Department> mixed =
           dataProvider.withConfigurableFilter(
             // Can be shortened as PersonFilter::new
@@ -391,6 +421,63 @@ public class DataProviders {
             dataProvider.refreshItem(newInstance);
         });
     }
+    
+    public void sortOrderProvider() {
+        Grid<Person> grid = new Grid<>();
+
+        grid.addColumn(person -> person.getName() + " " + person.getLastName())
+                .setHeader("Name")
+                .setSortOrderProvider(
+                    // Sort according to last name, then first name
+                    direction -> Stream.of(
+                            new QuerySortOrder("lastName", direction),
+                            new QuerySortOrder("firstName", direction)));
+
+        // Will be sortable by the user
+        // When sorting by this column, the query will have a SortOrder
+        // where getSorted() returns "name"
+        grid.addColumn(Person::getName).setHeader("Name")
+                .setSortProperty("name");
+
+        // Will not be sortable since no sorting info is given
+        grid.addColumn(Person::getYearOfBirth).setHeader("Year of birth");
+    }
+
+    public void filteringBy() {
+        /* not implemented
+        ComboBox<Person> comboBox = new ComboBox<>();
+        List<Person> persons = null;
+        
+        ListDataProvider<Person> dataProvider =
+                DataProvider.ofCollection(persons);
+
+              comboBox.setDataProvider(dataProvider.filteringBy(
+                (person, filterText) -> {
+                  if (person.getName().contains(filterText)) {
+                    return true;
+                  }
+
+                  if (person.getEmail().contains(filterText)) {
+                    return true;
+                  }
+
+                  return false;
+                }
+              ));
+        */
+    }
+
+    public void withConvertedFilter() {
+        DataProvider<Person, Set<String>> personProvider = getProvider();
+
+        ComboBox<Person> comboBox = new ComboBox<>();
+
+        DataProvider<Person, String> converted = personProvider
+                .withConvertedFilter(
+                        filterText -> Collections.singleton(filterText));
+
+        comboBox.setDataProvider(converted);
+    }
 
     private DataProvider<Person, Set<String>> getPersonsProvider() {
         return null;
@@ -401,6 +488,10 @@ public class DataProviders {
     }
 
     private PersonService getPersonService() {
+        return null;
+    }
+
+    private DataProvider<Person, Set<String>> getProvider() {
         return null;
     }
 }
