@@ -37,7 +37,7 @@ public class ExclusionRegistry {
 
     static {
         excludeProperty("vaadin-combo-box", "value");
-        excludeProperty("vaadin-radio-button", "value");
+        excludeProperty("vaadin-radio-group", "value");
         excludeProperty("vaadin-combo-box", "selectedItem");
         excludeProperty("vaadin-combo-box", "itemLabelPath");
         excludeProperty("vaadin-combo-box", "itemValuePath");
