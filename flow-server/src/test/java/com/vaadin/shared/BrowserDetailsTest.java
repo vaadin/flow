@@ -38,6 +38,7 @@ public class BrowserDetailsTest extends TestCase {
     private static final String CHROME3_MAC = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_8; en-US) AppleWebKit/532.0 (KHTML, like Gecko) Chrome/3.0.198 Safari/532.0";
     private static final String CHROME4_WINDOWS = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.249.89 Safari/532.5";
     private static final String CHROME_IOS = "Mozilla/5.0 (iPhone; CPU iPhone OS 9_2_1 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/49.0.2623.73 Mobile/13D15 Safari/601.1.46";
+    private static final String CHROME_40_ON_CHROMEOS = "Mozilla/5.0 (X11; CrOS x86_64 6457.31.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.38 Safari/537.36";
 
     private static final String SAFARI3_WINDOWS = "Mozilla/5.0 (Windows; U; Windows NT 5.1; cs-CZ) AppleWebKit/525.28.3 (KHTML, like Gecko) Version/3.2.3 Safari/525.29";
     private static final String SAFARI4_MAC = "Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10_5_8; en-us) AppleWebKit/531.22.7 (KHTML, like Gecko) Version/4.0.5 Safari/531.22.7";
@@ -203,6 +204,16 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 601.1f);
         assertIOS(bd, 9, 2);
+    }
+
+    public void testChromeChromeOS() {
+        BrowserDetails bd = new BrowserDetails(CHROME_40_ON_CHROMEOS);
+        assertWebKit(bd);
+        assertChrome(bd);
+        assertBrowserMajorVersion(bd, 40);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 537.36f);
+        assertChromeOS(bd);
     }
 
     public void testFirefox3() {
@@ -581,6 +592,7 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isWindows());
         assertTrue(browserDetails.isMacOSX());
         assertFalse(browserDetails.isAndroid());
+        assertFalse(browserDetails.isChromeOS());
     }
 
     private void assertAndroid(BrowserDetails browserDetails, int majorVersion,
@@ -590,6 +602,7 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isMacOSX());
         assertFalse(browserDetails.isIOS());
         assertTrue(browserDetails.isAndroid());
+        assertFalse(browserDetails.isChromeOS());
 
         assertOSMajorVersion(browserDetails, majorVersion);
         assertOSMinorVersion(browserDetails, minorVersion);
@@ -602,6 +615,7 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isMacOSX());
         assertTrue(browserDetails.isIOS());
         assertFalse(browserDetails.isAndroid());
+        assertFalse(browserDetails.isChromeOS());
 
         assertOSMajorVersion(browserDetails, majorVersion);
         assertOSMinorVersion(browserDetails, minorVersion);
@@ -628,6 +642,7 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isMacOSX());
         assertFalse(browserDetails.isIOS());
         assertFalse(browserDetails.isAndroid());
+        assertFalse(browserDetails.isChromeOS());
         Assert.assertEquals(isWindowsPhone, browserDetails.isWindowsPhone());
     }
 
@@ -637,6 +652,15 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isMacOSX());
         assertFalse(browserDetails.isIOS());
         assertFalse(browserDetails.isAndroid());
+        assertFalse(browserDetails.isChromeOS());
     }
 
+    private void assertChromeOS(BrowserDetails browserDetails) {
+        assertFalse(browserDetails.isLinux());
+        assertFalse(browserDetails.isWindows());
+        assertFalse(browserDetails.isMacOSX());
+        assertFalse(browserDetails.isIOS());
+        assertFalse(browserDetails.isAndroid());
+        assertTrue(browserDetails.isChromeOS());
+    }
 }

@@ -32,7 +32,7 @@ public class BrowserDetails implements Serializable {
      * An enum for detected operating systems.
      */
     public enum OperatingSystem {
-        UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID
+        UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID, CHROMEOS
     }
 
     private boolean isGecko;
@@ -50,6 +50,7 @@ public class BrowserDetails implements Serializable {
     private boolean isWindowsPhone;
     private boolean isIPad;
     private boolean isIPhone;
+    private boolean isChromeOS;
 
     private OperatingSystem os = OperatingSystem.UNKNOWN;
 
@@ -205,6 +206,48 @@ public class BrowserDetails implements Serializable {
                 parseIOSVersion(userAgent);
             } else {
                 os = OperatingSystem.MACOSX;
+            }
+        } else if (userAgent.contains("; cros ")) {
+            os = OperatingSystem.CHROMEOS;
+            isChromeOS = true;
+            parseChromeOSVersion(userAgent);
+        }
+    }
+
+    // (X11; CrOS armv7l 6946.63.0)
+    private void parseChromeOSVersion(String userAgent) {
+        int start = userAgent.indexOf("; cros ");
+        if (start == -1) {
+            return;
+        }
+        int end = userAgent.indexOf(')', start);
+        if (end == -1) {
+            return;
+        }
+        int cur = end;
+        while (cur >= start && userAgent.charAt(cur) != ' ') {
+            cur--;
+        }
+        if (cur == start) {
+            return;
+        }
+        String osVersionString = userAgent.substring(cur + 1, end);
+        String[] parts = osVersionString.split("\\.");
+        parseChromeOsVersion(parts);
+    }
+
+    private void parseChromeOsVersion(String[] parts) {
+        osMajorVersion = -1;
+        osMinorVersion = -1;
+
+        if (parts.length > 2) {
+            try {
+                osMajorVersion = Integer.parseInt(parts[1]);
+            } catch (Exception e) {
+            }
+            try {
+                osMinorVersion = Integer.parseInt(parts[0]);
+            } catch (Exception e) {
             }
         }
     }
@@ -522,6 +565,15 @@ public class BrowserDetails implements Serializable {
      */
     public boolean isIPhone() {
         return isIPhone;
+    }
+
+    /**
+     * Tests if the browser is run on Chrome OS (e.g. a Chromebook).
+     *
+     * @return true if run on Chrome OS, false otherwise
+     */
+    public boolean isChromeOS() {
+        return isChromeOS;
     }
 
     /**
