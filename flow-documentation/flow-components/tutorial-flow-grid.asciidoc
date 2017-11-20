@@ -511,18 +511,31 @@ more sort criteria.
 
 === Defining how a column is sorted
 
-You can define how a column is sorted in two different ways:
+Before jumping to the code, it's important to understand 2 key features of the sorting mechanism: in-memory sorting and backend sorting.
 
-==== 1. Using a property name at the column construction
+In-memory sorting is the sorting that is applied to the items that have been fetched from the backend, before returning them to the client.
 
-You can set the names of properties that will be used to sort the column at the moment you add it to the grid. For example:
+Backend sorting is a list of `QuerySortOrder` objects that can be used when implementing your own fetching logic within a `DataProvider`. 
+You can check more details about the backend sorting <<../data-provider/tutorial-flow-data-provider#Sorting,here>>.
+
+You can have both in-memory and backend sorting at the same time, or you can configure them separately. Here is a list of options
+you can use to setup the sorting for your Grid:
+
+==== 1. Using a sort property name at the column construction (in-memory and backend sorting)
+
+You can set the sort properties that will be used to do backend sorting at the moment you add the column to the grid. For example:
 
 [source, java]
 ----
 grid.addColumn(Person::getAge, "age").setHeader("Age");
 ----
 
-The `Age` column will use the `age` property of the bean to sort the values.
+The `Age` column will use the values returned by `Person::getAge` method to do in-memory sorting, and use the `age` String to build 
+a `QuerySortOrder` that will be sent to the `DataProvider` to do the backend sorting.
+
+[NOTE]
+For the in-memory sorting to work properly, the values returned by the `ValueProvider` (`Person::getAge` in the example) should 
+implement `Comparable`.
 
 You can use multiple properties as well:
 
@@ -532,9 +545,9 @@ grid.addColumn(person -> person.getName() + " " + person.getLastName(),
                 "name", "lastName").setHeader("Name");
 ----
 
-When using multiple properties, the comparisons are made in the order they are declared.
+When using multiple properties, the `QuerySortOrder` objects are created in the order they are declared.
 
-You can use properties created for your `TemplateRenderer` as well. For example:
+You can use properties created for your `TemplateRenderer` too. For example:
 
 [source, java]
 ----
@@ -545,12 +558,9 @@ grid.addColumn(TemplateRenderer.<Person> of(
         .setHeader("Person");
 ----
 
-[NOTE]
-The sortable properties declared at the `addColumn` method must implement `Comparable` for the automatic sorting to work.
+==== 2. Using a Comparator (in-memory sorting)
 
-==== 2. Using a Comparator
-
-When your model is complex enough, or when you need a custom logic to compare items to sort them properly, 
+When you need a custom logic to compare items to sort them properly, or if your underlying data is not `Comparable`, 
 you can set a `Comparator` to your column:
 
 [source, java]
@@ -562,7 +572,56 @@ grid.addColumn(Person::getName)
 ----
 
 [NOTE]
-Setting a `Comparator` will override any sortable property set at the `addColumn` method.
+Keep in mind that when a Comparator is set for a column, it is executed for all the items that will be sent to the client. 
+A comparator with poor performance will impact the overall performance of the Grid.
+
+==== 3. Setting sort properties (backend sorting)
+
+You can set strings describing backend properties to be used when sorting the column. Different from the `addColumn`, 
+this doesn't configure any in-memory sorting.
+
+[source, java]
+----
+grid.addColumn(Person::getName).setSortProperty("name", "email")
+        .setHeader("Person");
+----
+
+When setting the sort properties, a `SortOrderProvider` is created automatically for you.
+
+==== 4. Setting a SortOrderProvider (backend sorting)
+
+If you need a fine control on how the `QuerySortOrder` objects are created and sent to the `DataProvider`, you can set
+a `SortOrderProvider`:
+
+[source, java]
+----
+grid.addColumn(Person::getName)
+        .setSortOrderProvider(direction -> Arrays
+                .asList(new QuerySortOrder("name", direction),
+                        new QuerySortOrder("email", direction))
+                .stream())
+        .setHeader("Person");
+----
+
+=== Enabling and disabling the sorting in a column
+
+When using any of the 4 methods described above, the column is considered `sortable`. You can toggle the sorting for a column
+by using:
+
+[source, java]
+----
+column.setSortable(false);
+----
+
+Setting a column as not `sortable` doesn't delete any `Comparator`, `sort property` or `SortOrderProvider` previously set - 
+so you can toggle the `sortable` flag on and off without having to reconfigured it every time.
+
+You can check if a given column is currently `sortable` by calling:
+
+[source, java]
+----
+column.isSortable();
+----
 
 === Enabling multi-sorting
 

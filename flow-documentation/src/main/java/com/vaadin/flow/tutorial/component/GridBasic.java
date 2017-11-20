@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person;
 import com.vaadin.function.ValueProvider;
@@ -195,6 +196,16 @@ public class GridBasic {
                         .compareToIgnoreCase(person2.getName()))
                 .setHeader("Name");
 
+        grid.addColumn(Person::getName).setSortProperty("name", "email")
+                .setHeader("Person");
+
+        grid.addColumn(Person::getName)
+                .setSortOrderProvider(direction -> Arrays
+                        .asList(new QuerySortOrder("name", direction),
+                                new QuerySortOrder("email", direction))
+                        .stream())
+                .setHeader("Person");
+
         grid.addSortListener(event -> {
             String currentSortOrder = grid.getDataCommunicator()
                     .getBackEndSorting().stream()
@@ -207,6 +218,10 @@ public class GridBasic {
                     "Current sort order: %s. Sort originates from the client: %s.",
                     currentSortOrder, event.isFromClient()));
         });
+
+        Column<Person> column = grid.addColumn(Person::getName);
+        column.setSortable(false);
+        column.isSortable();
     }
 
     //@formatter:off
