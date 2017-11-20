@@ -46,9 +46,10 @@
     "vaadin-form-layout": "1.0.3",
     "vaadin-split-layout": "3.0.0",
     "vaadin-date-picker": "2.0.5",
-    "vaadin-dialog": "1.0.0",
+    "vaadin-dialog": "1.0.1",
     "vaadin-upload": "2.1.2",
     "vaadin-progress-bar": "1.0.0-alpha6",
-    "vaadin-tabs": "1.0.0-beta1"
+    "vaadin-tabs": "1.0.0-beta1",
+    "vaadin-radio-button": "1.0.0-alpha8"
   }
 }

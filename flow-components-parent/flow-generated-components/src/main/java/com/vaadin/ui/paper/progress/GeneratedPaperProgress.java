@@ -29,165 +29,6 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * Material design: <a
- * href="https://www.google.com/design/spec/components/progress-activity.html"
- * >Progress &amp; activity</a>
- * </p>
- * <p>
- * The progress bars are for situations where the percentage completed can be
- * determined. They give users a quick sense of how much longer an operation
- * will take.
- * </p>
- * <p>
- * Example:
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-progress value=&quot;10&quot;&gt;&lt;/paper-progress&gt;
- * </code>
- * </pre>
- * <p>
- * There is also a secondary progress which is useful for displaying
- * intermediate progress, such as the buffer level during a streaming playback
- * progress bar.
- * </p>
- * <p>
- * Example:
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-progress value=&quot;10&quot; secondary-progress=&quot;30&quot;&gt;&lt;/paper-progress&gt;
- * </code>
- * </pre>
- * 
- * <h3>Styling progress bar:</h3>
- * <p>
- * To change the active progress bar color:
- * </p>
- * 
- * <pre>
- * <code>paper-progress {
- *    --paper-progress-active-color: #e91e63;
- * }
- * </code>
- * </pre>
- * <p>
- * To change the secondary progress bar color:
- * </p>
- * 
- * <pre>
- * <code>paper-progress {
- *   --paper-progress-secondary-color: #f8bbd0;
- * }
- * </code>
- * </pre>
- * <p>
- * To change the progress bar background color:
- * </p>
- * 
- * <pre>
- * <code>paper-progress {
- *   --paper-progress-container-color: #64ffda;
- * }
- * </code>
- * </pre>
- * <p>
- * Add the class {@code transiting} to a paper-progress to animate the progress
- * bar when the value changed. You can also customize the transition:
- * </p>
- * 
- * <pre>
- * <code>paper-progress {
- *   --paper-progress-transition-duration: 0.08s;
- *   --paper-progress-transition-timing-function: ease;
- *   --paper-progress-transition-transition-delay: 0s;
- * }
- * </code>
- * </pre>
- * <p>
- * To change the duration of the indeterminate cycle:
- * </p>
- * 
- * <pre>
- * <code>paper-progress {
- *   --paper-progress-indeterminate-cycle-duration: 2s;
- * }
- * </code>
- * </pre>
- * <p>
- * The following mixins are available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Custom property</th>
- * <th>Description</th>
- * <th>Default</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code --paper-progress-container}</td>
- * <td>Mixin applied to container</td>
- * <td>{@code</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-progress-transition-duration}</td>
- * <td>Duration of the transition</td>
- * <td>{@code 0.008s}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-progress-transition-timing-function}</td>
- * <td>The timing function for the transition</td>
- * <td>{@code ease}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-progress-transition-delay}</td>
- * <td>delay for the transition</td>
- * <td>{@code 0s}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-progress-container-color}</td>
- * <td>Color of the container</td>
- * <td>{@code --google-grey-300}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-progress-active-color}</td>
- * <td>The color of the active bar</td>
- * <td>{@code --google-green-500}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-progress-secondary-color}</td>
- * <td>The color of the secondary bar</td>
- * <td>{@code --google-green-100}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-progress-disabled-active-color}</td>
- * <td>The color of the active bar if disabled</td>
- * <td>{@code --google-grey-500}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-progress-disabled-secondary-color}</td>
- * <td>The color of the secondary bar if disabled</td>
- * <td>{@code --google-grey-300}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-progress-height}</td>
- * <td>The height of the progress bar</td>
- * <td>{@code 4px}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-progress-indeterminate-cycle-duration}</td>
- * <td>Duration of an indeterminate cycle</td>
- * <td>{@code 2s}</td>
- * </tr>
- * </tbody>
- * </table>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-progress#2.0.1", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-progress")
@@ -493,6 +334,12 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code min-changed} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addMinChangeListener(
             ComponentEventListener<MinChangeEvent<R>> listener) {
         return addListener(MinChangeEvent.class,
@@ -507,6 +354,12 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code max-changed} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addMaxChangeListener(
             ComponentEventListener<MaxChangeEvent<R>> listener) {
         return addListener(MaxChangeEvent.class,
@@ -521,6 +374,13 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code step-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addStepChangeListener(
             ComponentEventListener<StepChangeEvent<R>> listener) {
         return addListener(StepChangeEvent.class,
@@ -535,6 +395,13 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code ratio-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addRatioChangeListener(
             ComponentEventListener<RatioChangeEvent<R>> listener) {
         return addListener(RatioChangeEvent.class,

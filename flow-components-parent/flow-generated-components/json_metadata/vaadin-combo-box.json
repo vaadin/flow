@@ -10,7 +10,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the dropdown is open, false otherwise.\n         "
+      "description": "True if the dropdown is open, false otherwise.\n         ",
+      "notify": true
     },
     {
       "name": "disabled",
@@ -58,7 +59,8 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The `String` value for the selected item of the combo box. Provides\nthe value for `iron-form`.\n\nWhen there’s no item selected, the value is an empty string.\n\nUse `selectedItem` property to get the raw selected item from\nthe `items` array.\n         "
+      "description": "The `String` value for the selected item of the combo box. Provides\nthe value for `iron-form`.\n\nWhen there’s no item selected, the value is an empty string.\n\nUse `selectedItem` property to get the raw selected item from\nthe `items` array.\n         ",
+      "notify": true
     },
     {
       "name": "hasValue",
@@ -83,7 +85,8 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "Filtering string the user has typed into the input field.\n         "
+      "description": "Filtering string the user has typed into the input field.\n         ",
+      "notify": true
     },
     {
       "name": "selectedItem",
@@ -91,7 +94,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "The selected item from the `items` array.\n         "
+      "description": "The selected item from the `items` array.\n         ",
+      "notify": true
     },
     {
       "name": "itemLabelPath",
@@ -131,7 +135,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Set to true if the value is invalid.\n         "
+      "description": "Set to true if the value is invalid.\n         ",
+      "notify": true
     },
     {
       "name": "label",

@@ -10,7 +10,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": ""
+      "description": "",
+      "notify": true
     },
     {
       "name": "template",
@@ -18,7 +19,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": ""
+      "description": "",
+      "notify": true
     },
     {
       "name": "content",
@@ -26,7 +28,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": ""
+      "description": "",
+      "notify": true
     },
     {
       "name": "withBackdrop",
@@ -35,6 +38,14 @@
       ],
       "objectType": [],
       "description": ""
+    },
+    {
+      "name": "modeless",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When true the overlay won't disable the main content, showing\nit doesn’t change the functionality of the user interface.\n           "
     },
     {
       "name": "focusTrap",

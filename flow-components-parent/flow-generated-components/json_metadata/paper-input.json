@@ -11,7 +11,8 @@
       ],
       "objectType": [],
       "description": "If true, the element currently has focus.\n       ",
-      "readOnly": true
+      "readOnly": true,
+      "notify": true
     },
     {
       "name": "disabled",
@@ -59,7 +60,8 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The value for this element.\n       "
+      "description": "The value for this element.\n       ",
+      "notify": true
     },
     {
       "name": "invalid",
@@ -67,7 +69,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Returns true if the value is invalid. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to both the\n`<paper-input-container>`'s and the input's `invalid` property.\n\nIf `autoValidate` is true, the `invalid` attribute is managed automatically,\nwhich can clobber attempts to manage it manually.\n       "
+      "description": "Returns true if the value is invalid. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to both the\n`<paper-input-container>`'s and the input's `invalid` property.\n\nIf `autoValidate` is true, the `invalid` attribute is managed automatically,\nwhich can clobber attempts to manage it manually.\n       ",
+      "notify": true
     },
     {
       "name": "allowedPattern",
@@ -431,5 +434,5 @@
     "Polymer.IronA11yKeysBehavior"
   ],
   "mixins": [],
-  "description": "This is a fresh new hell to make this element hybrid. Basically, in 2.0\n    we lost is=, so the example same template can't be used with iron-input 1.0 and 2.0.\n    Expect some conditional code (especially in the tests)."
+  "description": ""
 }

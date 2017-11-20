@@ -24,44 +24,6 @@ import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.ui.common.JsonSerializable;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * {@code <paper-input-char-counter>} is a character counter for use with
- * {@code <paper-input-container>}. It shows the number of characters entered in
- * the input and the max length if it is specified.
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-input-container&gt;
- *   &lt;input maxlength=&quot;20&quot;&gt;
- *   &lt;paper-input-char-counter&gt;&lt;/paper-input-char-counter&gt;
- * &lt;/paper-input-container&gt;
- * </code>
- * </pre>
- * 
- * <h3>Styling</h3>
- * <p>
- * The following mixin is available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Custom property</th>
- * <th>Description</th>
- * <th>Default</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code --paper-input-char-counter}</td>
- * <td>Mixin applied to the element</td>
- * <td>{@code</td>
- * </tr>
- * </tbody>
- * </table>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-input-char-counter#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input-char-counter")

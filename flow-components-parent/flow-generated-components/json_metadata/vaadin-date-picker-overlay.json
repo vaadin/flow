@@ -10,7 +10,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "The value for this element.\n             "
+      "description": "The value for this element.\n             ",
+      "notify": true
     },
     {
       "name": "focusedDate",
@@ -18,7 +19,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "Date value which is focused using keyboard.\n             "
+      "description": "Date value which is focused using keyboard.\n             ",
+      "notify": true
     },
     {
       "name": "initialPosition",

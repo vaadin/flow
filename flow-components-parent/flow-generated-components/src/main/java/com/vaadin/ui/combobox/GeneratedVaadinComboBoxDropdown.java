@@ -223,6 +223,13 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
         }
     }
 
+    /**
+     * Adds a listener for {@code vaadin-combo-box-dropdown-closed} events fired
+     * by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addVaadinComboBoxDropdownClosedListener(
             ComponentEventListener<VaadinComboBoxDropdownClosedEvent<R>> listener) {
         return addListener(VaadinComboBoxDropdownClosedEvent.class,
@@ -237,6 +244,13 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
         }
     }
 
+    /**
+     * Adds a listener for {@code vaadin-combo-box-dropdown-opened} events fired
+     * by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addVaadinComboBoxDropdownOpenedListener(
             ComponentEventListener<VaadinComboBoxDropdownOpenedEvent<R>> listener) {
         return addListener(VaadinComboBoxDropdownOpenedEvent.class,
@@ -251,6 +265,13 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
         }
     }
 
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -265,6 +286,13 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
         }
     }
 
+    /**
+     * Adds a listener for {@code template-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addTemplateChangeListener(
             ComponentEventListener<TemplateChangeEvent<R>> listener) {
         return addListener(TemplateChangeEvent.class,

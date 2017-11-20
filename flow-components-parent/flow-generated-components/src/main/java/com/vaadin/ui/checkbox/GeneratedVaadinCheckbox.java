@@ -346,6 +346,13 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code indeterminate-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addIndeterminateChangeListener(
             ComponentEventListener<IndeterminateChangeEvent<R>> listener) {
         return addListener(IndeterminateChangeEvent.class,

@@ -28,65 +28,6 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
-/**
- * <p>
- * Description copied from corresponding location in WebComponent:
- * </p>
- * <p>
- * This is a simple color picker element that will allow you to choose one of
- * the Material Design colors from a list of available swatches.
- * </p>
- * <p>
- * Example:
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-swatch-picker&gt;&lt;/paper-swatch-picker&gt;
- * 
- * &lt;paper-swatch-picker color=&quot;{{selectedColor}}&quot;&gt;&lt;/paper-swatch-picker&gt;
- * </code>
- * </pre>
- * <p>
- * You can configure the color palette being used using the {@code colorList}
- * array and the {@code columnCount} property, which specifies how many
- * &quot;generic&quot; colours (i.e. columns in the picker) you want to display.
- * </p>
- * 
- * <pre>
- * <code>&lt;paper-swatch-picker column-count=5 color-list='[&quot;#65a5f2&quot;, &quot;#83be54&quot;, &quot;#f0d551&quot;, &quot;#e5943c&quot;, &quot;#a96ddb&quot;]'&gt;&lt;/paper-swatch-picker&gt;
- * </code>
- * </pre>
- * 
- * <h3>Styling</h3>
- * <p>
- * The following custom properties and mixins are available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Custom property</th>
- * <th>Description</th>
- * <th>Default</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code --paper-swatch-picker-color-size}</td>
- * <td>The size of each of the color boxes</td>
- * <td>{@code 20px}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-swatch-picker-icon-size}</td>
- * <td>The size of the color picker icon</td>
- * <td>{@code 24px}</td>
- * </tr>
- * <tr>
- * <td>{@code --paper-swatch-picker-icon}</td>
- * <td>Mixin applied to the color picker icon</td>
- * <td>{@code</td>
- * </tr>
- * </tbody>
- * </table>
- */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-swatch-picker#2.0.1", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-swatch-picker")
@@ -317,6 +258,13 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code color-picker-selected} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addColorPickerSelectedListener(
             ComponentEventListener<ColorPickerSelectedEvent<R>> listener) {
         return addListener(ColorPickerSelectedEvent.class,
@@ -331,6 +279,13 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
         }
     }
 
+    /**
+     * Adds a listener for {@code color-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     */
     public Registration addColorChangeListener(
             ComponentEventListener<ColorChangeEvent<R>> listener) {
         return addListener(ColorChangeEvent.class,
