@@ -16,6 +16,13 @@
         <sonar.skip>true</sonar.skip>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>flow-component-base</id>
+            <url>https://maven.vaadin.com/vaadin-prereleases</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -39,6 +46,12 @@
             <artifactId>flow-test-util</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-data</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Component dependencies -->
