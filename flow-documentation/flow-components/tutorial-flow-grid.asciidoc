@@ -118,12 +118,12 @@ The selection model is also returned by the `setSelectionMode(SelectionMode)` me
 [source, java]
 ----
 // the default selection model
-GridSingleSelectionModel<Person> defaultModel =
-      (GridSingleSelectionModel<Person>) grid.getSelectionModel();
+GridSingleSelectionModel<Person> defaultModel = (GridSingleSelectionModel<Person>) grid
+        .getSelectionModel();
 
 // Use multi-selection mode
-GridMultiSelectionModel<Person> selectionModel =
-      (GridMultiSelectionModel<Person>) grid.setSelectionMode(SelectionMode.MULTI);
+GridMultiSelectionModel<Person> selectionModel = (GridMultiSelectionModel<Person>) grid
+        .setSelectionMode(SelectionMode.MULTI);
 ----
 
 ==== Single Selection Model
@@ -141,8 +141,9 @@ By default it is enabled, but can be disabled with `setDeselectAllowed()`.
 // preselect value
 grid.select(defaultItem);
 
-GridSingleSelectionModel<Person> singleSelect =
-      (GridSingleSelectionModel<Person>) grid.getSelectionModel();
+GridSingleSelectionModel<Person> singleSelect = (GridSingleSelectionModel<Person>) grid
+        .getSelectionModel();
+
 // disallow empty selection
 singleSelect.setDeselectAllowed(false);
 ----
@@ -164,8 +165,8 @@ access to `MultiSelectionEvent`, which allows to easily access differences in th
 // Grid in multi-selection mode
 Grid<Person> grid = new Grid<>();
 grid.setItems(people);
-GridMultiSelectionModel<Person> selectionModel =
-        (GridMultiSelectionModel<Person>) grid.setSelectionMode(SelectionMode.MULTI);
+GridMultiSelectionModel<Person> selectionModel = (GridMultiSelectionModel<Person>) grid
+        .setSelectionMode(SelectionMode.MULTI);
 
 selectionModel.selectAll();
 
@@ -500,3 +501,96 @@ for an item is visible with `isDetailsVisible()`.
 [NOTE]
 By default, items are selected by clicking them. If you want clicking just to show the item details without
 selection, you need to call `grid.setSelectionMode(SelectionMode.NONE)`.
+
+== Sorting
+
+A user can sort the data in a grid on a column by clicking the column header. Clicking another time 
+on the current sort column reverses the sort direction. Clicking on a third time resets the column to its 
+unsorted state. If multisorting is enabled, clicking on other sortable column headers adds a secondary or 
+more sort criteria.
+
+=== Defining how a column is sorted
+
+You can define how a column is sorted in two different ways:
+
+==== 1. Using a property name at the column construction
+
+You can set the names of properties that will be used to sort the column at the moment you add it to the grid. For example:
+
+[source, java]
+----
+grid.addColumn(Person::getAge, "age").setHeader("Age");
+----
+
+The `Age` column will use the `age` property of the bean to sort the values.
+
+You can use multiple properties as well:
+
+[source, java]
+----
+grid.addColumn(person -> person.getName() + " " + person.getLastName(),
+                "name", "lastName").setHeader("Name");
+----
+
+When using multiple properties, the comparisons are made in the order they are declared.
+
+You can use properties created for your `TemplateRenderer` as well. For example:
+
+[source, java]
+----
+grid.addColumn(TemplateRenderer.<Person> of(
+        "<div>[[item.name]]<br><small>[[item.email]]</small></div>")
+        .withProperty("name", Person::getName)
+        .withProperty("email", Person::getEmail), "name", "email")
+        .setHeader("Person");
+----
+
+[NOTE]
+The sortable properties declared at the `addColumn` method must implement `Comparable` for the automatic sorting to work.
+
+==== 2. Using a Comparator
+
+When your model is complex enough, or when you need a custom logic to compare items to sort them properly, 
+you can set a `Comparator` to your column:
+
+[source, java]
+----
+grid.addColumn(Person::getName)
+        .setComparator((person1, person2) -> person1.getName()
+                .compareToIgnoreCase(person2.getName()))
+        .setHeader("Name");
+----
+
+[NOTE]
+Setting a `Comparator` will override any sortable property set at the `addColumn` method.
+
+=== Enabling multi-sorting
+
+To enable users to sort the data by more than one sort criteria at the same time, you can enable
+multi-sorting at the Grid level:
+
+[source, java]
+----
+grid.setMultiSort(true);
+----
+
+=== Receiving sort events
+
+You can add a `SortListener` to the Grid to receive general sort events. Every time the sorting of the Grid is changed,
+an event is fired. You can access the `DataCommunicator` for sorting details. For example:
+
+[source, java]
+----
+grid.addSortListener(event -> {
+    String currentSortOrder = grid.getDataCommunicator()
+            .getBackEndSorting().stream()
+            .map(querySortOrder -> String.format(
+                    "{sort property: %s, direction: %s}",
+                    querySortOrder.getSorted(),
+                    querySortOrder.getDirection()))
+            .collect(Collectors.joining(", "));
+    System.out.println(String.format(
+            "Current sort order: %s. Sort originates from the client: %s.",
+            currentSortOrder, event.isFromClient()));
+});
+----

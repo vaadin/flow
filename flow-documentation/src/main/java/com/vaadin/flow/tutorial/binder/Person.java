@@ -34,6 +34,7 @@ public class Person implements Serializable {
     private String title;
 
     private int yearOfBirth;
+    private int age;
 
     private Gender gender;
 
@@ -109,6 +110,14 @@ public class Person implements Serializable {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 
 }
