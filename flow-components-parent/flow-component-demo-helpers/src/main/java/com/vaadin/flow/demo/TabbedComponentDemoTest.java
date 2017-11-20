@@ -28,13 +28,20 @@ public abstract class TabbedComponentDemoTest extends ComponentDemoTest {
         // NO-OP
     }
 
+    /**
+     * Navigates from one tab to another and checks whether the navigation
+     * causes errors in the browser. The {@code tab} will be added to the
+     * default test-path for navigation.
+     * 
+     * @param tab
+     *            the name of the tab to navigate to
+     */
     public void openDemoPageAndCheckForErrors(String tab) {
         String testPath = getTestURL();
         if (tab != null && !tab.isEmpty()) {
             testPath = testPath + (testPath.endsWith("/") ? tab : "/" + tab);
         }
         getDriver().get(testPath);
-        System.out.println(getDriver().getCurrentUrl());
         waitForElementPresent(By.tagName("div"));
         layout = findElement(By.tagName("div"));
         checkLogsForErrors();
