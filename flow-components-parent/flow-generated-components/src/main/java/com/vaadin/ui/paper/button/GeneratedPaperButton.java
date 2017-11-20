@@ -15,30 +15,31 @@
  */
 package com.vaadin.ui.paper.button;
 
+import javax.annotation.Generated;
+
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasText;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.Focusable;
 import com.vaadin.ui.common.HasClickListeners;
-import javax.annotation.Generated;
-import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.common.HtmlImport;
-import elemental.json.JsonObject;
-import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.common.NotSupported;
-import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.Synchronize;
+
+import elemental.json.JsonObject;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-button#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
 public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle, HasText,
+        extends Component implements HasStyle, HasText,
         Focusable<R>, HasClickListeners<R>, HasComponents {
 
     /**
