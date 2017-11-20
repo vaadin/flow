@@ -15,7 +15,6 @@
  */
 package com.vaadin.ui;
 
-import java.io.Serializable;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -51,7 +50,7 @@ import com.vaadin.util.AnnotationReader;
  *
  * @author Vaadin Ltd
  */
-public abstract class Component implements HasElement, Serializable,
+public abstract class Component implements HasElement,
         ComponentEventNotifier, AttachNotifier, DetachNotifier {
 
     /**
