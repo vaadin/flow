@@ -11,6 +11,13 @@
     <name>Flow components demo</name>
     <packaging>war</packaging>
 
+    <repositories>
+        <repository>
+            <id>flow-component-base</id>
+            <url>https://maven.vaadin.com/vaadin-prereleases</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -30,12 +37,69 @@
             <artifactId>flow-component-demo-helpers</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-data</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- Component instances -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-button-flow</artifactId>
+            <version>1.0.0.alpha1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-checkbox-flow</artifactId>
+            <version>1.0.0.alpha1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-combo-box-flow</artifactId>
+            <version>1.0.0.alpha1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-date-picker-flow</artifactId>
+            <version>1.0.0.alpha1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dialog-flow</artifactId>
+            <version>1.0.0.alpha1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-form-layout-flow</artifactId>
+            <version>1.0.0.alpha1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-icons-flow</artifactId>
+            <version>1.0.0.alpha2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-ordered-layout-flow</artifactId>
+            <version>1.0.0.alpha1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-text-field-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-split-layout-flow</artifactId>
+            <version>1.0.0.alpha1</version>
         </dependency>
 
         <!-- webJars -->

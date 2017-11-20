@@ -11,6 +11,13 @@
     <name>Flow server side components</name>
     <packaging>jar</packaging>
 
+    <repositories>
+        <repository>
+            <id>flow-component-base</id>
+            <url>https://maven.vaadin.com/vaadin-prereleases</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- Project dependencies -->
         <dependency>
@@ -46,50 +53,11 @@
             <scope>test</scope>
         </dependency>
 
+
         <!-- webJars -->
         <dependency>
             <groupId>org.webjars.bower</groupId>
             <artifactId>vaadin-grid</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-icons</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-text-field</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-date-picker</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-button</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-dialog</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-combo-box</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-form-layout</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-checkbox</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-split-layout</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-ordered-layout</artifactId>
         </dependency>
         <dependency>
             <groupId>org.webjars.bower</groupId>

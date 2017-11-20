@@ -16,7 +16,7 @@
 package com.vaadin.flow.tests.components.textfield;
 
 import com.vaadin.flow.tests.components.AbstractValidationTest;
-import com.vaadin.ui.passwordfield.PasswordField;
+import com.vaadin.ui.textfield.PasswordField;
 
 /**
  * Integration tests for {@link PasswordField} validation.

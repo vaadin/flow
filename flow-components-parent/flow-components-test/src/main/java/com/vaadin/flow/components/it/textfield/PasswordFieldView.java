@@ -18,7 +18,7 @@ package com.vaadin.flow.components.it.textfield;
 import com.vaadin.flow.components.it.TestView;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.button.Button;
-import com.vaadin.ui.passwordfield.PasswordField;
+import com.vaadin.ui.textfield.PasswordField;
 
 /**
  * Test view for {@link PasswordField}.

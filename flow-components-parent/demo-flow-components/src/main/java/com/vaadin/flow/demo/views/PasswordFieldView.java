@@ -22,7 +22,7 @@ import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Div;
-import com.vaadin.ui.passwordfield.PasswordField;
+import com.vaadin.ui.textfield.PasswordField;
 import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
 
 /**

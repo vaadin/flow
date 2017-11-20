@@ -35,6 +35,7 @@ import com.vaadin.ui.grid.ColumnGroup;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.GridSelectionColumn;
 import com.vaadin.ui.icon.Icon;
+import com.vaadin.ui.icon.IronIcon;
 
 /**
  * Test class for detecting that Vaadin components implement the correct
@@ -49,7 +50,7 @@ public class MixinTest {
     static {
         PACKAGE_WHITELIST.addAll(Arrays.asList("com.vaadin.ui.common",
                 "com.vaadin.ui.html", "com.vaadin.ui.polymertemplate"));
-        CLASS_WHITELIST.addAll(Arrays.asList(Icon.class, FormItem.class,
+        CLASS_WHITELIST.addAll(Arrays.asList(Icon.class, IronIcon.class, FormItem.class,
                 GridSelectionColumn.class, Dialog.class, Grid.Column.class,
                 ColumnGroup.class, AbstractColumn.class));
         REQUIRED_INTERFACES
