@@ -21,9 +21,6 @@ import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.common.HasValue;
-import java.util.Objects;
 import com.vaadin.ui.common.HasComponents;
 
 /**
@@ -69,8 +66,8 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("vaadin-radio-group")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/vaadin-radio-group.html")
 public class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle,
-        HasValue<R, String>, HasComponents {
+        extends Component
+        implements ComponentSupplier<R>, HasStyle, HasComponents {
 
     /**
      * <p>
@@ -104,43 +101,6 @@ public class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
      */
     public void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Value of the radio group.
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'value-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code value} property from the webcomponent
-     */
-    @Synchronize(property = "value", value = "value-changed")
-    @Override
-    public String getValue() {
-        return getElement().getProperty("value");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Value of the radio group.
-     * </p>
-     * 
-     * @param value
-     *            the String value to set
-     */
-    @Override
-    public void setValue(java.lang.String value) {
-        if (!Objects.equals(value, getValue())) {
-            getElement().setProperty("value", value == null ? "" : value);
-        }
     }
 
     /**
