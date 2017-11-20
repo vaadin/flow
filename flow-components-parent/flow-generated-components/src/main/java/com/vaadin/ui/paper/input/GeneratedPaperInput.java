@@ -15,21 +15,23 @@
  */
 package com.vaadin.ui.paper.input;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
-import com.vaadin.ui.common.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Synchronize;
-import elemental.json.JsonObject;
-import com.vaadin.ui.common.HasValue;
 import java.util.Objects;
+
+import javax.annotation.Generated;
+
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.NotSupported;
-import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.Synchronize;
+
+import elemental.json.JsonObject;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-input#2.0.2", "Flow#1.0-SNAPSHOT" })
@@ -37,7 +39,7 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/paper-input/paper-input.html")
 public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
         extends Component
-        implements ComponentSupplier<R>, HasStyle, HasValue<R, String> {
+        implements HasStyle, HasValue<R, String> {
 
     /**
      * <p>
