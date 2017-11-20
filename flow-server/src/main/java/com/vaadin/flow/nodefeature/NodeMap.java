@@ -42,7 +42,7 @@ public abstract class NodeMap extends NodeFeature {
     private static final Serializable REMOVED_MARKER = new UniqueSerializable() {
     };
 
-    private HashMap<String, Serializable> values;
+    private Map<String, Serializable> values;
 
     private boolean isPopulated;
 
@@ -274,7 +274,7 @@ public abstract class NodeMap extends NodeFeature {
         // TODO notify listeners
     }
 
-    private HashMap<String, Serializable> getChangeTracker() {
+    private Map<String, Serializable> getChangeTracker() {
         return getNode().getChangeTracker(this, HashMap::new);
     }
 

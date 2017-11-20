@@ -111,7 +111,7 @@ public class MultiSelectionEvent<C extends Component, T> extends
      * @return the items that were removed from selection
      */
     public Set<T> getRemovedSelection() {
-        LinkedHashSet<T> copy = new LinkedHashSet<>(getOldValue());
+        Set<T> copy = new LinkedHashSet<>(getOldValue());
         copy.removeAll(getNewSelection());
         return copy;
     }
@@ -126,7 +126,7 @@ public class MultiSelectionEvent<C extends Component, T> extends
      * @return the items that were removed from selection
      */
     public Set<T> getAddedSelection() {
-        LinkedHashSet<T> copy = new LinkedHashSet<>(getValue());
+        Set<T> copy = new LinkedHashSet<>(getValue());
         copy.removeAll(getOldValue());
         return copy;
     }

@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,7 +31,7 @@ public class ShadowRootTest extends AbstractNodeTest {
 
     @Test
     public void publicElementMethodsShouldReturnElement() {
-        HashSet<String> ignore = new HashSet<>();
+        Set<String> ignore = new HashSet<>();
         ignore.add("toString");
         ignore.add("hashCode");
         ignore.add("equals");

@@ -5,9 +5,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 /**
@@ -23,7 +25,7 @@ public class CustomerService {
 	private static CustomerService instance;
 	private static final Logger LOGGER = Logger.getLogger(CustomerService.class.getName());
 
-	private final HashMap<Long, Customer> contacts = new HashMap<>();
+        private final Map<Long, Customer> contacts = new HashMap<>();
 	private long nextId = 0;
 
 	private CustomerService() {
@@ -56,7 +58,7 @@ public class CustomerService {
 	 * @return list a Customer objects
 	 */
 	public synchronized List<Customer> findAll(String stringFilter) {
-		ArrayList<Customer> arrayList = new ArrayList<>();
+                List<Customer> arrayList = new ArrayList<>();
 		for (Customer contact : contacts.values()) {
 			try {
 				boolean passesFilter = (stringFilter == null || stringFilter.isEmpty())
@@ -91,7 +93,7 @@ public class CustomerService {
 	 * @return list a Customer objects
 	 */
 	public synchronized List<Customer> findAll(String stringFilter, int start, int maxresults) {
-		ArrayList<Customer> arrayList = new ArrayList<>();
+		List<Customer> arrayList = new ArrayList<>();
 		for (Customer contact : contacts.values()) {
 			try {
 				boolean passesFilter = (stringFilter == null || stringFilter.isEmpty())

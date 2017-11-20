@@ -276,8 +276,8 @@ public class CompositeTest {
     public void attachDetachEvents_compositeHierarchy_correctOrder() {
         UI ui = new UI();
 
-        ArrayList<Component> attached = new ArrayList<>();
-        ArrayList<Component> detached = new ArrayList<>();
+        List<Component> attached = new ArrayList<>();
+        List<Component> detached = new ArrayList<>();
 
         ComponentEventListener<AttachEvent> attachListener = event -> attached
                 .add(event.getSource());

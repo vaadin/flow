@@ -136,8 +136,8 @@ public class UIInternals implements Serializable {
     private ExecutionCanceler pendingTitleUpdateCanceler;
 
     private Location viewLocation = new Location("");
-    private ArrayList<View> viewChain = new ArrayList<>();
-    private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
+    private List<View> viewChain = new ArrayList<>();
+    private List<HasElement> routerTargetChain = new ArrayList<>();
 
     private final Set<Integer> sentTemplateIds = new HashSet<>();
 
@@ -264,7 +264,7 @@ public class UIInternals implements Serializable {
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] getRootNodeFeatures() {
         // Start with all element features
-        ArrayList<Class<? extends NodeFeature>> features = new ArrayList<>(
+        List<Class<? extends NodeFeature>> features = new ArrayList<>(
                 BasicElementStateProvider.getFeatures());
 
         // Then add our own custom features

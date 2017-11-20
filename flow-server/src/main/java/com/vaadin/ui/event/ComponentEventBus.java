@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.DomEvent;
@@ -50,12 +51,12 @@ public class ComponentEventBus implements Serializable {
 
     private static class ComponentEventData implements Serializable {
         private Registration domEventRemover = null;
-        private ArrayList<ComponentEventListener<? extends ComponentEvent<?>>> listeners = new ArrayList<>(
+        private List<ComponentEventListener<? extends ComponentEvent<?>>> listeners = new ArrayList<>(
                 1);
     }
 
     // Package private to enable testing only
-    HashMap<Class<? extends ComponentEvent<?>>, ComponentEventData> componentEventData = new HashMap<>();
+    Map<Class<? extends ComponentEvent<?>>, ComponentEventData> componentEventData = new HashMap<>();
 
     private Component component;
 

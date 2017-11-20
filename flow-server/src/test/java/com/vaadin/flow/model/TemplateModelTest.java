@@ -486,7 +486,7 @@ public class TemplateModelTest extends HasCurrentService {
 
         Assert.assertEquals("foobar", model.getString());
 
-        ArrayList<NodeChange> changes = new ArrayList<>();
+        List<NodeChange> changes = new ArrayList<>();
         ElementPropertyMap modelMap = template.getElement().getNode()
                 .getFeature(ElementPropertyMap.class);
         modelMap.collectChanges(changes::add);
@@ -915,7 +915,7 @@ public class TemplateModelTest extends HasCurrentService {
     @Test
     public void getListFromModel() {
         ListBeanModelTemplate template = new ListBeanModelTemplate();
-        ArrayList<Bean> beans = new ArrayList<>();
+        List<Bean> beans = new ArrayList<>();
         beans.add(new Bean(100));
         beans.add(new Bean(200));
         beans.add(new Bean(300));
@@ -927,7 +927,7 @@ public class TemplateModelTest extends HasCurrentService {
     @Test
     public void stringListModel_handlesListOperationsProperly() {
         StringListModelTemplate template = new StringListModelTemplate();
-        ArrayList<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         list.add("foo");
         list.add("bar");
         list.add("foobar");
@@ -993,7 +993,7 @@ public class TemplateModelTest extends HasCurrentService {
 
         ElementPropertyMap modelMap = getModelMap(template, "bean");
         Set<String> mapKeys = getKeys(modelMap);
-        HashSet<String> excluded = new HashSet<>();
+        Set<String> excluded = new HashSet<>();
         excluded.add("doubleValue");
         excluded.add("booleanObject");
 
@@ -1165,7 +1165,7 @@ public class TemplateModelTest extends HasCurrentService {
                 .getModel(modelList.get(0));
         ElementPropertyMap container2Map = ElementPropertyMap
                 .getModel(modelList.get(1));
-        HashSet<String> bean1bean2 = new HashSet<>();
+        Set<String> bean1bean2 = new HashSet<>();
         bean1bean2.add("bean1");
         bean1bean2.add("bean2");
         Assert.assertEquals(bean1bean2,

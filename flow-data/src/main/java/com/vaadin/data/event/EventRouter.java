@@ -23,6 +23,7 @@ import java.util.EventObject;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandler;
@@ -43,7 +44,7 @@ public class EventRouter implements MethodEventSource {
     /**
      * List of registered listeners.
      */
-    private LinkedHashSet<ListenerMethod> listenerList = null;
+    private Set<ListenerMethod> listenerList = null;
 
     /*
      * Registers a new listener with the specified activation method to listen

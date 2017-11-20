@@ -36,16 +36,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.data.event.EventRouter;
+import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.function.SerializableFunction;
 import com.vaadin.function.SerializablePredicate;
 import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;
@@ -2264,7 +2263,7 @@ public class Binder<BEAN> implements Serializable {
      * @return list of all fields in the class considering hierarchy
      */
     private List<Field> getFieldsInDeclareOrder(Class<?> searchClass) {
-        ArrayList<Field> memberFieldInOrder = new ArrayList<>();
+        List<Field> memberFieldInOrder = new ArrayList<>();
 
         while (searchClass != null) {
             memberFieldInOrder

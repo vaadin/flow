@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.change.NodeChange;
@@ -108,11 +109,11 @@ public class StateTree implements NodeOwner {
         void remove();
     }
 
-    private LinkedHashSet<StateNode> dirtyNodes = new LinkedHashSet<>();
+    private Set<StateNode> dirtyNodes = new LinkedHashSet<>();
 
     private final Map<Integer, StateNode> idToNode = new HashMap<>();
 
-    private LinkedList<StateNodeOnBeforeClientResponse> executionsToProcessBeforeResponse = new LinkedList<>();
+    private List<StateNodeOnBeforeClientResponse> executionsToProcessBeforeResponse = new LinkedList<>();
 
     private int nextId = 1;
 
@@ -225,8 +226,8 @@ public class StateTree implements NodeOwner {
      *
      * @return a set of dirty nodes, in the order they were marked dirty
      */
-    public LinkedHashSet<StateNode> collectDirtyNodes() {
-        LinkedHashSet<StateNode> collectedNodes = dirtyNodes;
+    public Set<StateNode> collectDirtyNodes() {
+        Set<StateNode> collectedNodes = dirtyNodes;
         dirtyNodes = new LinkedHashSet<>();
         return collectedNodes;
     }
