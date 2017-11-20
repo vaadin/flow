@@ -24,7 +24,6 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -43,10 +42,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
 import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.router.Router;
 import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.SystemMessages;

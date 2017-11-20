@@ -16,13 +16,10 @@
 package com.vaadin.flow.contexttest.ui;
 
 import java.io.ByteArrayInputStream;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.router.RouterConfiguration;
-import com.vaadin.router.Router;
 import com.vaadin.server.StreamRegistration;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinRequest;

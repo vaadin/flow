@@ -18,7 +18,6 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;

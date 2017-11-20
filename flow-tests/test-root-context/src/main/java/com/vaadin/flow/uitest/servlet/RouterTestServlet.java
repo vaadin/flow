@@ -13,7 +13,6 @@ import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WrappedSession;
 import com.vaadin.ui.Component;

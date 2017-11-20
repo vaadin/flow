@@ -19,7 +19,6 @@ import java.util.UUID;
 
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
