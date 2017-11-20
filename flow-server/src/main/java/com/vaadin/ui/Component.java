@@ -33,7 +33,6 @@ import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.ComponentEventNotifier;
 import com.vaadin.ui.event.DetachEvent;
 import com.vaadin.ui.i18n.I18NProvider;
 import com.vaadin.util.AnnotationReader;
@@ -50,8 +49,8 @@ import com.vaadin.util.AnnotationReader;
  *
  * @author Vaadin Ltd
  */
-public abstract class Component implements HasElement,
-        ComponentEventNotifier, AttachNotifier, DetachNotifier {
+public abstract class Component
+        implements HasElement, AttachNotifier, DetachNotifier {
 
     /**
      * Encapsulates data required for mapping a new component instance to an
