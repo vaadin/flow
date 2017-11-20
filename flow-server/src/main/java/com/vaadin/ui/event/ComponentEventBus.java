@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.DomEvent;
@@ -56,7 +55,7 @@ public class ComponentEventBus implements Serializable {
     }
 
     // Package private to enable testing only
-    Map<Class<? extends ComponentEvent<?>>, ComponentEventData> componentEventData = new HashMap<>();
+    HashMap<Class<? extends ComponentEvent<?>>, ComponentEventData> componentEventData = new HashMap<>();
 
     private Component component;
 

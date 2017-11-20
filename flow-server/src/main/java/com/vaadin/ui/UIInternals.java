@@ -136,8 +136,8 @@ public class UIInternals implements Serializable {
     private ExecutionCanceler pendingTitleUpdateCanceler;
 
     private Location viewLocation = new Location("");
-    private List<View> viewChain = new ArrayList<>();
-    private List<HasElement> routerTargetChain = new ArrayList<>();
+    private ArrayList<View> viewChain = new ArrayList<>();
+    private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
 
     private final Set<Integer> sentTemplateIds = new HashSet<>();
 

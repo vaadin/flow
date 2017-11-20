@@ -538,7 +538,7 @@ public class Profiler {
         Map<String, Node> totals = new HashMap<>();
         rootNode.sumUpTotals(totals);
 
-        List<Node> totalList = new ArrayList<>(totals.values());
+        ArrayList<Node> totalList = new ArrayList<>(totals.values());
         Collections.sort(totalList, new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
