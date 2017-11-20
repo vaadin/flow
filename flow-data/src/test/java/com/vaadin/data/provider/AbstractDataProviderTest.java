@@ -66,7 +66,7 @@ public class AbstractDataProviderTest {
         TestDataProvider dataProvider = new TestDataProvider();
         AtomicReference<DataChangeEvent<Object>> event = new AtomicReference<>();
         Registration registration = dataProvider
-                .addDataProviderListener(ev -> event.set(ev));
+                .addDataProviderListener(event::set);
         registration.remove();
         dataProvider.refreshAll();
         Assert.assertNull(event.get());

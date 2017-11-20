@@ -30,24 +30,8 @@ import com.vaadin.function.SerializablePredicate;
 
 public abstract class DataProviderTestBase<D extends DataProvider<StrBean, SerializablePredicate<StrBean>>> {
 
-    protected static class CountingListener implements DataProviderListener {
-
-        private int counter = 0;
-
-        @Override
-        public void onDataChange(DataChangeEvent event) {
-            ++counter;
-        }
-
-        public int getCounter() {
-            return counter;
-        }
-    }
-
     protected final SerializablePredicate<StrBean> fooFilter = s -> s.getValue()
             .equals("Foo");
-    protected final SerializablePredicate<StrBean> gt5Filter = s -> s
-            .getRandomNumber() > 5;
 
     protected D dataProvider;
     protected List<StrBean> data = StrBean.generateRandomBeans(100);
