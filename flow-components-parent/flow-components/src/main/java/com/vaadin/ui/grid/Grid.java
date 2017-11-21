@@ -75,7 +75,7 @@ import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.grid.GridTemplateRendererUtil.RendereredComponent;
-import com.vaadin.ui.renderers.ComponentRenderer;
+import com.vaadin.ui.renderers.ComponentTemplateRenderer;
 import com.vaadin.ui.renderers.ComponentRendererUtil;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
@@ -271,9 +271,9 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
             comparator = (a, b) -> 0;
             sortOrderProvider = direction -> Stream.empty();
 
-            if (renderer instanceof ComponentRenderer) {
+            if (renderer instanceof ComponentTemplateRenderer) {
                 renderedComponents = new HashMap<>();
-                ComponentRenderer<? extends Component, T> componentRenderer = (ComponentRenderer<? extends Component, T>) renderer;
+                ComponentTemplateRenderer<? extends Component, T> componentRenderer = (ComponentTemplateRenderer<? extends Component, T>) renderer;
                 grid.setupItemComponentRenderer(this, componentRenderer,
                         renderedComponents);
             }
@@ -1154,7 +1154,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
         if (renderer == null) {
             return;
         }
-        if (renderer instanceof ComponentRenderer) {
+        if (renderer instanceof ComponentTemplateRenderer) {
             renderedDetailComponents = renderedDetailComponents == null
                     ? new HashMap<>()
                     : renderedDetailComponents;
@@ -1163,7 +1163,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
                             .getComponent().getElement().removeFromParent());
             renderedDetailComponents.clear();
 
-            ComponentRenderer<? extends Component, T> componentRenderer = (ComponentRenderer<? extends Component, T>) renderer;
+            ComponentTemplateRenderer<? extends Component, T> componentRenderer = (ComponentTemplateRenderer<? extends Component, T>) renderer;
             setupItemComponentRenderer(this, componentRenderer,
                     renderedDetailComponents);
         }
@@ -1435,7 +1435,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     }
 
     private void setupItemComponentRenderer(Component owner,
-            ComponentRenderer<? extends Component, T> componentRenderer,
+            ComponentTemplateRenderer<? extends Component, T> componentRenderer,
             Map<String, RendereredComponent<T>> renderedComponents) {
 
         Element container = ComponentRendererUtil
@@ -1466,7 +1466,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     }
 
     private void onDataChangeEvent(DataChangeEvent<T> event,
-            ComponentRenderer<? extends Component, T> componentRenderer,
+            ComponentTemplateRenderer<? extends Component, T> componentRenderer,
             Map<String, RendereredComponent<T>> renderedComponents,
             Element container) {
 
@@ -1484,7 +1484,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     }
 
     private void onDataRefreshEvent(DataRefreshEvent<T> event,
-            ComponentRenderer<? extends Component, T> componentRenderer,
+            ComponentTemplateRenderer<? extends Component, T> componentRenderer,
             Map<String, RendereredComponent<T>> renderedComponents,
             Element container) {
 
@@ -1512,7 +1512,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     }
 
     private void onItemsSent(List<JsonValue> items, Element container,
-            ComponentRenderer<? extends Component, T> componentRenderer,
+            ComponentTemplateRenderer<? extends Component, T> componentRenderer,
             Map<String, RendereredComponent<T>> renderedComponents) {
         items.stream().map(value -> ((JsonObject) value).getString("key"))
                 .filter(key -> !renderedComponents.containsKey(key))
