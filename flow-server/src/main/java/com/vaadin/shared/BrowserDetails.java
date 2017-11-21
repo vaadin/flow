@@ -27,12 +27,16 @@ import java.io.Serializable;
 public class BrowserDetails implements Serializable {
     private static final String CHROME = " chrome/";
     private static final String HEADLESSCHROME = " headlesschrome/";
+    private static final String OS_MAJOR = "OS major";
+    private static final String OS_MINOR = "OS minor";
+    private static final String BROWSER_MAJOR = "Browser major";
+    private static final String BROWSER_MINOR = "Browser minor";
 
     /**
      * An enum for detected operating systems.
      */
     public enum OperatingSystem {
-        UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID
+        UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID, CHROMEOS
     }
 
     private boolean isGecko;
@@ -50,6 +54,7 @@ public class BrowserDetails implements Serializable {
     private boolean isWindowsPhone;
     private boolean isIPad;
     private boolean isIPhone;
+    private boolean isChromeOS;
 
     private OperatingSystem os = OperatingSystem.UNKNOWN;
 
@@ -206,6 +211,42 @@ public class BrowserDetails implements Serializable {
             } else {
                 os = OperatingSystem.MACOSX;
             }
+        } else if (userAgent.contains("; cros ")) {
+            os = OperatingSystem.CHROMEOS;
+            isChromeOS = true;
+            parseChromeOSVersion(userAgent);
+        }
+    }
+
+    // (X11; CrOS armv7l 6946.63.0)
+    private void parseChromeOSVersion(String userAgent) {
+        int start = userAgent.indexOf("; cros ");
+        if (start == -1) {
+            return;
+        }
+        int end = userAgent.indexOf(')', start);
+        if (end == -1) {
+            return;
+        }
+        int cur = end;
+        while (cur >= start && userAgent.charAt(cur) != ' ') {
+            cur--;
+        }
+        if (cur == start) {
+            return;
+        }
+        String osVersionString = userAgent.substring(cur + 1, end);
+        String[] parts = osVersionString.split("\\.");
+        parseChromeOsVersionParts(parts);
+    }
+
+    private void parseChromeOsVersionParts(String[] parts) {
+        osMajorVersion = -1;
+        osMinorVersion = -1;
+
+        if (parts.length > 2) {
+            osMajorVersion = parseVersionPart(parts[0], OS_MAJOR);
+            osMinorVersion = parseVersionPart(parts[1], OS_MINOR);
         }
     }
 
@@ -258,30 +299,18 @@ public class BrowserDetails implements Serializable {
         osMinorVersion = -1;
 
         if (parts.length >= 1) {
-            try {
-                osMajorVersion = Integer.parseInt(parts[0]);
-            } catch (Exception e) {
-                log("Os major version parsing failed for: " + parts[0], e);
-            }
+            osMajorVersion = parseVersionPart(parts[0], OS_MAJOR);
         }
         if (parts.length >= 2) {
-            try {
-                osMinorVersion = Integer.parseInt(parts[1]);
-            } catch (Exception e) {
-                log("Os minor version parsing failed for: " + parts[0], e);
-            }
             // Some Androids report version numbers as "2.1-update1"
-            if (osMinorVersion == -1 && parts[1].contains("-")) {
-                try {
-                    osMinorVersion = Integer.parseInt(
-                            parts[1].substring(0, parts[1].indexOf('-')));
-                } catch (Exception ee) {
-                    log("Minor version dash parsing failed for: " + parts[0],
-                            ee);
-                }
+            int dashIndex = parts[1].indexOf('-');
+            if (dashIndex > -1) {
+                String dashlessVersion = parts[1].substring(0, dashIndex);
+                osMinorVersion = parseVersionPart(dashlessVersion, OS_MINOR);
+            } else {
+                osMinorVersion = parseVersionPart(parts[1], OS_MINOR);
             }
         }
-
     }
 
     private void parseVersionString(String versionString) {
@@ -289,20 +318,16 @@ public class BrowserDetails implements Serializable {
         if (idx < 0) {
             idx = versionString.length();
         }
-        browserMajorVersion = Integer
-                .parseInt(safeSubstring(versionString, 0, idx));
+        String majorVersionPart = safeSubstring(versionString, 0, idx);
+        browserMajorVersion = parseVersionPart(majorVersionPart, BROWSER_MAJOR);
 
         int idx2 = versionString.indexOf('.', idx + 1);
         if (idx2 < 0) {
             idx2 = versionString.length();
         }
-        try {
-            browserMinorVersion = Integer
-                    .parseInt(safeSubstring(versionString, idx + 1, idx2)
-                            .replaceAll("[^0-9].*", ""));
-        } catch (NumberFormatException e) {
-            // leave the minor version unmodified (-1 = unknown)
-        }
+        String minorVersionPart = safeSubstring(versionString, idx + 1, idx2)
+                .replaceAll("[^0-9].*", "");
+        browserMinorVersion = parseVersionPart(minorVersionPart, BROWSER_MINOR);
     }
 
     private static String safeSubstring(String string, int beginIndex,
@@ -320,6 +345,15 @@ public class BrowserDetails implements Serializable {
             trimmedEnd = endIndex;
         }
         return string.substring(trimmedStart, trimmedEnd);
+    }
+
+    private int parseVersionPart(String versionString, String partName) {
+        try {
+            return Integer.parseInt(versionString);
+        } catch (Exception e) {
+            log(partName + " version parsing failed for: " + versionString, e);
+        }
+        return -1;
     }
 
     /**
@@ -522,6 +556,15 @@ public class BrowserDetails implements Serializable {
      */
     public boolean isIPhone() {
         return isIPhone;
+    }
+
+    /**
+     * Tests if the browser is run on Chrome OS (e.g. a Chromebook).
+     *
+     * @return true if run on Chrome OS, false otherwise
+     */
+    public boolean isChromeOS() {
+        return isChromeOS;
     }
 
     /**
