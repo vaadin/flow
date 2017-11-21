@@ -15,9 +15,10 @@
  */
 package com.vaadin.flow.dom;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class StyleUtilTest {
@@ -37,7 +38,7 @@ public class StyleUtilTest {
         stylepPropertyToAttribute.entrySet().forEach((entry) -> {
             String property = entry.getKey();
             String attribute = entry.getValue();
-            Assert.assertEquals(property,
+            assertEquals(property,
                     StyleUtil.styleAttributeToProperty(attribute));
 
         });
@@ -48,7 +49,7 @@ public class StyleUtilTest {
         stylepPropertyToAttribute.entrySet().forEach((entry) -> {
             String property = entry.getKey();
             String attribute = entry.getValue();
-            Assert.assertEquals(attribute,
+            assertEquals(attribute,
                     StyleUtil.stylePropertyToAttribute(property));
 
         });

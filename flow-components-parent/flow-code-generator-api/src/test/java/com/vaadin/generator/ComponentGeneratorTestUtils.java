@@ -15,10 +15,10 @@
  */
 package com.vaadin.generator;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.junit.Assert;
 
 /**
  * Utility class for {@link ComponentGenerator} unit tests.
@@ -43,10 +43,10 @@ public class ComponentGeneratorTestUtils {
         Pattern pattern = Pattern.compile("\\s*public\\s+class\\s+" + className
                 + ".*\\s+extends\\s+Component\\s+implements\\s+([^\\{]+)\\{");
         Matcher matcher = pattern.matcher(generatedClass);
-        Assert.assertTrue("Wrong class declaration", matcher.find());
+        assertTrue("Wrong class declaration", matcher.find());
 
         String interfaces = matcher.group(1);
-        Assert.assertTrue(interfaceToBeImplemented.getSimpleName()
+        assertTrue(interfaceToBeImplemented.getSimpleName()
                 + " interface not found in the class definition: " + interfaces,
                 interfaces.contains(interfaceToBeImplemented.getSimpleName()));
     }

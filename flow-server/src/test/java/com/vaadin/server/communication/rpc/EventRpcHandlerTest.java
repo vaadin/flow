@@ -15,9 +15,10 @@
  */
 package com.vaadin.server.communication.rpc;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -49,7 +50,7 @@ public class EventRpcHandlerTest {
             invoked.incrementAndGet();
         });
         sendElementEvent(element, ui, "test-event", null);
-        Assert.assertEquals(1, invoked.get());
+        assertEquals(1, invoked.get());
     }
 
     @Test
@@ -63,7 +64,7 @@ public class EventRpcHandlerTest {
             invoked.incrementAndGet();
         });
         sendElementEvent(element, ui, "test-event", null);
-        Assert.assertEquals(1, invoked.get());
+        assertEquals(1, invoked.get());
     }
 
     @Test
@@ -77,7 +78,7 @@ public class EventRpcHandlerTest {
         element.addEventListener("test-event",
                 e -> invocations.incrementAndGet());
         sendElementEvent(element, ui, "test-event", null);
-        Assert.assertEquals(1, invocations.get());
+        assertEquals(1, invocations.get());
     }
 
     @Test
@@ -93,7 +94,7 @@ public class EventRpcHandlerTest {
         JsonObject eventData = Json.createObject();
         eventData.put("nr", 123);
         sendElementEvent(element, ui, "test-event", eventData);
-        Assert.assertEquals(123, invocationData.get());
+        assertEquals(123, invocationData.get());
     }
 
     public static StateNode getInvocationNode(Element element) {

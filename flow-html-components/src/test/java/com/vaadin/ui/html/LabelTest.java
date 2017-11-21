@@ -15,7 +15,8 @@
  */
 package com.vaadin.ui.html;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 public class LabelTest extends ComponentTest {
@@ -33,7 +34,7 @@ public class LabelTest extends ComponentTest {
         otherComponent.setId("otherC");
         Label l = (Label) getComponent();
         l.setFor(otherComponent);
-        Assert.assertEquals(otherComponent.getId().get(), l.getFor().get());
+        assertEquals(otherComponent.getId().get(), l.getFor().get());
     }
 
 }

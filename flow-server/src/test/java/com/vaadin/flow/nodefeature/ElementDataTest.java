@@ -15,8 +15,9 @@
  */
 
 package com.vaadin.flow.nodefeature;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
@@ -24,10 +25,10 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
 
     @Test
     public void testSetGetTag() {
-        Assert.assertNull("Tag should initially be null", elementData.getTag());
+        assertNull("Tag should initially be null", elementData.getTag());
 
         elementData.setTag("myTag");
 
-        Assert.assertEquals("myTag", elementData.getTag());
+        assertEquals("myTag", elementData.getTag());
     }
 }

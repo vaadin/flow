@@ -1,12 +1,15 @@
 package com.vaadin.flow.nodefeature;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.shared.ui.Transport;
 
 public class PushConfigurationMapTest
@@ -17,37 +20,37 @@ public class PushConfigurationMapTest
     @Test
     public void transportWebsocket() {
         ns.setTransport(Transport.WEBSOCKET);
-        Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
+        assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("transport"));
-        Assert.assertFalse(
+        assertFalse(
                 ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
-        Assert.assertEquals(Transport.WEBSOCKET, ns.getTransport());
+        assertEquals(Transport.WEBSOCKET, ns.getTransport());
     }
 
     @Test
     public void transportLongPolling() {
         ns.setTransport(Transport.LONG_POLLING);
-        Assert.assertEquals(Transport.LONG_POLLING.getIdentifier(),
+        assertEquals(Transport.LONG_POLLING.getIdentifier(),
                 ns.getParameter("transport"));
-        Assert.assertFalse(
+        assertFalse(
                 ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
-        Assert.assertEquals(Transport.LONG_POLLING, ns.getTransport());
+        assertEquals(Transport.LONG_POLLING, ns.getTransport());
     }
 
     @Test
     public void transportLongWebsocketXHR() {
         ns.setTransport(Transport.WEBSOCKET_XHR);
-        Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
+        assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("transport"));
-        Assert.assertTrue((Boolean) ns
+        assertTrue((Boolean) ns
                 .get(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
-        Assert.assertEquals(Transport.WEBSOCKET_XHR, ns.getTransport());
+        assertEquals(Transport.WEBSOCKET_XHR, ns.getTransport());
     }
 
     @Test
     public void parameterNames() {
         ns.setParameter("foo", "bar");
-        Assert.assertArrayEquals(new String[] { "foo" },
+        assertArrayEquals(new String[] { "foo" },
                 ns.getParameterNames().toArray());
 
         ns.setTransport(Transport.WEBSOCKET);
@@ -61,7 +64,7 @@ public class PushConfigurationMapTest
         // getParmeterNames does not guarantee order
         Arrays.sort(expected);
         Arrays.sort(actual);
-        Assert.assertArrayEquals(expected, actual);
+        assertArrayEquals(expected, actual);
     }
 
 }

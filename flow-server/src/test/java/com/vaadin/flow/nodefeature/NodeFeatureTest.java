@@ -16,10 +16,11 @@
 
 package com.vaadin.flow.nodefeature;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -112,11 +113,11 @@ public class NodeFeatureTest {
         // Verifies that the ids are the same as on the client side
         Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
-        Assert.assertEquals("The number of expected features is not up to date",
+        assertEquals("The number of expected features is not up to date",
                 expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());
 
         expectedIds.forEach((type, expectedId) -> {
-            Assert.assertEquals("Unexpected id for " + type.getName(),
+            assertEquals("Unexpected id for " + type.getName(),
                     expectedId.intValue(), NodeFeatureRegistry.getId(type));
         });
     }
@@ -126,7 +127,7 @@ public class NodeFeatureTest {
         Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
         expectedIds.forEach((expectedType, id) -> {
-            Assert.assertEquals("Unexpected type for id " + id, expectedType,
+            assertEquals("Unexpected type for id " + id, expectedType,
                     NodeFeatureRegistry.getFeature(id));
         });
     }

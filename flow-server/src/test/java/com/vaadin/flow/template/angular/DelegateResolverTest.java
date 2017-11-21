@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.template.angular;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class DelegateResolverTest {
@@ -30,7 +31,7 @@ public class DelegateResolverTest {
 
     private void resolveAndAssert(String templateName, String expectedContents)
             throws IOException {
-        Assert.assertTrue(IOUtils.toString(subResolver.resolve(templateName))
+        assertTrue(IOUtils.toString(subResolver.resolve(templateName))
                 .contains(expectedContents));
     }
 

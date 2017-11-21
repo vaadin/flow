@@ -16,6 +16,12 @@
 
 package com.vaadin.flow;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -27,7 +33,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.change.NodeAttachChange;
@@ -79,27 +84,27 @@ public class StateNodeTest {
 
         NodeOwner owner = node.getOwner();
 
-        Assert.assertNotNull("New node should have an owner", owner);
+        assertNotNull("New node should have an owner", owner);
 
-        Assert.assertEquals("New node shold have unassigned id", -1,
+        assertEquals("New node shold have unassigned id", -1,
                 node.getId());
 
-        Assert.assertFalse("Node should not be attached", node.isAttached());
+        assertFalse("Node should not be attached", node.isAttached());
     }
 
     @Test
     public void nodeContainsDefinedFeatures() {
         StateNode node = new StateNode(ElementData.class);
 
-        Assert.assertTrue("Should have feature defined in constructor",
+        assertTrue("Should have feature defined in constructor",
                 node.hasFeature(ElementData.class));
 
         ElementData feature = node.getFeature(ElementData.class);
 
-        Assert.assertNotNull("Existing feature should also be available",
+        assertNotNull("Existing feature should also be available",
                 feature);
 
-        Assert.assertFalse(
+        assertFalse(
                 "Should not have a feature that wasn't defined in constructor",
                 node.hasFeature(ElementPropertyMap.class));
     }
@@ -119,27 +124,27 @@ public class StateNodeTest {
 
         node.collectChanges(collector);
 
-        Assert.assertTrue("Node should have no changes", changes.isEmpty());
+        assertTrue("Node should have no changes", changes.isEmpty());
 
         // Attach node
         setParent(node, createStateTree().getRootNode());
 
         node.collectChanges(collector);
 
-        Assert.assertEquals("Should have 1 change", 1, changes.size());
-        Assert.assertTrue("Should have attach change",
+        assertEquals("Should have 1 change", 1, changes.size());
+        assertTrue("Should have attach change",
                 changes.get(0) instanceof NodeAttachChange);
         changes.clear();
 
         node.collectChanges(collector);
-        Assert.assertTrue("Node should have no changes", changes.isEmpty());
+        assertTrue("Node should have no changes", changes.isEmpty());
 
         // Detach node
         setParent(node, null);
 
         node.collectChanges(collector);
-        Assert.assertEquals("Should have 1 change", 1, changes.size());
-        Assert.assertTrue("Should have detach change",
+        assertEquals("Should have 1 change", 1, changes.size());
+        assertTrue("Should have detach change",
                 changes.get(0) instanceof NodeDetachChange);
         changes.clear();
     }
@@ -156,9 +161,9 @@ public class StateNodeTest {
         setParent(child, parent);
         setParent(parent, root);
 
-        Assert.assertNotEquals(-1, parent.getId());
-        Assert.assertNotEquals(-1, child.getId());
-        Assert.assertNotEquals(-1, grandchild.getId());
+        assertNotEquals(-1, parent.getId());
+        assertNotEquals(-1, child.getId());
+        assertNotEquals(-1, grandchild.getId());
     }
 
     @Test
@@ -173,9 +178,9 @@ public class StateNodeTest {
         setParent(child, parent);
         setParent(grandchild, child);
 
-        Assert.assertNotEquals(-1, parent.getId());
-        Assert.assertNotEquals(-1, child.getId());
-        Assert.assertNotEquals(-1, grandchild.getId());
+        assertNotEquals(-1, parent.getId());
+        assertNotEquals(-1, child.getId());
+        assertNotEquals(-1, grandchild.getId());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -211,7 +216,7 @@ public class StateNodeTest {
         Set<Integer> set = IntStream.range(-1, node.getData() + 1).boxed()
                 .collect(Collectors.toSet());
         childOfRoot.visitNodeTree(n -> visit((TestStateNode) n, tree, set));
-        Assert.assertTrue(set.isEmpty());
+        assertTrue(set.isEmpty());
     }
 
     /**
@@ -242,7 +247,7 @@ public class StateNodeTest {
                 .collect(Collectors.toSet());
         childOfRoot.visitNodeTree(n -> visit((TestStateNode) n,
                 (StateTree) childOfRoot.getOwner(), set));
-        Assert.assertTrue(set.isEmpty());
+        assertTrue(set.isEmpty());
     }
 
     @Test
@@ -269,7 +274,7 @@ public class StateNodeTest {
             setParent(childOfRoot, root);
         }
 
-        root.visitNodeTreeBottomUp(node -> Assert.assertEquals(
+        root.visitNodeTreeBottomUp(node -> assertEquals(
                 ((Integer) ((TestStateNode) node).getData()),
                 data.removeLast()));
     }
@@ -279,14 +284,14 @@ public class StateNodeTest {
         StateNode root = new RootStateNode();
         TestStateNode child = new TestStateNode();
 
-        Assert.assertFalse(child.isAttached());
+        assertFalse(child.isAttached());
         AtomicBoolean triggered = new AtomicBoolean(false);
 
         child.addAttachListener(() -> triggered.set(true));
 
         setParent(child, root);
 
-        Assert.assertTrue(triggered.get());
+        assertTrue(triggered.get());
     }
 
     @Test
@@ -294,7 +299,7 @@ public class StateNodeTest {
         StateNode root = new RootStateNode();
         TestStateNode child = new TestStateNode();
 
-        Assert.assertFalse(child.isAttached());
+        assertFalse(child.isAttached());
         AtomicBoolean triggered = new AtomicBoolean(false);
 
         Registration registrationHandle = child
@@ -303,7 +308,7 @@ public class StateNodeTest {
 
         setParent(child, root);
 
-        Assert.assertFalse(triggered.get());
+        assertFalse(triggered.get());
     }
 
     @Test
@@ -312,7 +317,7 @@ public class StateNodeTest {
         TestStateNode child = new TestStateNode();
 
         setParent(child, root);
-        Assert.assertTrue(child.isAttached());
+        assertTrue(child.isAttached());
 
         AtomicBoolean triggered = new AtomicBoolean(false);
 
@@ -320,7 +325,7 @@ public class StateNodeTest {
 
         setParent(child, null);
 
-        Assert.assertTrue(triggered.get());
+        assertTrue(triggered.get());
     }
 
     @Test
@@ -329,7 +334,7 @@ public class StateNodeTest {
         TestStateNode child = new TestStateNode();
 
         setParent(child, root);
-        Assert.assertTrue(child.isAttached());
+        assertTrue(child.isAttached());
 
         AtomicBoolean triggered = new AtomicBoolean(false);
 
@@ -337,7 +342,7 @@ public class StateNodeTest {
                 .addDetachListener(() -> triggered.set(true));
         registrationHandle.remove();
 
-        Assert.assertFalse(triggered.get());
+        assertFalse(triggered.get());
     }
 
     public static StateNode createEmptyNode() {
@@ -403,7 +408,7 @@ public class StateNodeTest {
     }
 
     private void visit(TestStateNode node, StateTree tree, Set<Integer> set) {
-        Assert.assertEquals(tree, node.getOwner());
+        assertEquals(tree, node.getOwner());
         set.remove(node.getData());
     }
 
@@ -419,17 +424,17 @@ public class StateNodeTest {
         AtomicInteger commandRun = new AtomicInteger(0);
         StateNode n1 = createEmptyNode();
         n1.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
+            assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
 
-        Assert.assertEquals(0, commandRun.get());
+        assertEquals(0, commandRun.get());
 
         setParent(n1, tree.getRootNode());
-        Assert.assertEquals(1, commandRun.get());
+        assertEquals(1, commandRun.get());
         setParent(n1, null);
         setParent(n1, tree.getRootNode());
-        Assert.assertEquals(1, commandRun.get());
+        assertEquals(1, commandRun.get());
     }
 
     @Test
@@ -438,18 +443,18 @@ public class StateNodeTest {
         AtomicInteger commandRun = new AtomicInteger(0);
         StateNode n1 = createEmptyNode();
         n1.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
+            assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
         n1.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
+            assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
 
-        Assert.assertEquals(0, commandRun.get());
+        assertEquals(0, commandRun.get());
 
         setParent(n1, tree.getRootNode());
-        Assert.assertEquals(2, commandRun.get());
+        assertEquals(2, commandRun.get());
     }
 
     @Test
@@ -459,11 +464,11 @@ public class StateNodeTest {
         StateTree tree = createStateTree();
         setParent(n1, tree.getRootNode());
         n1.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
+            assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
 
-        Assert.assertEquals(1, commandRun.get());
+        assertEquals(1, commandRun.get());
     }
 
     @Test
@@ -472,14 +477,14 @@ public class StateNodeTest {
                 Arrays.asList(ElementClassList.class, ElementPropertyMap.class),
                 ElementAttributeMap.class);
 
-        Assert.assertTrue(stateNode.hasFeature(ElementClassList.class));
-        Assert.assertTrue(stateNode.hasFeature(ElementPropertyMap.class));
-        Assert.assertTrue(stateNode.hasFeature(ElementAttributeMap.class));
+        assertTrue(stateNode.hasFeature(ElementClassList.class));
+        assertTrue(stateNode.hasFeature(ElementPropertyMap.class));
+        assertTrue(stateNode.hasFeature(ElementAttributeMap.class));
 
-        Assert.assertTrue(stateNode.isReportedFeature(ElementClassList.class));
-        Assert.assertTrue(
+        assertTrue(stateNode.isReportedFeature(ElementClassList.class));
+        assertTrue(
                 stateNode.isReportedFeature(ElementPropertyMap.class));
-        Assert.assertFalse(
+        assertFalse(
                 stateNode.isReportedFeature(ElementAttributeMap.class));
     }
 }

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.testutil;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -27,7 +29,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -163,7 +164,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      *             if there was a problem accessing the reference image
      */
     protected void verifyScreenshot(String identifier) throws IOException {
-        Assert.assertTrue(
+        assertTrue(
                 "SCREENSHOT MATCH FAILURE: <" + identifier
                         + "> does not match expected.",
                 testBench().compareScreen(identifier));

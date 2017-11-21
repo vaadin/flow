@@ -17,6 +17,7 @@
 package com.vaadin.ui.polymertemplate;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -38,7 +39,6 @@ import java.util.function.Function;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -643,7 +643,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         assertNotNull(template.label);
         assertEquals(child, template.label.getNode());
 
-        Assert.assertEquals("labelId",
+        assertEquals("labelId",
                 template.label.getAttribute(NodeProperties.ID));
     }
 
@@ -702,20 +702,20 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         UI.getCurrent().add(template);
 
-        Assert.assertEquals(4, executionOrder.size());
+        assertEquals(4, executionOrder.size());
 
         // The order is important: "attachXXX" methods must be called before any
         // other JS execution for the same component.
 
         int index = executionOrder
                 .indexOf("this.attachCustomElement($0, $1, $2, $3);");
-        Assert.assertNotEquals(-1, index);
+        assertNotEquals(-1, index);
 
-        Assert.assertEquals("bar", executionOrder.get(index + 1));
+        assertEquals("bar", executionOrder.get(index + 1));
 
         index = executionOrder
                 .indexOf("this.attachExistingElementById($0, $1, $2, $3);");
-        Assert.assertEquals("foo", executionOrder.get(index + 1));
+        assertEquals("foo", executionOrder.get(index + 1));
     }
 
     private List<Integer> convertIntArray(JsonArray array) {
@@ -767,7 +767,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         });
         assertEquals(1, counter.get());
 
-        Assert.assertEquals("child", com.vaadin.flow.dom.Element
+        assertEquals("child", com.vaadin.flow.dom.Element
                 .get(injected.get()).getAttribute(NodeProperties.ID));
     }
 

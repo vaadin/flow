@@ -15,6 +15,9 @@
  */
 package com.vaadin.generator.registry;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -22,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -84,9 +86,9 @@ public class PropertyNameRemapRegistryTest {
 
     @Test
     public void notInRegistry_returnsEmptyOptional() {
-        Assert.assertFalse(PropertyNameRemapRegistry.getOptionalMappingFor(
+        assertFalse(PropertyNameRemapRegistry.getOptionalMappingFor(
                 TEST_COMPONENT_TAG, "mapping that doesn't exist").isPresent());
-        Assert.assertFalse(PropertyNameRemapRegistry
+        assertFalse(PropertyNameRemapRegistry
                 .getOptionalMappingFor("mapping that doesn't exist",
                         "mapping that doesn't exist")
                 .isPresent());
@@ -94,17 +96,17 @@ public class PropertyNameRemapRegistryTest {
 
     @Test
     public void getterAndSetterRemapping() {
-        Assert.assertTrue("Getter for renamed property should be present",
+        assertTrue("Getter for renamed property should be present",
                 generatedSource.contains("String getRenamed()"));
-        Assert.assertTrue(
+        assertTrue(
                 "Getter should use the original property name for accessing the value through the element API",
                 generatedSource.contains(
                         "return getElement().getProperty(\"original-property-name\");"));
 
-        Assert.assertTrue("Setter for renamed property should be present",
+        assertTrue("Setter for renamed property should be present",
                 generatedSource
                         .contains("setRenamed(java.lang.String renamed)"));
-        Assert.assertTrue(
+        assertTrue(
                 "Setter should use the original property name for setting the value through the element API",
                 generatedSource.contains(
                         "getElement().setProperty(\"original-property-name\","));
@@ -112,11 +114,11 @@ public class PropertyNameRemapRegistryTest {
 
     @Test
     public void eventRemapping() {
-        Assert.assertTrue(
+        assertTrue(
                 "Change event class name for renamed property should be renamed",
                 generatedSource
                         .contains("public static class RenamedChangeEvent"));
-        Assert.assertTrue(
+        assertTrue(
                 "Renamed change event class should still be bound to the original property name",
                 generatedSource.contains(
                         "@DomEvent(\"original-property-name-changed\")"));
@@ -143,10 +145,10 @@ public class PropertyNameRemapRegistryTest {
         String generated = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertFalse(
+        assertFalse(
                 "Remapped value property should not generate the HasValue interface",
                 generated.contains("HasValue"));
-        Assert.assertTrue("Remapped change event should be generated",
+        assertTrue("Remapped change event should be generated",
                 generated.contains("OtherValueChangeEvent"));
     }
 
@@ -173,12 +175,12 @@ public class PropertyNameRemapRegistryTest {
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(generated,
                 "TestTag", HasValue.class);
-        Assert.assertFalse(
+        assertFalse(
                 "Remapped value change event should not be generated",
                 generated.contains("ValueChangeEvent"));
-        Assert.assertTrue("HasValue getClientValuePropertyName overridden",
+        assertTrue("HasValue getClientValuePropertyName overridden",
                 generated.contains("String getClientValuePropertyName()"));
-        Assert.assertTrue("HasValue getClientValuePropertyName overridden",
+        assertTrue("HasValue getClientValuePropertyName overridden",
                 generated.contains("return \"map-to-value\";"));
     }
 }

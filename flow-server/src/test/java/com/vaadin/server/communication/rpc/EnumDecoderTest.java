@@ -15,7 +15,10 @@
  */
 package com.vaadin.server.communication.rpc;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import elemental.json.Json;
@@ -30,24 +33,24 @@ public class EnumDecoderTest {
 
     @Test
     public void isApplicable_applicableToStringAndEnum() {
-        Assert.assertTrue(
+        assertTrue(
                 decoder.isApplicable(Json.create("foo"), Title.class));
     }
 
     @Test
     public void isApplicable_notApplicableToBooleanAndEnum() {
-        Assert.assertFalse(decoder.isApplicable(Json.create(true), Enum.class));
+        assertFalse(decoder.isApplicable(Json.create(true), Enum.class));
     }
 
     @Test
     public void isApplicable_notApplicableToStringAndString() {
-        Assert.assertFalse(
+        assertFalse(
                 decoder.isApplicable(Json.create("foo"), String.class));
     }
 
     @Test
     public void isApplicable_notApplicableToStringAndAbstractEnum() {
-        Assert.assertFalse(
+        assertFalse(
                 decoder.isApplicable(Json.create("foo"), Enum.class));
     }
 
@@ -56,7 +59,7 @@ public class EnumDecoderTest {
             throws RpcDecodeException {
         Title title = Title.MRS;
         Title decoded = decoder.decode(Json.create(title.name()), Title.class);
-        Assert.assertEquals(title, decoded);
+        assertEquals(title, decoded);
     }
 
     @Test(expected = IllegalArgumentException.class)

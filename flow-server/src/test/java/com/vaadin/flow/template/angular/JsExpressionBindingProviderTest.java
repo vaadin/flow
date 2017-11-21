@@ -15,19 +15,20 @@
  */
 package com.vaadin.flow.template.angular;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.model.BasicModelType;
+import com.vaadin.flow.model.ModelType;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.template.angular.model.BeanModelType;
 import com.vaadin.flow.template.angular.model.TestModelDescriptor;
-import com.vaadin.flow.model.BasicModelType;
-import com.vaadin.flow.model.ModelType;
 
 /**
  * @author Vaadin Ltd
@@ -45,7 +46,7 @@ public class JsExpressionBindingProviderTest {
                         BasicModelType.get(String.class).get())));
         ModelMap.get(node).setValue("bar", "modelValue");
 
-        Assert.assertEquals("modelValuefoo", binding.getValue(node));
+        assertEquals("modelValuefoo", binding.getValue(node));
     }
 
     @Test
@@ -68,7 +69,7 @@ public class JsExpressionBindingProviderTest {
 
         ModelMap.get(rootNode).setValue("bean", beanNode);
 
-        Assert.assertEquals("foo", binding.getValue(rootNode));
+        assertEquals("foo", binding.getValue(rootNode));
     }
 
 }

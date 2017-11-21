@@ -82,7 +82,7 @@ public class NotEmptyTest {
             try {
                 Class.forName(NOT_EMPTY);
                 // The NotEmpty class must not be in the classpath
-                Assert.fail();
+                fail();
             } catch (ClassNotFoundException e) {
             }
             BeanValidationBinder<BeanToValidate> binder = new BeanValidationBinder<>(
@@ -96,7 +96,7 @@ public class NotEmptyTest {
             binder.bind(nameField, "firstname");
             binder.setBean(item);
 
-            Assert.assertTrue(nameField.isRequiredIndicatorVisible());
+            assertTrue(nameField.isRequiredIndicatorVisible());
         }
 
     }

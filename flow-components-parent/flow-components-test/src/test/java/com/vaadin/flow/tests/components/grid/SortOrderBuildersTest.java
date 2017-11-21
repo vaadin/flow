@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.tests.components.grid;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.data.provider.QuerySortOrder;
@@ -75,11 +76,11 @@ public class SortOrderBuildersTest {
 
     private <T extends SortOrder<?>> void verifySortOrders(List<T> order1,
             List<T> order2) {
-        Assert.assertEquals(order1.size(), order2.size());
+        assertEquals(order1.size(), order2.size());
         for (int i = 0; i < order1.size(); i++) {
-            Assert.assertEquals(order1.get(i).getDirection(),
+            assertEquals(order1.get(i).getDirection(),
                     order2.get(i).getDirection());
-            Assert.assertEquals(order1.get(i).getSorted(),
+            assertEquals(order1.get(i).getSorted(),
                     order1.get(i).getSorted());
         }
     }

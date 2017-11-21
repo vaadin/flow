@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.nodefeature;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import org.junit.Assert;
-
-import com.vaadin.flow.nodefeature.NodeFeature;
-import com.vaadin.flow.nodefeature.NodeMap;
 
 public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         extends AbstractNodeFeatureTest<T> {
@@ -32,11 +29,11 @@ public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         String value2 = "bar";
 
         setter.accept(value1);
-        Assert.assertEquals(value1, getter.get());
-        Assert.assertEquals(value1, mapFeature.get(key));
+        assertEquals(value1, getter.get());
+        assertEquals(value1, mapFeature.get(key));
 
         mapFeature.put(key, value2);
-        Assert.assertEquals(value2, getter.get());
+        assertEquals(value2, getter.get());
     }
 
     protected void testInt(NodeMap mapFeature, String key,
@@ -45,11 +42,11 @@ public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         Integer value2 = 5844;
 
         setter.accept(value1);
-        Assert.assertEquals(value1, getter.get());
-        Assert.assertEquals(value1, mapFeature.get(key));
+        assertEquals(value1, getter.get());
+        assertEquals(value1, mapFeature.get(key));
 
         mapFeature.put(key, value2);
-        Assert.assertEquals(value2, getter.get());
+        assertEquals(value2, getter.get());
     }
 
     protected void testBoolean(NodeMap mapFeature, String key,
@@ -58,11 +55,11 @@ public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         Boolean value2 = false;
 
         setter.accept(value1);
-        Assert.assertEquals(value1, getter.get());
-        Assert.assertEquals(value1, mapFeature.get(key));
+        assertEquals(value1, getter.get());
+        assertEquals(value1, mapFeature.get(key));
 
         mapFeature.put(key, value2);
-        Assert.assertEquals(value2, getter.get());
+        assertEquals(value2, getter.get());
     }
 
 }

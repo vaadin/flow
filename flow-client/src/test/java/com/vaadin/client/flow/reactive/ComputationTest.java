@@ -15,9 +15,10 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class ComputationTest {
@@ -29,29 +30,29 @@ public class ComputationTest {
     public void testRerunIfDirty() {
         CountingComputation computation = new CountingComputation(router);
 
-        Assert.assertEquals("Initial compute should not trigger before flush",
+        assertEquals("Initial compute should not trigger before flush",
                 0, computation.getCount());
 
         Reactive.flush();
 
-        Assert.assertEquals("Flush should trigger initial compute", 1,
+        assertEquals("Flush should trigger initial compute", 1,
                 computation.getCount());
 
         Reactive.flush();
 
-        Assert.assertEquals(
+        assertEquals(
                 "Another recompute should not trigger since dependency has not changed",
                 1, computation.getCount());
 
         router.invalidate();
 
-        Assert.assertEquals(
+        assertEquals(
                 "Invalidation should not trigger recompute until flush", 1,
                 computation.getCount());
 
         Reactive.flush();
 
-        Assert.assertEquals("Should recompute after flush after invalidation",
+        assertEquals("Should recompute after flush after invalidation",
                 2, computation.getCount());
     }
 
@@ -63,7 +64,7 @@ public class ComputationTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(0, computation.getCount());
+        assertEquals(0, computation.getCount());
     }
 
     @Test
@@ -78,7 +79,7 @@ public class ComputationTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(1, computation.getCount());
+        assertEquals(1, computation.getCount());
     }
 
     @Test
@@ -93,7 +94,7 @@ public class ComputationTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(1, computation.getCount());
+        assertEquals(1, computation.getCount());
     }
 
     @Test
@@ -116,20 +117,20 @@ public class ComputationTest {
         router.invalidate();
         Reactive.flush();
 
-        Assert.assertEquals("Invalidating router should not cause recompute", 1,
+        assertEquals("Invalidating router should not cause recompute", 1,
                 computeCount.get());
 
         otherRouter.invalidate();
         Reactive.flush();
         // Now depending on otherRouter
 
-        Assert.assertEquals("Invalidating otherRouter should cause recompute",
+        assertEquals("Invalidating otherRouter should cause recompute",
                 2, computeCount.get());
 
         otherRouter.invalidate();
         Reactive.flush();
 
-        Assert.assertEquals(
+        assertEquals(
                 "Invalidating otherRouter should not cause recompute", 2,
                 computeCount.get());
 
@@ -137,7 +138,7 @@ public class ComputationTest {
         Reactive.flush();
         // Now depending on otherRouter
 
-        Assert.assertEquals("Invalidating router should cause recompute", 3,
+        assertEquals("Invalidating router should cause recompute", 3,
                 computeCount.get());
     }
 
@@ -157,26 +158,26 @@ public class ComputationTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(
+        assertEquals(
                 "First flush registers listener, but doesn't increment count",
                 0, computeCount.get());
 
         router.invalidate();
 
-        Assert.assertEquals("Listener is fired right away, but removed", 1,
+        assertEquals("Listener is fired right away, but removed", 1,
                 computeCount.get());
 
         router.invalidate();
-        Assert.assertEquals(
+        assertEquals(
                 "Listner has been removed, so count isn't increased", 1,
                 computeCount.get());
 
         Reactive.flush();
-        Assert.assertEquals("Listener is not added again", 1,
+        assertEquals("Listener is not added again", 1,
                 computeCount.get());
 
         router.invalidate();
-        Assert.assertEquals("Listner has not been added again", 1,
+        assertEquals("Listner has not been added again", 1,
                 computeCount.get());
     }
 
@@ -189,13 +190,13 @@ public class ComputationTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(1, computeCount.get());
+        assertEquals(1, computeCount.get());
 
         router.invalidate();
 
         Reactive.flush();
 
-        Assert.assertEquals("No dependency was registered", 1,
+        assertEquals("No dependency was registered", 1,
                 computeCount.get());
     }
 
@@ -209,8 +210,8 @@ public class ComputationTest {
 
         computation.stop();
 
-        Assert.assertEquals(0, computeCount.get());
-        Assert.assertEquals(1, invalidateCount.get());
+        assertEquals(0, computeCount.get());
+        assertEquals(1, invalidateCount.get());
     }
 
 }

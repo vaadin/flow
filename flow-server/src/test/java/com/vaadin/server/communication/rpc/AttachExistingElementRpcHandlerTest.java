@@ -15,7 +15,8 @@
  */
 package com.vaadin.server.communication.rpc;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -148,9 +149,9 @@ public class AttachExistingElementRpcHandlerTest {
     private void assertNodeIsUnregistered(StateNode node, StateNode requested,
             AttachExistingElementFeature feature) {
         Mockito.verify(requested).setParent(null);
-        Assert.assertNull(feature.getParent(requested));
-        Assert.assertNull(feature.getCallback(requested));
-        Assert.assertNull(feature.getPreviousSibling(node));
+        assertNull(feature.getParent(requested));
+        assertNull(feature.getCallback(requested));
+        assertNull(feature.getPreviousSibling(node));
     }
 
 }

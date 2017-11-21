@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.tests.components.checkbox;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -33,7 +34,7 @@ public class CheckBoxViewIT extends AbstractComponentIT {
         open();
 
         WebElement checkbox = findElement(By.id("checkbox"));
-        Assert.assertTrue(getInShadowRoot(checkbox, By.id("nativeCheckbox"))
+        assertTrue(getInShadowRoot(checkbox, By.id("nativeCheckbox"))
                 .isSelected());
     }
 }

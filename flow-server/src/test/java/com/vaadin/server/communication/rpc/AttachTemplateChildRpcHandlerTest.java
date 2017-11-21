@@ -15,9 +15,10 @@
  */
 package com.vaadin.server.communication.rpc;
 
+import static org.junit.Assert.assertNull;
+
 import java.util.Optional;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -153,7 +154,7 @@ public class AttachTemplateChildRpcHandlerTest {
     private void assertNodeIsUnregistered(StateNode node, StateNode requested,
             AttachTemplateChildFeature feature) {
         Mockito.verify(requested).setParent(null);
-        Assert.assertNull(feature.getParent(requested));
+        assertNull(feature.getParent(requested));
     }
 
 }

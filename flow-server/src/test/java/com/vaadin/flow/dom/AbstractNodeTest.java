@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.dom;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -24,7 +29,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.googlecode.gentyref.GenericTypeReflector;
@@ -55,14 +59,14 @@ public abstract class AbstractNodeTest {
     }
 
     protected void assertChildren(Node<?> parent, Element... children) {
-        Assert.assertEquals(children.length, parent.getChildCount());
+        assertEquals(children.length, parent.getChildCount());
         for (int i = 0; i < children.length; i++) {
             assertChild(parent, i, children[i]);
         }
     }
 
     protected void assertChild(Node<?> parent, int index, Element child) {
-        Assert.assertEquals(child, parent.getChild(index));
+        assertEquals(child, parent.getChild(index));
     }
 
     @Test
@@ -253,14 +257,14 @@ public abstract class AbstractNodeTest {
 
         List<Element> children = parent.getChildren()
                 .collect(Collectors.toList());
-        Assert.assertEquals(Arrays.asList(child1, child2, child3), children);
+        assertEquals(Arrays.asList(child1, child2, child3), children);
     }
 
     @Test
     public void testGetChildren_empty() {
         Node<?> parent = createParentNode();
 
-        Assert.assertEquals(0, parent.getChildren().count());
+        assertEquals(0, parent.getChildren().count());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -278,10 +282,10 @@ public abstract class AbstractNodeTest {
         Element child3 = new Element("child3");
         Element child4 = new Element("child4");
         parent.appendChild(child1, child2, child3, child4);
-        Assert.assertEquals(child1, parent.getChild(0));
-        Assert.assertEquals(child2, parent.getChild(1));
-        Assert.assertEquals(child3, parent.getChild(2));
-        Assert.assertEquals(child4, parent.getChild(3));
+        assertEquals(child1, parent.getChild(0));
+        assertEquals(child2, parent.getChild(1));
+        assertEquals(child3, parent.getChild(2));
+        assertEquals(child4, parent.getChild(3));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -382,7 +386,7 @@ public abstract class AbstractNodeTest {
                 .collectChanges(change -> {
                     changesCausedBySetChild.incrementAndGet();
                 });
-        Assert.assertEquals(0, changesCausedBySetChild.get());
+        assertEquals(0, changesCausedBySetChild.get());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -411,7 +415,7 @@ public abstract class AbstractNodeTest {
 
         target.appendChild(child);
 
-        Assert.assertEquals(child.getParent(), target);
+        assertEquals(child.getParent(), target);
 
         checkIsNotChild(parent, child);
     }
@@ -422,7 +426,7 @@ public abstract class AbstractNodeTest {
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
 
-        Assert.assertEquals(0, parent.indexOfChild(child));
+        assertEquals(0, parent.indexOfChild(child));
     }
 
     @Test
@@ -433,7 +437,7 @@ public abstract class AbstractNodeTest {
         Element child3 = ElementFactory.createButton();
         parent.appendChild(child1, child2, child3);
 
-        Assert.assertEquals(1, parent.indexOfChild(child2));
+        assertEquals(1, parent.indexOfChild(child2));
     }
 
     @Test
@@ -441,7 +445,7 @@ public abstract class AbstractNodeTest {
         Node<?> parent = createParentNode();
         Element child = ElementFactory.createDiv();
 
-        Assert.assertEquals(-1, parent.indexOfChild(child));
+        assertEquals(-1, parent.indexOfChild(child));
     }
 
     @Test
@@ -501,7 +505,7 @@ public abstract class AbstractNodeTest {
 
         target.insertChild(0, child);
 
-        Assert.assertEquals(child.getParent(), target);
+        assertEquals(child.getParent(), target);
 
         checkIsNotChild(parent, child);
     }
@@ -517,7 +521,7 @@ public abstract class AbstractNodeTest {
 
         target.setChild(0, child);
 
-        Assert.assertEquals(child.getParent(), target);
+        assertEquals(child.getParent(), target);
 
         checkIsNotChild(parent, child);
     }
@@ -527,9 +531,9 @@ public abstract class AbstractNodeTest {
         Node<?> parent = createParentNode();
         Element otherElement = new Element("other");
         parent.appendChild(otherElement);
-        Assert.assertEquals(parent, otherElement.getParentNode());
+        assertEquals(parent, otherElement.getParentNode());
         otherElement.removeFromParent();
-        Assert.assertNull(otherElement.getParentNode());
+        assertNull(otherElement.getParentNode());
     }
 
     @Test
@@ -539,13 +543,13 @@ public abstract class AbstractNodeTest {
         Element child2 = new Element("child2");
         parent.appendChild(child1);
         parent.setChild(0, child2);
-        Assert.assertNull(child1.getParentNode());
-        Assert.assertEquals(parent, child2.getParentNode());
+        assertNull(child1.getParentNode());
+        assertEquals(parent, child2.getParentNode());
     }
 
     protected void checkIsNotChild(Node<?> parent, Element child) {
-        Assert.assertNotEquals(child.getParentNode(), parent);
-        Assert.assertFalse(
+        assertNotEquals(child.getParentNode(), parent);
+        assertFalse(
                 parent.getChildren().anyMatch(el -> el.equals(child)));
     }
 
@@ -573,7 +577,7 @@ public abstract class AbstractNodeTest {
                 // Setters and such
                 Type returnType = GenericTypeReflector
                         .getExactReturnType(method, clazz);
-                Assert.assertEquals(
+                assertEquals(
                         "Method " + method.getName()
                                 + " has invalid return type",
                         clazz, returnType);

@@ -15,17 +15,18 @@
  */
 package com.vaadin.client.communication;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.flow.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.nodefeature.PollConfigurationMap;
 
 public class PollConfiguratorTest {
 
@@ -51,19 +52,19 @@ public class PollConfiguratorTest {
             };
         });
 
-        Assert.assertEquals(-2, pollerInterval.get());
-        Assert.assertEquals(0, pollerSetIntervalCalled.get());
+        assertEquals(-2, pollerInterval.get());
+        assertEquals(0, pollerSetIntervalCalled.get());
         MapProperty pollIntervalProperty = stateTree.getRootNode()
                 .getMap(NodeFeatures.POLL_CONFIGURATION)
                 .getProperty(PollConfigurationMap.POLL_INTERVAL_KEY);
 
         pollIntervalProperty.setValue(100.0);
-        Assert.assertEquals(100, pollerInterval.get());
-        Assert.assertEquals(1, pollerSetIntervalCalled.get());
+        assertEquals(100, pollerInterval.get());
+        assertEquals(1, pollerSetIntervalCalled.get());
 
         pollIntervalProperty.setValue(-1.0);
-        Assert.assertEquals(-1, pollerInterval.get());
-        Assert.assertEquals(2, pollerSetIntervalCalled.get());
+        assertEquals(-1, pollerInterval.get());
+        assertEquals(2, pollerSetIntervalCalled.get());
 
     }
 }

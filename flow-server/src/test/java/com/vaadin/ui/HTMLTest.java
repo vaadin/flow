@@ -15,10 +15,11 @@
  */
 package com.vaadin.ui;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.Element;
@@ -60,17 +61,17 @@ public class HTMLTest {
     @Test
     public void simpleHtml() {
         Html html = new Html("<span>hello</span>");
-        Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
-        Assert.assertEquals("hello", html.getInnerHtml());
+        assertEquals(Tag.SPAN, html.getElement().getTag());
+        assertEquals("hello", html.getInnerHtml());
     }
 
     @Test
     public void rootAttributes() {
         Html html = new Html("<span foo='bar'>hello</span>");
-        Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
-        Assert.assertEquals(1, html.getElement().getAttributeNames().count());
-        Assert.assertEquals("bar", html.getElement().getAttribute("foo"));
-        Assert.assertEquals("hello", html.getInnerHtml());
+        assertEquals(Tag.SPAN, html.getElement().getTag());
+        assertEquals(1, html.getElement().getAttributeNames().count());
+        assertEquals("bar", html.getElement().getAttribute("foo"));
+        assertEquals("hello", html.getInnerHtml());
     }
 
     @Test
@@ -78,12 +79,12 @@ public class HTMLTest {
         Html html = new Html(
                 "<span class='foo' style='color: red'>hello</span>");
         Element element = html.getElement();
-        Assert.assertEquals(Tag.SPAN, element.getTag());
+        assertEquals(Tag.SPAN, element.getTag());
 
-        Assert.assertEquals(2, element.getAttributeNames().count());
-        Assert.assertEquals("foo", element.getAttribute("class"));
-        Assert.assertEquals("color:red", element.getAttribute("style"));
-        Assert.assertEquals("hello", html.getInnerHtml());
+        assertEquals(2, element.getAttributeNames().count());
+        assertEquals("foo", element.getAttribute("class"));
+        assertEquals("color:red", element.getAttribute("style"));
+        assertEquals("hello", html.getInnerHtml());
     }
 
     @Test
@@ -95,8 +96,8 @@ public class HTMLTest {
     @Test
     public void brokenHtml() {
         Html html = new Html("<b></div>");
-        Assert.assertEquals("b", html.getElement().getTag());
-        Assert.assertEquals("", html.getInnerHtml());
+        assertEquals("b", html.getElement().getTag());
+        assertEquals("", html.getInnerHtml());
     }
 
     @Test
@@ -109,10 +110,10 @@ public class HTMLTest {
                 + "" //
                 + "";
         Html html = new Html(input);
-        Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
+        assertEquals(Tag.SPAN, html.getElement().getTag());
         String expectedInnerHtml = input.replaceAll("^[ ]*<span>", "")
                 .replaceAll("</span>[ ]*$", "");
-        Assert.assertEquals(expectedInnerHtml, html.getInnerHtml());
+        assertEquals(expectedInnerHtml, html.getInnerHtml());
     }
 
 }

@@ -15,11 +15,13 @@
  */
 package com.vaadin.router;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.server.InvalidRouteConfigurationException;
@@ -45,17 +47,17 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                         GreetingNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals(RootNavigationTarget.class,
+        assertEquals(RootNavigationTarget.class,
                 resolveNavigationTarget(""));
-        Assert.assertEquals(FooNavigationTarget.class,
+        assertEquals(FooNavigationTarget.class,
                 resolveNavigationTarget("foo"));
-        Assert.assertEquals(FooBarNavigationTarget.class,
+        assertEquals(FooBarNavigationTarget.class,
                 resolveNavigationTarget("foo/bar"));
     }
 
     @Test
     public void no_route_found_resolves_to_null() {
-        Assert.assertNull(
+        assertNull(
                 "Attempting to resolve an invalid location should return null",
                 resolver.resolve(new ResolveRequest(router,
                         new Location("Not a configured location"))));
@@ -67,7 +69,7 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(GreetingNavigationTarget.class));
 
-        Assert.assertEquals(Collections.singletonList("World"),
+        assertEquals(Collections.singletonList("World"),
                 resolveNavigationState("greeting/World").getUrlParameters()
                         .get());
     }
@@ -81,9 +83,9 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                                 OtherGreetingNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals(GreetingNavigationTarget.class,
+        assertEquals(GreetingNavigationTarget.class,
                 resolveNavigationTarget("greeting/World"));
-        Assert.assertEquals(OtherGreetingNavigationTarget.class,
+        assertEquals(OtherGreetingNavigationTarget.class,
                 resolveNavigationTarget("greeting/other/World"));
     }
 
@@ -93,9 +95,9 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(GreetingNavigationTarget.class));
 
-        Assert.assertEquals(null,
+        assertEquals(null,
                 resolveNavigationState("greeting/World/something"));
-        Assert.assertEquals(null, resolveNavigationState("greeting"));
+        assertEquals(null, resolveNavigationState("greeting"));
     }
 
     private Class<? extends Component> resolveNavigationTarget(String path) {

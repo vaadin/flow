@@ -263,7 +263,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.writeBean(person);
 
-        Assert.assertEquals(age, person.getAge());
+        assertEquals(age, person.getAge());
     }
 
     @Test
@@ -280,7 +280,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.writeBean(person);
 
-        Assert.assertEquals(fieldValue, person.getFirstName());
+        assertEquals(fieldValue, person.getFirstName());
     }
 
     @Test
@@ -293,7 +293,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         person.setFirstName(name);
         binder.readBean(person);
 
-        Assert.assertEquals(name, nameField.getValue());
+        assertEquals(name, nameField.getValue());
     }
 
     @Test
@@ -306,7 +306,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         person.setFirstName(name);
         binder.readBean(person);
 
-        Assert.assertEquals("", nameField.getValue());
+        assertEquals("", nameField.getValue());
     }
 
     protected void bindName() {
@@ -327,19 +327,19 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         // Bind a person with null value and check that null representation is
         // used
         binder.setBean(namelessPerson);
-        Assert.assertEquals(
+        assertEquals(
                 "Null value from bean was not converted to explicit null representation",
                 nullRepresentation, nameField.getValue());
 
         // Verify that changes are applied to bean
         nameField.setValue(realName);
-        Assert.assertEquals(
+        assertEquals(
                 "Bean was not correctly updated from a change in the field",
                 realName, namelessPerson.getFirstName());
 
         // Verify conversion back to null
         nameField.setValue(nullRepresentation);
-        Assert.assertEquals(
+        assertEquals(
                 "Two-way null representation did not change value back to null",
                 null, namelessPerson.getFirstName());
     }
@@ -359,18 +359,18 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setBean(namelessPerson);
 
         assertTrue(nullTextField.isEmpty());
-        Assert.assertEquals(null, namelessPerson.getFirstName());
+        assertEquals(null, namelessPerson.getFirstName());
 
         // Change value, see that textfield is not empty and bean is updated.
         nullTextField.setValue("");
         assertFalse(nullTextField.isEmpty());
-        Assert.assertEquals("First name of person was not properly updated", "",
+        assertEquals("First name of person was not properly updated", "",
                 namelessPerson.getFirstName());
 
         // Verify that default null representation does not map back to null
         nullTextField.setValue("null");
         assertTrue(nullTextField.isEmpty());
-        Assert.assertEquals("Default one-way null representation failed.",
+        assertEquals("Default one-way null representation failed.",
                 "null", namelessPerson.getFirstName());
     }
 
@@ -385,7 +385,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 Objects.isNull(item.getFirstName()));
         binder.setBean(item);
 
-        Assert.assertEquals("Field value was not set correctly",
+        assertEquals("Field value was not set correctly",
                 item.getFirstName(), nameField.getValue());
     }
 
@@ -399,12 +399,12 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 .bind(Person::getSalary, Person::setSalary);
         binder.setBean(item);
 
-        Assert.assertEquals(customNullConverter.toString(),
+        assertEquals(customNullConverter.toString(),
                 ageField.getValue());
 
         Integer salary = 11;
         ageField.setValue(salary.toString());
-        Assert.assertEquals(11, salary.intValue());
+        assertEquals(11, salary.intValue());
     }
 
     @Test
@@ -415,7 +415,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Person person = new Person();
         binder.setBean(person);
 
-        Assert.assertEquals("", nameField.getValue());
+        assertEquals("", nameField.getValue());
     }
 
     @Test
@@ -431,7 +431,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Person person = new Person();
         binder.setBean(person);
 
-        Assert.assertEquals(customNullPointerRepresentation,
+        assertEquals(customNullPointerRepresentation,
                 nameField.getValue());
     }
 
@@ -444,11 +444,11 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         item.setFirstName(null);
         binder.setBean(item);
 
-        Assert.assertEquals(nullRepresentation, nameField.getValue());
+        assertEquals(nullRepresentation, nameField.getValue());
 
         String newValue = "bar";
         nameField.setValue(newValue);
-        Assert.assertEquals(newValue, item.getFirstName());
+        assertEquals(newValue, item.getFirstName());
     }
 
     @Test
@@ -467,7 +467,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertThat(textField.getErrorMessage(), isEmptyOrNullString());
 
         textField.setValue(textField.getEmptyValue());
-        Assert.assertEquals("foobar", componentErrors.get(textField));
+        assertEquals("foobar", componentErrors.get(textField));
 
         textField.setValue("value");
         assertThat(textField.getErrorMessage(), isEmptyOrNullString());
@@ -479,19 +479,19 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         TextField textField = new TextField();
         binder.forField(textField).asRequired("foobar")
                 .bind(Person::getFirstName, Person::setFirstName);
-        Assert.assertTrue(textField.isRequiredIndicatorVisible());
-        Assert.assertNull(componentErrors.get(textField));
+        assertTrue(textField.isRequiredIndicatorVisible());
+        assertNull(componentErrors.get(textField));
 
         binder.readBean(item);
-        Assert.assertNull(componentErrors.get(textField));
+        assertNull(componentErrors.get(textField));
 
         textField.setValue(textField.getEmptyValue());
-        Assert.assertTrue(textField.isRequiredIndicatorVisible());
-        Assert.assertNotNull(componentErrors.get(textField));
+        assertTrue(textField.isRequiredIndicatorVisible());
+        assertNotNull(componentErrors.get(textField));
 
         binder.readBean(null);
         assertTrue(textField.isRequiredIndicatorVisible());
-        Assert.assertNull(componentErrors.get(textField));
+        assertNull(componentErrors.get(textField));
     }
 
     @Test
@@ -512,13 +512,13 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binding.bind(Person::getFirstName, Person::setFirstName);
         binder.setBean(item);
         assertThat(textField.getErrorMessage(), isEmptyOrNullString());
-        Assert.assertEquals(0, invokes.get());
+        assertEquals(0, invokes.get());
 
         textField.setValue(textField.getEmptyValue());
-        Assert.assertEquals("foobar", componentErrors.get(textField));
+        assertEquals("foobar", componentErrors.get(textField));
         // validation is run twice, once for the field, then for all the fields
         // for cross field validation...
-        Assert.assertEquals(2, invokes.get());
+        assertEquals(2, invokes.get());
 
         textField.setValue("value");
         assertThat(textField.getErrorMessage(), isEmptyOrNullString());
@@ -543,13 +543,13 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.setBean(item);
         // setting the bean causes 2:
-        Assert.assertEquals(2, invokes.get());
+        assertEquals(2, invokes.get());
 
         lastNameField.setValue("");
-        Assert.assertEquals(2, invokes.get());
+        assertEquals(2, invokes.get());
 
         firstNameField.setValue("");
-        Assert.assertEquals(3, invokes.get());
+        assertEquals(3, invokes.get());
 
         binder.removeBean();
         Person person = new Person();
@@ -557,13 +557,13 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         person.setLastName("a");
         binder.readBean(person);
         // reading from a bean causes 2:
-        Assert.assertEquals(5, invokes.get());
+        assertEquals(5, invokes.get());
 
         lastNameField.setValue("");
-        Assert.assertEquals(5, invokes.get());
+        assertEquals(5, invokes.get());
 
         firstNameField.setValue("");
-        Assert.assertEquals(6, invokes.get());
+        assertEquals(6, invokes.get());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -646,16 +646,16 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.setBean(item);
 
-        Assert.assertTrue(binder.isValid());
+        assertTrue(binder.isValid());
 
         nameField.setValue("fail field validation");
-        Assert.assertFalse(binder.isValid());
+        assertFalse(binder.isValid());
 
         nameField.setValue("");
-        Assert.assertTrue(binder.isValid());
+        assertTrue(binder.isValid());
 
         nameField.setValue("fail bean validation");
-        Assert.assertFalse(binder.isValid());
+        assertFalse(binder.isValid());
     }
 
     @Test
@@ -665,13 +665,13 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                         name -> !name.equals("fail field validation"), ""))
                 .bind(Person::getFirstName, Person::setFirstName);
 
-        Assert.assertTrue(binder.isValid());
+        assertTrue(binder.isValid());
 
         nameField.setValue("fail field validation");
-        Assert.assertFalse(binder.isValid());
+        assertFalse(binder.isValid());
 
         nameField.setValue("");
-        Assert.assertTrue(binder.isValid());
+        assertTrue(binder.isValid());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -686,7 +686,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void getFields_returnsFields() {
-        Assert.assertEquals(0, binder.getFields().count());
+        assertEquals(0, binder.getFields().count());
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         assertStreamEquals(Stream.of(nameField), binder.getFields());
@@ -697,7 +697,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     private void assertStreamEquals(Stream<?> s1, Stream<?> s2) {
-        Assert.assertArrayEquals(s1.toArray(), s2.toArray());
+        assertArrayEquals(s1.toArray(), s2.toArray());
     }
 
     /**

@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.demo.views;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
@@ -32,7 +33,7 @@ public class PaperButtonIT extends ComponentDemoTest {
         WebElement button = layout.findElement(By.id("raised-button"));
         WebElement message = layout.findElement(By.id("raised-button-message"));
 
-        Assert.assertTrue("Button should be raised",
+        assertTrue("Button should be raised",
                 isAttributeTrue(button, "raised"));
         scrollIntoViewAndClick(button);
 
@@ -45,7 +46,7 @@ public class PaperButtonIT extends ComponentDemoTest {
         WebElement button = layout.findElement(By.id("link-button"));
         WebElement message = layout.findElement(By.id("link-button-message"));
 
-        Assert.assertTrue("Button should have noink",
+        assertTrue("Button should have noink",
                 isAttributeTrue(button, "noink"));
         scrollIntoViewAndClick(button);
 
@@ -58,9 +59,9 @@ public class PaperButtonIT extends ComponentDemoTest {
         WebElement button = layout.findElement(By.id("toggle-button"));
         WebElement message = layout.findElement(By.id("toggle-button-message"));
 
-        Assert.assertTrue("Button should have toggles",
+        assertTrue("Button should have toggles",
                 isAttributeTrue(button, "toggles"));
-        Assert.assertTrue("Button should be raised",
+        assertTrue("Button should be raised",
                 isAttributeTrue(button, "raised"));
         scrollIntoViewAndClick(button);
 
@@ -72,7 +73,7 @@ public class PaperButtonIT extends ComponentDemoTest {
     public void disableButtonIsShown() {
         WebElement button = layout.findElement(By.id("disabled-button"));
 
-        Assert.assertTrue("Button should be disabled",
+        assertTrue("Button should be disabled",
                 isAttributeTrue(button, "disabled"));
 
     }

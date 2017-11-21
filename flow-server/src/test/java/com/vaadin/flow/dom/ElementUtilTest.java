@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.dom;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -27,12 +29,12 @@ import com.vaadin.ui.Component;
 public class ElementUtilTest {
     @Test
     public void isNullValidAttribute() {
-        Assert.assertFalse(ElementUtil.isValidAttributeName(null));
+        assertFalse(ElementUtil.isValidAttributeName(null));
     }
 
     @Test
     public void isEmptyValidAttribute() {
-        Assert.assertFalse(ElementUtil.isValidAttributeName(""));
+        assertFalse(ElementUtil.isValidAttributeName(""));
     }
 
     @Test(expected = AssertionError.class)
@@ -45,7 +47,7 @@ public class ElementUtilTest {
     @Test
     public void componentNotInitiallyAttached() {
         Element e = ElementFactory.createDiv();
-        Assert.assertFalse(ElementUtil.getComponent(e).isPresent());
+        assertFalse(ElementUtil.getComponent(e).isPresent());
     }
 
     @Test
@@ -53,7 +55,7 @@ public class ElementUtilTest {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
-        Assert.assertEquals(c, ElementUtil.getComponent(e).get());
+        assertEquals(c, ElementUtil.getComponent(e).get());
     }
 
     @Test
@@ -61,7 +63,7 @@ public class ElementUtilTest {
         Element e = Element.createText("Text text");
         Component c = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
-        Assert.assertEquals(c, ElementUtil.getComponent(e).get());
+        assertEquals(c, ElementUtil.getComponent(e).get());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -94,10 +96,10 @@ public class ElementUtilTest {
         Node jsoupNode = ElementUtil.toJsoup(new Document(""),
                 template.getElement());
 
-        Assert.assertEquals(1, jsoupNode.childNodeSize());
+        assertEquals(1, jsoupNode.childNodeSize());
 
         Node child = jsoupNode.childNode(0);
-        Assert.assertEquals("<script>window.alert('shazbot');</script>",
+        assertEquals("<script>window.alert('shazbot');</script>",
                 child.outerHtml());
     }
 

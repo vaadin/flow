@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.template.angular;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -36,25 +40,25 @@ public class AngularTemplateParserTest {
         ElementTemplateNode rootNode = (ElementTemplateNode) parse(
                 "<div id=bar>baz<input></div>");
 
-        Assert.assertEquals("div", rootNode.getTag());
+        assertEquals("div", rootNode.getTag());
 
-        Assert.assertEquals(0, rootNode.getPropertyNames().count());
-        Assert.assertEquals(0, rootNode.getClassNames().count());
+        assertEquals(0, rootNode.getPropertyNames().count());
+        assertEquals(0, rootNode.getClassNames().count());
 
-        Assert.assertEquals(1, rootNode.getAttributeNames().count());
-        Assert.assertEquals("bar",
+        assertEquals(1, rootNode.getAttributeNames().count());
+        assertEquals("bar",
                 rootNode.getAttributeBinding("id").get().getValue(null));
 
-        Assert.assertEquals(2, rootNode.getChildCount());
+        assertEquals(2, rootNode.getChildCount());
 
         TextTemplateNode textChild = (TextTemplateNode) rootNode.getChild(0);
-        Assert.assertEquals("baz", textChild.getTextBinding().getValue(null));
+        assertEquals("baz", textChild.getTextBinding().getValue(null));
 
         ElementTemplateNode inputChild = (ElementTemplateNode) rootNode
                 .getChild(1);
-        Assert.assertEquals("input", inputChild.getTag());
-        Assert.assertEquals(0, inputChild.getAttributeNames().count());
-        Assert.assertEquals(0, inputChild.getChildCount());
+        assertEquals("input", inputChild.getTag());
+        assertEquals(0, inputChild.getAttributeNames().count());
+        assertEquals(0, inputChild.getChildCount());
     }
 
     private TemplateNode parse(String html) {
@@ -66,13 +70,13 @@ public class AngularTemplateParserTest {
         ElementTemplateNode rootNode = (ElementTemplateNode) parse(
                 "<div id='foo'>{{bar}}<input></div>");
 
-        Assert.assertEquals("div", rootNode.getTag());
+        assertEquals("div", rootNode.getTag());
 
-        Assert.assertEquals(1, rootNode.getAttributeNames().count());
-        Assert.assertEquals("foo",
+        assertEquals(1, rootNode.getAttributeNames().count());
+        assertEquals("foo",
                 rootNode.getAttributeBinding("id").get().getValue(null));
 
-        Assert.assertEquals(2, rootNode.getChildCount());
+        assertEquals(2, rootNode.getChildCount());
 
         TextTemplateNode textChild = (TextTemplateNode) rootNode.getChild(0);
         BindingValueProvider binding = textChild.getTextBinding();
@@ -82,12 +86,12 @@ public class AngularTemplateParserTest {
         // Explicitly set "bar" property to null. So model has property "bar".
         // See #970
         ModelMap.get(node).setValue("bar", null);
-        Assert.assertNull(binding.getValue(node));
+        assertNull(binding.getValue(node));
 
         String value = "someValue";
         ModelMap.get(node).setValue("bar", value);
 
-        Assert.assertEquals(value, binding.getValue(node));
+        assertEquals(value, binding.getValue(node));
     }
 
     @Test
@@ -95,15 +99,15 @@ public class AngularTemplateParserTest {
         ElementTemplateNode rootNode = (ElementTemplateNode) parse(
                 "<input [value]='foo'></input>");
 
-        Assert.assertEquals("input", rootNode.getTag());
+        assertEquals("input", rootNode.getTag());
 
-        Assert.assertEquals(0, rootNode.getAttributeNames().count());
-        Assert.assertEquals(0, rootNode.getClassNames().count());
-        Assert.assertEquals(1, rootNode.getPropertyNames().count());
+        assertEquals(0, rootNode.getAttributeNames().count());
+        assertEquals(0, rootNode.getClassNames().count());
+        assertEquals(1, rootNode.getPropertyNames().count());
 
         Optional<BindingValueProvider> binding = rootNode
                 .getPropertyBinding("value");
-        Assert.assertTrue(binding.isPresent());
+        assertTrue(binding.isPresent());
 
         StateNode node = new StateNode(ModelMap.class);
 
@@ -111,11 +115,11 @@ public class AngularTemplateParserTest {
         // See #970
         ModelMap.get(node).setValue("foo", null);
 
-        Assert.assertNull(binding.get().getValue(node));
+        assertNull(binding.get().getValue(node));
 
         ModelMap.get(node).setValue("foo", "bar");
 
-        Assert.assertEquals("bar", binding.get().getValue(node));
+        assertEquals("bar", binding.get().getValue(node));
     }
 
     @Test(expected = TemplateParseException.class)
@@ -128,26 +132,26 @@ public class AngularTemplateParserTest {
         ElementTemplateNode rootNode = (ElementTemplateNode) parse(
                 "<input [attr.value]='foo'></input>");
 
-        Assert.assertEquals("input", rootNode.getTag());
+        assertEquals("input", rootNode.getTag());
 
-        Assert.assertEquals(1, rootNode.getAttributeNames().count());
-        Assert.assertEquals(0, rootNode.getClassNames().count());
-        Assert.assertEquals(0, rootNode.getPropertyNames().count());
+        assertEquals(1, rootNode.getAttributeNames().count());
+        assertEquals(0, rootNode.getClassNames().count());
+        assertEquals(0, rootNode.getPropertyNames().count());
 
         Optional<BindingValueProvider> binding = rootNode
                 .getAttributeBinding("value");
-        Assert.assertTrue(binding.isPresent());
+        assertTrue(binding.isPresent());
 
         StateNode node = new StateNode(ModelMap.class);
 
         // Explicitly set "foo" property to null. So model has property "foo".
         // See #970
         ModelMap.get(node).setValue("foo", null);
-        Assert.assertNull(binding.get().getValue(node));
+        assertNull(binding.get().getValue(node));
 
         ModelMap.get(node).setValue("foo", "bar");
 
-        Assert.assertEquals("bar", binding.get().getValue(node));
+        assertEquals("bar", binding.get().getValue(node));
     }
 
     @Test(expected = TemplateParseException.class)
@@ -165,31 +169,31 @@ public class AngularTemplateParserTest {
         ElementTemplateNode rootNode = (ElementTemplateNode) parse(
                 "<input [class.foo]=bar [class.camelCase]=baz></input>");
 
-        Assert.assertEquals(0, rootNode.getAttributeNames().count());
-        Assert.assertEquals(0, rootNode.getPropertyNames().count());
-        Assert.assertEquals(2, rootNode.getClassNames().count());
+        assertEquals(0, rootNode.getAttributeNames().count());
+        assertEquals(0, rootNode.getPropertyNames().count());
+        assertEquals(2, rootNode.getClassNames().count());
 
         Optional<BindingValueProvider> fooBinding = rootNode
                 .getClassNameBinding("foo");
-        Assert.assertTrue(fooBinding.isPresent());
+        assertTrue(fooBinding.isPresent());
 
         Optional<BindingValueProvider> camelCaseBinding = rootNode
                 .getClassNameBinding("camelCase");
-        Assert.assertTrue(camelCaseBinding.isPresent());
+        assertTrue(camelCaseBinding.isPresent());
 
         StateNode node = new StateNode(ModelMap.class);
 
         // Explicitly set "bar" property to null. So model has property "bar".
         // See #970
         ModelMap.get(node).setValue("bar", null);
-        Assert.assertNull(fooBinding.get().getValue(node));
-        Assert.assertNull(camelCaseBinding.get().getValue(node));
+        assertNull(fooBinding.get().getValue(node));
+        assertNull(camelCaseBinding.get().getValue(node));
 
         ModelMap.get(node).setValue("bar", "value");
         ModelMap.get(node).setValue("baz", "value2");
 
-        Assert.assertEquals("value", fooBinding.get().getValue(node));
-        Assert.assertEquals("value2", camelCaseBinding.get().getValue(node));
+        assertEquals("value", fooBinding.get().getValue(node));
+        assertEquals("value2", camelCaseBinding.get().getValue(node));
     }
 
     @Test(expected = TemplateParseException.class)
@@ -212,9 +216,9 @@ public class AngularTemplateParserTest {
         ElementTemplateNode rootNode = (ElementTemplateNode) parse(
                 " \n<input \r> \t ");
 
-        Assert.assertEquals("input", rootNode.getTag());
-        Assert.assertEquals(0, rootNode.getPropertyNames().count());
-        Assert.assertEquals(0, rootNode.getChildCount());
+        assertEquals("input", rootNode.getTag());
+        assertEquals(0, rootNode.getPropertyNames().count());
+        assertEquals(0, rootNode.getChildCount());
     }
 
     @Test
@@ -222,14 +226,14 @@ public class AngularTemplateParserTest {
         // intentional whitespace
         TemplateNode rootNode = parse("<div> @child@</div>");
 
-        Assert.assertEquals(2, rootNode.getChildCount());
+        assertEquals(2, rootNode.getChildCount());
 
-        Assert.assertEquals(TextTemplateNode.class,
+        assertEquals(TextTemplateNode.class,
                 rootNode.getChild(0).getClass());
 
         TemplateNode childSlot = rootNode.getChild(1);
 
-        Assert.assertEquals(ChildSlotNode.class, childSlot.getClass());
+        assertEquals(ChildSlotNode.class, childSlot.getClass());
     }
 
     @Test(expected = TemplateParseException.class)
@@ -241,17 +245,17 @@ public class AngularTemplateParserTest {
     public void parseTopComment() {
         ElementTemplateNode node = (ElementTemplateNode) parse(
                 "<!-- comment --><div></div>");
-        Assert.assertEquals(0, node.getChildCount());
-        Assert.assertEquals("div", node.getTag());
+        assertEquals(0, node.getChildCount());
+        assertEquals("div", node.getTag());
     }
 
     @Test
     public void parseInnerComment() {
         ElementTemplateNode node = (ElementTemplateNode) parse(
                 "<div> <!-- comment --> <input> </div>");
-        Assert.assertEquals(4, node.getChildCount());
-        Assert.assertEquals("div", node.getTag());
-        Assert.assertEquals("input",
+        assertEquals(4, node.getChildCount());
+        assertEquals("div", node.getTag());
+        assertEquals("input",
                 ((ElementTemplateNode) node.getChild(2)).getTag());
     }
 
@@ -271,8 +275,8 @@ public class AngularTemplateParserTest {
         TemplateNode node = parse(
                 "<div><a class='item' *ngFor='let  item      of list'>{{item.text}}</a></div>");
         ForTemplateNode forNode = (ForTemplateNode) node.getChild(0);
-        Assert.assertEquals("list", forNode.getCollectionVariable());
-        Assert.assertEquals("item", forNode.getLoopVariable());
+        assertEquals("list", forNode.getCollectionVariable());
+        assertEquals("item", forNode.getLoopVariable());
     }
 
     @Test(expected = TemplateParseException.class)
@@ -288,14 +292,14 @@ public class AngularTemplateParserTest {
     public void parseEventHandler() {
         ElementTemplateNode node = (ElementTemplateNode) parse(
                 "<button (click)='handle($event)'>");
-        Assert.assertEquals(1, node.getEventNames().count());
+        assertEquals(1, node.getEventNames().count());
         Optional<String> event = node.getEventNames().findAny();
-        Assert.assertTrue(event.isPresent());
-        Assert.assertEquals("click", event.get());
+        assertTrue(event.isPresent());
+        assertEquals("click", event.get());
 
         Optional<String> eventHandler = node.getEventHandlerExpression("click");
-        Assert.assertTrue(eventHandler.isPresent());
-        Assert.assertEquals("handle($event)", eventHandler.get());
+        assertTrue(eventHandler.isPresent());
+        assertEquals("handle($event)", eventHandler.get());
     }
 
     @Test(expected = TemplateParseException.class)
@@ -307,16 +311,16 @@ public class AngularTemplateParserTest {
     public void parseMixedCaseAttributeStyle() {
         ElementTemplateNode node = (ElementTemplateNode) parse(
                 "<button someTag='value'>");
-        Assert.assertEquals(1, node.getAttributeNames().count());
-        Assert.assertEquals("sometag",
+        assertEquals(1, node.getAttributeNames().count());
+        assertEquals("sometag",
                 node.getAttributeNames().findFirst().get());
-        Assert.assertEquals(0, node.getPropertyNames().count());
-        Assert.assertEquals(0, node.getClassNames().count());
+        assertEquals(0, node.getPropertyNames().count());
+        assertEquals(0, node.getClassNames().count());
 
         Optional<BindingValueProvider> binding = node
                 .getAttributeBinding("sometag");
-        Assert.assertTrue(binding.isPresent());
-        Assert.assertEquals("value", binding.get().getValue(null));
+        assertTrue(binding.isPresent());
+        assertEquals("value", binding.get().getValue(null));
 
     }
 
@@ -325,14 +329,14 @@ public class AngularTemplateParserTest {
         ElementTemplateNode node = (ElementTemplateNode) parse(
                 "<button style='background-color:red'>");
 
-        Assert.assertEquals(1, node.getAttributeNames().count());
-        Assert.assertEquals(0, node.getPropertyNames().count());
-        Assert.assertEquals(0, node.getClassNames().count());
+        assertEquals(1, node.getAttributeNames().count());
+        assertEquals(0, node.getPropertyNames().count());
+        assertEquals(0, node.getClassNames().count());
 
         Optional<BindingValueProvider> binding = node
                 .getAttributeBinding("style");
-        Assert.assertTrue(binding.isPresent());
-        Assert.assertEquals("background-color:red",
+        assertTrue(binding.isPresent());
+        assertEquals("background-color:red",
                 binding.get().getValue(null));
     }
 
@@ -344,7 +348,7 @@ public class AngularTemplateParserTest {
         TemplateNode b = TemplateParser.parse(new ByteArrayInputStream(
                 templateString.getBytes(StandardCharsets.UTF_8)), null);
 
-        Assert.assertSame(a, b);
+        assertSame(a, b);
     }
 
 }

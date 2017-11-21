@@ -1,6 +1,7 @@
 package com.vaadin.flow.contexttest.ui;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertNotNull;
+
 import org.openqa.selenium.By;
 
 public class RootContextIT extends AbstractContextIT {
@@ -12,7 +13,7 @@ public class RootContextIT extends AbstractContextIT {
 
     @Override
     protected void verifyCorrectUI() {
-        Assert.assertNotNull(findElement(By.id("root")));
+        assertNotNull(findElement(By.id("root")));
     }
 
 }

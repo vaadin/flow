@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.template.angular;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -36,15 +37,15 @@ public class ScriptParsingTest {
         TemplateNode templateNode = parse("<style>" //
                 + contents + "</style>" //
         ); //
-        Assert.assertEquals(ElementTemplateNode.class, templateNode.getClass());
+        assertEquals(ElementTemplateNode.class, templateNode.getClass());
         ElementTemplateNode elementTemplate = (ElementTemplateNode) templateNode;
-        Assert.assertEquals("style", elementTemplate.getTag());
+        assertEquals("style", elementTemplate.getTag());
 
         TextTemplateNode textNode = ((TextTemplateNode) elementTemplate
                 .getChild(0));
         String nodeContents = (String) textNode.getTextBinding()
                 .getValue(new StateNode());
-        Assert.assertEquals(contents, nodeContents);
+        assertEquals(contents, nodeContents);
     }
 
     @Test
@@ -53,45 +54,45 @@ public class ScriptParsingTest {
         TemplateNode templateNode = parse("<script>" //
                 + script + "</script>" //
         ); //
-        Assert.assertEquals(ElementTemplateNode.class, templateNode.getClass());
+        assertEquals(ElementTemplateNode.class, templateNode.getClass());
         ElementTemplateNode elementTemplate = (ElementTemplateNode) templateNode;
-        Assert.assertEquals("script", elementTemplate.getTag());
+        assertEquals("script", elementTemplate.getTag());
 
         TextTemplateNode textNode = ((TextTemplateNode) elementTemplate
                 .getChild(0));
         String nodeContents = (String) textNode.getTextBinding()
                 .getValue(new StateNode());
-        Assert.assertEquals(script, nodeContents);
+        assertEquals(script, nodeContents);
     }
 
     @Test
     public void emptyInlineStyle() {
         TemplateNode templateNode = parse("<style></style>");
-        Assert.assertEquals(ElementTemplateNode.class, templateNode.getClass());
+        assertEquals(ElementTemplateNode.class, templateNode.getClass());
         ElementTemplateNode elementTemplate = (ElementTemplateNode) templateNode;
-        Assert.assertEquals("style", elementTemplate.getTag());
-        Assert.assertEquals(0, elementTemplate.getChildCount());
+        assertEquals("style", elementTemplate.getTag());
+        assertEquals(0, elementTemplate.getChildCount());
     }
 
     @Test
     public void emptyInlineScript() {
         TemplateNode templateNode = parse("<script></script>");
-        Assert.assertEquals(ElementTemplateNode.class, templateNode.getClass());
+        assertEquals(ElementTemplateNode.class, templateNode.getClass());
         ElementTemplateNode elementTemplate = (ElementTemplateNode) templateNode;
-        Assert.assertEquals("script", elementTemplate.getTag());
-        Assert.assertEquals(0, elementTemplate.getChildCount());
+        assertEquals("script", elementTemplate.getTag());
+        assertEquals(0, elementTemplate.getChildCount());
     }
 
     @Test
     public void scriptWithAttributes() {
         TemplateNode templateNode = parse(
                 "<script type='text/javascript' src='file://foobar'/>");
-        Assert.assertEquals(ElementTemplateNode.class, templateNode.getClass());
+        assertEquals(ElementTemplateNode.class, templateNode.getClass());
         ElementTemplateNode elementTemplate = (ElementTemplateNode) templateNode;
-        Assert.assertEquals("script", elementTemplate.getTag());
-        Assert.assertEquals("text/javascript", elementTemplate
+        assertEquals("script", elementTemplate.getTag());
+        assertEquals("text/javascript", elementTemplate
                 .getAttributeBinding("type").get().getValue(new StateNode()));
-        Assert.assertEquals("file://foobar", elementTemplate
+        assertEquals("file://foobar", elementTemplate
                 .getAttributeBinding("src").get().getValue(new StateNode()));
 
     }

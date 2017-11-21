@@ -15,9 +15,10 @@
  */
 package com.vaadin.router;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.router.event.NavigationEvent;
@@ -44,7 +45,7 @@ public class NavigationStateRendererTest {
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
                 .getRouterLayoutTypes(RouteParentLayout.class);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Found layout even though RouteParentLayout doesn't have any parents.",
                 0, routerLayoutTypes.size());
     }
@@ -57,9 +58,9 @@ public class NavigationStateRendererTest {
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
                 .getRouterLayoutTypes(SingleView.class);
 
-        Assert.assertEquals("Not all expected layouts were found", 1,
+        assertEquals("Not all expected layouts were found", 1,
                 routerLayoutTypes.size());
-        Assert.assertEquals("Wrong class found", RouteParentLayout.class,
+        assertEquals("Wrong class found", RouteParentLayout.class,
                 routerLayoutTypes.get(0));
     }
 
@@ -71,11 +72,11 @@ public class NavigationStateRendererTest {
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
                 .getRouterLayoutTypes(ChildConfiguration.class);
 
-        Assert.assertEquals("Not all expected layouts were found", 2,
+        assertEquals("Not all expected layouts were found", 2,
                 routerLayoutTypes.size());
-        Assert.assertEquals("Wrong class found as first in array",
+        assertEquals("Wrong class found as first in array",
                 MiddleLayout.class, routerLayoutTypes.get(0));
-        Assert.assertEquals("Wrong class found as second in array",
+        assertEquals("Wrong class found as second in array",
                 RouteParentLayout.class, routerLayoutTypes.get(1));
     }
 
@@ -87,7 +88,7 @@ public class NavigationStateRendererTest {
             @Override
             public <T extends HasElement> T createRouteTarget(
                     Class<T> routeTargetType, NavigationEvent event) {
-                Assert.assertEquals(Component.class, routeTargetType);
+                assertEquals(Component.class, routeTargetType);
                 return (T) new Text("foo");
             }
         });
@@ -101,7 +102,7 @@ public class NavigationStateRendererTest {
 
         Component routeTarget = renderer.getRouteTarget(Component.class, event);
 
-        Assert.assertEquals(Text.class, routeTarget.getClass());
+        assertEquals(Text.class, routeTarget.getClass());
 
         UI.setCurrent(null);
     }

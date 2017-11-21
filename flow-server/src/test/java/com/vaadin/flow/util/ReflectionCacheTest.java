@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class ReflectionCacheTest {
@@ -29,14 +32,14 @@ public class ReflectionCacheTest {
         ReflectionCache<Object, Integer> cache = new ReflectionCache<>(
                 type -> count.incrementAndGet());
 
-        Assert.assertEquals(0, count.get());
+        assertEquals(0, count.get());
 
-        Assert.assertEquals(1, cache.get(Object.class).intValue());
-        Assert.assertEquals(2, cache.get(String.class).intValue());
+        assertEquals(1, cache.get(Object.class).intValue());
+        assertEquals(2, cache.get(String.class).intValue());
 
-        Assert.assertEquals(1, cache.get(Object.class).intValue());
+        assertEquals(1, cache.get(Object.class).intValue());
 
-        Assert.assertEquals(2, count.get());
+        assertEquals(2, count.get());
     }
 
     @Test
@@ -44,11 +47,11 @@ public class ReflectionCacheTest {
         ReflectionCache<Object, Object> cache = new ReflectionCache<>(
                 type -> type);
 
-        Assert.assertFalse(cache.contains(Object.class));
+        assertFalse(cache.contains(Object.class));
 
         cache.get(Object.class);
-        Assert.assertTrue(cache.contains(Object.class));
-        Assert.assertFalse(cache.contains(String.class));
+        assertTrue(cache.contains(Object.class));
+        assertFalse(cache.contains(String.class));
     }
 
     @Test
@@ -57,9 +60,9 @@ public class ReflectionCacheTest {
                 type -> type);
 
         cache.get(Object.class);
-        Assert.assertTrue(cache.contains(Object.class));
+        assertTrue(cache.contains(Object.class));
 
         cache.clear();
-        Assert.assertFalse(cache.contains(Object.class));
+        assertFalse(cache.contains(Object.class));
     }
 }

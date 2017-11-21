@@ -17,7 +17,9 @@ package com.vaadin.ui.polymertemplate;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -34,7 +36,6 @@ import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -155,7 +156,7 @@ public class DefaultTemplateParserTest {
         Element element = parser
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
 
-        Assert.assertTrue(element.getElementById("foo") != null);
+        assertTrue(element.getElementById("foo") != null);
     }
 
     @Test
@@ -171,7 +172,7 @@ public class DefaultTemplateParserTest {
         Element element = parser
                 .getTemplateContent(RootImportsInspectTemplate.class, "foo");
 
-        Assert.assertTrue(element.getElementById("foo") != null);
+        assertTrue(element.getElementById("foo") != null);
     }
 
     @Test
@@ -185,7 +186,7 @@ public class DefaultTemplateParserTest {
         Element element = parser
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
 
-        Assert.assertTrue(element.getElementById("foo") != null);
+        assertTrue(element.getElementById("foo") != null);
     }
 
     @Test
@@ -212,7 +213,7 @@ public class DefaultTemplateParserTest {
         Element element = parser
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
 
-        Assert.assertTrue(element.getElementById("foo") != null);
+        assertTrue(element.getElementById("foo") != null);
     }
 
     @Test
@@ -239,7 +240,7 @@ public class DefaultTemplateParserTest {
         Element element = parser
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
 
-        Assert.assertTrue(element.getElementById("foo") != null);
+        assertTrue(element.getElementById("foo") != null);
 
         // The double slash should be ignored e.g. `/run//./..` should become
         // `/run/./..`
@@ -257,7 +258,7 @@ public class DefaultTemplateParserTest {
         DefaultTemplateParser parser = new DefaultTemplateParser();
         Element element = parser
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
-        Assert.assertTrue(element.getElementById("foo") != null);
+        assertTrue(element.getElementById("foo") != null);
         assertThat("No comments should be present in the parsing result",
                 extractCommentNodes(element), is(empty()));
     }
@@ -303,17 +304,17 @@ public class DefaultTemplateParserTest {
 
         Element element = parser
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
-        Assert.assertTrue(element.getElementById("foo") != null);
+        assertTrue(element.getElementById("foo") != null);
 
         element = parser.getTemplateContent(RootImportsInspectTemplate.class,
                 "foo");
-        Assert.assertTrue(element.getElementById("foo") != null);
+        assertTrue(element.getElementById("foo") != null);
 
         element = parser.getTemplateContent(OtherImportsInspectTemplate.class,
                 "bar");
-        Assert.assertTrue(element.getElementById("bar") != null);
+        assertTrue(element.getElementById("bar") != null);
 
-        Assert.assertEquals(
+        assertEquals(
                 "The DependencyFilter should be called exactly 3 times", 3,
                 calls.get());
 

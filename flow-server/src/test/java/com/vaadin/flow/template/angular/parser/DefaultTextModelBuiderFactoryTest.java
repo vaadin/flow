@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.template.angular.parser;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.template.angular.ChildSlotNode;
@@ -45,8 +47,8 @@ public class DefaultTextModelBuiderFactoryTest {
         }
 
         void verify(String... paths) {
-            Assert.assertEquals(paths.length, resolvedPaths.size());
-            Assert.assertEquals(Arrays.asList(paths), resolvedPaths);
+            assertEquals(paths.length, resolvedPaths.size());
+            assertEquals(Arrays.asList(paths), resolvedPaths);
         }
     }
 
@@ -71,22 +73,22 @@ public class DefaultTextModelBuiderFactoryTest {
     @Test
     public void parseStaticBinding() {
         List<TemplateNode> nodes = getNodes("sdfdsf sdf fgh@");
-        Assert.assertEquals(1, nodes.size());
+        assertEquals(1, nodes.size());
         verifyStaticText(nodes, 0, "sdfdsf sdf fgh@");
     }
 
     @Test
     public void parseChildNode() {
         List<TemplateNode> nodes = getNodes("@child@");
-        Assert.assertEquals(1, nodes.size());
-        Assert.assertEquals(ChildSlotNode.class, nodes.get(0).getClass());
+        assertEquals(1, nodes.size());
+        assertEquals(ChildSlotNode.class, nodes.get(0).getClass());
     }
 
     @Test
     public void parseTextBinding() {
         List<TemplateNode> nodes = getNodes("{{text}}");
-        Assert.assertEquals(1, nodes.size());
-        Assert.assertEquals(TextTemplateNode.class, nodes.get(0).getClass());
+        assertEquals(1, nodes.size());
+        assertEquals(TextTemplateNode.class, nodes.get(0).getClass());
     }
 
     @Test
@@ -94,23 +96,23 @@ public class DefaultTextModelBuiderFactoryTest {
         List<TemplateNode> nodes = assertIncludePath(
                 "sdf @include foo.html@ {{text}} dfg @include bar.html@ @child@",
                 "foo.html", "bar.html");
-        Assert.assertEquals(8, nodes.size());
+        assertEquals(8, nodes.size());
 
         verifyStaticText(nodes, 0, "sdf ");
 
-        Assert.assertEquals(ElementTemplateNode.class, nodes.get(1).getClass());
+        assertEquals(ElementTemplateNode.class, nodes.get(1).getClass());
 
         verifyStaticText(nodes, 2, " ");
 
-        Assert.assertEquals(TextTemplateNode.class, nodes.get(3).getClass());
+        assertEquals(TextTemplateNode.class, nodes.get(3).getClass());
 
         verifyStaticText(nodes, 4, " dfg ");
 
-        Assert.assertEquals(ElementTemplateNode.class, nodes.get(5).getClass());
+        assertEquals(ElementTemplateNode.class, nodes.get(5).getClass());
 
         verifyStaticText(nodes, 6, " ");
 
-        Assert.assertEquals(ChildSlotNode.class, nodes.get(7).getClass());
+        assertEquals(ChildSlotNode.class, nodes.get(7).getClass());
     }
 
     @Test
@@ -118,37 +120,37 @@ public class DefaultTextModelBuiderFactoryTest {
         List<TemplateNode> nodes = assertIncludePath(
                 "@include {{text}}dfg@ {{xzc @include}} include @child@",
                 "{{text}}dfg");
-        Assert.assertEquals(5, nodes.size());
+        assertEquals(5, nodes.size());
 
-        Assert.assertEquals(ElementTemplateNode.class, nodes.get(0).getClass());
+        assertEquals(ElementTemplateNode.class, nodes.get(0).getClass());
 
         verifyStaticText(nodes, 1, " ");
 
-        Assert.assertEquals(TextTemplateNode.class, nodes.get(2).getClass());
+        assertEquals(TextTemplateNode.class, nodes.get(2).getClass());
 
         verifyStaticText(nodes, 3, " include ");
 
-        Assert.assertEquals(ChildSlotNode.class, nodes.get(4).getClass());
+        assertEquals(ChildSlotNode.class, nodes.get(4).getClass());
     }
 
     @Test
     public void parseNotInclude() {
         TemplateNode node = TemplateParser
                 .parse("<div>foo@include.com, baz@foo.com</div>", null);
-        Assert.assertEquals(1, node.getChildCount());
+        assertEquals(1, node.getChildCount());
         TemplateNode child = node.getChild(0);
-        Assert.assertTrue(child instanceof TextTemplateNode);
+        assertTrue(child instanceof TextTemplateNode);
         TextTemplateNode text = (TextTemplateNode) child;
-        Assert.assertEquals("foo@include.com, baz@foo.com",
+        assertEquals("foo@include.com, baz@foo.com",
                 text.getTextBinding().getValue(null));
     }
 
     private void verifyStaticText(List<TemplateNode> nodes, int index,
             String expected) {
-        Assert.assertEquals(TextTemplateNode.class,
+        assertEquals(TextTemplateNode.class,
                 nodes.get(index).getClass());
         TextTemplateNode textNode = (TextTemplateNode) nodes.get(index);
-        Assert.assertEquals(expected, textNode.getTextBinding().getValue(null));
+        assertEquals(expected, textNode.getTextBinding().getValue(null));
     }
 
     private List<TemplateNode> getNodes(String text) {

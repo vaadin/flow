@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.nodefeature;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -30,21 +31,21 @@ public class ReconnectDialogConfigurationMapTest
 
     @Test
     public void defaults() {
-        Assert.assertEquals(ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT,
+        assertEquals(ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT,
                 map.getDialogText());
-        Assert.assertEquals(
+        assertEquals(
                 ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT,
                 map.getDialogTextGaveUp());
-        Assert.assertEquals(
+        assertEquals(
                 ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT,
                 map.getReconnectAttempts());
-        Assert.assertEquals(
+        assertEquals(
                 ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT,
                 map.getReconnectInterval());
-        Assert.assertEquals(
+        assertEquals(
                 ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_DEFAULT,
                 map.getDialogGracePeriod());
-        Assert.assertEquals(
+        assertEquals(
                 ReconnectDialogConfigurationMap.DIALOG_MODAL_DEFAULT,
                 map.isDialogModal());
     }

@@ -18,6 +18,8 @@ package com.vaadin.server;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +32,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpSessionBindingEvent;
 
 import org.easymock.EasyMock;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.server.communication.StreamRequestHandler;
@@ -71,19 +72,19 @@ public class VaadinServiceTest {
 
         MockVaadinSession vaadinSession = new MockVaadinSession(service);
         service.fireSessionDestroy(vaadinSession);
-        Assert.assertEquals(
+        assertEquals(
                 "'fireSessionDestroy' method doesn't call 'close' for the session",
                 1, vaadinSession.getCloseCount());
 
         vaadinSession.valueUnbound(
                 EasyMock.createMock(HttpSessionBindingEvent.class));
 
-        Assert.assertEquals(
+        assertEquals(
                 "'fireSessionDestroy' method may not call 'close' "
                         + "method for closing session",
                 1, vaadinSession.getCloseCount());
 
-        Assert.assertEquals("SessionDestroyListeners not called exactly once",
+        assertEquals("SessionDestroyListeners not called exactly once",
                 1, listener.callCount);
     }
 
@@ -158,7 +159,7 @@ public class VaadinServiceTest {
         VaadinServlet servlet = new VaadinServlet();
         servlet.init(servletConfig);
         VaadinService service = servlet.getService();
-        Assert.assertTrue(service.createRequestHandlers().stream()
+        assertTrue(service.createRequestHandlers().stream()
                 .filter(StreamRequestHandler.class::isInstance).findAny()
                 .isPresent());
     }
@@ -175,7 +176,7 @@ public class VaadinServiceTest {
 
         CurrentInstance.set(String.class, "Original value");
         service.runPendingAccessTasks(session);
-        Assert.assertEquals(
+        assertEquals(
                 "Original CurrentInstance should be set after the task has been run",
                 "Original value", CurrentInstance.get(String.class));
     }
@@ -210,13 +211,13 @@ public class VaadinServiceTest {
 
         service.init(instantiator);
 
-        Assert.assertFalse(listener1Run.get());
-        Assert.assertFalse(listener2Run.get());
+        assertFalse(listener1Run.get());
+        assertFalse(listener2Run.get());
 
         service.modifyBootstrapPage(null);
 
-        Assert.assertFalse(listener1Run.get());
-        Assert.assertTrue(listener2Run.get());
+        assertFalse(listener1Run.get());
+        assertTrue(listener2Run.get());
     }
 
     private static VaadinService createService() {

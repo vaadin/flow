@@ -15,6 +15,10 @@
  */
 package com.vaadin.spring.instantiator;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
@@ -24,7 +28,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -86,7 +89,7 @@ public class SpringInstantiatorTest {
 
         RouteTarget1 target1 = instantiator
                 .createRouteTarget(RouteTarget1.class, null);
-        Assert.assertNotNull(target1);
+        assertNotNull(target1);
     }
 
     @Test
@@ -97,8 +100,8 @@ public class SpringInstantiatorTest {
         Set<?> set = instantiator.getServiceInitListeners()
                 .map(Object::getClass).collect(Collectors.toSet());
 
-        Assert.assertTrue(set.contains(TestVaadinServiceInitListener.class));
-        Assert.assertTrue(set.contains(JavaSPIVaadinServiceInitListener.class));
+        assertTrue(set.contains(TestVaadinServiceInitListener.class));
+        assertTrue(set.contains(JavaSPIVaadinServiceInitListener.class));
     }
 
     @Test
@@ -108,7 +111,7 @@ public class SpringInstantiatorTest {
 
         RouteTarget2 singleton = context.getBean(RouteTarget2.class);
 
-        Assert.assertEquals(singleton,
+        assertEquals(singleton,
                 instantiator.createRouteTarget(RouteTarget2.class, null));
     }
 

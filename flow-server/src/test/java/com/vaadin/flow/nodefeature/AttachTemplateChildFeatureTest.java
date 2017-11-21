@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.nodefeature;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -37,7 +39,7 @@ public class AttachTemplateChildFeatureTest {
 
         Mockito.verify(child).setParent(node);
 
-        Assert.assertEquals(parent, feature.getParent(child));
+        assertEquals(parent, feature.getParent(child));
     }
 
     @Test
@@ -53,6 +55,6 @@ public class AttachTemplateChildFeatureTest {
 
         feature.unregister(child);
 
-        Assert.assertNull(feature.getParent(child));
+        assertNull(feature.getParent(child));
     }
 }

@@ -15,7 +15,8 @@
  */
 package com.vaadin.ui;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 public class TextTest {
@@ -34,12 +35,12 @@ public class TextTest {
 
     @Test
     public void emptyText() {
-        Assert.assertEquals("", new Text("").getText());
+        assertEquals("", new Text("").getText());
     }
 
     @Test
     public void setGetText() {
-        Assert.assertEquals("Simple", new Text("Simple").getText());
-        Assert.assertEquals("åäö €#%°#", new Text("åäö €#%°#").getText());
+        assertEquals("Simple", new Text("Simple").getText());
+        assertEquals("åäö €#%°#", new Text("åäö €#%°#").getText());
     }
 }

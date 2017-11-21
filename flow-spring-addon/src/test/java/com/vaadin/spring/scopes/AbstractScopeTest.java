@@ -15,6 +15,8 @@
  */
 package com.vaadin.spring.scopes;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -22,7 +24,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
@@ -73,14 +74,14 @@ public abstract class AbstractScopeTest {
         when(factory.getObject()).thenReturn(object);
         Object fooObject = scope.get("foo", factory);
 
-        Assert.assertSame(object, fooObject);
+        assertSame(object, fooObject);
         verify(factory).getObject();
 
         fooObject = scope.get("foo", factory);
 
         // This time it has not been called. Otherwise this would have failed.
         verify(factory).getObject();
-        Assert.assertSame(object, fooObject);
+        assertSame(object, fooObject);
     }
 
     @SuppressWarnings("rawtypes")
@@ -110,7 +111,7 @@ public abstract class AbstractScopeTest {
 
         scope.getBeanStore().destroy();
 
-        Assert.assertEquals(1, count.get());
+        assertEquals(1, count.get());
     }
 
     @SuppressWarnings("unchecked")

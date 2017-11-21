@@ -1,6 +1,11 @@
 package com.vaadin.flow.model;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -56,16 +61,16 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         TemplateModel m1 = emptyModelTemplate1.getModel();
         TemplateModel m2 = emptyModelTemplate2.getModel();
 
-        Assert.assertSame(m1.getClass(), m2.getClass());
+        assertSame(m1.getClass(), m2.getClass());
 
-        Assert.assertFalse(m1.equals(null));
-        Assert.assertFalse(m1.equals("foobar"));
-        Assert.assertFalse(m1.equals(m2));
+        assertFalse(m1.equals(null));
+        assertFalse(m1.equals("foobar"));
+        assertFalse(m1.equals(m2));
 
         ModelDescriptor<EmptyModel> realModelType = ModelDescriptor
                 .get(EmptyModel.class);
 
-        Assert.assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
+        assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
                 emptyModelTemplate1.getElement().getNode(), realModelType)));
 
         class TestTemplateModelType extends BeanModelType<TemplateModel> {
@@ -77,10 +82,10 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         }
 
         BeanModelType<TemplateModel> wrongModelType = new TestTemplateModelType();
-        Assert.assertFalse(m1.equals(TemplateModelProxyHandler.createModelProxy(
+        assertFalse(m1.equals(TemplateModelProxyHandler.createModelProxy(
                 emptyModelTemplate1.getElement().getNode(), wrongModelType)));
 
-        Assert.assertTrue(m2.equals(m2));
+        assertTrue(m2.equals(m2));
     }
 
     @Test
@@ -90,7 +95,7 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         TemplateModel m1 = emptyModelTemplate1.getModel();
         TemplateModel m2 = emptyModelTemplate2.getModel();
 
-        Assert.assertNotEquals(m1.hashCode(), m2.hashCode());
+        assertNotEquals(m1.hashCode(), m2.hashCode());
     }
 
     @Test
@@ -104,8 +109,8 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         // in toString()
         new UI().add(emptyModelTemplate1, emptyModelTemplate2);
 
-        Assert.assertEquals(m1.toString(), m1.toString());
-        Assert.assertNotEquals(m1.toString(), m2.toString());
+        assertEquals(m1.toString(), m1.toString());
+        assertNotEquals(m1.toString(), m2.toString());
     }
 
     @Test
@@ -114,7 +119,7 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
 
         Model proxy = TemplateModelProxyHandler.createModelProxy(
                 template.getElement().getNode(), new TestModelType());
-        Assert.assertEquals(System.identityHashCode(proxy), proxy.hashCode());
+        assertEquals(System.identityHashCode(proxy), proxy.hashCode());
     }
 
     @Test
@@ -123,7 +128,7 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
 
         Model proxy = TemplateModelProxyHandler.createModelProxy(
                 template.getElement().getNode(), new TestModelType());
-        Assert.assertEquals("foo", proxy.toString());
+        assertEquals("foo", proxy.toString());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -153,7 +158,7 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         EmptyModelTemplate emptyModelTemplate1 = new EmptyModelTemplate();
         TemplateModelTest.EmptyModel model = emptyModelTemplate1.getModel();
 
-        Assert.assertTrue(model.getClass().getCanonicalName().startsWith(
+        assertTrue(model.getClass().getCanonicalName().startsWith(
                 TemplateModelTest.EmptyModel.class.getCanonicalName()));
     }
 

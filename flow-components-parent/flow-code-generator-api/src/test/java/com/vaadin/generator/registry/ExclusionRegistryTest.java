@@ -1,6 +1,8 @@
 package com.vaadin.generator.registry;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 /**
@@ -14,20 +16,20 @@ public class ExclusionRegistryTest {
         ExclusionRegistry.excludeEvent("some-tag", "someEvent");
         ExclusionRegistry.excludeEvent(null, "someOtherEvent");
 
-        Assert.assertTrue(
+        assertTrue(
                 ExclusionRegistry.isEventExcluded("some-tag", "someEvent"));
-        Assert.assertTrue(ExclusionRegistry.isEventExcluded("some-tag",
+        assertTrue(ExclusionRegistry.isEventExcluded("some-tag",
                 "someOtherEvent"));
-        Assert.assertTrue(ExclusionRegistry.isEventExcluded("some-other-tag",
+        assertTrue(ExclusionRegistry.isEventExcluded("some-other-tag",
                 "someOtherEvent"));
 
-        Assert.assertFalse(
+        assertFalse(
                 ExclusionRegistry.isPropertyExcluded("some-tag", "someEvent"));
-        Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
+        assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
                 "someOtherEvent"));
-        Assert.assertFalse(
+        assertFalse(
                 ExclusionRegistry.isMethodExcluded("some-tag", "someEvent"));
-        Assert.assertFalse(ExclusionRegistry.isMethodExcluded("some-tag",
+        assertFalse(ExclusionRegistry.isMethodExcluded("some-tag",
                 "someOtherEvent"));
     }
 
@@ -36,20 +38,20 @@ public class ExclusionRegistryTest {
         ExclusionRegistry.excludeProperty("some-tag", "someProperty");
         ExclusionRegistry.excludeProperty(null, "someOtherProperty");
 
-        Assert.assertTrue(ExclusionRegistry.isPropertyExcluded("some-tag",
+        assertTrue(ExclusionRegistry.isPropertyExcluded("some-tag",
                 "someProperty"));
-        Assert.assertTrue(ExclusionRegistry.isPropertyExcluded("some-tag",
+        assertTrue(ExclusionRegistry.isPropertyExcluded("some-tag",
                 "someOtherProperty"));
-        Assert.assertTrue(ExclusionRegistry.isPropertyExcluded("some-other-tag",
+        assertTrue(ExclusionRegistry.isPropertyExcluded("some-other-tag",
                 "someOtherProperty"));
 
-        Assert.assertFalse(
+        assertFalse(
                 ExclusionRegistry.isEventExcluded("some-tag", "someProperty"));
-        Assert.assertFalse(ExclusionRegistry.isEventExcluded("some-tag",
+        assertFalse(ExclusionRegistry.isEventExcluded("some-tag",
                 "someOtherProperty"));
-        Assert.assertFalse(
+        assertFalse(
                 ExclusionRegistry.isMethodExcluded("some-tag", "someProperty"));
-        Assert.assertFalse(ExclusionRegistry.isMethodExcluded("some-tag",
+        assertFalse(ExclusionRegistry.isMethodExcluded("some-tag",
                 "someOtherProperty"));
     }
 
@@ -58,20 +60,20 @@ public class ExclusionRegistryTest {
         ExclusionRegistry.excludeMethod("some-tag", "someMethod");
         ExclusionRegistry.excludeMethod(null, "someOtherMethod");
 
-        Assert.assertTrue(
+        assertTrue(
                 ExclusionRegistry.isMethodExcluded("some-tag", "someMethod"));
-        Assert.assertTrue(ExclusionRegistry.isMethodExcluded("some-tag",
+        assertTrue(ExclusionRegistry.isMethodExcluded("some-tag",
                 "someOtherMethod"));
-        Assert.assertTrue(ExclusionRegistry.isMethodExcluded("some-other-tag",
+        assertTrue(ExclusionRegistry.isMethodExcluded("some-other-tag",
                 "someOtherMethod"));
 
-        Assert.assertFalse(
+        assertFalse(
                 ExclusionRegistry.isEventExcluded("some-tag", "someMethod"));
-        Assert.assertFalse(
+        assertFalse(
                 ExclusionRegistry.isEventExcluded("some-tag", "someMethod"));
-        Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
+        assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
                 "someOtherMethod"));
-        Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
+        assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
                 "someOtherMethod"));
     }
 

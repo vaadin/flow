@@ -16,7 +16,8 @@
 
 package com.vaadin.flow.change;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import com.vaadin.flow.nodefeature.AbstractNodeFeatureTest;
@@ -37,13 +38,13 @@ public class MapRemoveChangeTest {
 
         JsonObject json = change.toJson(null);
 
-        Assert.assertEquals(change.getNode().getId(),
+        assertEquals(change.getNode().getId(),
                 (int) json.getNumber(JsonConstants.CHANGE_NODE));
-        Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
+        assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
                 (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
-        Assert.assertEquals(JsonConstants.CHANGE_TYPE_REMOVE,
+        assertEquals(JsonConstants.CHANGE_TYPE_REMOVE,
                 json.getString(JsonConstants.CHANGE_TYPE));
-        Assert.assertEquals("some",
+        assertEquals("some",
                 json.getString(JsonConstants.CHANGE_MAP_KEY));
     }
 

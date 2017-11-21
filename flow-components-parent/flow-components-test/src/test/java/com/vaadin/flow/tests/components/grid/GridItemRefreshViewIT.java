@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.tests.components.grid;
 
+import static org.junit.Assert.assertFalse;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -73,7 +74,7 @@ public class GridItemRefreshViewIT extends AbstractComponentIT {
         Set<String> expected = IntStream.range(startIndex, lastIndex + 1)
                 .mapToObj(intVal -> "updated " + String.valueOf(intVal))
                 .collect(Collectors.toSet());
-        Assert.assertFalse(grid
+        assertFalse(grid
                 .findElements(By.tagName("vaadin-grid-cell-content")).stream()
                 .map(cell -> cell.getText()).collect(Collectors.toSet())
                 .removeAll(expected));

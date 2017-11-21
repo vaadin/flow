@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.tests.components;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ClassUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.ui.Component;
@@ -76,7 +77,7 @@ public class MixinTest {
                     Set<Class<?>> interfaces = new HashSet<>(
                             ClassUtils.getAllInterfaces(clazz));
                     REQUIRED_INTERFACES.forEach(
-                            requiredIface -> Assert.assertTrue(String.format(
+                            requiredIface -> assertTrue(String.format(
                                     "Class %s does not implement interface %s",
                                     clazz.getName(), requiredIface.getName()),
                                     interfaces.contains(requiredIface)));

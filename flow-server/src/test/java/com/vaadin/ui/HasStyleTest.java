@@ -15,11 +15,15 @@
  */
 package com.vaadin.ui;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.ui.common.HasStyle;
@@ -94,9 +98,9 @@ public class HasStyleTest {
     public void getClassName() {
         HasStyleComponent component = new HasStyleComponent();
         component.setClassName("foo");
-        Assert.assertEquals("foo", component.getClassName());
+        assertEquals("foo", component.getClassName());
         component.setClassName(" ");
-        Assert.assertNull(component.getClassName());
+        assertNull(component.getClassName());
     }
 
     @Test
@@ -120,13 +124,13 @@ public class HasStyleTest {
     @Test
     public void hasClassName() {
         HasStyleComponent component = new HasStyleComponent();
-        Assert.assertFalse(component.hasClassName("foo"));
+        assertFalse(component.hasClassName("foo"));
         component.setClassName("foo");
-        Assert.assertTrue(component.hasClassName("foo"));
-        Assert.assertFalse(component.hasClassName("fo"));
+        assertTrue(component.hasClassName("foo"));
+        assertFalse(component.hasClassName("fo"));
         component.setClassName("foo bar");
-        Assert.assertTrue(component.hasClassName("foo"));
-        Assert.assertTrue(component.hasClassName("bar"));
+        assertTrue(component.hasClassName("foo"));
+        assertTrue(component.hasClassName("bar"));
 
     }
 
@@ -134,7 +138,7 @@ public class HasStyleTest {
     public void getClassList_elementClassList() {
         HasStyleComponent component = new HasStyleComponent();
 
-        Assert.assertEquals(component.getElement().getClassList(),
+        assertEquals(component.getElement().getClassList(),
                 component.getClassNames());
     }
 
@@ -168,6 +172,6 @@ public class HasStyleTest {
         Set<String> actual = c.getClassNames();
         HashSet<String> expected = new HashSet<>(
                 Arrays.asList(expectedClasses));
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 }

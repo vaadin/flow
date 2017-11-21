@@ -15,8 +15,10 @@
  */
 package com.vaadin.ui;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
@@ -33,12 +35,12 @@ public class JavaScriptInvocationTest {
         JavaScriptInvocation deserialized = SerializationUtils
                 .deserialize(SerializationUtils.serialize(invocation));
 
-        Assert.assertNotSame(invocation, deserialized);
+        assertNotSame(invocation, deserialized);
 
-        Assert.assertEquals("expression", deserialized.getExpression());
-        Assert.assertEquals(2, deserialized.getParameters().size());
-        Assert.assertEquals("string", deserialized.getParameters().get(0));
-        Assert.assertEquals("jsonString",
+        assertEquals("expression", deserialized.getExpression());
+        assertEquals(2, deserialized.getParameters().size());
+        assertEquals("string", deserialized.getParameters().get(0));
+        assertEquals("jsonString",
                 ((JsonString) deserialized.getParameters().get(1)).getString());
     }
 }

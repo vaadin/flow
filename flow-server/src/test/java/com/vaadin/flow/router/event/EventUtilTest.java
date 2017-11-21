@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.event;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -22,7 +23,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -107,7 +107,7 @@ public class EventUtilTest {
         List<BeforeNavigationObserver> beforeNavigationObservers = EventUtil
                 .collectBeforeNavigationObservers(node);
 
-        Assert.assertEquals("Wrong amount of listener instances found", 1,
+        assertEquals("Wrong amount of listener instances found", 1,
                 beforeNavigationObservers.size());
     }
 
@@ -127,7 +127,7 @@ public class EventUtilTest {
         List<BeforeNavigationObserver> beforeNavigationObservers = EventUtil
                 .collectBeforeNavigationObservers(Arrays.asList(foo, bar));
 
-        Assert.assertEquals("Wrong amount of listener instances found", 2,
+        assertEquals("Wrong amount of listener instances found", 2,
                 beforeNavigationObservers.size());
     }
 
@@ -144,7 +144,7 @@ public class EventUtilTest {
         List<Element> elements = EventUtil.flattenChildren(node)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals("Missing elements from list.", 6, elements.size());
+        assertEquals("Missing elements from list.", 6, elements.size());
     }
 
     @Test
@@ -163,7 +163,7 @@ public class EventUtilTest {
                         BeforeNavigationObserver.class)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals("Wrong amount of listener instances found", 1,
+        assertEquals("Wrong amount of listener instances found", 1,
                 listenerComponents.size());
     }
 
@@ -181,7 +181,7 @@ public class EventUtilTest {
         List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
                 .collectLocaleChangeObservers(node);
 
-        Assert.assertEquals("Wrong amount of listener instances found", 1,
+        assertEquals("Wrong amount of listener instances found", 1,
                 beforeNavigationObservers.size());
     }
 
@@ -201,7 +201,7 @@ public class EventUtilTest {
         List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
                 .collectLocaleChangeObservers(Arrays.asList(foo, bar));
 
-        Assert.assertEquals("Wrong amount of listener instances found", 2,
+        assertEquals("Wrong amount of listener instances found", 2,
                 beforeNavigationObservers.size());
     }
 }

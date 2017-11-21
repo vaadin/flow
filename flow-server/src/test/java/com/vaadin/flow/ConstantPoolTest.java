@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import elemental.json.Json;
@@ -26,8 +30,8 @@ public class ConstantPoolTest {
 
     @Test
     public void newConstantPool_noNewItems() {
-        Assert.assertFalse(constantPool.hasNewConstants());
-        Assert.assertEquals(0, constantPool.dumpConstants().keys().length);
+        assertFalse(constantPool.hasNewConstants());
+        assertEquals(0, constantPool.dumpConstants().keys().length);
     }
 
     @Test
@@ -36,12 +40,12 @@ public class ConstantPoolTest {
 
         String constantId = constantPool.getConstantId(reference);
 
-        Assert.assertTrue(constantPool.hasNewConstants());
+        assertTrue(constantPool.hasNewConstants());
 
         JsonObject dump = constantPool.dumpConstants();
 
-        Assert.assertEquals(1, dump.keys().length);
-        Assert.assertEquals("{}", dump.get(constantId).toJson());
+        assertEquals(1, dump.keys().length);
+        assertEquals("{}", dump.get(constantId).toJson());
     }
 
     @Test
@@ -54,8 +58,8 @@ public class ConstantPoolTest {
         String otherId = constantPool
                 .getConstantId(new ConstantPoolKey(Json.createObject()));
 
-        Assert.assertEquals(constantId, otherId);
-        Assert.assertFalse(constantPool.hasNewConstants());
+        assertEquals(constantId, otherId);
+        assertFalse(constantPool.hasNewConstants());
     }
 
     @Test
@@ -68,7 +72,7 @@ public class ConstantPoolTest {
         String otherId = constantPool
                 .getConstantId(new ConstantPoolKey(Json.createArray()));
 
-        Assert.assertNotEquals(constantId, otherId);
-        Assert.assertTrue(constantPool.hasNewConstants());
+        assertNotEquals(constantId, otherId);
+        assertTrue(constantPool.hasNewConstants());
     }
 }

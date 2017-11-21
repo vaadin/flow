@@ -15,6 +15,14 @@
  */
 package com.vaadin.ui;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -30,7 +38,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -63,7 +70,7 @@ public class ComponentTest {
 
     @After
     public void checkThreadLocal() {
-        Assert.assertNull(Component.elementToMapTo.get());
+        assertNull(Component.elementToMapTo.get());
     }
 
     @Tag("div")
@@ -135,11 +142,11 @@ public class ComponentTest {
         AtomicInteger getDetachEvents();
 
         default void assertAttachEvents(int attachEvents) {
-            Assert.assertEquals(attachEvents, getAttachEvents().get());
+            assertEquals(attachEvents, getAttachEvents().get());
         }
 
         default void assertDetachEvents(int detachEvents) {
-            Assert.assertEquals(detachEvents, getDetachEvents().get());
+            assertEquals(detachEvents, getDetachEvents().get());
         }
     }
 
@@ -275,17 +282,17 @@ public class ComponentTest {
 
     @Test
     public void getElement() {
-        Assert.assertEquals(Tag.DIV,
+        assertEquals(Tag.DIV,
                 divWithTextComponent.getElement().getTag());
-        Assert.assertEquals("Test component",
+        assertEquals("Test component",
                 divWithTextComponent.getElement().getTextRecursively());
     }
 
     @Test
     public void getParentForAttachedComponent() {
-        Assert.assertEquals(parentDivComponent,
+        assertEquals(parentDivComponent,
                 child1SpanComponent.getParent().get());
-        Assert.assertEquals(parentDivComponent,
+        assertEquals(parentDivComponent,
                 child2InputComponent.getParent().get());
     }
 
@@ -300,12 +307,12 @@ public class ComponentTest {
         testUI = new UI();
         testUI.add(shadowRootParent);
 
-        Assert.assertEquals(testUI, shadowChild.getUI().get());
+        assertEquals(testUI, shadowChild.getUI().get());
     }
 
     @Test
     public void getParentForDetachedComponent() {
-        Assert.assertFalse(parentDivComponent.getParent().isPresent());
+        assertFalse(parentDivComponent.getParent().isPresent());
     }
 
     @Test
@@ -318,9 +325,9 @@ public class ComponentTest {
             Component... expectedChildren) {
         List<Component> children = parent.getChildren()
                 .collect(Collectors.toList());
-        Assert.assertArrayEquals(expectedChildren, children.toArray());
+        assertArrayEquals(expectedChildren, children.toArray());
         for (Component c : children) {
-            Assert.assertEquals(c.getParent().get(), parent);
+            assertEquals(c.getParent().get(), parent);
         }
     }
 
@@ -369,7 +376,7 @@ public class ComponentTest {
 
         List<Component> children = parent.getChildren()
                 .collect(Collectors.toList());
-        Assert.assertArrayEquals(new Component[] { child1, child2, child3 },
+        assertArrayEquals(new Component[] { child1, child2, child3 },
                 children.toArray());
 
     }
@@ -378,7 +385,7 @@ public class ComponentTest {
     public void defaultGetChildrenNoChildren() {
         List<Component> children = parentDivComponent.getChildren()
                 .collect(Collectors.toList());
-        Assert.assertArrayEquals(
+        assertArrayEquals(
                 new Component[] { child1SpanComponent, child2InputComponent },
                 children.toArray());
 
@@ -398,8 +405,8 @@ public class ComponentTest {
         };
         Element element = ElementFactory.createDiv();
         Component.setElement(c, element);
-        Assert.assertEquals(c, ElementUtil.getComponent(element).get());
-        Assert.assertEquals(element, c.getElement());
+        assertEquals(c, ElementUtil.getComponent(element).get());
+        assertEquals(element, c.getElement());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -423,14 +430,14 @@ public class ComponentTest {
     public void createComponentWithTag() {
         Component component = new TestComponentWithTag();
 
-        Assert.assertEquals(Tag.DIV, component.getElement().getTag());
+        assertEquals(Tag.DIV, component.getElement().getTag());
     }
 
     @Test
     public void createComponentWithInheritedTag() {
         Component component = new TestComponentWithInheritedTag();
 
-        Assert.assertEquals(Tag.DIV, component.getElement().getTag());
+        assertEquals(Tag.DIV, component.getElement().getTag());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -462,7 +469,7 @@ public class ComponentTest {
         TestComponent child = new TestComponent();
         UI ui = new UI();
         ui.add(child);
-        Assert.assertEquals(ui, child.getUI().get());
+        assertEquals(ui, child.getUI().get());
     }
 
     @Test
@@ -472,11 +479,11 @@ public class ComponentTest {
         parent.add(child);
         UI ui = new UI();
         ui.add(parent);
-        Assert.assertEquals(ui, child.getUI().get());
+        assertEquals(ui, child.getUI().get());
     }
 
     private void assertEmpty(Optional<?> optional) {
-        Assert.assertEquals("Optional should be empty but is " + optional,
+        assertEquals("Optional should be empty but is " + optional,
                 Optional.empty(), optional);
     }
 
@@ -551,10 +558,10 @@ public class ComponentTest {
         parent.track();
 
         child.addAttachListener(event -> {
-            Assert.assertEquals(0, parent.getAttachEvents().get());
+            assertEquals(0, parent.getAttachEvents().get());
         });
         parent.addAttachListener(event -> {
-            Assert.assertEquals(1, child.getAttachEvents().get());
+            assertEquals(1, child.getAttachEvents().get());
         });
 
         parent.add(child);
@@ -577,10 +584,10 @@ public class ComponentTest {
         parent.track();
 
         child.addDetachListener(event -> {
-            Assert.assertEquals(0, parent.getDetachEvents().get());
+            assertEquals(0, parent.getDetachEvents().get());
         });
         parent.addDetachListener(event -> {
-            Assert.assertEquals(1, child.getDetachEvents().get());
+            assertEquals(1, child.getDetachEvents().get());
         });
 
         parent.add(child);
@@ -607,10 +614,10 @@ public class ComponentTest {
         child.track();
 
         child.addAttachListener(event -> {
-            Assert.assertEquals(1, child.getDetachEvents().get());
+            assertEquals(1, child.getDetachEvents().get());
         });
         child.addDetachListener(event -> {
-            Assert.assertEquals(0, child.getAttachEvents().get());
+            assertEquals(0, child.getAttachEvents().get());
         });
 
         ui.add(child);
@@ -625,10 +632,10 @@ public class ComponentTest {
         TestComponent testComponent = new TestComponent();
         testComponent.track();
 
-        testComponent.addAttachListener(event -> Assert.assertEquals(ui,
+        testComponent.addAttachListener(event -> assertEquals(ui,
                 event.getSource().getUI().get()));
 
-        testComponent.addDetachListener(event -> Assert.assertEquals(ui,
+        testComponent.addDetachListener(event -> assertEquals(ui,
                 event.getSource().getUI().get()));
 
         testComponent.assertAttachEvents(0);
@@ -694,7 +701,7 @@ public class ComponentTest {
             initialAttach.set(e.isInitialAttach());
         });
         ui.getInternals().setSession(new VaadinSession(null));
-        Assert.assertTrue(initialAttach.get());
+        assertTrue(initialAttach.get());
         // UI is never detached and reattached
     }
 
@@ -707,7 +714,7 @@ public class ComponentTest {
         });
         UI ui = new UI();
         ui.add(c);
-        Assert.assertTrue(initialAttach.get());
+        assertTrue(initialAttach.get());
     }
 
     @Test
@@ -721,7 +728,7 @@ public class ComponentTest {
         ui.add(c);
         ui.remove(c);
         ui.add(c);
-        Assert.assertFalse(initialAttach.get());
+        assertFalse(initialAttach.get());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -763,15 +770,15 @@ public class ComponentTest {
 
         TestDiv testDiv = Component.from(div, TestDiv.class);
         TestButton testButton = Component.from(button, TestButton.class);
-        Assert.assertEquals(testButton.getParent().get(), testDiv);
-        Assert.assertTrue(testDiv.getChildren().anyMatch(c -> c == testButton));
+        assertEquals(testButton.getParent().get(), testDiv);
+        assertTrue(testDiv.getChildren().anyMatch(c -> c == testButton));
     }
 
     @Test
     public void wrappedComponentUsesElement() {
         Element div = new Element("div");
         div.setAttribute("id", "foo");
-        Assert.assertEquals(Optional.of("foo"), div.as(TestDiv.class).getId());
+        assertEquals(Optional.of("foo"), div.as(TestDiv.class).getId());
 
     }
 
@@ -779,7 +786,7 @@ public class ComponentTest {
     public void wrappedComponentModifyElement() {
         Element div = new Element("div");
         div.as(TestDiv.class).setId("foo");
-        Assert.assertEquals("foo", div.getAttribute("id"));
+        assertEquals("foo", div.getAttribute("id"));
     }
 
     @Test
@@ -787,8 +794,8 @@ public class ComponentTest {
         TestButton button = new TestButton();
         TestButton button2 = button.getElement().as(TestButton.class);
         button.setId("id1");
-        Assert.assertEquals(Optional.of("id1"), button2.getId());
-        Assert.assertEquals(Optional.of("id1"), button.getId());
+        assertEquals(Optional.of("id1"), button2.getId());
+        assertEquals(Optional.of("id1"), button.getId());
     }
 
     @Test
@@ -796,8 +803,8 @@ public class ComponentTest {
         TestButton button = new TestButton();
         TestOtherButton button2 = button.getElement().as(TestOtherButton.class);
         button.setId("id1");
-        Assert.assertEquals(Optional.of("id1"), button2.getId());
-        Assert.assertEquals(Optional.of("id1"), button.getId());
+        assertEquals(Optional.of("id1"), button2.getId());
+        assertEquals(Optional.of("id1"), button.getId());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -823,9 +830,9 @@ public class ComponentTest {
                 TestComponentWhichCreatesComponentInConstructor.class);
         Element buttonElement = c.getElement().getChild(0);
 
-        Assert.assertEquals(e, c.getElement());
-        Assert.assertNotEquals(e, buttonElement);
-        Assert.assertEquals("button", buttonElement.getTag());
+        assertEquals(e, c.getElement());
+        assertNotEquals(e, buttonElement);
+        assertEquals("button", buttonElement.getTag());
     }
 
     @Test
@@ -835,9 +842,9 @@ public class ComponentTest {
                 TestComponentWhichHasComponentField.class);
         Element buttonElement = c.getElement().getChild(0);
 
-        Assert.assertEquals(e, c.getElement());
-        Assert.assertNotEquals(e, buttonElement);
-        Assert.assertEquals("button", buttonElement.getTag());
+        assertEquals(e, c.getElement());
+        assertNotEquals(e, buttonElement);
+        assertEquals("button", buttonElement.getTag());
     }
 
     @Test
@@ -846,8 +853,8 @@ public class ComponentTest {
         TestComponentWhichUsesElementConstructor c = Component.from(e,
                 TestComponentWhichUsesElementConstructor.class);
 
-        Assert.assertSame(e, c.getElement());
-        Assert.assertSame(c, e.getComponent().get());
+        assertSame(e, c.getElement());
+        assertSame(c, e.getComponent().get());
     }
 
     @Test
@@ -856,8 +863,8 @@ public class ComponentTest {
         TestComponentWhichUsesNullElementConstructor c = Component.from(e,
                 TestComponentWhichUsesNullElementConstructor.class);
 
-        Assert.assertSame(e, c.getElement());
-        Assert.assertSame(c, e.getComponent().get());
+        assertSame(e, c.getElement());
+        assertSame(c, e.getComponent().get());
     }
 
     @Tag("div")
@@ -917,7 +924,7 @@ public class ComponentTest {
                 .collect(Collectors.toSet());
         Set<String> actual = element.getSynchronizedProperties()
                 .collect(Collectors.toSet());
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
 
     }
 
@@ -926,7 +933,7 @@ public class ComponentTest {
         Set<String> expected = Stream.of(events).collect(Collectors.toSet());
         Set<String> actual = element.getSynchronizedPropertyEvents()
                 .collect(Collectors.toSet());
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
 
     }
 
@@ -950,10 +957,10 @@ public class ComponentTest {
     @Test
     public void componentMetaDataCached() {
         ComponentUtil.componentMetaDataCache.clear();
-        Assert.assertFalse(
+        assertFalse(
                 ComponentUtil.componentMetaDataCache.contains(Text.class));
         new Text("foobar");
-        Assert.assertTrue(
+        assertTrue(
                 ComponentUtil.componentMetaDataCache.contains(Text.class));
     }
 
@@ -1032,7 +1039,7 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(4, pendingDependencies.size());
+        assertEquals(4, pendingDependencies.size());
 
         assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
                 pendingDependencies);
@@ -1051,7 +1058,7 @@ public class ComponentTest {
                 UsesUsesComponentWithDependencies.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(5, pendingDependencies.size());
+        assertEquals(5, pendingDependencies.size());
 
         assertDependency(Dependency.Type.HTML_IMPORT, "usesuses.html",
                 pendingDependencies);
@@ -1073,7 +1080,7 @@ public class ComponentTest {
         internals.addComponentDependencies(CircularDependencies1.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
-        Assert.assertEquals(2, pendingDependencies.size());
+        assertEquals(2, pendingDependencies.size());
 
         assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
                 pendingDependencies);
@@ -1085,7 +1092,7 @@ public class ComponentTest {
         internals.addComponentDependencies(CircularDependencies2.class);
         pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
-        Assert.assertEquals(2, pendingDependencies.size());
+        assertEquals(2, pendingDependencies.size());
         assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
                 pendingDependencies);
         assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
@@ -1096,11 +1103,11 @@ public class ComponentTest {
     private void assertDependency(Dependency.Type type, String url,
             Map<String, Dependency> pendingDependencies) {
         Dependency dependency = pendingDependencies.get("frontend://" + url);
-        Assert.assertNotNull(
+        assertNotNull(
                 "Could not locate a dependency object for url=" + url,
                 dependency);
-        Assert.assertEquals(type, dependency.getType());
-        Assert.assertEquals("frontend://" + url, dependency.getUrl());
+        assertEquals(type, dependency.getType());
+        assertEquals("frontend://" + url, dependency.getUrl());
     }
 
     private Map<String, Dependency> getDependenciesMap(

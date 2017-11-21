@@ -15,11 +15,13 @@
  */
 package com.vaadin.ui;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.ui.ComponentMetaData.SynchronizedPropertyInfo;
@@ -94,19 +96,19 @@ public class ComponentMetaDataTest {
 
         Collection<SynchronizedPropertyInfo> props = data
                 .getSynchronizedProperties();
-        Assert.assertEquals(2, props.size());
+        assertEquals(2, props.size());
 
         List<SynchronizedPropertyInfo> bazProps = props.stream()
                 .filter(prop -> prop.getProperty().equals("baz"))
                 .collect(Collectors.toList());
-        Assert.assertEquals(1, bazProps.size());
+        assertEquals(1, bazProps.size());
         SynchronizedPropertyInfo info = bazProps.get(0);
 
         List<String> events = info.getEventNames().collect(Collectors.toList());
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals("bar", events.get(0));
+        assertEquals(1, events.size());
+        assertEquals("bar", events.get(0));
 
-        Assert.assertTrue(props.stream()
+        assertTrue(props.stream()
                 .anyMatch(prop -> prop.getProperty().equals("bar")));
     }
 
@@ -117,14 +119,14 @@ public class ComponentMetaDataTest {
 
         Collection<SynchronizedPropertyInfo> props = data
                 .getSynchronizedProperties();
-        Assert.assertEquals(1, props.size());
+        assertEquals(1, props.size());
 
         SynchronizedPropertyInfo info = props.iterator().next();
-        Assert.assertEquals("foo", info.getProperty());
+        assertEquals("foo", info.getProperty());
 
         List<String> events = info.getEventNames().collect(Collectors.toList());
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals("baz", events.get(0));
+        assertEquals(1, events.size());
+        assertEquals("baz", events.get(0));
     }
 
     private void assertFooPoperty(Class<? extends Component> clazz) {
@@ -132,13 +134,13 @@ public class ComponentMetaDataTest {
 
         Collection<SynchronizedPropertyInfo> props = data
                 .getSynchronizedProperties();
-        Assert.assertEquals(1, props.size());
+        assertEquals(1, props.size());
 
         SynchronizedPropertyInfo info = props.iterator().next();
-        Assert.assertEquals("baz", info.getProperty());
+        assertEquals("baz", info.getProperty());
 
         List<String> events = info.getEventNames().collect(Collectors.toList());
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals("bar", events.get(0));
+        assertEquals(1, events.size());
+        assertEquals("bar", events.get(0));
     }
 }

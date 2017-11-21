@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.template.angular;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -37,7 +39,7 @@ public class ModelValueBindingTest {
 
         ModelMap.get(node).setValue("bar", "someValue");
 
-        Assert.assertEquals("someValue", binding.getValue(node));
+        assertEquals("someValue", binding.getValue(node));
     }
 
     @Test
@@ -46,12 +48,12 @@ public class ModelValueBindingTest {
                 "bar");
         JsonValue json = binding.toJson();
 
-        Assert.assertTrue(json instanceof JsonObject);
+        assertTrue(json instanceof JsonObject);
         JsonObject object = (JsonObject) json;
 
-        Assert.assertEquals(ModelValueBindingProvider.TYPE,
+        assertEquals(ModelValueBindingProvider.TYPE,
                 object.get(BindingValueProvider.TYPE_PROPERTY).asString());
-        Assert.assertEquals("bar",
+        assertEquals("bar",
                 object.get(BindingValueProvider.VALUE_PROPERTY).asString());
     }
 

@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.template.angular;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.Element;
@@ -51,25 +52,25 @@ public class AngularTemplateIncludeBuilderTest {
         ElementTemplateNode parentTemplateNode = ((TemplateElementStateProvider) template
                 .getElement().getStateProvider()).getTemplateNode();
         Element element = template.getElement();
-        Assert.assertEquals("div", element.getTag());
+        assertEquals("div", element.getTag());
 
         List<Element> children = filterOutTextChildren(element);
-        Assert.assertEquals("span", children.get(0).getTag());
-        Assert.assertEquals("Main template",
+        assertEquals("span", children.get(0).getTag());
+        assertEquals("Main template",
                 element.getChild(1).getTextRecursively());
 
         Element subTemplateElement = children.get(1);
-        Assert.assertEquals("div", subTemplateElement.getTag());
+        assertEquals("div", subTemplateElement.getTag());
 
         // template node should have the main template as the parent #1176
         ElementTemplateNode includedTemplateNode = ((TemplateElementStateProvider) subTemplateElement
                 .getStateProvider()).getTemplateNode();
-        Assert.assertEquals(parentTemplateNode,
+        assertEquals(parentTemplateNode,
                 includedTemplateNode.getParent().get());
 
         Element span = filterOutTextChildren(subTemplateElement).get(0);
-        Assert.assertEquals("span", span.getTag());
-        Assert.assertEquals("Sub template", span.getTextRecursively());
+        assertEquals("span", span.getTag());
+        assertEquals("Sub template", span.getTextRecursively());
     }
 
     @Test
@@ -91,15 +92,15 @@ public class AngularTemplateIncludeBuilderTest {
         ElementTemplateNode node = ((TemplateElementStateProvider) template
                 .getElement().getStateProvider()).getTemplateNode();
         Element element = template.getElement();
-        Assert.assertEquals("root-template", element.getTag());
+        assertEquals("root-template", element.getTag());
 
         Element firstSubTemplateElement = filterOutTextChildren(element).get(0);
         ElementTemplateNode firstSubTemplateElementNode = ((TemplateElementStateProvider) firstSubTemplateElement
                 .getStateProvider()).getTemplateNode();
 
-        Assert.assertEquals("includes-from-parent",
+        assertEquals("includes-from-parent",
                 firstSubTemplateElement.getTag());
-        Assert.assertEquals(node,
+        assertEquals(node,
                 firstSubTemplateElementNode.getParent().get());
 
         Element secondSubTemplateElement = filterOutTextChildren(
@@ -107,14 +108,14 @@ public class AngularTemplateIncludeBuilderTest {
         ElementTemplateNode secondSubTemplateElementNode = ((TemplateElementStateProvider) secondSubTemplateElement
                 .getStateProvider()).getTemplateNode();
 
-        Assert.assertEquals("div", secondSubTemplateElement.getTag());
-        Assert.assertEquals(firstSubTemplateElementNode,
+        assertEquals("div", secondSubTemplateElement.getTag());
+        assertEquals(firstSubTemplateElementNode,
                 secondSubTemplateElementNode.getParent().get());
 
         Element span = filterOutTextChildren(secondSubTemplateElement).get(0);
-        Assert.assertEquals("span", span.getTag());
-        Assert.assertEquals("Sub template", span.getTextRecursively());
-        Assert.assertEquals(secondSubTemplateElementNode,
+        assertEquals("span", span.getTag());
+        assertEquals("Sub template", span.getTextRecursively());
+        assertEquals(secondSubTemplateElementNode,
                 ((TemplateElementStateProvider) span.getStateProvider())
                         .getTemplateNode().getParent().get());
 

@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.nodefeature;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 public class LoadingIndicatorConfigurationMapTest
@@ -24,13 +25,13 @@ public class LoadingIndicatorConfigurationMapTest
 
     @Test
     public void defaults() {
-        Assert.assertEquals(
+        assertEquals(
                 LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT,
                 map.getFirstDelay());
-        Assert.assertEquals(
+        assertEquals(
                 LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT,
                 map.getSecondDelay());
-        Assert.assertEquals(
+        assertEquals(
                 LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT,
                 map.getThirdDelay());
     }

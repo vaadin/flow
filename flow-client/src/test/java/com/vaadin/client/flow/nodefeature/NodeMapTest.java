@@ -15,12 +15,18 @@
  */
 package com.vaadin.client.flow.nodefeature;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.flow.StateNode;
@@ -37,23 +43,23 @@ public class NodeMapTest {
 
     @Test
     public void testNewMapEmpty() {
-        map.forEachProperty((p, n) -> Assert.fail());
+        map.forEachProperty((p, n) -> fail());
     }
 
     @Test
     public void testPropertyCreation() {
         MapProperty property = map.getProperty("foo");
-        Assert.assertEquals("foo", property.getName());
-        Assert.assertSame(map, property.getMap());
+        assertEquals("foo", property.getName());
+        assertSame(map, property.getMap());
 
         List<MapProperty> properties = collectProperties();
 
-        Assert.assertEquals(Arrays.asList(property), properties);
+        assertEquals(Arrays.asList(property), properties);
 
         MapProperty getAgain = map.getProperty("foo");
-        Assert.assertSame(property, getAgain);
+        assertSame(property, getAgain);
 
-        Assert.assertEquals(properties, collectProperties());
+        assertEquals(properties, collectProperties());
     }
 
     @Test
@@ -64,36 +70,36 @@ public class NodeMapTest {
                 .addPropertyAddListener(new MapPropertyAddListener() {
                     @Override
                     public void onPropertyAdd(MapPropertyAddEvent event) {
-                        Assert.assertNull("Got unexpected event",
+                        assertNull("Got unexpected event",
                                 lastEvent.get());
 
                         lastEvent.set(event);
                     }
                 });
 
-        Assert.assertNull(lastEvent.get());
+        assertNull(lastEvent.get());
 
         map.getProperty("foo");
 
         MapPropertyAddEvent event = lastEvent.get();
 
-        Assert.assertSame(map, event.getSource());
-        Assert.assertEquals("foo", event.getProperty().getName());
+        assertSame(map, event.getSource());
+        assertEquals("foo", event.getProperty().getName());
 
         lastEvent.set(null);
         map.getProperty("foo");
 
-        Assert.assertNull("No new event should have fired", lastEvent.get());
+        assertNull("No new event should have fired", lastEvent.get());
 
         map.getProperty("bar");
 
-        Assert.assertEquals("bar", lastEvent.get().getProperty().getName());
+        assertEquals("bar", lastEvent.get().getProperty().getName());
 
         remover.remove();
 
         map.getProperty("baz");
 
-        Assert.assertEquals("bar", lastEvent.get().getProperty().getName());
+        assertEquals("bar", lastEvent.get().getProperty().getName());
     }
 
     @Test
@@ -104,15 +110,15 @@ public class NodeMapTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(1, computation.getCount());
+        assertEquals(1, computation.getCount());
 
         map.getProperty("foo");
 
-        Assert.assertEquals(1, computation.getCount());
+        assertEquals(1, computation.getCount());
 
         Reactive.flush();
 
-        Assert.assertEquals(2, computation.getCount());
+        assertEquals(2, computation.getCount());
     }
 
     private List<MapProperty> collectProperties() {
@@ -123,32 +129,32 @@ public class NodeMapTest {
 
     @Test
     public void hasPropertyValueForNonExistingProperty() {
-        Assert.assertFalse(map.hasPropertyValue("foo"));
+        assertFalse(map.hasPropertyValue("foo"));
         // Should not create the property
         map.forEachProperty((property, key) -> {
-            Assert.fail("There should be no properties");
+            fail("There should be no properties");
         });
     }
 
     @Test
     public void hasPropertyValueForExistingPropertyWithoutValue() {
         map.getProperty("foo");
-        Assert.assertFalse(map.hasPropertyValue("foo"));
+        assertFalse(map.hasPropertyValue("foo"));
     }
 
     @Test
     public void hasPropertyValueForExistingPropertyWithValue() {
         map.getProperty("foo").setValue("bar");
-        Assert.assertTrue(map.hasPropertyValue("foo"));
+        assertTrue(map.hasPropertyValue("foo"));
     }
 
     @Test
     public void hasPropertyValueAfterRemovingValue() {
         MapProperty p = map.getProperty("foo");
         p.setValue("bar");
-        Assert.assertTrue(map.hasPropertyValue("foo"));
+        assertTrue(map.hasPropertyValue("foo"));
         p.removeValue();
-        Assert.assertFalse(map.hasPropertyValue("foo"));
+        assertFalse(map.hasPropertyValue("foo"));
     }
 
 }

@@ -15,9 +15,11 @@
  */
 package com.vaadin.util;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.stream.Stream;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -29,7 +31,7 @@ public class CustomElementNameValidatorTest {
     public void testInvalidElementNames() {
         Stream.of("", "foo", "annotation-xml", "0-foo", "-foo", "foo-$",
                 "foo-/", "FOO-BAR", "foo/", "øl-unicorn", "foo-💩")
-                .forEach(name -> Assert.assertFalse(String.format(
+                .forEach(name -> assertFalse(String.format(
                         "Name %s is valid even though it should not be", name),
                         CustomElementNameValidator.isCustomElementName(name)));
     }
@@ -37,7 +39,7 @@ public class CustomElementNameValidatorTest {
     @Test
     public void testValidNamesWithoutErrorOrWarning() {
         Stream.of("foo-bar", "custom-element", "date-field", "dos-box")
-                .forEach(name -> Assert.assertTrue(String.format(
+                .forEach(name -> assertTrue(String.format(
                         "Name %s is not valid even though it should be", name),
                         CustomElementNameValidator.isCustomElementName(name)));
     }
@@ -47,7 +49,7 @@ public class CustomElementNameValidatorTest {
         Stream.of("polymer-", "x-", "ng-", "unicorn-", "unicorn-ø", "uni--corn",
                 "uni-----corn", "uni-co___rn", "uni-co.rn", "uni-corné",
                 "xml-unicorn", "não-tém", "foo-bår")
-                .forEach(name -> Assert.assertTrue(String.format(
+                .forEach(name -> assertTrue(String.format(
                         "Name %s is not valid even though it should be", name),
                         CustomElementNameValidator.isCustomElementName(name)));
 

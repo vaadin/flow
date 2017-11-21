@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.template.angular;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -47,8 +48,8 @@ public class ForElementTemplateNodeTest {
         Element div = getElement(templateNode);
 
         StateNode model = createModel(div, "items");
-        Assert.assertEquals(1, templateNode.getGeneratedElementCount(model));
-        Assert.assertEquals(0,
+        assertEquals(1, templateNode.getGeneratedElementCount(model));
+        assertEquals(0,
                 templateNode.getChild(0).getGeneratedElementCount(model));
     }
 
@@ -61,12 +62,12 @@ public class ForElementTemplateNodeTest {
 
         StateNode model = createModel(div, "items", Collections.emptyMap());
 
-        Assert.assertEquals(1, forTemplateNode.getGeneratedElementCount(model));
+        assertEquals(1, forTemplateNode.getGeneratedElementCount(model));
 
-        Assert.assertEquals(1, div.getChildCount());
+        assertEquals(1, div.getChildCount());
         Element li = div.getChild(0);
-        Assert.assertEquals("static", li.getAttribute("foo"));
-        Assert.assertEquals(div, li.getParent());
+        assertEquals("static", li.getAttribute("foo"));
+        assertEquals(div, li.getParent());
     }
 
     private Element getElement(TemplateNode templateNode) {
@@ -83,14 +84,14 @@ public class ForElementTemplateNodeTest {
         StateNode model = createModel(div, "items", Collections.emptyMap(),
                 Collections.emptyMap());
 
-        Assert.assertEquals(2, forTemplateNode.getGeneratedElementCount(model));
-        Assert.assertEquals("static",
+        assertEquals(2, forTemplateNode.getGeneratedElementCount(model));
+        assertEquals("static",
                 forTemplateNode.getElement(0, model).getAttribute("foo"));
-        Assert.assertEquals("static",
+        assertEquals("static",
                 forTemplateNode.getElement(1, model).getAttribute("foo"));
 
-        Assert.assertEquals(div, div.getChild(0).getParent());
-        Assert.assertEquals(div, div.getChild(1).getParent());
+        assertEquals(div, div.getChild(0).getParent());
+        assertEquals(div, div.getChild(1).getParent());
 
     }
 
@@ -105,8 +106,8 @@ public class ForElementTemplateNodeTest {
         data.put("text", "textValue");
         StateNode model = createModel(div, "items", data);
 
-        Assert.assertEquals(1, forTemplateNode.getGeneratedElementCount(model));
-        Assert.assertEquals("textValue",
+        assertEquals(1, forTemplateNode.getGeneratedElementCount(model));
+        assertEquals("textValue",
                 forTemplateNode.getElement(0, model).getText());
     }
 
@@ -123,10 +124,10 @@ public class ForElementTemplateNodeTest {
         data2.put("text", "textValue2");
         StateNode model = createModel(div, "items", data1, data2);
 
-        Assert.assertEquals(2, templateNode.getGeneratedElementCount(model));
-        Assert.assertEquals("textValue1",
+        assertEquals(2, templateNode.getGeneratedElementCount(model));
+        assertEquals("textValue1",
                 templateNode.getElement(0, model).getText());
-        Assert.assertEquals("textValue2",
+        assertEquals("textValue2",
                 templateNode.getElement(1, model).getText());
     }
 
@@ -141,8 +142,8 @@ public class ForElementTemplateNodeTest {
         data.put("value", "propertyValue");
         StateNode model = createModel(div, "items", data);
 
-        Assert.assertEquals(1, templateNode.getGeneratedElementCount(model));
-        Assert.assertEquals("propertyValue",
+        assertEquals(1, templateNode.getGeneratedElementCount(model));
+        assertEquals("propertyValue",
                 templateNode.getElement(0, model).getProperty("value"));
     }
 
@@ -159,10 +160,10 @@ public class ForElementTemplateNodeTest {
         data2.put("value", "PropertyValue2");
         StateNode model = createModel(div, "items", data1, data2);
 
-        Assert.assertEquals(2, templateNode.getGeneratedElementCount(model));
-        Assert.assertEquals("PropertyValue1",
+        assertEquals(2, templateNode.getGeneratedElementCount(model));
+        assertEquals("PropertyValue1",
                 templateNode.getElement(0, model).getProperty("value"));
-        Assert.assertEquals("PropertyValue2",
+        assertEquals("PropertyValue2",
                 templateNode.getElement(1, model).getProperty("value"));
     }
 

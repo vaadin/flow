@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -34,26 +38,26 @@ public class TextElementStateProviderTest {
 
     @Test
     public void testBlankNode() {
-        Assert.assertTrue(element.isTextNode());
+        assertTrue(element.isTextNode());
 
-        Assert.assertEquals("foo", element.getTextRecursively());
+        assertEquals("foo", element.getTextRecursively());
 
-        Assert.assertEquals("foo", feature.getText());
+        assertEquals("foo", feature.getText());
     }
 
     @Test
     public void testElementReadsFeature() {
         feature.setText("bar");
 
-        Assert.assertEquals("bar", element.getTextRecursively());
+        assertEquals("bar", element.getTextRecursively());
     }
 
     @Test
     public void testSetTextContent() {
         element.setText("bar");
 
-        Assert.assertEquals("bar", element.getTextRecursively());
-        Assert.assertEquals("bar", feature.getText());
+        assertEquals("bar", element.getTextRecursively());
+        assertEquals("bar", feature.getText());
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -63,33 +67,33 @@ public class TextElementStateProviderTest {
 
     @Test
     public void textNodeHasAttribute() {
-        Assert.assertFalse(Element.createText("foo").hasAttribute("bar"));
+        assertFalse(Element.createText("foo").hasAttribute("bar"));
     }
 
     @Test
     public void textNodeGetAttribute() {
-        Assert.assertNull(Element.createText("foo").getAttribute("bar"));
+        assertNull(Element.createText("foo").getAttribute("bar"));
     }
 
     @Test
     public void textNodeGetAttributeNames() {
-        Assert.assertEquals(0,
+        assertEquals(0,
                 Element.createText("foo").getAttributeNames().count());
     }
 
     @Test
     public void textNodeHasProperty() {
-        Assert.assertFalse(Element.createText("foo").hasProperty("bar"));
+        assertFalse(Element.createText("foo").hasProperty("bar"));
     }
 
     @Test
     public void textNodeGetProperty() {
-        Assert.assertNull(Element.createText("foo").getProperty("bar"));
+        assertNull(Element.createText("foo").getProperty("bar"));
     }
 
     @Test
     public void textNodeGetPropertyNames() {
-        Assert.assertEquals(0,
+        assertEquals(0,
                 Element.createText("foo").getPropertyNames().count());
     }
 
@@ -100,7 +104,7 @@ public class TextElementStateProviderTest {
 
     @Test
     public void testZeroChildren() {
-        Assert.assertEquals(0, element.getChildCount());
+        assertEquals(0, element.getChildCount());
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -118,12 +122,12 @@ public class TextElementStateProviderTest {
         Element parent = ElementFactory.createDiv();
         parent.appendChild(element);
 
-        Assert.assertEquals(parent, element.getParent());
-        Assert.assertEquals(element, parent.getChild(0));
+        assertEquals(parent, element.getParent());
+        assertEquals(element, parent.getChild(0));
 
         element.removeFromParent();
-        Assert.assertNull(element.getParent());
-        Assert.assertEquals(0, parent.getChildCount());
+        assertNull(element.getParent());
+        assertEquals(0, parent.getChildCount());
     }
 
     @Test
@@ -132,8 +136,8 @@ public class TextElementStateProviderTest {
                 (TextTemplateNode) TemplateParser.parse("<div>{{value}}</div>",
                         new NullTemplateResolver()).getChild(0));
 
-        Assert.assertTrue(provider.supports(new StateNode(ModelMap.class)));
-        Assert.assertFalse(provider.supports(new StateNode(TemplateMap.class)));
-        Assert.assertFalse(provider.supports(new StateNode()));
+        assertTrue(provider.supports(new StateNode(ModelMap.class)));
+        assertFalse(provider.supports(new StateNode(TemplateMap.class)));
+        assertFalse(provider.supports(new StateNode()));
     }
 }

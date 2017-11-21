@@ -16,6 +16,12 @@
 
 package com.vaadin.util;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,7 +41,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -105,12 +110,12 @@ public class ResponseWriterTest {
             return null;
         }).when(response).setContentLengthLong(Matchers.anyLong());
 
-        Assert.assertNull(VaadinService.getCurrent());
+        assertNull(VaadinService.getCurrent());
     }
 
     @After
     public void tearDown() {
-        Assert.assertNull(VaadinService.getCurrent());
+        assertNull(VaadinService.getCurrent());
     }
 
     @Test
@@ -126,7 +131,7 @@ public class ResponseWriterTest {
 
         responseWriter.writeContentType("/file.png", request, response);
 
-        Assert.assertEquals("image/png", contentType.get());
+        assertEquals("image/png", contentType.get());
     }
 
     @Test
@@ -141,29 +146,29 @@ public class ResponseWriterTest {
 
         responseWriter.writeContentType("/file", request, response);
 
-        Assert.assertNull(contentType.get());
+        assertNull(contentType.get());
     }
 
     @Test
     public void acceptsGzippedResource() {
-        Assert.assertTrue(acceptsGzippedResource("compress, gzip"));
-        Assert.assertTrue(acceptsGzippedResource("gzip"));
-        Assert.assertTrue(acceptsGzippedResource("gzip;"));
-        Assert.assertTrue(acceptsGzippedResource("gzip;q"));
-        Assert.assertFalse(acceptsGzippedResource("compress; q=1 , gzip;q=0"));
-        Assert.assertFalse(acceptsGzippedResource(""));
-        Assert.assertFalse(acceptsGzippedResource("compress"));
+        assertTrue(acceptsGzippedResource("compress, gzip"));
+        assertTrue(acceptsGzippedResource("gzip"));
+        assertTrue(acceptsGzippedResource("gzip;"));
+        assertTrue(acceptsGzippedResource("gzip;q"));
+        assertFalse(acceptsGzippedResource("compress; q=1 , gzip;q=0"));
+        assertFalse(acceptsGzippedResource(""));
+        assertFalse(acceptsGzippedResource("compress"));
 
-        Assert.assertTrue(
+        assertTrue(
                 acceptsGzippedResource("compress;q = 0.5, gzip;q=0.6"));
-        Assert.assertTrue(
+        assertTrue(
                 acceptsGzippedResource("gzip;q=1.0, identity;q=0.5, *;q=0"));
-        Assert.assertTrue(acceptsGzippedResource("*"));
-        Assert.assertTrue(acceptsGzippedResource("*;q=0;gzip"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0.0"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0.00"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0.000"));
+        assertTrue(acceptsGzippedResource("*"));
+        assertTrue(acceptsGzippedResource("*;q=0;gzip"));
+        assertFalse(acceptsGzippedResource("*;q=0"));
+        assertFalse(acceptsGzippedResource("*;q=0.0"));
+        assertFalse(acceptsGzippedResource("*;q=0.00"));
+        assertFalse(acceptsGzippedResource("*;q=0.000"));
     }
 
     private boolean acceptsGzippedResource(String acceptEncodingHeader) {
@@ -192,8 +197,8 @@ public class ResponseWriterTest {
         Mockito.when(response.getOutputStream()).thenReturn(out);
         responseWriter.writeResponseContents("/static/file.js", fileJsURL, request, response);
 
-        Assert.assertArrayEquals(fileJsGzippedContents, out.getOutput());
-        Assert.assertEquals(fileJsGzippedContents.length,
+        assertArrayEquals(fileJsGzippedContents, out.getOutput());
+        assertEquals(fileJsGzippedContents.length,
                 responseContentLength.get());
     }
 
@@ -213,8 +218,8 @@ public class ResponseWriterTest {
         Mockito.when(response.getOutputStream()).thenReturn(out);
         responseWriter.writeResponseContents("/static/file.js", fileJsURL, request, response);
 
-        Assert.assertArrayEquals(fileJsContentsBytes, out.getOutput());
-        Assert.assertEquals(fileJsContentsBytes.length,
+        assertArrayEquals(fileJsContentsBytes, out.getOutput());
+        assertEquals(fileJsContentsBytes.length,
                 responseContentLength.get());
     }
 
@@ -240,8 +245,8 @@ public class ResponseWriterTest {
         Mockito.when(response.getOutputStream()).thenReturn(out);
         responseWriter.writeResponseContents("/static/file.js", fileJsURL, request, response);
 
-        Assert.assertArrayEquals(fileJsContentsBytes, out.getOutput());
-        Assert.assertEquals(fileJsContentsBytes.length,
+        assertArrayEquals(fileJsContentsBytes, out.getOutput());
+        assertEquals(fileJsContentsBytes.length,
                 responseContentLength.get());
     }
 

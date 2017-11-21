@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.template.angular.parser;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import com.vaadin.flow.template.angular.AbstractBindingValueProvider;
@@ -32,12 +33,12 @@ public class AbstractTemplateBuilderFactoryTest {
     public void createExpressionBinding_simpleExpression() {
         AbstractBindingValueProvider binding = AbstractTemplateBuilderFactory
                 .createExpressionBinding("bean234");
-        Assert.assertEquals(ModelValueBindingProvider.class,
+        assertEquals(ModelValueBindingProvider.class,
                 binding.getClass());
 
         binding = AbstractTemplateBuilderFactory
                 .createExpressionBinding("bean234.property");
-        Assert.assertEquals(ModelValueBindingProvider.class,
+        assertEquals(ModelValueBindingProvider.class,
                 binding.getClass());
     }
 
@@ -45,7 +46,7 @@ public class AbstractTemplateBuilderFactoryTest {
     public void createExpressionBinding_JsExpression() {
         AbstractBindingValueProvider binding = AbstractTemplateBuilderFactory
                 .createExpressionBinding("bean234+'name'");
-        Assert.assertEquals(JsExpressionBindingProvider.class,
+        assertEquals(JsExpressionBindingProvider.class,
                 binding.getClass());
     }
 }

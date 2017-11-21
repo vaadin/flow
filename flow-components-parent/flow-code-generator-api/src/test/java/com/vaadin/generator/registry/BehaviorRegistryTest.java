@@ -15,11 +15,12 @@
  */
 package com.vaadin.generator.registry;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.ui.common.HasClickListeners;
@@ -34,11 +35,11 @@ public class BehaviorRegistryTest {
     @Test
     public void nullOrEmptyProperties_returnEmptySet() {
         Set<Class<?>> set = BehaviorRegistry.getClassesForBehaviors(null);
-        Assert.assertTrue("The set should be empty for null list of behaviors",
+        assertTrue("The set should be empty for null list of behaviors",
                 set.isEmpty());
 
         set = BehaviorRegistry.getClassesForBehaviors(Collections.emptyList());
-        Assert.assertTrue("The set should be empty for empty list of behaviors",
+        assertTrue("The set should be empty for empty list of behaviors",
                 set.isEmpty());
     }
 
@@ -46,7 +47,7 @@ public class BehaviorRegistryTest {
     public void notMappedProperties_returnEmptySet() {
         Set<Class<?>> set = BehaviorRegistry.getClassesForBehaviors(
                 Arrays.asList("NOT_MAPPED_PROPERTY1", "NOT_MAPPED_PROPERTY2"));
-        Assert.assertTrue(
+        assertTrue(
                 "The set should be empty for unmapped list of behaviors",
                 set.isEmpty());
     }
@@ -69,7 +70,7 @@ public class BehaviorRegistryTest {
     private void assertClassIsPresent(Class<?> clazz, String selector) {
         Set<Class<?>> set = BehaviorRegistry
                 .getClassesForBehaviors(Arrays.asList(selector));
-        Assert.assertTrue(clazz.getSimpleName()
+        assertTrue(clazz.getSimpleName()
                 + " should be in the set of inherited classes for selector "
                 + selector, set.contains(clazz));
     }

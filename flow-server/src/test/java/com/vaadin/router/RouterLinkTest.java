@@ -15,12 +15,15 @@
  */
 package com.vaadin.router;
 
-import javax.servlet.ServletException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
+import javax.servlet.ServletException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +63,7 @@ public class RouterLinkTest extends HasCurrentService {
     public void buildUrlWithoutParameters() {
         String url = RouterLink.buildUrl("foo/bar");
 
-        Assert.assertEquals("foo/bar", url);
+        assertEquals("foo/bar", url);
     }
 
     @Test
@@ -68,19 +71,19 @@ public class RouterLinkTest extends HasCurrentService {
         String url = RouterLink.buildUrl("{foo}/bar/*", "param1",
                 "param2/param3");
 
-        Assert.assertEquals("param1/bar/param2/param3", url);
+        assertEquals("param1/bar/param2/param3", url);
     }
 
     @Test
     public void buildUrlWithEmptyWildcard() {
         String url = RouterLink.buildUrl("{foo}/bar/*", "param1", "");
-        Assert.assertEquals("param1/bar/", url);
+        assertEquals("param1/bar/", url);
     }
 
     @Test
     public void buildUrlWithOmittedWildcard() {
         String url = RouterLink.buildUrl("{foo}/bar/*", "param1");
-        Assert.assertEquals("param1/bar/", url);
+        assertEquals("param1/bar/", url);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -100,7 +103,7 @@ public class RouterLinkTest extends HasCurrentService {
 
         String url = RouterLink.buildUrl(router, TestView.class, "asdf");
 
-        Assert.assertEquals("foo/asdf", url);
+        assertEquals("foo/asdf", url);
     }
 
     @Test
@@ -110,10 +113,10 @@ public class RouterLinkTest extends HasCurrentService {
 
         String url = RouterLink.buildUrl(router, TestView.class);
 
-        Assert.assertEquals("", url);
+        assertEquals("", url);
 
         RouterLink link = new RouterLink(router, "Home", TestView.class);
-        Assert.assertEquals("", link.getHref());
+        assertEquals("", link.getHref());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -144,13 +147,13 @@ public class RouterLinkTest extends HasCurrentService {
 
         RouterLink link = new RouterLink("Show something", TestView.class,
                 "something");
-        Assert.assertEquals("Show something", link.getText());
-        Assert.assertTrue(link.getElement()
+        assertEquals("Show something", link.getText());
+        assertTrue(link.getElement()
                 .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
 
-        Assert.assertTrue(link.getElement().hasAttribute("href"));
+        assertTrue(link.getElement().hasAttribute("href"));
 
-        Assert.assertEquals("show/something",
+        assertEquals("show/something",
                 link.getElement().getAttribute("href"));
     }
 
@@ -165,9 +168,9 @@ public class RouterLinkTest extends HasCurrentService {
         ui.add(link);
         link.setRoute(TestView.class, "foo");
 
-        Assert.assertTrue(link.getElement().hasAttribute("href"));
+        assertTrue(link.getElement().hasAttribute("href"));
 
-        Assert.assertEquals("show/foo", link.getElement().getAttribute("href"));
+        assertEquals("show/foo", link.getElement().getAttribute("href"));
     }
 
     @Test
@@ -177,13 +180,13 @@ public class RouterLinkTest extends HasCurrentService {
 
         RouterLink link = new RouterLink(router, "Show something",
                 TestView.class, "something");
-        Assert.assertEquals("Show something", link.getText());
-        Assert.assertTrue(link.getElement()
+        assertEquals("Show something", link.getText());
+        assertTrue(link.getElement()
                 .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
 
-        Assert.assertTrue(link.getElement().hasAttribute("href"));
+        assertTrue(link.getElement().hasAttribute("href"));
 
-        Assert.assertEquals("show/something",
+        assertEquals("show/something",
                 link.getElement().getAttribute("href"));
     }
 
@@ -200,12 +203,12 @@ public class RouterLinkTest extends HasCurrentService {
 
         link.setRoute(TestView.class, "other");
 
-        Assert.assertEquals("show/other",
+        assertEquals("show/other",
                 link.getElement().getAttribute("href"));
 
         link.setRoute(TestView.class, "changed");
 
-        Assert.assertEquals("show/changed",
+        assertEquals("show/changed",
                 link.getElement().getAttribute("href"));
     }
 
@@ -219,12 +222,12 @@ public class RouterLinkTest extends HasCurrentService {
 
         link.setRoute(router, TestView.class, "other");
 
-        Assert.assertEquals("show/other",
+        assertEquals("show/other",
                 link.getElement().getAttribute("href"));
 
         link.setRoute(router, TestView.class, "changed");
 
-        Assert.assertEquals("show/changed",
+        assertEquals("show/changed",
                 link.getElement().getAttribute("href"));
     }
 
@@ -239,12 +242,12 @@ public class RouterLinkTest extends HasCurrentService {
 
         link.setRoute(TestView.class, "other");
 
-        Assert.assertEquals("show/other",
+        assertEquals("show/other",
                 link.getElement().getAttribute("href"));
 
         link.setRoute(router, TestView.class, "changed");
 
-        Assert.assertEquals("show/changed",
+        assertEquals("show/changed",
                 link.getElement().getAttribute("href"));
     }
 
@@ -323,7 +326,7 @@ public class RouterLinkTest extends HasCurrentService {
 
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
-        Assert.assertEquals("foo", link.getHref());
+        assertEquals("foo", link.getHref());
     }
 
     @Test
@@ -338,7 +341,7 @@ public class RouterLinkTest extends HasCurrentService {
 
         RouterLink link = new RouterLink(router, "Greeting",
                 GreetingNavigationTarget.class, "hello");
-        Assert.assertEquals("greeting/hello", link.getHref());
+        assertEquals("greeting/hello", link.getHref());
     }
 
     @Rule

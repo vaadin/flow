@@ -15,9 +15,12 @@
  */
 package com.vaadin.server.communication.rpc;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import elemental.json.Json;
@@ -28,31 +31,31 @@ public class StringToNumberDecoderTest {
 
     @Test
     public void isApplicable_applicableToStringAndNumber() {
-        Assert.assertTrue(
+        assertTrue(
                 decoder.isApplicable(Json.create("foo"), Number.class));
     }
 
     @Test
     public void isApplicable_notApplicableToBooleanAndNumber() {
-        Assert.assertFalse(
+        assertFalse(
                 decoder.isApplicable(Json.create(true), Number.class));
     }
 
     @Test
     public void isApplicable_notApplicableToStringAndString() {
-        Assert.assertFalse(
+        assertFalse(
                 decoder.isApplicable(Json.create("foo"), String.class));
     }
 
     @Test
     public void isApplicable_notApplicableToStringAndAtomicInteger() {
-        Assert.assertFalse(
+        assertFalse(
                 decoder.isApplicable(Json.create("foo"), AtomicInteger.class));
     }
 
     @Test
     public void isApplicable_applicableToStringAndLong() {
-        Assert.assertTrue(decoder.isApplicable(Json.create("foo"), Long.class));
+        assertTrue(decoder.isApplicable(Json.create("foo"), Long.class));
     }
 
     @Test
@@ -61,7 +64,7 @@ public class StringToNumberDecoderTest {
         Integer expected = 37;
         Integer value = decoder.decode(Json.create(String.valueOf(expected)),
                 Integer.class);
-        Assert.assertEquals(expected, value);
+        assertEquals(expected, value);
     }
 
     @Test(expected = RpcDecodeException.class)
@@ -89,7 +92,7 @@ public class StringToNumberDecoderTest {
         Long expected = 37l;
         Long value = decoder.decode(Json.create(String.valueOf(expected)),
                 Long.class);
-        Assert.assertEquals(expected, value);
+        assertEquals(expected, value);
     }
 
     @Test(expected = RpcDecodeException.class)
@@ -110,7 +113,7 @@ public class StringToNumberDecoderTest {
         Short expected = 37;
         Short value = decoder.decode(Json.create(String.valueOf(expected)),
                 Short.class);
-        Assert.assertEquals(expected, value);
+        assertEquals(expected, value);
     }
 
     @Test(expected = RpcDecodeException.class)
@@ -137,7 +140,7 @@ public class StringToNumberDecoderTest {
         Byte expected = 37;
         Byte value = decoder.decode(Json.create(String.valueOf(expected)),
                 Byte.class);
-        Assert.assertEquals(expected, value);
+        assertEquals(expected, value);
     }
 
     @Test(expected = RpcDecodeException.class)
@@ -164,7 +167,7 @@ public class StringToNumberDecoderTest {
         Float expected = 37.72f;
         Float value = decoder.decode(Json.create(String.valueOf(expected)),
                 Float.class);
-        Assert.assertEquals(expected, value);
+        assertEquals(expected, value);
     }
 
     @Test(expected = RpcDecodeException.class)
@@ -186,7 +189,7 @@ public class StringToNumberDecoderTest {
         Double expected = 823.6349d;
         Double value = decoder.decode(Json.create(String.valueOf(expected)),
                 Double.class);
-        Assert.assertEquals(expected, value);
+        assertEquals(expected, value);
     }
 
     @Test
@@ -197,7 +200,7 @@ public class StringToNumberDecoderTest {
         Double expected = Double.MIN_NORMAL;
         Double value = decoder.decode(Json.create(String.valueOf(expected)),
                 Double.class);
-        Assert.assertEquals(expected, value);
+        assertEquals(expected, value);
     }
 
     @Test(expected = RpcDecodeException.class)
@@ -212,6 +215,6 @@ public class StringToNumberDecoderTest {
         Double expected = 823.6349d;
         Number value = decoder.decode(Json.create(String.valueOf(expected)),
                 Number.class);
-        Assert.assertEquals(expected, value);
+        assertEquals(expected, value);
     }
 }

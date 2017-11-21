@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -83,18 +86,18 @@ public class BeanModelTypeTest {
     }
 
     private void assertThreeBean(ModelMap model) {
-        Assert.assertEquals(7, model.getKeys().count());
+        assertEquals(7, model.getKeys().count());
 
-        Assert.assertEquals(Integer.valueOf(3), model.getValue("intValue"));
-        Assert.assertEquals(Integer.valueOf(3), model.getValue("intObject"));
+        assertEquals(Integer.valueOf(3), model.getValue("intValue"));
+        assertEquals(Integer.valueOf(3), model.getValue("intObject"));
 
-        Assert.assertEquals(Double.valueOf(3), model.getValue("doubleValue"));
-        Assert.assertEquals(Double.valueOf(3), model.getValue("doubleObject"));
+        assertEquals(Double.valueOf(3), model.getValue("doubleValue"));
+        assertEquals(Double.valueOf(3), model.getValue("doubleObject"));
 
-        Assert.assertEquals(Boolean.TRUE, model.getValue("booleanValue"));
-        Assert.assertEquals(Boolean.TRUE, model.getValue("booleanObject"));
+        assertEquals(Boolean.TRUE, model.getValue("booleanValue"));
+        assertEquals(Boolean.TRUE, model.getValue("booleanObject"));
 
-        Assert.assertEquals("3", model.getValue("string"));
+        assertEquals("3", model.getValue("string"));
     }
 
     @Test
@@ -108,9 +111,9 @@ public class BeanModelTypeTest {
 
         beanType.importProperties(model, bean, PropertyFilter.ACCEPT_ALL);
 
-        Assert.assertEquals(1, model.getKeys().count());
+        assertEquals(1, model.getKeys().count());
 
-        Assert.assertEquals(Integer.valueOf(3), model.getValue("intValue"));
+        assertEquals(Integer.valueOf(3), model.getValue("intValue"));
     }
 
     @Test
@@ -125,9 +128,9 @@ public class BeanModelTypeTest {
         beanType.importProperties(model, bean,
                 new PropertyFilter(name -> "intObject".equals(name)));
 
-        Assert.assertEquals(1, model.getKeys().count());
+        assertEquals(1, model.getKeys().count());
 
-        Assert.assertEquals(Integer.valueOf(3), model.getValue("intObject"));
+        assertEquals(Integer.valueOf(3), model.getValue("intObject"));
     }
 
     @Test
@@ -143,11 +146,11 @@ public class BeanModelTypeTest {
         beanType.importProperties(model, bean,
                 new PropertyFilter(name -> !"intValue".equals(name)));
 
-        Assert.assertEquals(1, model.getKeys().count());
+        assertEquals(1, model.getKeys().count());
 
-        Assert.assertEquals("3", model.getValue("string"));
+        assertEquals("3", model.getValue("string"));
 
-        Assert.assertFalse(model.hasValue("date"));
+        assertFalse(model.hasValue("date"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -173,9 +176,9 @@ public class BeanModelTypeTest {
 
         Bean bean = beanType.modelToApplication(model.getNode());
 
-        Assert.assertEquals("3", bean.getString());
-        Assert.assertEquals(3, bean.getIntValue());
-        Assert.assertNull(bean.getIntObject());
+        assertEquals("3", bean.getString());
+        assertEquals(3, bean.getIntValue());
+        assertNull(bean.getIntObject());
     }
 
     @Test
@@ -206,9 +209,9 @@ public class BeanModelTypeTest {
 
         ModelMap model = ModelMap.get(applicationToModel);
 
-        Assert.assertEquals(Arrays.asList("string"),
+        assertEquals(Arrays.asList("string"),
                 model.getKeys().collect(Collectors.toList()));
 
-        Assert.assertEquals("3", model.getValue("string"));
+        assertEquals("3", model.getValue("string"));
     }
 }

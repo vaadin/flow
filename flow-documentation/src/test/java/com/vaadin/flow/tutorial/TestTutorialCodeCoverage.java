@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.tutorial;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,7 +32,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
@@ -76,7 +77,7 @@ public class TestTutorialCodeCoverage {
             documentationErrors.insert(0,
                     String.format("%nFound %s problems with documentation",
                             documentationErrorsCount));
-            Assert.fail(documentationErrors.toString());
+            fail(documentationErrors.toString());
         }
     }
 

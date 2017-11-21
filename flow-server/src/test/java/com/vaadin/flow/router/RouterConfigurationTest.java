@@ -15,6 +15,14 @@
  */
 package com.vaadin.flow.router;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -25,7 +33,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.router.ViewRendererTest.AnotherParentView;
@@ -121,7 +128,7 @@ public class RouterConfigurationTest {
 
         original.removeRoute("foo/bar");
 
-        Assert.assertNotNull("Updating the original should not affect the copy",
+        assertNotNull("Updating the original should not affect the copy",
                 copy.resolveRoute(new Location("foo/bar")));
     }
 
@@ -139,8 +146,8 @@ public class RouterConfigurationTest {
     @SuppressWarnings("rawtypes")
     private void validateNoSameInstances(Object original, Object copy)
             throws Exception {
-        Assert.assertNotNull(original);
-        Assert.assertNotSame(original, copy);
+        assertNotNull(original);
+        assertNotSame(original, copy);
         for (Field f : original.getClass().getDeclaredFields()) {
             Class<?> fieldType = f.getType();
             if (Modifier.isStatic(f.getModifiers())) {
@@ -155,7 +162,7 @@ public class RouterConfigurationTest {
             Object originalValue = f.get(original);
             Object copyValue = f.get(copy);
             if (isSameObjectSharedField(f.getName())) {
-                Assert.assertEquals(originalValue, copyValue);
+                assertEquals(originalValue, copyValue);
             } else if (Map.class.isAssignableFrom(fieldType)) {
                 validateNoSameInstances((Map) originalValue, (Map) copyValue);
             } else {
@@ -198,13 +205,13 @@ public class RouterConfigurationTest {
         configuration.setRoute("*", navigationHandler);
 
         configuration.removeRoute("foo");
-        Assert.assertNotNull(configuration.resolveRoute(new Location("foo")));
+        assertNotNull(configuration.resolveRoute(new Location("foo")));
         configuration.removeRoute("{otherName}");
-        Assert.assertNotNull(configuration.resolveRoute(new Location("foo")));
+        assertNotNull(configuration.resolveRoute(new Location("foo")));
         configuration.removeRoute("*");
 
         // Should resolve to empty optional only after removing all the routes
-        Assert.assertFalse(
+        assertFalse(
                 configuration.resolveRoute(new Location("foo")).isPresent());
     }
 
@@ -248,12 +255,12 @@ public class RouterConfigurationTest {
         router.navigate(ui, new Location("route"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(ParentView.class,
+        assertEquals(ParentView.class,
                 router.getConfiguration().getParentView(TestView.class).get());
-        Assert.assertEquals(AnotherParentView.class, router.getConfiguration()
+        assertEquals(AnotherParentView.class, router.getConfiguration()
                 .getParentView(ParentView.class).get());
 
-        Assert.assertEquals(Arrays.asList(TestView.class, ParentView.class,
+        assertEquals(Arrays.asList(TestView.class, ParentView.class,
                 AnotherParentView.class), getViewChainTypes(ui));
     }
 
@@ -270,11 +277,11 @@ public class RouterConfigurationTest {
 
         router.navigate(ui, new Location("route"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(ParentView.class,
+        assertEquals(ParentView.class,
                 router.getConfiguration().getParentView(TestView.class).get());
-        Assert.assertEquals(AnotherParentView.class, router.getConfiguration()
+        assertEquals(AnotherParentView.class, router.getConfiguration()
                 .getParentView(ParentView.class).get());
-        Assert.assertEquals(Arrays.asList(TestView.class, ParentView.class,
+        assertEquals(Arrays.asList(TestView.class, ParentView.class,
                 AnotherParentView.class), getViewChainTypes(ui));
     }
 
@@ -334,7 +341,7 @@ public class RouterConfigurationTest {
 
         Optional<NavigationHandler> handler = configuration
                 .resolveRoute(new Location(location));
-        Assert.assertSame(handler.get(), strongerHandler);
+        assertSame(handler.get(), strongerHandler);
 
         // Do the same again with setRoute run in the opposite order
         configuration = createConfiguration();
@@ -343,17 +350,17 @@ public class RouterConfigurationTest {
         configuration.setRoute(strongerRoute, strongerHandler);
 
         handler = configuration.resolveRoute(new Location(location));
-        Assert.assertSame(handler.get(), strongerHandler);
+        assertSame(handler.get(), strongerHandler);
     }
 
     private static void assertMatches(String location, String route) {
-        Assert.assertTrue(
+        assertTrue(
                 "The route " + route + " should match the location " + location,
                 routeMatches(location, route));
     }
 
     private static void assertNotMatches(String location, String route) {
-        Assert.assertFalse("The route " + route
+        assertFalse("The route " + route
                 + " shouldn't match the location " + location,
                 routeMatches(location, route));
     }
@@ -447,12 +454,12 @@ public class RouterConfigurationTest {
             String... expected) {
         List<String> routes = router.getConfiguration().getRoutes(viewType)
                 .collect(Collectors.toList());
-        Assert.assertArrayEquals(expected, routes.toArray());
+        assertArrayEquals(expected, routes.toArray());
     }
 
     private void assertRoute(Router router, Class<? extends View> class1,
             String expected) {
-        Assert.assertEquals(expected,
+        assertEquals(expected,
                 router.getConfiguration().getRoute(class1).orElse(null));
     }
 
@@ -471,7 +478,7 @@ public class RouterConfigurationTest {
     private final void assertParentViews(Router router,
             Class<? extends View> viewType,
             Class<? extends HasChildView>... expected) {
-        Assert.assertArrayEquals(expected,
+        assertArrayEquals(expected,
                 router.getConfiguration().getParentViewsAscending(viewType)
                         .collect(Collectors.toList()).toArray());
 
@@ -482,7 +489,7 @@ public class RouterConfigurationTest {
         ViewRenderer errorHandler = (ViewRenderer) router.getConfiguration()
                 .getErrorHandler();
 
-        Assert.assertEquals(errorView, errorHandler.getViewType(null));
+        assertEquals(errorView, errorHandler.getViewType(null));
     }
 
     @Test
@@ -569,7 +576,7 @@ public class RouterConfigurationTest {
                 .handle(new NavigationEvent(router, new Location(""), new UI(),
                         NavigationTrigger.PROGRAMMATIC));
 
-        Assert.assertEquals(HttpServletResponse.SC_OK, statusCode);
+        assertEquals(HttpServletResponse.SC_OK, statusCode);
     }
 
     @Test
@@ -579,7 +586,7 @@ public class RouterConfigurationTest {
                 .handle(new NavigationEvent(router, new Location(""), new UI(),
                         NavigationTrigger.PROGRAMMATIC));
 
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
     }
 
     @Test
@@ -592,7 +599,7 @@ public class RouterConfigurationTest {
                 .handle(new NavigationEvent(router, new Location(""), new UI(),
                         NavigationTrigger.PROGRAMMATIC));
 
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
     }
 
 }

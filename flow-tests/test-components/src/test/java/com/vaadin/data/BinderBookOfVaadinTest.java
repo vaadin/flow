@@ -225,15 +225,15 @@ public class BinderBookOfVaadinTest {
 
         field.setValue("not-email");
         BinderValidationStatus<?> status = binder.validate();
-        Assert.assertEquals(1, status.getFieldValidationErrors().size());
-        Assert.assertEquals("This doesn't look like a valid email address",
+        assertEquals(1, status.getFieldValidationErrors().size());
+        assertEquals("This doesn't look like a valid email address",
                 status.getFieldValidationErrors().get(0).getMessage().get());
-        Assert.assertEquals("This doesn't look like a valid email address",
+        assertEquals("This doesn't look like a valid email address",
                 componentErrors.get(field));
 
         field.setValue("abc@vaadin.com");
         status = binder.validate();
-        Assert.assertEquals(0, status.getBeanValidationErrors().size());
+        assertEquals(0, status.getBeanValidationErrors().size());
         assertThat(field.getErrorMessage(), isEmptyOrNullString());
     }
 
@@ -247,15 +247,15 @@ public class BinderBookOfVaadinTest {
 
         field.setValue("a");
         BinderValidationStatus<?> status = binder.validate();
-        Assert.assertEquals(1, status.getFieldValidationErrors().size());
-        Assert.assertEquals("Last name must contain at least three characters",
+        assertEquals(1, status.getFieldValidationErrors().size());
+        assertEquals("Last name must contain at least three characters",
                 status.getFieldValidationErrors().get(0).getMessage().get());
-        Assert.assertEquals("Last name must contain at least three characters",
+        assertEquals("Last name must contain at least three characters",
                 componentErrors.get(field));
 
         field.setValue("long last name");
         status = binder.validate();
-        Assert.assertEquals(0, status.getFieldValidationErrors().size());
+        assertEquals(0, status.getFieldValidationErrors().size());
         assertThat(field.getErrorMessage(), isEmptyOrNullString());
     }
 
@@ -272,23 +272,23 @@ public class BinderBookOfVaadinTest {
         field.setValue("not-email");
         BinderValidationStatus<?> status = binder.validate();
         // Only one error per field should be reported
-        Assert.assertEquals(1, status.getFieldValidationErrors().size());
-        Assert.assertEquals("This doesn't look like a valid email address",
+        assertEquals(1, status.getFieldValidationErrors().size());
+        assertEquals("This doesn't look like a valid email address",
                 status.getFieldValidationErrors().get(0).getMessage().get());
-        Assert.assertEquals("This doesn't look like a valid email address",
+        assertEquals("This doesn't look like a valid email address",
                 componentErrors.get(field));
 
         field.setValue("abc@vaadin.com");
         status = binder.validate();
-        Assert.assertEquals(1, status.getFieldValidationErrors().size());
-        Assert.assertEquals("Only acme.com email addresses are allowed",
+        assertEquals(1, status.getFieldValidationErrors().size());
+        assertEquals("Only acme.com email addresses are allowed",
                 status.getFieldValidationErrors().get(0).getMessage().get());
-        Assert.assertEquals("Only acme.com email addresses are allowed",
+        assertEquals("Only acme.com email addresses are allowed",
                 componentErrors.get(field));
 
         field.setValue("abc@acme.com");
         status = binder.validate();
-        Assert.assertEquals(0, status.getFieldValidationErrors().size());
+        assertEquals(0, status.getFieldValidationErrors().size());
         assertThat(field.getErrorMessage(), isEmptyOrNullString());
     }
 
@@ -314,20 +314,20 @@ public class BinderBookOfVaadinTest {
         // Test that the book code works
         BookPerson bookPerson = new BookPerson(1972, Gender.FEMALE);
         binder.setBean(bookPerson);
-        Assert.assertTrue(genderField.getValue());
-        Assert.assertEquals("1,972", yearOfBirthField.getValue());
+        assertTrue(genderField.getValue());
+        assertEquals("1,972", yearOfBirthField.getValue());
 
         bookPerson.setGender(Gender.MALE);
         binder.readBean(bookPerson);
-        Assert.assertFalse(genderField.getValue());
+        assertFalse(genderField.getValue());
         bookPerson.setYearOfBirth(123);
         binder.readBean(bookPerson);
-        Assert.assertEquals("123", yearOfBirthField.getValue());
+        assertEquals("123", yearOfBirthField.getValue());
 
         yearOfBirthField.setValue("2016");
         genderField.setValue(true);
-        Assert.assertEquals(2016, bookPerson.getYearOfBirth());
-        Assert.assertEquals(Gender.FEMALE, bookPerson.getGender());
+        assertEquals(2016, bookPerson.getYearOfBirth());
+        assertEquals(Gender.FEMALE, bookPerson.getGender());
     }
 
     @Test
@@ -344,7 +344,7 @@ public class BinderBookOfVaadinTest {
         binder.setBean(new BookPerson(1900, 5));
         yearOfBirthField.setValue("abc");
         binder.validate();
-        Assert.assertEquals("Please enter a number",
+        assertEquals("Please enter a number",
                 componentErrors.get(yearOfBirthField));
     }
 
@@ -386,33 +386,33 @@ public class BinderBookOfVaadinTest {
         returning.setValue(after);
 
         BinderValidationStatus<Trip> status = binder.validate();
-        Assert.assertTrue(status.getBeanValidationErrors().isEmpty());
-        Assert.assertNull(componentErrors.get(departing));
-        Assert.assertNull(componentErrors.get(returning));
+        assertTrue(status.getBeanValidationErrors().isEmpty());
+        assertNull(componentErrors.get(departing));
+        assertNull(componentErrors.get(returning));
 
         // update returning => validation is done against this field
         returning.setValue(past);
         status = binder.validate();
 
-        Assert.assertFalse(status.getFieldValidationErrors().isEmpty());
-        Assert.assertNotNull(componentErrors.get(returning));
-        Assert.assertNull(componentErrors.get(departing));
+        assertFalse(status.getFieldValidationErrors().isEmpty());
+        assertNotNull(componentErrors.get(returning));
+        assertNull(componentErrors.get(departing));
 
         // set correct value back
         returning.setValue(before);
         status = binder.validate();
 
-        Assert.assertTrue(status.getFieldValidationErrors().isEmpty());
-        Assert.assertNull(componentErrors.get(departing));
-        Assert.assertNull(componentErrors.get(returning));
+        assertTrue(status.getFieldValidationErrors().isEmpty());
+        assertNull(componentErrors.get(departing));
+        assertNull(componentErrors.get(returning));
 
         // update departing => validation is done because of listener added
         departing.setValue(after);
         status = binder.validate();
 
-        Assert.assertFalse(status.getFieldValidationErrors().isEmpty());
-        Assert.assertNotNull(componentErrors.get(returning));
-        Assert.assertNull(componentErrors.get(departing));
+        assertFalse(status.getFieldValidationErrors().isEmpty());
+        assertNotNull(componentErrors.get(returning));
+        assertNull(componentErrors.get(departing));
 
     }
 
@@ -454,29 +454,29 @@ public class BinderBookOfVaadinTest {
         returning.setValue(after);
 
         BindingValidationStatus<LocalDate> result = returnBinding.validate();
-        Assert.assertFalse(result.isError());
-        Assert.assertNull(componentErrors.get(departing));
+        assertFalse(result.isError());
+        assertNull(componentErrors.get(departing));
 
         // update returning => validation is done against this field
         returning.setValue(past);
         result = returnBinding.validate();
 
-        Assert.assertTrue(result.isError());
-        Assert.assertNotNull(componentErrors.get(returning));
+        assertTrue(result.isError());
+        assertNotNull(componentErrors.get(returning));
 
         // set correct value back
         returning.setValue(before);
         result = returnBinding.validate();
 
-        Assert.assertFalse(result.isError());
-        Assert.assertNull(componentErrors.get(departing));
+        assertFalse(result.isError());
+        assertNull(componentErrors.get(departing));
 
         // update departing => validation is done because of listener added
         departing.setValue(after);
         result = returnBinding.validate();
 
-        Assert.assertTrue(result.isError());
-        Assert.assertNotNull(componentErrors.get(returning));
+        assertTrue(result.isError());
+        assertNotNull(componentErrors.get(returning));
     }
 
     @Test
@@ -491,14 +491,14 @@ public class BinderBookOfVaadinTest {
         field.setValue("foo");
         binder.validate();
 
-        Assert.assertTrue(isVisible(emailStatus));
-        Assert.assertEquals(msg, emailStatus.getText());
+        assertTrue(isVisible(emailStatus));
+        assertEquals(msg, emailStatus.getText());
 
         field.setValue("foo@vaadin.com");
         binder.validate();
 
-        Assert.assertFalse(isVisible(emailStatus));
-        Assert.assertEquals("", emailStatus.getText());
+        assertFalse(isVisible(emailStatus));
+        assertEquals("", emailStatus.getText());
     }
 
     @Test
@@ -519,24 +519,24 @@ public class BinderBookOfVaadinTest {
         field.setValue("aa");
         binder.validate();
 
-        Assert.assertTrue(isVisible(nameStatus));
-        Assert.assertEquals(msg, nameStatus.getText());
-        Assert.assertNotNull(statusCapture.get());
+        assertTrue(isVisible(nameStatus));
+        assertEquals(msg, nameStatus.getText());
+        assertNotNull(statusCapture.get());
         BindingValidationStatus<?> status = statusCapture.get();
-        Assert.assertEquals(Status.ERROR, status.getStatus());
-        Assert.assertEquals(msg, status.getMessage().get());
-        Assert.assertEquals(field, status.getField());
+        assertEquals(Status.ERROR, status.getStatus());
+        assertEquals(msg, status.getMessage().get());
+        assertEquals(field, status.getField());
 
         field.setValue("foo");
         binder.validate();
 
-        Assert.assertFalse(isVisible(nameStatus));
-        Assert.assertEquals("", nameStatus.getText());
-        Assert.assertNotNull(statusCapture.get());
+        assertFalse(isVisible(nameStatus));
+        assertEquals("", nameStatus.getText());
+        assertNotNull(statusCapture.get());
         status = statusCapture.get();
-        Assert.assertEquals(Status.OK, status.getStatus());
-        Assert.assertFalse(status.getMessage().isPresent());
-        Assert.assertEquals(field, status.getField());
+        assertEquals(Status.OK, status.getStatus());
+        assertFalse(status.getMessage().isPresent());
+        assertEquals(field, status.getField());
     }
 
     @Test
@@ -569,14 +569,14 @@ public class BinderBookOfVaadinTest {
         });
 
         emailField.setValue("foo@bar.com");
-        Assert.assertTrue(binder.writeBeanIfValid(person));
+        assertTrue(binder.writeBeanIfValid(person));
         // Person updated
-        Assert.assertEquals("foo@bar.com", person.getEmail());
+        assertEquals("foo@bar.com", person.getEmail());
 
         emailField.setValue("");
-        Assert.assertFalse(binder.writeBeanIfValid(person));
+        assertFalse(binder.writeBeanIfValid(person));
         // Person updated because phone and email are both empty
-        Assert.assertEquals("foo@bar.com", person.getEmail());
+        assertEquals("foo@bar.com", person.getEmail());
     }
 
     @Test
@@ -595,21 +595,21 @@ public class BinderBookOfVaadinTest {
         .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
 
         yearOfBirthField.setValue("abc");
-        Assert.assertEquals("Doesn't look like a year", binder.validate()
+        assertEquals("Doesn't look like a year", binder.validate()
                 .getFieldValidationErrors().get(0).getMessage().get());
         yearOfBirthField.setValue("abcd");
-        Assert.assertEquals("Must enter a number", binder.validate()
+        assertEquals("Must enter a number", binder.validate()
                 .getFieldValidationErrors().get(0).getMessage().get());
         yearOfBirthField.setValue("1200");
-        Assert.assertEquals("Person must be born in the 20th century",
+        assertEquals("Person must be born in the 20th century",
                 binder.validate().getFieldValidationErrors().get(0).getMessage()
                 .get());
 
         yearOfBirthField.setValue("1950");
-        Assert.assertFalse(binder.validate().hasErrors());
+        assertFalse(binder.validate().hasErrors());
         BookPerson person = new BookPerson(1500, 12);
         binder.writeBean(person);
-        Assert.assertEquals(1950, person.getYearOfBirth());
+        assertEquals(1950, person.getYearOfBirth());
     }
 
     class MyConverter implements Converter<String, Integer> {
@@ -648,17 +648,17 @@ public class BinderBookOfVaadinTest {
         binder.setBean(p);
 
         yearOfBirthField.setValue("abc");
-        Assert.assertTrue(binder.validate().hasErrors());
-        Assert.assertEquals("Please enter a number", binder.validate()
+        assertTrue(binder.validate().hasErrors());
+        assertEquals("Please enter a number", binder.validate()
                 .getFieldValidationErrors().get(0).getMessage().get());
 
         yearOfBirthField.setValue("123");
-        Assert.assertTrue(binder.validate().isOk());
+        assertTrue(binder.validate().isOk());
 
         p.setYearOfBirth(12500);
         binder.readBean(p);
-        Assert.assertEquals("12500", yearOfBirthField.getValue());
-        Assert.assertTrue(binder.validate().isOk());
+        assertEquals("12500", yearOfBirthField.getValue());
+        assertTrue(binder.validate().isOk());
     }
 
     @Test
@@ -685,31 +685,31 @@ public class BinderBookOfVaadinTest {
         yearOfBirth.setValue("2001");
 
         BinderValidationStatus<?> status = binder.validate();
-        Assert.assertEquals(0, status.getFieldValidationErrors().size());
-        Assert.assertEquals(1, status.getBeanValidationErrors().size());
-        Assert.assertEquals(message,
+        assertEquals(0, status.getFieldValidationErrors().size());
+        assertEquals(1, status.getBeanValidationErrors().size());
+        assertEquals(message,
                 status.getBeanValidationErrors().get(0).getErrorMessage());
 
-        Assert.assertEquals(message, formStatusLabel.getText());
+        assertEquals(message, formStatusLabel.getText());
 
         // value is correct, status label is cleared
         yearOfBirth.setValue("1999");
 
         status = binder.validate();
-        Assert.assertFalse(status.hasErrors());
+        assertFalse(status.hasErrors());
 
-        Assert.assertEquals("", formStatusLabel.getText());
+        assertEquals("", formStatusLabel.getText());
 
         // both bean validators fail, should be two error messages chained
         yearOfBirth.setValue("2000");
 
         status = binder.validate();
-        Assert.assertEquals(2, status.getBeanValidationResults().size());
-        Assert.assertEquals(0, status.getFieldValidationErrors().size());
-        Assert.assertEquals(2, status.getBeanValidationErrors().size());
+        assertEquals(2, status.getBeanValidationResults().size());
+        assertEquals(0, status.getFieldValidationErrors().size());
+        assertEquals(2, status.getBeanValidationErrors().size());
 
         // only first error is shown
-        Assert.assertEquals(message, formStatusLabel.getText());
+        assertEquals(message, formStatusLabel.getText());
     }
 
     @Test
@@ -750,42 +750,42 @@ public class BinderBookOfVaadinTest {
         // first binding validation fails, no bean level validation is done
         yearOfBirth.setValue("2001");
         BinderValidationStatus<?> status = binder.validate();
-        Assert.assertEquals(1, status.getFieldValidationErrors().size());
-        Assert.assertEquals(bindingMessage,
+        assertEquals(1, status.getFieldValidationErrors().size());
+        assertEquals(bindingMessage,
                 status.getFieldValidationErrors().get(0).getMessage().get());
 
-        Assert.assertEquals("", formStatusLabel.getText());
+        assertEquals("", formStatusLabel.getText());
 
         // first bean validator fails and passes error message to status label
         yearOfBirth.setValue("2002");
 
         status = binder.validate();
-        Assert.assertEquals(0, status.getFieldValidationErrors().size());
-        Assert.assertEquals(1, status.getBeanValidationErrors().size());
-        Assert.assertEquals(message,
+        assertEquals(0, status.getFieldValidationErrors().size());
+        assertEquals(1, status.getBeanValidationErrors().size());
+        assertEquals(message,
                 status.getBeanValidationErrors().get(0).getErrorMessage());
 
-        Assert.assertEquals(message, formStatusLabel.getText());
+        assertEquals(message, formStatusLabel.getText());
 
         // value is correct, status label is cleared
         yearOfBirth.setValue("1998");
 
         status = binder.validate();
-        Assert.assertTrue(status.isOk());
-        Assert.assertFalse(status.hasErrors());
-        Assert.assertEquals(0, status.getFieldValidationErrors().size());
-        Assert.assertEquals(0, status.getBeanValidationErrors().size());
+        assertTrue(status.isOk());
+        assertFalse(status.hasErrors());
+        assertEquals(0, status.getFieldValidationErrors().size());
+        assertEquals(0, status.getBeanValidationErrors().size());
 
-        Assert.assertEquals("", formStatusLabel.getText());
+        assertEquals("", formStatusLabel.getText());
 
         // both bean validators fail, should be two error messages chained
         yearOfBirth.setValue("2000");
 
         status = binder.validate();
-        Assert.assertEquals(0, status.getFieldValidationErrors().size());
-        Assert.assertEquals(2, status.getBeanValidationErrors().size());
+        assertEquals(0, status.getFieldValidationErrors().size());
+        assertEquals(2, status.getBeanValidationErrors().size());
 
-        Assert.assertEquals(message + "\n" + message2,
+        assertEquals(message + "\n" + message2,
                 formStatusLabel.getText());
 
     }
@@ -809,43 +809,43 @@ public class BinderBookOfVaadinTest {
         .withValidator(new StringLengthValidator("", 1, 3))
         .bind(BookPerson::getLastName, BookPerson::setLastName);
         // no changes
-        Assert.assertTrue(saveButton.isDisabled());
-        Assert.assertTrue(resetButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
+        assertTrue(resetButton.isDisabled());
         verifyEventIsFired(eventIsFired);
 
         BookPerson person = new BookPerson(2000, 1);
         binder.readBean(person);
         // no changes
-        Assert.assertTrue(saveButton.isDisabled());
-        Assert.assertTrue(resetButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
+        assertTrue(resetButton.isDisabled());
         verifyEventIsFired(eventIsFired);
 
         field.setValue("a");
         // binder is not bound, no event fired
         // no changes: see #375. There should be a change and enabled state
-        Assert.assertFalse(saveButton.isDisabled());
-        Assert.assertFalse(resetButton.isDisabled());
-        Assert.assertTrue(eventIsFired.get());
+        assertFalse(saveButton.isDisabled());
+        assertFalse(resetButton.isDisabled());
+        assertTrue(eventIsFired.get());
 
         binder.writeBeanIfValid(person);
         // no changes
-        Assert.assertTrue(saveButton.isDisabled());
-        Assert.assertTrue(resetButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
+        assertTrue(resetButton.isDisabled());
         verifyEventIsFired(eventIsFired);
 
         binder.validate();
         // no changes
-        Assert.assertTrue(saveButton.isDisabled());
-        Assert.assertTrue(resetButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
+        assertTrue(resetButton.isDisabled());
         verifyEventIsFired(eventIsFired);
 
         field.setValue("");
         // binder is not bound, no event fired
         // no changes: see #375. There should be a change and disabled state for
         // save button because of failed validation
-        Assert.assertTrue(saveButton.isDisabled());
-        Assert.assertFalse(resetButton.isDisabled());
-        Assert.assertTrue(eventIsFired.get());
+        assertTrue(saveButton.isDisabled());
+        assertFalse(resetButton.isDisabled());
+        assertTrue(eventIsFired.get());
     }
 
     @Test
@@ -867,15 +867,15 @@ public class BinderBookOfVaadinTest {
         .withValidator(new StringLengthValidator("", 1, 3))
         .bind(BookPerson::getLastName, BookPerson::setLastName);
         // no changes
-        Assert.assertTrue(saveButton.isDisabled());
-        Assert.assertTrue(resetButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
+        assertTrue(resetButton.isDisabled());
         verifyEventIsFired(eventIsFired);
 
         BookPerson person = new BookPerson(2000, 1);
         binder.setBean(person);
         // no changes
-        Assert.assertTrue(saveButton.isDisabled());
-        Assert.assertTrue(resetButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
+        assertTrue(resetButton.isDisabled());
         verifyEventIsFired(eventIsFired);
 
         field.setValue("a");
@@ -884,8 +884,8 @@ public class BinderBookOfVaadinTest {
 
         field.setValue("");
         // there are invalid changes
-        Assert.assertTrue(saveButton.isDisabled());
-        Assert.assertFalse(resetButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
+        assertFalse(resetButton.isDisabled());
         verifyEventIsFired(eventIsFired);
 
         // set valid value
@@ -893,8 +893,8 @@ public class BinderBookOfVaadinTest {
         verifyEventIsFired(eventIsFired);
         binder.writeBeanIfValid(person);
         // there are no changes.
-        Assert.assertTrue(saveButton.isDisabled());
-        Assert.assertTrue(resetButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
+        assertTrue(resetButton.isDisabled());
         verifyEventIsFired(eventIsFired);
     }
 
@@ -914,13 +914,13 @@ public class BinderBookOfVaadinTest {
         binder.forField(emailField).asRequired("").bind(BookPerson::getEmail,
                 BookPerson::setEmail);
 
-        Assert.assertTrue(saveButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
         field.setValue("not empty");
-        Assert.assertTrue(saveButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
         emailField.setValue("not empty");
-        Assert.assertFalse(saveButton.isDisabled());
+        assertFalse(saveButton.isDisabled());
         field.clear();
-        Assert.assertTrue(saveButton.isDisabled());
+        assertTrue(saveButton.isDisabled());
     }
 
     @Test
@@ -948,7 +948,7 @@ public class BinderBookOfVaadinTest {
     }
 
     private void verifyEventIsFired(AtomicBoolean flag) {
-        Assert.assertTrue(flag.get());
+        assertTrue(flag.get());
         flag.set(false);
     }
 

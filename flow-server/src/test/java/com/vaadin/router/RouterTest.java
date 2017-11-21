@@ -17,7 +17,9 @@ package com.vaadin.router;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -32,7 +34,6 @@ import java.util.stream.Stream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -867,15 +868,15 @@ public class RouterTest extends RoutingTestBase {
                         .collect(Collectors.toSet()));
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
+        assertEquals(RootNavigationTarget.class, getUIComponent());
 
         router.navigate(ui, new Location("foo"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(FooNavigationTarget.class, getUIComponent());
+        assertEquals(FooNavigationTarget.class, getUIComponent());
 
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+        assertEquals(FooBarNavigationTarget.class, getUIComponent());
     }
 
     @Test
@@ -885,7 +886,7 @@ public class RouterTest extends RoutingTestBase {
                 Collections.singleton(NavigationTargetWithTitle.class));
         router.navigate(ui, new Location("navigation-target-with-title"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Custom Title", ui.getInternals().getTitle());
+        assertEquals("Custom Title", ui.getInternals().getTitle());
     }
 
     @Test
@@ -897,7 +898,7 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("parent-with-title/child"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("", ui.getInternals().getTitle());
+        assertEquals("", ui.getInternals().getTitle());
     }
 
     @Test
@@ -950,7 +951,7 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
     }
 
@@ -967,22 +968,22 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("enteringTarget"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("BeforeEnterObserver should have fired.", 1,
+        assertEquals("BeforeEnterObserver should have fired.", 1,
                 eventCollector.size());
-        Assert.assertEquals("EnterListener got event with state ACTIVATING",
+        assertEquals("EnterListener got event with state ACTIVATING",
                 eventCollector.get(0));
 
         router.navigate(ui, new Location("leavingTarget"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("No leave or enter target should have fired.", 1,
+        assertEquals("No leave or enter target should have fired.", 1,
                 eventCollector.size());
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("BeforeLeaveObserver should have fired", 2,
+        assertEquals("BeforeLeaveObserver should have fired", 2,
                 eventCollector.size());
-        Assert.assertEquals("LeaveListener got event with state DEACTIVATING",
+        assertEquals("LeaveListener got event with state DEACTIVATING",
                 eventCollector.get(1));
     }
 
@@ -1000,23 +1001,23 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("combined"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(
+        assertEquals(
                 "BeforeNavigationObserver and BeforeEnterObserver should have fired.",
                 2, eventCollector.size());
-        Assert.assertEquals("BeforeNavigation got event with state ACTIVATING",
+        assertEquals("BeforeNavigation got event with state ACTIVATING",
                 eventCollector.get(0));
-        Assert.assertEquals("EnterListener got event with state ACTIVATING",
+        assertEquals("EnterListener got event with state ACTIVATING",
                 eventCollector.get(1));
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(
+        assertEquals(
                 "BeforeNavigationObserver and BeforeLeaveObserver target should have fired.",
                 4, eventCollector.size());
 
-        Assert.assertEquals("LeaveListener got event with state DEACTIVATING",
+        assertEquals("LeaveListener got event with state DEACTIVATING",
                 eventCollector.get(2));
-        Assert.assertEquals(
+        assertEquals(
                 "BeforeNavigation got event with state DEACTIVATING",
                 eventCollector.get(3));
     }
@@ -1031,15 +1032,15 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(0));
+        assertEquals("FooBar ACTIVATING", eventCollector.get(0));
 
         router.navigate(ui, new Location("foo"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("FooBar DEACTIVATING", eventCollector.get(1));
+        assertEquals("FooBar DEACTIVATING", eventCollector.get(1));
     }
 
     @Test
@@ -1055,13 +1056,13 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("reroute"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
 
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+        assertEquals(FooBarNavigationTarget.class, getUIComponent());
 
-        Assert.assertEquals("Redirecting", eventCollector.get(0));
-        Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(1));
+        assertEquals("Redirecting", eventCollector.get(0));
+        assertEquals("FooBar ACTIVATING", eventCollector.get(1));
     }
 
     @Test
@@ -1073,11 +1074,11 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("navigationEvents"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
+        assertEquals("Before navigation event was wrong.",
                 "Event before navigation", eventCollector.get(0));
-        Assert.assertEquals("After navigation event was wrong.",
+        assertEquals("After navigation event was wrong.",
                 "Event after navigation", eventCollector.get(1));
     }
 
@@ -1092,19 +1093,19 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("navigationEvents"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
+        assertEquals("Before navigation event was wrong.",
                 "Event before navigation", eventCollector.get(0));
-        Assert.assertEquals("After navigation event was wrong.",
+        assertEquals("After navigation event was wrong.",
                 "Event after navigation", eventCollector.get(1));
 
         router.navigate(ui, new Location("foo"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 3,
+        assertEquals("Expected event amount was wrong", 3,
                 eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
+        assertEquals("Before navigation event was wrong.",
                 "Event before navigation", eventCollector.get(2));
     }
 
@@ -1116,9 +1117,9 @@ public class RouterTest extends RoutingTestBase {
                         FooNavigationTarget.class, FooBarNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals("", router.getUrl(RootNavigationTarget.class));
-        Assert.assertEquals("foo", router.getUrl(FooNavigationTarget.class));
-        Assert.assertEquals("foo/bar",
+        assertEquals("", router.getUrl(RootNavigationTarget.class));
+        assertEquals("foo", router.getUrl(FooNavigationTarget.class));
+        assertEquals("foo/bar",
                 router.getUrl(FooBarNavigationTarget.class));
     }
 
@@ -1129,8 +1130,8 @@ public class RouterTest extends RoutingTestBase {
                 Stream.of(RouteChild.class, LoneRoute.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals("parent/child", router.getUrl(RouteChild.class));
-        Assert.assertEquals("single", router.getUrl(LoneRoute.class));
+        assertEquals("parent/child", router.getUrl(RouteChild.class));
+        assertEquals("single", router.getUrl(LoneRoute.class));
     }
 
     @Test
@@ -1142,12 +1143,12 @@ public class RouterTest extends RoutingTestBase {
                                 OtherGreetingNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals("greeting/my_param",
+        assertEquals("greeting/my_param",
                 router.getUrl(GreetingNavigationTarget.class, "my_param"));
-        Assert.assertEquals("greeting/true",
+        assertEquals("greeting/true",
                 router.getUrl(GreetingNavigationTarget.class, "true"));
 
-        Assert.assertEquals("greeting/other",
+        assertEquals("greeting/other",
                 router.getUrl(GreetingNavigationTarget.class, "other"));
     }
 
@@ -1162,9 +1163,9 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("redirect/to/param"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
+        assertEquals("Before navigation event was wrong.",
                 "Stored parameter: hello", eventCollector.get(1));
     }
 
@@ -1182,7 +1183,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Routing with mismatching parameters should have failed -",
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [hello].";
@@ -1223,9 +1224,9 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("redirect/to/params"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
+        assertEquals("Before navigation event was wrong.",
                 "Stored parameter: this/must/work", eventCollector.get(1));
     }
 
@@ -1243,7 +1244,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Routing with mismatching parameters should have failed -",
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
         String message = "Given route parameter 'class java.lang.Long' is of the wrong type. Required 'class java.lang.String'.";
@@ -1266,7 +1267,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Routing with mismatching parameters should have failed -",
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [this, must, work].";
@@ -1287,7 +1288,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Routing with mismatching parameters should have failed -",
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [this, must, work].";
@@ -1306,17 +1307,17 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location("param/param"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(RouteWithParameter.class, getUIComponent());
+        assertEquals(RouteWithParameter.class, getUIComponent());
 
         // Expectation of 2 events is due to parameter and BeforeNavigation
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
+        assertEquals("Before navigation event was wrong.",
                 "Stored parameter: param", eventCollector.get(1));
 
         router.navigate(ui, new Location("param/static"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(
+        assertEquals(
                 "Did not get correct class even though StaticParameter should have precedence over RouteWithParameter due to exact url match.",
                 StaticParameter.class, getUIComponent());
     }
@@ -1330,9 +1331,9 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("optional/parameter"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.", "parameter",
+        assertEquals("Before navigation event was wrong.", "parameter",
                 eventCollector.get(0));
     }
 
@@ -1345,9 +1346,9 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("optional"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
+        assertEquals("Before navigation event was wrong.",
                 "No parameter", eventCollector.get(0));
     }
 
@@ -1362,7 +1363,7 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location("param/parameter"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Failed", RouteWithParameter.class,
+        assertEquals("Failed", RouteWithParameter.class,
                 getUIComponent());
     }
 
@@ -1391,7 +1392,7 @@ public class RouterTest extends RoutingTestBase {
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(FooNavigationTarget.class));
 
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, router.navigate(
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, router.navigate(
                 ui, new Location(""), NavigationTrigger.PROGRAMMATIC));
     }
 
@@ -1404,25 +1405,25 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("wild"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "With parameter: ",
+        assertEquals("Parameter should be empty", "With parameter: ",
                 eventCollector.get(0));
 
         router.navigate(ui, new Location("wild/single"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
+        assertEquals("Parameter should be empty",
                 "With parameter: single", eventCollector.get(1));
 
         router.navigate(ui, new Location("wild/multi/part/parameter"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 3,
+        assertEquals("Expected event amount was wrong", 3,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
+        assertEquals("Parameter should be empty",
                 "With parameter: multi/part/parameter", eventCollector.get(2));
     }
 
@@ -1436,23 +1437,23 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("wild"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 0,
+        assertEquals("Expected event amount was wrong", 0,
                 eventCollector.size());
 
         router.navigate(ui, new Location("wild/parameter"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "Parameter: parameter",
+        assertEquals("Parameter should be empty", "Parameter: parameter",
                 eventCollector.get(0));
 
         router.navigate(ui, new Location("wild/multi/part/parameter"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
+        assertEquals("Parameter should be empty",
                 "With parameter: multi/part/parameter", eventCollector.get(1));
 
     }
@@ -1464,21 +1465,21 @@ public class RouterTest extends RoutingTestBase {
                 Stream.of(OptionalParameter.class, WildParameter.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals(
+        assertEquals(
                 "Optional value should be able to return even without any parameters",
                 "optional", router.getUrl(OptionalParameter.class));
 
-        Assert.assertEquals(
+        assertEquals(
                 "Wildcard value should be able to return even without any parameters",
                 "wild", router.getUrl(WildParameter.class));
 
-        Assert.assertEquals("optional/my_param",
+        assertEquals("optional/my_param",
                 router.getUrl(OptionalParameter.class, "my_param"));
 
-        Assert.assertEquals("wild/true",
+        assertEquals("wild/true",
                 router.getUrl(WildParameter.class, "true"));
 
-        Assert.assertEquals("wild/there/are/many/of/us",
+        assertEquals("wild/there/are/many/of/us",
                 router.getUrl(WildParameter.class, "there/are/many/of/us"));
     }
 
@@ -1490,21 +1491,21 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "With parameter: ",
+        assertEquals("Parameter should be empty", "With parameter: ",
                 eventCollector.get(0));
 
         router.navigate(ui, new Location("my/wild"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
+        assertEquals("Parameter should be empty",
                 "With parameter: my/wild", eventCollector.get(1));
 
-        Assert.assertEquals("", router.getUrl(WildRootParameter.class));
-        Assert.assertEquals("wild",
+        assertEquals("", router.getUrl(WildRootParameter.class));
+        assertEquals("wild",
                 router.getUrl(WildRootParameter.class, "wild"));
     }
 
@@ -1516,21 +1517,21 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "No parameter",
+        assertEquals("Parameter should be empty", "No parameter",
                 eventCollector.get(0));
 
         router.navigate(ui, new Location("optional"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "optional",
+        assertEquals("Parameter should be empty", "optional",
                 eventCollector.get(1));
 
-        Assert.assertEquals("", router.getUrl(OptionalRootParameter.class));
-        Assert.assertEquals("optional",
+        assertEquals("", router.getUrl(OptionalRootParameter.class));
+        assertEquals("optional",
                 router.getUrl(OptionalRootParameter.class, "optional"));
     }
 
@@ -1542,7 +1543,7 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Has url with required parameter should not match to \"\"", 0,
                 eventCollector.size());
     }
@@ -1557,9 +1558,9 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("param/reroute/hello"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "hello",
+        assertEquals("Parameter should be empty", "hello",
                 eventCollector.get(0));
     }
 
@@ -1574,23 +1575,23 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location("integer/5"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "Parameter: 5",
+        assertEquals("Parameter should be empty", "Parameter: 5",
                 eventCollector.get(0));
 
         router.navigate(ui, new Location("long/5"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "Parameter: 5",
+        assertEquals("Parameter should be empty", "Parameter: 5",
                 eventCollector.get(1));
 
         router.navigate(ui, new Location("boolean/true"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 3,
+        assertEquals("Expected event amount was wrong", 3,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "Parameter: true",
+        assertEquals("Parameter should be empty", "Parameter: true",
                 eventCollector.get(2));
     }
 
@@ -1603,12 +1604,12 @@ public class RouterTest extends RoutingTestBase {
                                 BooleanParameter.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals("integer/5",
+        assertEquals("integer/5",
                 router.getUrl(IntegerParameter.class, 5));
 
-        Assert.assertEquals("long/5", router.getUrl(LongParameter.class, 5l));
+        assertEquals("long/5", router.getUrl(LongParameter.class, 5l));
 
-        Assert.assertEquals("boolean/false",
+        assertEquals("boolean/false",
                 router.getUrl(BooleanParameter.class, false));
     }
 
@@ -1623,7 +1624,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Non existent route should have returned.",
+        assertEquals("Non existent route should have returned.",
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
         String message = String.format(
@@ -1644,12 +1645,12 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("fixed/wildcard/3/4/1"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "With parameter: 8",
+        assertEquals("Parameter should be empty", "With parameter: 8",
                 eventCollector.get(0));
 
-        Assert.assertEquals("fixed/wildcard/5/5/3", router
+        assertEquals("fixed/wildcard/5/5/3", router
                 .getUrl(FixedWildParameter.class, Arrays.asList(5, 5, 3)));
     }
 
@@ -1663,12 +1664,12 @@ public class RouterTest extends RoutingTestBase {
 
         int result = router.navigate(ui, new Location("error"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Non existent route should have returned.",
+        assertEquals("Non existent route should have returned.",
                 HttpServletResponse.SC_NOT_FOUND, result);
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("",
+        assertEquals("",
                 "Redirected to error view, showing message: Could not navigate to 'error'",
                 eventCollector.get(0));
     }
@@ -1681,7 +1682,7 @@ public class RouterTest extends RoutingTestBase {
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Non existent route should have returned.",
+        assertEquals("Non existent route should have returned.",
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
     }
 
@@ -1694,10 +1695,10 @@ public class RouterTest extends RoutingTestBase {
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Non existent route should have returned.",
+        assertEquals("Non existent route should have returned.",
                 HttpServletResponse.SC_NOT_FOUND, result);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Expected the extending class to be used instead of the super class",
                 ErrorTarget.class, getUIComponent());
     }
@@ -1724,10 +1725,10 @@ public class RouterTest extends RoutingTestBase {
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Non existent route should have returned.",
+        assertEquals("Non existent route should have returned.",
                 HttpServletResponse.SC_NOT_FOUND, result);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Expected the extending class to be used instead of the super class",
                 CustomNotFoundTarget.class, getUIComponent());
 
@@ -1747,14 +1748,14 @@ public class RouterTest extends RoutingTestBase {
                 new Location("beforeToError/exception"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Target should have rerouted to exception target.",
+        assertEquals("Target should have rerouted to exception target.",
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
-        Assert.assertEquals(IllegalTarget.class, getUIComponent());
+        assertEquals(IllegalTarget.class, getUIComponent());
 
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
-        Assert.assertEquals("Illegal argument exception.",
+        assertEquals("Illegal argument exception.",
                 visibleComponent.get().getElement().getText());
     }
 
@@ -1770,19 +1771,19 @@ public class RouterTest extends RoutingTestBase {
                 new Location("beforeToError/message/CustomMessage"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Target should have rerouted to exception target.",
+        assertEquals("Target should have rerouted to exception target.",
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
-        Assert.assertEquals(IllegalTarget.class, getUIComponent());
+        assertEquals(IllegalTarget.class, getUIComponent());
 
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
-        Assert.assertEquals("CustomMessage",
+        assertEquals("CustomMessage",
                 visibleComponent.get().getElement().getText());
 
-        Assert.assertEquals("Expected only one event message from error view",
+        assertEquals("Expected only one event message from error view",
                 1, eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
+        assertEquals("Parameter should be empty",
                 "Error location: beforeToError/message/CustomMessage",
                 eventCollector.get(0));
 
@@ -1797,10 +1798,10 @@ public class RouterTest extends RoutingTestBase {
 
         int result = router.navigate(ui, new Location("toNotFound/error"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Target should have rerouted to exception target.",
+        assertEquals("Target should have rerouted to exception target.",
                 HttpServletResponse.SC_NOT_FOUND, result);
 
-        Assert.assertEquals(RouteNotFoundError.class, getUIComponent());
+        assertEquals(RouteNotFoundError.class, getUIComponent());
     }
 
     @Test
@@ -1815,7 +1816,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location(location),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Target should have failed on an internal exception.",
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
@@ -1838,7 +1839,7 @@ public class RouterTest extends RoutingTestBase {
 
         ui.navigateTo("loop");
 
-        Assert.assertEquals("Expected only one request to loop", 1,
+        assertEquals("Expected only one request to loop", 1,
                 eventCollector.size());
     }
 
@@ -1852,7 +1853,7 @@ public class RouterTest extends RoutingTestBase {
 
         ui.navigateTo("redirect/loop");
 
-        Assert.assertEquals("Expected two events", 2, eventCollector.size());
+        assertEquals("Expected two events", 2, eventCollector.size());
     }
 
     @Test
@@ -1867,7 +1868,7 @@ public class RouterTest extends RoutingTestBase {
         int status = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                 status);
     }
 
@@ -1885,21 +1886,21 @@ public class RouterTest extends RoutingTestBase {
         int status2 = router.navigate(ui, new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("First transition failed",
+        assertEquals("First transition failed",
                 HttpServletResponse.SC_OK, status1);
-        Assert.assertEquals("Second transition failed",
+        assertEquals("Second transition failed",
                 HttpServletResponse.SC_OK, status2);
-        Assert.assertEquals(PostponingAndResumingNavigationTarget.class,
+        assertEquals(PostponingAndResumingNavigationTarget.class,
                 getUIComponent());
 
         Thread.sleep(200);
 
-        Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
-        Assert.assertEquals("Expected event amount was wrong", 3,
+        assertEquals(RootNavigationTarget.class, getUIComponent());
+        assertEquals("Expected event amount was wrong", 3,
                 eventCollector.size());
-        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
-        Assert.assertEquals("Postponed", eventCollector.get(1));
-        Assert.assertEquals("Resuming", eventCollector.get(2));
+        assertEquals("Can't postpone here", eventCollector.get(0));
+        assertEquals("Postponed", eventCollector.get(1));
+        assertEquals("Resuming", eventCollector.get(2));
     }
 
     @Test
@@ -1916,16 +1917,16 @@ public class RouterTest extends RoutingTestBase {
         int status2 = router.navigate(ui, new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("First transition failed",
+        assertEquals("First transition failed",
                 HttpServletResponse.SC_OK, status1);
-        Assert.assertEquals("Second transition failed",
+        assertEquals("Second transition failed",
                 HttpServletResponse.SC_OK, status2);
-        Assert.assertEquals(PostponingForeverNavigationTarget.class,
+        assertEquals(PostponingForeverNavigationTarget.class,
                 getUIComponent());
-        Assert.assertEquals("Expected event amount was wrong", 2,
+        assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
-        Assert.assertEquals("Postponed", eventCollector.get(1));
+        assertEquals("Can't postpone here", eventCollector.get(0));
+        assertEquals("Postponed", eventCollector.get(1));
     }
 
     @Test
@@ -1943,22 +1944,22 @@ public class RouterTest extends RoutingTestBase {
         int status3 = router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("First transition failed",
+        assertEquals("First transition failed",
                 HttpServletResponse.SC_OK, status1);
-        Assert.assertEquals("Second transition failed",
+        assertEquals("Second transition failed",
                 HttpServletResponse.SC_OK, status2);
-        Assert.assertEquals("Third transition failed",
+        assertEquals("Third transition failed",
                 HttpServletResponse.SC_OK, status3);
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+        assertEquals(FooBarNavigationTarget.class, getUIComponent());
         Thread.sleep(200);
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
-        Assert.assertEquals("Expected event amount was wrong", 5,
+        assertEquals(FooBarNavigationTarget.class, getUIComponent());
+        assertEquals("Expected event amount was wrong", 5,
                 eventCollector.size());
-        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
-        Assert.assertEquals("Postponed", eventCollector.get(1));
-        Assert.assertEquals("Not postponing anymore", eventCollector.get(2));
-        Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(3));
-        Assert.assertEquals("Resuming", eventCollector.get(4));
+        assertEquals("Can't postpone here", eventCollector.get(0));
+        assertEquals("Postponed", eventCollector.get(1));
+        assertEquals("Not postponing anymore", eventCollector.get(2));
+        assertEquals("FooBar ACTIVATING", eventCollector.get(3));
+        assertEquals("Resuming", eventCollector.get(4));
     }
 
     @Test
@@ -1974,23 +1975,23 @@ public class RouterTest extends RoutingTestBase {
         int status2 = router.navigate(ui, new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("First transition failed",
+        assertEquals("First transition failed",
                 HttpServletResponse.SC_OK, status1);
-        Assert.assertEquals("Second transition failed",
+        assertEquals("Second transition failed",
                 HttpServletResponse.SC_OK, status2);
-        Assert.assertEquals(PostponingAndResumingCompoundNavigationTarget.class,
+        assertEquals(PostponingAndResumingCompoundNavigationTarget.class,
                 getUIComponent());
 
         Thread.sleep(200);
 
-        Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
-        Assert.assertEquals("Expected event amount was wrong", 5,
+        assertEquals(RootNavigationTarget.class, getUIComponent());
+        assertEquals("Expected event amount was wrong", 5,
                 eventCollector.size());
-        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
-        Assert.assertEquals("ChildListener notified", eventCollector.get(1));
-        Assert.assertEquals("Postponed", eventCollector.get(2));
-        Assert.assertEquals("Resuming", eventCollector.get(3));
-        Assert.assertEquals("ChildListener notified", eventCollector.get(4));
+        assertEquals("Can't postpone here", eventCollector.get(0));
+        assertEquals("ChildListener notified", eventCollector.get(1));
+        assertEquals("Postponed", eventCollector.get(2));
+        assertEquals("Resuming", eventCollector.get(3));
+        assertEquals("ChildListener notified", eventCollector.get(4));
     }
 
     @Test
@@ -2001,9 +2002,9 @@ public class RouterTest extends RoutingTestBase {
 
         ui.navigateTo("");
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals(
+        assertEquals(
                 "Received locale change event for locale: "
                         + Locale.getDefault().getDisplayName(),
                 eventCollector.get(0));
@@ -2018,16 +2019,16 @@ public class RouterTest extends RoutingTestBase {
 
         ui.navigateTo("");
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
+        assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals(
+        assertEquals(
                 "Received locale change event for locale: "
                         + Locale.getDefault().getDisplayName(),
                 eventCollector.get(0));
 
         ui.navigateTo("foo");
 
-        Assert.assertEquals("Recorded event amount should have stayed the same",
+        assertEquals("Recorded event amount should have stayed the same",
                 1, eventCollector.size());
     }
 
@@ -2042,7 +2043,7 @@ public class RouterTest extends RoutingTestBase {
 
         router.getUrl(RouteWithCustomParameterSerialization.class, "foo");
 
-        Assert.assertEquals("Custom parameter serialization not called",
+        assertEquals("Custom parameter serialization not called",
                 "Custom parameter serialization called", eventCollector.get(0));
     }
 
@@ -2066,11 +2067,11 @@ public class RouterTest extends RoutingTestBase {
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
 
-        Assert.assertTrue("No navigation component visible",
+        assertTrue("No navigation component visible",
                 visibleComponent.isPresent());
 
-        Assert.assertEquals(errorClass, visibleComponent.get().getClass());
-        Assert.assertEquals(exceptionText,
+        assertEquals(errorClass, visibleComponent.get().getClass());
+        assertEquals(exceptionText,
                 visibleComponent.get().getElement().getText());
     }
 }

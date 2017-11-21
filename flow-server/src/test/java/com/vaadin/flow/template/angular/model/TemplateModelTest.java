@@ -1,5 +1,14 @@
 package com.vaadin.flow.template.angular.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,19 +19,18 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.model.Exclude;
-import com.vaadin.flow.model.Include;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
+import com.vaadin.flow.model.Bean;
+import com.vaadin.flow.model.BeanContainingBeans;
+import com.vaadin.flow.model.Exclude;
+import com.vaadin.flow.model.Include;
+import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.InlineTemplate;
-import com.vaadin.flow.model.Bean;
-import com.vaadin.flow.model.BeanContainingBeans;
-import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.util.ReflectTools;
 
@@ -449,12 +457,12 @@ public class TemplateModelTest {
         Class<? extends TemplateModel> templateModelType = TemplateModelTypeParser
                 .getType(NoModelTemplate.class);
 
-        Assert.assertEquals(TemplateModel.class, templateModelType);
+        assertEquals(TemplateModel.class, templateModelType);
 
         templateModelType = TemplateModelTypeParser
                 .getType(EmptyModelTemplate.class);
 
-        Assert.assertEquals(EmptyModel.class, templateModelType);
+        assertEquals(EmptyModel.class, templateModelType);
     }
 
     @Test
@@ -466,7 +474,7 @@ public class TemplateModelTest {
         Class<? extends TemplateModel> second = TemplateModelTypeParser
                 .getType(EmptyModelTemplate.class);
 
-        Assert.assertSame(first, second);
+        assertSame(first, second);
     }
 
     @Test
@@ -476,10 +484,10 @@ public class TemplateModelTest {
         TemplateModel modelProxy = emptyModelTemplate.getModel();
         TemplateModel modelProxy2 = emptyModelTemplate.getModel();
 
-        Assert.assertTrue(modelProxy == modelProxy2);
+        assertTrue(modelProxy == modelProxy2);
 
         modelProxy2 = new EmptyModelTemplate().getModel();
-        Assert.assertNotSame(modelProxy, modelProxy2);
+        assertNotSame(modelProxy, modelProxy2);
     }
 
     @Test
@@ -492,15 +500,15 @@ public class TemplateModelTest {
 
         model.setString("foobar");
 
-        Assert.assertEquals("foobar", model.getString());
+        assertEquals("foobar", model.getString());
 
         ArrayList<NodeChange> changes = new ArrayList<>();
         ModelMap modelMap = template.getElement().getNode()
                 .getFeature(ModelMap.class);
         modelMap.collectChanges(changes::add);
 
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(template.getElement().getNode(),
+        assertEquals(1, changes.size());
+        assertEquals(template.getElement().getNode(),
                 changes.get(0).getNode());
 
         changes.clear();
@@ -508,10 +516,10 @@ public class TemplateModelTest {
 
         model.setString("foobar");
 
-        Assert.assertEquals("foobar", model.getString());
+        assertEquals("foobar", model.getString());
         modelMap.collectChanges(changes::add);
 
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -519,19 +527,19 @@ public class TemplateModelTest {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(null, model.getBoolean());
+        assertEquals(null, model.getBoolean());
 
         model.setBoolean(Boolean.TRUE);
 
-        Assert.assertEquals(Boolean.TRUE, model.getBoolean());
+        assertEquals(Boolean.TRUE, model.getBoolean());
 
         model.setBoolean(Boolean.FALSE);
 
-        Assert.assertEquals(Boolean.FALSE, model.getBoolean());
+        assertEquals(Boolean.FALSE, model.getBoolean());
 
         model.setBoolean(null);
 
-        Assert.assertEquals(null, model.getBoolean());
+        assertEquals(null, model.getBoolean());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -539,7 +547,7 @@ public class TemplateModelTest {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(null, model.getBoolean());
+        assertEquals(null, model.getBoolean());
 
         template.getElement().getNode().getFeature(ModelMap.class)
         .setValue("boolean", "True");
@@ -552,7 +560,7 @@ public class TemplateModelTest {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(Boolean.FALSE, model.isBooleanPrimitive());
+        assertEquals(Boolean.FALSE, model.isBooleanPrimitive());
 
         template.getElement().getNode().getFeature(ModelMap.class)
         .setValue("booleanPrimitive", "TRUE");
@@ -565,13 +573,13 @@ public class TemplateModelTest {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertFalse(model.getBooleanPrimitive());
-        Assert.assertFalse(model.isBooleanPrimitive());
+        assertFalse(model.getBooleanPrimitive());
+        assertFalse(model.isBooleanPrimitive());
 
         model.setBooleanPrimitive(true);
 
-        Assert.assertTrue(model.getBooleanPrimitive());
-        Assert.assertTrue(model.isBooleanPrimitive());
+        assertTrue(model.getBooleanPrimitive());
+        assertTrue(model.isBooleanPrimitive());
     }
 
     @Test
@@ -579,11 +587,11 @@ public class TemplateModelTest {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(null, model.getDouble());
+        assertEquals(null, model.getDouble());
 
         model.setDouble(new Double(1.0D));
 
-        Assert.assertEquals(new Double(1.0D), model.getDouble());
+        assertEquals(new Double(1.0D), model.getDouble());
     }
 
     @Test
@@ -591,11 +599,11 @@ public class TemplateModelTest {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(0.0d, model.getDoublePrimitive(), 0.0d);
+        assertEquals(0.0d, model.getDoublePrimitive(), 0.0d);
 
         model.setDoublePrimitive(1.5d);
 
-        Assert.assertEquals(1.5d, model.getDoublePrimitive(), 0.0d);
+        assertEquals(1.5d, model.getDoublePrimitive(), 0.0d);
     }
 
     @Test
@@ -603,11 +611,11 @@ public class TemplateModelTest {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(null, model.getInteger());
+        assertEquals(null, model.getInteger());
 
         model.setInteger(new Integer(10));
 
-        Assert.assertEquals(new Integer(10), model.getInteger());
+        assertEquals(new Integer(10), model.getInteger());
     }
 
     @Test
@@ -615,11 +623,11 @@ public class TemplateModelTest {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(0, model.getInt());
+        assertEquals(0, model.getInt());
 
         model.setInt(1000);
 
-        Assert.assertEquals(1000, model.getInt());
+        assertEquals(1000, model.getInt());
     }
 
     @Test
@@ -627,11 +635,11 @@ public class TemplateModelTest {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(null, model.getString());
+        assertEquals(null, model.getString());
 
         model.setString("foobar");
 
-        Assert.assertEquals("foobar", model.getString());
+        assertEquals("foobar", model.getString());
     }
 
     @Test
@@ -646,8 +654,8 @@ public class TemplateModelTest {
         StateNode stateNode = (StateNode) template.getElement().getNode()
                 .getFeature(ModelMap.class).getValue("bean");
 
-        Assert.assertNull(stateNode);
-        Assert.assertEquals(0, beanTriggered.get());
+        assertNull(stateNode);
+        assertEquals(0, beanTriggered.get());
 
         model.setBean(bean);
 
@@ -656,12 +664,12 @@ public class TemplateModelTest {
 
         // enough to verify that TemplateModelBeanUtil.importBeanIntoModel is
         // triggered, since TemplatemodelBeanUtilTests covers the bean import
-        Assert.assertNotNull(stateNode);
-        Assert.assertEquals(1, beanTriggered.get());
+        assertNotNull(stateNode);
+        assertEquals(1, beanTriggered.get());
 
         ModelMap modelMap = ModelMap.get(stateNode);
-        Assert.assertNotNull(modelMap);
-        Assert.assertEquals("foobar", modelMap.getValue("string"));
+        assertNotNull(modelMap);
+        assertEquals("foobar", modelMap.getValue("string"));
     }
 
     @Test(expected = InvalidTemplateModelException.class)
@@ -775,7 +783,7 @@ public class TemplateModelTest {
         SubBeansModel model2 = new SubBeansTemplate().getModel();
         model2.setBeanClass(new SubBean());
 
-        Assert.assertSame(model1.getBeanClass().getClass(),
+        assertSame(model1.getBeanClass().getClass(),
                 model2.getBeanClass().getClass());
     }
 
@@ -891,7 +899,7 @@ public class TemplateModelTest {
         SubSubBeanIface subProxy = model.getProxy("bean.bean",
                 SubSubBeanIface.class);
 
-        Assert.assertEquals(4, subProxy.getValue());
+        assertEquals(4, subProxy.getValue());
     }
 
     private void setModelPropertyAndVerifyGetter(AngularTemplate template,
@@ -899,14 +907,14 @@ public class TemplateModelTest {
             Serializable expected) {
         ModelMap feature = getModelMap(template, beanPath);
         feature.setValue(property, expected);
-        Assert.assertEquals(expected, getter.get());
+        assertEquals(expected, getter.get());
     }
 
     private void verifyModel(AngularTemplate template, String beanPath,
             String property, Serializable expected) {
         ModelMap feature = getModelMap(template, beanPath);
-        Assert.assertNotNull(feature);
-        Assert.assertEquals(expected, feature.getValue(property));
+        assertNotNull(feature);
+        assertEquals(expected, feature.getValue(property));
     }
 
     private ModelMap getModelMap(AngularTemplate template, String beanPath) {
@@ -933,11 +941,11 @@ public class TemplateModelTest {
 
     @SafeVarargs
     private static <T> void assertListContentsEquals(List<T> list, T... beans) {
-        Assert.assertEquals(beans.length, list.size());
+        assertEquals(beans.length, list.size());
         for (int i = 0; i < beans.length; i++) {
-            Assert.assertThat(list.get(i),
+            assertThat(list.get(i),
                     Matchers.samePropertyValuesAs(beans[i]));
-            Assert.assertNotSame(beans[i], list.get(i));
+            assertNotSame(beans[i], list.get(i));
         }
 
     }
@@ -949,11 +957,11 @@ public class TemplateModelTest {
 
         ModelMap modelMap = getModelMap(template, "bean");
         Set<String> mapKeys = getKeys(modelMap);
-        Assert.assertTrue("Model should contain included 'doubleValue'",
+        assertTrue("Model should contain included 'doubleValue'",
                 mapKeys.remove("doubleValue"));
-        Assert.assertTrue("Model should contain included 'booleanObject'",
+        assertTrue("Model should contain included 'booleanObject'",
                 mapKeys.remove("booleanObject"));
-        Assert.assertTrue("model should be empty but contains: " + mapKeys,
+        assertTrue("model should be empty but contains: " + mapKeys,
                 mapKeys.isEmpty());
     }
 
@@ -969,7 +977,7 @@ public class TemplateModelTest {
         excluded.add("booleanObject");
 
         for (String excludedPropertyName : excluded) {
-            Assert.assertFalse("Model should not contain excluded '"
+            assertFalse("Model should not contain excluded '"
                     + excludedPropertyName + "'",
                     mapKeys.contains(excludedPropertyName));
         }
@@ -978,13 +986,13 @@ public class TemplateModelTest {
         .map(method -> ReflectTools.getPropertyName(method))
         .forEach(propertyName -> {
             if (!excluded.contains(propertyName)) {
-                Assert.assertTrue(
+                assertTrue(
                         "Model should contain the property '"
                                 + propertyName + "'",
                                 mapKeys.remove(propertyName));
             }
         });
-        Assert.assertTrue("model should be empty but contains: " + mapKeys,
+        assertTrue("model should be empty but contains: " + mapKeys,
                 mapKeys.isEmpty());
     }
 
@@ -993,8 +1001,8 @@ public class TemplateModelTest {
         TemplateWithExcludeAndInclude template = new TemplateWithExcludeAndInclude();
         template.getModel().setBean(new Bean(123));
         ModelMap modelMap = getModelMap(template, "bean");
-        Assert.assertTrue(modelMap.hasValue("booleanObject"));
-        Assert.assertEquals(1, modelMap.getKeys().count());
+        assertTrue(modelMap.hasValue("booleanObject"));
+        assertEquals(1, modelMap.getKeys().count());
     }
 
     @Test
@@ -1002,8 +1010,8 @@ public class TemplateModelTest {
         TemplateWithExcludeAndIncludeSubclass template = new TemplateWithExcludeAndIncludeSubclass();
         template.getModel().setBean(new Bean(123));
         ModelMap modelMap = getModelMap(template, "bean");
-        Assert.assertTrue(modelMap.hasValue("booleanObject"));
-        Assert.assertEquals(1, modelMap.getKeys().count());
+        assertTrue(modelMap.hasValue("booleanObject"));
+        assertEquals(1, modelMap.getKeys().count());
     }
 
     @Test
@@ -1011,8 +1019,8 @@ public class TemplateModelTest {
         TemplateWithExcludeAndIncludeSubclassOverrides template = new TemplateWithExcludeAndIncludeSubclassOverrides();
         template.getModel().setBean(new Bean(123));
         ModelMap modelMap = getModelMap(template, "bean");
-        Assert.assertTrue(modelMap.hasValue("doubleValue"));
-        Assert.assertEquals(1, modelMap.getKeys().count());
+        assertTrue(modelMap.hasValue("doubleValue"));
+        assertEquals(1, modelMap.getKeys().count());
     }
 
     @Test
@@ -1024,12 +1032,12 @@ public class TemplateModelTest {
 
         template.getModel().setBeanContainingBeans(beanContainer);
 
-        Assert.assertNotNull(
+        assertNotNull(
                 template.getModel().getBeanContainingBeans().getBean1());
-        Assert.assertTrue(getModelMap(template, "beanContainingBeans.bean1")
+        assertTrue(getModelMap(template, "beanContainingBeans.bean1")
                 .hasValue("booleanValue"));
         // bean1.booleanObject is excluded
-        Assert.assertFalse(getModelMap(template, "beanContainingBeans.bean1")
+        assertFalse(getModelMap(template, "beanContainingBeans.bean1")
                 .hasValue("booleanObject"));
     }
 
@@ -1052,13 +1060,13 @@ public class TemplateModelTest {
         beanContainer.setBean2(new Bean(2));
         template.getModel().setBeanContainingBeans(beanContainer);
 
-        Assert.assertNotNull(
+        assertNotNull(
                 template.getModel().getBeanContainingBeans().getBean1());
 
         ModelMap bean1Map = getModelMap(template, "beanContainingBeans.bean1");
         Set<String> bean1Keys = getKeys(bean1Map);
-        Assert.assertTrue(bean1Keys.contains("booleanObject"));
-        Assert.assertEquals(1, bean1Keys.size());
+        assertTrue(bean1Keys.contains("booleanObject"));
+        assertEquals(1, bean1Keys.size());
     }
 
     @Test(expected = InvalidTemplateModelException.class)
@@ -1083,9 +1091,9 @@ public class TemplateModelTest {
         ModelMap bean1 = ModelMap.get(modelList.get(0));
         Set<String> propertiesInMap = bean1.getKeys()
                 .collect(Collectors.toSet());
-        Assert.assertTrue("Bean in model should have an 'intValue' property",
+        assertTrue("Bean in model should have an 'intValue' property",
                 propertiesInMap.remove("intValue"));
-        Assert.assertEquals(
+        assertEquals(
                 "All other properties should have been filtered out", 0,
                 propertiesInMap.size());
     }
@@ -1104,15 +1112,15 @@ public class TemplateModelTest {
 
         Set<String> bean1InMap = getKeys(bean1);
         Set<String> bean2InMap = getKeys(bean2);
-        Assert.assertFalse(
+        assertFalse(
                 "Bean1 in model should not have an 'intValue' property",
                 bean1InMap.contains("intValue"));
-        Assert.assertFalse(
+        assertFalse(
                 "Bean2 in model should not have an 'intValue' property",
                 bean2InMap.contains("intValue"));
-        Assert.assertEquals("All other properties should have been included", 6,
+        assertEquals("All other properties should have been included", 6,
                 bean1InMap.size());
-        Assert.assertEquals("All other properties should have been included", 6,
+        assertEquals("All other properties should have been included", 6,
                 bean2InMap.size());
     }
 
@@ -1126,37 +1134,37 @@ public class TemplateModelTest {
         template.getModel().setBeanContainingBeans(beanContainingBeans);
 
         ModelList modelList = getModelList(template, "beanContainingBeans");
-        Assert.assertEquals(2, modelList.size());
+        assertEquals(2, modelList.size());
 
         ModelMap container1Map = ModelMap.get(modelList.get(0));
         ModelMap container2Map = ModelMap.get(modelList.get(1));
         HashSet<String> bean1bean2 = new HashSet<>();
         bean1bean2.add("bean1");
         bean1bean2.add("bean2");
-        Assert.assertEquals(bean1bean2,
+        assertEquals(bean1bean2,
                 container1Map.getKeys().collect(Collectors.toSet()));
-        Assert.assertEquals(bean1bean2,
+        assertEquals(bean1bean2,
                 container2Map.getKeys().collect(Collectors.toSet()));
 
         Set<String> container1Bean1Properties = getKeys(
                 container1Map.resolveModelMap("bean1"));
-        Assert.assertTrue(container1Bean1Properties.remove("intValue"));
-        Assert.assertEquals(0, container1Bean1Properties.size());
+        assertTrue(container1Bean1Properties.remove("intValue"));
+        assertEquals(0, container1Bean1Properties.size());
 
         Set<String> container1Bean2Properties = getKeys(
                 container1Map.resolveModelMap("bean2"));
-        Assert.assertTrue(container1Bean2Properties.remove("booleanValue"));
-        Assert.assertEquals(0, container1Bean2Properties.size());
+        assertTrue(container1Bean2Properties.remove("booleanValue"));
+        assertEquals(0, container1Bean2Properties.size());
 
         Set<String> container2Bean1Properties = getKeys(
                 container2Map.resolveModelMap("bean1"));
         // Null value in the initial bean implies not imported or created
-        Assert.assertEquals(0, container2Bean1Properties.size());
+        assertEquals(0, container2Bean1Properties.size());
 
         Set<String> container2Bean2Properties = getKeys(
                 container2Map.resolveModelMap("bean2"));
-        Assert.assertTrue(container2Bean2Properties.remove("booleanValue"));
-        Assert.assertEquals(0, container2Bean2Properties.size());
+        assertTrue(container2Bean2Properties.remove("booleanValue"));
+        assertEquals(0, container2Bean2Properties.size());
     }
 
     private static Set<String> getKeys(ModelMap map) {

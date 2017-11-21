@@ -15,11 +15,15 @@
  */
 package com.vaadin.ui.event;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.JsonCodec;
@@ -42,7 +46,7 @@ public class ComponentEventBusTest {
         @Override
         public void onComponentEvent(T e) {
             eventHandlerCalled.incrementAndGet();
-            Assert.assertNull(
+            assertNull(
                     "Event object must be explicitly set to null before firing an event",
                     eventObject.get());
             eventObject.set(e);
@@ -64,14 +68,14 @@ public class ComponentEventBusTest {
 
         public void assertEventCalled(TestComponent source,
                 boolean fromClient) {
-            Assert.assertEquals(1, getCalls());
-            Assert.assertEquals(source, getEvent().getSource());
-            Assert.assertEquals(fromClient, getEvent().isFromClient());
+            assertEquals(1, getCalls());
+            assertEquals(source, getEvent().getSource());
+            assertEquals(fromClient, getEvent().isFromClient());
 
         }
 
         public void assertEventNotCalled() {
-            Assert.assertEquals(0, getCalls());
+            assertEquals(0, getCalls());
         }
 
         @Override
@@ -105,8 +109,8 @@ public class ComponentEventBusTest {
         component.getEventBus().fireEvent(new MappedToDomEvent(component));
 
         eventTracker.assertEventCalled(component, false);
-        Assert.assertEquals(32, eventTracker.getEvent().getSomeData());
-        Assert.assertEquals("Default constructor",
+        assertEquals(32, eventTracker.getEvent().getSomeData());
+        assertEquals("Default constructor",
                 eventTracker.getEvent().getMoreData());
 
         eventTracker.reset();
@@ -114,8 +118,8 @@ public class ComponentEventBusTest {
         .fireEvent(new MappedToDomEvent(component, true));
 
         eventTracker.assertEventCalled(component, true);
-        Assert.assertEquals(12, eventTracker.getEvent().getSomeData());
-        Assert.assertEquals("Two arg constructor",
+        assertEquals(12, eventTracker.getEvent().getSomeData());
+        assertEquals("Two arg constructor",
                 eventTracker.getEvent().getMoreData());
     }
 
@@ -134,8 +138,8 @@ public class ComponentEventBusTest {
         component
         .fireEvent(new ServerEvent(component, new BigDecimal("12.22")));
 
-        Assert.assertEquals(1, eventHandlerCalled.get());
-        Assert.assertEquals(new BigDecimal("12.22"), dataValueInEvent.get());
+        assertEquals(1, eventHandlerCalled.get());
+        assertEquals(new BigDecimal("12.22"), dataValueInEvent.get());
     }
 
     @Test
@@ -145,7 +149,7 @@ public class ComponentEventBusTest {
         c.addListener(ServerNoDataEvent.class, eventTracker);
         c.fireEvent(new ServerNoDataEvent(c, false));
         eventTracker.assertEventCalled(c, false);
-        Assert.assertFalse(eventTracker.getEvent().isFromClient());
+        assertFalse(eventTracker.getEvent().isFromClient());
     }
 
     @Test
@@ -167,8 +171,8 @@ public class ComponentEventBusTest {
         c.addListener(MappedToDomEvent.class, eventListener);
         fireDomEvent(c, "dom-event", createData("event.someData", 2));
         eventListener.assertEventCalled(c, true);
-        Assert.assertEquals(2, eventListener.getEvent().getSomeData());
-        Assert.assertNull(eventListener.getEvent().getMoreData());
+        assertEquals(2, eventListener.getEvent().getSomeData());
+        assertNull(eventListener.getEvent().getMoreData());
     }
 
     private JsonObject createData(String key, Object value) {
@@ -202,7 +206,7 @@ public class ComponentEventBusTest {
     }
 
     private void assertNoListeners(ComponentEventBus eventBus) {
-        Assert.assertTrue(eventBus.componentEventData.isEmpty());
+        assertTrue(eventBus.componentEventData.isEmpty());
     }
 
     @Test
@@ -217,8 +221,8 @@ public class ComponentEventBusTest {
 
         eventTracker.assertEventCalled(component, true);
         MappedToDomEvent event = eventTracker.getEvent();
-        Assert.assertEquals(42, event.getSomeData());
-        Assert.assertEquals("1", event.getMoreData());
+        assertEquals(42, event.getSomeData());
+        assertEquals("1", event.getMoreData());
     }
 
     @Test
@@ -234,8 +238,8 @@ public class ComponentEventBusTest {
 
         eventTracker.assertEventCalled(component, true);
         MappedToDomEvent event = eventTracker.getEvent();
-        Assert.assertEquals(42, event.getSomeData());
-        Assert.assertEquals("1", event.getMoreData());
+        assertEquals(42, event.getSomeData());
+        assertEquals("1", event.getMoreData());
     }
 
     @Test
@@ -300,9 +304,9 @@ public class ComponentEventBusTest {
         fireDomEvent(component, "dom-event", eventData);
 
         eventTracker.assertEventCalled(component, true);
-        Assert.assertEquals("19", eventTracker.getEvent().getMoreData());
-        Assert.assertEquals(42, eventTracker.getEvent().getSomeData());
-        Assert.assertEquals(component, eventTracker.getEvent().getSource());
+        assertEquals("19", eventTracker.getEvent().getMoreData());
+        assertEquals(42, eventTracker.getEvent().getSomeData());
+        assertEquals(component, eventTracker.getEvent().getSource());
 
         eventTracker2.assertEventCalled(component, true);
     }
@@ -322,12 +326,12 @@ public class ComponentEventBusTest {
 
         eventTracker.assertEventCalled(component, true);
         eventTracker2.assertEventCalled(component, true);
-        Assert.assertEquals("19", eventTracker.getEvent().getMoreData());
-        Assert.assertEquals("19", eventTracker2.getEvent().getMoreData());
-        Assert.assertEquals(42, eventTracker.getEvent().getSomeData());
-        Assert.assertEquals(42, eventTracker2.getEvent().getSomeData());
-        Assert.assertEquals(component, eventTracker.getEvent().getSource());
-        Assert.assertEquals(component, eventTracker2.getEvent().getSource());
+        assertEquals("19", eventTracker.getEvent().getMoreData());
+        assertEquals("19", eventTracker2.getEvent().getMoreData());
+        assertEquals(42, eventTracker.getEvent().getSomeData());
+        assertEquals(42, eventTracker2.getEvent().getSomeData());
+        assertEquals(component, eventTracker.getEvent().getSource());
+        assertEquals(component, eventTracker2.getEvent().getSource());
     }
 
     @Test
@@ -348,9 +352,9 @@ public class ComponentEventBusTest {
 
         eventTracker.assertEventNotCalled();
         eventTracker2.assertEventCalled(component, true);
-        Assert.assertEquals("19", eventTracker2.getEvent().getMoreData());
-        Assert.assertEquals(42, eventTracker2.getEvent().getSomeData());
-        Assert.assertEquals(component, eventTracker2.getEvent().getSource());
+        assertEquals("19", eventTracker2.getEvent().getMoreData());
+        assertEquals(42, eventTracker2.getEvent().getSomeData());
+        assertEquals(component, eventTracker2.getEvent().getSource());
         remover2.remove();
         assertNoListeners(component.getEventBus());
     }
@@ -393,7 +397,7 @@ public class ComponentEventBusTest {
         };
         c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
 
-        Assert.assertEquals(0, eventBusCreated.get());
+        assertEquals(0, eventBusCreated.get());
     }
 
 }

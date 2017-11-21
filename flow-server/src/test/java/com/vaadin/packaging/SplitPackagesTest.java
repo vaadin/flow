@@ -15,6 +15,8 @@
  */
 package com.vaadin.packaging;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,7 +29,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class SplitPackagesTest {
@@ -50,7 +51,7 @@ public class SplitPackagesTest {
         String errors = collectErrors(packageToModules);
 
         if (!errors.isEmpty()) {
-            Assert.fail(errors.toString());
+            fail(errors.toString());
         }
     }
 

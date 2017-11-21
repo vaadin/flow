@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.template.angular;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class RelativeFileResolverTest {
@@ -31,9 +32,9 @@ public class RelativeFileResolverTest {
 
     private void resolveAndAssert(String templateName, String expectedContents)
             throws IOException {
-        Assert.assertTrue(IOUtils.toString(resolver.resolve(templateName))
+        assertTrue(IOUtils.toString(resolver.resolve(templateName))
                 .contains(expectedContents));
-        Assert.assertTrue(
+        assertTrue(
                 IOUtils.toString(resolverWithFolder.resolve(templateName))
                         .contains(expectedContents));
 

@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.dom;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Locale;
@@ -22,7 +25,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class ElementFactoryTest {
@@ -72,7 +74,7 @@ public class ElementFactoryTest {
 
     private void assertElement(String expectedOuterHtml, Element createAnchor) {
         String actualHtml = getOuterHtml(createAnchor);
-        Assert.assertEquals(expectedOuterHtml, actualHtml);
+        assertEquals(expectedOuterHtml, actualHtml);
     }
 
     private String getOuterHtml(Element e) {
@@ -119,7 +121,7 @@ public class ElementFactoryTest {
                     "<" + expectedTag + ">textContent</" + expectedTag + ">",
                     element);
         } else {
-            Assert.fail("Untested method: " + method.getName() + "("
+            fail("Untested method: " + method.getName() + "("
                     + Stream.of(method.getParameterTypes())
                             .map(Class::getSimpleName)
                             .collect(Collectors.joining(","))

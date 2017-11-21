@@ -15,6 +15,12 @@
  */
 package com.vaadin.server;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,7 +44,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -175,7 +180,7 @@ public class StaticFileServerTest implements Serializable {
             return null;
         }).when(response).setContentLengthLong(Matchers.anyLong());
 
-        Assert.assertNull(VaadinService.getCurrent());
+        assertNull(VaadinService.getCurrent());
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(service.getDeploymentConfiguration())
@@ -184,7 +189,7 @@ public class StaticFileServerTest implements Serializable {
 
     @After
     public void tearDown() {
-        Assert.assertNull(VaadinService.getCurrent());
+        assertNull(VaadinService.getCurrent());
     }
 
     @Test
@@ -192,26 +197,26 @@ public class StaticFileServerTest implements Serializable {
         // Context path should not affect the filename in any way
         for (String contextPath : new String[] { "", "/foo", "/foo/bar" }) {
             // /* servlet
-            Assert.assertEquals("", getRequestFilename(contextPath, "", null));
-            Assert.assertEquals("/bar.js",
+            assertEquals("", getRequestFilename(contextPath, "", null));
+            assertEquals("/bar.js",
                     getRequestFilename(contextPath, "", "/bar.js"));
-            Assert.assertEquals("/foo/bar.js",
+            assertEquals("/foo/bar.js",
                     getRequestFilename(contextPath, "", "/foo/bar.js"));
 
             // /foo servlet
-            Assert.assertEquals("/foo",
+            assertEquals("/foo",
                     getRequestFilename(contextPath, "/foo", null));
-            Assert.assertEquals("/foo/bar.js",
+            assertEquals("/foo/bar.js",
                     getRequestFilename(contextPath, "/foo", "/bar.js"));
-            Assert.assertEquals("/foo/bar/baz.js",
+            assertEquals("/foo/bar/baz.js",
                     getRequestFilename(contextPath, "/foo", "/bar/baz.js"));
 
             // /foo/bar servlet
-            Assert.assertEquals("/foo/bar",
+            assertEquals("/foo/bar",
                     getRequestFilename(contextPath, "/foo/bar", null));
-            Assert.assertEquals("/foo/bar/baz.js",
+            assertEquals("/foo/bar/baz.js",
                     getRequestFilename(contextPath, "/foo/bar", "/baz.js"));
-            Assert.assertEquals("/foo/bar/baz/baz.js",
+            assertEquals("/foo/bar/baz/baz.js",
                     getRequestFilename(contextPath, "/foo/bar", "/baz/baz.js"));
         }
     }
@@ -258,7 +263,7 @@ public class StaticFileServerTest implements Serializable {
         setupRequestURI("", "/static", "/file.png");
         Mockito.when(servletContext.getResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
-        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
+        assertTrue(fileServer.isStaticResourceRequest(request));
     }
 
     @Test
@@ -266,14 +271,14 @@ public class StaticFileServerTest implements Serializable {
         setupRequestURI("/foo", "/static", "/file.png");
         Mockito.when(servletContext.getResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
-        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
+        assertTrue(fileServer.isStaticResourceRequest(request));
     }
 
     @Test
     public void isNotResourceRequest() throws Exception {
         setupRequestURI("", "", null);
         Mockito.when(servletContext.getResource("/")).thenReturn(null);
-        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+        assertFalse(fileServer.isStaticResourceRequest(request));
     }
 
     @Test
@@ -293,7 +298,7 @@ public class StaticFileServerTest implements Serializable {
                             }
                         }));
 
-        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+        assertFalse(fileServer.isStaticResourceRequest(request));
     }
 
     @Test
@@ -301,7 +306,7 @@ public class StaticFileServerTest implements Serializable {
             throws MalformedURLException {
         fileServer.overrideBrowserHasNewestVersion = true;
         Long modificationTimestamp = writeModificationTime();
-        Assert.assertEquals(modificationTimestamp,
+        assertEquals(modificationTimestamp,
                 dateHeaders.get("Last-Modified"));
     }
 
@@ -310,7 +315,7 @@ public class StaticFileServerTest implements Serializable {
             throws MalformedURLException {
         fileServer.overrideBrowserHasNewestVersion = false;
         Long modificationTimestamp = writeModificationTime();
-        Assert.assertEquals(modificationTimestamp,
+        assertEquals(modificationTimestamp,
                 dateHeaders.get("Last-Modified"));
 
     }
@@ -338,7 +343,7 @@ public class StaticFileServerTest implements Serializable {
 
     @Test
     public void browserHasNewestVersionUnknownModificiationTime() {
-        Assert.assertFalse(fileServer.browserHasNewestVersion(request, -1));
+        assertFalse(fileServer.browserHasNewestVersion(request, -1));
     }
 
     @Test(expected = AssertionError.class)
@@ -350,7 +355,7 @@ public class StaticFileServerTest implements Serializable {
     public void browserHasNewestVersionNoIfModifiedSinceHeader() {
         long fileModifiedTime = 0;
 
-        Assert.assertFalse(
+        assertFalse(
                 fileServer.browserHasNewestVersion(request, fileModifiedTime));
     }
 
@@ -361,7 +366,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(request.getDateHeader("If-Modified-Since"))
                 .thenReturn(browserIfModifiedSince);
 
-        Assert.assertFalse(
+        assertFalse(
                 fileServer.browserHasNewestVersion(request, fileModifiedTime));
     }
 
@@ -372,7 +377,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(request.getDateHeader("If-Modified-Since"))
                 .thenReturn(browserIfModifiedSince);
 
-        Assert.assertTrue(
+        assertTrue(
                 fileServer.browserHasNewestVersion(request, fileModifiedTime));
     }
 
@@ -380,7 +385,7 @@ public class StaticFileServerTest implements Serializable {
     public void writeCacheHeadersCacheResource() {
         fileServer.overrideCacheTime = 12;
         fileServer.writeCacheHeaders("/folder/myfile.txt", response);
-        Assert.assertTrue(headers.get("Cache-Control").contains("max-age=12"));
+        assertTrue(headers.get("Cache-Control").contains("max-age=12"));
     }
 
     @Test
@@ -389,15 +394,15 @@ public class StaticFileServerTest implements Serializable {
 
         fileServer.overrideCacheTime = 12;
         fileServer.writeCacheHeaders("/folder/myfile.txt", response);
-        Assert.assertTrue(headers.get("Cache-Control").equals("no-cache"));
+        assertTrue(headers.get("Cache-Control").equals("no-cache"));
     }
 
     @Test
     public void writeCacheHeadersDoNotCacheResource() {
         fileServer.overrideCacheTime = 0;
         fileServer.writeCacheHeaders("/folder/myfile.txt", response);
-        Assert.assertTrue(headers.get("Cache-Control").contains("max-age=0"));
-        Assert.assertTrue(
+        assertTrue(headers.get("Cache-Control").contains("max-age=0"));
+        assertTrue(
                 headers.get("Cache-Control").contains("must-revalidate"));
     }
 
@@ -407,21 +412,21 @@ public class StaticFileServerTest implements Serializable {
 
         fileServer.overrideCacheTime = 0;
         fileServer.writeCacheHeaders("/folder/myfile.txt", response);
-        Assert.assertTrue(headers.get("Cache-Control").equals("no-cache"));
+        assertTrue(headers.get("Cache-Control").equals("no-cache"));
     }
 
     @Test
     public void getCacheTime() {
         int oneYear = 60 * 60 * 24 * 365;
-        Assert.assertEquals(oneYear,
+        assertEquals(oneYear,
                 fileServer.getCacheTime("somefile.cache.js"));
-        Assert.assertEquals(oneYear,
+        assertEquals(oneYear,
                 fileServer.getCacheTime("folder/somefile.cache.js"));
-        Assert.assertEquals(0, fileServer.getCacheTime("somefile.nocache.js"));
-        Assert.assertEquals(0,
+        assertEquals(0, fileServer.getCacheTime("somefile.nocache.js"));
+        assertEquals(0,
                 fileServer.getCacheTime("folder/somefile.nocache.js"));
-        Assert.assertEquals(3600, fileServer.getCacheTime("randomfile.js"));
-        Assert.assertEquals(3600,
+        assertEquals(3600, fileServer.getCacheTime("randomfile.js"));
+        assertEquals(3600,
                 fileServer.getCacheTime("folder/randomfile.js"));
     }
 
@@ -430,7 +435,7 @@ public class StaticFileServerTest implements Serializable {
         setupRequestURI("", "", "/nonexisting/file.js");
 
         fileServer.serveStaticResource(request, response);
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
+        assertEquals(HttpServletResponse.SC_NOT_FOUND,
                 responseCode.get());
     }
 
@@ -444,8 +449,8 @@ public class StaticFileServerTest implements Serializable {
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
 
-        Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertArrayEquals(fileData, out.getOutput());
+        assertTrue(fileServer.serveStaticResource(request, response));
+        assertArrayEquals(fileData, out.getOutput());
     }
 
     @Test
@@ -466,9 +471,9 @@ public class StaticFileServerTest implements Serializable {
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
 
-        Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertEquals(0, out.getOutput().length);
-        Assert.assertEquals(HttpServletResponse.SC_NOT_MODIFIED,
+        assertTrue(fileServer.serveStaticResource(request, response));
+        assertEquals(0, out.getOutput().length);
+        assertEquals(HttpServletResponse.SC_NOT_MODIFIED,
                 responseCode.get());
     }
 

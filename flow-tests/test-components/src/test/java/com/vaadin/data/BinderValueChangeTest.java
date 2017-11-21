@@ -68,32 +68,32 @@ extends BinderTestBase<Binder<Person>, Person> {
         BindingBuilder<Person, String> binding = binder.forField(nameField);
 
         nameField.setValue("");
-        Assert.assertNull(event.get());
+        assertNull(event.get());
 
         binding.bind(Person::getFirstName, Person::setFirstName);
-        Assert.assertNull(event.get());
+        assertNull(event.get());
     }
 
     @Test
     public void setBean_unbound_noEvents() {
         binder.addValueChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        assertNull(event.get());
 
         binder.setBean(item);
 
-        Assert.assertNull(event.get());
+        assertNull(event.get());
     }
 
     @Test
     public void readBean_unbound_noEvents() {
         binder.addValueChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        assertNull(event.get());
 
         binder.readBean(item);
 
-        Assert.assertNull(event.get());
+        assertNull(event.get());
     }
 
     @Test
@@ -106,7 +106,7 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         binder.addValueChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        assertNull(event.get());
         nameField.setValue("foo");
         verifyEvent(nameField);
     }
@@ -122,7 +122,7 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         binder.addValueChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        assertNull(event.get());
         nameField.setValue("foo");
         verifyEvent(nameField);
     }
@@ -138,7 +138,7 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         binder.addValueChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        assertNull(event.get());
         field.getElement().getNode().getFeature(ElementPropertyMap.class)
         .setProperty("value", "foo", false);
         verifyEvent(field, true);
@@ -155,7 +155,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
-        Assert.assertNull(event.get());
+        assertNull(event.get());
         ageField.setValue(String.valueOf(1));
         verifyEvent(ageField);
     }
@@ -166,13 +166,13 @@ extends BinderTestBase<Binder<Person>, Person> {
 
     private void verifyEvent(HasValue<?, ?> field, boolean isUserOriginated) {
         ValueChangeEvent<?, ?> changeEvent = event.get();
-        Assert.assertNotNull(changeEvent);
-        Assert.assertEquals(field, changeEvent.getSource());
-        Assert.assertEquals(isUserOriginated, changeEvent.isFromClient());
+        assertNotNull(changeEvent);
+        assertEquals(field, changeEvent.getSource());
+        assertEquals(isUserOriginated, changeEvent.isFromClient());
     }
 
     private void statusChanged(ValueChangeEvent<?, ?> evt) {
-        Assert.assertNull(event.get());
+        assertNull(event.get());
         event.set(evt);
     }
 }

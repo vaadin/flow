@@ -1,6 +1,10 @@
 package com.vaadin.flow.dom;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -15,13 +19,13 @@ public class BasicElementStateProviderTest {
     public void supportsSelfCreatedNode() {
         BasicElementStateProvider provider = BasicElementStateProvider.get();
         StateNode node = BasicElementStateProvider.createStateNode("foo");
-        Assert.assertTrue(provider.supports(node));
+        assertTrue(provider.supports(node));
     }
 
     @Test
     public void doesNotSupportEmptyNode() {
         BasicElementStateProvider provider = BasicElementStateProvider.get();
-        Assert.assertFalse(provider.supports(new StateNode()));
+        assertFalse(provider.supports(new StateNode()));
     }
 
     @Test
@@ -35,14 +39,14 @@ public class BasicElementStateProviderTest {
             }
         };
         StateNode rootNode = ui.getInternals().getStateTree().getRootNode();
-        Assert.assertTrue(provider.supports(rootNode));
+        assertTrue(provider.supports(rootNode));
 
     }
 
     @Test
     public void getParent_parentNodeIsNull_parentIsNull() {
         Element div = ElementFactory.createDiv();
-        Assert.assertNull(
+        assertNull(
                 BasicElementStateProvider.get().getParent(div.getNode()));
     }
 
@@ -51,7 +55,7 @@ public class BasicElementStateProviderTest {
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
-        Assert.assertEquals(parent,
+        assertEquals(parent,
                 BasicElementStateProvider.get().getParent(child.getNode()));
     }
 
@@ -60,13 +64,13 @@ public class BasicElementStateProviderTest {
         ShadowRoot parent = ElementFactory.createDiv().attachShadow();
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
-        Assert.assertEquals(parent,
+        assertEquals(parent,
                 BasicElementStateProvider.get().getParent(child.getNode()));
     }
 
     @Test
     public void createStateNode_stateNodeHasRequiredElementDataFeature() {
         StateNode stateNode = BasicElementStateProvider.createStateNode("div");
-        Assert.assertTrue(stateNode.isReportedFeature(ElementData.class));
+        assertTrue(stateNode.isReportedFeature(ElementData.class));
     }
 }

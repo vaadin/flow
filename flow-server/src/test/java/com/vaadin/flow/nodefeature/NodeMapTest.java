@@ -16,12 +16,18 @@
 
 package com.vaadin.flow.nodefeature;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -41,59 +47,59 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
 
     @Test
     public void testBasicFunctionality() {
-        Assert.assertFalse(nodeMap.contains("key"));
-        Assert.assertNull(nodeMap.get("key"));
+        assertFalse(nodeMap.contains("key"));
+        assertNull(nodeMap.get("key"));
 
         nodeMap.put("key", "value");
-        Assert.assertTrue(nodeMap.contains("key"));
-        Assert.assertEquals("value", nodeMap.get("key"));
+        assertTrue(nodeMap.contains("key"));
+        assertEquals("value", nodeMap.get("key"));
 
         nodeMap.remove("key");
-        Assert.assertFalse(nodeMap.contains("key"));
-        Assert.assertNull(nodeMap.get("key"));
+        assertFalse(nodeMap.contains("key"));
+        assertNull(nodeMap.get("key"));
     }
 
     @Test
     public void testCollectChange() {
         List<NodeChange> initialChanges = collectChanges(nodeMap);
-        Assert.assertEquals(0, initialChanges.size());
+        assertEquals(0, initialChanges.size());
 
         nodeMap.put("key", "value");
         List<NodeChange> putChanges = collectChanges(nodeMap);
-        Assert.assertEquals(1, putChanges.size());
+        assertEquals(1, putChanges.size());
 
         MapPutChange putChange = (MapPutChange) putChanges.get(0);
-        Assert.assertEquals("key", putChange.getKey());
-        Assert.assertEquals("value", putChange.getValue());
+        assertEquals("key", putChange.getKey());
+        assertEquals("value", putChange.getValue());
 
         nodeMap.put("key", null);
         List<NodeChange> putNullChanges = collectChanges(nodeMap);
-        Assert.assertEquals(1, putNullChanges.size());
+        assertEquals(1, putNullChanges.size());
 
         MapPutChange putNullChange = (MapPutChange) putNullChanges.get(0);
-        Assert.assertEquals("key", putNullChange.getKey());
-        Assert.assertEquals(null, putNullChange.getValue());
+        assertEquals("key", putNullChange.getKey());
+        assertEquals(null, putNullChange.getValue());
 
         nodeMap.remove("key");
 
         List<NodeChange> removeChanges = collectChanges(nodeMap);
-        Assert.assertEquals(1, removeChanges.size());
+        assertEquals(1, removeChanges.size());
 
         MapRemoveChange removeChange = (MapRemoveChange) removeChanges.get(0);
-        Assert.assertEquals("key", removeChange.getKey());
+        assertEquals("key", removeChange.getKey());
     }
 
     @Test
     public void testNoChangeEvent() {
         nodeMap.put("key", "value", false);
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
         nodeMap.put("key", "value", true);
         changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
         nodeMap.put("key", "bar", true);
         changes = collectChanges(nodeMap);
-        Assert.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
     }
 
     @Test
@@ -101,12 +107,12 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         nodeMap.put("key", "value", true);
         nodeMap.put("key", "foobar", false);
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
 
         nodeMap.put("key", "urk");
         changes = collectChanges(nodeMap);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals("urk", ((MapPutChange) changes.get(0)).getValue());
+        assertEquals(1, changes.size());
+        assertEquals("urk", ((MapPutChange) changes.get(0)).getValue());
 
     }
 
@@ -116,7 +122,7 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         nodeMap.remove("key");
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -125,8 +131,8 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         nodeMap.put("key", "value2");
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals("value2",
+        assertEquals(1, changes.size());
+        assertEquals("value2",
                 ((MapPutChange) changes.get(0)).getValue());
     }
 
@@ -138,7 +144,7 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         nodeMap.put("key", "otherValue");
         nodeMap.put("key", "value");
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -150,7 +156,7 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         nodeMap.put("key", "value");
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -161,8 +167,8 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         nodeMap.generateChangesFromEmpty();
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals("value",
+        assertEquals(1, changes.size());
+        assertEquals("value",
                 ((MapPutChange) changes.get(0)).getValue());
     }
 
@@ -175,7 +181,7 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         nodeMap.remove("key");
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -193,22 +199,22 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         } catch (AssertionError expected) {
             threw = true;
         }
-        Assert.assertTrue(name + " should throw AssertionError", threw);
+        assertTrue(name + " should throw AssertionError", threw);
     }
 
     @Test
     public void testPutAttachDetachChildren() {
         StateNode child = StateNodeTest.createEmptyNode("child");
 
-        Assert.assertNull(child.getParent());
+        assertNull(child.getParent());
 
         nodeMap.put("key", child);
 
-        Assert.assertSame(nodeMap.getNode(), child.getParent());
+        assertSame(nodeMap.getNode(), child.getParent());
 
         nodeMap.put("key", "foo");
 
-        Assert.assertNull(child.getParent());
+        assertNull(child.getParent());
     }
 
     @Test
@@ -217,11 +223,11 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
 
         nodeMap.put("key", child);
 
-        Assert.assertSame(nodeMap.getNode(), child.getParent());
+        assertSame(nodeMap.getNode(), child.getParent());
 
         nodeMap.remove("key");
 
-        Assert.assertNull(child.getParent());
+        assertNull(child.getParent());
     }
 
     @Test
@@ -244,11 +250,11 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         NodeMap copy = SerializationUtils
                 .deserialize(SerializationUtils.serialize(nodeMap));
 
-        Assert.assertNotSame(nodeMap, copy);
+        assertNotSame(nodeMap, copy);
 
-        Assert.assertEquals(values.keySet(), copy.keySet());
+        assertEquals(values.keySet(), copy.keySet());
         // Also verify that original value wasn't changed by the serialization
-        Assert.assertEquals(values.keySet(), nodeMap.keySet());
+        assertEquals(values.keySet(), nodeMap.keySet());
 
         values.keySet().forEach(key -> {
             if (key.startsWith("json")) {
@@ -256,59 +262,59 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
                 JsonValue originalValue = (JsonValue) nodeMap.get(key);
                 JsonValue copyValue = (JsonValue) copy.get(key);
 
-                Assert.assertEquals(originalValue.toJson(), copyValue.toJson());
+                assertEquals(originalValue.toJson(), copyValue.toJson());
             } else {
-                Assert.assertEquals(nodeMap.get(key), copy.get(key));
+                assertEquals(nodeMap.get(key), copy.get(key));
             }
 
             // Verify original was not touched
-            Assert.assertSame(values.get(key), nodeMap.get(key));
+            assertSame(values.get(key), nodeMap.get(key));
         });
     }
 
     @Test
     public void testGetIntDefaultValue() {
-        Assert.assertEquals(12, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(12, nodeMap.getOrDefault(KEY, 12));
 
         nodeMap.put(KEY, 24);
-        Assert.assertEquals(24, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(24, nodeMap.getOrDefault(KEY, 12));
 
         nodeMap.put(KEY, null);
-        Assert.assertEquals(12, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(12, nodeMap.getOrDefault(KEY, 12));
 
         nodeMap.remove(KEY);
-        Assert.assertEquals(12, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(12, nodeMap.getOrDefault(KEY, 12));
     }
 
     @Test
     public void testGetBooleanDefaultValue() {
-        Assert.assertTrue(nodeMap.getOrDefault(KEY, true));
-        Assert.assertFalse(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, true));
+        assertFalse(nodeMap.getOrDefault(KEY, false));
 
         nodeMap.put(KEY, true);
-        Assert.assertTrue(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, false));
 
         nodeMap.put(KEY, null);
-        Assert.assertTrue(nodeMap.getOrDefault(KEY, true));
-        Assert.assertFalse(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, true));
+        assertFalse(nodeMap.getOrDefault(KEY, false));
 
         nodeMap.remove(KEY);
-        Assert.assertTrue(nodeMap.getOrDefault(KEY, true));
-        Assert.assertFalse(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, true));
+        assertFalse(nodeMap.getOrDefault(KEY, false));
     }
 
     @Test
     public void testGetStringDefaultValue() {
-        Assert.assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
 
         nodeMap.put(KEY, "assigned");
-        Assert.assertEquals("assigned", nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("assigned", nodeMap.getOrDefault(KEY, "default"));
 
         nodeMap.put(KEY, null);
-        Assert.assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
 
         nodeMap.remove(KEY);
-        Assert.assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
     }
 
     @Test
@@ -317,9 +323,9 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         nodeMap.put("bar", 1);
         nodeMap.put("baz", 1);
         nodeMap.clear();
-        Assert.assertEquals(0, nodeMap.getPropertyNames().count());
-        Assert.assertFalse(nodeMap.hasProperty("foo"));
-        Assert.assertFalse(nodeMap.hasProperty("bar"));
-        Assert.assertFalse(nodeMap.hasProperty("baz"));
+        assertEquals(0, nodeMap.getPropertyNames().count());
+        assertFalse(nodeMap.hasProperty("foo"));
+        assertFalse(nodeMap.hasProperty("bar"));
+        assertFalse(nodeMap.hasProperty("baz"));
     }
 }

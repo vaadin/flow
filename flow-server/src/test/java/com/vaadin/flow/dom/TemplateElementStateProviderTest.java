@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.dom;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -30,7 +36,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -72,14 +77,14 @@ public class TemplateElementStateProviderTest {
 
         Element element = createElement(builder);
 
-        Assert.assertEquals("div", element.getTag());
-        Assert.assertFalse(element.isTextNode());
+        assertEquals("div", element.getTag());
+        assertFalse(element.isTextNode());
 
-        Assert.assertNull(element.getParent());
-        Assert.assertEquals(0, element.getChildCount());
+        assertNull(element.getParent());
+        assertEquals(0, element.getChildCount());
 
-        Assert.assertEquals(0, element.getPropertyNames().count());
-        Assert.assertEquals(0, element.getAttributeNames().count());
+        assertEquals(0, element.getPropertyNames().count());
+        assertEquals(0, element.getAttributeNames().count());
     }
 
     @Test
@@ -90,10 +95,10 @@ public class TemplateElementStateProviderTest {
 
         Element element = createElement(builder);
 
-        Assert.assertEquals("v1", element.getProperty("a1"));
-        Assert.assertEquals("v2", element.getProperty("a2"));
+        assertEquals("v1", element.getProperty("a1"));
+        assertEquals("v2", element.getProperty("a2"));
 
-        Assert.assertEquals(new HashSet<>(Arrays.asList("a1", "a2")),
+        assertEquals(new HashSet<>(Arrays.asList("a1", "a2")),
                 element.getPropertyNames().collect(Collectors.toSet()));
     }
 
@@ -107,9 +112,9 @@ public class TemplateElementStateProviderTest {
         StateNode stateNode = element.getNode();
         ModelMap.get(stateNode).setValue("key", Boolean.TRUE);
 
-        Assert.assertEquals(Boolean.TRUE, element.getPropertyRaw("a"));
+        assertEquals(Boolean.TRUE, element.getPropertyRaw("a"));
 
-        Assert.assertEquals(new HashSet<>(Arrays.asList("a")),
+        assertEquals(new HashSet<>(Arrays.asList("a")),
                 element.getPropertyNames().collect(Collectors.toSet()));
     }
 
@@ -123,9 +128,9 @@ public class TemplateElementStateProviderTest {
         StateNode stateNode = element.getNode();
         ModelMap.get(stateNode).setValue("key", 1.1d);
 
-        Assert.assertEquals(1.1d, element.getPropertyRaw("a"));
+        assertEquals(1.1d, element.getPropertyRaw("a"));
 
-        Assert.assertEquals(new HashSet<>(Arrays.asList("a")),
+        assertEquals(new HashSet<>(Arrays.asList("a")),
                 element.getPropertyNames().collect(Collectors.toSet()));
     }
 
@@ -141,9 +146,9 @@ public class TemplateElementStateProviderTest {
         json.put("foo", "bar");
         ModelMap.get(stateNode).setValue("key", json);
 
-        Assert.assertEquals(json, element.getPropertyRaw("a"));
+        assertEquals(json, element.getPropertyRaw("a"));
 
-        Assert.assertEquals(new HashSet<>(Arrays.asList("a")),
+        assertEquals(new HashSet<>(Arrays.asList("a")),
                 element.getPropertyNames().collect(Collectors.toSet()));
     }
 
@@ -155,10 +160,10 @@ public class TemplateElementStateProviderTest {
 
         Element element = createElement(builder);
 
-        Assert.assertEquals("v1", element.getAttribute("a1"));
-        Assert.assertEquals("v2", element.getAttribute("a2"));
+        assertEquals("v1", element.getAttribute("a1"));
+        assertEquals("v2", element.getAttribute("a2"));
 
-        Assert.assertEquals(new HashSet<>(Arrays.asList("a1", "a2")),
+        assertEquals(new HashSet<>(Arrays.asList("a1", "a2")),
                 element.getAttributeNames().collect(Collectors.toSet()));
     }
 
@@ -171,12 +176,12 @@ public class TemplateElementStateProviderTest {
         basicElement.appendChild(templateElement);
 
         Element child = basicElement.getChild(0);
-        Assert.assertEquals("template", child.getTag());
-        Assert.assertEquals(templateElement, child);
+        assertEquals("template", child.getTag());
+        assertEquals(templateElement, child);
 
         Element parent = templateElement.getParent();
-        Assert.assertEquals("basic", parent.getTag());
-        Assert.assertEquals(basicElement, parent);
+        assertEquals("basic", parent.getTag());
+        assertEquals(basicElement, parent);
     }
 
     @Test
@@ -187,15 +192,15 @@ public class TemplateElementStateProviderTest {
 
         Element element = createElement(builder);
 
-        Assert.assertEquals(2, element.getChildCount());
+        assertEquals(2, element.getChildCount());
 
         Element child0 = element.getChild(0);
-        Assert.assertEquals("child0", child0.getTag());
-        Assert.assertEquals(element, child0.getParent());
+        assertEquals("child0", child0.getTag());
+        assertEquals(element, child0.getParent());
 
         Element child1 = element.getChild(1);
-        Assert.assertEquals("child1", child1.getTag());
-        Assert.assertEquals(element, child1.getParent());
+        assertEquals("child1", child1.getTag());
+        assertEquals(element, child1.getParent());
     }
 
     @Test
@@ -205,8 +210,8 @@ public class TemplateElementStateProviderTest {
 
         Element element = createElement(builder);
 
-        Assert.assertTrue(element.isTextNode());
-        Assert.assertEquals("Hello", element.getTextRecursively());
+        assertTrue(element.isTextNode());
+        assertEquals("Hello", element.getTextRecursively());
     }
 
     @Test
@@ -217,12 +222,12 @@ public class TemplateElementStateProviderTest {
 
         Element element = createElement(builder);
 
-        Assert.assertEquals("div", element.getTag());
-        Assert.assertEquals("Hello", element.getTextRecursively());
+        assertEquals("div", element.getTag());
+        assertEquals("Hello", element.getTextRecursively());
 
         Element child = element.getChild(0);
-        Assert.assertTrue(child.isTextNode());
-        Assert.assertEquals(element, child.getParent());
+        assertTrue(child.isTextNode());
+        assertEquals(element, child.getParent());
     }
 
     @Test
@@ -236,11 +241,11 @@ public class TemplateElementStateProviderTest {
         List<Element> children = parent.getChildren()
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(1, children.size());
+        assertEquals(1, children.size());
 
-        Assert.assertEquals(child, children.get(0));
+        assertEquals(child, children.get(0));
 
-        Assert.assertEquals(parent, child.getParent());
+        assertEquals(parent, child.getParent());
     }
 
     @Test
@@ -253,8 +258,8 @@ public class TemplateElementStateProviderTest {
 
         parent.removeChild(0);
 
-        Assert.assertEquals(0, parent.getChildCount());
-        Assert.assertFalse(parent.getChildren().findFirst().isPresent());
+        assertEquals(0, parent.getChildCount());
+        assertFalse(parent.getChildren().findFirst().isPresent());
     }
 
     @Test
@@ -267,8 +272,8 @@ public class TemplateElementStateProviderTest {
 
         parent.removeChild(child);
 
-        Assert.assertEquals(0, parent.getChildCount());
-        Assert.assertFalse(parent.getChildren().findFirst().isPresent());
+        assertEquals(0, parent.getChildCount());
+        assertFalse(parent.getChildren().findFirst().isPresent());
     }
 
     @Test
@@ -281,8 +286,8 @@ public class TemplateElementStateProviderTest {
 
         parent.removeAllChildren();
 
-        Assert.assertEquals(0, parent.getChildCount());
-        Assert.assertFalse(parent.getChildren().findFirst().isPresent());
+        assertEquals(0, parent.getChildCount());
+        assertFalse(parent.getChildren().findFirst().isPresent());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -324,7 +329,7 @@ public class TemplateElementStateProviderTest {
     public void emptyChildSlot() {
         Element parent = createElement("<div>@child@</div>");
 
-        Assert.assertEquals(0, parent.getChildCount());
+        assertEquals(0, parent.getChildCount());
     }
 
     @Test
@@ -337,10 +342,10 @@ public class TemplateElementStateProviderTest {
 
         div.getNode().getFeature(TemplateMap.class).setChild(child.getNode());
 
-        Assert.assertEquals(1, span.getChildCount());
-        Assert.assertEquals(child, span.getChild(0));
+        assertEquals(1, span.getChildCount());
+        assertEquals(child, span.getChild(0));
 
-        Assert.assertEquals(span, child.getParent());
+        assertEquals(span, child.getParent());
     }
 
     @Test
@@ -348,9 +353,9 @@ public class TemplateElementStateProviderTest {
         Element parent = createElement(
                 "<div><before></before>@child@<after></after></div>");
 
-        Assert.assertEquals(2, parent.getChildCount());
+        assertEquals(2, parent.getChildCount());
 
-        Assert.assertEquals(Arrays.asList("before", "after"),
+        assertEquals(Arrays.asList("before", "after"),
                 parent.getChildren().map(Element::getTag)
                         .collect(Collectors.toList()));
     }
@@ -364,9 +369,9 @@ public class TemplateElementStateProviderTest {
         parent.getNode().getFeature(TemplateMap.class)
                 .setChild(child.getNode());
 
-        Assert.assertEquals(3, parent.getChildCount());
+        assertEquals(3, parent.getChildCount());
 
-        Assert.assertEquals(Arrays.asList("before", "child", "after"),
+        assertEquals(Arrays.asList("before", "child", "after"),
                 parent.getChildren().map(Element::getTag)
                         .collect(Collectors.toList()));
     }
@@ -379,13 +384,13 @@ public class TemplateElementStateProviderTest {
                 .getFeature(TemplateMap.class);
         templateMap.setChild(child.getNode());
 
-        Assert.assertEquals(1, parent.getChildCount());
+        assertEquals(1, parent.getChildCount());
 
         templateMap.setChild(null);
 
-        Assert.assertEquals(0, parent.getChildCount());
-        Assert.assertEquals(0, parent.getChildren().count());
-        Assert.assertNull(child.getParent());
+        assertEquals(0, parent.getChildCount());
+        assertEquals(0, parent.getChildren().count());
+        assertNull(child.getParent());
     }
 
     // Currently not implemented, but we might want to support this at some
@@ -409,11 +414,11 @@ public class TemplateElementStateProviderTest {
         parent.getNode().getFeature(TemplateMap.class)
                 .setChild(child.getNode());
 
-        Assert.assertEquals(1, parent.getChildCount());
-        Assert.assertEquals(1, parent.getChildren().count());
-        Assert.assertEquals(parent, child.getParent());
+        assertEquals(1, parent.getChildCount());
+        assertEquals(1, parent.getChildren().count());
+        assertEquals(parent, child.getParent());
 
-        Assert.assertEquals("The text", parent.getTextRecursively());
+        assertEquals("The text", parent.getTextRecursively());
     }
 
     @Test
@@ -424,11 +429,11 @@ public class TemplateElementStateProviderTest {
         parent.getNode().getFeature(TemplateMap.class)
                 .setChild(child.getNode());
 
-        Assert.assertEquals(1, parent.getChildCount());
-        Assert.assertEquals(1, parent.getChildren().count());
-        Assert.assertEquals(parent, child.getParent());
+        assertEquals(1, parent.getChildCount());
+        assertEquals(1, parent.getChildren().count());
+        assertEquals(parent, child.getParent());
 
-        Assert.assertEquals("The text", parent.getTextRecursively());
+        assertEquals("The text", parent.getTextRecursively());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -444,20 +449,20 @@ public class TemplateElementStateProviderTest {
     public void testHardcodedStyleAttribute() {
         Element element = createElement("<div style='display:none'></div>");
 
-        Assert.assertEquals(1, element.getAttributeNames().count());
+        assertEquals(1, element.getAttributeNames().count());
 
         // Test the same after attributes have been migrated to an override node
         element.setProperty("foo", "bar");
 
-        Assert.assertEquals(1, element.getAttributeNames().count());
+        assertEquals(1, element.getAttributeNames().count());
     }
 
     @Test
     public void templateBoundClassAttribute() {
         Element element = createElement("<div class='foo bar'></div>");
 
-        Assert.assertEquals("foo bar", element.getAttribute("class"));
-        Assert.assertArrayEquals(new Object[] { "class" },
+        assertEquals("foo bar", element.getAttribute("class"));
+        assertArrayEquals(new Object[] { "class" },
                 element.getAttributeNames().toArray());
 
         assertClassList(element.getClassList(), "foo", "bar");
@@ -465,8 +470,8 @@ public class TemplateElementStateProviderTest {
         // Test the same after attributes have been migrated to an override node
         element.setProperty("foo", "bar");
 
-        Assert.assertEquals("foo bar", element.getAttribute("class"));
-        Assert.assertArrayEquals(new Object[] { "class" },
+        assertEquals("foo bar", element.getAttribute("class"));
+        assertArrayEquals(new Object[] { "class" },
                 element.getAttributeNames().toArray());
 
         assertClassList(element.getClassList(), "foo", "bar");
@@ -484,7 +489,7 @@ public class TemplateElementStateProviderTest {
         // See #970
         element.getNode().getFeature(ModelMap.class).setValue("hasBar", null);
         element.getNode().getFeature(ModelMap.class).setValue("hasBaz", null);
-        Assert.assertEquals("foo", element.getAttribute("class"));
+        assertEquals("foo", element.getAttribute("class"));
 
         assertClassList(classList, "foo");
         assertNotClassList(classList, "bar", "baz");
@@ -516,14 +521,14 @@ public class TemplateElementStateProviderTest {
 
         StateNode overrideNode = element.getNode()
                 .getFeature(TemplateOverridesMap.class).get(node, false);
-        Assert.assertTrue(BasicElementStateProvider.get()
+        assertTrue(BasicElementStateProvider.get()
                 .hasProperty(overrideNode, "prop"));
-        Assert.assertEquals("foo", BasicElementStateProvider.get()
+        assertEquals("foo", BasicElementStateProvider.get()
                 .getProperty(overrideNode, "prop"));
         List<String> props = BasicElementStateProvider.get()
                 .getPropertyNames(overrideNode).collect(Collectors.toList());
-        Assert.assertEquals(1, props.size());
-        Assert.assertEquals("prop", props.get(0));
+        assertEquals(1, props.size());
+        assertEquals("prop", props.get(0));
     }
 
     @Test
@@ -533,12 +538,12 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(node);
         element.setProperty("prop", "foo");
 
-        Assert.assertTrue(element.hasProperty("prop"));
-        Assert.assertEquals("foo", element.getProperty("prop"));
+        assertTrue(element.hasProperty("prop"));
+        assertEquals("foo", element.getProperty("prop"));
         List<String> props = element.getPropertyNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(1, props.size());
-        Assert.assertEquals("prop", props.get(0));
+        assertEquals(1, props.size());
+        assertEquals("prop", props.get(0));
     }
 
     @Test
@@ -548,13 +553,13 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(node);
         element.setProperty("prop", "foo");
 
-        Assert.assertTrue(element.hasProperty("prop"));
-        Assert.assertEquals("foo", element.getProperty("prop"));
+        assertTrue(element.hasProperty("prop"));
+        assertEquals("foo", element.getProperty("prop"));
         Set<String> props = element.getPropertyNames()
                 .collect(Collectors.toSet());
-        Assert.assertEquals(2, props.size());
-        Assert.assertTrue(props.contains("foo"));
-        Assert.assertTrue(props.contains("prop"));
+        assertEquals(2, props.size());
+        assertTrue(props.contains("foo"));
+        assertTrue(props.contains("prop"));
     }
 
     @Test
@@ -564,12 +569,12 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(node);
         element.setProperty("foo", "newValue");
 
-        Assert.assertTrue(element.hasProperty("foo"));
-        Assert.assertEquals("newValue", element.getProperty("foo"));
+        assertTrue(element.hasProperty("foo"));
+        assertEquals("newValue", element.getProperty("foo"));
         Set<String> props = element.getPropertyNames()
                 .collect(Collectors.toSet());
-        Assert.assertEquals(1, props.size());
-        Assert.assertTrue(props.contains("foo"));
+        assertEquals(1, props.size());
+        assertTrue(props.contains("foo"));
     }
 
     @Test
@@ -581,11 +586,11 @@ public class TemplateElementStateProviderTest {
 
         element.removeProperty("prop");
 
-        Assert.assertFalse(element.hasProperty("prop"));
+        assertFalse(element.hasProperty("prop"));
         Set<String> props = element.getPropertyNames()
                 .collect(Collectors.toSet());
-        Assert.assertEquals(1, props.size());
-        Assert.assertTrue(props.contains("foo"));
+        assertEquals(1, props.size());
+        assertTrue(props.contains("foo"));
     }
 
     @Test
@@ -596,10 +601,10 @@ public class TemplateElementStateProviderTest {
         element.setProperty("prop", "foo");
         element.removeProperty("prop");
 
-        Assert.assertFalse(element.hasProperty("prop"));
+        assertFalse(element.hasProperty("prop"));
         List<String> props = element.getPropertyNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(0, props.size());
+        assertEquals(0, props.size());
     }
 
     @Test
@@ -607,14 +612,14 @@ public class TemplateElementStateProviderTest {
         TemplateNode node = TemplateParser.parse("<div foo='bar'></div>",
                 new NullTemplateResolver());
         Element element = createElement(node);
-        Assert.assertFalse(element.hasProperty("foo"));
+        assertFalse(element.hasProperty("foo"));
         element.setProperty("foo", "bar");
         element.removeProperty("foo");
 
-        Assert.assertFalse(element.hasProperty("foo"));
+        assertFalse(element.hasProperty("foo"));
         List<String> props = element.getPropertyNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(0, props.size());
+        assertEquals(0, props.size());
     }
 
     @Test
@@ -627,11 +632,11 @@ public class TemplateElementStateProviderTest {
 
         StateNode overrideNode = element.getNode()
                 .getFeature(TemplateOverridesMap.class).get(node, false);
-        Assert.assertFalse(BasicElementStateProvider.get()
+        assertFalse(BasicElementStateProvider.get()
                 .hasProperty(overrideNode, "prop"));
         List<String> props = BasicElementStateProvider.get()
                 .getPropertyNames(overrideNode).collect(Collectors.toList());
-        Assert.assertEquals(0, props.size());
+        assertEquals(0, props.size());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -653,10 +658,10 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(node);
         element.removeAttribute("foo");
 
-        Assert.assertFalse(element.hasAttribute("foo"));
+        assertFalse(element.hasAttribute("foo"));
         List<String> attrs = element.getAttributeNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(0, attrs.size());
+        assertEquals(0, attrs.size());
     }
 
     @Test
@@ -667,11 +672,11 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(node);
         element.removeAttribute("attr");
 
-        Assert.assertFalse(element.hasAttribute("attr"));
-        Assert.assertTrue(element.hasAttribute("foo"));
+        assertFalse(element.hasAttribute("attr"));
+        assertTrue(element.hasAttribute("foo"));
         List<String> attrs = element.getAttributeNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(1, attrs.size());
+        assertEquals(1, attrs.size());
     }
 
     @Test
@@ -682,13 +687,13 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(node);
         element.removeAttribute("foo");
 
-        Assert.assertFalse(element.hasAttribute("foo"));
-        Assert.assertTrue(element.hasAttribute("attr"));
+        assertFalse(element.hasAttribute("foo"));
+        assertTrue(element.hasAttribute("attr"));
         List<String> attrs = element.getAttributeNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(1, attrs.size());
-        Assert.assertEquals("attr", attrs.get(0));
-        Assert.assertEquals("value", element.getAttribute("attr"));
+        assertEquals(1, attrs.size());
+        assertEquals("attr", attrs.get(0));
+        assertEquals("value", element.getAttribute("attr"));
     }
 
     @Test
@@ -699,10 +704,10 @@ public class TemplateElementStateProviderTest {
         element.setAttribute("attr", "foo");
         element.removeAttribute("attr");
 
-        Assert.assertFalse(element.hasAttribute("attr"));
+        assertFalse(element.hasAttribute("attr"));
         List<String> props = element.getAttributeNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(0, props.size());
+        assertEquals(0, props.size());
     }
 
     @Test
@@ -713,10 +718,10 @@ public class TemplateElementStateProviderTest {
         element.setAttribute("attr", "foo");
         element.removeAttribute("attr");
 
-        Assert.assertFalse(element.hasAttribute("attr"));
+        assertFalse(element.hasAttribute("attr"));
         List<String> props = element.getAttributeNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(0, props.size());
+        assertEquals(0, props.size());
     }
 
     @Test
@@ -728,14 +733,14 @@ public class TemplateElementStateProviderTest {
 
         StateNode overrideNode = element.getNode()
                 .getFeature(TemplateOverridesMap.class).get(node, false);
-        Assert.assertTrue(BasicElementStateProvider.get()
+        assertTrue(BasicElementStateProvider.get()
                 .hasAttribute(overrideNode, "attr"));
-        Assert.assertEquals("foo", BasicElementStateProvider.get()
+        assertEquals("foo", BasicElementStateProvider.get()
                 .getAttribute(overrideNode, "attr"));
         List<String> attrs = BasicElementStateProvider.get()
                 .getAttributeNames(overrideNode).collect(Collectors.toList());
-        Assert.assertEquals(1, attrs.size());
-        Assert.assertEquals("attr", attrs.get(0));
+        assertEquals(1, attrs.size());
+        assertEquals("attr", attrs.get(0));
     }
 
     @Test
@@ -745,12 +750,12 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(node);
         element.setAttribute("attr", "foo");
 
-        Assert.assertTrue(element.hasAttribute("attr"));
-        Assert.assertEquals("foo", element.getAttribute("attr"));
+        assertTrue(element.hasAttribute("attr"));
+        assertEquals("foo", element.getAttribute("attr"));
         List<String> attrs = element.getAttributeNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(1, attrs.size());
-        Assert.assertEquals("attr", attrs.get(0));
+        assertEquals(1, attrs.size());
+        assertEquals("attr", attrs.get(0));
     }
 
     @Test
@@ -760,12 +765,12 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(node);
         element.setAttribute("attr", "foo");
 
-        Assert.assertTrue(element.hasAttribute("attr"));
-        Assert.assertEquals("foo", element.getAttribute("attr"));
+        assertTrue(element.hasAttribute("attr"));
+        assertEquals("foo", element.getAttribute("attr"));
         List<String> attrs = element.getAttributeNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(1, attrs.size());
-        Assert.assertEquals("attr", attrs.get(0));
+        assertEquals(1, attrs.size());
+        assertEquals("attr", attrs.get(0));
     }
 
     @Test
@@ -777,15 +782,15 @@ public class TemplateElementStateProviderTest {
         element.getNode().getFeature(ModelMap.class).setValue("foo",
                 "someValue");
 
-        Assert.assertTrue(element.hasAttribute("foo"));
-        Assert.assertTrue(element.hasAttribute("attr"));
-        Assert.assertEquals("bar", element.getAttribute("foo"));
-        Assert.assertEquals("someValue", element.getAttribute("attr"));
+        assertTrue(element.hasAttribute("foo"));
+        assertTrue(element.hasAttribute("attr"));
+        assertEquals("bar", element.getAttribute("foo"));
+        assertEquals("someValue", element.getAttribute("attr"));
         List<String> attrs = element.getAttributeNames()
                 .collect(Collectors.toList());
-        Assert.assertEquals(2, attrs.size());
-        Assert.assertTrue(attrs.contains("attr"));
-        Assert.assertTrue(attrs.contains("foo"));
+        assertEquals(2, attrs.size());
+        assertTrue(attrs.contains("attr"));
+        assertTrue(attrs.contains("foo"));
     }
 
     @Test
@@ -795,12 +800,12 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(node);
         element.setAttribute("foo", "newValue");
 
-        Assert.assertTrue(element.hasAttribute("foo"));
-        Assert.assertEquals("newValue", element.getAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
+        assertEquals("newValue", element.getAttribute("foo"));
         Set<String> attrs = element.getAttributeNames()
                 .collect(Collectors.toSet());
-        Assert.assertEquals(1, attrs.size());
-        Assert.assertTrue(attrs.contains("foo"));
+        assertEquals(1, attrs.size());
+        assertTrue(attrs.contains("foo"));
     }
 
     @Test
@@ -810,15 +815,15 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(node);
         element.setAttribute("attr", "foo");
 
-        Assert.assertTrue(element.hasAttribute("attr"));
-        Assert.assertTrue(element.hasAttribute("foo"));
-        Assert.assertEquals("foo", element.getAttribute("attr"));
-        Assert.assertEquals("bar", element.getAttribute("foo"));
+        assertTrue(element.hasAttribute("attr"));
+        assertTrue(element.hasAttribute("foo"));
+        assertEquals("foo", element.getAttribute("attr"));
+        assertEquals("bar", element.getAttribute("foo"));
         Set<String> attrs = element.getAttributeNames()
                 .collect(Collectors.toSet());
-        Assert.assertEquals(2, attrs.size());
-        Assert.assertTrue(attrs.contains("foo"));
-        Assert.assertTrue(attrs.contains("attr"));
+        assertEquals(2, attrs.size());
+        assertTrue(attrs.contains("foo"));
+        assertTrue(attrs.contains("attr"));
     }
 
     @Test
@@ -831,11 +836,11 @@ public class TemplateElementStateProviderTest {
 
         StateNode overrideNode = element.getNode()
                 .getFeature(TemplateOverridesMap.class).get(node, false);
-        Assert.assertFalse(BasicElementStateProvider.get()
+        assertFalse(BasicElementStateProvider.get()
                 .hasAttribute(overrideNode, "attr"));
         List<String> attrs = BasicElementStateProvider.get()
                 .getAttributeNames(overrideNode).collect(Collectors.toList());
-        Assert.assertEquals(0, attrs.size());
+        assertEquals(0, attrs.size());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -854,23 +859,23 @@ public class TemplateElementStateProviderTest {
         HashSet<String> expectedSet = new HashSet<>(
                 Arrays.asList(expectedNames));
 
-        Assert.assertEquals(expectedNames.length, classList.size());
-        Assert.assertEquals(expectedNames.length, classList.stream().count());
-        Assert.assertEquals(expectedNames.length,
+        assertEquals(expectedNames.length, classList.size());
+        assertEquals(expectedNames.length, classList.stream().count());
+        assertEquals(expectedNames.length,
                 iteratorToStream(classList.iterator()).count());
 
         for (String className : expectedNames) {
-            Assert.assertTrue(classList.contains(className));
+            assertTrue(classList.contains(className));
         }
 
-        Assert.assertEquals(expectedSet, classList);
-        Assert.assertEquals(classList, expectedSet);
+        assertEquals(expectedSet, classList);
+        assertEquals(classList, expectedSet);
 
         // Does classList.iterator() contain the right values?
-        Assert.assertEquals(expectedSet, new HashSet<>(classList));
+        assertEquals(expectedSet, new HashSet<>(classList));
 
         // Does classList.stream() contain the right values?
-        Assert.assertEquals(expectedSet,
+        assertEquals(expectedSet,
                 classList.stream().collect(Collectors.toSet()));
     }
 
@@ -882,7 +887,7 @@ public class TemplateElementStateProviderTest {
     private void assertNotClassList(ClassList classList,
             String... forbiddenClassNames) {
         for (String className : forbiddenClassNames) {
-            Assert.assertFalse(classList.contains(className));
+            assertFalse(classList.contains(className));
         }
 
     }
@@ -917,14 +922,14 @@ public class TemplateElementStateProviderTest {
                 "<div></div").getStateProvider();
 
         // Test that a node with all required features is accepted
-        Assert.assertTrue(provider.supports(new StateNode(requiredFeatures)));
+        assertTrue(provider.supports(new StateNode(requiredFeatures)));
 
         // Test that removing any feature makes it non-accepted
         for (int i = 0; i < requiredFeatures.length; i++) {
             ArrayList<Class<? extends NodeFeature>> list = new ArrayList<>(
                     Arrays.asList(requiredFeatures));
             list.remove(i);
-            Assert.assertFalse(provider
+            assertFalse(provider
                     .supports(new StateNode(list.toArray(new Class[0]))));
         }
     }
@@ -954,10 +959,10 @@ public class TemplateElementStateProviderTest {
                 .getFeatures()) {
             boolean has = node.hasFeature(feature);
             if (featureSet.contains(feature)) {
-                Assert.assertTrue("node should have the feature " + feature,
+                assertTrue("node should have the feature " + feature,
                         has);
             } else {
-                Assert.assertFalse("node shouldn't have the feature " + feature,
+                assertFalse("node shouldn't have the feature " + feature,
                         has);
             }
         }
@@ -970,7 +975,7 @@ public class TemplateElementStateProviderTest {
 
     private static Element createElement(TemplateNodeBuilder builder) {
         List<TemplateNode> nodes = builder.build(null);
-        Assert.assertEquals(1, nodes.size());
+        assertEquals(1, nodes.size());
         return createElement(nodes.get(0));
     }
 
@@ -1005,7 +1010,7 @@ public class TemplateElementStateProviderTest {
         ModelMap.get(stateNode).resolveModelMap("bean").setValue("name",
                 "John");
 
-        Assert.assertEquals("John", element.getProperty("prop"));
+        assertEquals("John", element.getProperty("prop"));
     }
 
     @Test
@@ -1016,20 +1021,20 @@ public class TemplateElementStateProviderTest {
         ModelMap.get(element.getNode()).setValue("modelParam", "modelValue");
 
         // Attribute names are case insensitive
-        Assert.assertEquals("value", element.getAttribute("unboundattribute"));
-        Assert.assertEquals("value", element.getAttribute("UNBOUNDattribute"));
-        Assert.assertEquals("modelValue",
+        assertEquals("value", element.getAttribute("unboundattribute"));
+        assertEquals("value", element.getAttribute("UNBOUNDattribute"));
+        assertEquals("modelValue",
                 element.getAttribute("boundattribute"));
-        Assert.assertEquals("modelValue",
+        assertEquals("modelValue",
                 element.getAttribute("BOUNDattribute"));
-        Assert.assertArrayEquals(
+        assertArrayEquals(
                 new Object[] { "unboundattribute", "boundattribute" },
                 element.getAttributeNames().toArray());
 
         // Property names are case sensitive
-        Assert.assertEquals("modelValue", element.getProperty("boundproperty"));
-        Assert.assertNull(element.getProperty("boundProperty"));
-        Assert.assertArrayEquals(new Object[] { "boundproperty" },
+        assertEquals("modelValue", element.getProperty("boundproperty"));
+        assertNull(element.getProperty("boundProperty"));
+        assertArrayEquals(new Object[] { "boundproperty" },
                 element.getPropertyNames().toArray());
     }
 
@@ -1037,9 +1042,9 @@ public class TemplateElementStateProviderTest {
     public void templateStaticStyleAttribute() {
         Element element = createElement("<div style='background:blue'></div>");
 
-        Assert.assertEquals("background:blue", element.getAttribute("style"));
-        Assert.assertEquals("blue", element.getStyle().get("background"));
-        Assert.assertArrayEquals(new Object[] { "style" },
+        assertEquals("background:blue", element.getAttribute("style"));
+        assertEquals("blue", element.getStyle().get("background"));
+        assertArrayEquals(new Object[] { "style" },
                 element.getAttributeNames().toArray());
     }
 
@@ -1048,7 +1053,7 @@ public class TemplateElementStateProviderTest {
         StateNode node = TemplateElementStateProvider
                 .createSubModelNode(ModelList.class);
 
-        Assert.assertTrue(node.isReportedFeature(ModelList.class));
+        assertTrue(node.isReportedFeature(ModelList.class));
     }
 
 }

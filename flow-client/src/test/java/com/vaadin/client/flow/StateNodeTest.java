@@ -15,11 +15,14 @@
  */
 package com.vaadin.client.flow;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.flow.nodefeature.NodeFeature;
@@ -31,23 +34,23 @@ public class StateNodeTest {
 
     @Test
     public void testDefaultNoFeatures() {
-        node.forEachFeature((ns, id) -> Assert.fail());
+        node.forEachFeature((ns, id) -> fail());
     }
 
     @Test
     public void testGetListFeature() {
         NodeList list = node.getList(1);
 
-        Assert.assertEquals(1, list.getId());
+        assertEquals(1, list.getId());
 
         List<NodeFeature> features = collectFeatures();
 
-        Assert.assertEquals(Arrays.asList(list), features);
+        assertEquals(Arrays.asList(list), features);
 
         NodeList anotherList = node.getList(1);
 
-        Assert.assertSame(anotherList, list);
-        Assert.assertEquals(features, collectFeatures());
+        assertSame(anotherList, list);
+        assertEquals(features, collectFeatures());
     }
 
     private List<NodeFeature> collectFeatures() {
@@ -60,14 +63,14 @@ public class StateNodeTest {
     public void testGetMapFeature() {
         NodeMap map = node.getMap(1);
 
-        Assert.assertEquals(1, map.getId());
+        assertEquals(1, map.getId());
 
         List<NodeFeature> features = collectFeatures();
 
-        Assert.assertEquals(Arrays.asList(map), features);
+        assertEquals(Arrays.asList(map), features);
 
         NodeMap anotherMap = node.getMap(1);
 
-        Assert.assertSame(anotherMap, map);
+        assertSame(anotherMap, map);
     }
 }

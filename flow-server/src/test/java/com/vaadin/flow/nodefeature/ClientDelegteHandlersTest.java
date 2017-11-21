@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.nodefeature;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -22,7 +25,6 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -172,7 +174,7 @@ public class ClientDelegteHandlersTest {
 
         ClientDelegateHandlers feature = stateNode
                 .getFeature(ClientDelegateHandlers.class);
-        Assert.assertEquals(1, feature.size());
+        assertEquals(1, feature.size());
     }
 
     @Test
@@ -184,8 +186,8 @@ public class ClientDelegteHandlersTest {
 
         ClientDelegateHandlers feature = template.getElement().getNode()
                 .getFeature(ClientDelegateHandlers.class);
-        Assert.assertEquals(1, feature.size());
-        Assert.assertEquals(
+        assertEquals(1, feature.size());
+        assertEquals(
                 getDeclaredMethods(Template1.class).findFirst().get(),
                 feature.get(0));
     }
@@ -207,7 +209,7 @@ public class ClientDelegteHandlersTest {
 
         ClientDelegateHandlers feature = template.getElement().getNode()
                 .getFeature(ClientDelegateHandlers.class);
-        Assert.assertEquals(10, feature.size());
+        assertEquals(10, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
                 TemplateWithGoodParametersMethods.class)
@@ -217,7 +219,7 @@ public class ClientDelegteHandlersTest {
         for (int i = 0; i < feature.size(); i++) {
             methods.remove(feature.get(i));
         }
-        Assert.assertTrue(
+        assertTrue(
                 "Feature doesn't contain methods: " + methods.toString(),
                 methods.isEmpty());
     }
@@ -247,8 +249,8 @@ public class ClientDelegteHandlersTest {
 
         ClientDelegateHandlers feature = template.getElement().getNode()
                 .getFeature(ClientDelegateHandlers.class);
-        Assert.assertEquals(2, feature.size());
-        Assert.assertEquals(getDeclaredMethods(
+        assertEquals(2, feature.size());
+        assertEquals(getDeclaredMethods(
                 TemplateWithMethodDeclaringUncheckedException.class).findFirst()
                         .get(),
                 feature.get(0));
@@ -263,7 +265,7 @@ public class ClientDelegteHandlersTest {
 
         ClientDelegateHandlers feature = template.getElement().getNode()
                 .getFeature(ClientDelegateHandlers.class);
-        Assert.assertEquals(3, feature.size());
+        assertEquals(3, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
                 ChildTemplateWithMultipleMethods.class)
@@ -273,7 +275,7 @@ public class ClientDelegteHandlersTest {
         for (int i = 0; i < feature.size(); i++) {
             methods.remove(feature.get(i));
         }
-        Assert.assertTrue(
+        assertTrue(
                 "Feature doesn't contain methods: " + methods.toString(),
                 methods.isEmpty());
     }
@@ -287,8 +289,8 @@ public class ClientDelegteHandlersTest {
 
         ClientDelegateHandlers feature = template.getElement().getNode()
                 .getFeature(ClientDelegateHandlers.class);
-        Assert.assertEquals(1, feature.size());
-        Assert.assertEquals(
+        assertEquals(1, feature.size());
+        assertEquals(
                 getDeclaredMethods(ChildTemplateWithOverriddenMethod.class)
                         .findFirst().get(),
                 feature.get(0));
@@ -309,7 +311,7 @@ public class ClientDelegteHandlersTest {
         StateNode stateNode = new StateNode(ClientDelegateHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0,
+        assertEquals(0,
                 stateNode.getFeature(ClientDelegateHandlers.class).size());
     }
 
@@ -321,7 +323,7 @@ public class ClientDelegteHandlersTest {
                 ClientDelegateHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0,
+        assertEquals(0,
                 stateNode.getFeature(ClientDelegateHandlers.class).size());
     }
 
@@ -349,9 +351,9 @@ public class ClientDelegteHandlersTest {
 
     private void assertListFeature(SerializableNodeList<String> feature,
             String... expected) {
-        Assert.assertEquals(expected.length, feature.size());
+        assertEquals(expected.length, feature.size());
         for (int i = 0; i < expected.length; i++) {
-            Assert.assertEquals(expected[i], feature.get(i));
+            assertEquals(expected[i], feature.get(i));
         }
 
     }

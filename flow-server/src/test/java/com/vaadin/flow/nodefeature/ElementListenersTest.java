@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.nodefeature;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.DomEvent;
@@ -46,17 +51,17 @@ public class ElementListenersTest
         Registration handle = ns.add("foo",
                 e -> eventCount.incrementAndGet(), new String[0]);
 
-        Assert.assertEquals(0, eventCount.get());
+        assertEquals(0, eventCount.get());
 
         ns.fireEvent(createEvent("foo"));
 
-        Assert.assertEquals(1, eventCount.get());
+        assertEquals(1, eventCount.get());
 
         handle.remove();
 
         ns.fireEvent(createEvent("foo"));
 
-        Assert.assertEquals(1, eventCount.get());
+        assertEquals(1, eventCount.get());
     }
 
     private static DomEvent createEvent(String type) {
@@ -65,15 +70,15 @@ public class ElementListenersTest
 
     @Test
     public void testEventNameInClientData() {
-        Assert.assertFalse(ns.contains("foo"));
+        assertFalse(ns.contains("foo"));
 
         Registration handle = ns.add("foo", noOp, new String[0]);
 
-        Assert.assertEquals(0, getExpressions("foo").size());
+        assertEquals(0, getExpressions("foo").size());
 
         handle.remove();
 
-        Assert.assertFalse(ns.contains("foo"));
+        assertFalse(ns.contains("foo"));
     }
 
     @Test
@@ -81,9 +86,9 @@ public class ElementListenersTest
         ns.add("eventType", noOp, new String[] { "data1", "data2" });
 
         Set<String> expressions = getExpressions("eventType");
-        Assert.assertTrue(expressions.contains("data1"));
-        Assert.assertTrue(expressions.contains("data2"));
-        Assert.assertFalse(expressions.contains("data3"));
+        assertTrue(expressions.contains("data1"));
+        assertTrue(expressions.contains("data2"));
+        assertFalse(expressions.contains("data3"));
 
         Registration handle = ns.add("eventType",
                 new DomEventListener() {
@@ -99,15 +104,15 @@ public class ElementListenersTest
                 }, new String[] { "data3" });
 
         expressions = getExpressions("eventType");
-        Assert.assertTrue(expressions.contains("data1"));
-        Assert.assertTrue(expressions.contains("data2"));
-        Assert.assertTrue(expressions.contains("data3"));
+        assertTrue(expressions.contains("data1"));
+        assertTrue(expressions.contains("data2"));
+        assertTrue(expressions.contains("data3"));
 
         handle.remove();
 
         expressions = getExpressions("eventType");
-        Assert.assertTrue(expressions.contains("data1"));
-        Assert.assertTrue(expressions.contains("data2"));
+        assertTrue(expressions.contains("data1"));
+        assertTrue(expressions.contains("data2"));
         // data3 might still be there, but we don't care
     }
 
@@ -115,21 +120,21 @@ public class ElementListenersTest
     public void testEventDataInEvent() {
         AtomicReference<JsonObject> eventDataReference = new AtomicReference<>();
         ns.add("foo", e -> {
-            Assert.assertNull(eventDataReference.get());
+            assertNull(eventDataReference.get());
             eventDataReference.set(e.getEventData());
         }, new String[0]);
 
-        Assert.assertNull(eventDataReference.get());
+        assertNull(eventDataReference.get());
 
         JsonObject eventData = Json.createObject();
         eventData.put("baz", true);
         ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData));
 
         JsonObject capturedJson = eventDataReference.get();
-        Assert.assertNotNull(capturedJson);
+        assertNotNull(capturedJson);
 
-        Assert.assertEquals(1, capturedJson.keys().length);
-        Assert.assertEquals("true", capturedJson.get("baz").toJson());
+        assertEquals(1, capturedJson.keys().length);
+        assertEquals("true", capturedJson.get("baz").toJson());
     }
 
     private Set<String> getExpressions(String name) {
