@@ -151,8 +151,8 @@ public class RouterLink extends Component
      * @param <T>
      *            url parameter type
      */
-    public <T> RouterLink(String text,
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(String text,
+            Class<? extends C> navigationTarget, T parameter) {
         this();
         setText(text);
         setRoute((com.vaadin.router.Router) getRouter(), navigationTarget,
@@ -192,8 +192,9 @@ public class RouterLink extends Component
      * @param <T>
      *            url parameter type
      */
-    public <T> RouterLink(com.vaadin.router.Router router, String text,
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(
+            com.vaadin.router.Router router, String text,
+            Class<? extends C> navigationTarget, T parameter) {
         this();
         setText(text);
         setRoute(router, navigationTarget, parameter);
@@ -226,8 +227,9 @@ public class RouterLink extends Component
      * @param <T>
      *            url parameter type
      */
-    public <T> void setRoute(com.vaadin.router.Router router,
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
+    public <T, C extends Component & HasUrlParameter<T>> void setRoute(
+            com.vaadin.router.Router router,
+            Class<? extends C> navigationTarget, T parameter) {
         validateRouteParameters(router, navigationTarget);
         String url = router.getUrl(navigationTarget, parameter);
         HREF.set(this, url);
@@ -363,9 +365,9 @@ public class RouterLink extends Component
             @Override
             public void acceptPlaceholder(String placeholderName) {
                 if (!parametersIterator.hasNext()) {
-                    throw new IllegalArgumentException(
-                            route + " has more placeholders than the number of given parameters: "
-                                    + Arrays.toString(parameters));
+                    throw new IllegalArgumentException(route
+                            + " has more placeholders than the number of given parameters: "
+                            + Arrays.toString(parameters));
                 }
                 urlSegments.add(parametersIterator.next());
             }
@@ -386,9 +388,9 @@ public class RouterLink extends Component
         });
 
         if (parametersIterator.hasNext()) {
-            throw new IllegalArgumentException(
-                    route + " has fewer placeholders than the number of given parameters: "
-                            + Arrays.toString(parameters));
+            throw new IllegalArgumentException(route
+                    + " has fewer placeholders than the number of given parameters: "
+                    + Arrays.toString(parameters));
         }
 
         return new Location(urlSegments).getPath();

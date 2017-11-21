@@ -15,12 +15,16 @@
  */
 package com.vaadin.router;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
@@ -42,12 +46,6 @@ import com.vaadin.ui.UI;
  * @see Route
  */
 public class Router implements RouterInterface {
-
-    /* See https://github.com/vaadin/flow/issues/2869 */
-    private static <T> List<String> serializeUrlParameters(List<T> urlParameters) {
-        return urlParameters.stream().filter(Objects::nonNull).map(T::toString)
-                .collect(Collectors.toList());
-    }
 
     private RouteResolver routeResolver;
 
@@ -250,8 +248,8 @@ public class Router implements RouterInterface {
      *            parameter to embed into the generated url
      * @return url for the navigation target with parameter
      */
-    public <T> String getUrl(
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
+    public <T, C extends Component & HasUrlParameter<T>> String getUrl(
+            Class<? extends C> navigationTarget, T parameter) {
         return getUrl(navigationTarget, Arrays.asList(parameter));
     }
 
@@ -269,13 +267,12 @@ public class Router implements RouterInterface {
      *            parameters to embed into the generated url
      * @return url for the navigation target with parameter
      */
-    public <T> String getUrl(
-            Class<? extends HasUrlParameter<T>> navigationTarget,
-            List<T> parameters) {
-        String routeString = getUrlForTarget(
-                (Class<? extends Component>) navigationTarget);
+    public <T, C extends Component & HasUrlParameter<T>> String getUrl(
+            Class<? extends C> navigationTarget, List<T> parameters) {
+        String routeString = getUrlForTarget(navigationTarget);
 
-        List<String> serializedParameters = serializeUrlParameters(parameters);
+        List<String> serializedParameters = getSerializedParameters(
+                navigationTarget, parameters);
         if (!parameters.isEmpty()) {
             routeString = routeString.replace(
                     "{" + parameters.get(0).getClass().getSimpleName() + "}",
@@ -318,6 +315,37 @@ public class Router implements RouterInterface {
     private boolean hasUrlParameters(
             Class<? extends Component> navigationTarget) {
         return HasUrlParameter.class.isAssignableFrom(navigationTarget);
+    }
+
+    private <T, C extends Component & HasUrlParameter<T>> List<String> getSerializedParameters(
+            Class<? extends C> navigationTarget, List<T> parameters) {
+        List<String> serializedParameters = new ArrayList<>();
+        try {
+            // If serializeUrlParameters is the default one, no need to trigger
+            // a potentially expensive instantiation of the component
+            if (navigationTarget.getMethod("serializeUrlParameters", List.class)
+                    .getDeclaringClass().equals(HasUrlParameter.class)) {
+                serializedParameters.addAll(serializeUrlParameters(parameters));
+            } else {
+                Instantiator instantiator = VaadinService.getCurrent()
+                        .getInstantiator();
+                serializedParameters
+                        .addAll(instantiator.createComponent(navigationTarget)
+                                .serializeUrlParameters(parameters));
+            }
+        } catch (NoSuchMethodException e) {
+            Logger.getLogger(Router.class.getName()).log(Level.WARNING, e,
+                    () -> String.format(
+                            "Failed to get method 'serializeUrlParameters' for %s",
+                            navigationTarget.getName()));
+            serializedParameters.addAll(serializeUrlParameters(parameters));
+        }
+        return serializedParameters;
+    }
+
+    private <T> List<String> serializeUrlParameters(List<T> urlParameters) {
+        return urlParameters.stream().filter(Objects::nonNull).map(T::toString)
+                .collect(Collectors.toList());
     }
 
     @Override
