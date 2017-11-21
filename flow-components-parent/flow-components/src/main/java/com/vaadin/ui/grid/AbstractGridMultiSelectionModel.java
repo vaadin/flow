@@ -295,7 +295,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
         Set<T> oldSelection = new LinkedHashSet<>(selected);
         boolean added = selected.add(item);
         if (added) {
-            fireSelectionEvent(new MultiSelectionEvent<Grid<T>, T>(
+            fireSelectionEvent(new MultiSelectionEvent<>(
                     getGrid(), getGrid().asMultiSelect(), oldSelection,
                     userOriginated));
         }
@@ -305,7 +305,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
         Set<T> oldSelection = new LinkedHashSet<>(selected);
         boolean removed = selected.remove(item);
         if (removed) {
-            fireSelectionEvent(new MultiSelectionEvent<Grid<T>, T>(
+            fireSelectionEvent(new MultiSelectionEvent<>(
                     getGrid(), getGrid().asMultiSelect(), oldSelection,
                     userOriginated));
         }
@@ -322,7 +322,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
         selected.removeAll(removedItems);
         selected.addAll(addedItems);
         getGrid().getDataCommunicator().reset();
-        fireSelectionEvent(new MultiSelectionEvent<Grid<T>, T>(getGrid(),
+        fireSelectionEvent(new MultiSelectionEvent<>(getGrid(),
                 getGrid().asMultiSelect(), oldSelection, userOriginated));
         if (!removedItems.isEmpty()) {
             selectionColumn.setSelectAllCheckboxState(false);

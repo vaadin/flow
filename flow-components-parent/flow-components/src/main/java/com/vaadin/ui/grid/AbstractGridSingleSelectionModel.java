@@ -184,7 +184,7 @@ public abstract class AbstractGridSingleSelectionModel<T>
     private void doSelect(T item, boolean userOriginated) {
         T oldValue = selectedItem;
         selectedItem = item;
-        fireSelectionEvent(new SingleSelectionEvent<Grid<T>, T>(getGrid(),
+        fireSelectionEvent(new SingleSelectionEvent<>(getGrid(),
                 getGrid().asSingleSelect(), oldValue, userOriginated));
     }
 }
