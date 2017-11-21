@@ -15,6 +15,11 @@
  */
 package com.vaadin.server;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,7 +39,6 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 
 import org.easymock.EasyMock;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -202,10 +206,10 @@ public class VaadinSessionTest {
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
         ui.addDetachListener(e -> {
             detachCalled.set(true);
-            Assert.assertEquals(ui, UI.getCurrent());
-            Assert.assertEquals(session, VaadinSession.getCurrent());
-            Assert.assertEquals(mockService, VaadinService.getCurrent());
-            Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
+            assertEquals(ui, UI.getCurrent());
+            assertEquals(session, VaadinSession.getCurrent());
+            assertEquals(mockService, VaadinService.getCurrent());
+            assertEquals(mockServlet, VaadinServlet.getCurrent());
         });
 
         session.valueUnbound(
@@ -216,7 +220,7 @@ public class VaadinSessionTest {
                                                     // VaadinService.fireSessionDestroy,
                                                     // we need to run the
                                                     // pending task ourselves
-        Assert.assertTrue(detachCalled.get());
+        assertTrue(detachCalled.get());
     }
 
     @Test
@@ -225,10 +229,10 @@ public class VaadinSessionTest {
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
         ui.addDetachListener(e -> {
             detachCalled.set(true);
-            Assert.assertEquals(ui, UI.getCurrent());
-            Assert.assertEquals(session, VaadinSession.getCurrent());
-            Assert.assertEquals(mockService, VaadinService.getCurrent());
-            Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
+            assertEquals(ui, UI.getCurrent());
+            assertEquals(session, VaadinSession.getCurrent());
+            assertEquals(mockService, VaadinService.getCurrent());
+            assertEquals(mockServlet, VaadinServlet.getCurrent());
         });
         CurrentInstance.clearAll();
         session.close();
@@ -239,7 +243,7 @@ public class VaadinSessionTest {
                                                     // VaadinService.fireSessionDestroy,
                                                     // we need to run the
                                                     // pending task ourselves
-        Assert.assertTrue(detachCalled.get());
+        assertTrue(detachCalled.get());
     }
 
     @Test
@@ -283,7 +287,7 @@ public class VaadinSessionTest {
         VaadinSession.setCurrent(session);
         session.lock();
         SerializationPushConnection pc = new SerializationPushConnection(ui);
-        Assert.assertEquals("Session should be set when instance is created",
+        assertEquals("Session should be set when instance is created",
                 session, pc.session);
         ui.getPushConfiguration().setPushMode(PushMode.MANUAL);
         ui.getInternals().setPushConnection(pc);
@@ -303,10 +307,10 @@ public class VaadinSessionTest {
 
         VaadinSession deserializedSession = (VaadinSession) in.readObject();
 
-        Assert.assertNull("Current session shouldn't leak from deserialisation",
+        assertNull("Current session shouldn't leak from deserialisation",
                 VaadinSession.getCurrent());
 
-        Assert.assertNotSame("Should get a new session", session,
+        assertNotSame("Should get a new session", session,
                 deserializedSession);
 
         // Restore http session and service instance so the session can be
@@ -318,7 +322,7 @@ public class VaadinSessionTest {
         SerializationPushConnection deserializedPc = (SerializationPushConnection) deserializedUi
                 .getInternals().getPushConnection();
 
-        Assert.assertEquals(
+        assertEquals(
                 "Current session should be available in SerializationTestLabel.readObject",
                 deserializedSession, deserializedPc.session);
         deserializedSession.unlock();

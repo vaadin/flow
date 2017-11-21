@@ -1,5 +1,7 @@
 package com.vaadin;
 
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +24,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -104,12 +105,12 @@ public class LicenseCheckTest {
                     Node license = licenses.item(i);
                     Map<String, List<String>> unsupported = new HashMap<>();
                     if (!checkLicenses(license, unsupported)) {
-                        Assert.fail(getErrorMessage(file, unsupported));
+                        fail(getErrorMessage(file, unsupported));
                     }
                 }
             } catch (ParserConfigurationException | SAXException
                     | IOException exception) {
-                Assert.fail("Cannot parse license file " + file);
+                fail("Cannot parse license file " + file);
             }
         }
 

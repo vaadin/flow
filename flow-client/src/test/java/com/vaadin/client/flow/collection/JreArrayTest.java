@@ -17,6 +17,8 @@
 package com.vaadin.client.flow.collection;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -24,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.flow.collection.jre.JreJsArray;
@@ -35,17 +36,17 @@ public class JreArrayTest {
     public void testArray() {
         JsArray<String> array = JsCollections.array();
 
-        Assert.assertEquals(0, array.length());
+        assertEquals(0, array.length());
 
         array.push("foo");
 
-        Assert.assertEquals(1, array.length());
+        assertEquals(1, array.length());
 
-        Assert.assertEquals("foo", array.get(0));
+        assertEquals("foo", array.get(0));
 
         array.set(0, "bar");
 
-        Assert.assertEquals("bar", array.get(0));
+        assertEquals("bar", array.get(0));
     }
 
     @Test
@@ -104,23 +105,23 @@ public class JreArrayTest {
     @Test
     public void testArrayIsEmpty() {
         JsArray<String> array = JsCollections.array();
-        Assert.assertTrue(array.isEmpty());
+        assertTrue(array.isEmpty());
         // 1, 2, 3
         array.push("1");
-        Assert.assertFalse(array.isEmpty());
+        assertFalse(array.isEmpty());
         array.push("2");
-        Assert.assertFalse(array.isEmpty());
+        assertFalse(array.isEmpty());
         array.remove(0);
-        Assert.assertFalse(array.isEmpty());
+        assertFalse(array.isEmpty());
         array.remove(0);
-        Assert.assertTrue(array.isEmpty());
+        assertTrue(array.isEmpty());
     }
 
     @SafeVarargs
     private final <T> void assertArray(JsArray<T> array, T... values) {
-        Assert.assertEquals(values.length, array.length());
+        assertEquals(values.length, array.length());
         for (int i = 0; i < values.length; i++) {
-            Assert.assertEquals(values[i], array.get(i));
+            assertEquals(values[i], array.get(i));
         }
     }
 
@@ -134,17 +135,17 @@ public class JreArrayTest {
         // 1, 1.3, 1.7, 2
         JsArray<String> noneRemoved = array.splice(1, 0, "1.3", "1.7");
 
-        Assert.assertEquals(0, noneRemoved.length());
-        Assert.assertEquals(4, array.length());
-        Assert.assertEquals("1.3", array.get(1));
+        assertEquals(0, noneRemoved.length());
+        assertEquals(4, array.length());
+        assertEquals("1.3", array.get(1));
 
         // 1, 2
         JsArray<String> twoRemoved = array.splice(1, 2);
-        Assert.assertEquals(2, twoRemoved.length());
-        Assert.assertEquals("1.7", twoRemoved.get(1));
+        assertEquals(2, twoRemoved.length());
+        assertEquals("1.7", twoRemoved.get(1));
 
-        Assert.assertEquals(2, array.length());
-        Assert.assertEquals("2", array.get(1));
+        assertEquals(2, array.length());
+        assertEquals("2", array.get(1));
     }
 
     @Test
@@ -164,7 +165,7 @@ public class JreArrayTest {
                 continue;
             }
 
-            Assert.assertFalse(JreJsArray.class.getSimpleName()
+            assertFalse(JreJsArray.class.getSimpleName()
                     + " must override" + method,
                     Modifier.isNative(method.getModifiers()));
         }

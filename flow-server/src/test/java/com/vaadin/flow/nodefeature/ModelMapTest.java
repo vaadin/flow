@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.nodefeature;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,17 +40,17 @@ public class ModelMapTest {
     public void putGet() {
         ModelMap map = new ModelMap(new StateNode());
         map.setValue("foo", "bar");
-        Assert.assertEquals("bar", map.get("foo"));
+        assertEquals("bar", map.get("foo"));
     }
 
     @Test
     public void hasValue() {
         ModelMap map = new ModelMap(new StateNode());
-        Assert.assertFalse(map.hasValue("foo"));
+        assertFalse(map.hasValue("foo"));
         map.setValue("foo", "bar");
-        Assert.assertTrue(map.hasValue("foo"));
+        assertTrue(map.hasValue("foo"));
         map.remove("foo");
-        Assert.assertFalse(map.hasValue("foo"));
+        assertFalse(map.hasValue("foo"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -60,14 +63,14 @@ public class ModelMapTest {
     public void resolveAndCreateImmediateChildMap() {
         ModelMap child = rootMap.resolveModelMap("child");
         ModelMap parent = getParentMapAndAssertMapping(child, "child");
-        Assert.assertEquals(rootMap, parent);
+        assertEquals(rootMap, parent);
     }
 
     @Test
     public void resolveAndCreateImmediateChildList() {
         ModelList child = rootMap.resolveModelList("child");
         ModelMap parent = getParentMapAndAssertMapping(child, "child");
-        Assert.assertEquals(rootMap, parent);
+        assertEquals(rootMap, parent);
     }
 
     @Test
@@ -75,7 +78,7 @@ public class ModelMapTest {
         ModelMap child = rootMap.resolveModelMap("parent.child");
         ModelMap parent = getParentMapAndAssertMapping(child, "child");
         ModelMap resolvedRoot = getParentMapAndAssertMapping(parent, "parent");
-        Assert.assertEquals(rootMap, resolvedRoot);
+        assertEquals(rootMap, resolvedRoot);
     }
 
     @Test
@@ -83,7 +86,7 @@ public class ModelMapTest {
         ModelList child = rootMap.resolveModelList("parent.child");
         ModelMap parent = getParentMapAndAssertMapping(child, "child");
         ModelMap resolvedRoot = getParentMapAndAssertMapping(parent, "parent");
-        Assert.assertEquals(rootMap, resolvedRoot);
+        assertEquals(rootMap, resolvedRoot);
     }
 
     @Test
@@ -92,7 +95,7 @@ public class ModelMapTest {
         ModelMap parent = getParentMapAndAssertMapping(child, "child");
         ModelMap grand = getParentMapAndAssertMapping(parent, "parent");
         ModelMap resolvedRoot = getParentMapAndAssertMapping(grand, "grand");
-        Assert.assertEquals(rootMap, resolvedRoot);
+        assertEquals(rootMap, resolvedRoot);
     }
 
     @Test
@@ -101,12 +104,12 @@ public class ModelMapTest {
         ModelMap parent = getParentMapAndAssertMapping(child, "child");
         ModelMap grand = getParentMapAndAssertMapping(parent, "parent");
         ModelMap resolvedRoot = getParentMapAndAssertMapping(grand, "grand");
-        Assert.assertEquals(rootMap, resolvedRoot);
+        assertEquals(rootMap, resolvedRoot);
     }
 
     @Test
     public void resolveEmptyPath() {
-        Assert.assertEquals(rootMap, rootMap.resolveModelMap(""));
+        assertEquals(rootMap, rootMap.resolveModelMap(""));
     }
 
     @Test(expected = AssertionError.class)
@@ -125,7 +128,7 @@ public class ModelMapTest {
         assert child.getNode() != null;
         ModelMap parentMap = ModelMap.get(child.getNode().getParent());
         assert parentMap != null;
-        Assert.assertEquals(child.getNode(), parentMap.getValue(childKey));
+        assertEquals(child.getNode(), parentMap.getValue(childKey));
         return parentMap;
     }
 
@@ -135,28 +138,28 @@ public class ModelMapTest {
         assert child.getNode() != null;
         ModelMap parentMap = ModelMap.get(child.getNode().getParent());
         assert parentMap != null;
-        Assert.assertEquals(child.getNode(), parentMap.getValue(childKey));
+        assertEquals(child.getNode(), parentMap.getValue(childKey));
         return parentMap;
     }
 
     @Test
     public void getLastPartEmptyString() {
-        Assert.assertEquals("", ModelMap.getLastPart(""));
+        assertEquals("", ModelMap.getLastPart(""));
     }
 
     @Test
     public void getLastPartWithoutDots() {
-        Assert.assertEquals("foo", ModelMap.getLastPart("foo"));
+        assertEquals("foo", ModelMap.getLastPart("foo"));
     }
 
     @Test
     public void getLastPartOneLevel() {
-        Assert.assertEquals("bar", ModelMap.getLastPart("foo.bar"));
+        assertEquals("bar", ModelMap.getLastPart("foo.bar"));
     }
 
     @Test
     public void getLastPartTwoLevels() {
-        Assert.assertEquals("baz", ModelMap.getLastPart("foo.bar.baz"));
+        assertEquals("baz", ModelMap.getLastPart("foo.bar.baz"));
     }
 
     @Test(expected = IllegalArgumentException.class)

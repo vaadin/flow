@@ -15,9 +15,15 @@
  */
 package com.vaadin.client.flow;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -58,9 +64,9 @@ public class StateTreeTest {
         }
 
         void assertMessage(StateNode node, String key, Object value) {
-            Assert.assertEquals(node, this.node);
-            Assert.assertEquals(key, this.key);
-            Assert.assertEquals(value, this.value);
+            assertEquals(node, this.node);
+            assertEquals(key, this.key);
+            assertEquals(value, this.value);
         }
     }
 
@@ -82,12 +88,12 @@ public class StateTreeTest {
     public void testIdMappings() {
 
         StateNode nullNode = tree.getNode(node.getId());
-        Assert.assertNull(nullNode);
+        assertNull(nullNode);
 
         tree.registerNode(node);
 
         StateNode foundNode = tree.getNode(node.getId());
-        Assert.assertSame(node, foundNode);
+        assertSame(node, foundNode);
     }
 
     @Test(expected = AssertionError.class)
@@ -105,13 +111,13 @@ public class StateTreeTest {
     public void testNodeUnregister() {
         tree.registerNode(node);
 
-        Assert.assertFalse(node.isUnregistered());
+        assertFalse(node.isUnregistered());
 
         AtomicReference<NodeUnregisterEvent> lastEvent = new AtomicReference<>();
         node.addUnregisterListener(new NodeUnregisterListener() {
             @Override
             public void onUnregister(NodeUnregisterEvent event) {
-                Assert.assertNull("Unexpected event fired", lastEvent.get());
+                assertNull("Unexpected event fired", lastEvent.get());
                 lastEvent.set(event);
             }
         });
@@ -119,10 +125,10 @@ public class StateTreeTest {
         tree.unregisterNode(node);
 
         NodeUnregisterEvent event = lastEvent.get();
-        Assert.assertSame(node, event.getNode());
+        assertSame(node, event.getNode());
 
-        Assert.assertTrue(node.isUnregistered());
-        Assert.assertNull(tree.getNode(node.getId()));
+        assertTrue(node.isUnregistered());
+        assertNull(tree.getNode(node.getId()));
     }
 
     @Test
@@ -130,7 +136,7 @@ public class StateTreeTest {
         tree.registerNode(node);
 
         EventRemover remove = node
-                .addUnregisterListener(e -> Assert.fail("Should never run"));
+                .addUnregisterListener(e -> fail("Should never run"));
 
         remove.remove();
 
@@ -150,7 +156,7 @@ public class StateTreeTest {
 
         try {
             tree.unregisterNode(node);
-            Assert.fail("Should have thrown");
+            fail("Should have thrown");
         } catch (AssertionError expected) {
             // All is fine
         }

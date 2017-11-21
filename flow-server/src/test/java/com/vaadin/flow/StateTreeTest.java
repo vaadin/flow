@@ -15,6 +15,13 @@
  */
 
 package com.vaadin.flow;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -25,7 +32,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.change.ListAddChange;
@@ -72,16 +78,16 @@ public class StateTreeTest {
     public void testRootNodeState() {
         StateNode rootNode = tree.getRootNode();
 
-        Assert.assertNull("Root node should have no parent",
+        assertNull("Root node should have no parent",
                 rootNode.getParent());
 
-        Assert.assertTrue("Root node should always be attached",
+        assertTrue("Root node should always be attached",
                 rootNode.isAttached());
 
-        Assert.assertEquals("Root node should always have the same id", 1,
+        assertEquals("Root node should always have the same id", 1,
                 rootNode.getId());
 
-        Assert.assertSame(tree, rootNode.getOwner());
+        assertSame(tree, rootNode.getOwner());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -93,17 +99,17 @@ public class StateTreeTest {
     public void attachedNodeIsAttached() {
         StateNode node = StateNodeTest.createEmptyNode();
 
-        Assert.assertFalse("New node should not be attached",
+        assertFalse("New node should not be attached",
                 node.isAttached());
 
         StateNodeTest.setParent(node, tree.getRootNode());
 
-        Assert.assertTrue("Node with parent set should be attached",
+        assertTrue("Node with parent set should be attached",
                 node.isAttached());
 
         StateNodeTest.setParent(node, null);
 
-        Assert.assertFalse("Node without parent should not be attached",
+        assertFalse("Node without parent should not be attached",
                 node.isAttached());
     }
 
@@ -125,7 +131,7 @@ public class StateTreeTest {
     public void testNoRootAttachChange() {
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals(Collections.emptyList(), changes);
+        assertEquals(Collections.emptyList(), changes);
     }
 
     @Test
@@ -135,9 +141,9 @@ public class StateTreeTest {
 
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         NodeAttachChange nodeChange = (NodeAttachChange) changes.get(0);
-        Assert.assertSame(node2, nodeChange.getNode());
+        assertSame(node2, nodeChange.getNode());
     }
 
     @Test
@@ -149,21 +155,21 @@ public class StateTreeTest {
 
         NodeOwner owner = node1.getOwner();
 
-        Assert.assertSame("Both nodes should have the same owner", owner,
+        assertSame("Both nodes should have the same owner", owner,
                 node2.getOwner());
 
         Set<StateNode> initialDirty = tree.collectDirtyNodes();
-        Assert.assertEquals("Both nodes should initially be empty",
+        assertEquals("Both nodes should initially be empty",
                 new HashSet<>(Arrays.asList(node1, node2)), initialDirty);
 
         Set<StateNode> emptyCollection = tree.collectDirtyNodes();
-        Assert.assertTrue("Dirty nodes should be empty after collection",
+        assertTrue("Dirty nodes should be empty after collection",
                 emptyCollection.isEmpty());
 
         node2.markAsDirty();
 
         Set<StateNode> collectAfterOneMarked = tree.collectDirtyNodes();
-        Assert.assertEquals("Marked node should be in collect result",
+        assertEquals("Marked node should be in collect result",
                 Collections.singleton(node2), collectAfterOneMarked);
     }
 
@@ -182,12 +188,12 @@ public class StateTreeTest {
         expected.add(rootNode);
         expected.addAll(nodes);
 
-        Assert.assertArrayEquals(expected.toArray(),
+        assertArrayEquals(expected.toArray(),
                 tree.collectDirtyNodes().toArray());
 
         nodes.forEach(StateNode::markAsDirty);
         expected = new ArrayList<>(nodes);
-        Assert.assertArrayEquals(expected.toArray(),
+        assertArrayEquals(expected.toArray(),
                 tree.collectDirtyNodes().toArray());
     }
 
@@ -204,8 +210,8 @@ public class StateTreeTest {
 
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals("Should be one change.", 1, changes.size());
-        Assert.assertTrue("Should have a detach change",
+        assertEquals("Should be one change.", 1, changes.size());
+        assertTrue("Should have a detach change",
                 changes.get(0) instanceof NodeDetachChange);
     }
 
@@ -224,16 +230,16 @@ public class StateTreeTest {
         StateNodeTest.setParent(node2, node1);
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals("Should be two changes.", 2, changes.size());
-        Assert.assertTrue("First change should re-attach the node.",
+        assertEquals("Should be two changes.", 2, changes.size());
+        assertTrue("First change should re-attach the node.",
                 changes.get(0) instanceof NodeAttachChange);
-        Assert.assertTrue("Second change should re-put the value.",
+        assertTrue("Second change should re-put the value.",
                 changes.get(1) instanceof MapPutChange);
 
         MapPutChange nodeChange = (MapPutChange) changes.get(1);
-        Assert.assertEquals(ElementData.class, nodeChange.getFeature());
-        Assert.assertEquals("tag", nodeChange.getKey());
-        Assert.assertEquals("foo", nodeChange.getValue());
+        assertEquals(ElementData.class, nodeChange.getFeature());
+        assertEquals("tag", nodeChange.getKey());
+        assertEquals("foo", nodeChange.getValue());
     }
 
     private List<NodeChange> collectChangesExceptChildrenAddRemove() {
@@ -268,7 +274,7 @@ public class StateTreeTest {
         byte[] serialized = SerializationUtils.serialize(tree);
         StateTree d1 = (StateTree) SerializationUtils.deserialize(serialized);
 
-        Assert.assertNotNull(d1);
+        assertNotNull(d1);
     }
 
     @Test
@@ -285,30 +291,30 @@ public class StateTreeTest {
         int childId = child.getId();
         int grandChildId = grandChild.getId();
 
-        Assert.assertTrue(child.isAttached());
-        Assert.assertTrue(grandChild.isAttached());
+        assertTrue(child.isAttached());
+        assertTrue(grandChild.isAttached());
 
-        Assert.assertSame(child, tree.getNodeById(childId));
-        Assert.assertSame(grandChild, tree.getNodeById(grandChildId));
+        assertSame(child, tree.getNodeById(childId));
+        assertSame(grandChild, tree.getNodeById(grandChildId));
 
         children.remove(0);
 
-        Assert.assertFalse(child.isAttached());
-        Assert.assertFalse(grandChild.isAttached());
+        assertFalse(child.isAttached());
+        assertFalse(grandChild.isAttached());
 
-        Assert.assertNull(tree.getNodeById(childId));
-        Assert.assertNull(tree.getNodeById(grandChildId));
+        assertNull(tree.getNodeById(childId));
+        assertNull(tree.getNodeById(grandChildId));
 
         children.add(0, child);
 
-        Assert.assertTrue(child.isAttached());
-        Assert.assertTrue(grandChild.isAttached());
+        assertTrue(child.isAttached());
+        assertTrue(grandChild.isAttached());
 
-        Assert.assertEquals(childId, child.getId());
-        Assert.assertEquals(grandChildId, grandChild.getId());
+        assertEquals(childId, child.getId());
+        assertEquals(grandChildId, grandChild.getId());
 
-        Assert.assertSame(child, tree.getNodeById(childId));
-        Assert.assertSame(grandChild, tree.getNodeById(grandChildId));
+        assertSame(child, tree.getNodeById(childId));
+        assertSame(grandChild, tree.getNodeById(grandChildId));
     }
 
     @Test
@@ -335,8 +341,8 @@ public class StateTreeTest {
             // nop
         });
 
-        Assert.assertTrue(TestUtil.isGarbageCollected(childRef));
-        Assert.assertTrue(TestUtil.isGarbageCollected(grandChildRef));
+        assertTrue(TestUtil.isGarbageCollected(childRef));
+        assertTrue(TestUtil.isGarbageCollected(grandChildRef));
     }
 
     @Test
@@ -350,11 +356,11 @@ public class StateTreeTest {
         tree.beforeClientResponse(rootNode, () -> results.add(2));
 
         tree.runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 3 results in the list",
+        assertTrue("There should be 3 results in the list",
                 results.size() == 3);
 
         for (int i = 0; i < results.size(); i++) {
-            Assert.assertEquals(
+            assertEquals(
                     "The result at index '" + i + "' should be " + i, i,
                     results.get(i).intValue());
         }
@@ -375,11 +381,11 @@ public class StateTreeTest {
         tree.beforeClientResponse(rootNode, () -> results.add(2));
 
         tree.runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 5 results in the list",
+        assertTrue("There should be 5 results in the list",
                 results.size() == 5);
 
         for (int i = 0; i < results.size(); i++) {
-            Assert.assertEquals(
+            assertEquals(
                     "The result at index '" + i + "' should be " + i, i,
                     results.get(i).intValue());
         }
@@ -398,12 +404,12 @@ public class StateTreeTest {
         tree.beforeClientResponse(rootNode, () -> results.add(3));
 
         tree.runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 2 results in the list",
+        assertTrue("There should be 2 results in the list",
                 results.size() == 2);
 
-        Assert.assertEquals("The result at index '0' should be " + 1, 1,
+        assertEquals("The result at index '0' should be " + 1, 1,
                 results.get(0).intValue());
-        Assert.assertEquals("The result at index '1' should be " + 3, 3,
+        assertEquals("The result at index '1' should be " + 3, 3,
                 results.get(1).intValue());
     }
 
@@ -427,16 +433,16 @@ public class StateTreeTest {
         tree.beforeClientResponse(rootNode, () -> results.add(3));
 
         tree.runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 4 results in the list",
+        assertTrue("There should be 4 results in the list",
                 results.size() == 4);
 
-        Assert.assertEquals("The result at index '0' should be 1", 1,
+        assertEquals("The result at index '0' should be 1", 1,
                 results.get(0).intValue());
-        Assert.assertEquals("The result at index '1' should be 3", 3,
+        assertEquals("The result at index '1' should be 3", 3,
                 results.get(1).intValue());
-        Assert.assertEquals("The result at index '2' should be 0", 0,
+        assertEquals("The result at index '2' should be 0", 0,
                 results.get(2).intValue());
-        Assert.assertEquals("The result at index '3' should be 2", 2,
+        assertEquals("The result at index '3' should be 2", 2,
                 results.get(3).intValue());
     }
 

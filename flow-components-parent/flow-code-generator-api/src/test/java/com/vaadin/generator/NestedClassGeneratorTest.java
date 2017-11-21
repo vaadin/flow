@@ -15,17 +15,18 @@
  */
 package com.vaadin.generator;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.ui.common.JsonSerializable;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
+import com.vaadin.ui.common.JsonSerializable;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -117,30 +118,30 @@ public class NestedClassGeneratorTest {
 
     private void assertJsonSerializableWasImplemented(
             JavaClassSource javaClass) {
-        Assert.assertTrue(
+        assertTrue(
                 "The generated class should implement "
                         + JsonSerializable.class.getName(),
                 javaClass.hasInterface(JsonSerializable.class));
 
-        Assert.assertTrue(
+        assertTrue(
                 "The generated class should have an \"internalObject\" field.",
                 javaClass.hasField("internalObject"));
 
-        Assert.assertTrue(
+        assertTrue(
                 "The generated class should have the \"toJson\" method.",
                 javaClass.hasMethodSignature("toJson"));
 
-        Assert.assertTrue(
+        assertTrue(
                 "The generated class should have the \"readJson\" method.",
                 javaClass.hasMethodSignature("readJson", JsonObject.class));
     }
 
     private void assertGetterAndSetterArePresent(JavaClassSource javaClass,
             String getterName, String setterName, Class<?> setterType) {
-        Assert.assertTrue(
+        assertTrue(
                 "The generated class should have the getter " + getterName,
                 javaClass.hasMethodSignature(getterName));
-        Assert.assertTrue(
+        assertTrue(
                 "The generated class should have the setter " + setterName,
                 javaClass.hasMethodSignature(setterName, setterType));
     }

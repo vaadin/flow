@@ -15,7 +15,9 @@
  */
 package com.vaadin.ui;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 
 import com.vaadin.ui.common.HasSize;
@@ -31,7 +33,7 @@ public class HasSizeTest {
     public void setWidth() {
         HasSizeComponent c = new HasSizeComponent();
         c.setWidth("100px");
-        Assert.assertEquals("100px", c.getWidth());
+        assertEquals("100px", c.getWidth());
     }
 
     @Test
@@ -39,14 +41,14 @@ public class HasSizeTest {
         HasSizeComponent c = new HasSizeComponent();
         c.setWidth("100px");
         c.setWidth(null);
-        Assert.assertNull(c.getWidth());
+        assertNull(c.getWidth());
     }
 
     @Test
     public void setHeight() {
         HasSizeComponent c = new HasSizeComponent();
         c.setHeight("100px");
-        Assert.assertEquals("100px", c.getHeight());
+        assertEquals("100px", c.getHeight());
     }
 
     @Test
@@ -54,7 +56,7 @@ public class HasSizeTest {
         HasSizeComponent c = new HasSizeComponent();
         c.setHeight("100px");
         c.setHeight(null);
-        Assert.assertNull(c.getHeight());
+        assertNull(c.getHeight());
     }
 
     @Test
@@ -62,8 +64,8 @@ public class HasSizeTest {
         HasSizeComponent component = new HasSizeComponent();
         component.setSizeFull();
 
-        Assert.assertEquals("100%", component.getWidth());
-        Assert.assertEquals("100%", component.getHeight());
+        assertEquals("100%", component.getWidth());
+        assertEquals("100%", component.getHeight());
     }
 
     @Test
@@ -74,8 +76,8 @@ public class HasSizeTest {
 
         component.setSizeUndefined();
 
-        Assert.assertNull(component.getWidth());
-        Assert.assertNull(component.getHeight());
+        assertNull(component.getWidth());
+        assertNull(component.getHeight());
     }
 
 }

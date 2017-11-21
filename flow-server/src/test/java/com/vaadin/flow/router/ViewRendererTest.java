@@ -15,23 +15,28 @@
  */
 package com.vaadin.flow.router;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.router.PageTitle;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.PageTitle;
 import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
+import com.vaadin.ui.common.HasText;
 import com.vaadin.util.ReflectTools;
 
 public class ViewRendererTest {
@@ -48,7 +53,7 @@ public class ViewRendererTest {
         private String wildcardValue;
 
         public TestView() {
-            Assert.assertFalse("View instance creation is not allowed",
+            assertFalse("View instance creation is not allowed",
                     Boolean.TRUE.equals(blockNewViewInstances.get()));
         }
 
@@ -92,7 +97,7 @@ public class ViewRendererTest {
         @Override
         public void setChildView(View childView) {
             if (childView != null) {
-                Assert.assertNotEquals(
+                assertNotEquals(
                         "setChildView should not be called if the child has not changed",
                         getElement(), childView.getElement().getParent());
             }
@@ -141,16 +146,16 @@ public class ViewRendererTest {
         new TestViewRenderer(TestView.class).handle(dummyEvent);
 
         List<View> viewChain = ui.getInternals().getActiveViewChain();
-        Assert.assertEquals(1, viewChain.size());
+        assertEquals(1, viewChain.size());
 
         View viewInstance = viewChain.get(0);
-        Assert.assertSame(TestView.class, viewInstance.getClass());
+        assertSame(TestView.class, viewInstance.getClass());
 
-        Assert.assertEquals(ui.getElement(),
+        assertEquals(ui.getElement(),
                 viewInstance.getElement().getParent());
-        Assert.assertEquals(1, ui.getElement().getChildCount());
+        assertEquals(1, ui.getElement().getChildCount());
 
-        Assert.assertEquals(Arrays.asList(dummyEvent.getLocation()),
+        assertEquals(Arrays.asList(dummyEvent.getLocation()),
                 ((TestView) viewInstance).locations);
     }
 
@@ -160,8 +165,8 @@ public class ViewRendererTest {
                 AnotherParentView.class).handle(dummyEvent);
 
         List<View> viewChain = ui.getInternals().getActiveViewChain();
-        Assert.assertEquals(3, viewChain.size());
-        Assert.assertEquals(
+        assertEquals(3, viewChain.size());
+        assertEquals(
                 Arrays.asList(TestView.class, ParentView.class,
                         AnotherParentView.class),
                 viewChain.stream().map(Object::getClass)
@@ -169,17 +174,17 @@ public class ViewRendererTest {
 
         Element element = null;
         for (View view : viewChain) {
-            Assert.assertEquals(Arrays.asList(dummyEvent.getLocation()),
+            assertEquals(Arrays.asList(dummyEvent.getLocation()),
                     ((TestView) view).locations);
 
             Element viewElement = view.getElement();
             if (element != null) {
-                Assert.assertEquals(viewElement, element.getParent());
+                assertEquals(viewElement, element.getParent());
             }
             element = viewElement;
         }
-        Assert.assertEquals(ui.getElement(), element.getParent());
-        Assert.assertEquals(1, ui.getElement().getChildCount());
+        assertEquals(ui.getElement(), element.getParent());
+        assertEquals(1, ui.getElement().getChildCount());
     }
 
     @Test
@@ -189,16 +194,16 @@ public class ViewRendererTest {
         List<View> firstChain = ui.getInternals().getActiveViewChain();
         TestView view = (TestView) firstChain.get(0);
 
-        Assert.assertEquals(1, view.locations.size());
+        assertEquals(1, view.locations.size());
 
         new TestViewRenderer(TestView.class).handle(dummyEvent);
 
-        Assert.assertEquals(2, view.locations.size());
+        assertEquals(2, view.locations.size());
 
         List<View> secondChain = ui.getInternals().getActiveViewChain();
 
-        Assert.assertNotSame(firstChain, secondChain);
-        Assert.assertSame(view, secondChain.get(0));
+        assertNotSame(firstChain, secondChain);
+        assertSame(view, secondChain.get(0));
     }
 
     @Test
@@ -214,7 +219,7 @@ public class ViewRendererTest {
         List<View> secondChain = ui.getInternals().getActiveViewChain();
 
         // Last item in each chain should be reused
-        Assert.assertSame(firstChain.get(2), secondChain.get(1));
+        assertSame(firstChain.get(2), secondChain.get(1));
     }
 
     @Test
@@ -229,7 +234,7 @@ public class ViewRendererTest {
 
         List<View> secondChain = ui.getInternals().getActiveViewChain();
 
-        Assert.assertEquals(Arrays.asList(firstChain.get(0), firstChain.get(2),
+        assertEquals(Arrays.asList(firstChain.get(0), firstChain.get(2),
                 firstChain.get(1)), secondChain);
     }
 
@@ -259,7 +264,7 @@ public class ViewRendererTest {
         new TestViewRenderer(ParentView.class, AnotherParentView.class)
                 .handle(dummyEvent);
 
-        Assert.assertEquals(0, parentView.getElement().getChildCount());
+        assertEquals(0, parentView.getElement().getChildCount());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -281,8 +286,8 @@ public class ViewRendererTest {
         TestView testView = (TestView) ui.getInternals().getActiveViewChain()
                 .get(0);
 
-        Assert.assertEquals("bar", testView.namePlaceholderValue);
-        Assert.assertEquals("baz/", testView.wildcardValue);
+        assertEquals("bar", testView.namePlaceholderValue);
+        assertEquals("baz/", testView.wildcardValue);
     }
 
     @Test
@@ -382,8 +387,8 @@ public class ViewRendererTest {
         View parentView2 = dummyEvent.getUI().getInternals()
                 .getActiveViewChain().get(1);
 
-        Assert.assertNotSame(view1, view2);
-        Assert.assertNotSame(parentView1, parentView2);
+        assertNotSame(view1, view2);
+        assertNotSame(parentView1, parentView2);
     }
 
     @Test
@@ -393,7 +398,7 @@ public class ViewRendererTest {
         int statusCode = renderer.handle(dummyEvent);
 
         // StatusCodeView increments default status code with 1
-        Assert.assertEquals(201, statusCode);
+        assertEquals(201, statusCode);
     }
 
     @Test
@@ -402,12 +407,12 @@ public class ViewRendererTest {
 
         int statusCode = renderer.handle(dummyEvent);
 
-        Assert.assertEquals(404, statusCode);
+        assertEquals(404, statusCode);
 
         List<View> activeViewChain = ui.getInternals().getActiveViewChain();
 
-        Assert.assertEquals(1, activeViewChain.size());
-        Assert.assertSame(DefaultErrorView.class,
+        assertEquals(1, activeViewChain.size());
+        assertSame(DefaultErrorView.class,
                 activeViewChain.get(0).getClass());
     }
 
@@ -419,7 +424,7 @@ public class ViewRendererTest {
     private void verifyViewTitleUpdate(String pageTitle) {
         List<JavaScriptInvocation> jsInvocations = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
-        Assert.assertEquals("Page.setTitle should use title from annotation",
+        assertEquals("Page.setTitle should use title from annotation",
                 pageTitle, jsInvocations.get(0).getParameters().get(0));
     }
 }

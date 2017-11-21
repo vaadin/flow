@@ -82,7 +82,7 @@ public class Jsr303Test {
 
         @Override
         public void execute() {
-            Assert.assertFalse(BeanUtil.checkBeanValidationAvailable());
+            assertFalse(BeanUtil.checkBeanValidationAvailable());
 
             Binder<BeanToValidate> binder = new Binder<>(BeanToValidate.class);
             BeanToValidate item = new BeanToValidate();
@@ -102,7 +102,7 @@ public class Jsr303Test {
             try {
                 BeanValidationBinder<BeanToValidate> beanValidationBinder = new BeanValidationBinder<>(
                         BeanToValidate.class);
-                Assert.fail();
+                fail();
             } catch (IllegalStateException ignore) {
                 // an exception has to be thrown
             }

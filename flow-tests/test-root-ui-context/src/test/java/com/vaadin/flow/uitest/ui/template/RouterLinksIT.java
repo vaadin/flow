@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
@@ -34,7 +37,7 @@ public class RouterLinksIT extends ChromeBrowserTest {
         WebElement textInput = getInShadowRoot(findElement(By.id("template")),
                 By.id("input"));
 
-        Assert.assertTrue("Input was not empty",
+        assertTrue("Input was not empty",
                 textInput.getAttribute("value").isEmpty());
         textInput.sendKeys(TEXT_INPUT);
         Assert.assertEquals("Input was missing contents", TEXT_INPUT,
@@ -48,7 +51,7 @@ public class RouterLinksIT extends ChromeBrowserTest {
                 link);
 
         // Original url should end with UI and the navigation link Template
-        Assert.assertNotEquals(originalUrl, getDriver().getCurrentUrl());
+        assertNotEquals(originalUrl, getDriver().getCurrentUrl());
 
         textInput = getInShadowRoot(findElement(By.id("template")), By.id("input"));
 

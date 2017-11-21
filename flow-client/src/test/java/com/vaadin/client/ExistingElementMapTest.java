@@ -15,7 +15,9 @@
  */
 package com.vaadin.client;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -29,8 +31,8 @@ public class ExistingElementMapTest {
         Element element = Mockito.mock(Element.class);
         map.add(1, element);
 
-        Assert.assertEquals(element, map.getElement(1));
-        Assert.assertEquals(Integer.valueOf(1), map.getId(element));
+        assertEquals(element, map.getElement(1));
+        assertEquals(Integer.valueOf(1), map.getId(element));
     }
 
     @Test
@@ -41,7 +43,7 @@ public class ExistingElementMapTest {
 
         map.remove(1);
 
-        Assert.assertNull(map.getElement(1));
-        Assert.assertNull(map.getId(element));
+        assertNull(map.getElement(1));
+        assertNull(map.getId(element));
     }
 }

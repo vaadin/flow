@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -28,6 +29,6 @@ public class BasicTextElementStateProviderTest {
     public void createStateNode_stateNodeHasRequiredElementDataFeature() {
         StateNode stateNode = BasicTextElementStateProvider
                 .createStateNode("foo");
-        Assert.assertTrue(stateNode.isReportedFeature(TextNodeMap.class));
+        assertTrue(stateNode.isReportedFeature(TextNodeMap.class));
     }
 }

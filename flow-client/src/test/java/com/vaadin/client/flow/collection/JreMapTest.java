@@ -16,10 +16,14 @@
 
 package com.vaadin.client.flow.collection;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class JreMapTest {
@@ -28,27 +32,27 @@ public class JreMapTest {
     public void testMap() {
         JsMap<String, Integer> map = JsCollections.map();
 
-        Assert.assertEquals(0, map.size());
+        assertEquals(0, map.size());
 
         map.set("One", 1).set("Two", 2);
 
-        Assert.assertEquals(2, map.size());
+        assertEquals(2, map.size());
 
-        Assert.assertTrue(map.has("One"));
-        Assert.assertTrue(map.has("Two"));
-        Assert.assertFalse(map.has("Three"));
+        assertTrue(map.has("One"));
+        assertTrue(map.has("Two"));
+        assertFalse(map.has("Three"));
 
-        Assert.assertEquals(1, (int) map.get("One"));
-        Assert.assertEquals(2, (int) map.get("Two"));
-        Assert.assertNull(map.get("Three"));
+        assertEquals(1, (int) map.get("One"));
+        assertEquals(2, (int) map.get("Two"));
+        assertNull(map.get("Three"));
 
-        Assert.assertTrue(map.delete("One"));
-        Assert.assertFalse(map.delete("Three"));
-        Assert.assertFalse(map.has("One"));
+        assertTrue(map.delete("One"));
+        assertFalse(map.delete("Three"));
+        assertFalse(map.has("One"));
 
         map.clear();
-        Assert.assertEquals(0, map.size());
-        Assert.assertFalse(map.has("Two"));
+        assertEquals(0, map.size());
+        assertFalse(map.has("Two"));
     }
 
     @Test
@@ -59,20 +63,20 @@ public class JreMapTest {
 
         JsArray<Integer> values = JsCollections.mapValues(map);
 
-        Assert.assertEquals(2, values.length());
+        assertEquals(2, values.length());
 
-        Assert.assertEquals(1, values.get(0).intValue());
-        Assert.assertEquals(2, values.get(1).intValue());
+        assertEquals(1, values.get(0).intValue());
+        assertEquals(2, values.get(1).intValue());
 
         map.delete("One");
 
         values = JsCollections.mapValues(map);
-        Assert.assertEquals(1, values.length());
-        Assert.assertEquals(2, values.get(0).intValue());
+        assertEquals(1, values.length());
+        assertEquals(2, values.get(0).intValue());
 
         map.clear();
         values = JsCollections.mapValues(map);
-        Assert.assertEquals(0, values.length());
+        assertEquals(0, values.length());
     }
 
     @Test
@@ -89,6 +93,6 @@ public class JreMapTest {
         expectedValues.put("One", 1);
         expectedValues.put("Two", 2);
 
-        Assert.assertEquals(expectedValues, seenValues);
+        assertEquals(expectedValues, seenValues);
     }
 }

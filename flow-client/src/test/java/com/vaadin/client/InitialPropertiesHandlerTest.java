@@ -15,9 +15,10 @@
  */
 package com.vaadin.client;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -83,10 +84,10 @@ public class InitialPropertiesHandlerTest {
 
         Reactive.flush();
 
-        Assert.assertEquals("bar", properties.getProperty("foo").getValue());
-        Assert.assertEquals("value",
+        assertEquals("bar", properties.getProperty("foo").getValue());
+        assertEquals("value",
                 properties.getProperty("other").getValue());
-        Assert.assertEquals("baz", properties.getProperty("client").getValue());
+        assertEquals("baz", properties.getProperty("client").getValue());
 
         Mockito.verify(tree, Mockito.times(0)).sendNodePropertySyncToServer(
                 serverSidePropertyUpdatedByClient);
@@ -128,7 +129,7 @@ public class InitialPropertiesHandlerTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(2, count.get());
+        assertEquals(2, count.get());
     }
 
 }

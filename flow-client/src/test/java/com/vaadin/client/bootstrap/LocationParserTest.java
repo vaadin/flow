@@ -15,27 +15,28 @@
  */
 package com.vaadin.client.bootstrap;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 public class LocationParserTest {
 
     @Test
     public void testParameterParsing() {
-        Assert.assertEquals(null, LocationParser.getParameter("?", "foo"));
-        Assert.assertEquals(null, LocationParser.getParameter("?bar", "foo"));
-        Assert.assertEquals("", LocationParser.getParameter("?foo", "foo"));
-        Assert.assertEquals("", LocationParser.getParameter("?foo=", "foo"));
-        Assert.assertEquals("bar",
+        assertEquals(null, LocationParser.getParameter("?", "foo"));
+        assertEquals(null, LocationParser.getParameter("?bar", "foo"));
+        assertEquals("", LocationParser.getParameter("?foo", "foo"));
+        assertEquals("", LocationParser.getParameter("?foo=", "foo"));
+        assertEquals("bar",
                 LocationParser.getParameter("?foo=bar", "foo"));
-        Assert.assertEquals("bar",
+        assertEquals("bar",
                 LocationParser.getParameter("?foo=bar&", "foo"));
 
-        Assert.assertEquals("", LocationParser.getParameter("?foo&bar", "foo"));
-        Assert.assertEquals("", LocationParser.getParameter("?bar&foo", "foo"));
-        Assert.assertEquals("",
+        assertEquals("", LocationParser.getParameter("?foo&bar", "foo"));
+        assertEquals("", LocationParser.getParameter("?bar&foo", "foo"));
+        assertEquals("",
                 LocationParser.getParameter("?bar&foo=", "foo"));
-        Assert.assertEquals("a",
+        assertEquals("a",
                 LocationParser.getParameter("?bar&foo=a", "foo"));
     }
 }

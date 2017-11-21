@@ -15,12 +15,14 @@
  */
 package com.vaadin.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Vector;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -54,7 +56,7 @@ public class LocaleUtilTest {
         Optional<Locale> exactLocaleMatch = LocaleUtil.getExactLocaleMatch(request,
                 Arrays.asList(Locale.ENGLISH, LOCALE_EN));
 
-        Assert.assertEquals(
+        assertEquals(
                 "Found wrong locale event though an exact match should have been available.",
                 LOCALE_EN, exactLocaleMatch.get());
     }
@@ -64,7 +66,7 @@ public class LocaleUtilTest {
         Optional<Locale> exactLocaleMatch = LocaleUtil.getExactLocaleMatch(request,
                 Arrays.asList(Locale.ENGLISH));
 
-        Assert.assertFalse(
+        assertFalse(
                 "Found locale event though none should have been available.", exactLocaleMatch.isPresent());
     }
 
@@ -74,7 +76,7 @@ public class LocaleUtilTest {
                 Arrays.asList(Locale.US, LOCALE_FI));
 
 
-        Assert.assertEquals(
+        assertEquals(
                 "Found wrong locale event though an language match should have been available.",
                 LOCALE_FI, exactLocaleMatch.get());
     }
@@ -84,7 +86,7 @@ public class LocaleUtilTest {
         Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(request,
                 Arrays.asList(Locale.FRENCH, Locale.KOREA));
 
-        Assert.assertFalse(
+        assertFalse(
                 "Found locale event though none should have been available.", exactLocaleMatch.isPresent());
     }
 

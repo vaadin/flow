@@ -1,9 +1,8 @@
 package com.vaadin.flow.nodefeature;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
-import com.vaadin.flow.nodefeature.PollConfigurationMap;
+import org.junit.Test;
 
 public class PollConfigurationMapTest
         extends AbstractMapFeatureTest<PollConfigurationMap> {
@@ -12,7 +11,7 @@ public class PollConfigurationMapTest
 
     @Test
     public void setDefaultPollInterval() {
-        Assert.assertEquals(-1, map.getPollInterval());
+        assertEquals(-1, map.getPollInterval());
     }
 
     @Test

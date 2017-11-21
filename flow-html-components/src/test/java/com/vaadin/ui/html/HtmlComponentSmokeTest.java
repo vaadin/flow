@@ -15,6 +15,9 @@
  */
 package com.vaadin.ui.html;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -33,7 +36,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -65,7 +67,7 @@ public class HtmlComponentSmokeTest {
     @Test
     public void testAllHtmlComponents() throws IOException {
         URL divClassLocationLocation = Div.class.getResource("Div.class");
-        Assert.assertEquals(divClassLocationLocation.getProtocol(), "file");
+        assertEquals(divClassLocationLocation.getProtocol(), "file");
 
         Path componentClassesLocation = new File(
                 divClassLocationLocation.getPath()).getParentFile().toPath();
@@ -113,12 +115,12 @@ public class HtmlComponentSmokeTest {
             HtmlComponent instance = constructor.newInstance(parameterValue);
 
             if (clazz.getAnnotation(Tag.class) == null) {
-                Assert.assertEquals(
+                assertEquals(
                         constructor
                                 + " should set the tag for a class without @Tag",
                         parameterValue, instance.getElement().getTag());
             } else {
-                Assert.assertEquals(
+                assertEquals(
                         constructor
                                 + " should set the text content for a class with @Tag",
                         parameterValue, instance.getElement().getText());
@@ -180,7 +182,7 @@ public class HtmlComponentSmokeTest {
             getterType = (Class<?>) ((ParameterizedType) gen)
                     .getActualTypeArguments()[0];
         }
-        Assert.assertEquals(setter + " should have the same type as its getter",
+        assertEquals(setter + " should have the same type as its getter",
                 propertyType, getterType);
 
         Object testValue = testValues.get(propertyType);
@@ -200,7 +202,7 @@ public class HtmlComponentSmokeTest {
             setter.invoke(instance, testValue);
 
             // Might have to add a blacklist for this logic at some point
-            Assert.assertTrue(
+            assertTrue(
                     setter + " should update the underlying state node",
                     hasPendingChanges(elementNode));
 
@@ -208,7 +210,7 @@ public class HtmlComponentSmokeTest {
             if (isOptional) {
                 getterValue = ((Optional<?>) getterValue).get();
             }
-            Assert.assertEquals(getter + " should return the set value",
+            assertEquals(getter + " should return the set value",
                     testValue, getterValue);
 
         } catch (IllegalAccessException | IllegalArgumentException

@@ -15,17 +15,18 @@
  */
 package com.vaadin.client.flow.nodefeature;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
-import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.client.flow.nodefeature.MapPropertyChangeEvent;
-import com.vaadin.client.flow.nodefeature.MapPropertyChangeListener;
-import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.CountingComputation;
 import com.vaadin.client.flow.reactive.Reactive;
 
@@ -37,13 +38,13 @@ public class MapPropertyTest {
 
     @Test
     public void testValue() {
-        Assert.assertNull(property.getValue());
-        Assert.assertFalse(property.hasValue());
+        assertNull(property.getValue());
+        assertFalse(property.hasValue());
 
         property.setValue("bar");
 
-        Assert.assertEquals("bar", property.getValue());
-        Assert.assertTrue(property.hasValue());
+        assertEquals("bar", property.getValue());
+        assertTrue(property.hasValue());
     }
 
     @Test
@@ -54,7 +55,7 @@ public class MapPropertyTest {
                 .addChangeListener(new MapPropertyChangeListener() {
                     @Override
                     public void onPropertyChange(MapPropertyChangeEvent event) {
-                        Assert.assertNull("Got unexpected event",
+                        assertNull("Got unexpected event",
                                 lastEvent.get());
                         lastEvent.set(event);
                     }
@@ -63,34 +64,34 @@ public class MapPropertyTest {
         property.setValue("foo");
 
         MapPropertyChangeEvent event = lastEvent.get();
-        Assert.assertSame(property, event.getSource());
-        Assert.assertNull(event.getOldValue());
-        Assert.assertEquals("foo", event.getNewValue());
+        assertSame(property, event.getSource());
+        assertNull(event.getOldValue());
+        assertEquals("foo", event.getNewValue());
 
         property.setValue("foo");
-        Assert.assertSame("No new event should have fired", event,
+        assertSame("No new event should have fired", event,
                 lastEvent.get());
 
         lastEvent.set(null);
         property.removeValue();
 
         MapPropertyChangeEvent removeEvent = lastEvent.get();
-        Assert.assertNull(removeEvent.getNewValue());
+        assertNull(removeEvent.getNewValue());
 
         property.removeValue();
-        Assert.assertSame("No new event should have fired", removeEvent,
+        assertSame("No new event should have fired", removeEvent,
                 lastEvent.get());
 
         lastEvent.set(null);
         property.setValue(null);
         MapPropertyChangeEvent addBackEvent = lastEvent.get();
-        Assert.assertNull(addBackEvent.getOldValue());
+        assertNull(addBackEvent.getOldValue());
 
         remover.remove();
 
         property.setValue("bar");
 
-        Assert.assertSame("No new event should have fired", addBackEvent,
+        assertSame("No new event should have fired", addBackEvent,
                 lastEvent.get());
     }
 
@@ -101,16 +102,16 @@ public class MapPropertyTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(1, computation.getCount());
+        assertEquals(1, computation.getCount());
 
         property.setValue("bar");
         property.setValue("baz");
 
-        Assert.assertEquals(1, computation.getCount());
+        assertEquals(1, computation.getCount());
 
         Reactive.flush();
 
-        Assert.assertEquals(2, computation.getCount());
+        assertEquals(2, computation.getCount());
     }
 
     @Test
@@ -122,67 +123,67 @@ public class MapPropertyTest {
 
         property.setValue("baz");
 
-        Assert.assertEquals(1, computation.getCount());
+        assertEquals(1, computation.getCount());
 
         Reactive.flush();
 
-        Assert.assertEquals(2, computation.getCount());
+        assertEquals(2, computation.getCount());
     }
 
     @Test
     public void testRemoveValue() {
         property.setValue("foo");
-        Assert.assertTrue(property.hasValue());
+        assertTrue(property.hasValue());
 
         property.removeValue();
 
-        Assert.assertFalse(property.hasValue());
-        Assert.assertNull(property.getValue());
+        assertFalse(property.hasValue());
+        assertNull(property.getValue());
     }
 
     @Test
     public void testGetIntDefaultValue() {
-        Assert.assertEquals(12, property.getValueOrDefault(12));
+        assertEquals(12, property.getValueOrDefault(12));
 
         property.setValue(24.0); // Server side sets everything as double
-        Assert.assertEquals(24, property.getValueOrDefault(12));
+        assertEquals(24, property.getValueOrDefault(12));
 
         property.setValue(null);
-        Assert.assertEquals(12, property.getValueOrDefault(12));
+        assertEquals(12, property.getValueOrDefault(12));
 
         property.removeValue();
-        Assert.assertEquals(12, property.getValueOrDefault(12));
+        assertEquals(12, property.getValueOrDefault(12));
     }
 
     @Test
     public void testGetBooleanDefaultValue() {
-        Assert.assertTrue(property.getValueOrDefault(true));
-        Assert.assertFalse(property.getValueOrDefault(false));
+        assertTrue(property.getValueOrDefault(true));
+        assertFalse(property.getValueOrDefault(false));
 
         property.setValue(true);
-        Assert.assertTrue(property.getValueOrDefault(false));
+        assertTrue(property.getValueOrDefault(false));
 
         property.setValue(null);
-        Assert.assertTrue(property.getValueOrDefault(true));
-        Assert.assertFalse(property.getValueOrDefault(false));
+        assertTrue(property.getValueOrDefault(true));
+        assertFalse(property.getValueOrDefault(false));
 
         property.removeValue();
-        Assert.assertTrue(property.getValueOrDefault(true));
-        Assert.assertFalse(property.getValueOrDefault(false));
+        assertTrue(property.getValueOrDefault(true));
+        assertFalse(property.getValueOrDefault(false));
     }
 
     @Test
     public void testGetStringDefaultValue() {
-        Assert.assertEquals("default", property.getValueOrDefault("default"));
+        assertEquals("default", property.getValueOrDefault("default"));
 
         property.setValue("assigned");
-        Assert.assertEquals("assigned", property.getValueOrDefault("default"));
+        assertEquals("assigned", property.getValueOrDefault("default"));
 
         property.setValue(null);
-        Assert.assertEquals("default", property.getValueOrDefault("default"));
+        assertEquals("default", property.getValueOrDefault("default"));
 
         property.removeValue();
-        Assert.assertEquals("default", property.getValueOrDefault("default"));
+        assertEquals("default", property.getValueOrDefault("default"));
     }
 
 }

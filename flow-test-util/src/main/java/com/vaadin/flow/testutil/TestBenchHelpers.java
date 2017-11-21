@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.testutil;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -22,7 +24,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
@@ -151,7 +152,7 @@ public class TestBenchHelpers extends ParallelTest {
             unwrappedActual = ((WrapsElement) unwrappedActual)
                     .getWrappedElement();
         }
-        Assert.assertEquals(unwrappedExpected, unwrappedActual);
+        assertEquals(unwrappedExpected, unwrappedActual);
     }
 
     /**
@@ -354,7 +355,7 @@ public class TestBenchHelpers extends ParallelTest {
                 "return arguments[0].shadowRoot", webComponent) != null);
         WebElement shadowRoot = (WebElement) getCommandExecutor()
                 .executeScript("return arguments[0].shadowRoot", webComponent);
-        Assert.assertNotNull("Could not locate shadowRoot in the element",
+        assertNotNull("Could not locate shadowRoot in the element",
                 shadowRoot);
         return shadowRoot;
     }

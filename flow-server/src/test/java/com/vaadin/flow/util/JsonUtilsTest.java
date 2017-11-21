@@ -15,12 +15,17 @@
  */
 package com.vaadin.flow.util;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import elemental.json.Json;
@@ -33,43 +38,43 @@ public class JsonUtilsTest {
     @Test
     public void testEquals() {
         // Equal
-        Assert.assertTrue(
+        assertTrue(
                 JsonUtils.jsonEquals(Json.create(true), Json.create(true)));
-        Assert.assertTrue(
+        assertTrue(
                 JsonUtils.jsonEquals(Json.create("foo"), Json.create("foo")));
-        Assert.assertTrue(
+        assertTrue(
                 JsonUtils.jsonEquals(Json.create(3.14), Json.create(3.14)));
-        Assert.assertTrue(
+        assertTrue(
                 JsonUtils.jsonEquals(Json.createNull(), Json.createNull()));
-        Assert.assertTrue(
+        assertTrue(
                 JsonUtils.jsonEquals(createTestObject1(), createTestObject1()));
-        Assert.assertTrue(
+        assertTrue(
                 JsonUtils.jsonEquals(createTestArray1(), createTestArray1()));
 
         // Non-equal with matching types
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(Json.create(true), Json.create(false)));
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(Json.create("foo"), Json.create("oof")));
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(Json.create(3.14), Json.create(3.142)));
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(createTestObject1(), createTestObject2()));
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(createTestArray1(), createTestArray2()));
 
         // Non-equal with different types
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(Json.create(true), Json.create("true")));
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(Json.create(3.14), Json.create("3.14")));
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(Json.createNull(), Json.create("null")));
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(Json.createObject(), Json.create("{}")));
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(Json.createArray(), Json.create(0)));
-        Assert.assertFalse(
+        assertFalse(
                 JsonUtils.jsonEquals(createTestArray1(), createTestObject1()));
     }
 
@@ -117,19 +122,19 @@ public class JsonUtilsTest {
     public void collectEmptyStream() {
         Stream<JsonValue> jsonValueStream = Stream.empty();
         JsonArray a = jsonValueStream.collect(JsonUtils.asArray());
-        Assert.assertEquals(0, a.length());
+        assertEquals(0, a.length());
     }
 
     public void createObjectStreamForNull() {
-        Assert.assertEquals(Stream.empty(), JsonUtils.objectStream(null));
+        assertEquals(Stream.empty(), JsonUtils.objectStream(null));
     }
 
     public void createNumberStreamForNull() {
-        Assert.assertEquals(Stream.empty(), JsonUtils.numberStream(null));
+        assertEquals(Stream.empty(), JsonUtils.numberStream(null));
     }
 
     public void createStreamForNull() {
-        Assert.assertEquals(Stream.empty(), JsonUtils.stream(null));
+        assertEquals(Stream.empty(), JsonUtils.stream(null));
     }
 
     @Test
@@ -138,9 +143,9 @@ public class JsonUtilsTest {
         List<JsonValue> list = JsonUtils.stream(array)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(2, list.size());
-        Assert.assertEquals("foo", list.get(0).asString());
-        Assert.assertTrue(
+        assertEquals(2, list.size());
+        assertEquals("foo", list.get(0).asString());
+        assertTrue(
                 JsonUtils.jsonEquals(list.get(1), Json.createObject()));
     }
 
@@ -152,12 +157,12 @@ public class JsonUtilsTest {
         List<JsonObject> objects = JsonUtils.objectStream(array)
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(3, objects.size());
-        Assert.assertTrue(
+        assertEquals(3, objects.size());
+        assertTrue(
                 JsonUtils.jsonEquals(Json.createObject(), objects.get(0)));
-        Assert.assertTrue(
+        assertTrue(
                 JsonUtils.jsonEquals(createTestObject1(), objects.get(1)));
-        Assert.assertTrue(
+        assertTrue(
                 JsonUtils.jsonEquals(createTestObject2(), objects.get(2)));
     }
 
@@ -170,7 +175,7 @@ public class JsonUtilsTest {
 
         DoubleStream numberStream = JsonUtils.numberStream(array);
 
-        Assert.assertArrayEquals(values, numberStream.toArray(), 0);
+        assertArrayEquals(values, numberStream.toArray(), 0);
     }
 
     @Test
@@ -179,7 +184,7 @@ public class JsonUtilsTest {
 
         JsonArray array = stream.collect(JsonUtils.asArray());
 
-        Assert.assertTrue(JsonUtils.jsonEquals(createTestArray1(), array));
+        assertTrue(JsonUtils.jsonEquals(createTestArray1(), array));
     }
 
     @Test
@@ -187,16 +192,16 @@ public class JsonUtilsTest {
         JsonArray array = JsonUtils.createArray(Json.create("string"),
                 Json.createNull());
 
-        Assert.assertEquals(2, array.length());
-        Assert.assertEquals("string", array.getString(0));
-        Assert.assertSame(JreJsonNull.class, array.get(1).getClass());
+        assertEquals(2, array.length());
+        assertEquals("string", array.getString(0));
+        assertSame(JreJsonNull.class, array.get(1).getClass());
     }
 
     @Test
     public void testCreateEmptyArray() {
         JsonArray array = JsonUtils.createArray();
 
-        Assert.assertEquals(0, array.length());
+        assertEquals(0, array.length());
     }
 
 }

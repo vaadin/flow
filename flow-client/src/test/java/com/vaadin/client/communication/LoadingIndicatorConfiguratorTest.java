@@ -21,8 +21,8 @@ import static com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap.SECON
 import static com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap.SECOND_DELAY_KEY;
 import static com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT;
 import static com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap.THIRD_DELAY_KEY;
+import static org.junit.Assert.assertEquals;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,11 +66,11 @@ public class LoadingIndicatorConfiguratorTest
 
     @Test
     public void defaults() {
-        Assert.assertEquals(FIRST_DELAY_DEFAULT,
+        assertEquals(FIRST_DELAY_DEFAULT,
                 loadingIndicator.getFirstDelay());
-        Assert.assertEquals(SECOND_DELAY_DEFAULT,
+        assertEquals(SECOND_DELAY_DEFAULT,
                 loadingIndicator.getSecondDelay());
-        Assert.assertEquals(THIRD_DELAY_DEFAULT,
+        assertEquals(THIRD_DELAY_DEFAULT,
                 loadingIndicator.getThirdDelay());
     }
 

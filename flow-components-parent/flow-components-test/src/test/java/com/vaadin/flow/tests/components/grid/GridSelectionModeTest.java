@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.tests.components.grid;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,7 +58,7 @@ public class GridSelectionModeTest {
     }
 
     private void assertInstanceOf(Class<?> expected, Class<?> actual) {
-        Assert.assertTrue(
+        assertTrue(
                 actual.getName() + " should be instance of "
                         + expected.getName(),
                 expected.isAssignableFrom(actual));

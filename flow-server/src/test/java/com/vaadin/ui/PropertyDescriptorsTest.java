@@ -15,9 +15,11 @@
  */
 package com.vaadin.ui;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.util.Optional;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,30 +68,30 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void stringPropertyDefaultEmptyString_initial() {
-        Assert.assertEquals(EMPTY_STRING,
+        assertEquals(EMPTY_STRING,
                 stringPropertyDefaultEmpty.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void stringPropertyDefaultEmptyString_setNonDefault() {
         stringPropertyDefaultEmpty.set(component, SOME_STRING_VALUE);
-        Assert.assertEquals(SOME_STRING_VALUE,
+        assertEquals(SOME_STRING_VALUE,
                 stringPropertyDefaultEmpty.get(component));
-        Assert.assertEquals(SOME_STRING_VALUE,
+        assertEquals(SOME_STRING_VALUE,
                 component.getElement().getPropertyRaw(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void stringPropertyDefaultEmptyString_resetToDefault() {
         stringPropertyDefaultEmpty.set(component, SOME_STRING_VALUE);
         stringPropertyDefaultEmpty.set(component, EMPTY_STRING);
-        Assert.assertEquals(EMPTY_STRING,
+        assertEquals(EMPTY_STRING,
                 stringPropertyDefaultEmpty.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -99,28 +101,28 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void stringPropertyDefaultFoo_initial() {
-        Assert.assertEquals(FOO, stringPropertyDefaultFoo.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertEquals(FOO, stringPropertyDefaultFoo.get(component));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void stringPropertyDefaultFoo_setNonDefault() {
         stringPropertyDefaultFoo.set(component, SOME_STRING_VALUE);
-        Assert.assertEquals(SOME_STRING_VALUE,
+        assertEquals(SOME_STRING_VALUE,
                 stringPropertyDefaultFoo.get(component));
-        Assert.assertEquals(SOME_STRING_VALUE,
+        assertEquals(SOME_STRING_VALUE,
                 component.getElement().getPropertyRaw(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void stringPropertyDefaultFoo_resetToDefault() {
         stringPropertyDefaultFoo.set(component, SOME_STRING_VALUE);
         stringPropertyDefaultFoo.set(component, FOO);
-        Assert.assertEquals(FOO, stringPropertyDefaultFoo.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertEquals(FOO, stringPropertyDefaultFoo.get(component));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -130,28 +132,28 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void integerPropertyDefaultZero_initial() {
-        Assert.assertEquals(ZERO, integerPropertyDefaultZero.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertEquals(ZERO, integerPropertyDefaultZero.get(component));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void integerPropertyDefaultZero_setNonDefault() {
         integerPropertyDefaultZero.set(component, SOME_INTEGER_VALUE);
-        Assert.assertEquals(SOME_INTEGER_VALUE,
+        assertEquals(SOME_INTEGER_VALUE,
                 integerPropertyDefaultZero.get(component));
-        Assert.assertEquals(SOME_INTEGER_VALUE, Integer.valueOf(
+        assertEquals(SOME_INTEGER_VALUE, Integer.valueOf(
                 component.getElement().getProperty(TEST_PROPERTY, -1)));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void integerPropertyDefaultZero_resetToDefault() {
         integerPropertyDefaultZero.set(component, SOME_INTEGER_VALUE);
         integerPropertyDefaultZero.set(component, ZERO);
-        Assert.assertEquals(ZERO, integerPropertyDefaultZero.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertEquals(ZERO, integerPropertyDefaultZero.get(component));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -161,28 +163,28 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void integerPropertyDefaultOne_initial() {
-        Assert.assertEquals(ONE, integerPropertyDefaultOne.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertEquals(ONE, integerPropertyDefaultOne.get(component));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void integerPropertyDefaultOne_setNonDefault() {
         integerPropertyDefaultOne.set(component, SOME_INTEGER_VALUE);
-        Assert.assertEquals(SOME_INTEGER_VALUE,
+        assertEquals(SOME_INTEGER_VALUE,
                 integerPropertyDefaultOne.get(component));
-        Assert.assertEquals(SOME_INTEGER_VALUE, Integer.valueOf(
+        assertEquals(SOME_INTEGER_VALUE, Integer.valueOf(
                 component.getElement().getProperty(TEST_PROPERTY, -1)));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void integerPropertyDefaultOne_resetToDefault() {
         integerPropertyDefaultOne.set(component, SOME_INTEGER_VALUE);
         integerPropertyDefaultOne.set(component, ONE);
-        Assert.assertEquals(ONE, integerPropertyDefaultOne.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertEquals(ONE, integerPropertyDefaultOne.get(component));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -192,27 +194,27 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void booleanPropertyDefaultFalse_initial() {
-        Assert.assertEquals(false, booleanPropertyDefaultFalse.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertEquals(false, booleanPropertyDefaultFalse.get(component));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void booleanPropertyDefaultFalse_setNonDefault() {
         booleanPropertyDefaultFalse.set(component, true);
-        Assert.assertEquals(true, booleanPropertyDefaultFalse.get(component));
-        Assert.assertEquals(true, Boolean.valueOf(component.getElement()
+        assertEquals(true, booleanPropertyDefaultFalse.get(component));
+        assertEquals(true, Boolean.valueOf(component.getElement()
                 .getProperty(TEST_PROPERTY, "neverused")));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void booleanPropertyDefaultFalse_resetToDefault() {
         booleanPropertyDefaultFalse.set(component, true);
         booleanPropertyDefaultFalse.set(component, false);
-        Assert.assertEquals(false, booleanPropertyDefaultFalse.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertEquals(false, booleanPropertyDefaultFalse.get(component));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -222,27 +224,27 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void booleanPropertyDefaultTrue_initial() {
-        Assert.assertEquals(true, booleanPropertyDefaultTrue.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertEquals(true, booleanPropertyDefaultTrue.get(component));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void booleanPropertyDefaultTrue_setNonDefault() {
         booleanPropertyDefaultTrue.set(component, false);
-        Assert.assertEquals(false, booleanPropertyDefaultTrue.get(component));
-        Assert.assertEquals(false, Boolean.valueOf(component.getElement()
+        assertEquals(false, booleanPropertyDefaultTrue.get(component));
+        assertEquals(false, Boolean.valueOf(component.getElement()
                 .getProperty(TEST_PROPERTY, "neverused")));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test
     public void booleanPropertyDefaultTrue_resetToDefault() {
         booleanPropertyDefaultTrue.set(component, false);
         booleanPropertyDefaultTrue.set(component, true);
-        Assert.assertEquals(true, booleanPropertyDefaultTrue.get(component));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertEquals(true, booleanPropertyDefaultTrue.get(component));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -252,30 +254,30 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void stringAttributeDefaultEmpty_initial() {
-        Assert.assertEquals(EMPTY_STRING,
+        assertEquals(EMPTY_STRING,
                 stringAttributeDefaultEmpty.get(component));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
     }
 
     @Test
     public void stringAttributeDefaultEmpty_setNonDefault() {
         stringAttributeDefaultEmpty.set(component, SOME_STRING_VALUE);
-        Assert.assertEquals(SOME_STRING_VALUE,
+        assertEquals(SOME_STRING_VALUE,
                 stringAttributeDefaultEmpty.get(component));
-        Assert.assertEquals(SOME_STRING_VALUE,
+        assertEquals(SOME_STRING_VALUE,
                 component.getElement().getAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
     }
 
     @Test
     public void stringAttributeDefaultEmpty_resetToDefault() {
         stringAttributeDefaultEmpty.set(component, SOME_STRING_VALUE);
         stringAttributeDefaultEmpty.set(component, EMPTY_STRING);
-        Assert.assertEquals(EMPTY_STRING,
+        assertEquals(EMPTY_STRING,
                 stringAttributeDefaultEmpty.get(component));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
 
     }
 
@@ -286,28 +288,28 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void stringAttributeDefaultFoo_initial() {
-        Assert.assertEquals(FOO, stringAttributeDefaultFoo.get(component));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertEquals(FOO, stringAttributeDefaultFoo.get(component));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
     }
 
     @Test
     public void stringAttributeDefaultFoo_setNonDefault() {
         stringAttributeDefaultFoo.set(component, SOME_STRING_VALUE);
-        Assert.assertEquals(SOME_STRING_VALUE,
+        assertEquals(SOME_STRING_VALUE,
                 stringAttributeDefaultFoo.get(component));
-        Assert.assertEquals(SOME_STRING_VALUE,
+        assertEquals(SOME_STRING_VALUE,
                 component.getElement().getAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
     }
 
     @Test
     public void stringAttributeDefaultFoo_resetToDefault() {
         stringAttributeDefaultFoo.set(component, SOME_STRING_VALUE);
         stringAttributeDefaultFoo.set(component, FOO);
-        Assert.assertEquals(FOO, stringAttributeDefaultFoo.get(component));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertEquals(FOO, stringAttributeDefaultFoo.get(component));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
 
     }
 
@@ -318,30 +320,30 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void stringAttributeOptionalDefaultEmpty_initial() {
-        Assert.assertEquals(Optional.empty(),
+        assertEquals(Optional.empty(),
                 stringAttributeOptionalDefaultEmpty.get(component));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
     }
 
     @Test
     public void stringAttributeOptionalDefaultEmpty_setNonOptionalDefault() {
         stringAttributeOptionalDefaultEmpty.set(component, SOME_STRING_VALUE);
-        Assert.assertEquals(Optional.of(SOME_STRING_VALUE),
+        assertEquals(Optional.of(SOME_STRING_VALUE),
                 stringAttributeOptionalDefaultEmpty.get(component));
-        Assert.assertEquals(SOME_STRING_VALUE,
+        assertEquals(SOME_STRING_VALUE,
                 component.getElement().getAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
     }
 
     @Test
     public void stringAttributeOptionalDefaultEmpty_resetToOptionalDefault() {
         stringAttributeOptionalDefaultEmpty.set(component, SOME_STRING_VALUE);
         stringAttributeOptionalDefaultEmpty.set(component, EMPTY_STRING);
-        Assert.assertEquals(Optional.empty(),
+        assertEquals(Optional.empty(),
                 stringAttributeOptionalDefaultEmpty.get(component));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
 
     }
 
@@ -352,30 +354,30 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void stringAttributeOptionalDefaultFoo_initial() {
-        Assert.assertEquals(Optional.empty(),
+        assertEquals(Optional.empty(),
                 stringAttributeOptionalDefaultFoo.get(component));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
     }
 
     @Test
     public void stringAttributeOptionalDefaultFoo_setNonOptionalDefault() {
         stringAttributeOptionalDefaultFoo.set(component, SOME_STRING_VALUE);
-        Assert.assertEquals(Optional.of(SOME_STRING_VALUE),
+        assertEquals(Optional.of(SOME_STRING_VALUE),
                 stringAttributeOptionalDefaultFoo.get(component));
-        Assert.assertEquals(SOME_STRING_VALUE,
+        assertEquals(SOME_STRING_VALUE,
                 component.getElement().getAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
     }
 
     @Test
     public void stringAttributeOptionalDefaultFoo_resetToOptionalDefault() {
         stringAttributeOptionalDefaultFoo.set(component, SOME_STRING_VALUE);
         stringAttributeOptionalDefaultFoo.set(component, FOO);
-        Assert.assertEquals(Optional.empty(),
+        assertEquals(Optional.empty(),
                 stringAttributeOptionalDefaultFoo.get(component));
-        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
-        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+        assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
 
     }
 

@@ -15,12 +15,13 @@
  */
 package com.vaadin.server;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.function.Function;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.function.DeploymentConfiguration;
@@ -38,7 +39,7 @@ public class AbstractDeploymentConfigurationTest {
         String ui = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig(VaadinSession.UI_PARAMETER,
                 ui);
-        Assert.assertEquals("Unexpected UI class configuration option value",
+        assertEquals("Unexpected UI class configuration option value",
                 ui, config.getUIClassName());
     }
 
@@ -46,7 +47,7 @@ public class AbstractDeploymentConfigurationTest {
     public void getClassLoader_returnsClassloaderPropertyValue() {
         String classLoader = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig("ClassLoader", classLoader);
-        Assert.assertEquals("Unexpected classLoader configuration option value",
+        assertEquals("Unexpected classLoader configuration option value",
                 classLoader, config.getClassLoaderName());
     }
 

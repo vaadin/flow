@@ -394,7 +394,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         binder.bind(field, "firstname");
         binder.setBean(bean);
 
-        Assert.assertTrue(field.isRequiredIndicatorVisible());
+        assertTrue(field.isRequiredIndicatorVisible());
         testSerialization(binder);
     }
 
@@ -408,7 +408,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         binder.bind(field, "age");
         binder.setBean(bean);
 
-        Assert.assertTrue(field.isRequiredIndicatorVisible());
+        assertTrue(field.isRequiredIndicatorVisible());
         testSerialization(binder);
     }
 
@@ -422,7 +422,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         binder.bind(field, "lastname");
         binder.setBean(bean);
 
-        Assert.assertTrue(field.isRequiredIndicatorVisible());
+        assertTrue(field.isRequiredIndicatorVisible());
         testSerialization(binder);
     }
 
@@ -437,7 +437,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         binder.bind(field, "subfield.name");
         binder.setBean(bean);
 
-        Assert.assertTrue(field.isRequiredIndicatorVisible());
+        assertTrue(field.isRequiredIndicatorVisible());
         testSerialization(binder);
     }
 
@@ -454,7 +454,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         binder.bind(field, "subfield.subsub.value");
         binder.setBean(bean);
 
-        Assert.assertTrue(field.isRequiredIndicatorVisible());
+        assertTrue(field.isRequiredIndicatorVisible());
         testSerialization(binder);
     }
 
@@ -468,9 +468,9 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         RequiredConstraints bean = new RequiredConstraints();
         bean.setSubfield(new SubConstraint());
         binder.setBean(bean);
-        Assert.assertFalse(binder.validate().isOk());
+        assertFalse(binder.validate().isOk());
         field.setValue("overfive");
-        Assert.assertTrue(binder.validate().isOk());
+        assertTrue(binder.validate().isOk());
     }
 
     @Test
@@ -486,9 +486,9 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         subfield.setSubsub(new SubSubConstraint());
         binder.setBean(bean);
 
-        Assert.assertFalse(binder.validate().isOk());
+        assertFalse(binder.validate().isOk());
         field.setValue("overtencharacters");
-        Assert.assertTrue(binder.validate().isOk());
+        assertTrue(binder.validate().isOk());
     }
 
     private void assertInvalid(TextField field, String message) {

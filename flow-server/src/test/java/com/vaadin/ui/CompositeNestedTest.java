@@ -1,8 +1,9 @@
 package com.vaadin.ui;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -81,25 +82,25 @@ public class CompositeNestedTest {
 
     @Test
     public void compositeOuterElement() {
-        Assert.assertEquals(componentInComposite.getElement(),
+        assertEquals(componentInComposite.getElement(),
                 compositeOuter.getElement());
     }
 
     @Test
     public void compositeInnerElement() {
-        Assert.assertEquals(componentInComposite.getElement(),
+        assertEquals(componentInComposite.getElement(),
                 compositeInner.getElement());
     }
 
     @Test
     public void getParentElement_compositeOuter() {
-        Assert.assertEquals(layout.getElement(),
+        assertEquals(layout.getElement(),
                 compositeOuter.getElement().getParent());
     }
 
     @Test
     public void getParentElement_compositeInner() {
-        Assert.assertEquals(layout.getElement(),
+        assertEquals(layout.getElement(),
                 compositeInner.getElement().getParent());
     }
 
@@ -111,17 +112,17 @@ public class CompositeNestedTest {
 
     @Test
     public void getParent_compositeOuter() {
-        Assert.assertEquals(layout, compositeOuter.getParent().get());
+        assertEquals(layout, compositeOuter.getParent().get());
     }
 
     @Test
     public void getParent_compositeInner() {
-        Assert.assertEquals(compositeOuter, compositeInner.getParent().get());
+        assertEquals(compositeOuter, compositeInner.getParent().get());
     }
 
     @Test
     public void getParent_componentInComposite() {
-        Assert.assertEquals(compositeInner,
+        assertEquals(compositeInner,
                 componentInComposite.getParent().get());
     }
 

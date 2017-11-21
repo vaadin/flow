@@ -15,12 +15,14 @@
  */
 package com.vaadin.server;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import javax.servlet.ServletContext;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -34,7 +36,7 @@ public class StreamResourceTest {
                 () -> makeEmptyStream());
         ContentTypeResolver resolver = resource.getContentTypeResolver();
 
-        Assert.assertNotNull(resolver);
+        assertNotNull(resolver);
 
         assertContentType(resource, resolver);
     }
@@ -45,7 +47,7 @@ public class StreamResourceTest {
                 () -> makeEmptyStream());
         resource.setContentTypeResolver((res, context) -> "bar");
 
-        Assert.assertNotNull(resource.getContentTypeResolver());
+        assertNotNull(resource.getContentTypeResolver());
 
         assertContentType(resource, resource.getContentTypeResolver());
     }
@@ -56,7 +58,7 @@ public class StreamResourceTest {
                 () -> makeEmptyStream());
         resource.setContentType("bar");
 
-        Assert.assertNotNull(resource.getContentTypeResolver());
+        assertNotNull(resource.getContentTypeResolver());
 
         assertContentType(resource, resource.getContentTypeResolver());
     }
@@ -67,7 +69,7 @@ public class StreamResourceTest {
         Mockito.when(context.getMimeType("foo")).thenReturn("bar");
         String mimeType = resolver.apply(resource, context);
 
-        Assert.assertEquals("bar", mimeType);
+        assertEquals("bar", mimeType);
     }
 
     private InputStream makeEmptyStream() {

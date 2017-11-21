@@ -1,6 +1,7 @@
 package com.vaadin.flow.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.Serializable;
 import java.util.Calendar;
@@ -9,7 +10,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -636,7 +636,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
         TemplateWithConverters template = new TemplateWithConverters();
 
         Date date = template.getModel().getDateString();
-        Assert.assertNull(date);
+        assertNull(date);
     }
 
     @Test

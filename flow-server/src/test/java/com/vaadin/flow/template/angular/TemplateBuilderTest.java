@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.template.angular;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class TemplateBuilderTest {
@@ -34,32 +38,32 @@ public class TemplateBuilderTest {
                         new StaticBindingValueProvider("baz")));
 
         List<TemplateNode> nodes = builder.build(null);
-        Assert.assertFalse(nodes.isEmpty());
+        assertFalse(nodes.isEmpty());
         ElementTemplateNode node = (ElementTemplateNode) nodes.get(0);
 
-        Assert.assertFalse(node.getParent().isPresent());
-        Assert.assertEquals("div", node.getTag());
+        assertFalse(node.getParent().isPresent());
+        assertEquals("div", node.getTag());
 
-        Assert.assertArrayEquals(new String[] { "foo" },
+        assertArrayEquals(new String[] { "foo" },
                 node.getPropertyNames().toArray());
-        Assert.assertEquals("bar",
+        assertEquals("bar",
                 node.getPropertyBinding("foo").get().getValue(null));
 
-        Assert.assertArrayEquals(new String[] { "baz" },
+        assertArrayEquals(new String[] { "baz" },
                 node.getAttributeNames().toArray());
-        Assert.assertEquals("lorem",
+        assertEquals("lorem",
                 node.getAttributeBinding("baz").get().getValue(null));
 
-        Assert.assertArrayEquals(new String[] { "a-name" },
+        assertArrayEquals(new String[] { "a-name" },
                 node.getClassNames().toArray());
-        Assert.assertEquals("a-value",
+        assertEquals("a-value",
                 node.getClassNameBinding("a-name").get().getValue(null));
 
-        Assert.assertEquals(1, node.getChildCount());
+        assertEquals(1, node.getChildCount());
 
         TextTemplateNode child = (TextTemplateNode) node.getChild(0);
-        Assert.assertSame(node, child.getParent().get());
-        Assert.assertEquals("baz", child.getTextBinding().getValue(null));
-        Assert.assertEquals(0, child.getChildCount());
+        assertSame(node, child.getParent().get());
+        assertEquals("baz", child.getTextBinding().getValue(null));
+        assertEquals(0, child.getChildCount());
     }
 }

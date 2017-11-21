@@ -1,7 +1,9 @@
 package com.vaadin.ui;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +15,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -98,7 +99,7 @@ public class UITest {
             if (initialLocation.isEmpty()) {
                 pathInfo = null;
             } else {
-                Assert.assertFalse(initialLocation.startsWith("/"));
+                assertFalse(initialLocation.startsWith("/"));
                 pathInfo = "/" + initialLocation;
             }
             Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
@@ -193,7 +194,7 @@ public class UITest {
             UI ui = createAndInitTestUI("");
             try {
                 ui.navigateTo(invalidTarget);
-                Assert.fail("Navigation target should cause exception: "
+                fail("Navigation target should cause exception: "
                         + invalidTarget);
             } catch (IllegalArgumentException expected) {
                 // All is fine
@@ -215,8 +216,8 @@ public class UITest {
 
         initUI(ui, "", statusCodeCaptor);
 
-        Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
-        Assert.assertFalse(
+        assertTrue(ui.getElement().getTextRecursively().contains("404"));
+        assertFalse(
                 ui.getElement().getTextRecursively().contains("UI.init"));
         assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
     }
@@ -291,11 +292,11 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, () -> results.add(2));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 3 results in the list",
+        assertTrue("There should be 3 results in the list",
                 results.size() == 3);
 
         for (int i = 0; i < results.size(); i++) {
-            Assert.assertEquals(
+            assertEquals(
                     "The result at index '" + i + "' should be " + i, i,
                     results.get(i).intValue());
         }
@@ -318,11 +319,11 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, () -> results.add(2));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 5 results in the list",
+        assertTrue("There should be 5 results in the list",
                 results.size() == 5);
 
         for (int i = 0; i < results.size(); i++) {
-            Assert.assertEquals(
+            assertEquals(
                     "The result at index '" + i + "' should be " + i, i,
                     results.get(i).intValue());
         }
@@ -343,12 +344,12 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, () -> results.add(3));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 2 results in the list",
+        assertTrue("There should be 2 results in the list",
                 results.size() == 2);
 
-        Assert.assertEquals("The result at index '0' should be " + 1, 1,
+        assertEquals("The result at index '0' should be " + 1, 1,
                 results.get(0).intValue());
-        Assert.assertEquals("The result at index '1' should be " + 3, 3,
+        assertEquals("The result at index '1' should be " + 3, 3,
                 results.get(1).intValue());
     }
 
@@ -374,16 +375,16 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, () -> results.add(3));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 4 results in the list",
+        assertTrue("There should be 4 results in the list",
                 results.size() == 4);
 
-        Assert.assertEquals("The result at index '0' should be 1", 1,
+        assertEquals("The result at index '0' should be 1", 1,
                 results.get(0).intValue());
-        Assert.assertEquals("The result at index '1' should be 3", 3,
+        assertEquals("The result at index '1' should be 3", 3,
                 results.get(1).intValue());
-        Assert.assertEquals("The result at index '2' should be 0", 0,
+        assertEquals("The result at index '2' should be 0", 0,
                 results.get(2).intValue());
-        Assert.assertEquals("The result at index '3' should be 2", 2,
+        assertEquals("The result at index '3' should be 2", 2,
                 results.get(3).intValue());
     }
 }

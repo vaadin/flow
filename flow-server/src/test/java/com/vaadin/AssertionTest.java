@@ -15,7 +15,8 @@
  */
 package com.vaadin;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 /**
@@ -29,7 +30,7 @@ public class AssertionTest {
         // *assigns* true if assertions are on.
         assert assertOn = true;
 
-        Assert.assertTrue("Assertions are turned off for the server package",
+        assertTrue("Assertions are turned off for the server package",
                 assertOn);
     }
 }

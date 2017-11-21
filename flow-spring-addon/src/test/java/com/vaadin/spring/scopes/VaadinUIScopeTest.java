@@ -15,6 +15,9 @@
  */
 package com.vaadin.spring.scopes;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -23,7 +26,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -122,16 +124,16 @@ public class VaadinUIScopeTest extends AbstractScopeTest {
         String attribute = VaadinUIScope.class.getName() + "$UIStoreWrapper";
 
         // self control - the attribute name is used by the implementation
-        Assert.assertNotNull(springSession.getAttribute(attribute));
+        assertNotNull(springSession.getAttribute(attribute));
 
         springSession.fireSessionDestroy();
 
-        Assert.assertEquals(1, count.get());
-        Assert.assertNull(springSession.getAttribute(attribute));
+        assertEquals(1, count.get());
+        assertNull(springSession.getAttribute(attribute));
 
         // Destruction callbacks are not called anymore (they are removed)
         scope.getBeanStore().destroy();
-        Assert.assertEquals(1, count.get());
+        assertEquals(1, count.get());
 
         // object has been removed from the storage, so object factory is called
         // once again to create the bean
@@ -157,11 +159,11 @@ public class VaadinUIScopeTest extends AbstractScopeTest {
 
         ComponentUtil.onComponentDetach(ui);
 
-        Assert.assertEquals(1, count.get());
+        assertEquals(1, count.get());
 
         // Destruction callbacks are not called anymore (they are removed)
         scope.getBeanStore().destroy();
-        Assert.assertEquals(1, count.get());
+        assertEquals(1, count.get());
 
         // object has been removed from the storage, so object factory is called
         // once again to create the bean

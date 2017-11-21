@@ -15,18 +15,22 @@
  */
 package com.vaadin.flow.nodefeature;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeEvent;
 import com.vaadin.ui.event.PropertyChangeListener;
-import com.vaadin.shared.Registration;
 
 public class ElementPropertyMapTest {
 
@@ -45,7 +49,7 @@ public class ElementPropertyMapTest {
         StateNode node = BasicElementStateProvider.createStateNode("div");
         ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
         PropertyChangeListener listener = ev -> {
-            Assert.fail();
+            fail();
         };
         Registration registration = map
                 .addPropertyChangeListener("foo", listener);
@@ -68,8 +72,8 @@ public class ElementPropertyMapTest {
 
         map.setProperty("foo", "bar", true);
 
-        Assert.assertTrue(first.get());
-        Assert.assertTrue(second.get());
+        assertTrue(first.get());
+        assertTrue(second.get());
     }
 
     @Test
@@ -79,7 +83,7 @@ public class ElementPropertyMapTest {
         map.resolveModelList("foo");
 
         StateNode stateNode = (StateNode) map.get("foo");
-        Assert.assertTrue(stateNode.isReportedFeature(ModelList.class));
+        assertTrue(stateNode.isReportedFeature(ModelList.class));
     }
 
     @Test
@@ -89,7 +93,7 @@ public class ElementPropertyMapTest {
         map.resolveModelMap("foo");
 
         StateNode stateNode = (StateNode) map.get("foo");
-        Assert.assertTrue(
+        assertTrue(
                 stateNode.isReportedFeature(ElementPropertyMap.class));
     }
 
@@ -98,17 +102,17 @@ public class ElementPropertyMapTest {
         ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
         AtomicReference<PropertyChangeEvent> event = new AtomicReference<>();
         PropertyChangeListener listener = ev -> {
-            Assert.assertNull(event.get());
+            assertNull(event.get());
             event.set(ev);
         };
         map.addPropertyChangeListener("foo", listener);
         map.setProperty("foo", "bar", !clientEvent);
 
-        Assert.assertNull(event.get().getOldValue());
-        Assert.assertEquals("bar", event.get().getValue());
-        Assert.assertEquals("foo", event.get().getPropertyName());
-        Assert.assertEquals(Element.get(node), event.get().getSource());
-        Assert.assertEquals(clientEvent, event.get().isUserOriginated());
+        assertNull(event.get().getOldValue());
+        assertEquals("bar", event.get().getValue());
+        assertEquals("foo", event.get().getPropertyName());
+        assertEquals(Element.get(node), event.get().getSource());
+        assertEquals(clientEvent, event.get().isUserOriginated());
 
         // listener is not called. Otherwise its assertion fails.
         map.setProperty("bar", "foo");

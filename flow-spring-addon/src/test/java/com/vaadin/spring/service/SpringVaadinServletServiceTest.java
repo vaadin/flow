@@ -15,12 +15,13 @@
  */
 package com.vaadin.spring.service;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Properties;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +111,7 @@ public class SpringVaadinServletServiceTest {
 
         Instantiator instantiator = service.getInstantiator();
 
-        Assert.assertEquals(TestInstantiator.class, instantiator.getClass());
+        assertEquals(TestInstantiator.class, instantiator.getClass());
     }
 
     @Test
@@ -123,7 +124,7 @@ public class SpringVaadinServletServiceTest {
 
         Instantiator instantiator = service.getInstantiator();
 
-        Assert.assertEquals(JavaSPIInstantiator.class, instantiator.getClass());
+        assertEquals(JavaSPIInstantiator.class, instantiator.getClass());
     }
 
     @Test(expected = ServletException.class)

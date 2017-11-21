@@ -15,6 +15,10 @@
  */
 package com.vaadin.data;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -27,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.function.ValueProvider;
@@ -74,7 +77,7 @@ public class BeanPropertySetTest {
         PropertySet<Person> deserializedPropertySet = ClassesSerializableUtils
                 .serializeAndDeserialize(originalPropertySet);
 
-        Assert.assertSame(
+        assertSame(
                 "Deserialized instance should be the same as the original",
                 originalPropertySet, deserializedPropertySet);
     }
@@ -103,10 +106,10 @@ public class BeanPropertySetTest {
         PropertySet<Person> deserializedPropertySet = (PropertySet<Person>) in
                 .readObject();
 
-        Assert.assertSame(
+        assertSame(
                 "Deserialized instance should be the same as in the cache",
                 BeanPropertySet.get(Person.class), deserializedPropertySet);
-        Assert.assertNotSame(
+        assertNotSame(
                 "Deserialized instance should not be the same as the original",
                 originalPropertySet, deserializedPropertySet);
     }
@@ -124,10 +127,10 @@ public class BeanPropertySetTest {
         Person person = new Person("Milennial", 2000);
         Integer age = (Integer) getter.apply(person);
 
-        Assert.assertEquals("Deserialized definition should be functional",
+        assertEquals("Deserialized definition should be functional",
                 Integer.valueOf(2000), age);
 
-        Assert.assertSame(
+        assertSame(
                 "Deserialized instance should be the same as in the cache",
                 BeanPropertySet.get(Person.class).getProperty("born")
                         .orElseThrow(RuntimeException::new),
@@ -154,10 +157,10 @@ public class BeanPropertySetTest {
 
         Integer postalCode = (Integer) getter.apply(person);
 
-        Assert.assertEquals("Deserialized definition should be functional",
+        assertEquals("Deserialized definition should be functional",
                 address.getPostalCode(), postalCode);
 
-        Assert.assertSame(
+        assertSame(
                 "Deserialized instance should be the same as in the cache",
                 BeanPropertySet.get(com.vaadin.tests.data.bean.Person.class)
                         .getProperty("address.postalCode").orElseThrow(
@@ -182,7 +185,7 @@ public class BeanPropertySetTest {
 
         String firstName = (String) getter.apply(son);
 
-        Assert.assertEquals(grandFather.getFirstName(), firstName);
+        assertEquals(grandFather.getFirstName(), firstName);
     }
 
     @Test(expected = NullPointerException.class)
@@ -217,7 +220,7 @@ public class BeanPropertySetTest {
         Set<String> propertyNames = propertySet.getProperties()
                 .map(PropertyDefinition::getName).collect(Collectors.toSet());
 
-        Assert.assertEquals(new HashSet<>(Arrays.asList("name", "born")),
+        assertEquals(new HashSet<>(Arrays.asList("name", "born")),
                 propertyNames);
     }
 }

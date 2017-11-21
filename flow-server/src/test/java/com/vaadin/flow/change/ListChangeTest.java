@@ -16,9 +16,11 @@
 
 package com.vaadin.flow.change;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.util.Arrays;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -45,21 +47,21 @@ public class ListChangeTest {
 
         JsonObject json = change.toJson(null);
 
-        Assert.assertEquals(change.getNode().getId(),
+        assertEquals(change.getNode().getId(),
                 (int) json.getNumber(JsonConstants.CHANGE_NODE));
-        Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
+        assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
                 (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
-        Assert.assertEquals(JsonConstants.CHANGE_TYPE_SPLICE,
+        assertEquals(JsonConstants.CHANGE_TYPE_SPLICE,
                 json.getString(JsonConstants.CHANGE_TYPE));
-        Assert.assertEquals(0,
+        assertEquals(0,
                 (int) json.getNumber(JsonConstants.CHANGE_SPLICE_INDEX));
 
         JsonArray addNodes = json
                 .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
-        Assert.assertEquals(2, addNodes.length());
+        assertEquals(2, addNodes.length());
 
-        Assert.assertEquals(child1.getId(), (int) addNodes.getNumber(0));
-        Assert.assertEquals(child2.getId(), (int) addNodes.getNumber(1));
+        assertEquals(child1.getId(), (int) addNodes.getNumber(0));
+        assertEquals(child2.getId(), (int) addNodes.getNumber(1));
     }
 
     @Test
@@ -69,7 +71,7 @@ public class ListChangeTest {
 
         JsonObject json = change.toJson(null);
 
-        Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_SPLICE_REMOVE));
+        assertFalse(json.hasKey(JsonConstants.CHANGE_SPLICE_REMOVE));
     }
 
     @Test
@@ -79,6 +81,6 @@ public class ListChangeTest {
 
         JsonObject json = change.toJson(null);
 
-        Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES));
+        assertFalse(json.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES));
     }
 }

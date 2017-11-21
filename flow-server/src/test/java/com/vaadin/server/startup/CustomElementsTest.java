@@ -17,6 +17,7 @@
 package com.vaadin.server.startup;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +26,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -91,7 +91,7 @@ public class CustomElementsTest {
         elementsToAdd.forEach(
                 element -> customElements.addElement(getTag(element), element));
 
-        Assert.assertThat(
+        assertThat(
                 "Custom elements should contain only one class that we put into",
                 customElements.computeTagToElementRelation(),
                 is(expectedClasses.stream().collect(Collectors.toMap(

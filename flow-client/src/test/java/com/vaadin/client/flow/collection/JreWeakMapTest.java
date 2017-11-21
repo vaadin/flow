@@ -16,7 +16,12 @@
 
 package com.vaadin.client.flow.collection;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 public class JreWeakMapTest {
@@ -31,17 +36,17 @@ public class JreWeakMapTest {
 
         map.set(one, 1).set(two, 2);
 
-        Assert.assertTrue(map.has(one));
-        Assert.assertTrue(map.has(two));
-        Assert.assertFalse(map.has(three));
+        assertTrue(map.has(one));
+        assertTrue(map.has(two));
+        assertFalse(map.has(three));
 
-        Assert.assertEquals(1, (int) map.get(one));
-        Assert.assertEquals(2, (int) map.get(two));
-        Assert.assertNull(map.get(three));
+        assertEquals(1, (int) map.get(one));
+        assertEquals(2, (int) map.get(two));
+        assertNull(map.get(three));
 
-        Assert.assertTrue(map.delete(one));
-        Assert.assertFalse(map.delete(three));
-        Assert.assertFalse(map.has(one));
+        assertTrue(map.delete(one));
+        assertFalse(map.delete(three));
+        assertFalse(map.has(one));
     }
 
     @Test
@@ -57,7 +62,7 @@ public class JreWeakMapTest {
         try {
             JsWeakMap<Object, String> map = JsCollections.weakMap();
             map.set(key, "value");
-            Assert.fail("set should throw for " + key);
+            fail("set should throw for " + key);
         } catch (Exception expected) {
             // All is ok
         }

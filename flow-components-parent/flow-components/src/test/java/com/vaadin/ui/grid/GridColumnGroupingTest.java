@@ -15,9 +15,10 @@
  */
 package com.vaadin.ui.grid;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Arrays;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,16 +41,16 @@ public class GridColumnGroupingTest {
 
     @Test
     public void merged_column_order() {
-        Assert.assertEquals(
+        assertEquals(
                 Arrays.asList(firstColumn, secondColumn, thirdColumn),
                 grid.getParentColumns());
         ColumnGroup merged = grid.mergeColumns(firstColumn, thirdColumn);
-        Assert.assertEquals(Arrays.asList(merged, secondColumn),
+        assertEquals(Arrays.asList(merged, secondColumn),
                 grid.getParentColumns());
         ColumnGroup secondMerge = grid.mergeColumns(merged, secondColumn);
-        Assert.assertEquals(Arrays.asList(secondMerge),
+        assertEquals(Arrays.asList(secondMerge),
                 grid.getParentColumns());
-        Assert.assertEquals(
+        assertEquals(
                 Arrays.asList(firstColumn, thirdColumn, secondColumn),
                 grid.getColumns());
     }

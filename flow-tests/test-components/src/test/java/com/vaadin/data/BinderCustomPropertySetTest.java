@@ -117,7 +117,7 @@ public class BinderCustomPropertySetTest {
         binder.setBean(map);
 
         field.setValue("value");
-        Assert.assertEquals(
+        assertEquals(
                 "Field value should propagate to the corresponding key in the map",
                 "value", map.get("key"));
     }
@@ -131,17 +131,17 @@ public class BinderCustomPropertySetTest {
 
         binder.bindInstanceFields(instanceFields);
 
-        Assert.assertNotNull(
+        assertNotNull(
                 "Field corresponding to supported property name should be bound",
                 instanceFields.one);
-        Assert.assertNull(
+        assertNull(
                 "Field corresponding to unsupported property name should be ignored",
                 instanceFields.another);
 
         binder.setBean(map);
 
         instanceFields.one.setValue("value");
-        Assert.assertEquals(
+        assertEquals(
                 "Field value should propagate to the corresponding key in the map",
                 "value", map.get("one"));
     }

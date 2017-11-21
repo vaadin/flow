@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.demo.views;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Dimension;
@@ -30,7 +32,7 @@ import com.vaadin.testbench.By;
 public class PaperDialogIT extends ComponentDemoTest {
     @Before
     public void init() {
-        Assert.assertFalse(isElementPresent(By.tagName("paper-dialog")));
+        assertFalse(isElementPresent(By.tagName("paper-dialog")));
     }
 
     @Test
@@ -41,7 +43,7 @@ public class PaperDialogIT extends ComponentDemoTest {
         assertMessageIsEqualsTo("Plain dialog was opened");
 
         WebElement dialog = findElement(By.tagName("paper-dialog"));
-        Assert.assertTrue(dialog.getText().contains("Plain dialog"));
+        assertTrue(dialog.getText().contains("Plain dialog"));
 
         // click on the page, should close the dialog
         clickOutsideTheDialog(dialog);
@@ -57,11 +59,11 @@ public class PaperDialogIT extends ComponentDemoTest {
         assertMessageIsEqualsTo("Modal dialog was opened");
 
         WebElement dialog = findElement(By.tagName("paper-dialog"));
-        Assert.assertTrue(dialog.getText().contains("Modal dialog"));
+        assertTrue(dialog.getText().contains("Modal dialog"));
 
         // click on the page, should not close the dialog
         clickOutsideTheDialog(dialog);
-        Assert.assertFalse(dialog.getCssValue("display").equals("none"));
+        assertFalse(dialog.getCssValue("display").equals("none"));
         assertMessageIsEqualsTo("Modal dialog was opened");
 
         // click on the close button, should close the dialog
@@ -79,7 +81,7 @@ public class PaperDialogIT extends ComponentDemoTest {
         assertMessageIsEqualsTo("Nested dialogs was opened");
 
         WebElement dialog = findElement(By.tagName("paper-dialog"));
-        Assert.assertTrue(dialog.getText().contains("Nested dialogs"));
+        assertTrue(dialog.getText().contains("Nested dialogs"));
 
         // click on the button to open the second dialog
         dialog.findElement(By.tagName("paper-button")).click();
@@ -88,12 +90,12 @@ public class PaperDialogIT extends ComponentDemoTest {
         assertMessageIsEqualsTo("Second dialog was opened");
 
         WebElement secondDialog = findElement(By.id("second-dialog"));
-        Assert.assertTrue(secondDialog.getText().contains("Second dialog"));
+        assertTrue(secondDialog.getText().contains("Second dialog"));
 
         // click on the page, should close the second dialog and not the first
         clickOutsideTheDialog(secondDialog);
         waitUntil(driver -> secondDialog.getCssValue("display").equals("none"));
-        Assert.assertFalse(dialog.getCssValue("display").equals("none"));
+        assertFalse(dialog.getCssValue("display").equals("none"));
         assertMessageIsEqualsTo("Second dialog was closed");
 
         // click on the page again, should close the first dialog
@@ -111,11 +113,11 @@ public class PaperDialogIT extends ComponentDemoTest {
         assertMessageIsEqualsTo("Dialog with actions was opened");
 
         WebElement dialog = findElement(By.tagName("paper-dialog"));
-        Assert.assertTrue(dialog.getText().contains("Dialog with actions"));
+        assertTrue(dialog.getText().contains("Dialog with actions"));
 
         // click on the Do nothing button, should not close the dialog
         getButtonWithText(dialog, "Do nothing").click();
-        Assert.assertFalse(dialog.getCssValue("display").equals("none"));
+        assertFalse(dialog.getCssValue("display").equals("none"));
         assertMessageIsEqualsTo("Dialog with actions was opened");
 
         // click on the Decline button, should close the dialog
@@ -142,7 +144,7 @@ public class PaperDialogIT extends ComponentDemoTest {
         assertMessageIsEqualsTo("Animated dialog was opened");
 
         WebElement dialog = findElement(By.tagName("paper-dialog"));
-        Assert.assertTrue(dialog.getText().contains("Animated dialog"));
+        assertTrue(dialog.getText().contains("Animated dialog"));
 
         // click on the page, should close the dialog
         clickOutsideTheDialog(dialog);
@@ -153,7 +155,7 @@ public class PaperDialogIT extends ComponentDemoTest {
     private void assertMessageIsEqualsTo(String message) {
         waitForElementPresent(By.id("dialogsMessage"));
         WebElement messageDiv = findElement(By.id("dialogsMessage"));
-        Assert.assertTrue(messageDiv.getText().equalsIgnoreCase(message));
+        assertTrue(messageDiv.getText().equalsIgnoreCase(message));
     }
 
     private void clickOutsideTheDialog(WebElement dialog) {

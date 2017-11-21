@@ -15,6 +15,9 @@
  */
 package com.vaadin.server.startup;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -27,7 +30,6 @@ import javax.servlet.ServletException;
 
 import org.jsoup.Jsoup;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -103,7 +105,7 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
     public void registryInitializerAcceptsNull() throws ServletException {
         // doesn't throw
         customElementRegistryInitializer.onStartup(null, null);
-        Assert.assertTrue(CustomElementRegistry.getInstance().isInitialized());
+        assertTrue(CustomElementRegistry.getInstance().isInitialized());
     }
 
     @Test
@@ -113,7 +115,7 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
                 Stream.of(ValidCustomElement.class).collect(Collectors.toSet()),
                 null);
 
-        Assert.assertTrue(CustomElementRegistry.getInstance()
+        assertTrue(CustomElementRegistry.getInstance()
                 .isRegisteredCustomElement("custom-element"));
     }
 
@@ -134,9 +136,9 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
                         .collect(Collectors.toSet()),
                 null);
 
-        Assert.assertTrue(CustomElementRegistry.getInstance()
+        assertTrue(CustomElementRegistry.getInstance()
                 .isRegisteredCustomElement("custom-element"));
-        Assert.assertEquals("Stored element was not the super class",
+        assertEquals("Stored element was not the super class",
                 ValidCustomElement.class, CustomElementRegistry.getInstance()
                         .getRegisteredCustomElement("custom-element"));
     }
@@ -156,7 +158,7 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
                 Stream.of(NonPolymerElement.class).collect(Collectors.toSet()),
                 null);
 
-        Assert.assertFalse(CustomElementRegistry.getInstance()
+        assertFalse(CustomElementRegistry.getInstance()
                 .isRegisteredCustomElement("non-polymer"));
     }
 
@@ -169,10 +171,10 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
         Element polymerElement = new Element("custom-polymer-element");
 
-        Assert.assertTrue("Element didn't have a Component",
+        assertTrue("Element didn't have a Component",
                 polymerElement.getComponent().isPresent());
 
-        Assert.assertTrue("Element got unexpected Component",
+        assertTrue("Element got unexpected Component",
                 polymerElement.getComponent().get().getClass()
                         .equals(CustomPolymerElement.class));
     }
@@ -187,10 +189,10 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
         Element element = new Element("custom-element");
 
-        Assert.assertTrue("Element didn't have a Component",
+        assertTrue("Element didn't have a Component",
                 element.getComponent().isPresent());
 
-        Assert.assertTrue("Element got unexpected Component",
+        assertTrue("Element got unexpected Component",
                 element.getComponent().get().getClass()
                         .equals(ValidCustomElement.class));
     }
@@ -205,19 +207,19 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
         Element customElement = new Element("custom-element");
 
-        Assert.assertTrue("CustomElement didn't have a Component",
+        assertTrue("CustomElement didn't have a Component",
                 customElement.getComponent().isPresent());
 
-        Assert.assertEquals("CustomElement got unexpected Component",
+        assertEquals("CustomElement got unexpected Component",
                 ValidCustomElement.class,
                 customElement.getComponent().get().getClass());
 
         Element polymerElement = new Element("custom-polymer-element");
 
-        Assert.assertTrue("PolymerElement didn't have a Component",
+        assertTrue("PolymerElement didn't have a Component",
                 polymerElement.getComponent().isPresent());
 
-        Assert.assertEquals("PolymerElement got unexpected Component",
+        assertEquals("PolymerElement got unexpected Component",
                 CustomPolymerElement.class,
                 polymerElement.getComponent().get().getClass());
     }
@@ -233,10 +235,10 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
         Element element = new Element("custom-element");
 
-        Assert.assertTrue("Element didn't have a Component",
+        assertTrue("Element didn't have a Component",
                 element.getComponent().isPresent());
 
-        Assert.assertTrue("Element got unexpected Component",
+        assertTrue("Element got unexpected Component",
                 element.getComponent().get().getClass()
                         .equals(ValidCustomElement.class));
     }

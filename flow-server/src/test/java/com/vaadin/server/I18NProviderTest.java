@@ -15,6 +15,9 @@
  */
 package com.vaadin.server;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
@@ -25,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -42,7 +44,7 @@ public class I18NProviderTest {
             throws ServletException, ServiceException {
         initServletAndService(new Properties());
 
-        Assert.assertEquals("Locale was not the expected default locale",
+        assertEquals("Locale was not the expected default locale",
                 Locale.getDefault(), VaadinSession.getCurrent().getLocale());
     }
 
@@ -55,7 +57,7 @@ public class I18NProviderTest {
 
         initServletAndService(initParams);
 
-        Assert.assertEquals("Found wrong registry", TestProvider.class,
+        assertEquals("Found wrong registry", TestProvider.class,
                 VaadinService.getCurrent().getInstantiator().getI18NProvider()
                         .getClass());
     }
@@ -71,9 +73,9 @@ public class I18NProviderTest {
 
         I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator()
                 .getI18NProvider();
-        Assert.assertNotNull("No provider for ", i18NProvider);
+        assertNotNull("No provider for ", i18NProvider);
 
-        Assert.assertEquals("Locale was not the defined locale",
+        assertEquals("Locale was not the defined locale",
                 i18NProvider.getProvidedLocales().get(0),
                 VaadinSession.getCurrent().getLocale());
 

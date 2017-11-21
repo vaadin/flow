@@ -15,9 +15,10 @@
  */
 package com.vaadin.flow.template.angular;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Optional;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
@@ -49,13 +50,13 @@ public class AngularTemplateNodeTest {
         TemplateNode templateNode = parse("<div id='foo'><div>");
         Element div = getElement(templateNode);
         Element foundDiv = templateNode.findElement(div.getNode(), "foo").get();
-        Assert.assertEquals(div, foundDiv);
+        assertEquals(div, foundDiv);
     }
 
     @Test
     public void unknownElementLookup() {
         TemplateNode templateNode = parse("<div><div>");
-        Assert.assertEquals(Optional.empty(), templateNode.findElement(
+        assertEquals(Optional.empty(), templateNode.findElement(
                 TemplateElementStateProvider.createRootNode(), "foo"));
     }
 
@@ -64,7 +65,7 @@ public class AngularTemplateNodeTest {
         TemplateNode templateNode = parse("<span><div id='foo'><div></span>");
         Element div = getElement(templateNode).getChild(0);
         Element foundDiv = templateNode.findElement(div.getNode(), "foo").get();
-        Assert.assertEquals(div, foundDiv);
+        assertEquals(div, foundDiv);
     }
 
     @Test
@@ -82,7 +83,7 @@ public class AngularTemplateNodeTest {
         listNode.getFeature(ModelList.class).add(item1);
         listNode.getFeature(ModelList.class).add(item2);
 
-        Assert.assertEquals(Optional.empty(),
+        assertEquals(Optional.empty(),
                 templateNode.findElement(node, "foo"));
     }
 
@@ -97,10 +98,10 @@ public class AngularTemplateNodeTest {
         TemplateNode templateNode = stateNode.getFeature(TemplateMap.class)
                 .getRootTemplate();
 
-        Assert.assertEquals("<span id=\"main\">Main template</span>",
+        assertEquals("<span id=\"main\">Main template</span>",
                 templateNode.findElement(stateNode, "main").get()
                         .getOuterHTML());
-        Assert.assertEquals("<span id=\"sub\">Sub template</span>", templateNode
+        assertEquals("<span id=\"sub\">Sub template</span>", templateNode
                 .findElement(stateNode, "sub").get().getOuterHTML());
     }
 

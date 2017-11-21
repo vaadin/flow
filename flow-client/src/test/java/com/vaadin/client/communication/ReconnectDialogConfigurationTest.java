@@ -27,10 +27,10 @@ import static com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap.RECONN
 import static com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY;
 import static com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT;
 import static com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY;
+import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -81,16 +81,16 @@ public class ReconnectDialogConfigurationTest
 
     @Test
     public void defaults() {
-        Assert.assertEquals(DIALOG_TEXT_DEFAULT, configuration.getDialogText());
-        Assert.assertEquals(DIALOG_TEXT_GAVE_UP_DEFAULT,
+        assertEquals(DIALOG_TEXT_DEFAULT, configuration.getDialogText());
+        assertEquals(DIALOG_TEXT_GAVE_UP_DEFAULT,
                 configuration.getDialogTextGaveUp());
-        Assert.assertEquals(RECONNECT_ATTEMPTS_DEFAULT,
+        assertEquals(RECONNECT_ATTEMPTS_DEFAULT,
                 configuration.getReconnectAttempts());
-        Assert.assertEquals(RECONNECT_INTERVAL_DEFAULT,
+        assertEquals(RECONNECT_INTERVAL_DEFAULT,
                 configuration.getReconnectInterval());
-        Assert.assertEquals(DIALOG_GRACE_PERIOD_DEFAULT,
+        assertEquals(DIALOG_GRACE_PERIOD_DEFAULT,
                 configuration.getDialogGracePeriod());
-        Assert.assertEquals(DIALOG_MODAL_DEFAULT,
+        assertEquals(DIALOG_MODAL_DEFAULT,
                 configuration.isDialogModal());
     }
 
@@ -136,10 +136,10 @@ public class ReconnectDialogConfigurationTest
         configurationUpdatedCalled.set(0);
         getProperty(DIALOG_MODAL_KEY).setValue(true);
         Reactive.flush();
-        Assert.assertEquals(1, configurationUpdatedCalled.get());
+        assertEquals(1, configurationUpdatedCalled.get());
         getProperty(DIALOG_TEXT_KEY).setValue("foo");
         Reactive.flush();
-        Assert.assertEquals(2, configurationUpdatedCalled.get());
+        assertEquals(2, configurationUpdatedCalled.get());
     }
 
     @Test
@@ -151,9 +151,9 @@ public class ReconnectDialogConfigurationTest
         getProperty(DIALOG_MODAL_KEY).setValue(true);
         getProperty(DIALOG_TEXT_KEY).setValue("abc");
         getProperty(DIALOG_TEXT_GAVE_UP_KEY).setValue("def");
-        Assert.assertEquals(0, configurationUpdatedCalled.get());
+        assertEquals(0, configurationUpdatedCalled.get());
         Reactive.flush();
-        Assert.assertEquals(1, configurationUpdatedCalled.get());
+        assertEquals(1, configurationUpdatedCalled.get());
     }
 
 }

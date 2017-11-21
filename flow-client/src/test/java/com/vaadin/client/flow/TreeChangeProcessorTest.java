@@ -15,10 +15,15 @@
  */
 package com.vaadin.client.flow;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.InitialPropertiesHandler;
@@ -58,8 +63,8 @@ public class TreeChangeProcessorTest {
         Object value = tree.getRootNode().getMap(ns).getProperty(myKey)
                 .getValue();
 
-        Assert.assertEquals(myValue, value);
-        Assert.assertEquals(tree.getRootNode(), node);
+        assertEquals(myValue, value);
+        assertEquals(tree.getRootNode(), node);
     }
 
     @Test
@@ -71,8 +76,8 @@ public class TreeChangeProcessorTest {
 
         StateNode node = TreeChangeProcessor.processChange(tree, change);
 
-        Assert.assertFalse(property.hasValue());
-        Assert.assertEquals(tree.getRootNode(), node);
+        assertFalse(property.hasValue());
+        assertEquals(tree.getRootNode(), node);
     }
 
     @Test
@@ -91,8 +96,8 @@ public class TreeChangeProcessorTest {
 
         StateNode node = TreeChangeProcessor.processChange(tree, change);
 
-        Assert.assertSame(child, property.getValue());
-        Assert.assertEquals(tree.getRootNode(), node);
+        assertSame(child, property.getValue());
+        assertEquals(tree.getRootNode(), node);
     }
 
     @Test
@@ -107,8 +112,8 @@ public class TreeChangeProcessorTest {
         Object value = tree.getRootNode().getMap(ns).getProperty(myKey)
                 .getValue();
 
-        Assert.assertSame(child, value);
-        Assert.assertEquals(tree.getRootNode(), node);
+        assertSame(child, value);
+        assertEquals(tree.getRootNode(), node);
     }
 
     @Test
@@ -120,32 +125,32 @@ public class TreeChangeProcessorTest {
 
         NodeList list = tree.getRootNode().getList(ns);
 
-        Assert.assertEquals(2, list.length());
-        Assert.assertEquals("foo", list.get(0));
-        Assert.assertEquals("bar", list.get(1));
+        assertEquals(2, list.length());
+        assertEquals("foo", list.get(0));
+        assertEquals("bar", list.get(1));
 
-        Assert.assertEquals(tree.getRootNode(), node);
+        assertEquals(tree.getRootNode(), node);
 
         change = spliceChange(rootId, ns, 1, 0, Json.create("baz"));
 
         node = TreeChangeProcessor.processChange(tree, change);
 
-        Assert.assertEquals(3, list.length());
-        Assert.assertEquals("foo", list.get(0));
-        Assert.assertEquals("baz", list.get(1));
-        Assert.assertEquals("bar", list.get(2));
+        assertEquals(3, list.length());
+        assertEquals("foo", list.get(0));
+        assertEquals("baz", list.get(1));
+        assertEquals("bar", list.get(2));
 
         change = spliceChange(rootId, ns, 1, 1);
 
-        Assert.assertEquals(tree.getRootNode(), node);
+        assertEquals(tree.getRootNode(), node);
 
         node = TreeChangeProcessor.processChange(tree, change);
 
-        Assert.assertEquals(2, list.length());
-        Assert.assertEquals("foo", list.get(0));
-        Assert.assertEquals("bar", list.get(1));
+        assertEquals(2, list.length());
+        assertEquals("foo", list.get(0));
+        assertEquals("bar", list.get(1));
 
-        Assert.assertEquals(tree.getRootNode(), node);
+        assertEquals(tree.getRootNode(), node);
     }
 
     @Test
@@ -159,10 +164,10 @@ public class TreeChangeProcessorTest {
 
         NodeList list = tree.getRootNode().getList(ns);
 
-        Assert.assertEquals(1, list.length());
-        Assert.assertSame(child, list.get(0));
+        assertEquals(1, list.length());
+        assertSame(child, list.get(0));
 
-        Assert.assertEquals(tree.getRootNode(), node);
+        assertEquals(tree.getRootNode(), node);
     }
 
     @Test
@@ -180,10 +185,10 @@ public class TreeChangeProcessorTest {
 
         Object value = tree.getNode(nodeId).getMap(ns).getProperty(myKey)
                 .getValue();
-        Assert.assertEquals(myValue, value);
+        assertEquals(myValue, value);
 
-        Assert.assertEquals(1, updatedNodes.size());
-        Assert.assertTrue(updatedNodes.has(tree.getNode(nodeId)));
+        assertEquals(1, updatedNodes.size());
+        assertTrue(updatedNodes.has(tree.getNode(nodeId)));
     }
 
     @Test
@@ -195,18 +200,18 @@ public class TreeChangeProcessorTest {
 
         tree.registerNode(childNode);
 
-        Assert.assertSame(childNode, tree.getNode(childNode.getId()));
-        Assert.assertEquals(0, unregisterCount.get());
+        assertSame(childNode, tree.getNode(childNode.getId()));
+        assertEquals(0, unregisterCount.get());
 
         JsonArray changes = toArray(detachChange(childNode.getId()));
         JsSet<StateNode> updatedNodes = TreeChangeProcessor.processChanges(tree,
                 changes);
 
-        Assert.assertNull(tree.getNode(childNode.getId()));
-        Assert.assertEquals(1, unregisterCount.get());
+        assertNull(tree.getNode(childNode.getId()));
+        assertEquals(1, unregisterCount.get());
 
-        Assert.assertEquals(1, updatedNodes.size());
-        Assert.assertTrue(updatedNodes.has(childNode));
+        assertEquals(1, updatedNodes.size());
+        assertTrue(updatedNodes.has(childNode));
     }
 
     @Test
@@ -218,11 +223,11 @@ public class TreeChangeProcessorTest {
 
         StateNode updatedNode = TreeChangeProcessor.processChange(tree, change);
 
-        Assert.assertTrue(node.hasFeature(featureId));
+        assertTrue(node.hasFeature(featureId));
         // No assertion error because of wrong feature instance
         node.getMap(featureId);
 
-        Assert.assertEquals(node, updatedNode);
+        assertEquals(node, updatedNode);
     }
 
     @Test
@@ -234,11 +239,11 @@ public class TreeChangeProcessorTest {
 
         StateNode updatedNode = TreeChangeProcessor.processChange(tree, change);
 
-        Assert.assertTrue(node.hasFeature(featureId));
+        assertTrue(node.hasFeature(featureId));
         // No assertion error because of wrong feature instance
         node.getList(featureId);
 
-        Assert.assertEquals(node, updatedNode);
+        assertEquals(node, updatedNode);
     }
 
     private static JsonArray toArray(JsonValue... changes) {

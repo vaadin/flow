@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.router;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,7 +60,7 @@ public class LocationChangeEventTest {
 
     @Test
     public void noReroute() {
-        Assert.assertFalse(event.getRerouteTarget().isPresent());
+        assertFalse(event.getRerouteTarget().isPresent());
     }
 
     @Test
@@ -64,9 +68,9 @@ public class LocationChangeEventTest {
         NavigationHandler handler = e -> 200;
         event.rerouteTo(handler);
 
-        Assert.assertTrue(event.getRerouteTarget().isPresent());
+        assertTrue(event.getRerouteTarget().isPresent());
 
-        Assert.assertSame(handler, event.getRerouteTarget().get());
+        assertSame(handler, event.getRerouteTarget().get());
     }
 
     @Test
@@ -74,18 +78,18 @@ public class LocationChangeEventTest {
         NavigationHandler handler = e -> 200;
         event.rerouteTo(handler);
 
-        Assert.assertTrue(event.getRerouteTarget().isPresent());
+        assertTrue(event.getRerouteTarget().isPresent());
 
         event.rerouteTo((NavigationHandler) null);
 
-        Assert.assertFalse(event.getRerouteTarget().isPresent());
+        assertFalse(event.getRerouteTarget().isPresent());
     }
 
     @Test
     public void rerouteToErrorView() {
         event.rerouteToErrorView();
 
-        Assert.assertSame(
+        assertSame(
                 event.getSource().getConfiguration().getErrorHandler(),
                 event.getRerouteTarget().get());
     }
@@ -99,11 +103,11 @@ public class LocationChangeEventTest {
         List<View> viewChain = event.getUI().getInternals()
                 .getActiveViewChain();
 
-        Assert.assertEquals(2, viewChain.size());
+        assertEquals(2, viewChain.size());
 
-        Assert.assertSame(TestView.class, viewChain.get(0).getClass());
+        assertSame(TestView.class, viewChain.get(0).getClass());
 
         // Parent view from router conf
-        Assert.assertSame(ParentView.class, viewChain.get(1).getClass());
+        assertSame(ParentView.class, viewChain.get(1).getClass());
     }
 }

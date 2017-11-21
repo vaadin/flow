@@ -1,8 +1,9 @@
 package com.vaadin.client;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.UILifecycle.UIState;
@@ -13,15 +14,15 @@ public class UILifecycleTest {
 
     @Test
     public void initialState() {
-        Assert.assertEquals(UIState.INITIALIZING, lifecycle.getState());
+        assertEquals(UIState.INITIALIZING, lifecycle.getState());
     }
 
     @Test
     public void initialToRunningToTerminated() {
         lifecycle.setState(UIState.RUNNING);
-        Assert.assertEquals(UIState.RUNNING, lifecycle.getState());
+        assertEquals(UIState.RUNNING, lifecycle.getState());
         lifecycle.setState(UIState.TERMINATED);
-        Assert.assertEquals(UIState.TERMINATED, lifecycle.getState());
+        assertEquals(UIState.TERMINATED, lifecycle.getState());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -61,11 +62,11 @@ public class UILifecycleTest {
             events.incrementAndGet();
         });
 
-        Assert.assertEquals(0, events.get());
+        assertEquals(0, events.get());
         lifecycle.setState(UIState.RUNNING);
-        Assert.assertEquals(1, events.get());
+        assertEquals(1, events.get());
         lifecycle.setState(UIState.TERMINATED);
-        Assert.assertEquals(2, events.get());
+        assertEquals(2, events.get());
     }
 
 }

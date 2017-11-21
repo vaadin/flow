@@ -15,13 +15,14 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import elemental.events.EventRemover;
@@ -34,15 +35,15 @@ public class ReactiveTest {
         Reactive.addFlushListener(count::incrementAndGet);
         Reactive.addFlushListener(count::incrementAndGet);
 
-        Assert.assertEquals(0, count.get());
+        assertEquals(0, count.get());
 
         Reactive.flush();
 
-        Assert.assertEquals(2, count.get());
+        assertEquals(2, count.get());
 
         Reactive.flush();
 
-        Assert.assertEquals("Flush listeners are removed after each flush", 2,
+        assertEquals("Flush listeners are removed after each flush", 2,
                 count.get());
     }
 
@@ -53,13 +54,13 @@ public class ReactiveTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(
+        assertEquals(
                 "Listener added during flush is run in the same flush", 1,
                 count.get());
 
         Reactive.flush();
 
-        Assert.assertEquals("Listener is not run again", 1, count.get());
+        assertEquals("Listener is not run again", 1, count.get());
     }
 
     @Test
@@ -69,22 +70,22 @@ public class ReactiveTest {
         EventRemover eventRemover = Reactive
                 .addEventCollector(e -> count.incrementAndGet());
 
-        Assert.assertEquals(0, count.get());
+        assertEquals(0, count.get());
 
         router.invalidate();
 
-        Assert.assertEquals("Event should trigger collector", 1, count.get());
+        assertEquals("Event should trigger collector", 1, count.get());
 
         router.invalidate();
 
-        Assert.assertEquals("Event should still trigger collector", 2,
+        assertEquals("Event should still trigger collector", 2,
                 count.get());
 
         eventRemover.remove();
 
         router.invalidate();
 
-        Assert.assertEquals("Event should no longer trigger collector", 2,
+        assertEquals("Event should no longer trigger collector", 2,
                 count.get());
     }
 
@@ -93,11 +94,11 @@ public class ReactiveTest {
         AtomicInteger invokeCount = new AtomicInteger();
         Reactive.addPostFlushListener(invokeCount::incrementAndGet);
 
-        Assert.assertEquals(0, invokeCount.get());
+        assertEquals(0, invokeCount.get());
 
         Reactive.flush();
 
-        Assert.assertEquals(1, invokeCount.get());
+        assertEquals(1, invokeCount.get());
     }
 
     @Test
@@ -106,10 +107,10 @@ public class ReactiveTest {
         Reactive.addPostFlushListener(invokeCount::incrementAndGet);
 
         Reactive.flush();
-        Assert.assertEquals(1, invokeCount.get());
+        assertEquals(1, invokeCount.get());
 
         Reactive.flush();
-        Assert.assertEquals(1, invokeCount.get());
+        assertEquals(1, invokeCount.get());
     }
 
     @Test
@@ -125,7 +126,7 @@ public class ReactiveTest {
         Reactive.flush();
 
         for (int i = 0; i < 10; i++) {
-            Assert.assertEquals(Integer.valueOf(i), order.get(i));
+            assertEquals(Integer.valueOf(i), order.get(i));
         }
     }
 
@@ -136,11 +137,11 @@ public class ReactiveTest {
         Reactive.addPostFlushListener(() -> order.add("postFlush"));
         Reactive.addFlushListener(() -> order.add("flush"));
 
-        Assert.assertEquals(Collections.emptyList(), order);
+        assertEquals(Collections.emptyList(), order);
 
         Reactive.flush();
 
-        Assert.assertEquals(Arrays.asList("flush", "postFlush"), order);
+        assertEquals(Arrays.asList("flush", "postFlush"), order);
     }
 
     @Test
@@ -155,7 +156,7 @@ public class ReactiveTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(
+        assertEquals(
                 Arrays.asList("flush1", "postFlush1", "flush2", "postFlush2"),
                 order);
     }

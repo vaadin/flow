@@ -15,6 +15,11 @@
  */
 package com.vaadin.server.startup;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
@@ -24,7 +29,6 @@ import java.util.stream.Stream;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -73,13 +77,13 @@ public class RouteRegistryInitializerTest {
                         NavigationTargetBar.class).collect(Collectors.toSet()),
                 servletContext);
 
-        Assert.assertEquals("Route '' registered to NavigationTarget.class",
+        assertEquals("Route '' registered to NavigationTarget.class",
                 NavigationTarget.class, registry.getNavigationTarget("").get());
-        Assert.assertEquals(
+        assertEquals(
                 "Route 'foo' registered to NavigationTargetFoo.class",
                 NavigationTargetFoo.class,
                 registry.getNavigationTarget("foo").get());
-        Assert.assertEquals(
+        assertEquals(
                 "Route 'bar' registered to NavigationTargetBar.class",
                 NavigationTargetBar.class,
                 registry.getNavigationTarget("bar").get());
@@ -90,7 +94,7 @@ public class RouteRegistryInitializerTest {
         try {
             routeRegistryInitializer.onStartup(null, servletContext);
         } catch (Exception e) {
-            Assert.fail(
+            fail(
                     "RouteRegistryInitializer.onStartup should not throw with null arguments");
         }
     }
@@ -115,10 +119,10 @@ public class RouteRegistryInitializerTest {
     @Test(expected = InvalidRouteConfigurationException.class)
     public void routeRegistry_routes_can_only_be_set_once()
             throws InvalidRouteConfigurationException {
-        Assert.assertFalse("RouteRegistry should not be initialized",
+        assertFalse("RouteRegistry should not be initialized",
                 registry.navigationTargetsInitialized());
         registry.setNavigationTargets(new HashSet<>());
-        Assert.assertTrue("RouteRegistry should be initialized",
+        assertTrue("RouteRegistry should be initialized",
                 registry.navigationTargetsInitialized());
         registry.setNavigationTargets(new HashSet<>());
     }
@@ -151,9 +155,9 @@ public class RouteRegistryInitializerTest {
         Optional<Class<? extends Component>> navigationTarget = registry
                 .getNavigationTarget("parent/prefix");
 
-        Assert.assertTrue("Couldn't find navigation target for `parent/prefix`",
+        assertTrue("Couldn't find navigation target for `parent/prefix`",
                 navigationTarget.isPresent());
-        Assert.assertEquals(
+        assertEquals(
                 "Route 'parent/prefix' was not registered to ExtendingPrefix.class",
                 ExtendingPrefix.class, navigationTarget.get());
     }
@@ -168,9 +172,9 @@ public class RouteRegistryInitializerTest {
         Optional<Class<? extends Component>> navigationTarget = registry
                 .getNavigationTarget("absolute");
 
-        Assert.assertTrue("Could not find navigation target for `absolute`",
+        assertTrue("Could not find navigation target for `absolute`",
                 navigationTarget.isPresent());
-        Assert.assertEquals("Route 'absolute' was not registered correctly",
+        assertEquals("Route 'absolute' was not registered correctly",
                 AbosulteRoute.class, navigationTarget.get());
     }
 
@@ -197,9 +201,9 @@ public class RouteRegistryInitializerTest {
         Optional<String> url = registry
                 .getTargetUrl(MultiLevelRouteAlias.class);
 
-        Assert.assertTrue(url.isPresent());
+        assertTrue(url.isPresent());
 
-        Assert.assertEquals("absolute/levels", url.get());
+        assertEquals("absolute/levels", url.get());
 
         assertRouteTarget(MultiLevelRouteAlias.class, "parent/alias1",
                 "RouteAlias 'alias1' was not registered correctly");
@@ -252,13 +256,13 @@ public class RouteRegistryInitializerTest {
                         AbosulteRoute.class, ExtendingPrefix.class)
                 .collect(Collectors.toSet()), servletContext);
 
-        Assert.assertEquals("",
+        assertEquals("",
                 registry.getTargetUrl(NavigationTarget.class).get());
-        Assert.assertEquals("foo",
+        assertEquals("foo",
                 registry.getTargetUrl(NavigationTargetFoo.class).get());
-        Assert.assertEquals("absolute",
+        assertEquals("absolute",
                 registry.getTargetUrl(AbosulteRoute.class).get());
-        Assert.assertEquals("parent/prefix",
+        assertEquals("parent/prefix",
                 registry.getTargetUrl(ExtendingPrefix.class).get());
     }
 
@@ -270,9 +274,9 @@ public class RouteRegistryInitializerTest {
                         .collect(Collectors.toSet()),
                 servletContext);
 
-        Assert.assertEquals("parameter/{Boolean}",
+        assertEquals("parameter/{Boolean}",
                 registry.getTargetUrl(ParameterRoute.class).get());
-        Assert.assertEquals("string/{String}",
+        assertEquals("string/{String}",
                 registry.getTargetUrl(StringParameterRoute.class).get());
     }
 
@@ -283,7 +287,7 @@ public class RouteRegistryInitializerTest {
                 .of(NavigationRootWithParent.class).collect(Collectors.toSet()),
                 servletContext);
 
-        Assert.assertEquals(
+        assertEquals(
                 "The root target for a parent layout should not end with '/'",
                 "parent",
                 registry.getTargetUrl(NavigationRootWithParent.class).get());
@@ -322,7 +326,7 @@ public class RouteRegistryInitializerTest {
                 Collections.singleton(ChildWithDynamicTitle.class),
                 servletContext);
 
-        Assert.assertEquals("bar",
+        assertEquals("bar",
                 registry.getTargetUrl(ChildWithDynamicTitle.class).get());
     }
 
@@ -477,8 +481,8 @@ public class RouteRegistryInitializerTest {
         Optional<Class<? extends Component>> navigationTarget = registry
                 .getNavigationTarget(path);
 
-        Assert.assertTrue("Could not find navigation target for `" + path + "`",
+        assertTrue("Could not find navigation target for `" + path + "`",
                 navigationTarget.isPresent());
-        Assert.assertEquals(errorMessage, routeClass, navigationTarget.get());
+        assertEquals(errorMessage, routeClass, navigationTarget.get());
     }
 }

@@ -1,15 +1,12 @@
 package com.vaadin.flow.model;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.model.BeanModelType;
-import com.vaadin.flow.model.PropertyFilter;
-import com.vaadin.flow.model.TemplateModelListProxy;
 
 public class TemplateModelListProxyTest {
 
@@ -69,7 +66,7 @@ public class TemplateModelListProxyTest {
     private static void assertListClearedNormally(
             TemplateModelListProxy<?> list) {
         list.clear();
-        Assert.assertThat(
+        assertThat(
                 "List should be of size 0, since we've called clear()",
                 list.size(), is(0));
     }

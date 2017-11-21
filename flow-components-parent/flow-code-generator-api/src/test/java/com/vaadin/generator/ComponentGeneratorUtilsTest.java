@@ -15,7 +15,9 @@
  */
 package com.vaadin.generator;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 
 /**
@@ -29,7 +31,7 @@ public class ComponentGeneratorUtilsTest {
         String convertedName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(name);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Name was not converted to camelCase in the correct way",
                 "testMethodForComponent", convertedName);
     }
@@ -40,7 +42,7 @@ public class ComponentGeneratorUtilsTest {
         String convertedName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(name);
 
-        Assert.assertEquals("_for", convertedName);
+        assertEquals("_for", convertedName);
     }
 
     @Test
@@ -49,12 +51,12 @@ public class ComponentGeneratorUtilsTest {
         String convertedName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(name, true);
 
-        Assert.assertEquals("for", convertedName);
+        assertEquals("for", convertedName);
 
         convertedName = ComponentGeneratorUtils
                 .generateMethodNameForProperty("get", name);
 
-        Assert.assertEquals("getFor", convertedName);
+        assertEquals("getFor", convertedName);
     }
 
     @Test
@@ -63,7 +65,7 @@ public class ComponentGeneratorUtilsTest {
         String convertedName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(name);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Name was not converted to camelCase in the correct way", name,
                 convertedName);
     }
@@ -74,7 +76,7 @@ public class ComponentGeneratorUtilsTest {
         String convertedName = ComponentGeneratorUtils
                 .generateValidJavaClassName(name);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Name was not converted to camelCase in the correct way",
                 "TestMethodForComponent", convertedName);
     }
@@ -86,13 +88,13 @@ public class ComponentGeneratorUtilsTest {
         String formattedProperty = ComponentGeneratorUtils
                 .generateMethodNameForProperty("get", property);
 
-        Assert.assertEquals("Getter was converted wrong.", "getMyProperty",
+        assertEquals("Getter was converted wrong.", "getMyProperty",
                 formattedProperty);
 
         formattedProperty = ComponentGeneratorUtils
                 .generateMethodNameForProperty("set", property);
 
-        Assert.assertEquals("Setter was converted wrong.", "setMyProperty",
+        assertEquals("Setter was converted wrong.", "setMyProperty",
                 formattedProperty);
     }
 
@@ -103,7 +105,7 @@ public class ComponentGeneratorUtilsTest {
         String formatted = ComponentGeneratorUtils
                 .generateMethodNameForProperty(null, property);
 
-        Assert.assertEquals("", "MyProperty", formatted);
+        assertEquals("", "MyProperty", formatted);
     }
 
     @Test
@@ -113,13 +115,13 @@ public class ComponentGeneratorUtilsTest {
         String formatted = ComponentGeneratorUtils
                 .formatStringToJavaComment(simpleComment);
 
-        Assert.assertEquals("/*\n * simple comment\n */\n", formatted);
+        assertEquals("/*\n * simple comment\n */\n", formatted);
 
         String multiLineComment = "this\nis\na\nmulti\nline\ncomment";
 
         formatted = ComponentGeneratorUtils
                 .formatStringToJavaComment(multiLineComment);
-        Assert.assertEquals(
+        assertEquals(
                 "/*\n * this\n * is\n * a\n * multi\n * line\n * comment\n */\n",
                 formatted);
     }
@@ -131,63 +133,63 @@ public class ComponentGeneratorUtilsTest {
 
     @Test
     public void convertFilePathToPackage() {
-        Assert.assertEquals("some.directory.structure",
+        assertEquals("some.directory.structure",
                 ComponentGeneratorUtils.convertFilePathToPackage(
                         "/some/directory/structure/my-file.html"));
 
-        Assert.assertEquals("some.directory.structure",
+        assertEquals("some.directory.structure",
                 ComponentGeneratorUtils.convertFilePathToPackage(
                         "\\some\\directory\\structure\\my-file.html"));
 
-        Assert.assertEquals("some.directory.structure",
+        assertEquals("some.directory.structure",
                 ComponentGeneratorUtils.convertFilePathToPackage(
                         "some directory structure/my-file.html"));
 
-        Assert.assertEquals("some.directory.structure",
+        assertEquals("some.directory.structure",
                 ComponentGeneratorUtils.convertFilePathToPackage(
                         "/SOME_DIRECTORY-STRUCTURE/MY-FILE.html"));
 
-        Assert.assertEquals("c.my.documents.something",
+        assertEquals("c.my.documents.something",
                 ComponentGeneratorUtils.convertFilePathToPackage(
                         "C:/My Documents/Something/My-File.html"));
 
-        Assert.assertEquals("_42", ComponentGeneratorUtils
+        assertEquals("_42", ComponentGeneratorUtils
                 .convertFilePathToPackage("42/my-file.html"));
     }
 
     @Test
     public void convertFilePathToEmptyPackage() {
-        Assert.assertEquals("", ComponentGeneratorUtils
+        assertEquals("", ComponentGeneratorUtils
                 .convertFilePathToPackage("my-file.html"));
 
-        Assert.assertEquals("", ComponentGeneratorUtils
+        assertEquals("", ComponentGeneratorUtils
                 .convertFilePathToPackage("/my-file.html"));
 
-        Assert.assertEquals("",
+        assertEquals("",
                 ComponentGeneratorUtils.convertFilePathToPackage("/ / / /"));
     }
 
     @Test
     public void convertCamelCaseToHyphens() {
-        Assert.assertNull(
+        assertNull(
                 ComponentGeneratorUtils.convertCamelCaseToHyphens(null));
 
-        Assert.assertEquals("some-thing",
+        assertEquals("some-thing",
                 ComponentGeneratorUtils.convertCamelCaseToHyphens("someThing"));
 
-        Assert.assertEquals("some-thing",
+        assertEquals("some-thing",
                 ComponentGeneratorUtils.convertCamelCaseToHyphens("SomeThing"));
 
-        Assert.assertEquals("s-o-m-e-t-h-i-n-g",
+        assertEquals("s-o-m-e-t-h-i-n-g",
                 ComponentGeneratorUtils.convertCamelCaseToHyphens("SOMETHING"));
 
-        Assert.assertEquals("",
+        assertEquals("",
                 ComponentGeneratorUtils.convertCamelCaseToHyphens(""));
 
-        Assert.assertEquals("i",
+        assertEquals("i",
                 ComponentGeneratorUtils.convertCamelCaseToHyphens("I"));
 
-        Assert.assertEquals("am-i",
+        assertEquals("am-i",
                 ComponentGeneratorUtils.convertCamelCaseToHyphens("AmI"));
     }
 

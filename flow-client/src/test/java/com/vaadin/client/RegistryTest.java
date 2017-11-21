@@ -1,6 +1,7 @@
 package com.vaadin.client;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertSame;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,8 +21,8 @@ public class RegistryTest {
         StateTree instance = new StateTree(registry);
         registry.set(StateTree.class, instance);
 
-        Assert.assertSame(instance, registry.get(StateTree.class));
-        Assert.assertSame(instance, registry.getStateTree());
+        assertSame(instance, registry.get(StateTree.class));
+        assertSame(instance, registry.getStateTree());
     }
 
     @Test(expected = AssertionError.class)
@@ -38,7 +39,7 @@ public class RegistryTest {
     public void setAndGetCustom() {
         MyClass myClass = new MyClass();
         registry.set(MyClass.class, myClass);
-        Assert.assertSame(myClass, registry.get(MyClass.class));
+        assertSame(myClass, registry.get(MyClass.class));
 
     }
 }

@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.tests.components.textfield;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
@@ -39,7 +40,7 @@ public class PasswordFieldViewIT extends AbstractComponentIT {
         WebElement webComponent = findElement(
                 By.tagName("vaadin-password-field"));
 
-        Assert.assertNull(webComponent.getAttribute("readonly"));
+        assertNull(webComponent.getAttribute("readonly"));
 
         WebElement button = findElement(By.id("read-only"));
         button.click();
@@ -58,7 +59,7 @@ public class PasswordFieldViewIT extends AbstractComponentIT {
         WebElement webComponent = findElement(
                 By.tagName("vaadin-password-field"));
 
-        Assert.assertNull(webComponent.getAttribute("required"));
+        assertNull(webComponent.getAttribute("required"));
 
         WebElement button = findElement(By.id("required"));
         button.click();

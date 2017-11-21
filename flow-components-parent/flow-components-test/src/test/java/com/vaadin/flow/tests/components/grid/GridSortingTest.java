@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.tests.components.grid;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -24,7 +28,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -193,16 +196,16 @@ public class GridSortingTest {
 
     @Test
     public void sort_event_correct() {
-        Assert.assertEquals(0, testSortListener.events.size());
+        assertEquals(0, testSortListener.events.size());
         setTestSorting();
-        Assert.assertEquals(1, testSortListener.events.size());
+        assertEquals(1, testSortListener.events.size());
 
-        Assert.assertEquals(1, testSortListener.events.size());
+        assertEquals(1, testSortListener.events.size());
         assertSortOrdersEquals(
                 GridSortOrder.asc(nameColumn).thenDesc(ageColumn)
                         .thenAsc(templateColumn).build(),
                 testSortListener.events.get(0).getSortOrder());
-        Assert.assertTrue(testSortListener.events.get(0).isFromClient());
+        assertTrue(testSortListener.events.get(0).isFromClient());
     }
 
     @Test
@@ -214,7 +217,7 @@ public class GridSortingTest {
                 createSortObject(nameColumn.getColumnId(), "desc"));
         callSortersChanged(secondSortersArray);
 
-        Assert.assertEquals(2, testSortListener.events.size());
+        assertEquals(2, testSortListener.events.size());
 
         assertSortOrdersEquals(GridSortOrder.desc(nameColumn).build(),
                 testSortListener.events.get(1).getSortOrder());
@@ -254,7 +257,7 @@ public class GridSortingTest {
         } catch (NoSuchMethodException | SecurityException
                 | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
-            Assert.fail("Could not call Grid.sortersChanged");
+            fail("Could not call Grid.sortersChanged");
         }
     }
 
@@ -267,11 +270,11 @@ public class GridSortingTest {
 
     private <T, V extends SortOrder<T>> void assertSortOrdersEquals(List<V> o1,
             List<V> o2) {
-        Assert.assertEquals(o1.size(), o2.size());
+        assertEquals(o1.size(), o2.size());
         for (int i = 0; i < o1.size(); ++i) {
-            Assert.assertEquals(o1.get(i).getDirection(),
+            assertEquals(o1.get(i).getDirection(),
                     o2.get(i).getDirection());
-            Assert.assertEquals(o1.get(i).getSorted(), o2.get(i).getSorted());
+            assertEquals(o1.get(i).getSorted(), o2.get(i).getSorted());
         }
     }
 
@@ -304,6 +307,6 @@ public class GridSortingTest {
         expectedOrder.sort(comparator);
         actualOrder.sort(grid.getDataCommunicator().getInMemorySorting());
 
-        Assert.assertEquals(expectedOrder, actualOrder);
+        assertEquals(expectedOrder, actualOrder);
     }
 }

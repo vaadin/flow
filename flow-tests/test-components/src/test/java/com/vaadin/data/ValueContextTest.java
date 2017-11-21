@@ -39,7 +39,7 @@ public class ValueContextTest extends UI {
         ValueContext fromComponent = new ValueContext(textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
-        Assert.assertEquals("Unexpected locale from component",
+        assertEquals("Unexpected locale from component",
                 COMPONENT_LOCALE, locale);
     }
 
@@ -48,7 +48,7 @@ public class ValueContextTest extends UI {
         ValueContext fromComponent = new ValueContext(textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
-        Assert.assertEquals("Unexpected locale from component", UI_LOCALE,
+        assertEquals("Unexpected locale from component", UI_LOCALE,
                 locale);
     }
 
@@ -58,7 +58,7 @@ public class ValueContextTest extends UI {
         ValueContext fromComponent = new ValueContext(textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
-        Assert.assertEquals("Unexpected locale from component",
+        assertEquals("Unexpected locale from component",
                 Locale.getDefault(), locale);
     }
 
@@ -66,7 +66,7 @@ public class ValueContextTest extends UI {
     public void testHasValue1() {
         setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(textField);
-        Assert.assertEquals(textField, fromComponent.getHasValue().get());
+        assertEquals(textField, fromComponent.getHasValue().get());
     }
 
     @Test
@@ -74,7 +74,7 @@ public class ValueContextTest extends UI {
         setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(new DatePicker(),
                 textField);
-        Assert.assertEquals(textField, fromComponent.getHasValue().get());
+        assertEquals(textField, fromComponent.getHasValue().get());
     }
 
     @Test
@@ -82,8 +82,8 @@ public class ValueContextTest extends UI {
         setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(new DatePicker(),
                 textField, Locale.CANADA);
-        Assert.assertEquals(textField, fromComponent.getHasValue().get());
-        Assert.assertEquals(Locale.CANADA, fromComponent.getLocale().get());
+        assertEquals(textField, fromComponent.getHasValue().get());
+        assertEquals(Locale.CANADA, fromComponent.getLocale().get());
     }
 
     @Before

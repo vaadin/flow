@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.model;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import com.vaadin.flow.model.PropertyFilter;
+import org.junit.Test;
 
 public class PropertyFilterTest {
 
@@ -26,8 +26,8 @@ public class PropertyFilterTest {
     public void simpleFilter() {
         PropertyFilter filter = new PropertyFilter("accept"::equals);
 
-        Assert.assertTrue(filter.test("accept"));
-        Assert.assertFalse(filter.test("reject"));
+        assertTrue(filter.test("accept"));
+        assertFalse(filter.test("reject"));
     }
 
     @Test
@@ -42,13 +42,13 @@ public class PropertyFilterTest {
                 name -> !"baz".equals(name));
 
         // Rejected by outer filter
-        Assert.assertFalse(innerFilter.test("foo"));
+        assertFalse(innerFilter.test("foo"));
         // Rejected by middle filter
-        Assert.assertFalse(innerFilter.test("bar"));
+        assertFalse(innerFilter.test("bar"));
         // Rejected by inner filter
-        Assert.assertFalse(innerFilter.test("baz"));
+        assertFalse(innerFilter.test("baz"));
 
         // Not rejected by any filter
-        Assert.assertTrue(innerFilter.test("foobar"));
+        assertTrue(innerFilter.test("foobar"));
     }
 }

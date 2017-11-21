@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.router.QueryParameters;
@@ -169,21 +168,21 @@ public class QueryParametersTest {
     public void parameterWithoutValue() {
         QueryParameters params = new QueryParameters(
                 Collections.singletonMap("foo", Collections.emptyList()));
-        Assert.assertEquals("foo", params.getQueryString());
+        assertEquals("foo", params.getQueryString());
 
         params = new QueryParameters(
                 Collections.singletonMap("foo", Arrays.asList(null, "bar")));
-        Assert.assertEquals("foo&foo=bar", params.getQueryString());
+        assertEquals("foo&foo=bar", params.getQueryString());
 
         params = new QueryParameters(
                 Collections.singletonMap("foo", Arrays.asList("bar", null)));
-        Assert.assertEquals("foo=bar&foo", params.getQueryString());
+        assertEquals("foo=bar&foo", params.getQueryString());
     }
 
     @Test
     public void parameterWithEmptyValue() {
         QueryParameters fullParams = new QueryParameters(
                 Collections.singletonMap("foo", Collections.singletonList("")));
-        Assert.assertEquals("foo=", fullParams.getQueryString());
+        assertEquals("foo=", fullParams.getQueryString());
     }
 }

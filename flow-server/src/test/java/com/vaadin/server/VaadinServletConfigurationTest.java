@@ -15,13 +15,14 @@
  */
 package com.vaadin.server;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Properties;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.easymock.EasyMock;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.function.DeploymentConfiguration;
@@ -39,7 +40,7 @@ public class VaadinServletConfigurationTest {
                 .getUIClass(new VaadinServletRequest(
                         EasyMock.createMock(HttpServletRequest.class),
                         servlet.getService()));
-        Assert.assertEquals(MockUIContainingServlet.class, uiClass);
+        assertEquals(MockUIContainingServlet.class, uiClass);
     }
 
     @Test
@@ -49,15 +50,15 @@ public class VaadinServletConfigurationTest {
         DeploymentConfiguration configuration = servlet.getService()
                 .getDeploymentConfiguration();
 
-        Assert.assertEquals(true, configuration.isProductionMode());
-        Assert.assertEquals(true, configuration.isCloseIdleSessions());
-        Assert.assertEquals(1234, configuration.getHeartbeatInterval());
+        assertEquals(true, configuration.isProductionMode());
+        assertEquals(true, configuration.isCloseIdleSessions());
+        assertEquals(1234, configuration.getHeartbeatInterval());
 
         Class<? extends UI> uiClass = BootstrapHandler
                 .getUIClass(new VaadinServletRequest(
                         EasyMock.createMock(HttpServletRequest.class),
                         servlet.getService()));
-        Assert.assertEquals(MockUIContainingServlet.class, uiClass);
+        assertEquals(MockUIContainingServlet.class, uiClass);
     }
 
     @Test
@@ -75,17 +76,17 @@ public class VaadinServletConfigurationTest {
                 .getDeploymentConfiguration();
 
         // Values from servlet init params take precedence
-        Assert.assertEquals(expectedBoolean, configuration.isSendUrlsAsParameters());
-        Assert.assertEquals(expectedInt, configuration.getHeartbeatInterval());
+        assertEquals(expectedBoolean, configuration.isSendUrlsAsParameters());
+        assertEquals(expectedInt, configuration.getHeartbeatInterval());
 
         // Other params are as defined in the annotation
-        Assert.assertEquals(true, configuration.isCloseIdleSessions());
+        assertEquals(true, configuration.isCloseIdleSessions());
 
         Class<? extends UI> uiClass = BootstrapHandler
                 .getUIClass(new VaadinServletRequest(
                         EasyMock.createMock(HttpServletRequest.class),
                         servlet.getService()));
-        Assert.assertEquals(MockUIContainingServlet.class, uiClass);
+        assertEquals(MockUIContainingServlet.class, uiClass);
     }
 
     @Test(expected = ServletException.class)

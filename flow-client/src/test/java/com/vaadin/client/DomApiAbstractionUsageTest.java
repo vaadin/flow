@@ -1,5 +1,7 @@
 package com.vaadin.client;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,7 +15,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -78,7 +79,7 @@ public class DomApiAbstractionUsageTest {
                 String typeName = desc.substring(1, desc.length() - 1);
                 Class<?> type = DomApiAbstractionUsageTest.getClass(typeName);
                 if (DomNode.class.isAssignableFrom(type)) {
-                    Assert.fail(className + "." + name
+                    fail(className + "." + name
                             + " references a wrapped node");
                 }
             }
@@ -147,7 +148,7 @@ public class DomApiAbstractionUsageTest {
             return;
         }
 
-        Assert.fail(callingMethod + " calls " + targetClass.getName() + "."
+        fail(callingMethod + " calls " + targetClass.getName() + "."
                 + targetMethod);
     }
 

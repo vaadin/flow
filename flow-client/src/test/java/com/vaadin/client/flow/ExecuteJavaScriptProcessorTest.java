@@ -15,11 +15,13 @@
  */
 package com.vaadin.client.flow;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.ExistingElementMap;
@@ -74,22 +76,22 @@ public class ExecuteJavaScriptProcessorTest {
 
         processor.execute(invocations);
 
-        Assert.assertEquals(2, processor.parameterNamesAndCodeList.size());
-        Assert.assertEquals(2, processor.parametersList.size());
-        Assert.assertEquals(2, processor.nodeParametersList.size());
+        assertEquals(2, processor.parameterNamesAndCodeList.size());
+        assertEquals(2, processor.parametersList.size());
+        assertEquals(2, processor.nodeParametersList.size());
 
-        Assert.assertArrayEquals(new String[] { "script1" },
+        assertArrayEquals(new String[] { "script1" },
                 processor.parameterNamesAndCodeList.get(0));
-        Assert.assertEquals(0, processor.parametersList.get(0).length());
+        assertEquals(0, processor.parametersList.get(0).length());
 
-        Assert.assertArrayEquals(new String[] { "$0", "$1", "script2" },
+        assertArrayEquals(new String[] { "$0", "$1", "script2" },
                 processor.parameterNamesAndCodeList.get(1));
-        Assert.assertEquals(2, processor.parametersList.get(1).length());
-        Assert.assertEquals("param1", processor.parametersList.get(1).get(0));
-        Assert.assertEquals("param2", processor.parametersList.get(1).get(1));
+        assertEquals(2, processor.parametersList.get(1).length());
+        assertEquals("param1", processor.parametersList.get(1).get(0));
+        assertEquals("param2", processor.parametersList.get(1).get(1));
 
-        Assert.assertEquals(0, processor.nodeParametersList.get(0).size());
-        Assert.assertEquals(0, processor.nodeParametersList.get(1).size());
+        assertEquals(0, processor.nodeParametersList.get(0).size());
+        assertEquals(0, processor.nodeParametersList.get(1).size());
     }
 
     @Test
@@ -123,14 +125,14 @@ public class ExecuteJavaScriptProcessorTest {
 
         processor.execute(JsonUtils.createArray(invocation));
 
-        Assert.assertEquals(1, processor.nodeParametersList.size());
+        assertEquals(1, processor.nodeParametersList.size());
 
-        Assert.assertEquals(1, processor.nodeParametersList.get(0).size());
+        assertEquals(1, processor.nodeParametersList.get(0).size());
 
         JsMap<Object, StateNode> map = processor.nodeParametersList.get(0);
 
         StateNode stateNode = map.get(element);
-        Assert.assertEquals(node, stateNode);
+        assertEquals(node, stateNode);
     }
 
     @Test
@@ -166,7 +168,7 @@ public class ExecuteJavaScriptProcessorTest {
         processor.execute(JsonUtils.createArray(invocation));
 
         // The invocation has not been executed
-        Assert.assertEquals(0, processor.nodeParametersList.size());
+        assertEquals(0, processor.nodeParametersList.size());
 
         // now remove the node from the map
         registry.getExistingElementMap().remove(node.getId());
@@ -174,13 +176,13 @@ public class ExecuteJavaScriptProcessorTest {
         node.setDomNode(element);
         Reactive.flush();
 
-        Assert.assertEquals(1, processor.nodeParametersList.size());
+        assertEquals(1, processor.nodeParametersList.size());
 
-        Assert.assertEquals(1, processor.nodeParametersList.get(0).size());
+        assertEquals(1, processor.nodeParametersList.get(0).size());
 
         JsMap<Object, StateNode> map = processor.nodeParametersList.get(0);
 
         StateNode stateNode = map.get(element);
-        Assert.assertEquals(node, stateNode);
+        assertEquals(node, stateNode);
     }
 }

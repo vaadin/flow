@@ -15,7 +15,11 @@
  */
 package com.vaadin.util;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 import net.bytebuddy.ByteBuddy;
@@ -70,8 +74,8 @@ public class ReflectToolsTest {
     public void testCreateInstance() {
         OkToCreate instance = ReflectTools.createInstance(OkToCreate.class);
 
-        Assert.assertNotNull(instance);
-        Assert.assertSame("Created instance should be of the requested type",
+        assertNotNull(instance);
+        assertSame("Created instance should be of the requested type",
                 OkToCreate.class, instance.getClass());
     }
 
@@ -79,8 +83,8 @@ public class ReflectToolsTest {
     public void testCreateInstance_varArgsCtor() {
         VarArgsCtor instance = ReflectTools.createInstance(VarArgsCtor.class);
 
-        Assert.assertNotNull(instance);
-        Assert.assertSame("Created instance should be of the requested type",
+        assertNotNull(instance);
+        assertSame("Created instance should be of the requested type",
                 VarArgsCtor.class, instance.getClass());
     }
 
@@ -143,9 +147,9 @@ public class ReflectToolsTest {
         // This is how you get correct exception message.
         try {
             ReflectTools.createProxyInstance(proxyClass, originalClass);
-            Assert.fail("Creation should cause an exception");
+            fail("Creation should cause an exception");
         } catch (IllegalArgumentException re) {
-            Assert.assertEquals(String.format(
+            assertEquals(String.format(
                     ReflectTools.CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
                     originalClass.getName()), re.getMessage());
         }
@@ -161,9 +165,9 @@ public class ReflectToolsTest {
     private void assertError(String expectedError, Class<?> cls) {
         try {
             ReflectTools.createInstance(cls);
-            Assert.fail("Creation should cause an exception");
+            fail("Creation should cause an exception");
         } catch (IllegalArgumentException re) {
-            Assert.assertEquals(String.format(expectedError, cls.getName()),
+            assertEquals(String.format(expectedError, cls.getName()),
                     re.getMessage());
         }
     }

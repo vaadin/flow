@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.servlet;
 
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -36,7 +38,7 @@ public class NavigationTargetIT extends ChromeBrowserTest {
 
         WebElement navigationTarget = findElement(By.id("navigationTarget"));
 
-        Assert.assertNotNull(navigationTarget);
+        assertNotNull(navigationTarget);
         Assert.assertEquals("Hello world", navigationTarget.getText());
     }
 }

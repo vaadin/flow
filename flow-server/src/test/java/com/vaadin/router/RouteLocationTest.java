@@ -15,10 +15,11 @@
  */
 package com.vaadin.router;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.easymock.EasyMock;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.router.RouteLocation.RouteSegmentVisitor;
@@ -33,23 +34,23 @@ public class RouteLocationTest {
         location.visitSegments(new RouteSegmentVisitor() {
             @Override
             public void acceptSegment(String segmentName) {
-                Assert.assertEquals("foo", segmentName);
-                Assert.assertEquals(1, calls.incrementAndGet());
+                assertEquals("foo", segmentName);
+                assertEquals(1, calls.incrementAndGet());
             }
 
             @Override
             public void acceptPlaceholder(String placeholderName) {
-                Assert.assertEquals("bar", placeholderName);
-                Assert.assertEquals(2, calls.incrementAndGet());
+                assertEquals("bar", placeholderName);
+                assertEquals(2, calls.incrementAndGet());
             }
 
             @Override
             public void acceptWildcard() {
-                Assert.assertEquals(3, calls.incrementAndGet());
+                assertEquals(3, calls.incrementAndGet());
             }
         });
 
-        Assert.assertEquals(3, calls.get());
+        assertEquals(3, calls.get());
     }
 
     @Test(expected = IllegalArgumentException.class)

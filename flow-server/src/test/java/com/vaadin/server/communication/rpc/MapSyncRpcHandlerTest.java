@@ -15,9 +15,15 @@
  */
 package com.vaadin.server.communication.rpc;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.io.Serializable;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.JsonCodec;
@@ -46,11 +52,11 @@ public class MapSyncRpcHandlerTest {
         Element element = c.getElement();
         UI ui = new UI();
         ui.add(c);
-        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
+        assertFalse(element.hasProperty(TEST_PROPERTY));
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value1");
-        Assert.assertEquals("value1", element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals("value1", element.getPropertyRaw(TEST_PROPERTY));
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value2");
-        Assert.assertEquals("value2", element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals("value2", element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -85,12 +91,12 @@ public class MapSyncRpcHandlerTest {
         // TEST_PROPERTY value
         Serializable testPropertyValue = propertyMap.getProperty(TEST_PROPERTY);
 
-        Assert.assertTrue(testPropertyValue instanceof StateNode);
+        assertTrue(testPropertyValue instanceof StateNode);
 
         StateNode newNode = (StateNode) testPropertyValue;
-        Assert.assertNotEquals(item.getId(), newNode.getId());
+        assertNotEquals(item.getId(), newNode.getId());
 
-        Assert.assertEquals("baz", newNode.getFeature(ElementPropertyMap.class)
+        assertEquals("baz", newNode.getFeature(ElementPropertyMap.class)
                 .getProperty("bar"));
     }
 
@@ -123,10 +129,10 @@ public class MapSyncRpcHandlerTest {
 
         Serializable testPropertyValue = propertyMap.getProperty("foo");
 
-        Assert.assertTrue(testPropertyValue instanceof StateNode);
+        assertTrue(testPropertyValue instanceof StateNode);
 
         StateNode newNode = (StateNode) testPropertyValue;
-        Assert.assertSame(model, newNode);
+        assertSame(model, newNode);
     }
 
     @Test
@@ -154,8 +160,8 @@ public class MapSyncRpcHandlerTest {
         Serializable testPropertyValue = node
                 .getFeature(ElementPropertyMap.class).getProperty("foo");
 
-        Assert.assertNotSame(anotherNode, testPropertyValue);
-        Assert.assertTrue(testPropertyValue instanceof JsonValue);
+        assertNotSame(anotherNode, testPropertyValue);
+        assertTrue(testPropertyValue instanceof JsonValue);
     }
 
     private static void sendSynchronizePropertyEvent(Element element, UI ui,

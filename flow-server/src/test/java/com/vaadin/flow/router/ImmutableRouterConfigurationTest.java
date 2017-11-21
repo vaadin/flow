@@ -15,9 +15,10 @@
  */
 package com.vaadin.flow.router;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.lang.reflect.Method;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class ImmutableRouterConfigurationTest {
@@ -29,7 +30,7 @@ public class ImmutableRouterConfigurationTest {
             if (exclude(m)) {
                 continue;
             }
-            Assert.assertNotNull(ImmutableRouterConfiguration.class
+            assertNotNull(ImmutableRouterConfiguration.class
                     .getMethod(m.getName(), m.getParameterTypes()));
         }
     }

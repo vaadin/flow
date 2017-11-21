@@ -15,12 +15,15 @@
  */
 package com.vaadin.flow.nodefeature;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,12 +56,12 @@ public class NodeValueEmptyRequiredFeatureTest {
         AtomicReference<NodeChange> change = new AtomicReference<>();
         node.collectChanges(change::set);
 
-        Assert.assertTrue(change.get() instanceof EmptyChange);
+        assertTrue(change.get() instanceof EmptyChange);
 
         nodeValue.generateChangesFromEmpty();
         change.set(null);
         node.collectChanges(change::set);
-        Assert.assertNull(change.get());
+        assertNull(change.get());
     }
 
     @Test
@@ -70,8 +73,8 @@ public class NodeValueEmptyRequiredFeatureTest {
         List<NodeChange> changes = new ArrayList<>();
         node.collectChanges(changes::add);
 
-        Assert.assertEquals(1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof MapPutChange);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof MapPutChange);
     }
 
     @Test
@@ -81,11 +84,11 @@ public class NodeValueEmptyRequiredFeatureTest {
         AtomicReference<NodeChange> change = new AtomicReference<>();
         nodeValue.collectChanges(change::set);
 
-        Assert.assertTrue(change.get() instanceof EmptyChange);
+        assertTrue(change.get() instanceof EmptyChange);
 
         change.set(null);
         nodeValue.collectChanges(change::set);
-        Assert.assertNull(change.get());
+        assertNull(change.get());
     }
 
     @Test
@@ -95,7 +98,7 @@ public class NodeValueEmptyRequiredFeatureTest {
         List<NodeChange> changes = new ArrayList<>();
         node.collectChanges(changes::add);
 
-        Assert.assertEquals(1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof MapPutChange);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof MapPutChange);
     }
 }

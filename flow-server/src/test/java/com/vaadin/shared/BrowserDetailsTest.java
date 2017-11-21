@@ -1,7 +1,5 @@
 package com.vaadin.shared;
 
-import org.junit.Assert;
-
 import junit.framework.TestCase;
 
 public class BrowserDetailsTest extends TestCase {
@@ -643,7 +641,7 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isIOS());
         assertFalse(browserDetails.isAndroid());
         assertFalse(browserDetails.isChromeOS());
-        Assert.assertEquals(isWindowsPhone, browserDetails.isWindowsPhone());
+        assertEquals(isWindowsPhone, browserDetails.isWindowsPhone());
     }
 
     private void assertLinux(BrowserDetails browserDetails) {

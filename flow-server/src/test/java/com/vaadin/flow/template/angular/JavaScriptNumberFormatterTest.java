@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.template.angular;
 
+import static org.junit.Assert.assertEquals;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class JavaScriptNumberFormatterTest {
@@ -58,6 +59,6 @@ public class JavaScriptNumberFormatterTest {
     private void assertDouble(double d, String jsFormatted)
             throws ScriptException {
         String javaFormatted = JavaScriptNumberFormatter.toString(d);
-        Assert.assertEquals(jsFormatted, javaFormatted);
+        assertEquals(jsFormatted, javaFormatted);
     }
 }

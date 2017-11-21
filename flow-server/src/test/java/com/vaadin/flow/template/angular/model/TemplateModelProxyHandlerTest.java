@@ -1,11 +1,16 @@
 package com.vaadin.flow.template.angular.model;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
+import com.vaadin.flow.model.PropertyFilter;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.EmptyModelTemplate;
-import com.vaadin.flow.model.PropertyFilter;
 import com.vaadin.ui.UI;
 
 public class TemplateModelProxyHandlerTest {
@@ -30,24 +35,24 @@ public class TemplateModelProxyHandlerTest {
         TemplateModel m1 = emptyModelTemplate1.getModel();
         TemplateModel m2 = emptyModelTemplate2.getModel();
 
-        Assert.assertSame(m1.getClass(), m2.getClass());
+        assertSame(m1.getClass(), m2.getClass());
 
-        Assert.assertFalse(m1.equals(null));
-        Assert.assertFalse(m1.equals("foobar"));
-        Assert.assertFalse(m1.equals(m2));
+        assertFalse(m1.equals(null));
+        assertFalse(m1.equals("foobar"));
+        assertFalse(m1.equals(m2));
 
         ModelDescriptor<EmptyModel> realModelType = ModelDescriptor
                 .get(EmptyModel.class);
 
-        Assert.assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
+        assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
                 emptyModelTemplate1.getElement().getNode(), realModelType)));
 
         BeanModelType<TemplateModel> wrongModelType = new BeanModelType<>(
                 TemplateModel.class, PropertyFilter.ACCEPT_ALL);
-        Assert.assertFalse(m1.equals(TemplateModelProxyHandler.createModelProxy(
+        assertFalse(m1.equals(TemplateModelProxyHandler.createModelProxy(
                 emptyModelTemplate1.getElement().getNode(), wrongModelType)));
 
-        Assert.assertTrue(m2.equals(m2));
+        assertTrue(m2.equals(m2));
     }
 
     @Test
@@ -57,7 +62,7 @@ public class TemplateModelProxyHandlerTest {
         TemplateModel m1 = emptyModelTemplate1.getModel();
         TemplateModel m2 = emptyModelTemplate2.getModel();
 
-        Assert.assertNotEquals(m1.hashCode(), m2.hashCode());
+        assertNotEquals(m1.hashCode(), m2.hashCode());
     }
 
     @Test
@@ -71,8 +76,8 @@ public class TemplateModelProxyHandlerTest {
         // in toString()
         new UI().add(emptyModelTemplate1, emptyModelTemplate2);
 
-        Assert.assertEquals(m1.toString(), m1.toString());
-        Assert.assertNotEquals(m1.toString(), m2.toString());
+        assertEquals(m1.toString(), m1.toString());
+        assertNotEquals(m1.toString(), m2.toString());
     }
 
     @Test
@@ -82,7 +87,7 @@ public class TemplateModelProxyHandlerTest {
         Model proxy = TemplateModelProxyHandler.createModelProxy(
                 template.getElement().getNode(),
                 new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL));
-        Assert.assertEquals(System.identityHashCode(proxy), proxy.hashCode());
+        assertEquals(System.identityHashCode(proxy), proxy.hashCode());
     }
 
     @Test
@@ -92,7 +97,7 @@ public class TemplateModelProxyHandlerTest {
         Model proxy = TemplateModelProxyHandler.createModelProxy(
                 template.getElement().getNode(),
                 new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL));
-        Assert.assertEquals("foo", proxy.toString());
+        assertEquals("foo", proxy.toString());
     }
 
     @Test(expected = IllegalArgumentException.class)

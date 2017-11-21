@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -110,7 +110,7 @@ public class LocationTest {
         Location location = new Location("foo");
         Optional<Location> maybeSubLocation = location.getSubLocation();
 
-        Assert.assertFalse(maybeSubLocation.isPresent());
+        assertFalse(maybeSubLocation.isPresent());
     }
 
     @Test
@@ -205,11 +205,11 @@ public class LocationTest {
     @Test
     public void locationWithParamWithAndWithoutValue() {
         Location location = new Location("foo?param&param=bar");
-        Assert.assertEquals("param&param=bar",
+        assertEquals("param&param=bar",
                 location.getQueryParameters().getQueryString());
 
         location = new Location("foo?param=bar&param");
-        Assert.assertEquals("param=bar&param",
+        assertEquals("param=bar&param",
                 location.getQueryParameters().getQueryString());
     }
 
@@ -217,7 +217,7 @@ public class LocationTest {
     public void locationWithParamAndEmptyValue() {
         Location location = new Location("foo?param=&param=bar");
 
-        Assert.assertEquals("param=&param=bar",
+        assertEquals("param=&param=bar",
                 location.getQueryParameters().getQueryString());
     }
 

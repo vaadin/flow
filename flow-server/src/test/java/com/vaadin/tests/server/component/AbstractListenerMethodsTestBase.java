@@ -1,5 +1,7 @@
 package com.vaadin.tests.server.component;
 
+import static org.junit.Assert.assertArrayEquals;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -7,7 +9,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.easymock.EasyMock;
-import org.junit.Assert;
 
 import com.vaadin.tests.VaadinClasses;
 
@@ -172,7 +173,7 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
         assertEquals("Number of listeners", expectedListeners.length,
                 registeredListeners.size());
 
-        Assert.assertArrayEquals(expectedListeners,
+        assertArrayEquals(expectedListeners,
                 registeredListeners.toArray());
 
     }

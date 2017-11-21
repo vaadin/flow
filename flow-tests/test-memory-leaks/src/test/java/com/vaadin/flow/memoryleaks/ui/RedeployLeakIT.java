@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.memoryleaks.ui;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -32,7 +35,6 @@ import org.eclipse.jetty.webapp.MetaInfConfiguration;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.webapp.WebInfConfiguration;
 import org.eclipse.jetty.webapp.WebXmlConfiguration;
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -92,7 +94,7 @@ public class RedeployLeakIT extends AbstractTestBenchTest {
         RemoteWebDriver driver = new RemoteWebDriver(DesiredCapabilities.chrome());
         try {
             driver.get("http://"+ getCurrentHostAddress() + ":7778/");
-            Assert.assertNotNull(driver.findElement(By.id("hello")));
+            assertNotNull(driver.findElement(By.id("hello")));
         } finally {
             driver.close();
             driver.quit();
@@ -130,7 +132,7 @@ public class RedeployLeakIT extends AbstractTestBenchTest {
 
         testReference = new WeakReference<>(
                 Class.forName(testClass, true, context.getClassLoader()));
-        Assert.assertNotNull(testReference.get());
+        assertNotNull(testReference.get());
 
     }
 
@@ -149,7 +151,7 @@ public class RedeployLeakIT extends AbstractTestBenchTest {
                 }
             }
 
-            Assert.assertNull(testReference.get());
+            assertNull(testReference.get());
 
         } finally {
             server.stop();

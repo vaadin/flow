@@ -15,9 +15,13 @@
  */
 package com.vaadin.client.flow.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.function.Function;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.flow.StateNode;
@@ -39,14 +43,14 @@ public class ClientJsonCodecTest {
 
     private static void decodePrimitiveValues(
             Function<JsonValue, Object> decoder) {
-        Assert.assertEquals("string", decoder.apply(Json.create("string")));
+        assertEquals("string", decoder.apply(Json.create("string")));
 
-        Assert.assertEquals(Double.valueOf(3.14),
+        assertEquals(Double.valueOf(3.14),
                 decoder.apply(Json.create(3.14)));
 
-        Assert.assertEquals(Boolean.TRUE, decoder.apply(Json.create(true)));
+        assertEquals(Boolean.TRUE, decoder.apply(Json.create(true)));
 
-        Assert.assertNull(decoder.apply(Json.createNull()));
+        assertNull(decoder.apply(Json.createNull()));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -72,12 +76,12 @@ public class ClientJsonCodecTest {
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, json);
 
-        Assert.assertTrue(decoded instanceof JsArray);
+        assertTrue(decoded instanceof JsArray);
         JsArray<?> decodedArray = (JsArray<?>) decoded;
 
-        Assert.assertEquals(2, decodedArray.length());
-        Assert.assertEquals("string", decodedArray.get(0));
-        Assert.assertEquals(Boolean.TRUE, decodedArray.get(1));
+        assertEquals(2, decodedArray.length());
+        assertEquals("string", decodedArray.get(0));
+        assertEquals(Boolean.TRUE, decodedArray.get(1));
     }
 
     @Test
@@ -96,7 +100,7 @@ public class ClientJsonCodecTest {
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
 
-        Assert.assertSame(element, decoded);
+        assertSame(element, decoded);
     }
 
     @Test
@@ -120,7 +124,7 @@ public class ClientJsonCodecTest {
 
         StateNode decoded = ClientJsonCodec.decodeStateNode(tree, json);
 
-        Assert.assertSame(node, decoded);
+        assertSame(node, decoded);
     }
 
     @Test
@@ -128,12 +132,12 @@ public class ClientJsonCodecTest {
         JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
                 .createArray(Json.create("string"), Json.create(true)));
 
-        Assert.assertNull(ClientJsonCodec.decodeStateNode(null, json));
+        assertNull(ClientJsonCodec.decodeStateNode(null, json));
     }
 
     @Test
     public void decodeStateNode_primitive() {
-        Assert.assertNull(
+        assertNull(
                 ClientJsonCodec.decodeStateNode(null, Json.create("string")));
     }
 
@@ -151,7 +155,7 @@ public class ClientJsonCodecTest {
     }
 
     private static void assertJsonEquals(JsonValue expected, JsonValue actual) {
-        Assert.assertTrue(
+        assertTrue(
                 actual.toJson() + " does not equal " + expected.toJson(),
                 JsonUtils.jsonEquals(expected, actual));
     }

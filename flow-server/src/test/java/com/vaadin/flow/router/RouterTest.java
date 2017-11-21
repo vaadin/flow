@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.router;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -25,7 +31,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -75,12 +80,12 @@ public class RouterTest {
         @Override
         public Optional<NavigationHandler> resolve(
                 NavigationEvent eventToResolve) {
-            Assert.assertNull(resolvedLocation.get());
+            assertNull(resolvedLocation.get());
             resolvedLocation.set(eventToResolve.getLocation());
             return Optional.of(new NavigationHandler() {
                 @Override
                 public int handle(NavigationEvent eventToHandle) {
-                    Assert.assertNull(handledEvent.get());
+                    assertNull(handledEvent.get());
                     handledEvent.set(eventToHandle);
                     return HttpServletResponse.SC_OK;
                 }
@@ -101,17 +106,17 @@ public class RouterTest {
         TestResolver resolver = new TestResolver();
         router.reconfigure(c -> c.setResolver(resolver));
 
-        Assert.assertNull(resolver.resolvedLocation.get());
-        Assert.assertNull(resolver.handledEvent.get());
+        assertNull(resolver.resolvedLocation.get());
+        assertNull(resolver.handledEvent.get());
 
         Location testLocation = new Location("");
 
         router.navigate(ui, testLocation, NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertSame(testLocation, resolver.resolvedLocation.get());
-        Assert.assertSame(testLocation,
+        assertSame(testLocation, resolver.resolvedLocation.get());
+        assertSame(testLocation,
                 resolver.handledEvent.get().getLocation());
-        Assert.assertSame(ui, resolver.handledEvent.get().getUI());
+        assertSame(ui, resolver.handledEvent.get().getUI());
     }
 
     @Test
@@ -126,7 +131,7 @@ public class RouterTest {
 
         router.initializeUI(ui, request);
 
-        Assert.assertEquals(Arrays.asList(""),
+        assertEquals(Arrays.asList(""),
                 resolver.resolvedLocation.get().getSegments());
 
         resolver.resolvedLocation.set(null);
@@ -137,7 +142,7 @@ public class RouterTest {
                         ui.getPage().getHistory(), null, new Location("foo"),
                         NavigationTrigger.HISTORY));
 
-        Assert.assertEquals(Arrays.asList("foo"),
+        assertEquals(Arrays.asList("foo"),
                 resolver.resolvedLocation.get().getSegments());
     }
 
@@ -164,7 +169,7 @@ public class RouterTest {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
+        assertTrue(ui.getElement().getTextRecursively().contains("404"));
         // 404 code should be sent ONLY on initial request
         Mockito.verifyZeroInteractions(response);
 
@@ -175,7 +180,7 @@ public class RouterTest {
         ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor
                 .forClass(Integer.class);
         Mockito.verify(response).setStatus(statusCodeCaptor.capture());
-        Assert.assertEquals(Integer.valueOf(HttpServletResponse.SC_NOT_FOUND),
+        assertEquals(Integer.valueOf(HttpServletResponse.SC_NOT_FOUND),
                 statusCodeCaptor.getValue());
     }
 
@@ -188,7 +193,7 @@ public class RouterTest {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
+        assertTrue(ui.getElement().getTextRecursively().contains("404"));
     }
 
     @Test
@@ -223,7 +228,7 @@ public class RouterTest {
         // Wait until updater thread has updated the config
         configUpdated.await();
 
-        Assert.assertNotSame("Update should not yet be visible", newResolver,
+        assertNotSame("Update should not yet be visible", newResolver,
                 router.getConfiguration().getResolver());
 
         // Allow the update thread to exit the configure method
@@ -232,7 +237,7 @@ public class RouterTest {
         // Wait for updater thread to finish
         updaterThread.join();
 
-        Assert.assertSame("Update should now be visible", newResolver,
+        assertSame("Update should now be visible", newResolver,
                 router.getConfiguration().getResolver());
     }
 
@@ -256,7 +261,7 @@ public class RouterTest {
         Resolver newResolver = e -> null;
         configurationLeak.get().setResolver(newResolver);
 
-        Assert.assertNotSame(newResolver,
+        assertNotSame(newResolver,
                 router.getConfiguration().getResolver());
     }
 
@@ -282,7 +287,7 @@ public class RouterTest {
         router.navigate(new RouterTestUI(), new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("resolver", usedHandler.get());
+        assertEquals("resolver", usedHandler.get());
     }
 
     @Test
@@ -303,7 +308,7 @@ public class RouterTest {
         router.navigate(new RouterTestUI(), new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("route", usedHandler.get());
+        assertEquals("route", usedHandler.get());
     }
 
     @Test
@@ -316,7 +321,7 @@ public class RouterTest {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(new DefaultErrorView().getText(),
+        assertEquals(new DefaultErrorView().getText(),
                 ui.getElement().getTextRecursively());
     }
 
@@ -331,7 +336,7 @@ public class RouterTest {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(new ErrorView().getText(),
+        assertEquals(new ErrorView().getText(),
                 ui.getElement().getTextRecursively());
     }
 
@@ -347,12 +352,12 @@ public class RouterTest {
 
         router.navigate(ui, new Location("foo/bar/"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("foo/bar",
+        assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
 
         router.navigate(ui, new Location("bar"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("bar/",
+        assertEquals("bar/",
                 ui.getInternals().getActiveViewLocation().getPath());
     }
 
