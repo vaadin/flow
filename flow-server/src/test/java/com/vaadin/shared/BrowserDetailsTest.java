@@ -213,7 +213,7 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 40);
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 537.36f);
-        assertChromeOS(bd);
+        assertChromeOS(bd, 6457, 31);
     }
 
     public void testFirefox3() {
@@ -655,12 +655,16 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isChromeOS());
     }
 
-    private void assertChromeOS(BrowserDetails browserDetails) {
+    private void assertChromeOS(BrowserDetails browserDetails, int majorVersion,
+            int minorVersion) {
         assertFalse(browserDetails.isLinux());
         assertFalse(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());
         assertFalse(browserDetails.isIOS());
         assertFalse(browserDetails.isAndroid());
         assertTrue(browserDetails.isChromeOS());
+
+        assertOSMajorVersion(browserDetails, majorVersion);
+        assertOSMinorVersion(browserDetails, minorVersion);
     }
 }

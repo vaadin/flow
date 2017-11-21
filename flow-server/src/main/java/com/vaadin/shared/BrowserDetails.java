@@ -233,22 +233,16 @@ public class BrowserDetails implements Serializable {
         }
         String osVersionString = userAgent.substring(cur + 1, end);
         String[] parts = osVersionString.split("\\.");
-        parseChromeOsVersion(parts);
+        parseChromeOsVersionParts(parts);
     }
 
-    private void parseChromeOsVersion(String[] parts) {
+    private void parseChromeOsVersionParts(String[] parts) {
         osMajorVersion = -1;
         osMinorVersion = -1;
 
         if (parts.length > 2) {
-            try {
-                osMajorVersion = Integer.parseInt(parts[1]);
-            } catch (Exception e) {
-            }
-            try {
-                osMinorVersion = Integer.parseInt(parts[0]);
-            } catch (Exception e) {
-            }
+            osMajorVersion = parseVersionPart(parts[0], "OS major");
+            osMinorVersion = parseVersionPart(parts[1], "OS minor");
         }
     }
 
@@ -301,30 +295,18 @@ public class BrowserDetails implements Serializable {
         osMinorVersion = -1;
 
         if (parts.length >= 1) {
-            try {
-                osMajorVersion = Integer.parseInt(parts[0]);
-            } catch (Exception e) {
-                log("Os major version parsing failed for: " + parts[0], e);
-            }
+            osMajorVersion = parseVersionPart(parts[0], "OS major");
         }
         if (parts.length >= 2) {
-            try {
-                osMinorVersion = Integer.parseInt(parts[1]);
-            } catch (Exception e) {
-                log("Os minor version parsing failed for: " + parts[0], e);
-            }
             // Some Androids report version numbers as "2.1-update1"
-            if (osMinorVersion == -1 && parts[1].contains("-")) {
-                try {
-                    osMinorVersion = Integer.parseInt(
-                            parts[1].substring(0, parts[1].indexOf('-')));
-                } catch (Exception ee) {
-                    log("Minor version dash parsing failed for: " + parts[0],
-                            ee);
-                }
+            int dashIndex = parts[1].indexOf('-');
+            if (dashIndex > -1) {
+                String dashlessVersion = parts[1].substring(0, dashIndex);
+                osMinorVersion = parseVersionPart(dashlessVersion, "OS minor");
+            } else {
+                osMinorVersion = parseVersionPart(parts[1], "OS minor");
             }
         }
-
     }
 
     private void parseVersionString(String versionString) {
@@ -332,20 +314,18 @@ public class BrowserDetails implements Serializable {
         if (idx < 0) {
             idx = versionString.length();
         }
-        browserMajorVersion = Integer
-                .parseInt(safeSubstring(versionString, 0, idx));
+        String majorVersionPart = safeSubstring(versionString, 0, idx);
+        browserMajorVersion = parseVersionPart(majorVersionPart,
+                "Browser major");
 
         int idx2 = versionString.indexOf('.', idx + 1);
         if (idx2 < 0) {
             idx2 = versionString.length();
         }
-        try {
-            browserMinorVersion = Integer
-                    .parseInt(safeSubstring(versionString, idx + 1, idx2)
-                            .replaceAll("[^0-9].*", ""));
-        } catch (NumberFormatException e) {
-            // leave the minor version unmodified (-1 = unknown)
-        }
+        String minorVersionPart = safeSubstring(versionString, idx + 1, idx2)
+                .replaceAll("[^0-9].*", "");
+        browserMinorVersion = parseVersionPart(minorVersionPart,
+                "Browser minor");
     }
 
     private static String safeSubstring(String string, int beginIndex,
@@ -363,6 +343,16 @@ public class BrowserDetails implements Serializable {
             trimmedEnd = endIndex;
         }
         return string.substring(trimmedStart, trimmedEnd);
+    }
+
+    private int parseVersionPart(String versionString, String partName) {
+        try {
+            return Integer.parseInt(versionString);
+        } catch (Exception e) {
+            log(String.format("%s version parsing failed for: '%s'", partName,
+                    versionString), e);
+        }
+        return -1;
     }
 
     /**
