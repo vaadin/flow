@@ -114,7 +114,8 @@ public class GridViewIT extends TabbedComponentDemoTest {
                 getSelectionMessage(null, GridView.items.get(0), false),
                 messageDiv.getText());
 
-        Assert.assertFalse(getLogEntries(Level.SEVERE).findAny().isPresent());
+        Assert.assertFalse(
+                getLogEntries(Level.SEVERE).stream().findAny().isPresent());
     }
 
     @Test
