@@ -15,22 +15,23 @@
  */
 package com.vaadin.ui.checkbox;
 
+import java.util.Objects;
+
+import javax.annotation.Generated;
+
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
-import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.Focusable;
 import com.vaadin.ui.common.HasClickListeners;
-import javax.annotation.Generated;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HasValue;
-import java.util.Objects;
-import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.Synchronize;
 
 /**
  * <p>
@@ -122,8 +123,8 @@ import com.vaadin.ui.common.HasComponents;
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
         extends Component
-        implements ComponentSupplier<R>, HasStyle, Focusable<R>,
-        HasClickListeners<R>, HasValue<R, Boolean>, HasComponents {
+        implements HasStyle, Focusable<R>, HasClickListeners<R>,
+        HasValue<R, Boolean>, HasComponents {
 
     /**
      * <p>

@@ -38,14 +38,14 @@ import java.util.stream.Stream;
 import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.data.event.EventRouter;
+import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.function.SerializableFunction;
 import com.vaadin.function.SerializablePredicate;
 import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;
@@ -1595,6 +1595,12 @@ public class Binder<BEAN> implements Serializable {
      * level validators if a bean is currently set with
      * {@link #setBean(Object)}, and returns whether any of the validators
      * failed.
+     * <p>
+     * <b>Note:</b> Calling this method will not trigger status change events,
+     * unlike {@link #validate()} and will not modify the UI. To also update
+     * error indicators on fields, use {@code validate().isOk()}.
+     *
+     * @see #validate()
      *
      * @return whether this binder is in a valid state
      * @throws IllegalStateException
@@ -2089,7 +2095,7 @@ public class Binder<BEAN> implements Serializable {
      *
      * MyForm myForm = new MyForm();
      * ...
-     * binder.bindMemberFields(myForm);
+     * binder.bindInstanceFields(myForm);
      * </pre>
      *
      * This binds the firstName TextField to a "firstName" property in the item,

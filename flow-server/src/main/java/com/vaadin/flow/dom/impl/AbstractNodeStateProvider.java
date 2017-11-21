@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.dom.impl;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
@@ -36,7 +34,7 @@ import com.vaadin.flow.nodefeature.ShadowRootHost;
  *
  */
 public abstract class AbstractNodeStateProvider
-        implements ElementStateProvider, Serializable {
+        implements ElementStateProvider {
 
     @Override
     public boolean supports(StateNode node) {

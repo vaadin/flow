@@ -27,7 +27,7 @@ import com.vaadin.ui.common.HtmlImport;
  * @author Vaadin Ltd.
  */
 @Tag("vaadin-grid-flow-selection-column")
-@HtmlImport("context://vaadin-grid-flow-selection-column.html")
+@HtmlImport("frontend://vaadin-grid-flow-selection-column.html")
 public class GridSelectionColumn extends Component {
 
     private final SerializableRunnable selectAllCallback;

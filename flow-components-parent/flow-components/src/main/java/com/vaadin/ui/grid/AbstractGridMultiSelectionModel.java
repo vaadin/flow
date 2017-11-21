@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.data.provider.DataGenerator;
 import com.vaadin.data.provider.Query;
 import com.vaadin.data.selection.MultiSelect;
 import com.vaadin.data.selection.MultiSelectionEvent;
@@ -45,7 +44,7 @@ import elemental.json.JsonObject;
  */
 public abstract class AbstractGridMultiSelectionModel<T>
         extends AbstractGridExtension<T>
-        implements GridMultiSelectionModel<T>, DataGenerator<T> {
+        implements GridMultiSelectionModel<T> {
 
     private final Set<T> selected;
     private final GridSelectionColumn selectionColumn;
