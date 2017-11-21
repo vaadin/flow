@@ -400,10 +400,10 @@ You need to use Polymer notation for event handlers, so `on-click` (with a dash)
 
 == Using Components
 
-You can use any component inside the grid cells by providing a `ComponentRenderer` for the appropriate `Column`.
+You can use any component inside the grid cells by providing a `ComponentTemplateRenderer` for the appropriate `Column`.
 
 To define how the component will be generated for each item, you need to pass a `Function` for the
-`ComponentRenderer`.
+`ComponentTemplateRenderer`.
 The following example adds a column that contains an icon for each person, that is based on the person's gender.
 
 [source, java]
@@ -411,7 +411,7 @@ The following example adds a column that contains an icon for each person, that 
 Grid<Person> grid = new Grid();
 grid.setItems(people);
 
-grid.addColumn(new ComponentRenderer<>(person -> {
+grid.addColumn(new ComponentTemplateRenderer<>(person -> {
     if (person.getGender() == Gender.MALE) {
         return new Icon(VaadinIcons.MALE);
     } else {
@@ -425,7 +425,7 @@ it for each item.
 
 [source, java]
 ----
-grid.addColumn(new ComponentRenderer<>(Div::new,
+grid.addColumn(new ComponentTemplateRenderer<>(Div::new,
         (div, person) -> div.setText(person.getName())))
         .setHeader("Name");
 ----
@@ -434,7 +434,7 @@ Or if the component is the same for every item, you only need to provide the `Su
 
 [source, java]
 ----
-grid.addColumn(new ComponentRenderer<>(
+grid.addColumn(new ComponentTemplateRenderer<>(
         () -> new Icon(VaadinIcons.ARROW_LEFT)));
 ----
 
@@ -443,7 +443,7 @@ layouts, so you can create complex contents for the grid cells.
 
 [source, java]
 ----
-grid.addColumn(new ComponentRenderer<>(person -> {
+grid.addColumn(new ComponentTemplateRenderer<>(person -> {
 
     // text field for entering a new name for the person
     TextField name = new TextField("Name");
@@ -479,12 +479,12 @@ Editing the grid's items requires refreshing it's `DataProvider`, like explained
 Often you don't want to overwhelm the user with a complex grid with all the information about each item,
 but instead show just the basic information by default and hide the details. For this purpose, grid supports
 expanding it's rows for showing additional details for the items. This is enabled with the
-`setItemDetailsRenderer()` method. You can pass either a `TemplateRenderer` or a `ComponentRenderer` for the
+`setItemDetailsRenderer()` method. You can pass either a `TemplateRenderer` or a `ComponentTemplateRenderer` for the
 method to define how the details are rendered.
 
 [source, java]
 ----
-grid.setItemDetailsRenderer(new ComponentRenderer<>(person -> {
+grid.setItemDetailsRenderer(new ComponentTemplateRenderer<>(person -> {
     VerticalLayout layout = new VerticalLayout();
     layout.add(new Label("Address: " + person.getAddress().getStreet()
             + " " + person.getAddress().getNumber()));
