@@ -326,7 +326,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag(TAG)
-    private static class NoModelTemplate extends PolymerTemplate {
+    private static class NoModelTemplate extends PolymerTemplate<ModelClass> {
 
         NoModelTemplate() {
             super(new SimpleTemplateParser());
@@ -378,7 +378,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
                 @Override
                 public ExecutionCanceler executeJavaScript(String expression,
-                        Serializable[] parameters) {
+                        Serializable... parameters) {
                     executionOrder.add(expression);
                     return () -> true;
                 }

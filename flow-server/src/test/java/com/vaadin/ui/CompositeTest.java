@@ -234,7 +234,7 @@ public class CompositeTest {
 
     @Test(expected = IllegalStateException.class)
     public void rawContentType() {
-        class CompositeWithRawType extends Composite {
+        class CompositeWithRawType extends Composite<Component> {
         }
 
         CompositeWithRawType composite = new CompositeWithRawType();

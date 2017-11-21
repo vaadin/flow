@@ -75,8 +75,8 @@ import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.grid.GridTemplateRendererUtil.RendereredComponent;
-import com.vaadin.ui.renderers.ComponentTemplateRenderer;
 import com.vaadin.ui.renderers.ComponentRendererUtil;
+import com.vaadin.ui.renderers.ComponentTemplateRenderer;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
 

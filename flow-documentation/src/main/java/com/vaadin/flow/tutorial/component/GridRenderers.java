@@ -71,7 +71,7 @@ public class GridRenderers {
     }
 
     public void componentRenderer() {
-        Grid<Person> grid = new Grid();
+        Grid<Person> grid = new Grid<>();
         grid.setItems(people);
 
         grid.addColumn(new ComponentTemplateRenderer<>(person -> {
@@ -116,7 +116,7 @@ public class GridRenderers {
     }
 
     public void showingItemDetails() {
-        Grid<Person> grid = new Grid();
+        Grid<Person> grid = new Grid<>();
 
         grid.setItemDetailsRenderer(new ComponentTemplateRenderer<>(person -> {
             VerticalLayout layout = new VerticalLayout();
