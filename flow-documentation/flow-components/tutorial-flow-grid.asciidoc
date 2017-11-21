@@ -533,10 +533,6 @@ grid.addColumn(Person::getAge, "age").setHeader("Age");
 The `Age` column will use the values returned by `Person::getAge` method to do in-memory sorting, and use the `age` String to build 
 a `QuerySortOrder` that will be sent to the `DataProvider` to do the backend sorting.
 
-[NOTE]
-For the in-memory sorting to work properly, the values returned by the `ValueProvider` (`Person::getAge` in the example) should 
-implement `Comparable`.
-
 You can use multiple properties as well:
 
 [source, java]
@@ -557,6 +553,15 @@ grid.addColumn(TemplateRenderer.<Person> of(
         .withProperty("email", Person::getEmail), "name", "email")
         .setHeader("Person");
 ----
+
+
+[NOTE]
+For the in-memory sorting to work properly, the values returned by the `ValueProviders` inside the `TemplateRenderer` 
+(`Person::getAge` and `Person::getEmail` in the example) should implement `Comparable`.
+
+[NOTE]
+When using `TemplateRenderers`, the names of the sort properties must match the names of the properties in the template 
+(set via `withProperty`).
 
 ==== 2. Using a Comparator (in-memory sorting)
 
@@ -605,8 +610,8 @@ grid.addColumn(Person::getName)
 
 === Enabling and disabling the sorting in a column
 
-When using any of the 4 methods described above, the column is considered `sortable`. You can toggle the sorting for a column
-by using:
+When using any of the 4 methods described above, the column is considered `sortable` - in other words, it displays the 
+sorter element in the header of the column. You can toggle the sorter display for a column by using:
 
 [source, java]
 ----
