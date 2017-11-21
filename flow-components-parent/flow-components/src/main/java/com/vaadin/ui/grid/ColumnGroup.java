@@ -70,7 +70,7 @@ public class ColumnGroup extends AbstractColumn<ColumnGroup> {
      * @return the child columns of this column group
      */
     public List<ColumnBase<?>> getChildColumns() {
-        return new ArrayList<ColumnBase<?>>(childColumns);
+        return new ArrayList<>(childColumns);
     }
 
     /**

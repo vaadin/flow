@@ -23,7 +23,7 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
 /**
- * Helper class for components that uses {@link ComponentRenderer} internally.
+ * Helper class for components that uses {@link ComponentTemplateRenderer} internally.
  * It contains utility methods for managing the renderer context at the
  * server-side.
  * 

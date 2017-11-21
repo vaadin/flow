@@ -30,7 +30,7 @@ import com.vaadin.ui.icon.Icon;
 import com.vaadin.ui.icon.VaadinIcons;
 import com.vaadin.ui.layout.HorizontalLayout;
 import com.vaadin.ui.layout.VerticalLayout;
-import com.vaadin.ui.renderers.ComponentRenderer;
+import com.vaadin.ui.renderers.ComponentTemplateRenderer;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.ui.textfield.TextField;
 
@@ -74,7 +74,7 @@ public class GridRenderers {
         Grid<Person> grid = new Grid();
         grid.setItems(people);
 
-        grid.addColumn(new ComponentRenderer<>(person -> {
+        grid.addColumn(new ComponentTemplateRenderer<>(person -> {
             if (person.getGender() == Gender.MALE) {
                 return new Icon(VaadinIcons.MALE);
             } else {
@@ -82,14 +82,14 @@ public class GridRenderers {
             }
         })).setHeader("Gender");
 
-        grid.addColumn(new ComponentRenderer<>(Div::new,
+        grid.addColumn(new ComponentTemplateRenderer<>(Div::new,
                 (div, person) -> div.setText(person.getName())))
                 .setHeader("Name");
 
-        grid.addColumn(new ComponentRenderer<>(
+        grid.addColumn(new ComponentTemplateRenderer<>(
                 () -> new Icon(VaadinIcons.ARROW_LEFT)));
 
-        grid.addColumn(new ComponentRenderer<>(person -> {
+        grid.addColumn(new ComponentTemplateRenderer<>(person -> {
 
             // text field for entering a new name for the person
             TextField name = new TextField("Name");
@@ -118,7 +118,7 @@ public class GridRenderers {
     public void showingItemDetails() {
         Grid<Person> grid = new Grid();
 
-        grid.setItemDetailsRenderer(new ComponentRenderer<>(person -> {
+        grid.setItemDetailsRenderer(new ComponentTemplateRenderer<>(person -> {
             VerticalLayout layout = new VerticalLayout();
             layout.add(new Label("Address: " + person.getAddress().getStreet()
                     + " " + person.getAddress().getNumber()));

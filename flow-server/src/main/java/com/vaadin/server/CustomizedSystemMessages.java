@@ -16,8 +16,6 @@
 
 package com.vaadin.server;
 
-import java.io.Serializable;
-
 /**
  * Contains the system messages used to notify the user about various critical
  * situations that can occur.
@@ -46,8 +44,7 @@ import java.io.Serializable;
  * database crash)
  * </ul>
  */
-public class CustomizedSystemMessages extends SystemMessages
-        implements Serializable {
+public class CustomizedSystemMessages extends SystemMessages {
 
     /**
      * Sets the URL the user will be redirected to after dismissing a "session

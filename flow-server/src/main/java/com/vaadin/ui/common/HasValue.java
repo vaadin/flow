@@ -15,14 +15,13 @@
  */
 package com.vaadin.ui.common;
 
-import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
 
 /**
  * A generic interface for field components and other user interface objects
@@ -37,7 +36,7 @@ import com.vaadin.ui.event.ComponentEvent;
  *            the value type
  */
 public interface HasValue<C extends Component, V>
-extends ComponentSupplier<C>, Serializable {
+        extends ComponentSupplier<C> {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -105,7 +104,7 @@ extends ComponentSupplier<C>, Serializable {
      */
     @FunctionalInterface
     interface ValueChangeListener<C extends Component, V> extends
-    ComponentEventListener<ValueChangeEvent<C, V>>, Serializable {
+            ComponentEventListener<ValueChangeEvent<C, V>> {
 
         /**
          * Invoked when this listener receives a value change event from an

@@ -75,7 +75,7 @@ import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.grid.GridTemplateRendererUtil.RendereredComponent;
-import com.vaadin.ui.renderers.ComponentRenderer;
+import com.vaadin.ui.renderers.ComponentTemplateRenderer;
 import com.vaadin.ui.renderers.ComponentRendererUtil;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
@@ -98,8 +98,8 @@ import elemental.json.JsonValue;
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column.html")
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-sorter.html")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
-@HtmlImport("context://flow-component-renderer.html")
-@JavaScript("context://gridConnector.js")
+@HtmlImport("frontend://flow-component-renderer.html")
+@JavaScript("frontend://gridConnector.js")
 public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
         HasSize, Focusable<Grid<T>>, SortNotifier<Grid<T>, GridSortOrder<T>> {
 
@@ -236,7 +236,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
 
     /**
      * Server-side component for the {@code <vaadin-grid-column>} element.
-     * 
+     *
      * @param <T>
      *            type of the underlying grid this column is compatible with
      */
@@ -271,9 +271,9 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
             comparator = (a, b) -> 0;
             sortOrderProvider = direction -> Stream.empty();
 
-            if (renderer instanceof ComponentRenderer) {
+            if (renderer instanceof ComponentTemplateRenderer) {
                 renderedComponents = new HashMap<>();
-                ComponentRenderer<? extends Component, T> componentRenderer = (ComponentRenderer<? extends Component, T>) renderer;
+                ComponentTemplateRenderer<? extends Component, T> componentRenderer = (ComponentTemplateRenderer<? extends Component, T>) renderer;
                 grid.setupItemComponentRenderer(this, componentRenderer,
                         renderedComponents);
             }
@@ -308,7 +308,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
 
         /**
          * Gets the width of this column as a CSS-string.
-         * 
+         *
          * @return the width of this column as a CSS-string
          */
         @Synchronize("width-changed")
@@ -569,7 +569,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
 
         /**
          * Adds this extension to the given grid.
-         * 
+         *
          * @param grid
          *            the grid to extend
          */
@@ -587,7 +587,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
 
         /**
          * Gets the Grid this extension extends.
-         * 
+         *
          * @return the grid this extension extends
          */
         protected Grid<T> getGrid() {
@@ -597,7 +597,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
 
     /**
      * Data generator implementation for the Grid.
-     * 
+     *
      * @param <T>
      *            the grid bean type
      */
@@ -765,7 +765,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
      * but it's up to the webcomponent to determine the actual query limit,
      * based on the height of the component and scroll position. Usually the
      * limit is 3 times the page size (e.g. 150 items with a page size of 50).
-     * 
+     *
      * @param pageSize
      *            the page size. Must be greater than zero.
      */
@@ -823,7 +823,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
      * Adds a new text column to this {@link Grid} with a template renderer. The
      * values inside the renderer are converted to JSON values by using
      * {@link JsonSerializer#toJson(Object)}.
-     * 
+     *
      * @param renderer
      *            the renderer used to create the grid cell structure
      * @return the created column
@@ -941,7 +941,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
      * <p>
      * This method is private at the moment because the Grid doesn't support
      * changing the the pageSize after the initial load.
-     * 
+     *
      * @param pageSize
      *            the maximum number of items sent per request. Should be
      *            greater than zero
@@ -1071,7 +1071,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
      *
      * @see #getSelectionModel()
      * @see GridSelectionModel
-     * 
+     *
      * @return a set with the selected items, never <code>null</code>
      */
     public Set<T> getSelectedItems() {
@@ -1095,7 +1095,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     /**
      * This method is a shorthand that delegates to the currently set selection
      * model.
-     * 
+     *
      * @param item
      *            the item to deselect
      *
@@ -1154,7 +1154,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
         if (renderer == null) {
             return;
         }
-        if (renderer instanceof ComponentRenderer) {
+        if (renderer instanceof ComponentTemplateRenderer) {
             renderedDetailComponents = renderedDetailComponents == null
                     ? new HashMap<>()
                     : renderedDetailComponents;
@@ -1163,7 +1163,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
                             .getComponent().getElement().removeFromParent());
             renderedDetailComponents.clear();
 
-            ComponentRenderer<? extends Component, T> componentRenderer = (ComponentRenderer<? extends Component, T>) renderer;
+            ComponentTemplateRenderer<? extends Component, T> componentRenderer = (ComponentTemplateRenderer<? extends Component, T>) renderer;
             setupItemComponentRenderer(this, componentRenderer,
                     renderedDetailComponents);
         }
@@ -1345,7 +1345,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
 
     /**
      * Gets whether multiple column sorting is enabled on the client-side.
-     * 
+     *
      * @see #setMultiSort(boolean)
      *
      * @return {@code true} if sorting of multiple columns is enabled,
@@ -1435,7 +1435,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     }
 
     private void setupItemComponentRenderer(Component owner,
-            ComponentRenderer<? extends Component, T> componentRenderer,
+            ComponentTemplateRenderer<? extends Component, T> componentRenderer,
             Map<String, RendereredComponent<T>> renderedComponents) {
 
         Element container = ComponentRendererUtil
@@ -1466,7 +1466,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     }
 
     private void onDataChangeEvent(DataChangeEvent<T> event,
-            ComponentRenderer<? extends Component, T> componentRenderer,
+            ComponentTemplateRenderer<? extends Component, T> componentRenderer,
             Map<String, RendereredComponent<T>> renderedComponents,
             Element container) {
 
@@ -1484,7 +1484,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     }
 
     private void onDataRefreshEvent(DataRefreshEvent<T> event,
-            ComponentRenderer<? extends Component, T> componentRenderer,
+            ComponentTemplateRenderer<? extends Component, T> componentRenderer,
             Map<String, RendereredComponent<T>> renderedComponents,
             Element container) {
 
@@ -1512,7 +1512,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
     }
 
     private void onItemsSent(List<JsonValue> items, Element container,
-            ComponentRenderer<? extends Component, T> componentRenderer,
+            ComponentTemplateRenderer<? extends Component, T> componentRenderer,
             Map<String, RendereredComponent<T>> renderedComponents) {
         items.stream().map(value -> ((JsonObject) value).getString("key"))
                 .filter(key -> !renderedComponents.containsKey(key))

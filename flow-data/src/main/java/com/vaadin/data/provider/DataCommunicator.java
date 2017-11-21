@@ -210,7 +210,7 @@ public class DataCommunicator<T> {
 
         this.dataProvider = dataProvider;
 
-        keyMapper.setIdentifierGetter(dataProvider::getId);
+        getKeyMapper().setIdentifierGetter(dataProvider::getId);
 
         handleAttach();
 

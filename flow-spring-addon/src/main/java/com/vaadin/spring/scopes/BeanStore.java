@@ -39,9 +39,9 @@ class BeanStore {
 
     private final VaadinSession session;
 
-    private final Map<String, Object> objects = new HashMap<String, Object>();
+    private final Map<String, Object> objects = new HashMap<>();
 
-    private final Map<String, Runnable> destructionCallbacks = new HashMap<String, Runnable>();
+    private final Map<String, Runnable> destructionCallbacks = new HashMap<>();
 
     /**
      * Creates a new instance for the given {@code session}.

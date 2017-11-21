@@ -16,7 +16,6 @@
 
 package com.vaadin.ui;
 
-import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -75,7 +74,7 @@ import com.vaadin.util.CurrentInstance;
  * @since 7.0
  */
 public class UI extends Component
-        implements Serializable, PollNotifier, HasComponents, RouterLayout {
+        implements PollNotifier, HasComponents, RouterLayout {
 
     /**
      * The id of this UI, used to find the server side instance of the UI form

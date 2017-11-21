@@ -18,7 +18,6 @@ package com.vaadin.ui.grid;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.data.provider.DataGenerator;
 import com.vaadin.data.selection.SelectionEvent;
 import com.vaadin.data.selection.SelectionListener;
 import com.vaadin.data.selection.SingleSelect;
@@ -40,7 +39,7 @@ import elemental.json.JsonObject;
  */
 public abstract class AbstractGridSingleSelectionModel<T>
         extends AbstractGridExtension<T>
-        implements GridSingleSelectionModel<T>, DataGenerator<T> {
+        implements GridSingleSelectionModel<T> {
 
     private T selectedItem;
     private boolean deselectAllowed = true;
@@ -185,7 +184,7 @@ public abstract class AbstractGridSingleSelectionModel<T>
     private void doSelect(T item, boolean userOriginated) {
         T oldValue = selectedItem;
         selectedItem = item;
-        fireSelectionEvent(new SingleSelectionEvent<Grid<T>, T>(getGrid(),
+        fireSelectionEvent(new SingleSelectionEvent<>(getGrid(),
                 getGrid().asSingleSelect(), oldValue, userOriginated));
     }
 }

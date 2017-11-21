@@ -118,12 +118,12 @@ The selection model is also returned by the `setSelectionMode(SelectionMode)` me
 [source, java]
 ----
 // the default selection model
-GridSingleSelectionModel<Person> defaultModel =
-      (GridSingleSelectionModel<Person>) grid.getSelectionModel();
+GridSingleSelectionModel<Person> defaultModel = (GridSingleSelectionModel<Person>) grid
+        .getSelectionModel();
 
 // Use multi-selection mode
-GridMultiSelectionModel<Person> selectionModel =
-      (GridMultiSelectionModel<Person>) grid.setSelectionMode(SelectionMode.MULTI);
+GridMultiSelectionModel<Person> selectionModel = (GridMultiSelectionModel<Person>) grid
+        .setSelectionMode(SelectionMode.MULTI);
 ----
 
 ==== Single Selection Model
@@ -141,8 +141,9 @@ By default it is enabled, but can be disabled with `setDeselectAllowed()`.
 // preselect value
 grid.select(defaultItem);
 
-GridSingleSelectionModel<Person> singleSelect =
-      (GridSingleSelectionModel<Person>) grid.getSelectionModel();
+GridSingleSelectionModel<Person> singleSelect = (GridSingleSelectionModel<Person>) grid
+        .getSelectionModel();
+
 // disallow empty selection
 singleSelect.setDeselectAllowed(false);
 ----
@@ -164,8 +165,8 @@ access to `MultiSelectionEvent`, which allows to easily access differences in th
 // Grid in multi-selection mode
 Grid<Person> grid = new Grid<>();
 grid.setItems(people);
-GridMultiSelectionModel<Person> selectionModel =
-        (GridMultiSelectionModel<Person>) grid.setSelectionMode(SelectionMode.MULTI);
+GridMultiSelectionModel<Person> selectionModel = (GridMultiSelectionModel<Person>) grid
+        .setSelectionMode(SelectionMode.MULTI);
 
 selectionModel.selectAll();
 
@@ -399,10 +400,10 @@ You need to use Polymer notation for event handlers, so `on-click` (with a dash)
 
 == Using Components
 
-You can use any component inside the grid cells by providing a `ComponentRenderer` for the appropriate `Column`.
+You can use any component inside the grid cells by providing a `ComponentTemplateRenderer` for the appropriate `Column`.
 
 To define how the component will be generated for each item, you need to pass a `Function` for the
-`ComponentRenderer`.
+`ComponentTemplateRenderer`.
 The following example adds a column that contains an icon for each person, that is based on the person's gender.
 
 [source, java]
@@ -410,7 +411,7 @@ The following example adds a column that contains an icon for each person, that 
 Grid<Person> grid = new Grid();
 grid.setItems(people);
 
-grid.addColumn(new ComponentRenderer<>(person -> {
+grid.addColumn(new ComponentTemplateRenderer<>(person -> {
     if (person.getGender() == Gender.MALE) {
         return new Icon(VaadinIcons.MALE);
     } else {
@@ -424,7 +425,7 @@ it for each item.
 
 [source, java]
 ----
-grid.addColumn(new ComponentRenderer<>(Div::new,
+grid.addColumn(new ComponentTemplateRenderer<>(Div::new,
         (div, person) -> div.setText(person.getName())))
         .setHeader("Name");
 ----
@@ -433,7 +434,7 @@ Or if the component is the same for every item, you only need to provide the `Su
 
 [source, java]
 ----
-grid.addColumn(new ComponentRenderer<>(
+grid.addColumn(new ComponentTemplateRenderer<>(
         () -> new Icon(VaadinIcons.ARROW_LEFT)));
 ----
 
@@ -442,7 +443,7 @@ layouts, so you can create complex contents for the grid cells.
 
 [source, java]
 ----
-grid.addColumn(new ComponentRenderer<>(person -> {
+grid.addColumn(new ComponentTemplateRenderer<>(person -> {
 
     // text field for entering a new name for the person
     TextField name = new TextField("Name");
@@ -478,12 +479,12 @@ Editing the grid's items requires refreshing it's `DataProvider`, like explained
 Often you don't want to overwhelm the user with a complex grid with all the information about each item,
 but instead show just the basic information by default and hide the details. For this purpose, grid supports
 expanding it's rows for showing additional details for the items. This is enabled with the
-`setItemDetailsRenderer()` method. You can pass either a `TemplateRenderer` or a `ComponentRenderer` for the
+`setItemDetailsRenderer()` method. You can pass either a `TemplateRenderer` or a `ComponentTemplateRenderer` for the
 method to define how the details are rendered.
 
 [source, java]
 ----
-grid.setItemDetailsRenderer(new ComponentRenderer<>(person -> {
+grid.setItemDetailsRenderer(new ComponentTemplateRenderer<>(person -> {
     VerticalLayout layout = new VerticalLayout();
     layout.add(new Label("Address: " + person.getAddress().getStreet()
             + " " + person.getAddress().getNumber()));
@@ -500,3 +501,163 @@ for an item is visible with `isDetailsVisible()`.
 [NOTE]
 By default, items are selected by clicking them. If you want clicking just to show the item details without
 selection, you need to call `grid.setSelectionMode(SelectionMode.NONE)`.
+
+== Sorting
+
+A user can sort the data in a grid on a column by clicking the column header. Clicking another time 
+on the current sort column reverses the sort direction. Clicking on a third time resets the column to its 
+unsorted state. If multisorting is enabled, clicking on other sortable column headers adds a secondary or 
+more sort criteria.
+
+=== Defining how a column is sorted
+
+Before jumping to the code, it's important to understand 2 key features of the sorting mechanism: in-memory sorting and backend sorting.
+
+In-memory sorting is the sorting that is applied to the items that have been fetched from the backend, before returning them to the client.
+
+Backend sorting is a list of `QuerySortOrder` objects that can be used when implementing your own fetching logic within a `DataProvider`. 
+You can check more details about the backend sorting <<../data-provider/tutorial-flow-data-provider#Sorting,here>>.
+
+You can have both in-memory and backend sorting at the same time, or you can configure them separately. Here is a list of options
+you can use to setup the sorting for your Grid:
+
+==== 1. Using a sort property name at the column construction (in-memory and backend sorting)
+
+You can set the sort properties that will be used to do backend sorting at the moment you add the column to the grid. For example:
+
+[source, java]
+----
+grid.addColumn(Person::getAge, "age").setHeader("Age");
+----
+
+The `Age` column will use the values returned by `Person::getAge` method to do in-memory sorting, and use the `age` String to build 
+a `QuerySortOrder` that will be sent to the `DataProvider` to do the backend sorting.
+
+You can use multiple properties as well:
+
+[source, java]
+----
+grid.addColumn(person -> person.getName() + " " + person.getLastName(),
+                "name", "lastName").setHeader("Name");
+----
+
+When using multiple properties, the `QuerySortOrder` objects are created in the order they are declared.
+
+You can use properties created for your `TemplateRenderer` too. For example:
+
+[source, java]
+----
+grid.addColumn(TemplateRenderer.<Person> of(
+        "<div>[[item.name]]<br><small>[[item.email]]</small></div>")
+        .withProperty("name", Person::getName)
+        .withProperty("email", Person::getEmail), "name", "email")
+        .setHeader("Person");
+----
+
+
+[NOTE]
+For the in-memory sorting to work properly, the values returned by the `ValueProviders` inside the `TemplateRenderer` 
+(`Person::getAge` and `Person::getEmail` in the example) should implement `Comparable`.
+
+[NOTE]
+When using `TemplateRenderers`, the names of the sort properties must match the names of the properties in the template 
+(set via `withProperty`).
+
+==== 2. Using a Comparator (in-memory sorting)
+
+When you need a custom logic to compare items to sort them properly, or if your underlying data is not `Comparable`, 
+you can set a `Comparator` to your column:
+
+[source, java]
+----
+grid.addColumn(Person::getName)
+        .setComparator((person1, person2) -> person1.getName()
+                .compareToIgnoreCase(person2.getName()))
+        .setHeader("Name");
+----
+
+[NOTE]
+Keep in mind that when a Comparator is set for a column, it is executed for all the items that will be sent to the client. 
+A comparator with poor performance will impact the overall performance of the Grid.
+
+==== 3. Setting sort properties (backend sorting)
+
+You can set strings describing backend properties to be used when sorting the column.
+
+[source, java]
+----
+grid.addColumn(Person::getName).setSortProperty("name", "email")
+        .setHeader("Person");
+----
+
+[NOTE]
+Unlike using the sorting properties in the `addColumn` method directly, calling `setSortProperty` doesn't configure 
+any in-memory sorting.
+
+When setting the sort properties, a `SortOrderProvider` is created automatically for you.
+
+==== 4. Setting a SortOrderProvider (backend sorting)
+
+If you need a fine control on how the `QuerySortOrder` objects are created and sent to the `DataProvider`, you can set
+a `SortOrderProvider`:
+
+[source, java]
+----
+grid.addColumn(Person::getName)
+        .setSortOrderProvider(direction -> Arrays
+                .asList(new QuerySortOrder("name", direction),
+                        new QuerySortOrder("email", direction))
+                .stream())
+        .setHeader("Person");
+----
+
+=== Enabling and disabling the sorting in a column
+
+When using any of the 4 methods described above, the column is considered `sortable` - in other words, it displays the 
+sorter element in the header of the column. You can toggle the sorter display for a column by using:
+
+[source, java]
+----
+column.setSortable(false);
+----
+
+Setting a column as not `sortable` doesn't delete any `Comparator`, `sort property` or `SortOrderProvider` previously set - 
+so you can toggle the `sortable` flag on and off without having to reconfigure it every time.
+
+You can check if a given column is currently `sortable` by calling:
+
+[source, java]
+----
+column.isSortable();
+----
+
+=== Enabling multi-sorting
+
+To enable users to sort the data by more than one sort criteria at the same time, you can enable
+multi-sorting at the Grid level:
+
+[source, java]
+----
+grid.setMultiSort(true);
+----
+
+=== Receiving sort events
+
+You can add a `SortListener` to the Grid to receive general sort events. Every time the sorting of the Grid is changed,
+an event is fired. You can access the `DataCommunicator` for sorting details. For example:
+
+[source, java]
+----
+grid.addSortListener(event -> {
+    String currentSortOrder = grid.getDataCommunicator()
+            .getBackEndSorting().stream()
+            .map(querySortOrder -> String.format(
+                    "{sort property: %s, direction: %s}",
+                    querySortOrder.getSorted(),
+                    querySortOrder.getDirection()))
+            .collect(Collectors.joining(", "));
+    System.out.println(String.format(
+            "Current sort order: %s. Sort originates from the client: %s.",
+            currentSortOrder, event.isFromClient()));
+});
+----

@@ -18,7 +18,7 @@ package com.vaadin.flow.demo;
 import com.vaadin.testbench.By;
 
 /**
- * Base class for the integration tests for views that use tabs.
+ * Base class for the component integration tests for views that use tabs.
  *
  */
 public abstract class TabbedComponentDemoTest extends ComponentDemoTest {
@@ -28,14 +28,22 @@ public abstract class TabbedComponentDemoTest extends ComponentDemoTest {
         // NO-OP
     }
 
+    /**
+     * Navigates from one tab to another and checks whether the navigation
+     * causes errors in the browser. The {@code tab} will be added to the
+     * default test-path for navigation.
+     * 
+     * @param tab
+     *            the name of the tab to navigate to
+     */
     public void openTabAndCheckForErrors(String tab) {
         String testPath = getTestURL();
         if (tab != null && !tab.isEmpty()) {
-            testPath = testPath + "/" + tab;
+            testPath = testPath + (testPath.endsWith("/") ? tab : "/" + tab);
         }
         getDriver().get(testPath);
-        waitForElementPresent(By.tagName("main-layout"));
-        layout = findElement(By.tagName("main-layout"));
+        waitForElementPresent(By.tagName("div"));
+        layout = findElement(By.tagName("div"));
         checkLogsForErrors();
     }
 

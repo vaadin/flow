@@ -17,6 +17,9 @@ package com.vaadin.flow.testutil;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
@@ -24,6 +27,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.internal.WrapsElement;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -301,6 +306,47 @@ public class TestBenchHelpers extends ParallelTest {
      */
     protected void clickElementWithJs(WebElement element) {
         executeScript("arguments[0].click();", element);
+    }
+
+    /**
+     * Gets the log entries from the browser that have the given logging level
+     * or higher.
+     * 
+     * @param level
+     *            the minimum severity of logs included
+     * @return log entries from the browser
+     */
+    protected List<LogEntry> getLogEntries(Level level) {
+        return driver.manage().logs().get(LogType.BROWSER).getAll().stream()
+                .filter(logEntry -> logEntry.getLevel().intValue() >= level
+                        .intValue())
+                // we always have this error
+                .filter(logEntry -> !logEntry.getMessage()
+                        .contains("favicon.ico"))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Checks browser's log entries, throws an error for any client-side error
+     * and logs any client-side warnings.
+     * 
+     * @throws AssertionError
+     *             if an error is found in the browser logs
+     */
+    protected void checkLogsForErrors() {
+        getLogEntries(Level.WARNING).forEach(logEntry -> {
+            if (Objects.equals(logEntry.getLevel(), Level.SEVERE)
+                    || logEntry.getMessage().contains("404")) {
+                throw new AssertionError(String.format(
+                        "Received error message in browser log console right after opening the page, message: %s",
+                        logEntry));
+            } else {
+                Logger.getLogger(TestBenchHelpers.class.getName())
+                        .warning(() -> String.format(
+                                "This message in browser log console may be a potential error: '%s'",
+                                logEntry));
+            }
+        });
     }
 
     private WebElement getShadowRoot(WebElement webComponent) {

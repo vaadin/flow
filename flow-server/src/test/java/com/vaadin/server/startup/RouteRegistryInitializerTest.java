@@ -463,8 +463,8 @@ public class RouteRegistryInitializerTest {
     }
 
     @Route("bar")
-    private static class ChildWithDynamicTitle extends ParentWithTitleAnnotation
-            implements HasDynamicTitle {
+    private static class ChildWithDynamicTitle
+            extends ParentWithTitleAnnotation {
 
         @Override
         public String getPageTitle() {

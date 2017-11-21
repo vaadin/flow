@@ -19,7 +19,7 @@ import com.vaadin.data.provider.DataKeyMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.renderers.ComponentRenderer;
+import com.vaadin.ui.renderers.ComponentTemplateRenderer;
 import com.vaadin.ui.renderers.TemplateRenderer;
 
 /**
@@ -82,9 +82,9 @@ public class AbstractColumn<T extends AbstractColumn<T>> extends Component
 
     private void setupHeaderOrFooter(boolean header,
             TemplateRenderer<?> renderer, Element headerOrFooter) {
-        if (renderer instanceof ComponentRenderer) {
+        if (renderer instanceof ComponentTemplateRenderer) {
             GridTemplateRendererUtil.setupHeaderOrFooterComponentRenderer(this,
-                    (ComponentRenderer) renderer);
+                    (ComponentTemplateRenderer) renderer);
         }
 
         headerOrFooter.setProperty("innerHTML",

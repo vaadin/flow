@@ -18,7 +18,9 @@ package com.vaadin.flow.tutorial.component;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person;
 import com.vaadin.function.ValueProvider;
@@ -66,7 +68,7 @@ public class GridBasic {
             Set<Person> selected = event.getAllSelectedItems();
             message.setText(selected.size() + " items selected");
         });
-        
+
         Person defaultItem = null;
         List<Person> people = null;
 
@@ -79,32 +81,32 @@ public class GridBasic {
         people.subList(2, 3).forEach(grid::select);
 
         // the default selection model
-        GridSingleSelectionModel<Person> defaultModel = 
-                (GridSingleSelectionModel<Person>) grid.getSelectionModel();
+        GridSingleSelectionModel<Person> defaultModel = (GridSingleSelectionModel<Person>) grid
+                .getSelectionModel();
 
         // Use multi-selection mode
-        GridMultiSelectionModel<Person> selectionModel = 
-                (GridMultiSelectionModel<Person>) grid.setSelectionMode(SelectionMode.MULTI);
+        GridMultiSelectionModel<Person> selectionModel = (GridMultiSelectionModel<Person>) grid
+                .setSelectionMode(SelectionMode.MULTI);
 
         // preselect value
         grid.select(defaultItem);
 
-        GridSingleSelectionModel<Person> singleSelect =
-                (GridSingleSelectionModel<Person>) grid.getSelectionModel();
+        GridSingleSelectionModel<Person> singleSelect = (GridSingleSelectionModel<Person>) grid
+                .getSelectionModel();
         // disallow empty selection
         singleSelect.setDeselectAllowed(false);
     }
-    
+
     public void gridMultiSelect() {
         List<Person> people = null;
         Label message = new Label();
         Button deleteSelected = null;
-        
+
         // Grid in multi-selection mode
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
-        GridMultiSelectionModel<Person> selectionModel =
-                (GridMultiSelectionModel<Person>) grid.setSelectionMode(SelectionMode.MULTI);
+        GridMultiSelectionModel<Person> selectionModel = (GridMultiSelectionModel<Person>) grid
+                .setSelectionMode(SelectionMode.MULTI);
 
         selectionModel.selectAll();
 
@@ -117,30 +119,30 @@ public class GridBasic {
             deleteSelected.setDisabled(event.getNewSelection().isEmpty());
         });
     }
-    
+
     public void gridConfiguringColumns() {
         Grid<Person> grid = new Grid<>();
-        
+
+        //@formatter:off
         Column<Person> nameColumn = grid.addColumn(Person::getName)
-            .setHeader("Name")
-            .setFlexGrow(0)
-            .setWidth("100px")
-            .setResizable(false);
-        
+                .setHeader("Name")
+                .setFlexGrow(0)
+                .setWidth("100px")
+                .setResizable(false);
+        //@formatter:on
+
         grid.setColumnReorderingAllowed(true);
-        
+
         nameColumn.setFrozen(true);
     }
 
     public void gridColumnMerging() {
         Grid<Person> grid = new Grid<>();
-        Column<Person> nameColumn = grid.addColumn(
-                ValueProvider.identity());
+        Column<Person> nameColumn = grid.addColumn(ValueProvider.identity());
         Column<Person> ageColumn = grid.addColumn(ValueProvider.identity());
-        Column<Person> streetColumn = grid.addColumn(
-                ValueProvider.identity());
-        Column<Person> postalCodeColumn = grid.addColumn(
-                ValueProvider.identity());
+        Column<Person> streetColumn = grid.addColumn(ValueProvider.identity());
+        Column<Person> postalCodeColumn = grid
+                .addColumn(ValueProvider.identity());
 
         // Group two columns, nameColumn and ageColumn,
         // in a ColumnGroup and set the header text
@@ -160,8 +162,7 @@ public class GridBasic {
 
     public void gridHeadersAndFooters() {
         Grid<Person> grid = new Grid<>();
-        Column<Person> nameColumn = grid.addColumn(
-                ValueProvider.identity());
+        Column<Person> nameColumn = grid.addColumn(ValueProvider.identity());
 
         // Sets a simple text header
         nameColumn.setHeader("Name");
@@ -174,10 +175,62 @@ public class GridBasic {
         nameColumn.setFooter(TemplateRenderer.<Person> of("<b>Name</b>"));
     }
 
-    /* code of commented lines
+    public void gridSorting() {
+        Grid<Person> grid = new Grid<>();
 
+        grid.setMultiSort(true);
+
+        grid.addColumn(Person::getAge, "age").setHeader("Age");
+
+        grid.addColumn(person -> person.getName() + " " + person.getLastName(),
+                "name", "lastName").setHeader("Name");
+
+        grid.addColumn(TemplateRenderer.<Person> of(
+                "<div>[[item.name]]<br><small>[[item.email]]</small></div>")
+                .withProperty("name", Person::getName)
+                .withProperty("email", Person::getEmail), "name", "email")
+                .setHeader("Person");
+
+        grid.addColumn(Person::getName)
+                .setComparator((person1, person2) -> person1.getName()
+                        .compareToIgnoreCase(person2.getName()))
+                .setHeader("Name");
+
+        grid.addColumn(Person::getName).setSortProperty("name", "email")
+                .setHeader("Person");
+
+        grid.addColumn(Person::getName)
+                .setSortOrderProvider(direction -> Arrays
+                        .asList(new QuerySortOrder("name", direction),
+                                new QuerySortOrder("email", direction))
+                        .stream())
+                .setHeader("Person");
+
+        grid.addSortListener(event -> {
+            String currentSortOrder = grid.getDataCommunicator()
+                    .getBackEndSorting().stream()
+                    .map(querySortOrder -> String.format(
+                            "{sort property: %s, direction: %s}",
+                            querySortOrder.getSorted(),
+                            querySortOrder.getDirection()))
+                    .collect(Collectors.joining(", "));
+            System.out.println(String.format(
+                    "Current sort order: %s. Sort originates from the client: %s.",
+                    currentSortOrder, event.isFromClient()));
+        });
+
+        Column<Person> column = grid.addColumn(Person::getName);
+        column.setSortable(false);
+        column.isSortable();
+    }
+
+    //@formatter:off
+    /*
+     * code of commented lines
+     * 
      grid.setColumnOrder(firstnameColumn, lastnameColumn,
                     bornColumn, birthplaceColumn,
                     diedColumn);
      */
+    //@formatter:on
 }
