@@ -582,14 +582,17 @@ A comparator with poor performance will impact the overall performance of the Gr
 
 ==== 3. Setting sort properties (backend sorting)
 
-You can set strings describing backend properties to be used when sorting the column. Unlike the `addColumn`, 
-this doesn't configure any in-memory sorting.
+You can set strings describing backend properties to be used when sorting the column.
 
 [source, java]
 ----
 grid.addColumn(Person::getName).setSortProperty("name", "email")
         .setHeader("Person");
 ----
+
+[NOTE]
+Unlike using the sorting properties in the `addColumn` method directly, calling `setSortProperty` doesn't configure 
+any in-memory sorting.
 
 When setting the sort properties, a `SortOrderProvider` is created automatically for you.
 
