@@ -577,7 +577,7 @@ A comparator with poor performance will impact the overall performance of the Gr
 
 ==== 3. Setting sort properties (backend sorting)
 
-You can set strings describing backend properties to be used when sorting the column. Different from the `addColumn`, 
+You can set strings describing backend properties to be used when sorting the column. Unlike the `addColumn`, 
 this doesn't configure any in-memory sorting.
 
 [source, java]
@@ -614,7 +614,7 @@ column.setSortable(false);
 ----
 
 Setting a column as not `sortable` doesn't delete any `Comparator`, `sort property` or `SortOrderProvider` previously set - 
-so you can toggle the `sortable` flag on and off without having to reconfigured it every time.
+so you can toggle the `sortable` flag on and off without having to reconfigure it every time.
 
 You can check if a given column is currently `sortable` by calling:
 
