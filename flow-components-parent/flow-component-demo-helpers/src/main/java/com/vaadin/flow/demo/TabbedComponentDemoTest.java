@@ -36,7 +36,7 @@ public abstract class TabbedComponentDemoTest extends ComponentDemoTest {
      * @param tab
      *            the name of the tab to navigate to
      */
-    public void openDemoPageAndCheckForErrors(String tab) {
+    public void openTabAndCheckForErrors(String tab) {
         String testPath = getTestURL();
         if (tab != null && !tab.isEmpty()) {
             testPath = testPath + (testPath.endsWith("/") ? tab : "/" + tab);

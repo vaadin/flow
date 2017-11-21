@@ -28,7 +28,7 @@ public abstract class TabbedComponentDemoTest extends ComponentDemoTest {
         // NO-OP
     }
 
-    public void openDemoPageAndCheckForErrors(String tab) {
+    public void openTabAndCheckForErrors(String tab) {
         String testPath = getTestURL();
         if (tab != null && !tab.isEmpty()) {
             testPath = testPath + "/" + tab;
