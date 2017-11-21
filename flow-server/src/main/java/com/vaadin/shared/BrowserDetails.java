@@ -349,8 +349,7 @@ public class BrowserDetails implements Serializable {
         try {
             return Integer.parseInt(versionString);
         } catch (Exception e) {
-            log(String.format("%s version parsing failed for: '%s'", partName,
-                    versionString), e);
+            log(partName + " version parsing failed for: " + versionString, e);
         }
         return -1;
     }
