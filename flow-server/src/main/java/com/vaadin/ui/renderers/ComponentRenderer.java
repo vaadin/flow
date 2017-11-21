@@ -27,7 +27,7 @@ import com.vaadin.ui.Component;
  * <p>
  * Internally it uses a {@code <flow-component-renderer>} webcomponent to manage
  * the component instances at the client-side.
- * 
+ *
  * @author Vaadin Ltd.
  *
  * @param <COMPONENT>
@@ -35,9 +35,10 @@ import com.vaadin.ui.Component;
  * @param <ITEM>
  *            the type of the input object that can be used by the rendered
  *            component
- * 
+ *
  */
-public class ComponentRenderer<COMPONENT, ITEM> extends TemplateRenderer<ITEM> {
+public class ComponentRenderer<COMPONENT, ITEM> extends TemplateRenderer<ITEM>
+        implements Renderer<COMPONENT, ITEM> {
 
     private SerializableSupplier<COMPONENT> componentSupplier;
     private SerializableFunction<ITEM, COMPONENT> componentFunction;
@@ -59,7 +60,7 @@ public class ComponentRenderer<COMPONENT, ITEM> extends TemplateRenderer<ITEM> {
      * Some components may support several rendered components at once, so
      * different component instances should be created for each different item
      * for those components.
-     * 
+     *
      * @param componentSupplier
      *            a supplier that can generate new component instances
      * @param itemConsumer
@@ -83,7 +84,7 @@ public class ComponentRenderer<COMPONENT, ITEM> extends TemplateRenderer<ITEM> {
      * Some components may support several rendered components at once, so
      * different component instances should be created for each different item
      * for those components.
-     * 
+     *
      * @param componentSupplier
      *            a supplier that can generate new component instances
      */
@@ -100,7 +101,7 @@ public class ComponentRenderer<COMPONENT, ITEM> extends TemplateRenderer<ITEM> {
      * Some components may support several rendered components at once, so
      * different component instances should be created for each different item
      * for those components.
-     * 
+     *
      * @param componentFunction
      *            a function that can generate new component instances
      */
@@ -113,7 +114,7 @@ public class ComponentRenderer<COMPONENT, ITEM> extends TemplateRenderer<ITEM> {
      * Sets attributes to the internal component renderer, that can affect the
      * actual rendering. It is used internally by components that support
      * ComponentRenderers.
-     * 
+     *
      * @param attribute
      *            the attribute to set on the internal component renderer
      *            element
@@ -133,11 +134,12 @@ public class ComponentRenderer<COMPONENT, ITEM> extends TemplateRenderer<ITEM> {
      * Effectively calls the functions to get component instances and set the
      * model items. This is called internally by the components which support
      * ComponentRenderers.
-     * 
+     *
      * @param item
      *            the corresponding model item for the component
      * @return a component instance
      */
+    @Override
     public COMPONENT createComponent(ITEM item) {
         if (componentFunction != null) {
             return componentFunction.apply(item);
