@@ -155,7 +155,7 @@ public class MainView extends VerticalLayout {
     public MainView() {
         ExampleTemplate template = new ExampleTemplate();
 
-        Button button =  new Button("Click me", event -> template.setValue("Clicked!"));
+        Button button = new Button("Click me", event -> template.setValue("Clicked!"));
 
         add(button, template);
     }
@@ -267,7 +267,7 @@ following line in the main view constructor:
 
 [source,java]
 ----
-Button button =  new Button("Click me", event -> template.setValue("Clicked!"));
+Button button = new Button("Click me", event -> template.setValue("Clicked!"));
 ----
 
 Doing so adds a breakpoint to the selected line. If you then reload the page in
@@ -724,7 +724,9 @@ the end of the [classname]#MainView# constructor:
 grid.asSingleSelect().addValueChangeListener(event -> {
     if (event.getValue() != null) {
         form.setCustomer(event.getValue());
-    } else form.setCustomer(null);
+    } else {
+        form.setCustomer(null);
+    }
 });
 ----
 
