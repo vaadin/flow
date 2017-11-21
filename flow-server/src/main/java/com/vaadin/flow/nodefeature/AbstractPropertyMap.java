@@ -98,7 +98,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *         if the value is explicitly set to null
      */
     public Serializable getProperty(String name) {
-        return (Serializable) get(name);
+        return get(name);
     }
 
     /**
