@@ -1,7 +1,6 @@
 # The default behavior
 * text=auto
 
-*.sh text eol=lf
 *.java text
 *.html text
 *.xml text
@@ -11,6 +10,8 @@
 *.scss text
 *.properties text
 *.asciidoc text
+*.md text
+*.sh text eol=lf
 
 .gitattributes text
 .gitignore text
