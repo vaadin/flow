@@ -41,6 +41,7 @@ import com.vaadin.ui.html.H3;
  */
 @Tag(Tag.DIV)
 @StyleSheet("src/css/demo.css")
+@StyleSheet("src/css/prism.css")
 @JavaScript("src/script/prism.js")
 public abstract class DemoView extends Component
         implements HasComponents, HasUrlParameter<String>, HasStyle {
