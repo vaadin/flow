@@ -27,6 +27,10 @@ import java.io.Serializable;
 public class BrowserDetails implements Serializable {
     private static final String CHROME = " chrome/";
     private static final String HEADLESSCHROME = " headlesschrome/";
+    private static final String OS_MAJOR = "OS major";
+    private static final String OS_MINOR = "OS minor";
+    private static final String BROWSER_MAJOR = "Browser major";
+    private static final String BROWSER_MINOR = "Browser minor";
 
     /**
      * An enum for detected operating systems.
@@ -241,8 +245,8 @@ public class BrowserDetails implements Serializable {
         osMinorVersion = -1;
 
         if (parts.length > 2) {
-            osMajorVersion = parseVersionPart(parts[0], "OS major");
-            osMinorVersion = parseVersionPart(parts[1], "OS minor");
+            osMajorVersion = parseVersionPart(parts[0], OS_MAJOR);
+            osMinorVersion = parseVersionPart(parts[1], OS_MINOR);
         }
     }
 
@@ -295,16 +299,16 @@ public class BrowserDetails implements Serializable {
         osMinorVersion = -1;
 
         if (parts.length >= 1) {
-            osMajorVersion = parseVersionPart(parts[0], "OS major");
+            osMajorVersion = parseVersionPart(parts[0], OS_MAJOR);
         }
         if (parts.length >= 2) {
             // Some Androids report version numbers as "2.1-update1"
             int dashIndex = parts[1].indexOf('-');
             if (dashIndex > -1) {
                 String dashlessVersion = parts[1].substring(0, dashIndex);
-                osMinorVersion = parseVersionPart(dashlessVersion, "OS minor");
+                osMinorVersion = parseVersionPart(dashlessVersion, OS_MINOR);
             } else {
-                osMinorVersion = parseVersionPart(parts[1], "OS minor");
+                osMinorVersion = parseVersionPart(parts[1], OS_MINOR);
             }
         }
     }
@@ -315,8 +319,7 @@ public class BrowserDetails implements Serializable {
             idx = versionString.length();
         }
         String majorVersionPart = safeSubstring(versionString, 0, idx);
-        browserMajorVersion = parseVersionPart(majorVersionPart,
-                "Browser major");
+        browserMajorVersion = parseVersionPart(majorVersionPart, BROWSER_MAJOR);
 
         int idx2 = versionString.indexOf('.', idx + 1);
         if (idx2 < 0) {
@@ -324,8 +327,7 @@ public class BrowserDetails implements Serializable {
         }
         String minorVersionPart = safeSubstring(versionString, idx + 1, idx2)
                 .replaceAll("[^0-9].*", "");
-        browserMinorVersion = parseVersionPart(minorVersionPart,
-                "Browser minor");
+        browserMinorVersion = parseVersionPart(minorVersionPart, BROWSER_MINOR);
     }
 
     private static String safeSubstring(String string, int beginIndex,
