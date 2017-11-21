@@ -114,7 +114,7 @@ public class ComponentMetaData {
             Class<? extends Component> componentClass) {
         DependencyInfo dependencyInfo = new DependencyInfo();
         findDependencies(componentClass, dependencyInfo,
-                new HashSet<Class<? extends Component>>());
+                new HashSet<>());
         return dependencyInfo;
     }
 
