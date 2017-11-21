@@ -15,21 +15,14 @@
  */
 package com.vaadin.flow.demo;
 
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-
 import org.junit.Before;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.logging.LogEntry;
-import org.openqa.selenium.logging.LogType;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
 
 /**
- * Base class for the integration tests of this project.
+ * Base class for the integration tests of component demos.
  *
  */
 public abstract class ComponentDemoTest extends ChromeBrowserTest {
@@ -54,32 +47,5 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
         waitForElementPresent(By.tagName("div"));
         layout = findElement(By.tagName("div"));
         checkLogsForErrors();
-    }
-
-    protected Stream<LogEntry> getLogEntries(Level level) {
-        return driver.manage().logs().get(LogType.BROWSER).getAll().stream()
-                .filter(logEntry -> logEntry.getLevel().intValue() >= level
-                        .intValue())
-                // we always have this error
-                .filter(logEntry -> !logEntry.getMessage()
-                        .contains("favicon.ico"));
-    }
-
-    protected void checkLogsForErrors() {
-        getLogEntries(Level.WARNING).forEach(this::processWarningOrError);
-    }
-
-    private void processWarningOrError(LogEntry logEntry) {
-        if (Objects.equals(logEntry.getLevel(), Level.SEVERE)
-                || logEntry.getMessage().contains("404")) {
-            throw new AssertionError(String.format(
-                    "Received error message in browser log console right after opening the page, message: %s",
-                    logEntry));
-        } else {
-            Logger.getLogger(ComponentDemoTest.class.getName())
-                    .warning(() -> String.format(
-                            "This message in browser log console may be a potential error: '%s'",
-                            logEntry));
-        }
     }
 }
