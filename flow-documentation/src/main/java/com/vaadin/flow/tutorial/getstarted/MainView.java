@@ -43,12 +43,10 @@ public class MainView extends VerticalLayout {
         filterText.setPlaceholder("filter by name...");
         filterText.addValueChangeListener(e -> updateList());
 
-        Button clearFilterTextBtn = new Button(
-                new Icon(VaadinIcons.CLOSE_CIRCLE));
+        Button clearFilterTextBtn = new Button(new Icon(VaadinIcons.CLOSE_CIRCLE));
         clearFilterTextBtn.addClickListener(e -> filterText.clear());
 
-        HorizontalLayout filtering = new HorizontalLayout(filterText,
-                clearFilterTextBtn);
+        HorizontalLayout filtering = new HorizontalLayout(filterText, clearFilterTextBtn);
 
         Button addCustomerBtn = new Button("Add new customer");
         addCustomerBtn.addClickListener(e -> {
@@ -56,8 +54,7 @@ public class MainView extends VerticalLayout {
             form.setCustomer(new Customer());
         });
 
-        HorizontalLayout toolbar = new HorizontalLayout(filtering,
-                addCustomerBtn);
+        HorizontalLayout toolbar = new HorizontalLayout(filtering, addCustomerBtn);
 
         grid.setSizeFull();
 
@@ -76,13 +73,13 @@ public class MainView extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(event -> {
             if (event.getValue() != null) {
                 form.setCustomer(event.getValue());
-            } else
+            } else {
                 form.setCustomer(null);
+            }
         });
 
         ExampleTemplate template = new ExampleTemplate();
-        Button button = new Button("Click me",
-                event -> template.setValue("Clicked!"));
+        Button button = new Button("Click me", event -> template.setValue("Clicked!"));
         add(button, template);
         // Add the next two lines:
         // The rest is already there...
