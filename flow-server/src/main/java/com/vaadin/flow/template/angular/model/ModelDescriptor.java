@@ -31,7 +31,6 @@ import com.vaadin.flow.util.ReflectionCache;
  */
 @Deprecated
 public class ModelDescriptor<T extends TemplateModel> extends BeanModelType<T> {
-    @SuppressWarnings("unchecked")
     private static ReflectionCache<TemplateModel, ModelDescriptor<?>> classToDescriptor = new ReflectionCache<>(
             ModelDescriptor::new);
 
