@@ -63,6 +63,7 @@ public class CodeTest {
             }
         }
     }
+
     private static void gwtGenerics(File file) throws IOException {
         ASTParser parser = ASTParser.newParser(AST.JLS8);
         String value = FileUtils.readFileToString(file, UTF_8);
@@ -74,7 +75,6 @@ public class CodeTest {
         cu.accept(new ASTVisitor() {
 
             Set<String> imports = new HashSet<>();
-
             String packageName;
 
             @Override
@@ -90,14 +90,13 @@ public class CodeTest {
 
             @Override
             public boolean visit(VariableDeclarationStatement node) {
-                Type type = node.getType();
                 for (Object frament : node.fragments()) {
                     if (frament instanceof VariableDeclarationFragment) {
                         VariableDeclarationFragment variableDeclaration = (VariableDeclarationFragment) frament;
                         Expression expression = variableDeclaration.getInitializer();
                         if (expression instanceof ClassInstanceCreation) {
-                            Class<?> typeClass = getClass(type);
                             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
+                            Class<?> typeClass = getClass(node.getType());
                             Class<?> instanceClass = getClass(
                                     classInstanceCreation.getType());
                             if (typeClass != instanceClass && typeClass
@@ -139,17 +138,19 @@ public class CodeTest {
                     return clas;
                 }
 
-                String fileName = file.getName();
-                fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-
                 try {
+                    String fileName = file.getName();
+                    fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+
                     if (fileName.equals(className)) {
                         return Class.forName(packageName + '.' + fileName);
                     }
+
                     clas = getClass(packageName + '.' + className);
                     if (clas != null) {
                         return clas;
                     }
+
                     return Class.forName(
                             packageName + '.' + fileName + '$' + className);
                 } catch (ClassNotFoundException e) {
