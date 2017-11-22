@@ -234,7 +234,8 @@ public class CompositeTest {
 
     @Test(expected = IllegalStateException.class)
     public void rawContentType() {
-        class CompositeWithRawType extends Composite<Component> {
+        @SuppressWarnings("rawtypes")
+        class CompositeWithRawType extends Composite {
         }
 
         CompositeWithRawType composite = new CompositeWithRawType();
