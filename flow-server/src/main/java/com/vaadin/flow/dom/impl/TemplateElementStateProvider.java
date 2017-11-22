@@ -72,7 +72,6 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             ParentGeneratorHolder.class, ClientDelegateHandlers.class,
             TemplateOverridesMap.class, ModelMap.class };
 
-    @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
             .of(OverrideElementData.class, ElementChildrenList.class,
                     ParentGeneratorHolder.class, ComponentMapping.class,

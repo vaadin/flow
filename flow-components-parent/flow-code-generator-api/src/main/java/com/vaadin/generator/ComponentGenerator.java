@@ -15,6 +15,8 @@
  */
 package com.vaadin.generator;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -683,7 +685,7 @@ public class ComponentGenerator {
                             ComponentGeneratorUtils.convertPackageToDirectory(
                                     targetPath, javaClass.getPackage(), true),
                             fileName).toPath(),
-                    source.getBytes("UTF-8"));
+                    source.getBytes(UTF_8));
         } catch (IOException ex) {
             throw new ComponentGenerationException(
                     "Error writing the generated Java source file \"" + fileName

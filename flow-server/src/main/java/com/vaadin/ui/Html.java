@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -73,7 +75,7 @@ public class Html extends Component {
             throw new IllegalArgumentException("HTML stream cannot be null");
         }
         try {
-            setOuterHtml(Jsoup.parse(stream, "UTF-8", ""));
+            setOuterHtml(Jsoup.parse(stream, UTF_8.name(), ""));
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to read HTML from stream",
                     e);

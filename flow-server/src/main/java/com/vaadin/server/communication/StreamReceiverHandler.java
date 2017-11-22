@@ -15,7 +15,8 @@
  */
 package com.vaadin.server.communication;
 
-import javax.servlet.http.HttpServletRequest;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +26,8 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -312,7 +315,7 @@ public class StreamReceiverHandler implements Serializable {
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
         try (OutputStream out = response.getOutputStream()) {
             final PrintWriter outWriter = new PrintWriter(
-                    new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));
+                    new BufferedWriter(new OutputStreamWriter(out, UTF_8)));
             try {
                 outWriter.print("<html><body>download handled</body></html>");
             } finally {

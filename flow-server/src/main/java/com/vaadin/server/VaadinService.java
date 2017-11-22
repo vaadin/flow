@@ -16,9 +16,8 @@
 
 package com.vaadin.server;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -47,6 +46,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
@@ -1584,7 +1587,7 @@ public abstract class VaadinService implements Serializable {
 
         final OutputStream out = response.getOutputStream();
         final PrintWriter outWriter = new PrintWriter(
-                new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));
+                new BufferedWriter(new OutputStreamWriter(out, UTF_8)));
         outWriter.print(reponseString);
         outWriter.close();
     }

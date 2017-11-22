@@ -34,61 +34,63 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 @Route("")
 @CodeFor("get-started.asciidoc")
 public class MainView extends VerticalLayout {
-	private CustomerService service = CustomerService.getInstance();
-	private Grid<Customer> grid = new Grid<>();
-	private TextField filterText = new TextField();
-	private CustomerForm form = new CustomerForm(this);
+    private CustomerService service = CustomerService.getInstance();
+    private Grid<Customer> grid = new Grid<>();
+    private TextField filterText = new TextField();
+    private CustomerForm form = new CustomerForm(this);
 
-	public MainView() {
-		filterText.setPlaceholder("filter by name...");
-		filterText.addValueChangeListener(e -> updateList());
+    public MainView() {
+        filterText.setPlaceholder("filter by name...");
+        filterText.addValueChangeListener(e -> updateList());
 
-		Button clearFilterTextBtn = new Button(new Icon(VaadinIcons.CLOSE_CIRCLE));
-		clearFilterTextBtn.addClickListener(e -> filterText.clear());
+        Button clearFilterTextBtn = new Button(new Icon(VaadinIcons.CLOSE_CIRCLE));
+        clearFilterTextBtn.addClickListener(e -> filterText.clear());
 
-		HorizontalLayout filtering = new HorizontalLayout(filterText, clearFilterTextBtn);
+        HorizontalLayout filtering = new HorizontalLayout(filterText, clearFilterTextBtn);
 
-		Button addCustomerBtn = new Button("Add new customer");
-		addCustomerBtn.addClickListener(e -> {
-		    grid.asSingleSelect().clear();
-		    form.setCustomer(new Customer());
-		});
+        Button addCustomerBtn = new Button("Add new customer");
+        addCustomerBtn.addClickListener(e -> {
+            grid.asSingleSelect().clear();
+            form.setCustomer(new Customer());
+        });
 
-		HorizontalLayout toolbar = new HorizontalLayout(filtering, addCustomerBtn);
+        HorizontalLayout toolbar = new HorizontalLayout(filtering, addCustomerBtn);
 
-		grid.setSizeFull();
+        grid.setSizeFull();
 
-		grid.addColumn(Customer::getFirstName).setHeader("First name");
-		grid.addColumn(Customer::getLastName).setHeader("Last name");
-		grid.addColumn(Customer::getStatus).setHeader("Status");
+        grid.addColumn(Customer::getFirstName).setHeader("First name");
+        grid.addColumn(Customer::getLastName).setHeader("Last name");
+        grid.addColumn(Customer::getStatus).setHeader("Status");
 
-		HorizontalLayout main = new HorizontalLayout(grid, form);
-		main.setAlignItems(Alignment.START);
-		main.setSizeFull();
+        HorizontalLayout main = new HorizontalLayout(grid, form);
+        main.setAlignItems(Alignment.START);
+        main.setSizeFull();
 
-	    add(toolbar, main);
+        add(toolbar, main);
 
-	    updateList();
+        updateList();
 
-	    grid.asSingleSelect().addValueChangeListener(event -> {
-	        if (event.getValue() != null) {
-	            form.setCustomer(event.getValue());
-	        } else form.setCustomer(null);
-	    });
+        grid.asSingleSelect().addValueChangeListener(event -> {
+            if (event.getValue() != null) {
+                form.setCustomer(event.getValue());
+            } else {
+                form.setCustomer(null);
+            }
+        });
 
-	  ExampleTemplate template = new ExampleTemplate();
-		Button button =  new Button("Click me", event -> template.setValue("Clicked!"));
-		add(button, template);
-		// Add the next two lines:
-		// The rest is already there...
-		add(grid);
-		grid.setItems(service.findAll());
-		add(filtering, grid);
-		setSizeUndefined();
-		add(filtering, main);
-	}
+        ExampleTemplate template = new ExampleTemplate();
+        Button button = new Button("Click me", event -> template.setValue("Clicked!"));
+        add(button, template);
+        // Add the next two lines:
+        // The rest is already there...
+        add(grid);
+        grid.setItems(service.findAll());
+        add(filtering, grid);
+        setSizeUndefined();
+        add(filtering, main);
+    }
 
-	public void updateList() {
-	    grid.setItems(service.findAll(filterText.getValue()));
-	}
+    public void updateList() {
+        grid.setItems(service.findAll(filterText.getValue()));
+    }
 }

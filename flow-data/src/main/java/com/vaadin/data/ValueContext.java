@@ -66,7 +66,6 @@ public class ValueContext implements Serializable {
      *            component implements {@link HasValue}, it will be returned by
      *            {@link #getHasValue()} as well.
      */
-    @SuppressWarnings("unchecked")
     public ValueContext(Component component) {
         Objects.requireNonNull(component,
                 "Component can't be null in ValueContext construction");
