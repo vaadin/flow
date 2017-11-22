@@ -538,7 +538,6 @@ public class Profiler {
         rootNode.sumUpTotals(totals);
 
         ArrayList<Node> totalList = new ArrayList<>(totals.values());
-        ArrayList<Node>[] x = new ArrayList[0];
         Collections.sort(totalList, new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
