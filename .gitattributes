@@ -1,1 +1,17 @@
+# The default behavior
+* text=auto
+
+*.java text
+*.html text
+*.xml text
+*.js text
+*.svg text
+*.css text
+*.scss text
+*.properties text
+*.asciidoc text
+*.md text
 *.sh text eol=lf
+
+.gitattributes text
+.gitignore text
