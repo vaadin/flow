@@ -15,6 +15,8 @@
  */
 package com.vaadin.generator;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -99,7 +101,7 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
         if (licenseFile != null) {
             try {
                 String licenseNote = new String(
-                        Files.readAllBytes(licenseFile.toPath()), "UTF-8");
+                        Files.readAllBytes(licenseFile.toPath()), UTF_8);
 
                 generator.withLicenseNote(licenseNote);
             } catch (IOException e) {

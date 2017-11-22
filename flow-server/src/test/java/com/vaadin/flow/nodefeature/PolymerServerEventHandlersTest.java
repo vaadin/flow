@@ -120,7 +120,6 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
                         Collectors.toMap(Method::getName, Function.identity()));
     }
 
-    @SuppressWarnings("unchecked")
     @Before
     public void setUp() {
         Collection<Class<? extends NodeFeature>> features = BasicElementStateProvider
