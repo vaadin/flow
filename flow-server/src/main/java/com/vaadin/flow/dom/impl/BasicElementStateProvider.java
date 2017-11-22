@@ -198,7 +198,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         return getAttributeFeature(node).attributes();
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public Node getParent(StateNode node) {
         StateNode parentNode = node.getParent();

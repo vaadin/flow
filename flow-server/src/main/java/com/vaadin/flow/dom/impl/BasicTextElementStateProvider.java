@@ -84,7 +84,6 @@ public class BasicTextElementStateProvider
         node.getFeature(TextNodeMap.class).setText(textContent);
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public Node getParent(StateNode node) {
         return BasicElementStateProvider.get().getParent(node);

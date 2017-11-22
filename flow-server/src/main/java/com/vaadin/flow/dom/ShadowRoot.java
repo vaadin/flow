@@ -52,7 +52,6 @@ public class ShadowRoot extends Node<ShadowRoot> {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public Node getParentNode() {
         return null;

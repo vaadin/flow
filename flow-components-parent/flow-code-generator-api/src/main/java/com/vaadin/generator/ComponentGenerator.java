@@ -15,7 +15,7 @@
  */
 package com.vaadin.generator;
 
-import javax.annotation.Generated;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,9 +34,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.annotation.Generated;
+
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -46,6 +45,9 @@ import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
@@ -683,7 +685,7 @@ public class ComponentGenerator {
                             ComponentGeneratorUtils.convertPackageToDirectory(
                                     targetPath, javaClass.getPackage(), true),
                             fileName).toPath(),
-                    source.getBytes("UTF-8"));
+                    source.getBytes(UTF_8));
         } catch (IOException ex) {
             throw new ComponentGenerationException(
                     "Error writing the generated Java source file \"" + fileName

@@ -37,7 +37,6 @@ public class GridDelegatesToSelectionModelTest {
     }
 
     @Before
-    @SuppressWarnings("unchecked")
     public void init() {
         selectionModelMock = Mockito.mock(GridSelectionModel.class);
         grid = new CustomGrid();

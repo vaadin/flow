@@ -35,7 +35,6 @@ import com.vaadin.ui.Component;
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         implements ServletContainerInitializer {
 
-    @SuppressWarnings("unchecked")
     @Override
     public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {

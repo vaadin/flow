@@ -15,6 +15,8 @@
  */
 package com.vaadin.router;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -304,7 +306,7 @@ public class Location implements Serializable {
             // Ignore forbidden chars supported in route definitions
             String strippedPath = path.replaceAll("[{}*]", "");
 
-            URI uri = new URI(URLEncoder.encode(strippedPath, "UTF-8"));
+            URI uri = new URI(URLEncoder.encode(strippedPath, UTF_8.name()));
             if (uri.isAbsolute()) {
                 // "A URI is absolute if, and only if, it has a scheme
                 // component"
