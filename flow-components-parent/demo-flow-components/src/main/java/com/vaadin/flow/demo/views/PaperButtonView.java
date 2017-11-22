@@ -43,7 +43,7 @@ public class PaperButtonView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Link button
-        GeneratedPaperButton link = new GeneratedPaperButton("Link");
+        GeneratedPaperButton<?> link = new GeneratedPaperButton<>("Link");
         link.setRaised(false);
         link.setNoink(true);
         link.getStyle().set("backgroundColor", "white");
@@ -61,7 +61,7 @@ public class PaperButtonView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Raised button
-        GeneratedPaperButton raised = new GeneratedPaperButton("Raised");
+        GeneratedPaperButton<?> raised = new GeneratedPaperButton<>("Raised");
         raised.setRaised(true);
         raised.getStyle().set("backgroundColor", "white");
         raised.addClickListener(
@@ -78,7 +78,7 @@ public class PaperButtonView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Toggle button
-        GeneratedPaperButton toggles = new GeneratedPaperButton("Toggles");
+        GeneratedPaperButton<?> toggles = new GeneratedPaperButton<>("Toggles");
         toggles.setRaised(true);
         toggles.setToggles(true);
         toggles.getStyle().set("backgroundColor", "white");
@@ -94,7 +94,8 @@ public class PaperButtonView extends DemoView {
     private void createDisabledButton() {
         // begin-source-example
         // source-example-heading: Disabled button
-        GeneratedPaperButton disabled = new GeneratedPaperButton("Disabled");
+        GeneratedPaperButton<?> disabled = new GeneratedPaperButton<>(
+                "Disabled");
         disabled.setRaised(false);
         disabled.setDisabled(true);
         disabled.getStyle().set("backgroundColor", "white");
