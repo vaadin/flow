@@ -31,7 +31,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -489,7 +488,6 @@ public class ComponentGenerator {
         Set<Class<?>> interfaces = BehaviorRegistry
                 .getClassesForBehaviors(classBehaviorsAndMixins);
 
-        AtomicBoolean componentSupplierAdded = new AtomicBoolean();
         interfaces.forEach(clazz -> {
             if (clazz.getTypeParameters().length > 0) {
                 javaClass.addInterface(
@@ -497,12 +495,12 @@ public class ComponentGenerator {
             } else {
                 javaClass.addInterface(clazz);
             }
-            if (ComponentSupplier.class.isAssignableFrom(clazz)) {
-                componentSupplierAdded.set(true);
-            }
         });
 
-        if (!componentSupplierAdded.get()) {
+        boolean componentSupplierAdded = interfaces.stream()
+                .filter(ComponentSupplier.class::isAssignableFrom).count() > 0;
+
+        if (!componentSupplierAdded) {
             javaClass.addInterface(ComponentSupplier.class.getName()
                     + GENERIC_TYPE_DECLARATION);
         }
