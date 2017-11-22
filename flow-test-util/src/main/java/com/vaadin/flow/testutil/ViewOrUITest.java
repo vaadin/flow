@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.testutil;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.logging.Level;
@@ -22,6 +24,7 @@ import java.util.logging.Logger;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
+
 
 /**
  * Base class for TestBench tests which use a UI/View matched to the test name
@@ -37,13 +40,14 @@ public class ViewOrUITest extends AbstractTestBenchTest {
         Class<? extends UI> uiClass = getUIClass();
         try {
             if (uiClass != null) {
-                return "/run/" + URLEncoder.encode(uiClass.getName(), "UTF-8");
+                return "/run/"
+                        + URLEncoder.encode(uiClass.getName(), UTF_8.name());
             }
 
             Class<? extends Component> viewClass = getViewClass();
             if (viewClass != null) {
                 return "/view/"
-                        + URLEncoder.encode(viewClass.getName(), "UTF-8");
+                        + URLEncoder.encode(viewClass.getName(), UTF_8.name());
             }
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
