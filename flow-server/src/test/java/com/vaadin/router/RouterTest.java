@@ -197,24 +197,6 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("param")
     @Tag(Tag.DIV)
-    public static class RouteWithCustomParameterSerialization extends Component
-            implements HasUrlParameter<String> {
-
-        @Override
-        public void setParameter(BeforeNavigationEvent event,
-                String parameter) {
-            eventCollector.add("Received param: " + parameter);
-        }
-
-        @Override
-        public List<String> serializeUrlParameters(List<String> urlParameters) {
-            eventCollector.add("Custom parameter serialization called");
-            return urlParameters;
-        }
-    }
-
-    @Route("param")
-    @Tag(Tag.DIV)
     public static class RouteWithMultipleParameters extends Component
             implements BeforeNavigationObserver, HasUrlParameter<String> {
 
@@ -1654,6 +1636,19 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void custom_serializer_gives_expected_result()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream
+                .of(FixedWildParameter.class).collect(Collectors.toSet()));
+
+        Assert.assertEquals("fixed/wildcard/sum/13", router
+                .getUrl(FixedWildParameter.class, Arrays.asList(5, 5, 3), urlParameters -> 
+                        Arrays.asList("sum", urlParameters.stream()
+                                .reduce(Integer::sum).orElse(0).toString())
+                ));
+    }
+
+    @Test
     public void redirect_to_routeNotFound_error_view_when_no_route_found()
             throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(Stream
@@ -2029,21 +2024,6 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Recorded event amount should have stayed the same",
                 1, eventCollector.size());
-    }
-
-    @Test
-    public void overridden_url_parameters_serializer()
-            throws InvalidRouteConfigurationException {
-        this.createVaadinServiceWithDefaultInstantiator();
-
-        router.getRegistry().setNavigationTargets(
-                Stream.of(RouteWithCustomParameterSerialization.class)
-                        .collect(Collectors.toSet()));
-
-        router.getUrl(RouteWithCustomParameterSerialization.class, "foo");
-
-        Assert.assertEquals("Custom parameter serialization not called",
-                "Custom parameter serialization called", eventCollector.get(0));
     }
 
     private void createVaadinServiceWithDefaultInstantiator() {
