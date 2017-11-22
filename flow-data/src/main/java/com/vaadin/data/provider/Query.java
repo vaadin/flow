@@ -151,4 +151,19 @@ public class Query<T, F> implements Serializable {
     public Comparator<T> getInMemorySorting() {
         return inMemorySorting;
     }
+
+    /**
+     * Gets the optional comparator for sorting data. The comparator is only
+     * used when fetching items, but not when counting the number of available
+     * items.
+     * <p>
+     * <strong>Note: </strong> Sort orders and comparator sorting are mutually
+     * exclusive. If the {@link DataProvider} handles one, it should ignore the
+     * other.
+     *
+     * @return optional sorting comparator
+     */
+    public Optional<Comparator<T>> getSortingComparator() {
+        return Optional.ofNullable(inMemorySorting);
+    }
 }
