@@ -326,7 +326,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag(TAG)
-    private static class NoModelTemplate extends PolymerTemplate<ModelClass> {
+    @SuppressWarnings("rawtypes")
+    private static class NoModelTemplate extends PolymerTemplate {
 
         NoModelTemplate() {
             super(new SimpleTemplateParser());
