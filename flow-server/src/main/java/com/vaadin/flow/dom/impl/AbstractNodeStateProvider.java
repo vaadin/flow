@@ -153,7 +153,8 @@ public abstract class AbstractNodeStateProvider
      *            the node to wrap into flyweight
      * @return the flyweight instance for the {@code node}
      */
-    protected abstract Node<?> getNode(StateNode node);
+    @SuppressWarnings("rawtypes")
+    protected abstract Node getNode(StateNode node);
 
     /**
      * Gets the children data feature for the given node and asserts it is
