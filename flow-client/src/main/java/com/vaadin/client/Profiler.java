@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
@@ -462,7 +461,7 @@ public class Profiler {
             return;
         }
 
-        Set<Node> extendedTimeNodes = new HashSet<>();
+        HashSet<Node> extendedTimeNodes = new HashSet<>();
         for (int i = 0; i < gwtStatsEvents.length(); i++) {
             GwtStatsEvent gwtStatsEvent = gwtStatsEvents.get(i);
             if (!EVT_GROUP.equals(gwtStatsEvent.getEvtGroup())) {
@@ -535,10 +534,11 @@ public class Profiler {
             return;
         }
 
-        Map<String, Node> totals = new HashMap<>();
+        HashMap<String, Node> totals = new HashMap<>();
         rootNode.sumUpTotals(totals);
 
         ArrayList<Node> totalList = new ArrayList<>(totals.values());
+        ArrayList<Node>[] x = new ArrayList[0];
         Collections.sort(totalList, new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {

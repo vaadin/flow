@@ -17,7 +17,6 @@ package com.vaadin.client.communication;
 
 import java.util.Date;
 import java.util.EnumMap;
-import java.util.Map;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
@@ -338,7 +337,8 @@ public class MessageHandler {
 
     private void handleDependencies(JsonObject inputJson) {
         Console.log("Handling dependencies");
-        Map<LoadMode, JsonArray> dependencies = new EnumMap<>(LoadMode.class);
+        EnumMap<LoadMode, JsonArray> dependencies = new EnumMap<>(
+                LoadMode.class);
         for (LoadMode loadMode : LoadMode.values()) {
             if (inputJson.hasKey(loadMode.name())) {
                 dependencies.put(loadMode, inputJson.getArray(loadMode.name()));
