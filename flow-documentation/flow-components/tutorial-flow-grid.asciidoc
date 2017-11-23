@@ -274,7 +274,7 @@ When `setResizable()` is enabled the user can resize a column by dragging its se
 === Frozen Columns
 
 You can set columns to be frozen with the `setFrozen()` method in `Column`, so that they are not scrolled off when scrolling horizontally.
-Additionally, user reordering of frozen columns is disabled.
+Additionally, user reordering of frozen columns is limited between other frozen columns.
 
 [source, java]
 ----
