@@ -15,11 +15,7 @@
  */
 package com.vaadin.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,17 +25,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletResponse;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
-import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationObserver;
@@ -51,7 +44,6 @@ import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.server.MockVaadinServletService;
 import com.vaadin.server.MockVaadinSession;
-import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Component;
@@ -60,9 +52,11 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.i18n.LocaleChangeEvent;
 import com.vaadin.ui.i18n.LocaleChangeObserver;
-import com.vaadin.util.CurrentInstance;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -192,24 +186,6 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             eventCollector.add("Stored parameter: " + param);
-        }
-    }
-
-    @Route("param")
-    @Tag(Tag.DIV)
-    public static class RouteWithCustomParameterSerialization extends Component
-            implements HasUrlParameter<String> {
-
-        @Override
-        public void setParameter(BeforeNavigationEvent event,
-                String parameter) {
-            eventCollector.add("Received param: " + parameter);
-        }
-
-        @Override
-        public List<String> serializeUrlParameters(List<String> urlParameters) {
-            eventCollector.add("Custom parameter serialization called");
-            return urlParameters;
         }
     }
 
@@ -853,7 +829,6 @@ public class RouterTest extends RoutingTestBase {
     @After
     public void tearDown() {
         UI.setCurrent(null);
-        CurrentInstance.clearAll();
     }
 
     @Rule
@@ -1654,6 +1629,19 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void custom_serializer_gives_expected_result()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream
+                .of(FixedWildParameter.class).collect(Collectors.toSet()));
+
+        Assert.assertEquals("fixed/wildcard/sum/13",
+                router.getUrl(FixedWildParameter.class, Arrays.asList(5, 5, 3),
+                        urlParameters -> Arrays.asList("sum",
+                                urlParameters.stream().reduce(Integer::sum)
+                                        .orElse(0).toString())));
+    }
+
+    @Test
     public void redirect_to_routeNotFound_error_view_when_no_route_found()
             throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(Stream
@@ -2029,27 +2017,6 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Recorded event amount should have stayed the same",
                 1, eventCollector.size());
-    }
-
-    @Test
-    public void overridden_url_parameters_serializer()
-            throws InvalidRouteConfigurationException {
-        this.createVaadinServiceWithDefaultInstantiator();
-
-        router.getRegistry().setNavigationTargets(
-                Stream.of(RouteWithCustomParameterSerialization.class)
-                        .collect(Collectors.toSet()));
-
-        router.getUrl(RouteWithCustomParameterSerialization.class, "foo");
-
-        Assert.assertEquals("Custom parameter serialization not called",
-                "Custom parameter serialization called", eventCollector.get(0));
-    }
-
-    private void createVaadinServiceWithDefaultInstantiator() {
-        VaadinService service = Mockito.mock(VaadinService.class);
-        CurrentInstance.set(VaadinService.class, service);
-        Mockito.when(service.getInstantiator()).thenReturn(new DefaultInstantiator(service));
     }
 
     private Class<? extends Component> getUIComponent() {
