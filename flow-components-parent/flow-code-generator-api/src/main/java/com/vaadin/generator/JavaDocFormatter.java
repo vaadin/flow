@@ -106,7 +106,7 @@ class JavaDocFormatter {
      * exists as a dependency.
      */
     private static String escapeHtml(String input) {
-        return input.replace("\"", "&quot;").replace("&", "&amp;")
+        return input.replace("&", "&amp;").replace("\"", "&quot;")
                 .replace("<", "&lt;").replace(">", "&gt;");
     }
 
