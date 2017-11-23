@@ -37,7 +37,7 @@ class JavaDocFormatter {
     private static final String JAVA_DOC_CLOSE_ESCAPED = "&#42;&#47;";
 
     private static final Pattern MULTI_LINE_CODE_PARTS = Pattern
-            .compile("```(.*?)```");
+            .compile("```(.*?)```", Pattern.DOTALL);
     private static final Pattern MULTI_LINE_CODE_PARTS_HTML = Pattern
             .compile("```html(.*?)```", Pattern.DOTALL);
     private static final Pattern SINGLE_LINE_CODE_PARTS = Pattern
