@@ -23,7 +23,7 @@ import java.util.List;
  * @author Vaadin Ltd.
  *
  * @param <T>
- *            type parameter type
+ *            type of the parameters that will be serialized
  */
 @FunctionalInterface
 public interface ParameterSerializer<T> {
