@@ -191,6 +191,17 @@ public final class ExecuteJavaScriptElementUtils {
 
     }
 
+    /**
+     * Populate model {@code properties}: add them into
+     * {@literal NodeFeatures.ELEMENT_PROPERTIES} {@link NodeMap} if they are
+     * not defined by the client-side element or send their client-side value to
+     * the server otherwise.
+     *
+     * @param node
+     *            the node whose properties should be populated
+     * @param properties
+     *            array of property names to populate
+     */
     public static void populateModelProperties(StateNode node,
             JsArray<String> properties) {
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
