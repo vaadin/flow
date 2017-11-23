@@ -269,7 +269,8 @@ public class Router implements RouterInterface {
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
             Class<? extends C> navigationTarget, List<T> parameters) {
-        return getUrl(navigationTarget, Objects.requireNonNull(parameters), this::serializeUrlParameters);
+        return getUrl(navigationTarget, Objects.requireNonNull(parameters),
+                this::serializeUrlParameters);
     }
 
     /**
@@ -289,9 +290,10 @@ public class Router implements RouterInterface {
      * @return url for the navigation target with parameter
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
-            Class<? extends C> navigationTarget, List<T> parameters, ParameterSerializer<T> serializer) {
-        List<String> serializedParameters = serializer.serializeUrlParameters(
-                Objects.requireNonNull(parameters));
+            Class<? extends C> navigationTarget, List<T> parameters,
+            ParameterSerializer<T> serializer) {
+        List<String> serializedParameters = serializer
+                .serializeUrlParameters(Objects.requireNonNull(parameters));
 
         String routeString = getUrlForTarget(navigationTarget);
 
