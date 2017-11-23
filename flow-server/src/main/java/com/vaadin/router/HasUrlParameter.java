@@ -17,9 +17,7 @@ package com.vaadin.router;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -92,24 +90,6 @@ public interface HasUrlParameter<T> {
                     "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class "
                             + navigationTarget.getName());
         }
-    }
-
-    /**
-     * Method used to serialize the list of url parameters get the url segments
-     * This method can be overridden to support more complex objects as an url
-     * parameter. By default this method attempts to cast the parameter list to
-     * String and collect the parts to a List.
-     * 
-     * @param urlParameters
-     *            parameters to serialize
-     * @return list of serialized parameters
-     */
-    default List<String> serializeUrlParameters(List<T> urlParameters) {
-        if (urlParameters == null) {
-            return new ArrayList<>();
-        }
-        return urlParameters.stream().filter(Objects::nonNull).map(T::toString)
-                .collect(Collectors.toList());
     }
 
     /**

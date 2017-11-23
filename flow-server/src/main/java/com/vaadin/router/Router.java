@@ -15,16 +15,12 @@
  */
 package com.vaadin.router;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
@@ -254,7 +250,7 @@ public class Router implements RouterInterface {
     }
 
     /**
-     * Get the url string for given navigation target with the parameter in the
+     * Get the url string for given navigation target with the parameters in the
      * url.
      * <p>
      * Note! Given parameter is checked for correct class type. This means that
@@ -264,15 +260,39 @@ public class Router implements RouterInterface {
      * @param navigationTarget
      *            navigation target to get url for
      * @param parameters
-     *            parameters to embed into the generated url
+     *            parameters to embed into the generated url, not null
      * @return url for the navigation target with parameter
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
             Class<? extends C> navigationTarget, List<T> parameters) {
+        return getUrl(navigationTarget, Objects.requireNonNull(parameters),
+                this::serializeUrlParameters);
+    }
+
+    /**
+     * Get the url string for given navigation target with the parameters in the
+     * url that are serialized using the given parameter serializer.
+     * <p>
+     * Note! Given parameter is checked for correct class type. This means that
+     * if the navigation target defined parameter is of type {@code Boolean}
+     * then calling getUrl with a {@code String} will fail.
+     *
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @param parameters
+     *            parameters to embed into the generated url, not null
+     * @param serializer
+     *            parameter serializer to use for serializing parameters list
+     * @return url for the navigation target with parameter
+     */
+    public <T, C extends Component & HasUrlParameter<T>> String getUrl(
+            Class<? extends C> navigationTarget, List<T> parameters,
+            ParameterSerializer<T> serializer) {
+        List<String> serializedParameters = serializer
+                .serializeUrlParameters(Objects.requireNonNull(parameters));
+
         String routeString = getUrlForTarget(navigationTarget);
 
-        List<String> serializedParameters = getSerializedParameters(
-                navigationTarget, parameters);
         if (!parameters.isEmpty()) {
             routeString = routeString.replace(
                     "{" + parameters.get(0).getClass().getSimpleName() + "}",
@@ -315,32 +335,6 @@ public class Router implements RouterInterface {
     private boolean hasUrlParameters(
             Class<? extends Component> navigationTarget) {
         return HasUrlParameter.class.isAssignableFrom(navigationTarget);
-    }
-
-    private <T, C extends Component & HasUrlParameter<T>> List<String> getSerializedParameters(
-            Class<? extends C> navigationTarget, List<T> parameters) {
-        List<String> serializedParameters = new ArrayList<>();
-        try {
-            // If serializeUrlParameters is the default one, no need to trigger
-            // a potentially expensive instantiation of the component
-            if (navigationTarget.getMethod("serializeUrlParameters", List.class)
-                    .getDeclaringClass().equals(HasUrlParameter.class)) {
-                serializedParameters.addAll(serializeUrlParameters(parameters));
-            } else {
-                Instantiator instantiator = VaadinService.getCurrent()
-                        .getInstantiator();
-                serializedParameters
-                        .addAll(instantiator.createComponent(navigationTarget)
-                                .serializeUrlParameters(parameters));
-            }
-        } catch (NoSuchMethodException e) {
-            Logger.getLogger(Router.class.getName()).log(Level.WARNING, e,
-                    () -> String.format(
-                            "Failed to get method 'serializeUrlParameters' for %s",
-                            navigationTarget.getName()));
-            serializedParameters.addAll(serializeUrlParameters(parameters));
-        }
-        return serializedParameters;
     }
 
     private <T> List<String> serializeUrlParameters(List<T> urlParameters) {
