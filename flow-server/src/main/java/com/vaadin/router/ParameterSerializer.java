@@ -19,6 +19,11 @@ import java.util.List;
 
 /**
  * Parameter serializer interface for customizing parameter serialization.
+ *
+ * @author Vaadin Ltd.
+ *
+ * @param <T>
+ *            type parameter type
  */
 @FunctionalInterface
 public interface ParameterSerializer<T> {

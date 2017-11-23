@@ -15,16 +15,12 @@
  */
 package com.vaadin.router;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
