@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.util.ReflectTools;
 
@@ -68,7 +67,7 @@ public interface HasUrlParameter<T> {
             return isAnnotatedParameter(this.getClass(),
                     WildcardParameter.class) ? (T) "" : null;
         }
-        Class parameterType = getClassType(this.getClass());
+        Class<?> parameterType = getClassType(this.getClass());
         if (isAnnotatedParameter(this.getClass(), WildcardParameter.class)) {
             validateWildcardType(this.getClass(), parameterType);
             return (T) urlParameters.stream().collect(Collectors.joining("/"));

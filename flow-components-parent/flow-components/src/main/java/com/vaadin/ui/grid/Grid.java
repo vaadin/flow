@@ -75,8 +75,8 @@ import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.grid.GridTemplateRendererUtil.RendereredComponent;
-import com.vaadin.ui.renderers.ComponentTemplateRenderer;
 import com.vaadin.ui.renderers.ComponentRendererUtil;
+import com.vaadin.ui.renderers.ComponentTemplateRenderer;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
 
@@ -993,7 +993,7 @@ public class Grid<T> extends Component implements HasDataProvider<T>, HasStyle,
         Objects.requireNonNull(selectionMode, "selection mode cannot be null");
         if (selectionModel != null
                 && selectionModel instanceof AbstractGridExtension) {
-            ((AbstractGridExtension) selectionModel).remove();
+            ((AbstractGridExtension<?>) selectionModel).remove();
         }
         selectionModel = model;
         getElement().callFunction("$connector.setSelectionMode",

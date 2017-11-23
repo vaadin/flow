@@ -28,7 +28,7 @@ import com.vaadin.ui.UI;
  */
 public class ErrorNavigationEvent extends NavigationEvent {
 
-    private final ErrorParameter errorParameter;
+    private final ErrorParameter<?> errorParameter;
 
     /**
      * Creates a new navigation event.
@@ -46,7 +46,8 @@ public class ErrorNavigationEvent extends NavigationEvent {
      *            parameter containing navigation error information
      */
     public ErrorNavigationEvent(RouterInterface router, Location location,
-            UI ui, NavigationTrigger trigger, ErrorParameter errorParameter) {
+            UI ui, NavigationTrigger trigger,
+            ErrorParameter<?> errorParameter) {
         super(router, location, ui, trigger);
 
         this.errorParameter = errorParameter;
@@ -57,7 +58,7 @@ public class ErrorNavigationEvent extends NavigationEvent {
      *
      * @return set error parameter or null if not set
      */
-    public ErrorParameter getErrorParameter() {
+    public ErrorParameter<?> getErrorParameter() {
         return errorParameter;
     }
 }

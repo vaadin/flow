@@ -20,7 +20,7 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 @PageTitle("Registered custom elements view")
 public class CustomElementMappingView extends AbstractDivView {
 
-    List<Class<? extends PolymerTemplate>> customElements = Arrays.asList(
+    List<Class<? extends PolymerTemplate<?>>> customElements = Arrays.asList(
             DomRepeatView.class, EventHandlerView.class,
             OneWayPolymerBindingView.class, SubPropertyModelTemplate.class,
             TwoWayPolymerBindingView.class);
@@ -32,7 +32,7 @@ public class CustomElementMappingView extends AbstractDivView {
         customElements.forEach(this::addKeyIfRegistered);
     }
 
-    private void addKeyIfRegistered(Class<? extends PolymerTemplate> clazz) {
+    private void addKeyIfRegistered(Class<? extends PolymerTemplate<?>> clazz) {
         String tagName = clazz.getAnnotation(Tag.class).value();
         CustomElementRegistry registry = CustomElementRegistry.getInstance();
         if (registry.isRegisteredCustomElement(tagName)

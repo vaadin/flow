@@ -107,7 +107,7 @@ public class NavigationEvents {
     }
 }
 
-class ConfirmDialog extends GeneratedPaperDialog {
+class ConfirmDialog extends GeneratedPaperDialog<ConfirmDialog> {
 
     public static ConfirmDialog build(String message) {
         ConfirmDialog dialog = new ConfirmDialog();

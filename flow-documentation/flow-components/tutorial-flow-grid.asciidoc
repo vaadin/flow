@@ -408,7 +408,7 @@ The following example adds a column that contains an icon for each person, that 
 
 [source, java]
 ----
-Grid<Person> grid = new Grid();
+Grid<Person> grid = new Grid<>();
 grid.setItems(people);
 
 grid.addColumn(new ComponentTemplateRenderer<>(person -> {

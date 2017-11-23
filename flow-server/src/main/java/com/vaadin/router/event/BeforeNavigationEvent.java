@@ -328,7 +328,7 @@ public class BeforeNavigationEvent extends EventObject {
                     .withTarget(errorNavigationTarget.get()).build();
             rerouteTarget = new ErrorStateRenderer(rerouteTargetState);
 
-            errorParameter = new ErrorParameter(exception, customMessage);
+            errorParameter = new ErrorParameter<>(exception, customMessage);
         } else {
             throw new RuntimeException(customMessage, exception);
         }
@@ -348,7 +348,7 @@ public class BeforeNavigationEvent extends EventObject {
      * 
      * @return error parameter
      */
-    public ErrorParameter getErrorParameter() {
+    public ErrorParameter<?> getErrorParameter() {
         return errorParameter;
     }
 
