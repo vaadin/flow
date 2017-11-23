@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -72,7 +72,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code index} property from the webcomponent
      */
     public double getIndex() {
@@ -86,7 +86,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * <p>
      * The index of the item
      * </p>
-     * 
+     *
      * @param index
      *            the double value to set
      */
@@ -104,7 +104,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code item} property from the webcomponent
      */
     public String getItemString() {
@@ -121,7 +121,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code item} property from the webcomponent
      */
     protected JsonObject protectedGetItemObject() {
@@ -135,7 +135,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * <p>
      * The item to render
      * </p>
-     * 
+     *
      * @param item
      *            the String value to set
      */
@@ -150,7 +150,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * <p>
      * The item to render
      * </p>
-     * 
+     *
      * @param item
      *            the JsonObject value to set
      */
@@ -168,7 +168,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code label} property from the webcomponent
      */
     public String getLabel() {
@@ -182,7 +182,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * <p>
      * The text label corresponding to the item
      * </p>
-     * 
+     *
      * @param label
      *            the String value to set
      */
@@ -200,7 +200,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selected} property from the webcomponent
      */
     public boolean isSelected() {
@@ -214,7 +214,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * <p>
      * True when item is selected
      * </p>
-     * 
+     *
      * @param selected
      *            the boolean value to set
      */
@@ -232,7 +232,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code focused} property from the webcomponent
      */
     public boolean isFocused() {
@@ -246,7 +246,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * <p>
      * True when item is focused
      * </p>
-     * 
+     *
      * @param focused
      *            the boolean value to set
      */

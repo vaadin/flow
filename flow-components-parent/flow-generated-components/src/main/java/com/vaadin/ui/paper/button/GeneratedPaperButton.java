@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -53,7 +53,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code keyEventTarget} property from the webcomponent
      */
     protected JsonObject protectedGetKeyEventTarget() {
@@ -68,7 +68,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * The EventTarget that will be firing relevant KeyboardEvents. Set it to
      * {@code null} to disable the listeners.
      * </p>
-     * 
+     *
      * @param keyEventTarget
      *            the JsonObject value to set
      */
@@ -87,7 +87,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
@@ -103,7 +103,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * If true, this property will cause the implementing element to
      * automatically stop propagation on any handled KeyboardEvents.
      * </p>
-     * 
+     *
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
@@ -116,7 +116,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code keyBindings} property from the webcomponent
      */
     protected JsonObject protectedGetKeyBindings() {
@@ -141,7 +141,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code pressed} property from the webcomponent
      */
     public boolean isPressed() {
@@ -159,7 +159,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code toggles} property from the webcomponent
      */
     public boolean isToggles() {
@@ -174,7 +174,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * If true, the button toggles the active state with each tap or press of
      * the spacebar.
      * </p>
-     * 
+     *
      * @param toggles
      *            the boolean value to set
      */
@@ -192,7 +192,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is synchronized automatically from client side when a
      * 'active-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code active} property from the webcomponent
      */
     @Synchronize(property = "active", value = "active-changed")
@@ -207,7 +207,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * <p>
      * If true, the button is a toggle and is currently in the active state.
      * </p>
-     * 
+     *
      * @param active
      *            the boolean value to set
      */
@@ -227,7 +227,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code pointerDown} property from the webcomponent
      */
     public boolean isPointerDown() {
@@ -245,7 +245,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code receivedFocusFromKeyboard} property from the
      *         webcomponent
      */
@@ -264,7 +264,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code ariaActiveAttribute} property from the webcomponent
      */
     public String getAriaActiveAttribute() {
@@ -279,7 +279,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * The aria attribute to be set if the button is a toggle and in the active
      * state.
      * </p>
-     * 
+     *
      * @param ariaActiveAttribute
      *            the String value to set
      */
@@ -298,7 +298,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is synchronized automatically from client side when a
      * 'focused-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
@@ -316,7 +316,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is synchronized automatically from client side when a
      * 'disabled-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     @Synchronize(property = "disabled", value = "disabled-changed")
@@ -331,7 +331,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * <p>
      * If true, the user cannot interact with this element.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -350,7 +350,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noink} property from the webcomponent
      */
     public boolean isNoink() {
@@ -365,7 +365,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * If true, the element will not produce a ripple effect when interacted
      * with via the pointer.
      * </p>
-     * 
+     *
      * @param noink
      *            the boolean value to set
      */
@@ -385,7 +385,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code elevation} property from the webcomponent
      */
     public double getElevation() {
@@ -402,7 +402,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code raised} property from the webcomponent
      */
     public boolean isRaised() {
@@ -416,7 +416,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * <p>
      * If true, the button should be styled with a shadow.
      * </p>
-     * 
+     *
      * @param raised
      *            the boolean value to set
      */
@@ -433,7 +433,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * element. This is the imperative equivalent of declaring a keybinding in
      * the {@code keyBindings} prototype property.
      * </p>
-     * 
+     *
      * @param eventString
      *            Missing documentation!
      * @param handlerName
@@ -467,7 +467,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param event
      *            Missing documentation!
      * @param eventString
@@ -486,7 +486,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * Ensures this element contains a ripple effect. For startup efficiency the
      * ripple effect is dynamically on demand when needed.
      * </p>
-     * 
+     *
      * @param optTriggeringEvent
      *            (optional) event that triggered the ripple.
      */
@@ -535,7 +535,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
     /**
      * Adds a listener for {@code active-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -556,7 +556,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
     /**
      * Adds a listener for {@code focused-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -577,7 +577,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
     /**
      * Adds a listener for {@code disabled-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -598,7 +598,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
     /**
      * Adds a listener for {@code transitionend} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -610,7 +610,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 
     /**
      * Sets the given string as the content of this component.
-     * 
+     *
      * @param the
      *            text content to set
      * @see HasText#setText(String)

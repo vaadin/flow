@@ -665,7 +665,7 @@ public class UIInternals implements Serializable {
      * The method will return {@code null} if the UI is not currently attached
      * to a VaadinSession.
      * </p>
-     * 
+     *
      * @return the VaadinSession to which the related UI is attached
      */
     public VaadinSession getSession() {
@@ -750,7 +750,7 @@ public class UIInternals implements Serializable {
     /**
      * Get the latest handled location or empty optional if no active
      * navigation.
-     * 
+     *
      * @return location if navigated during active navigation or {@code null}
      */
     public Location getLastHandledLocation() {
@@ -759,7 +759,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Set the latest navigation location for active navigation.
-     * 
+     *
      * @param location
      *            last location navigated to
      */

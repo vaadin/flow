@@ -25,7 +25,7 @@ import com.vaadin.ui.renderers.TemplateRenderer;
 /**
  * Base class with common implementation for different types of columns used
  * inside a {@link Grid}.
- * 
+ *
  * @author Vaadin Ltd.
  * @param <T>
  *            the subclass type
@@ -39,7 +39,7 @@ public class AbstractColumn<T extends AbstractColumn<T>> extends Component
 
     /**
      * Base constructor with the destination Grid.
-     * 
+     *
      * @param grid
      *            the grid that is the owner of this column
      */
@@ -49,7 +49,7 @@ public class AbstractColumn<T extends AbstractColumn<T>> extends Component
 
     /**
      * Gets the owner of this column.
-     * 
+     *
      * @return the grid which owns this column
      */
     public Grid<?> getGrid() {

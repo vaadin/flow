@@ -122,7 +122,7 @@ public class DefaultInstantiator implements Instantiator {
     /**
      * Get the I18NProvider property from the session configurator or try to
      * load it from application.properties property file.
-     * 
+     *
      * @return I18NProvider parameter or null if not found
      */
     private String getI18NProviderProperty() {

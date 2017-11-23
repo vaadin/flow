@@ -365,7 +365,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     /**
      * Returns the state of this connection.
-     * 
+     *
      * @return the state of this connection
      */
     protected State getState() {

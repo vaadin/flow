@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -100,7 +100,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     public boolean isDisabled() {
@@ -114,7 +114,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * <p>
      * If true, the user cannot interact with this element.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -132,7 +132,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selected} property from the webcomponent
      */
     public boolean isSelected() {
@@ -146,7 +146,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * <p>
      * If true, the item is in selected state.
      * </p>
-     * 
+     *
      * @param selected
      *            the boolean value to set
      */
@@ -164,7 +164,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code value} property from the webcomponent
      */
     public String getValue() {
@@ -178,7 +178,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * <p>
      * A property representing the value of this item
      * </p>
-     * 
+     *
      * @param value
      *            the String value to set
      */

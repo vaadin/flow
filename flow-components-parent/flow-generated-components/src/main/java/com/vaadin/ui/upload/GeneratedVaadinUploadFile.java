@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -45,7 +45,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code file} property from the webcomponent
      */
     protected JsonObject protectedGetFile() {
@@ -59,7 +59,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * <p>
      * File metadata, upload status and progress information.
      * </p>
-     * 
+     *
      * @param file
      *            the JsonObject value to set
      */
@@ -92,7 +92,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
 
     /**
      * Adds a listener for {@code file-abort} events fired by the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -127,7 +127,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
 
     /**
      * Adds a listener for {@code file-remove} events fired by the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -162,7 +162,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
 
     /**
      * Adds a listener for {@code file-retry} events fired by the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -197,7 +197,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
 
     /**
      * Adds a listener for {@code file-start} events fired by the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */

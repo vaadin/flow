@@ -22,7 +22,7 @@ public class ComponentGenerationException extends RuntimeException {
 
     /**
      * Constructs the exception with a message.
-     * 
+     *
      * @param message
      *            The message of the error.
      */
@@ -32,7 +32,7 @@ public class ComponentGenerationException extends RuntimeException {
 
     /**
      * Constructs the exception with a message and a cause.
-     * 
+     *
      * @param message
      *            The message of the error.
      * @param cause

@@ -26,7 +26,7 @@ import com.vaadin.ui.html.Anchor;
 /**
  * Component to render anchors for specific parts of a component demo. Those
  * anchors acts like "tabs" in the UI.
- * 
+ *
  * @author Vaadin Ltd
  */
 @Tag("nav")
@@ -45,7 +45,7 @@ public class DemoNavigationBar extends HtmlContainer {
 
     /**
      * Adds a menu item inside the navigation bar.
-     * 
+     *
      * @param text
      *            the text shown for the anchor
      * @param href
@@ -62,7 +62,7 @@ public class DemoNavigationBar extends HtmlContainer {
     /**
      * Sets an specific anchor as active. The previous active anchor, if
      * existent, is made inactive.
-     * 
+     *
      * @param href
      *            the href of the anchor to be set as active, or
      *            <code>null</code> to inactivate all the anchors.

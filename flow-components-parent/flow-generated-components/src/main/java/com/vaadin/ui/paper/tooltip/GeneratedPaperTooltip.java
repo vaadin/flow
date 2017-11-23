@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -43,7 +43,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code animationConfig} property from the webcomponent
      */
     protected JsonObject protectedGetAnimationConfig() {
@@ -59,7 +59,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * the tooltip. If you want to override this, you must ensure that your
      * animationConfig has the exact format below.
      * </p>
-     * 
+     *
      * @param animationConfig
      *            the JsonObject value to set
      */
@@ -80,7 +80,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code entryAnimation} property from the webcomponent
      */
     public String getEntryAnimation() {
@@ -96,7 +96,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * {@code animationConfig.entry} manually if using this. The animated node
      * is set to {@code this} if using this property.
      * </p>
-     * 
+     *
      * @param entryAnimation
      *            the String value to set
      */
@@ -117,7 +117,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code exitAnimation} property from the webcomponent
      */
     public String getExitAnimation() {
@@ -133,7 +133,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * {@code animationConfig.exit} manually if using this. The animated node is
      * set to {@code this} if using this property.
      * </p>
-     * 
+     *
      * @param exitAnimation
      *            the String value to set
      */
@@ -153,7 +153,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code for} property from the webcomponent
      */
     public String getFor() {
@@ -168,7 +168,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * The id of the element that the tooltip is anchored to. This element must
      * be a sibling of the tooltip.
      * </p>
-     * 
+     *
      * @param _for
      *            the String value to set
      */
@@ -187,7 +187,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code manualMode} property from the webcomponent
      */
     public boolean isManualMode() {
@@ -202,7 +202,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * Set this to true if you want to manually control when the tooltip is
      * shown or hidden.
      * </p>
-     * 
+     *
      * @param manualMode
      *            the boolean value to set
      */
@@ -220,7 +220,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code position} property from the webcomponent
      */
     public String getPosition() {
@@ -234,7 +234,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * <p>
      * Positions the tooltip to the top, right, bottom, left of its content.
      * </p>
-     * 
+     *
      * @param position
      *            the String value to set
      */
@@ -252,7 +252,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code fitToVisibleBounds} property from the webcomponent
      */
     public boolean isFitToVisibleBounds() {
@@ -266,7 +266,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * <p>
      * If true, no parts of the tooltip will ever be shown offscreen.
      * </p>
-     * 
+     *
      * @param fitToVisibleBounds
      *            the boolean value to set
      */
@@ -285,7 +285,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code offset} property from the webcomponent
      */
     public double getOffset() {
@@ -300,7 +300,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * The spacing between the top of the tooltip and the element it is anchored
      * to.
      * </p>
-     * 
+     *
      * @param offset
      *            the double value to set
      */
@@ -320,7 +320,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code marginTop} property from the webcomponent
      */
     public double getMarginTop() {
@@ -336,7 +336,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * exiting code. Please use {@code offset} instead. If both {@code offset}
      * and {@code marginTop} are provided, {@code marginTop} will be ignored.
      * </p>
-     * 
+     *
      * @param marginTop
      *            the double value to set
      */
@@ -355,7 +355,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code animationDelay} property from the webcomponent
      */
     public double getAnimationDelay() {
@@ -370,7 +370,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * The delay that will be applied before the {@code entry} animation is
      * played when showing the tooltip.
      * </p>
-     * 
+     *
      * @param animationDelay
      *            the double value to set
      */
@@ -390,7 +390,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code target} property from the webcomponent
      */
     protected JsonObject protectedGetTarget() {
@@ -406,7 +406,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * the element given by the {@code for} attribute, or the immediate parent
      * of the tooltip.
      * </p>
-     * 
+     *
      * @param target
      *            the JsonObject value to set
      */
@@ -425,7 +425,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * property {@code animationConfig}, which is either a configuration object
      * or a map of animation type to array of configuration objects.
      * </p>
-     * 
+     *
      * @param type
      *            Missing documentation!
      */
@@ -440,7 +440,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * <p>
      * Plays an animation with an optional {@code type}.
      * </p>
-     * 
+     *
      * @param type
      *            Missing documentation!
      * @param cookie
@@ -477,7 +477,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
 
     /**
      * Adds the given components as children of this component.
-     * 
+     *
      * @param components
      *            the components to add
      * @see HasComponents#add(Component...)

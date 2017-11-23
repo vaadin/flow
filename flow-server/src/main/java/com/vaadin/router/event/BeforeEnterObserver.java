@@ -29,7 +29,7 @@ public interface BeforeEnterObserver {
 
     /**
      * Method called before navigation to attaching Component chain is made.
-     * 
+     *
      * @param event
      *            before navigation event with event details
      */

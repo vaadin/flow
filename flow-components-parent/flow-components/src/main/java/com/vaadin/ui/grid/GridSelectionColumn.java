@@ -36,7 +36,7 @@ public class GridSelectionColumn extends Component {
     /**
      * Constructs a new grid selection column configured to use the given
      * callbacks whenever the select all checkbox is toggled on the client side.
-     * 
+     *
      * @param selectAllCallback
      *            the runnable to run when the select all checkbox has been
      *            checked

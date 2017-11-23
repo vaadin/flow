@@ -30,7 +30,7 @@ import com.vaadin.flow.dom.Node;
  * <p>
  * The data is going to be destroyed once the response from the client side is
  * received.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -53,7 +53,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
     /**
      * Registers the data for the {@code child} node requested as being attached
      * to an existing element.
-     * 
+     *
      * @param parent
      *            parent node of the {@code child}
      * @param previousSibling
@@ -74,7 +74,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
 
     /**
      * Gets callback of the registered {@code node}.
-     * 
+     *
      * @param node
      *            the registered state node
      * @return the registered callback for the {@code node}
@@ -85,7 +85,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
 
     /**
      * Gets parent {@link Node} of the registered {@code node}.
-     * 
+     *
      * @param node
      *            the registered state node
      * @return the registered parent for the {@code node}
@@ -96,7 +96,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
 
     /**
      * Gets previous sibling of the registered {@code node}.
-     * 
+     *
      * @param node
      *            the registered state node
      * @return the registered previous sibling for the {@code node}
@@ -107,7 +107,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
 
     /**
      * Unregister the {@code node} and clean up all associated data.
-     * 
+     *
      * @param node
      *            the registered state node
      */

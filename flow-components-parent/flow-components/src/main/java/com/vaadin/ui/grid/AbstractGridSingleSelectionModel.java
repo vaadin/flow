@@ -31,7 +31,7 @@ import elemental.json.JsonObject;
 
 /**
  * Abstract implementation of a GridSingleSelectionModel.
- * 
+ *
  * @author Vaadin Ltd.
  *
  * @param <T>
@@ -46,7 +46,7 @@ public abstract class AbstractGridSingleSelectionModel<T>
 
     /**
      * Constructor for passing a reference of the grid to this implementation.
-     * 
+     *
      * @param grid
      *            reference to the grid for which this selection model is
      *            created
@@ -175,7 +175,7 @@ public abstract class AbstractGridSingleSelectionModel<T>
 
     /**
      * Method for handling the firing of selection events.
-     * 
+     *
      * @param event
      *            the selection event to fire
      */

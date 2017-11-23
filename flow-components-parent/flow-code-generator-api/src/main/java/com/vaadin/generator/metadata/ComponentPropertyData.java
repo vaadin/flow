@@ -17,7 +17,7 @@ package com.vaadin.generator.metadata;
 
 /**
  * Class that represents a property exposed by the webcomponent.
- * 
+ *
  * @see ComponentMetadata
  */
 public class ComponentPropertyData extends ComponentPropertyBaseData {
@@ -28,7 +28,7 @@ public class ComponentPropertyData extends ComponentPropertyBaseData {
     /**
      * Gets whether the property is read-only or not. Read-only properties
      * doesn't have a corresponding "setter" at the generated Java class.
-     * 
+     *
      * @return the readOnly <code>true</code> if the property is read-only (and
      *         doesn't contain a setter), <code>false</code> otherwise.
      */
@@ -39,7 +39,7 @@ public class ComponentPropertyData extends ComponentPropertyBaseData {
     /**
      * Sets whether the property is read-only or not. Read-only properties
      * doesn't have a corresponding "setter" at the generated Java class.
-     * 
+     *
      * @param readOnly
      *            <code>true</code> if the property is read-only (and doesn't
      *            contain a setter), <code>false</code> otherwise.
@@ -52,7 +52,7 @@ public class ComponentPropertyData extends ComponentPropertyBaseData {
      * Gets whether the webcomponent automatically fires a
      * {@code propertyName-changed} event every time the property value changes
      * on the client-side
-     * 
+     *
      * @return <code>true</code> if the webcomponent fires a changed event for
      *         this property, <code>false</code> otherwise.
      */
@@ -64,7 +64,7 @@ public class ComponentPropertyData extends ComponentPropertyBaseData {
      * Sets whether the webcomponent automatically fires a
      * {@code propertyName-changed} event everytime the property value changes
      * on the client-side.
-     * 
+     *
      * @param notify
      *            <code>true</code> if the webcomponent fires a changed event
      *            for this property, <code>false</code> otherwise

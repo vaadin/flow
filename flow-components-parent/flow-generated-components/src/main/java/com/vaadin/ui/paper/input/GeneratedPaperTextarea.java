@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -51,7 +51,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is synchronized automatically from client side when a
      * 'focused-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
@@ -72,7 +72,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is synchronized automatically from client side when a
      * 'disabled-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     @Synchronize(property = "disabled", value = "disabled-changed")
@@ -90,7 +90,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * {@code <paper-input-container>}'s and the input's {@code disabled}
      * property.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -109,7 +109,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code keyEventTarget} property from the webcomponent
      */
     protected JsonObject protectedGetKeyEventTarget() {
@@ -124,7 +124,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * The EventTarget that will be firing relevant KeyboardEvents. Set it to
      * {@code null} to disable the listeners.
      * </p>
-     * 
+     *
      * @param keyEventTarget
      *            the JsonObject value to set
      */
@@ -143,7 +143,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
@@ -159,7 +159,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * If true, this property will cause the implementing element to
      * automatically stop propagation on any handled KeyboardEvents.
      * </p>
-     * 
+     *
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
@@ -172,7 +172,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code keyBindings} property from the webcomponent
      */
     protected JsonObject protectedGetKeyBindings() {
@@ -201,7 +201,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code label} property from the webcomponent
      */
     public String getLabel() {
@@ -219,7 +219,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * {@code &lt;label hidden$=&quot;[[!label]]&quot;&gt;[[label]]</label>} in
      * your {@code template}
      * </p>
-     * 
+     *
      * @param label
      *            the String value to set
      */
@@ -237,7 +237,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is synchronized automatically from client side when a
      * 'value-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code value} property from the webcomponent
      */
     @Synchronize(property = "value", value = "value-changed")
@@ -253,7 +253,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * <p>
      * The value for this element.
      * </p>
-     * 
+     *
      * @param value
      *            the String value to set
      */
@@ -281,7 +281,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is synchronized automatically from client side when a
      * 'invalid-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code invalid} property from the webcomponent
      */
     @Synchronize(property = "invalid", value = "invalid-changed")
@@ -303,7 +303,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * If {@code autoValidate} is true, the {@code invalid} attribute is managed
      * automatically, which can clobber attempts to manage it manually.
      * </p>
-     * 
+     *
      * @param invalid
      *            the boolean value to set
      */
@@ -324,7 +324,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code allowedPattern} property from the webcomponent
      */
     public String getAllowedPattern() {
@@ -341,7 +341,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s
      * {@code allowedPattern} property.
      * </p>
-     * 
+     *
      * @param allowedPattern
      *            the String value to set
      */
@@ -365,7 +365,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code type} property from the webcomponent
      */
     public String getType() {
@@ -384,7 +384,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * {@code <input is="iron-input">}'s or (Polymer 2) {@code <iron-input>}'s
      * {@code type} property.
      * </p>
-     * 
+     *
      * @param type
      *            the String value to set
      */
@@ -405,7 +405,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code list} property from the webcomponent
      */
     public String getList() {
@@ -422,7 +422,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * implement your own paper-input-like element, bind this to the
      * {@code <input is="iron-input">}'s {@code list} property.
      * </p>
-     * 
+     *
      * @param list
      *            the String value to set
      */
@@ -442,7 +442,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code pattern} property from the webcomponent
      */
     public String getPattern() {
@@ -458,7 +458,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * PaperInputBehavior to implement your own paper-input-like element, bind
      * this to the {@code <input is="iron-input">}'s {@code pattern} property.
      * </p>
-     * 
+     *
      * @param pattern
      *            the String value to set
      */
@@ -481,7 +481,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code required} property from the webcomponent
      */
     public boolean isRequired() {
@@ -500,7 +500,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * It's also strongly recommended to provide a visual style for the element
      * when its value is invalid.
      * </p>
-     * 
+     *
      * @param required
      *            the boolean value to set
      */
@@ -520,7 +520,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code errorMessage} property from the webcomponent
      */
     public String getErrorMessage() {
@@ -536,7 +536,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * PaperInputBehavior to implement your own paper-input-like element, bind
      * this to the {@code <paper-input-error>}'s content, if using.
      * </p>
-     * 
+     *
      * @param errorMessage
      *            the String value to set
      */
@@ -555,7 +555,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code charCounter} property from the webcomponent
      */
     public boolean isCharCounter() {
@@ -569,7 +569,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * <p>
      * Set to true to show a character counter.
      * </p>
-     * 
+     *
      * @param charCounter
      *            the boolean value to set
      */
@@ -590,7 +590,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noLabelFloat} property from the webcomponent
      */
     public boolean isNoLabelFloat() {
@@ -607,7 +607,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * this to the {@code <paper-input-container>}'s {@code noLabelFloat}
      * property.
      * </p>
-     * 
+     *
      * @param noLabelFloat
      *            the boolean value to set
      */
@@ -627,7 +627,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code alwaysFloatLabel} property from the webcomponent
      */
     public boolean isAlwaysFloatLabel() {
@@ -643,7 +643,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * to implement your own paper-input-like element, bind this to the
      * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
      * </p>
-     * 
+     *
      * @param alwaysFloatLabel
      *            the boolean value to set
      */
@@ -664,7 +664,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autoValidate} property from the webcomponent
      */
     public boolean isAutoValidate() {
@@ -681,7 +681,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * this to the {@code <paper-input-container>}'s {@code autoValidate}
      * property.
      * </p>
-     * 
+     *
      * @param autoValidate
      *            the boolean value to set
      */
@@ -701,7 +701,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code validator} property from the webcomponent
      */
     public String getValidator() {
@@ -717,7 +717,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * implement your own paper-input-like element, bind this to the
      * {@code <input is="iron-input">}'s {@code validator} property.
      * </p>
-     * 
+     *
      * @param validator
      *            the String value to set
      */
@@ -738,7 +738,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autocomplete} property from the webcomponent
      */
     public String getAutocomplete() {
@@ -754,7 +754,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s
      * {@code autocomplete} property.
      * </p>
-     * 
+     *
      * @param autocomplete
      *            the String value to set
      */
@@ -775,7 +775,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autofocus} property from the webcomponent
      */
     public boolean isAutofocus() {
@@ -791,7 +791,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s
      * {@code autofocus} property.
      * </p>
-     * 
+     *
      * @param autofocus
      *            the boolean value to set
      */
@@ -811,7 +811,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code inputmode} property from the webcomponent
      */
     public String getInputmode() {
@@ -827,7 +827,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s
      * {@code inputmode} property.
      * </p>
-     * 
+     *
      * @param inputmode
      *            the String value to set
      */
@@ -848,7 +848,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code minlength} property from the webcomponent
      */
     public double getMinlength() {
@@ -864,7 +864,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * to implement your own paper-input-like element, bind this to the
      * {@code <input is="iron-input">}'s {@code minlength} property.
      * </p>
-     * 
+     *
      * @param minlength
      *            the double value to set
      */
@@ -884,7 +884,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code maxlength} property from the webcomponent
      */
     public double getMaxlength() {
@@ -900,7 +900,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * to implement your own paper-input-like element, bind this to the
      * {@code <input is="iron-input">}'s {@code maxlength} property.
      * </p>
-     * 
+     *
      * @param maxlength
      *            the double value to set
      */
@@ -920,7 +920,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code min} property from the webcomponent
      */
     public String getMin() {
@@ -936,7 +936,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * PaperInputBehavior to implement your own paper-input-like element, bind
      * this to the {@code <input is="iron-input">}'s {@code min} property.
      * </p>
-     * 
+     *
      * @param min
      *            the String value to set
      */
@@ -957,7 +957,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code max} property from the webcomponent
      */
     public String getMax() {
@@ -974,7 +974,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * using PaperInputBehavior to implement your own paper-input-like element,
      * bind this to the {@code <input is="iron-input">}'s {@code max} property.
      * </p>
-     * 
+     *
      * @param max
      *            the String value to set
      */
@@ -994,7 +994,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code step} property from the webcomponent
      */
     public String getStep() {
@@ -1010,7 +1010,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * PaperInputBehavior to implement your own paper-input-like element, bind
      * this to the {@code <input is="iron-input">}'s {@code step} property.
      * </p>
-     * 
+     *
      * @param step
      *            the String value to set
      */
@@ -1028,7 +1028,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code name} property from the webcomponent
      */
     public String getName() {
@@ -1042,7 +1042,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * <p>
      * The name of this element.
      * </p>
-     * 
+     *
      * @param name
      *            the String value to set
      */
@@ -1061,7 +1061,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code placeholder} property from the webcomponent
      */
     public String getPlaceholder() {
@@ -1076,7 +1076,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * A placeholder string in addition to the label. If this is set, the label
      * will always float.
      * </p>
-     * 
+     *
      * @param placeholder
      *            the String value to set
      */
@@ -1097,7 +1097,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code readonly} property from the webcomponent
      */
     public boolean isReadonly() {
@@ -1113,7 +1113,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s
      * {@code readonly} property.
      * </p>
-     * 
+     *
      * @param readonly
      *            the boolean value to set
      */
@@ -1133,7 +1133,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code size} property from the webcomponent
      */
     public double getSize() {
@@ -1149,7 +1149,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s {@code size}
      * property.
      * </p>
-     * 
+     *
      * @param size
      *            the double value to set
      */
@@ -1169,7 +1169,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autocapitalize} property from the webcomponent
      */
     public String getAutocapitalize() {
@@ -1185,7 +1185,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s
      * {@code autocapitalize} property.
      * </p>
-     * 
+     *
      * @param autocapitalize
      *            the String value to set
      */
@@ -1206,7 +1206,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autocorrect} property from the webcomponent
      */
     public String getAutocorrect() {
@@ -1222,7 +1222,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s
      * {@code autocorrect} property.
      * </p>
-     * 
+     *
      * @param autocorrect
      *            the String value to set
      */
@@ -1243,7 +1243,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autosave} property from the webcomponent
      */
     public String getAutosave() {
@@ -1259,7 +1259,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s
      * {@code autosave} property, used with type=search.
      * </p>
-     * 
+     *
      * @param autosave
      *            the String value to set
      */
@@ -1279,7 +1279,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code results} property from the webcomponent
      */
     public double getResults() {
@@ -1295,7 +1295,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s
      * {@code results} property, used with type=search.
      * </p>
-     * 
+     *
      * @param results
      *            the double value to set
      */
@@ -1315,7 +1315,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code accept} property from the webcomponent
      */
     public String getAccept() {
@@ -1331,7 +1331,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the {@code <input is="iron-input">}'s
      * {@code accept} property, used with type=file.
      * </p>
-     * 
+     *
      * @param accept
      *            the String value to set
      */
@@ -1351,7 +1351,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code multiple} property from the webcomponent
      */
     public boolean isMultiple() {
@@ -1367,7 +1367,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element, bind this to the{@code <input is="iron-input">}'s
      * {@code multiple} property, used with type=file.
      * </p>
-     * 
+     *
      * @param multiple
      *            the boolean value to set
      */
@@ -1385,7 +1385,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code rows} property from the webcomponent
      */
     public double getRows() {
@@ -1399,7 +1399,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * <p>
      * The initial number of rows.
      * </p>
-     * 
+     *
      * @param rows
      *            the double value to set
      */
@@ -1418,7 +1418,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code maxRows} property from the webcomponent
      */
     public double getMaxRows() {
@@ -1433,7 +1433,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * The maximum number of rows this element can grow to until it scrolls. 0
      * means no maximum.
      * </p>
-     * 
+     *
      * @param maxRows
      *            the double value to set
      */
@@ -1450,7 +1450,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * element. This is the imperative equivalent of declaring a keybinding in
      * the {@code keyBindings} prototype property.
      * </p>
-     * 
+     *
      * @param eventString
      *            Missing documentation!
      * @param handlerName
@@ -1484,7 +1484,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param event
      *            Missing documentation!
      * @param eventString
@@ -1530,7 +1530,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * <p>
      * Restores the cursor to its original position after updating the value.
      * </p>
-     * 
+     *
      * @param newValue
      *            The value that should be saved.
      */
@@ -1549,7 +1549,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
     /**
      * Adds a listener for {@code focused-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1570,7 +1570,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
     /**
      * Adds a listener for {@code disabled-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1590,7 +1590,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 
     /**
      * Adds a listener for {@code change} events fired by the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1611,7 +1611,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
     /**
      * Adds a listener for {@code invalid-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1632,7 +1632,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
     /**
      * Adds a listener for {@code iron-form-element-register} events fired by
      * the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1653,7 +1653,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
     /**
      * Adds a listener for {@code iron-form-element-unregister} events fired by
      * the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */

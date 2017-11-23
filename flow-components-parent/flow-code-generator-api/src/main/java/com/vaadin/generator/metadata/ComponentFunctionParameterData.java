@@ -26,7 +26,7 @@ public class ComponentFunctionParameterData extends ComponentPropertyBaseData {
 
     /**
      * Gets whether the parameter is optional or not when calling the function.
-     * 
+     *
      * @return <code>true</code> if the parameter is optional,
      *         <code>false</code> otherwise.
      */
@@ -36,7 +36,7 @@ public class ComponentFunctionParameterData extends ComponentPropertyBaseData {
 
     /**
      * Sets whether the parameter is optional or not when calling the function.
-     * 
+     *
      * @param optional
      *            <code>true</code> if the parameter is optional,
      *            <code>false</code> otherwise.

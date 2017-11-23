@@ -37,7 +37,7 @@ public class StreamResourceHandler implements Serializable {
 
     /**
      * Handle sending for a stream resource request.
-     * 
+     *
      * @param session
      *            session for the request
      * @param request

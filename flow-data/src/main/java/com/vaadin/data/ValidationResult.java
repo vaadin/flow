@@ -34,7 +34,7 @@ public interface ValidationResult extends Serializable {
 
     /**
      * Simple validation result implementation.
-     * 
+     *
      * @author Vaadin Ltd
      *
      */

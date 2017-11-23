@@ -62,7 +62,7 @@ public class Attributes implements Serializable {
      *
      * @see #getAttribute(Class)
      * @see #setAttribute(String, Object)
-     * 
+     *
      * @param <T>
      *            the attribute type
      * @param type
@@ -112,7 +112,7 @@ public class Attributes implements Serializable {
      *
      * @see #setAttribute(Class, Object)
      * @see #getAttribute(String)
-     * 
+     *
      * @param <T>
      *            the attribute type
      * @param type

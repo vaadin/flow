@@ -101,7 +101,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     /**
      * Adds a property change listener.
-     * 
+     *
      * @param name
      *            the property name to add the listener for
      * @param listener

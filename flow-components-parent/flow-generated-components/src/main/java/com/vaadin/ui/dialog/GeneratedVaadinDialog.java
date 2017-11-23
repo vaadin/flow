@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -68,7 +68,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * This property is synchronized automatically from client side when a
      * 'opened-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
@@ -83,7 +83,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * <p>
      * True if the overlay is currently displayed.
      * </p>
-     * 
+     *
      * @param opened
      *            the boolean value to set
      */
@@ -101,7 +101,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noCloseOnOutsideClick} property from the webcomponent
      */
     public boolean isNoCloseOnOutsideClick() {
@@ -115,7 +115,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * <p>
      * Set to true to disable closing dialog on outside click
      * </p>
-     * 
+     *
      * @param noCloseOnOutsideClick
      *            the boolean value to set
      */
@@ -134,7 +134,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noCloseOnEsc} property from the webcomponent
      */
     public boolean isNoCloseOnEsc() {
@@ -148,7 +148,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * <p>
      * Set to true to disable closing dialog on Escape press
      * </p>
-     * 
+     *
      * @param noCloseOnEsc
      *            the boolean value to set
      */
@@ -167,7 +167,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
     /**
      * Adds a listener for {@code opened-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */

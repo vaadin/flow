@@ -285,7 +285,7 @@ public class BeforeNavigationEvent extends EventObject {
      * Reroute to error target for given exception without custom message.
      * <p>
      * Exception class needs to have default no-arg constructor.
-     * 
+     *
      * @param exception
      *            exception to get error target for
      * @see BeforeNavigationEvent#rerouteToError(Exception, String)
@@ -298,7 +298,7 @@ public class BeforeNavigationEvent extends EventObject {
      * Reroute to error target for given exception with given custom message.
      * <p>
      * Exception class needs to have default no-arg constructor.
-     * 
+     *
      * @param exception
      *            exception to get error target for
      * @param customMessage
@@ -313,7 +313,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Reroute to error target for given exception with given custom message.
-     * 
+     *
      * @param exception
      *            exception to get error target for
      * @param customMessage
@@ -336,7 +336,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Check if we have an error parameter set for this navigation event.
-     * 
+     *
      * @return true if error parameter is set
      */
     public boolean hasErrorParameter() {
@@ -345,7 +345,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Get the set error parameter.
-     * 
+     *
      * @return error parameter
      */
     public ErrorParameter getErrorParameter() {

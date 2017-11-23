@@ -17,14 +17,14 @@ package com.vaadin.generator.metadata;
 
 /**
  * Marker interface for component types.
- * 
+ *
  * @author Vaadin Ltd
  */
 public interface ComponentType {
 
     /**
      * Check whether this instance represents a basic type.
-     * 
+     *
      * @return whether this type represents a basic type
      */
     default boolean isBasicType() {

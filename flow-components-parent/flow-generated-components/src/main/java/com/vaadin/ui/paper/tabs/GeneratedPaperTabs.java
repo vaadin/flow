@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -55,7 +55,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code attrForSelected} property from the webcomponent
      */
     public String getAttrForSelected() {
@@ -76,7 +76,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * selection works in both cases. (Use {@code attr-or-property-name} instead
      * of {@code attrOrPropertyName}.)
      * </p>
-     * 
+     *
      * @param attrForSelected
      *            the String value to set
      */
@@ -96,7 +96,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is synchronized automatically from client side when a
      * 'selected-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code selected} property from the webcomponent
      */
     @Synchronize(property = "selected", value = "selected-changed")
@@ -115,7 +115,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is synchronized automatically from client side when a
      * 'selected-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code selected} property from the webcomponent
      */
     @Synchronize(property = "selected", value = "selected-changed")
@@ -131,7 +131,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * Gets or sets the selected element. The default is to use the index of the
      * item.
      * </p>
-     * 
+     *
      * @param selected
      *            the String value to set
      */
@@ -147,7 +147,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * Gets or sets the selected element. The default is to use the index of the
      * item.
      * </p>
-     * 
+     *
      * @param selected
      *            the double value to set
      */
@@ -165,7 +165,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selectedItem} property from the webcomponent
      */
     protected JsonObject protectedGetSelectedItem() {
@@ -184,7 +184,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code activateEvent} property from the webcomponent
      */
     public String getActivateEvent() {
@@ -200,7 +200,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * listen for this event from items and update the selection state. Set to
      * empty string to listen to no events.
      * </p>
-     * 
+     *
      * @param activateEvent
      *            the String value to set
      */
@@ -212,7 +212,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code selectable} property from the webcomponent
      */
     public String getSelectable() {
@@ -238,7 +238,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selectedClass} property from the webcomponent
      */
     public String getSelectedClass() {
@@ -252,7 +252,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * <p>
      * The class to set on elements when selected.
      * </p>
-     * 
+     *
      * @param selectedClass
      *            the String value to set
      */
@@ -271,7 +271,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selectedAttribute} property from the webcomponent
      */
     public String getSelectedAttribute() {
@@ -285,7 +285,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * <p>
      * The attribute to set on elements when selected.
      * </p>
-     * 
+     *
      * @param selectedAttribute
      *            the String value to set
      */
@@ -305,7 +305,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code fallbackSelection} property from the webcomponent
      */
     public String getFallbackSelection() {
@@ -320,7 +320,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * Default fallback if the selection based on selected with
      * {@code attrForSelected} is not found.
      * </p>
-     * 
+     *
      * @param fallbackSelection
      *            the String value to set
      */
@@ -339,7 +339,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is synchronized automatically from client side when a
      * 'items-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code items} property from the webcomponent
      */
     @Synchronize(property = "items", value = "items-changed")
@@ -357,7 +357,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code multi} property from the webcomponent
      */
     public boolean isMulti() {
@@ -371,7 +371,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * <p>
      * If true, multiple selections are allowed.
      * </p>
-     * 
+     *
      * @param multi
      *            the boolean value to set
      */
@@ -390,7 +390,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selectedValues} property from the webcomponent
      */
     protected JsonArray protectedGetSelectedValues() {
@@ -405,7 +405,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * Gets or sets the selected elements. This is used instead of
      * {@code selected} when {@code multi} is true.
      * </p>
-     * 
+     *
      * @param selectedValues
      *            the JsonArray value to set
      */
@@ -423,7 +423,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selectedItems} property from the webcomponent
      */
     protected JsonArray protectedGetSelectedItems() {
@@ -441,7 +441,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code keyEventTarget} property from the webcomponent
      */
     protected JsonObject protectedGetKeyEventTarget() {
@@ -456,7 +456,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * The EventTarget that will be firing relevant KeyboardEvents. Set it to
      * {@code null} to disable the listeners.
      * </p>
-     * 
+     *
      * @param keyEventTarget
      *            the JsonObject value to set
      */
@@ -475,7 +475,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
@@ -491,7 +491,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * If true, this property will cause the implementing element to
      * automatically stop propagation on any handled KeyboardEvents.
      * </p>
-     * 
+     *
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
@@ -504,7 +504,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code keyBindings} property from the webcomponent
      */
     protected JsonObject protectedGetKeyBindings() {
@@ -529,7 +529,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code focusedItem} property from the webcomponent
      */
     protected JsonObject protectedGetFocusedItem() {
@@ -548,7 +548,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code attrForItemTitle} property from the webcomponent
      */
     public String getAttrForItemTitle() {
@@ -564,7 +564,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * first letter of an item when the menu is open focuses that item. If
      * unset, {@code textContent} will be used.
      * </p>
-     * 
+     *
      * @param attrForItemTitle
      *            the String value to set
      */
@@ -576,7 +576,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     public boolean isDisabled() {
@@ -603,7 +603,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noink} property from the webcomponent
      */
     public boolean isNoink() {
@@ -619,7 +619,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * all descendant {@code <paper-tab>} elements have their {@code noink}
      * property changed to the new value as well.
      * </p>
-     * 
+     *
      * @param noink
      *            the boolean value to set
      */
@@ -637,7 +637,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noBar} property from the webcomponent
      */
     public boolean isNoBar() {
@@ -651,7 +651,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * <p>
      * If true, the bottom bar to indicate the selected tab will not be shown.
      * </p>
-     * 
+     *
      * @param noBar
      *            the boolean value to set
      */
@@ -669,7 +669,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noSlide} property from the webcomponent
      */
     public boolean isNoSlide() {
@@ -683,7 +683,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * <p>
      * If true, the slide effect for the bottom bar is disabled.
      * </p>
-     * 
+     *
      * @param noSlide
      *            the boolean value to set
      */
@@ -702,7 +702,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code scrollable} property from the webcomponent
      */
     public boolean isScrollable() {
@@ -717,7 +717,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * If true, tabs are scrollable and the tab width is based on the label
      * width.
      * </p>
-     * 
+     *
      * @param scrollable
      *            the boolean value to set
      */
@@ -736,7 +736,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code fitContainer} property from the webcomponent
      */
     public boolean isFitContainer() {
@@ -751,7 +751,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * If true, tabs expand to fit their container. This currently only applies
      * when scrollable is true.
      * </p>
-     * 
+     *
      * @param fitContainer
      *            the boolean value to set
      */
@@ -769,7 +769,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code disableDrag} property from the webcomponent
      */
     public boolean isDisableDrag() {
@@ -783,7 +783,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * <p>
      * If true, dragging on the tabs to scroll is disabled.
      * </p>
-     * 
+     *
      * @param disableDrag
      *            the boolean value to set
      */
@@ -802,7 +802,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code hideScrollButtons} property from the webcomponent
      */
     public boolean isHideScrollButtons() {
@@ -817,7 +817,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * If true, scroll buttons (left/right arrow) will be hidden for scrollable
      * tabs.
      * </p>
-     * 
+     *
      * @param hideScrollButtons
      *            the boolean value to set
      */
@@ -836,7 +836,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code alignBottom} property from the webcomponent
      */
     public boolean isAlignBottom() {
@@ -851,7 +851,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * If true, the tabs are aligned to bottom (the selection bar appears at the
      * top).
      * </p>
-     * 
+     *
      * @param alignBottom
      *            the boolean value to set
      */
@@ -869,7 +869,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autoselect} property from the webcomponent
      */
     public boolean isAutoselect() {
@@ -883,7 +883,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * <p>
      * If true, tabs are automatically selected when focused using the keyboard.
      * </p>
-     * 
+     *
      * @param autoselect
      *            the boolean value to set
      */
@@ -903,7 +903,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autoselectDelay} property from the webcomponent
      */
     public double getAutoselectDelay() {
@@ -919,7 +919,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * the tabs through the keyboard and when the focused item is automatically
      * selected (if {@code autoselect} is true).
      * </p>
-     * 
+     *
      * @param autoselectDelay
      *            the double value to set
      */
@@ -948,7 +948,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * Used to assign the closest resizable ancestor to this resizable if the
      * ancestor detects a request for notifications.
      * </p>
-     * 
+     *
      * @param parentResizable
      *            Missing documentation!
      */
@@ -965,7 +965,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * Used to remove a resizable descendant from the list of descendants that
      * should be notified of a resize change.
      * </p>
-     * 
+     *
      * @param target
      *            Missing documentation!
      */
@@ -987,7 +987,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param element
      *            A candidate descendant element that implements
      *            `IronResizableBehavior`.
@@ -1007,7 +1007,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This function is not supported by Flow because it returns a
      * <code>elemental.json.JsonObject</code>. Functions with return types
      * different than void are not supported at this moment.
-     * 
+     *
      * @param item
      *            Missing documentation!
      */
@@ -1024,7 +1024,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * selected state of the {@code value} will be toggled; otherwise the
      * {@code value} will be selected.
      * </p>
-     * 
+     *
      * @param value
      *            the value to select.
      */
@@ -1041,7 +1041,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * selected state of the {@code value} will be toggled; otherwise the
      * {@code value} will be selected.
      * </p>
-     * 
+     *
      * @param value
      *            the value to select.
      */
@@ -1080,7 +1080,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * <p>
      * Selects the item at the given index.
      * </p>
-     * 
+     *
      * @param index
      *            Missing documentation!
      */
@@ -1128,7 +1128,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * element. This is the imperative equivalent of declaring a keybinding in
      * the {@code keyBindings} prototype property.
      * </p>
-     * 
+     *
      * @param eventString
      *            Missing documentation!
      * @param handlerName
@@ -1162,7 +1162,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param event
      *            Missing documentation!
      * @param eventString
@@ -1184,7 +1184,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * Adds a listener for {@code iron-activate} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1205,7 +1205,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * Adds a listener for {@code iron-deselect} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1226,7 +1226,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * Adds a listener for {@code iron-items-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1246,7 +1246,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
 
     /**
      * Adds a listener for {@code iron-select} events fired by the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1267,7 +1267,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * Adds a listener for {@code selected-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1288,7 +1288,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * Adds a listener for {@code selected-item-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1309,7 +1309,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * Adds a listener for {@code items-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1330,7 +1330,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * Adds a listener for {@code selected-values-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1351,7 +1351,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * Adds a listener for {@code selected-items-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1363,7 +1363,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
 
     /**
      * Adds the given components as children of this component.
-     * 
+     *
      * @param components
      *            the components to add
      * @see HasComponents#add(Component...)

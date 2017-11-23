@@ -22,7 +22,7 @@ import com.vaadin.flow.nodefeature.NodeList;
 /**
  * Change describing an operation (add/remove) in a {@link NodeList list} node
  * feature.
- * 
+ *
  * @author Vaadin Ltd
  *
  * @param <T>
@@ -59,7 +59,7 @@ public abstract class AbstractListChange<T extends Serializable>
 
     /**
      * Gets a changed list.
-     * 
+     *
      * @return the changed list
      */
     protected NodeList<T> getNodeList() {
@@ -68,7 +68,7 @@ public abstract class AbstractListChange<T extends Serializable>
 
     /**
      * Gets a copy of the change with the same data except {@code index}.
-     * 
+     *
      * @param index
      *            the new index of the change
      * @return a copy of the change based on new index

@@ -23,7 +23,7 @@ import java.util.function.Function;
 /**
  * Class for providing instances of {@link ModelConverter}s for given property
  * filters.
- * 
+ *
  * @author Vaadin Ltd
  */
 public class ModelConverterProvider implements
@@ -46,7 +46,7 @@ public class ModelConverterProvider implements
     /**
      * Composes a new ModelConverterProvider from the given
      * ModelConverterProvider, map of converters and PropertyFilter.
-     * 
+     *
      * @param converterProvider
      *            the model converter provider to compose this with
      * @param converters

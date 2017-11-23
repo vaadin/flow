@@ -34,7 +34,7 @@ public interface HasBlurListeners<T extends Component>
 
     /**
      * Add a listener to blur DOM events.
-     * 
+     *
      * @param listener
      *            the blur listener
      * @return a registration that can be used to unregister the listener
@@ -49,7 +49,7 @@ public interface HasBlurListeners<T extends Component>
 
     /**
      * Class that represents the DOM event "blur".
-     * 
+     *
      * @param <C>
      *            The source component type.
      */
@@ -58,7 +58,7 @@ public interface HasBlurListeners<T extends Component>
 
         /**
          * BlurEvent base constructor.
-         * 
+         *
          * @param source
          *            the source component
          * @param fromClient

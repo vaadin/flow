@@ -55,7 +55,7 @@ public abstract class ValidationTestView extends TestView {
 
     /**
      * Gets the component to be tested.
-     * 
+     *
      * @return a component that implements {@link HasValidation}
      */
     protected abstract HasValidation getValidationComponent();

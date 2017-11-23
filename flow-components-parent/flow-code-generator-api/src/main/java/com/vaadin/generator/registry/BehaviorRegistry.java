@@ -63,7 +63,7 @@ public final class BehaviorRegistry {
     /**
      * Gets the interfaces to be inherited by the generated Java class, based on
      * the list of behaviors and mixins that the original webcomponent contains.
-     * 
+     *
      * @param behaviors
      *            Collection of behaviors and mixins extracted from the
      *            webcomponent.

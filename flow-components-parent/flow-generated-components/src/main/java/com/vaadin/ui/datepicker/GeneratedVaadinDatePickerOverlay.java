@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -45,7 +45,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selectedDate} property from the webcomponent
      */
     protected JsonObject protectedGetSelectedDate() {
@@ -59,7 +59,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * <p>
      * The value for this element.
      * </p>
-     * 
+     *
      * @param selectedDate
      *            the JsonObject value to set
      */
@@ -77,7 +77,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code focusedDate} property from the webcomponent
      */
     protected JsonObject protectedGetFocusedDate() {
@@ -91,7 +91,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * <p>
      * Date value which is focused using keyboard.
      * </p>
-     * 
+     *
      * @param focusedDate
      *            the JsonObject value to set
      */
@@ -109,7 +109,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code initialPosition} property from the webcomponent
      */
     protected JsonObject protectedGetInitialPosition() {
@@ -123,7 +123,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * <p>
      * Date which should be visible when there is no value selected.
      * </p>
-     * 
+     *
      * @param initialPosition
      *            the JsonObject value to set
      */
@@ -135,7 +135,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code i18n} property from the webcomponent
      */
     protected JsonObject protectedGetI18n() {
@@ -153,7 +153,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code showWeekNumbers} property from the webcomponent
      */
     public boolean isShowWeekNumbers() {
@@ -179,7 +179,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code minDate} property from the webcomponent
      */
     protected JsonObject protectedGetMinDate() {
@@ -194,7 +194,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * The earliest date that can be selected. All earlier dates will be
      * disabled.
      * </p>
-     * 
+     *
      * @param minDate
      *            the JsonObject value to set
      */
@@ -212,7 +212,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code maxDate} property from the webcomponent
      */
     protected JsonObject protectedGetMaxDate() {
@@ -226,7 +226,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * <p>
      * The latest date that can be selected. All later dates will be disabled.
      * </p>
-     * 
+     *
      * @param maxDate
      *            the JsonObject value to set
      */
@@ -244,7 +244,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code label} property from the webcomponent
      */
     public String getLabel() {
@@ -258,7 +258,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * <p>
      * Input label
      * </p>
-     * 
+     *
      * @param label
      *            the String value to set
      */
@@ -289,7 +289,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * <p>
      * Scrolls the list to the given Date.
      * </p>
-     * 
+     *
      * @param date
      *            Missing documentation!
      * @param animate
@@ -307,7 +307,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * <p>
      * Scrolls the month and year scrollers enough to reveal the given date.
      * </p>
-     * 
+     *
      * @param date
      *            Missing documentation!
      */
@@ -341,7 +341,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
     /**
      * Adds a listener for {@code scroll-animation-finished} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -362,7 +362,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
     /**
      * Adds a listener for {@code selected-date-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -383,7 +383,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
     /**
      * Adds a listener for {@code focused-date-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */

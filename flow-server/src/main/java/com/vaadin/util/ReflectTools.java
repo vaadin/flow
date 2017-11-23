@@ -564,7 +564,7 @@ public class ReflectTools implements Serializable {
     /**
      * Finds the Class type for the generic interface class extended by given
      * class if exists.
-     * 
+     *
      * @param clazz
      *            class that should extend interface
      * @param interfaceType
@@ -640,7 +640,7 @@ public class ReflectTools implements Serializable {
      *
      * @param functionalClass
      *            interface class to get the functional method for
-     * 
+     *
      * @return functional interface method
      */
     public static Method getFunctionalMethod(Class<?> functionalClass) {
@@ -660,7 +660,7 @@ public class ReflectTools implements Serializable {
     /**
      * Collect all the integer values for public static final constants found
      * for the given class.
-     * 
+     *
      * @param clazz
      *            class to collect constants from
      * @return list of all integer constants in class

@@ -45,7 +45,7 @@ final class ChromeDriverLocator {
     /**
      * Fills {@link ChromeDriverLocator#WEBDRIVER_CHROME_DRIVER} system property
      * with chromedriver path, does not override already existing value.
-     * 
+     *
      * @throws UncheckedIOException
      *             on io exceptions of the
      *             {@link Files#find(Path, int, BiPredicate, FileVisitOption...)}

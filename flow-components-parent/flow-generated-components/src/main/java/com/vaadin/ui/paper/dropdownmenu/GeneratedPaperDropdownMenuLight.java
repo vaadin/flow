@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -47,7 +47,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code keyEventTarget} property from the webcomponent
      */
     protected JsonObject protectedGetKeyEventTarget() {
@@ -62,7 +62,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * The EventTarget that will be firing relevant KeyboardEvents. Set it to
      * {@code null} to disable the listeners.
      * </p>
-     * 
+     *
      * @param keyEventTarget
      *            the JsonObject value to set
      */
@@ -81,7 +81,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
@@ -97,7 +97,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * If true, this property will cause the implementing element to
      * automatically stop propagation on any handled KeyboardEvents.
      * </p>
-     * 
+     *
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
@@ -110,7 +110,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code keyBindings} property from the webcomponent
      */
     protected JsonObject protectedGetKeyBindings() {
@@ -135,7 +135,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code pressed} property from the webcomponent
      */
     public boolean isPressed() {
@@ -153,7 +153,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code toggles} property from the webcomponent
      */
     public boolean isToggles() {
@@ -168,7 +168,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * If true, the button toggles the active state with each tap or press of
      * the spacebar.
      * </p>
-     * 
+     *
      * @param toggles
      *            the boolean value to set
      */
@@ -186,7 +186,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is synchronized automatically from client side when a
      * 'active-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code active} property from the webcomponent
      */
     @Synchronize(property = "active", value = "active-changed")
@@ -201,7 +201,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * <p>
      * If true, the button is a toggle and is currently in the active state.
      * </p>
-     * 
+     *
      * @param active
      *            the boolean value to set
      */
@@ -221,7 +221,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code pointerDown} property from the webcomponent
      */
     public boolean isPointerDown() {
@@ -239,7 +239,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code receivedFocusFromKeyboard} property from the
      *         webcomponent
      */
@@ -258,7 +258,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code ariaActiveAttribute} property from the webcomponent
      */
     public String getAriaActiveAttribute() {
@@ -273,7 +273,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * The aria attribute to be set if the button is a toggle and in the active
      * state.
      * </p>
-     * 
+     *
      * @param ariaActiveAttribute
      *            the String value to set
      */
@@ -292,7 +292,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is synchronized automatically from client side when a
      * 'focused-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
@@ -310,7 +310,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is synchronized automatically from client side when a
      * 'disabled-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     @Synchronize(property = "disabled", value = "disabled-changed")
@@ -325,7 +325,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * <p>
      * If true, the user cannot interact with this element.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -344,7 +344,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noink} property from the webcomponent
      */
     public boolean isNoink() {
@@ -359,7 +359,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * If true, the element will not produce a ripple effect when interacted
      * with via the pointer.
      * </p>
-     * 
+     *
      * @param noink
      *            the boolean value to set
      */
@@ -377,7 +377,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code name} property from the webcomponent
      */
     public String getName() {
@@ -391,7 +391,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * <p>
      * The name of this element.
      * </p>
-     * 
+     *
      * @param name
      *            the String value to set
      */
@@ -411,7 +411,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is synchronized automatically from client side when a
      * 'value-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code value} property from the webcomponent
      */
     @Synchronize(property = "value", value = "value-changed")
@@ -434,7 +434,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code required} property from the webcomponent
      */
     public boolean isRequired() {
@@ -453,7 +453,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * It's also strongly recommended to provide a visual style for the element
      * when its value is invalid.
      * </p>
-     * 
+     *
      * @param required
      *            the boolean value to set
      */
@@ -471,7 +471,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code validator} property from the webcomponent
      */
     public String getValidator() {
@@ -485,7 +485,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * <p>
      * Name of the validator to use.
      * </p>
-     * 
+     *
      * @param validator
      *            the String value to set
      */
@@ -504,7 +504,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is synchronized automatically from client side when a
      * 'invalid-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code invalid} property from the webcomponent
      */
     @Synchronize(property = "invalid", value = "invalid-changed")
@@ -519,7 +519,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * <p>
      * True if the last call to {@code validate} is invalid.
      * </p>
-     * 
+     *
      * @param invalid
      *            the boolean value to set
      */
@@ -539,7 +539,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selectedItemLabel} property from the webcomponent
      */
     public String getSelectedItemLabel() {
@@ -559,7 +559,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selectedItem} property from the webcomponent
      */
     protected JsonObject protectedGetSelectedItem() {
@@ -576,7 +576,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code label} property from the webcomponent
      */
     public String getLabel() {
@@ -590,7 +590,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * <p>
      * The label for the dropdown.
      * </p>
-     * 
+     *
      * @param label
      *            the String value to set
      */
@@ -608,7 +608,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code placeholder} property from the webcomponent
      */
     public String getPlaceholder() {
@@ -622,7 +622,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * <p>
      * The placeholder for the dropdown.
      * </p>
-     * 
+     *
      * @param placeholder
      *            the String value to set
      */
@@ -641,7 +641,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is synchronized automatically from client side when a
      * 'opened-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
@@ -656,7 +656,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * <p>
      * True if the dropdown is open. Otherwise, false.
      * </p>
-     * 
+     *
      * @param opened
      *            the boolean value to set
      */
@@ -676,7 +676,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code allowOutsideScroll} property from the webcomponent
      */
     public boolean isAllowOutsideScroll() {
@@ -692,7 +692,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * when opened. Set to true in order to prevent scroll from being
      * constrained to the dropdown when it opens.
      * </p>
-     * 
+     *
      * @param allowOutsideScroll
      *            the boolean value to set
      */
@@ -711,7 +711,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noLabelFloat} property from the webcomponent
      */
     public boolean isNoLabelFloat() {
@@ -726,7 +726,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * Set to true to disable the floating label. Bind this to the
      * {@code <paper-input-container>}'s {@code noLabelFloat} property.
      * </p>
-     * 
+     *
      * @param noLabelFloat
      *            the boolean value to set
      */
@@ -745,7 +745,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code alwaysFloatLabel} property from the webcomponent
      */
     public boolean isAlwaysFloatLabel() {
@@ -760,7 +760,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * Set to true to always float the label. Bind this to the
      * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
      * </p>
-     * 
+     *
      * @param alwaysFloatLabel
      *            the boolean value to set
      */
@@ -778,7 +778,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noAnimations} property from the webcomponent
      */
     public boolean isNoAnimations() {
@@ -792,7 +792,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * <p>
      * Set to true to disable animations when opening and closing the dropdown.
      * </p>
-     * 
+     *
      * @param noAnimations
      *            the boolean value to set
      */
@@ -811,7 +811,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code horizontalAlign} property from the webcomponent
      */
     public String getHorizontalAlign() {
@@ -826,7 +826,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * The orientation against which to align the menu dropdown horizontally
      * relative to the dropdown trigger.
      * </p>
-     * 
+     *
      * @param horizontalAlign
      *            the String value to set
      */
@@ -846,7 +846,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code verticalAlign} property from the webcomponent
      */
     public String getVerticalAlign() {
@@ -861,7 +861,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * The orientation against which to align the menu dropdown vertically
      * relative to the dropdown trigger.
      * </p>
-     * 
+     *
      * @param verticalAlign
      *            the String value to set
      */
@@ -873,7 +873,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code hasContent} property from the webcomponent
      */
     public boolean hasContent() {
@@ -890,7 +890,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code contentElement} property from the webcomponent
      */
     protected JsonObject protectedGetContentElement() {
@@ -904,7 +904,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * <p>
      * The content element that is contained by the dropdown menu, if any.
      * </p>
-     * 
+     *
      * @param contentElement
      *            the JsonObject value to set
      */
@@ -921,7 +921,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * element. This is the imperative equivalent of declaring a keybinding in
      * the {@code keyBindings} prototype property.
      * </p>
-     * 
+     *
      * @param eventString
      *            Missing documentation!
      * @param handlerName
@@ -955,7 +955,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param event
      *            Missing documentation!
      * @param eventString
@@ -974,7 +974,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * Ensures this element contains a ripple effect. For startup efficiency the
      * ripple effect is dynamically on demand when needed.
      * </p>
-     * 
+     *
      * @param optTriggeringEvent
      *            (optional) event that triggered the ripple.
      */
@@ -1035,7 +1035,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param value
      *            Deprecated: The value to be validated. By default, it is
      *            passed to the validator's `validate()` function, if a
@@ -1081,7 +1081,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds a listener for {@code active-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1102,7 +1102,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds a listener for {@code focused-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1123,7 +1123,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds a listener for {@code disabled-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1144,7 +1144,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds a listener for {@code iron-form-element-register} events fired by
      * the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1165,7 +1165,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds a listener for {@code iron-form-element-unregister} events fired by
      * the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1186,7 +1186,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds a listener for {@code value-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1207,7 +1207,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds a listener for {@code invalid-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1228,7 +1228,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds a listener for {@code selected-item-label-changed} events fired by
      * the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1249,7 +1249,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds a listener for {@code selected-item-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1270,7 +1270,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds a listener for {@code opened-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1283,7 +1283,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * Adds the given components as children of this component at the slot
      * 'dropdown-content'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -1304,7 +1304,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 
     /**
      * Removes the given child components from this component.
-     * 
+     *
      * @param components
      *            The components to remove.
      * @throws IllegalArgumentException

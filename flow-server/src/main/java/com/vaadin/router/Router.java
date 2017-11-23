@@ -210,7 +210,7 @@ public class Router implements RouterInterface {
     /**
      * Trim the given route string of extra characters that can be left in
      * special cases like root target containing optional parameter.
-     * 
+     *
      * @param routeString
      *            route string to trim
      * @return trimmed route

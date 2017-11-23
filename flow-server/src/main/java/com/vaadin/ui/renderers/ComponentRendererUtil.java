@@ -26,7 +26,7 @@ import com.vaadin.ui.UI;
  * Helper class for components that uses {@link ComponentTemplateRenderer} internally.
  * It contains utility methods for managing the renderer context at the
  * server-side.
- * 
+ *
  * @author Vaadin Ltd.
  *
  */
@@ -42,7 +42,7 @@ public class ComponentRendererUtil {
      * The container is used by the {@code <flow-component-renderer>}
      * webcomponent to fetch the actual instances to be used inside the
      * templates.
-     * 
+     *
      * @param owner
      *            the owner of the container. The container is removed from the
      *            DOM whenever the owner is detached, and readded when the owner
@@ -71,7 +71,7 @@ public class ComponentRendererUtil {
     /**
      * Removes a rendered component by selector. This removal doesn't affect the
      * server-side StateTree.
-     * 
+     *
      * @param ui
      *            the current UI
      * @param container

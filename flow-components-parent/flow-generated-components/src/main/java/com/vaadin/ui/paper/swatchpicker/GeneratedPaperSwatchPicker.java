@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -45,7 +45,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * This property is synchronized automatically from client side when a
      * 'color-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code color} property from the webcomponent
      */
     @Synchronize(property = "color", value = "color-changed")
@@ -60,7 +60,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * <p>
      * The selected color, as hex (i.e. #ffffff). value.
      * </p>
-     * 
+     *
      * @param color
      *            the String value to set
      */
@@ -82,7 +82,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code colorList} property from the webcomponent
      */
     protected JsonArray protectedGetColorList() {
@@ -100,7 +100,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * blues, etc. Depending on how many of these generic colors you have, you
      * should update the {@code columnCount} property.
      * </p>
-     * 
+     *
      * @param colorList
      *            the JsonArray value to set
      */
@@ -121,7 +121,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code columnCount} property from the webcomponent
      */
     public double getColumnCount() {
@@ -138,7 +138,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * specific color) you are using in your {@code colorList}. For example, the
      * Material Design palette has 18 colors
      * </p>
-     * 
+     *
      * @param columnCount
      *            the double value to set
      */
@@ -157,7 +157,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code horizontalAlign} property from the webcomponent
      */
     public String getHorizontalAlign() {
@@ -172,7 +172,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * The orientation against which to align the menu dropdown horizontally
      * relative to the dropdown trigger.
      * </p>
-     * 
+     *
      * @param horizontalAlign
      *            the String value to set
      */
@@ -192,7 +192,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code verticalAlign} property from the webcomponent
      */
     public String getVerticalAlign() {
@@ -207,7 +207,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * The orientation against which to align the menu dropdown vertically
      * relative to the dropdown trigger.
      * </p>
-     * 
+     *
      * @param verticalAlign
      *            the String value to set
      */
@@ -227,7 +227,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noink} property from the webcomponent
      */
     public boolean isNoink() {
@@ -242,7 +242,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * If true, the color picker button will not produce a ripple effect when
      * interacted with via the pointer.
      * </p>
-     * 
+     *
      * @param noink
      *            the boolean value to set
      */
@@ -261,7 +261,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
     /**
      * Adds a listener for {@code color-picker-selected} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -282,7 +282,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
     /**
      * Adds a listener for {@code color-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */

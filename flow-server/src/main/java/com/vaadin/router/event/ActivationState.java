@@ -17,7 +17,7 @@ package com.vaadin.router.event;
 
 /**
  * Enumeration for knowing in which activation state a event is fired for.
- * 
+ *
  * @author Vaadin Ltd
  */
 public enum ActivationState {

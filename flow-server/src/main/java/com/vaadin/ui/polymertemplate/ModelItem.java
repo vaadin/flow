@@ -41,7 +41,7 @@ public @interface ModelItem {
 
     /**
      * Path value for ModelItem.
-     * 
+     *
      * @return Given Path or default value
      */
     String value() default "event.model.item";

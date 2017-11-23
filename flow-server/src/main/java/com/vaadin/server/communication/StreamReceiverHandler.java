@@ -86,7 +86,7 @@ public class StreamReceiverHandler implements Serializable {
 
     /**
      * Handle reception of incoming stream from the client.
-     * 
+     *
      * @param session
      *            The session for the request
      * @param request

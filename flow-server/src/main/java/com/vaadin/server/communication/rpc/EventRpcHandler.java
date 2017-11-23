@@ -26,7 +26,7 @@ import elemental.json.JsonObject;
 
 /**
  * RPC handler for events.
- * 
+ *
  * @see JsonConstants#RPC_EVENT_TYPE
  * @author Vaadin Ltd
  *

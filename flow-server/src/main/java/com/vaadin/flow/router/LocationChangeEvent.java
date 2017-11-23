@@ -125,7 +125,7 @@ public class LocationChangeEvent extends EventObject {
 
     /**
      * Gets the type of user action that triggered this location change.
-     * 
+     *
      * @return the type of user action that triggered this location change, not
      *         <code>null</code>
      */

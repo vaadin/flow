@@ -29,12 +29,12 @@ import com.vaadin.util.JsonSerializer;
  * A renderer that allows the usage of HTML and Polymer data binding syntax as
  * output. The output of the TemplateRenderer is meant to be used inside
  * {@code <template>} elements.
- * 
+ *
  * @author Vaadin Ltd.
  *
  * @param <SOURCE>
  *            the type of the input object used inside the template
- * 
+ *
  * @see ValueProvider
  * @see <a href=
  *      "https://www.polymer-project.org/2.0/docs/devguide/templates">https://www.polymer-project.org/2.0/docs/devguide/templates</a>
@@ -51,17 +51,17 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * element, and works with Polymer data binding syntax.
      * <p>
      * Examples:
-     * 
+     *
      * <pre>
      * {@code
      * // Prints the index of the item inside a repeating list
      * TemplateRenderer.of("[[index]]");
-     * 
+     *
      * // Prints the property of an item
      * TemplateRenderer.of("<div>Property: [[item.property]]</div>");
      * }
      * </pre>
-     * 
+     *
      * @param <SOURCE>
      *            the type of the input object used inside the template
      * @param template
@@ -82,28 +82,28 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * syntax.
      * <p>
      * Examples:
-     * 
+     *
      * <pre>
      * {@code
      * // Regular property
      * TemplateRenderer.<Person> of("<div>Name: [[item.name]]</div>")
      *          .withProperty("name", Person::getName);
-     * 
+     *
      * // Property that uses a bean. Note that in this case the entire "Address" object will be sent to the template.
      * // Note that even properties of the bean which are not used in the template are sent to the client, so use
      * // this feature with caution.
      * TemplateRenderer.<Person> of("<span>Street: [[item.address.street]]</span>")
-     *          .withProperty("address", Person::getAddress); 
-     * 
+     *          .withProperty("address", Person::getAddress);
+     *
      * // In this case only the street field inside the Address object is sent
      * TemplateRenderer.<Person> of("<span>Street: [[item.street]]</span>")
      *          .withProperty("street", person -> person.getAddress().getStreet());
      * }
      * </pre>
-     * 
+     *
      * Any types supported by the {@link JsonSerializer} are valid types for the
      * TemplateRenderer.
-     * 
+     *
      * @param property
      *            the name of the property used inside the template, not
      *            <code>null</code>
@@ -126,24 +126,24 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * syntax.
      * <p>
      * Examples:
-     * 
+     *
      * <pre>
      * {@code
      * // Standard event
      * TemplateRenderer.of("<button on-click='handleClick'>Click me</button>")
      *          .withEventHandler("handleClick", object -> doSomething());
-     * 
+     *
      * // You can handle custom events from webcomponents as well, using the same syntax
      * TemplateRenderer.of("<my-webcomponent on-customevent=
     'onCustomEvent'></my-webcomponent>")
      *          .withEventHandler("onCustomEvent", object -> doSomething());
      * }
      * </pre>
-     * 
+     *
      * The name of the function used on the {@code on-event} attribute should be
      * the name used at the handlerName parameter. This name must be a valid
      * Javascript function name.
-     * 
+     *
      * @param handlerName
      *            the name of the handler used inside the
      *            {@code on-event="handlerName"}, not <code>null</code>
@@ -169,7 +169,7 @@ public class TemplateRenderer<SOURCE> implements Serializable {
 
     /**
      * Gets the template set for this renderer.
-     * 
+     *
      * @return the template, never <code>null</code>
      */
     public String getTemplate() {
@@ -179,7 +179,7 @@ public class TemplateRenderer<SOURCE> implements Serializable {
     /**
      * Gets the property mapped to {@link ValueProvider}s in this renderer. The
      * returned map is immutable.
-     * 
+     *
      * @return the mapped properties, never <code>null</code>
      */
     public Map<String, ValueProvider<SOURCE, ?>> getValueProviders() {
@@ -189,7 +189,7 @@ public class TemplateRenderer<SOURCE> implements Serializable {
     /**
      * Gets the event handlers linked to this renderer. The returned map in
      * immutable.
-     * 
+     *
      * @return the mapped event handlers, never <code>null</code>
      * @see #withEventHandler(String, SerializableConsumer)
      */

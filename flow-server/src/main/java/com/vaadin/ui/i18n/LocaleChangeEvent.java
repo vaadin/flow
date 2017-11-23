@@ -44,7 +44,7 @@ public class LocaleChangeEvent extends EventObject {
 
     /**
      * Get the new locale that was set.
-     * 
+     *
      * @return set locale
      */
     public Locale getLocale() {

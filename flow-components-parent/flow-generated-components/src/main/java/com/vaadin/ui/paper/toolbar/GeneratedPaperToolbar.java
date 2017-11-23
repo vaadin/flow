@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -41,7 +41,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code bottomJustify} property from the webcomponent
      */
     public String getBottomJustify() {
@@ -57,7 +57,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * the bottom. Options are {@code start}, {@code center}, {@code end},
      * {@code justified} and {@code around}.
      * </p>
-     * 
+     *
      * @param bottomJustify
      *            the String value to set
      */
@@ -78,7 +78,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code justify} property from the webcomponent
      */
     public String getJustify() {
@@ -94,7 +94,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * {@code start}, {@code center}, {@code end}, {@code justified} and
      * {@code around}.
      * </p>
-     * 
+     *
      * @param justify
      *            the String value to set
      */
@@ -114,7 +114,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code middleJustify} property from the webcomponent
      */
     public String getMiddleJustify() {
@@ -130,7 +130,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * the middle. Options are {@code start}, {@code center}, {@code end},
      * {@code justified} and {@code around}.
      * </p>
-     * 
+     *
      * @param middleJustify
      *            the String value to set
      */
@@ -142,7 +142,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
     /**
      * Adds the given components as children of this component at the slot
      * 'top'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -164,7 +164,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
     /**
      * Adds the given components as children of this component at the slot
      * 'middle'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -186,7 +186,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
     /**
      * Adds the given components as children of this component at the slot
      * 'bottom'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -207,7 +207,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 
     /**
      * Removes the given child components from this component.
-     * 
+     *
      * @param components
      *            The components to remove.
      * @throws IllegalArgumentException

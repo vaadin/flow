@@ -42,7 +42,7 @@ public @interface ComponentDemo {
 
     /**
      * Name of the component demo
-     * 
+     *
      * @return component demo name
      */
     String name();
@@ -50,7 +50,7 @@ public @interface ComponentDemo {
     /**
      * Which category this demo belongs in, default is
      * {@code DemoCategory.VAADIN}.
-     * 
+     *
      * @return the demo category
      */
     DemoCategory category() default DemoCategory.VAADIN;
@@ -58,7 +58,7 @@ public @interface ComponentDemo {
     /**
      * Which subcategory this demo belongs in, default is empty (no
      * subcategory).
-     * 
+     *
      * @return the demo subcategory
      */
     String subcategory() default "";

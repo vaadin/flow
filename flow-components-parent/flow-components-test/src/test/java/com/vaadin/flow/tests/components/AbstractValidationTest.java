@@ -27,7 +27,7 @@ import com.vaadin.ui.common.HasValidation;
 /**
  * Base class for validation tests of components that implement
  * {@link HasValidation}.
- * 
+ *
  * @see ValidationTestView
  */
 public abstract class AbstractValidationTest extends AbstractComponentIT {

@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -40,7 +40,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code heading} property from the webcomponent
      */
     public String getHeading() {
@@ -54,7 +54,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * <p>
      * The title of the card.
      * </p>
-     * 
+     *
      * @param heading
      *            the String value to set
      */
@@ -72,7 +72,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code image} property from the webcomponent
      */
     public String getImage() {
@@ -86,7 +86,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * <p>
      * The url of the title image of the card.
      * </p>
-     * 
+     *
      * @param image
      *            the String value to set
      */
@@ -104,7 +104,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code alt} property from the webcomponent
      */
     public String getAlt() {
@@ -118,7 +118,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * <p>
      * The text alternative of the card's title image.
      * </p>
-     * 
+     *
      * @param alt
      *            the String value to set
      */
@@ -137,7 +137,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code preloadImage} property from the webcomponent
      */
     public boolean isPreloadImage() {
@@ -152,7 +152,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * When {@code true}, any change to the image url property will cause the
      * {@code placeholder} image to be shown until the image is fully rendered.
      * </p>
-     * 
+     *
      * @param preloadImage
      *            the boolean value to set
      */
@@ -171,7 +171,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code fadeImage} property from the webcomponent
      */
     public boolean isFadeImage() {
@@ -186,7 +186,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * When {@code preloadImage} is true, setting {@code fadeImage} to true will
      * cause the image to fade into place.
      * </p>
-     * 
+     *
      * @param fadeImage
      *            the boolean value to set
      */
@@ -206,7 +206,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code placeholderImage} property from the webcomponent
      */
     public String getPlaceholderImage() {
@@ -222,7 +222,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * has loaded. Use of a data-URI for placeholder is encouraged for instant
      * rendering.
      * </p>
-     * 
+     *
      * @param placeholderImage
      *            the String value to set
      */
@@ -241,7 +241,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code elevation} property from the webcomponent
      */
     public double getElevation() {
@@ -255,7 +255,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * <p>
      * The z-depth of the card, from 0-5.
      * </p>
-     * 
+     *
      * @param elevation
      *            the double value to set
      */
@@ -274,7 +274,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code animatedShadow} property from the webcomponent
      */
     public boolean isAnimatedShadow() {
@@ -289,7 +289,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * Set this to true to animate the card shadow when setting a new {@code z}
      * value.
      * </p>
-     * 
+     *
      * @param animatedShadow
      *            the boolean value to set
      */
@@ -308,7 +308,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code animated} property from the webcomponent
      */
     public boolean isAnimated() {
@@ -317,7 +317,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
 
     /**
      * Adds the given components as children of this component.
-     * 
+     *
      * @param components
      *            the components to add
      * @see HasComponents#add(Component...)

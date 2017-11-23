@@ -32,7 +32,7 @@ public final class LocaleUtil {
 
     /**
      * Get the exact locale match for the given request in the provided locales.
-     * 
+     *
      * @param request
      *            request to get locale for
      * @param providedLocales
@@ -56,7 +56,7 @@ public final class LocaleUtil {
     /**
      * Get the locale matching the language of the request locale in the
      * provided locales.
-     * 
+     *
      * @param request
      *            request to get locale for
      * @param providedLocales

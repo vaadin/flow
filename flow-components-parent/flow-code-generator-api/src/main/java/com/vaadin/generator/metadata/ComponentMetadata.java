@@ -42,7 +42,7 @@ public class ComponentMetadata {
     /**
      * Gets the name of the ES6 class of the webcomponent, which is used to
      * create the corresponding Java class.
-     * 
+     *
      * @return The name of the of the webcomponent.
      */
     public String getName() {
@@ -52,7 +52,7 @@ public class ComponentMetadata {
     /**
      * Sets the name of the ES6 class of the webcomponent, which is used to
      * create the corresponding Java class.
-     * 
+     *
      * @param name
      *            The name of the of the webcomponent.
      */
@@ -63,7 +63,7 @@ public class ComponentMetadata {
     /**
      * Gets the tag name used by the webcomponent. For example "my-component",
      * which is used at the HTML page as "&lt;my-component&gt;".
-     * 
+     *
      * @return The tag name of the webcomponent.
      */
     public String getTag() {
@@ -73,7 +73,7 @@ public class ComponentMetadata {
     /**
      * Sets the tag name used by the webcomponent. For example "my-component",
      * which is used at the HTML page as "&lt;my-component&gt;".
-     * 
+     *
      * @param tag
      *            The tag name of the webcomponent.
      */
@@ -85,7 +85,7 @@ public class ComponentMetadata {
      * Gets the {@link List} of properties exposed by the webcomponent. Each
      * individual property is represented by the {@link ComponentPropertyData}
      * object.
-     * 
+     *
      * @return The list of exposed properties.
      */
     public List<ComponentPropertyData> getProperties() {
@@ -96,7 +96,7 @@ public class ComponentMetadata {
      * Sets the {@link List} of properties exposed by the webcomponent. Each
      * individual property is represented by the {@link ComponentPropertyData}
      * object.
-     * 
+     *
      * @param properties
      *            The list of exposed properties.
      */
@@ -109,7 +109,7 @@ public class ComponentMetadata {
      * trigger different code generation workflows. For example, the behavior
      * "container" makes the corresponding Java class accept child components,
      * by implementing the {@link HasComponents} interface.
-     * 
+     *
      * @return The list of behaviors of the webcomponent.
      */
     public List<String> getBehaviors() {
@@ -121,7 +121,7 @@ public class ComponentMetadata {
      * trigger different code generation workflows. For example, the behavior
      * "container" makes the corresponding Java class accept child components,
      * by implementing the {@link HasComponents} interface.
-     * 
+     *
      * @param behaviors
      *            The list of behaviors of the webcomponent.
      */
@@ -131,7 +131,7 @@ public class ComponentMetadata {
 
     /**
      * Gets the version of the webcomponent.
-     * 
+     *
      * @return The version.
      */
     public String getVersion() {
@@ -140,7 +140,7 @@ public class ComponentMetadata {
 
     /**
      * Sets the version of the webcomponent.
-     * 
+     *
      * @param version
      *            The version of the webcomponent.
      */
@@ -151,7 +151,7 @@ public class ComponentMetadata {
     /**
      * Gets the public description of the webcomponent, that can be used to
      * generate the corresponding Javadoc at the Java class.
-     * 
+     *
      * @return The class-level description of the webcomponent.
      */
     public String getDescription() {
@@ -161,7 +161,7 @@ public class ComponentMetadata {
     /**
      * Sets the public description of the webcomponent, that can be used to
      * generate the corresponding Javadoc at the Java class.
-     * 
+     *
      * @param description
      *            The class-level description of the webcomponent.
      */
@@ -190,7 +190,7 @@ public class ComponentMetadata {
      * Gets the list of exposed methods of the webcomponent, that can be
      * called from the corresponding Java class. Each function is represented by
      * the {@link ComponentFunctionData} object.
-     * 
+     *
      * @return The list of exposed methods.
      */
     public List<ComponentFunctionData> getMethods() {
@@ -201,7 +201,7 @@ public class ComponentMetadata {
      * Sets the list of exposed methods of the webcomponent, that can be
      * called from the corresponding Java class. Each function is represented by
      * the {@link ComponentFunctionData} object.
-     * 
+     *
      * @param methods
      *            The list of exposed methods.
      */
@@ -213,7 +213,7 @@ public class ComponentMetadata {
      * Gets the list of events triggered by the webcomponent, that can be
      * intercepted at the server side by the corresponding Java class. Each
      * event is represented by the {@link ComponentEventData} object.
-     * 
+     *
      * @return The list of events.
      */
     public List<ComponentEventData> getEvents() {
@@ -224,7 +224,7 @@ public class ComponentMetadata {
      * Sets the list of events triggered by the webcomponent, that can be
      * intercepted at the server side by the corresponding Java class. Each
      * event is represented by the {@link ComponentEventData} object.
-     * 
+     *
      * @param events
      *            The list of events.
      */

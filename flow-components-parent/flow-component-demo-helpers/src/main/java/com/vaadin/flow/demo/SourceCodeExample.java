@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 /**
  * Object that defines a source code example to be shown together with a demo.
- * 
+ *
  * @author Vaadin Ltd
  */
 public class SourceCodeExample implements Serializable {

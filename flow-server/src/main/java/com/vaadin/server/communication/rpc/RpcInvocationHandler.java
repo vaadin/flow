@@ -25,7 +25,7 @@ import elemental.json.JsonObject;
  * Each instance must return unique rpc type (see {@link #getRpcType()} and
  * handle a {@link JsonObject} RPC data using {@link #handle(UI, JsonObject)}
  * method.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -33,14 +33,14 @@ public interface RpcInvocationHandler {
 
     /**
      * Gets unique RPC type which this handler is applicable for.
-     * 
+     *
      * @return the unique rpc type
      */
     String getRpcType();
 
     /**
      * Handles RPC data {@code invocationJson} using {@code ui} as a context.
-     * 
+     *
      * @param ui
      *            the UI to handle against, not {@code null}
      * @param invocationJson

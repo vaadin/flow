@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Class that represents a exposed function of the webcomponent, that can be
  * called on the server-side by the corresponding Java class.
- * 
+ *
  * @see ComponentMetadata
  */
 public class ComponentFunctionData {
@@ -32,7 +32,7 @@ public class ComponentFunctionData {
 
     /**
      * Gets the name of the function on the webcomponent.
-     * 
+     *
      * @return The name of the function.
      */
     public String getName() {
@@ -41,7 +41,7 @@ public class ComponentFunctionData {
 
     /**
      * Sets the name of the function on the webcomponent.
-     * 
+     *
      * @param name
      *            The name of the function.
      */
@@ -51,7 +51,7 @@ public class ComponentFunctionData {
 
     /**
      * Gets the return type of the function.
-     * 
+     *
      * @return The type of the return, or <code>null</code> if void.
      */
     public ComponentBasicType getReturns() {
@@ -60,7 +60,7 @@ public class ComponentFunctionData {
 
     /**
      * Sets the return type of the function.
-     * 
+     *
      * @param returns
      *            The type of the return, or <code>null</code> if void.
      */
@@ -71,7 +71,7 @@ public class ComponentFunctionData {
     /**
      * Gets the public description of the function, that can be used to
      * generate the corresponding Javadoc at the Java class.
-     * 
+     *
      * @return The function-level description.
      */
     public String getDescription() {
@@ -81,7 +81,7 @@ public class ComponentFunctionData {
     /**
      * Sets the public description of the function, that can be used to
      * generate the corresponding Javadoc at the Java class.
-     * 
+     *
      * @param description
      *            The function-level description.
      */
@@ -92,7 +92,7 @@ public class ComponentFunctionData {
     /**
      * Gets the list of parameters of the function. Each parameter is
      * represented by the {@link ComponentFunctionParameterData} object.
-     * 
+     *
      * @return The list of parameters of the function.
      */
     public List<ComponentFunctionParameterData> getParameters() {
@@ -102,7 +102,7 @@ public class ComponentFunctionData {
     /**
      * Sets the list of parameters of the function. Each parameter is
      * represented by the {@link ComponentFunctionParameterData} object.
-     * 
+     *
      * @param parameters
      *            The list of parameters of the function.
      */

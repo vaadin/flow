@@ -419,7 +419,7 @@ public class GridViewIT extends TabbedComponentDemoTest {
                         sortOrdersString, fromClient),
                 findElement(By.id("grid-sortable-columns-message")).getText());
     }
-    
+
     @Test
     public void gridWithHeaderWithTemplateRenderer_headerAndFooterAreRenderered() {
         openTabAndCheckForErrors("using-templates");
@@ -433,14 +433,14 @@ public class GridViewIT extends TabbedComponentDemoTest {
                 "There should be a cell with the renderered 'Basic Information' header",
                 topLevelColumn.getAttribute("innerHTML").contains(
                         "<span style=\"color:orange\" title=\"Basic Information\">Basic Information</span>"));
-        
+
         Assert.assertTrue("There should be a cell with the renderered footer",
                 topLevelColumn.getAttribute("innerHTML").contains(
                         "<span style=\"color:red\">Total: 499 people</span>"));
 
         List<WebElement> secondLevelColumns = topLevelColumn
                 .findElements(By.tagName("vaadin-grid-column"));
-        
+
         Assert.assertTrue(
                 "There should be a cell with the renderered 'Name' header",
                 secondLevelColumns.get(0).getAttribute("innerHTML").contains(
@@ -477,7 +477,7 @@ public class GridViewIT extends TabbedComponentDemoTest {
                 hasComponentRendereredCell(grid,
                         "<label data-flow-renderer-item-key=\"0\" style=\"color: red;\">Total: 499 people</label>"));
     }
-    
+
     private static String getSelectionMessage(Object oldSelection,
             Object newSelection, boolean isFromClient) {
         return String.format(

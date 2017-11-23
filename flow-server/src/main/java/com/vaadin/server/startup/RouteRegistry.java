@@ -507,7 +507,7 @@ public class RouteRegistry implements Serializable {
 
     /**
      * Check if there are any registered routes.
-     * 
+     *
      * @return true if we have registered routes
      */
     public boolean hasRoutes() {

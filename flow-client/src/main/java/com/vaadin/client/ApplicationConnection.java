@@ -164,7 +164,7 @@ public class ApplicationConnection {
         client.getVersionInfo = $entry(function(parameter) {
             return { "flow": servletVersion};
         });
-    
+
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler()();
             var pd = [

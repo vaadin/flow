@@ -23,7 +23,7 @@ import com.vaadin.ui.html.Div;
 
 /**
  * Card to hold components for DemoViews
- * 
+ *
  * @author Vaadin Ltd
  */
 @StyleSheet("src/css/component-card.css")

@@ -227,7 +227,7 @@ public class GridBasic {
     //@formatter:off
     /*
      * code of commented lines
-     * 
+     *
      grid.setColumnOrder(firstnameColumn, lastnameColumn,
                     bornColumn, birthplaceColumn,
                     diedColumn);

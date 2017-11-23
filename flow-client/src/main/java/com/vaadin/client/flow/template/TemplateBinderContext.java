@@ -21,7 +21,7 @@ import com.vaadin.client.flow.binding.BinderContext;
 /**
  * A {@link BinderContext} extension which provides template root node for
  * template strategies.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -39,7 +39,7 @@ public interface TemplateBinderContext extends BinderContext {
      * Template node is required e.g. when template metadata information is
      * required: to be able to find event handler methods (which are defined for
      * the template {@link StateNode} only).
-     * 
+     *
      * @return the template root node
      */
     StateNode getTemplateRoot();

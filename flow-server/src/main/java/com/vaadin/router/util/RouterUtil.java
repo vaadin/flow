@@ -41,7 +41,7 @@ public final class RouterUtil {
 
     /**
      * Get parent layouts for navigation target.
-     * 
+     *
      * @param component
      *            navigation target to get parents for
      * @return parent layouts for target
@@ -121,7 +121,7 @@ public final class RouterUtil {
 
     /**
      * Create a new location change event for given navigation event and chain.
-     * 
+     *
      * @param event
      *            current navigation event
      * @param routeTargetChain

@@ -30,7 +30,7 @@ public class ComponentGeneratorTestUtils {
 
     /**
      * Assert that a given generated class implements the given interface.
-     * 
+     *
      * @param generatedClass
      *            the full generated class string
      * @param className
@@ -53,7 +53,7 @@ public class ComponentGeneratorTestUtils {
 
     /**
      * Removes indentations from a given source code string.
-     * 
+     *
      * @param sourceCode
      *            the source string to remove indentation from
      * @return a new source string with indentations removed

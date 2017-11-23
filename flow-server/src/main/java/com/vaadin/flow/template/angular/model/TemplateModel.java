@@ -97,7 +97,7 @@ public interface TemplateModel extends Serializable {
      * }
      * </code>
      * </pre>
-     * 
+     *
      * @param <T>
      *            the proxy type
      * @param modelPath

@@ -32,7 +32,7 @@ public interface HasErrorParameter<T extends Exception> {
      * <p>
      * Note! returned int should be a valid
      * {@link javax.servlet.http.HttpServletResponse} code
-     * 
+     *
      * @param event
      *            the before navigation event for this request
      * @param parameter

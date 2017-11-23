@@ -138,9 +138,9 @@ public class DataProviders {
 
         // Sets items as a collection
         comboBox.setItems(EnumSet.allOf(Status.class));
-        
+
         List<Status> itemsToShow = null;
-        
+
         /* Not implemented
         comboBox.setItems(
                 (itemCaption, filterText) ->
@@ -164,7 +164,7 @@ public class DataProviders {
                 new Person("James Madison", 1751)
               );
         // @formatter:on
-        
+
         grid.addColumn(Person::getName)
         .setHeader("Name")
         // Override default natural sorting
@@ -421,7 +421,7 @@ public class DataProviders {
             dataProvider.refreshItem(newInstance);
         });
     }
-    
+
     public void sortOrderProvider() {
         Grid<Person> grid = new Grid<>();
 
@@ -447,7 +447,7 @@ public class DataProviders {
         /* not implemented
         ComboBox<Person> comboBox = new ComboBox<>();
         List<Person> persons = null;
-        
+
         ListDataProvider<Person> dataProvider =
                 DataProvider.ofCollection(persons);
 

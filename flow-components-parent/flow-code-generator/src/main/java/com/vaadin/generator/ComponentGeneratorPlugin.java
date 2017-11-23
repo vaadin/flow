@@ -31,7 +31,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 /**
  * Maven plugin for the Java code generation based on JSON metadata extracted
  * from webcomponents.
- * 
+ *
  * @see ComponentGenerator
  */
 @Mojo(defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "generate")

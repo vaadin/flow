@@ -51,7 +51,7 @@ public class ResponseWriter implements Serializable {
 
     /**
      * Creates a response writer with custom buffer size.
-     * 
+     *
      * @param bufferSize
      *            custom buffer size
      */

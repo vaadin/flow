@@ -33,7 +33,7 @@ public interface ComponentSupplier<C extends Component>
 
     /**
      * Gets this instance as a {@link Component}.
-     * 
+     *
      * @return this instance
      */
     @Override

@@ -38,7 +38,7 @@ public final class EventUtil {
     /**
      * Collect all Components implementing {@link BeforeNavigationObserver}
      * connected to the given element tree.
-     * 
+     *
      * @param element
      *            element to search from
      * @return navigation listeners

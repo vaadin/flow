@@ -368,7 +368,7 @@ public interface ElementStateProvider extends Serializable {
 
     /**
      * Adds a property change listener.
-     * 
+     *
      * @param node
      *            the node containing the property
      * @param name
@@ -382,7 +382,7 @@ public interface ElementStateProvider extends Serializable {
 
     /**
      * Gets shadow root for the {@code node} if it has been attached.
-     * 
+     *
      * @param node
      *            the node having a shadow root, not {@code null}
      * @return the shadow root of the {@code node}, may be null
@@ -391,7 +391,7 @@ public interface ElementStateProvider extends Serializable {
 
     /**
      * Attaches the shadow root for the {@code node}.
-     * 
+     *
      * @param node
      *            the node to attach the shadow root
      * @return the shadow root of the {@code node}
@@ -405,7 +405,7 @@ public interface ElementStateProvider extends Serializable {
      * The {@code previousSibling} parameter value can be {@code null} which
      * means that the very first child with the given {@code tagName} will be
      * used to attach (if any).
-     * 
+     *
      * @param node
      *            the parent node
      * @param tagName

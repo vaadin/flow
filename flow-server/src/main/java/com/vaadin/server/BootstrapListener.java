@@ -27,7 +27,7 @@ import java.util.EventListener;
  * <p>
  * BootstrapListeners are registered using the {@link ServiceInitEvent} during
  * the initialization of the application.
- * 
+ *
  * @see ServiceInitEvent#addBootstrapListener(BootstrapListener)
  *
  * @author Vaadin Ltd

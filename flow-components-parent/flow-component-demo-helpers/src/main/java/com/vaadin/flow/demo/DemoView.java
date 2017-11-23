@@ -36,7 +36,7 @@ import com.vaadin.ui.html.H3;
 
 /**
  * Base class for all the Views that demo some component.
- * 
+ *
  * @author Vaadin Ltd
  */
 @Tag(Tag.DIV)
@@ -123,7 +123,7 @@ public abstract class DemoView extends Component
      * The href of the tab is defined based on the tab name. For example, a tab
      * named "Advanced usage" has the "advanced-tab" as href (all in lower case
      * and with "-" in place of spaces and special characters).
-     * 
+     *
      * @param tabName
      *            the name of the tab that will contain the demo, not
      *            <code>null</code>

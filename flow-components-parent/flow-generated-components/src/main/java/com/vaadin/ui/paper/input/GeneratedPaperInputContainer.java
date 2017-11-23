@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -46,7 +46,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noLabelFloat} property from the webcomponent
      */
     public boolean isNoLabelFloat() {
@@ -61,7 +61,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * Set to true to disable the floating label. The label disappears when the
      * input value is not null.
      * </p>
-     * 
+     *
      * @param noLabelFloat
      *            the boolean value to set
      */
@@ -79,7 +79,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code alwaysFloatLabel} property from the webcomponent
      */
     public boolean isAlwaysFloatLabel() {
@@ -93,7 +93,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * <p>
      * Set to true to always float the floating label.
      * </p>
-     * 
+     *
      * @param alwaysFloatLabel
      *            the boolean value to set
      */
@@ -111,7 +111,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code attrForValue} property from the webcomponent
      */
     public String getAttrForValue() {
@@ -125,7 +125,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * <p>
      * The attribute to listen for value changes on.
      * </p>
-     * 
+     *
      * @param attrForValue
      *            the String value to set
      */
@@ -144,7 +144,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autoValidate} property from the webcomponent
      */
     public boolean isAutoValidate() {
@@ -158,7 +158,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * <p>
      * Set to true to auto-validate the input value when it changes.
      * </p>
-     * 
+     *
      * @param autoValidate
      *            the boolean value to set
      */
@@ -178,7 +178,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code invalid} property from the webcomponent
      */
     public boolean isInvalid() {
@@ -194,7 +194,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * input value changes if auto-validating, or when the
      * {@code iron-input-validate} event is heard from a child.
      * </p>
-     * 
+     *
      * @param invalid
      *            the boolean value to set
      */
@@ -212,7 +212,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * This property is synchronized automatically from client side when a
      * 'focused-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
@@ -227,7 +227,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * <p>
      * Call this to update the state of add-ons.
      * </p>
-     * 
+     *
      * @param state
      *            Add-on state.
      */
@@ -246,7 +246,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
     /**
      * Adds a listener for {@code focused-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -259,7 +259,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
     /**
      * Adds the given components as children of this component at the slot
      * 'prefix'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -281,7 +281,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
     /**
      * Adds the given components as children of this component at the slot
      * 'label'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -303,7 +303,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
     /**
      * Adds the given components as children of this component at the slot
      * 'input'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -325,7 +325,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
     /**
      * Adds the given components as children of this component at the slot
      * 'suffix'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -347,7 +347,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
     /**
      * Adds the given components as children of this component at the slot
      * 'add-on'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -368,7 +368,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 
     /**
      * Removes the given child components from this component.
-     * 
+     *
      * @param components
      *            The components to remove.
      * @throws IllegalArgumentException

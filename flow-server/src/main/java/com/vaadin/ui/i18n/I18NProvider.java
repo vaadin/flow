@@ -26,7 +26,7 @@ public interface I18NProvider {
     /**
      * Get the locales that we have translations for. The first locale should be
      * the default locale.
-     * 
+     *
      * @return provided locales
      */
     List<Locale> getProvidedLocales();

@@ -43,7 +43,7 @@ public final class CustomElementNameValidator {
 
     /**
      * Validate that given name is a valid Custom Element name.
-     * 
+     *
      * @param name
      *            Name to validate
      * @return Result containing possible validation error and/or warning

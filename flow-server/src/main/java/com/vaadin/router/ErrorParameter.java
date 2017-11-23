@@ -20,7 +20,7 @@ import java.io.Serializable;
 /**
  * Navigation error parameter class containing thrown exception and possibly a
  * custom message.
- * 
+ *
  * @author Vaadin Ltd.
  */
 public class ErrorParameter<T extends Exception> implements Serializable {
@@ -30,7 +30,7 @@ public class ErrorParameter<T extends Exception> implements Serializable {
 
     /**
      * Create ErrorParameter for exception.
-     * 
+     *
      * @param exception
      *            exception to create error parameter for
      */
@@ -40,7 +40,7 @@ public class ErrorParameter<T extends Exception> implements Serializable {
 
     /**
      * Create ErrorParameter for exception with a custom message.
-     * 
+     *
      * @param exception
      *            exception to create error parameter for
      * @param customMessage
@@ -53,7 +53,7 @@ public class ErrorParameter<T extends Exception> implements Serializable {
 
     /**
      * Get the handled exception.
-     * 
+     *
      * @return exception
      */
     public T getException() {
@@ -62,7 +62,7 @@ public class ErrorParameter<T extends Exception> implements Serializable {
 
     /**
      * Check if we have a custom message for the exception.
-     * 
+     *
      * @return true if a custom message is set
      */
     public boolean hasCustomMessage() {
@@ -71,7 +71,7 @@ public class ErrorParameter<T extends Exception> implements Serializable {
 
     /**
      * Get the set custom message.
-     * 
+     *
      * @return custom message or empty if not defined
      */
     public String getCustomMessage() {

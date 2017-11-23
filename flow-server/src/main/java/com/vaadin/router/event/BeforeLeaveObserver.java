@@ -29,7 +29,7 @@ public interface BeforeLeaveObserver {
 
     /**
      * Method called before navigation to detaching Component chain is made.
-     * 
+     *
      * @param event
      *            before navigation event with event details
      */

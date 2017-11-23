@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -209,7 +209,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is synchronized automatically from client side when a
      * 'value-changed' event happens.</li>
      * </ul>
-     * 
+     *
      * @return the {@code value} property from the webcomponent
      */
     @Synchronize(property = "value", value = "value-changed")
@@ -232,7 +232,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
      * {@code &quot;-YYYYYY-MM-DD&quot;}</li>
      * </ul>
-     * 
+     *
      * @param valueAsString
      *            the String value to set
      */
@@ -251,7 +251,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code required} property from the webcomponent
      */
     public boolean isRequired() {
@@ -265,7 +265,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * Set to true to mark the input as required.
      * </p>
-     * 
+     *
      * @param required
      *            the boolean value to set
      */
@@ -283,7 +283,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code name} property from the webcomponent
      */
     public String getName() {
@@ -297,7 +297,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * The name of this element.
      * </p>
-     * 
+     *
      * @param name
      *            the String value to set
      */
@@ -315,7 +315,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code hasValue} property from the webcomponent
      */
     public boolean hasValue() {
@@ -335,7 +335,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code initialPosition} property from the webcomponent
      */
     public String getInitialPosition() {
@@ -352,7 +352,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * The same date formats as for the {@code value} property are supported.
      * </p>
-     * 
+     *
      * @param initialPosition
      *            the String value to set
      */
@@ -371,7 +371,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code label} property from the webcomponent
      */
     public String getLabel() {
@@ -385,7 +385,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * The label for this element.
      * </p>
-     * 
+     *
      * @param label
      *            the String value to set
      */
@@ -403,7 +403,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is synchronized automatically from client side when a
      * 'opened-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
@@ -418,7 +418,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * Set true to open the date selector overlay.
      * </p>
-     * 
+     *
      * @param opened
      *            the boolean value to set
      */
@@ -438,7 +438,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code showWeekNumbers} property from the webcomponent
      */
     public boolean isShowWeekNumbers() {
@@ -454,7 +454,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * displaying week numbers is only supported when
      * {@code i18n.firstDayOfWeek} is 1 (Monday).
      * </p>
-     * 
+     *
      * @param showWeekNumbers
      *            the boolean value to set
      */
@@ -474,7 +474,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * The object has the following JSON structure and default values:
      * </p>
-     * 
+     *
      * <pre>
      * <code>        {
      * 	          // An array with the full names of months starting
@@ -484,47 +484,47 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 	            'June', 'July', 'August', 'September',
      * 	            'October', 'November', 'December'
      * 	          ],
-     * 
+     *
      * 	          // An array of weekday names starting with Sunday. Used
      * 	          // in screen reader announcements.
      * 	          weekdays: [
      * 	            'Sunday', 'Monday', 'Tuesday', 'Wednesday',
      * 	            'Thursday', 'Friday', 'Saturday'
      * 	          ],
-     * 
+     *
      * 	          // An array of short weekday names starting with Sunday.
      * 	          // Displayed in the calendar.
      * 	          weekdaysShort: [
      * 	            'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
      * 	          ],
-     * 
+     *
      * 	          // An integer indicating the first day of the week
      * 	          // (0 = Sunday, 1 = Monday, etc.).
      * 	          firstDayOfWeek: 0,
-     * 
+     *
      * 	          // Used in screen reader announcements along with week
      * 	          // numbers, if they are displayed.
      * 	          week: 'Week',
-     * 
+     *
      * 	          // Translation of the Calendar icon button title.
      * 	          calendar: 'Calendar',
-     * 
+     *
      * 	          // Translation of the Clear icon button title.
      * 	          clear: 'Clear',
-     * 
+     *
      * 	          // Translation of the Today shortcut button text.
      * 	          today: 'Today',
-     * 
+     *
      * 	          // Translation of the Cancel button text.
      * 	          cancel: 'Cancel',
-     * 
+     *
      * 	          // A function to format given {@code Date} object as
      * 	          // date string.
      * 	          formatDate: d =&gt; {
      * 	            // returns a string representation of the given
      * 	            // Date object in 'MM/DD/YYYY' -format
      * 	          },
-     * 
+     *
      * 	          // A function to parse the given text to a {@code Date}
      * 	          // object. Must properly parse (at least) text
      * 	          // formatted by {@code formatDate}.
@@ -534,7 +534,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 	            // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to
      * 	            // a Date object
      * 	          }
-     * 
+     *
      * 	          // A function to format given {@code monthName} and
      * 	          // {@code fullYear} integer as calendar title string.
      * 	          formatTitle: (monthName, fullYear) =&gt; {
@@ -543,7 +543,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 	        }&lt;p&gt;This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
      * 	</code>
      * </pre>
-     * 
+     *
      * @return the {@code i18n} property from the webcomponent
      */
     protected JsonObject protectedGetI18n() {
@@ -562,7 +562,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * The object has the following JSON structure and default values:
      * </p>
-     * 
+     *
      * <pre>
      * <code>        {
      * 	          // An array with the full names of months starting
@@ -572,47 +572,47 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 	            'June', 'July', 'August', 'September',
      * 	            'October', 'November', 'December'
      * 	          ],
-     * 
+     *
      * 	          // An array of weekday names starting with Sunday. Used
      * 	          // in screen reader announcements.
      * 	          weekdays: [
      * 	            'Sunday', 'Monday', 'Tuesday', 'Wednesday',
      * 	            'Thursday', 'Friday', 'Saturday'
      * 	          ],
-     * 
+     *
      * 	          // An array of short weekday names starting with Sunday.
      * 	          // Displayed in the calendar.
      * 	          weekdaysShort: [
      * 	            'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
      * 	          ],
-     * 
+     *
      * 	          // An integer indicating the first day of the week
      * 	          // (0 = Sunday, 1 = Monday, etc.).
      * 	          firstDayOfWeek: 0,
-     * 
+     *
      * 	          // Used in screen reader announcements along with week
      * 	          // numbers, if they are displayed.
      * 	          week: 'Week',
-     * 
+     *
      * 	          // Translation of the Calendar icon button title.
      * 	          calendar: 'Calendar',
-     * 
+     *
      * 	          // Translation of the Clear icon button title.
      * 	          clear: 'Clear',
-     * 
+     *
      * 	          // Translation of the Today shortcut button text.
      * 	          today: 'Today',
-     * 
+     *
      * 	          // Translation of the Cancel button text.
      * 	          cancel: 'Cancel',
-     * 
+     *
      * 	          // A function to format given {@code Date} object as
      * 	          // date string.
      * 	          formatDate: d =&gt; {
      * 	            // returns a string representation of the given
      * 	            // Date object in 'MM/DD/YYYY' -format
      * 	          },
-     * 
+     *
      * 	          // A function to parse the given text to a {@code Date}
      * 	          // object. Must properly parse (at least) text
      * 	          // formatted by {@code formatDate}.
@@ -622,7 +622,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 	            // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to
      * 	            // a Date object
      * 	          }
-     * 
+     *
      * 	          // A function to format given {@code monthName} and
      * 	          // {@code fullYear} integer as calendar title string.
      * 	          formatTitle: (monthName, fullYear) =&gt; {
@@ -631,7 +631,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 	        }
      * 	</code>
      * </pre>
-     * 
+     *
      * @param i18n
      *            the JsonObject value to set
      */
@@ -658,7 +658,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.</li>
      * </ul>
-     * 
+     *
      * @return the {@code min} property from the webcomponent
      */
     public String getMinAsString() {
@@ -681,7 +681,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
      * {@code &quot;-YYYYYY-MM-DD&quot;}</li>
      * </ul>
-     * 
+     *
      * @param minAsString
      *            the String value to set
      */
@@ -707,7 +707,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.</li>
      * </ul>
-     * 
+     *
      * @return the {@code max} property from the webcomponent
      */
     public String getMaxAsString() {
@@ -729,7 +729,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
      * {@code &quot;-YYYYYY-MM-DD&quot;}</li>
      * </ul>
-     * 
+     *
      * @param maxAsString
      *            the String value to set
      */
@@ -747,7 +747,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     public boolean isDisabled() {
@@ -761,7 +761,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * Set to true to disable this element.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -779,7 +779,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code errorMessage} property from the webcomponent
      */
     public String getErrorMessage() {
@@ -793,7 +793,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * The error message to display when the input is invalid.
      * </p>
-     * 
+     *
      * @param errorMessage
      *            the String value to set
      */
@@ -813,7 +813,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code placeholder} property from the webcomponent
      */
     public String getPlaceholder() {
@@ -828,7 +828,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * A placeholder string in addition to the label. If this is set, the label
      * will always float.
      * </p>
-     * 
+     *
      * @param placeholder
      *            the String value to set
      */
@@ -847,7 +847,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code readonly} property from the webcomponent
      */
     public boolean isReadonly() {
@@ -861,7 +861,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * Set to true to make this element read-only.
      * </p>
-     * 
+     *
      * @param readonly
      *            the boolean value to set
      */
@@ -879,7 +879,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This property is synchronized automatically from client side when a
      * 'invalid-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code invalid} property from the webcomponent
      */
     @Synchronize(property = "invalid", value = "invalid-changed")
@@ -894,7 +894,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * This property is set to true when the control value invalid.
      * </p>
-     * 
+     *
      * @param invalid
      *            the boolean value to set
      */
@@ -938,7 +938,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param value
      *            Missing documentation!
      */
@@ -957,7 +957,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * Override the {@code checkValidity} method for custom validations.
      * </p>
-     * 
+     *
      * @param value
      *            Missing documentation!
      */
@@ -976,7 +976,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
     /**
      * Adds a listener for {@code invalid-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1005,7 +1005,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
     /**
      * Adds a listener for {@code value-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1034,7 +1034,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
     /**
      * Adds a listener for {@code opened-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1047,7 +1047,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
     /**
      * Adds the given components as children of this component at the slot
      * 'prefix'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -1068,7 +1068,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 
     /**
      * Removes the given child components from this component.
-     * 
+     *
      * @param components
      *            The components to remove.
      * @throws IllegalArgumentException

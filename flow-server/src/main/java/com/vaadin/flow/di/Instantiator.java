@@ -164,7 +164,7 @@ public interface Instantiator extends Serializable {
 
     /**
      * Get the I18NProvider if on has been defined.
-     * 
+     *
      * @return I18NProvier instance
      */
     I18NProvider getI18NProvider();

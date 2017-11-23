@@ -24,7 +24,7 @@ import com.vaadin.flow.StateNode;
  * <p>
  * The value is wrapped into a {@link StateNode} and this feature instead being
  * sent directly. It allows to use basic types in lists.
- * 
+ *
  * @author Vaadin Ltd
  *
  */

@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -52,7 +52,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code nodrop} property from the webcomponent
      */
     public boolean isNodrop() {
@@ -70,7 +70,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * means that drop is enabled even in touch-devices, and true disables drop
      * in all devices.
      * </p>
-     * 
+     *
      * @param nodrop
      *            the boolean value to set
      */
@@ -89,7 +89,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code target} property from the webcomponent
      */
     public String getTarget() {
@@ -104,7 +104,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * The server URL. The default value is an empty string, which means that
      * <em>window.location</em> will be used.
      * </p>
-     * 
+     *
      * @param target
      *            the String value to set
      */
@@ -122,7 +122,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code method} property from the webcomponent
      */
     public String getMethod() {
@@ -136,7 +136,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * <p>
      * HTTP Method used to send the files. Only POST and PUT are allowed.
      * </p>
-     * 
+     *
      * @param method
      *            the String value to set
      */
@@ -156,7 +156,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code headers} property from the webcomponent
      */
     protected JsonObject protectedGetHeaders() {
@@ -172,7 +172,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * attribute, use a valid JSON string, for example: {@code }
      * <code>&lt;vaadin-upload headers='{&quot;X-Foo&quot;: &quot;Bar&quot;}'&gt;&lt;/vaadin-upload&gt; {@code }</code>
      * </p>
-     * 
+     *
      * @param headers
      *            the JsonObject value to set
      */
@@ -188,12 +188,12 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * Max time in milliseconds for the entire upload process, if exceeded the
      * request will be aborted. Zero means that there is no timeout.
      * </p>
-     * 
+     *
      * <pre>
      * <code>   &lt;p&gt;This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
      * 	</code>
      * </pre>
-     * 
+     *
      * @return the {@code timeout} property from the webcomponent
      */
     public double getTimeout() {
@@ -208,7 +208,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * Max time in milliseconds for the entire upload process, if exceeded the
      * request will be aborted. Zero means that there is no timeout.
      * </p>
-     * 
+     *
      * @param timeout
      *            the double value to set
      */
@@ -252,7 +252,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is synchronized automatically from client side when a
      * 'files-changed' event happens.</li>
      * </ul>
-     * 
+     *
      * @return the {@code files} property from the webcomponent
      */
     @Synchronize(property = "files", value = "files-changed")
@@ -293,7 +293,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * <li>{@code complete}: True when the file was transferred to the server.</li>
      * <li>{@code uploading}: True while trasferring data to the server.</li>
      * </ul>
-     * 
+     *
      * @param files
      *            the JsonArray value to set
      */
@@ -312,7 +312,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code maxFiles} property from the webcomponent
      */
     public double getMaxFiles() {
@@ -327,7 +327,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * Limit of files to upload, by default it is unlimited. If the value is set
      * to one, native file browser will prevent selecting multiple files.
      * </p>
-     * 
+     *
      * @param maxFiles
      *            the double value to set
      */
@@ -345,7 +345,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code maxFilesReached} property from the webcomponent
      */
     public boolean isMaxFilesReached() {
@@ -367,7 +367,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code accept} property from the webcomponent
      */
     public String getAccept() {
@@ -386,7 +386,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * Example: accept=&quot;video/*,image/tiff&quot; or
      * accept=&quot;.pdf,audio/mp3&quot;
      * </p>
-     * 
+     *
      * @param accept
      *            the String value to set
      */
@@ -407,7 +407,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code maxFileSize} property from the webcomponent
      */
     public double getMaxFileSize() {
@@ -424,7 +424,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * request. Obviously you need to do the same validation in the server-side
      * and be sure that they are aligned.
      * </p>
-     * 
+     *
      * @param maxFileSize
      *            the double value to set
      */
@@ -442,7 +442,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code formDataName} property from the webcomponent
      */
     public String getFormDataName() {
@@ -456,7 +456,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * <p>
      * Specifies the 'name' property at Content-Disposition
      * </p>
-     * 
+     *
      * @param formDataName
      *            the String value to set
      */
@@ -477,7 +477,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noAuto} property from the webcomponent
      */
     public boolean isNoAuto() {
@@ -493,7 +493,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * set, you must manually trigger uploads using the {@code uploadFiles}
      * method
      * </p>
-     * 
+     *
      * @param noAuto
      *            the boolean value to set
      */
@@ -513,7 +513,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * <p>
      * The object has the following JSON structure and default values:
      * </p>
-     * 
+     *
      * <pre>
      * <code>{
      * 	  dropFiles: {
@@ -559,7 +559,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 	}&lt;p&gt;This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
      * 	</code>
      * </pre>
-     * 
+     *
      * @return the {@code i18n} property from the webcomponent
      */
     protected JsonObject protectedGetI18n() {
@@ -578,7 +578,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * <p>
      * The object has the following JSON structure and default values:
      * </p>
-     * 
+     *
      * <pre>
      * <code>{
      * 	  dropFiles: {
@@ -624,7 +624,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 	}
      * 	</code>
      * </pre>
-     * 
+     *
      * @param i18n
      *            the JsonObject value to set
      */
@@ -639,7 +639,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * <p>
      * Triggers the upload of any files that are not completed
      * </p>
-     * 
+     *
      * @param files
      *            Missing documentation!
      */
@@ -679,7 +679,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
 
     /**
      * Adds a listener for {@code file-reject} events fired by the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -722,7 +722,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code upload-abort} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -772,7 +772,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code upload-before} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -815,7 +815,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code upload-error} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -858,7 +858,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code upload-progress} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -908,7 +908,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code upload-request} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -951,7 +951,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code upload-response} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -994,7 +994,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code upload-retry} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1037,7 +1037,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code upload-start} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1080,7 +1080,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code upload-success} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1101,7 +1101,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code files-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1122,7 +1122,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds a listener for {@code max-files-reached-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -1135,7 +1135,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds the given components as children of this component at the slot
      * 'add-button'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -1157,7 +1157,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds the given components as children of this component at the slot
      * 'drop-label-icon'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -1179,7 +1179,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds the given components as children of this component at the slot
      * 'drop-label'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -1201,7 +1201,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     /**
      * Adds the given components as children of this component at the slot
      * 'file-list'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -1242,7 +1242,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
 
     /**
      * Adds the given components as children of this component.
-     * 
+     *
      * @param components
      *            the components to add
      * @see HasComponents#add(Component...)

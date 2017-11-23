@@ -36,7 +36,7 @@ import elemental.json.JsonObject;
 
 /**
  * Abstract implementation of a GridMultiSelectionModel.
- * 
+ *
  * @author Vaadin Ltd.
  *
  * @param <T>
@@ -49,10 +49,10 @@ public abstract class AbstractGridMultiSelectionModel<T>
     private final Set<T> selected;
     private final GridSelectionColumn selectionColumn;
     private SelectAllCheckboxVisibility selectAllCheckBoxVisibility;
-    
+
     /**
      * Constructor for passing a reference of the grid to this implementation.
-     * 
+     *
      * @param grid
      *            reference to the grid for which this selection model is
      *            created
@@ -272,7 +272,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
 
     /**
      * Method for handling the firing of selection events.
-     * 
+     *
      * @param event
      *            the selection event to fire
      */
@@ -310,7 +310,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
                     userOriginated));
         }
     }
-    
+
     private void doUpdateSelection(Set<T> addedItems,
             Set<T> removedItems, boolean userOriginated) {
         addedItems.removeIf(removedItems::remove);

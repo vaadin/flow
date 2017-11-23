@@ -189,13 +189,13 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         Element storedElement = map.getElement(requestedId);
         assertEquals(child, storedElement);
     }
-    
+
     public void testAttachExistingElementById_notCustomElementInitially_elementExistsInDom() {
         String id = "identifier";
 
         Element child = Browser.getDocument().createElement("div");
         child.setAttribute("id", id);
-        
+
         mockWhenDefined(element);
 
         ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
@@ -235,11 +235,11 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         Element storedElement = map.getElement(requestedId);
         assertEquals(anotherGrandChild, storedElement);
     }
-    
+
     public void testAttachCustomElement_notCustomElementInitially_elementExistsInDom() {
         Element child = Browser.getDocument().createElement("div");
         element.appendChild(child);
-        
+
         Element grandChild = Browser.getDocument().createElement("a");
         child.appendChild(grandChild);
         Element anotherGrandChild = Browser.getDocument().createElement("span");
@@ -248,12 +248,12 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         JsonArray path = Json.createArray();
         path.set(0, 0);
         path.set(1, 1);
-        
+
         mockWhenDefined(element);
 
         ExecuteJavaScriptElementUtils.attachCustomElement(node, "span",
                 requestedId, path);
-        
+
         setupShadowRoot();
         runWhenDefined(element);
 
@@ -285,13 +285,13 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         ExistingElementMap map = tree.getRegistry().getExistingElementMap();
         assertNull(map.getElement(requestedId));
     }
-    
+
     public void testAttachExistingElementById_notCustomElementInitially_elementMissingInDom() {
         mockWhenDefined(element);
 
         ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
                 requestedId, "not_found");
-        
+
         setupShadowRoot();
         runWhenDefined(element);
 
@@ -317,7 +317,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         ExistingElementMap map = tree.getRegistry().getExistingElementMap();
         assertNull(map.getElement(requestedId));
     }
-    
+
     public void testAttachCustomElement_notCustomElementInitially_elementMissingInDom() {
         mockWhenDefined(element);
 
@@ -328,7 +328,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         path.set(0, 1);
         ExecuteJavaScriptElementUtils.attachCustomElement(node, "div",
                 requestedId, path);
-        
+
         setupShadowRoot();
         runWhenDefined(element);
 
@@ -365,10 +365,10 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                 .getExistingElementMap();
         assertNull(existingElements.getElement(requestedId));
     }
-    
+
     public void testAttachExistingElementById_notCustomElementInitially_elementIsAlreadyAssociated() {
         mockWhenDefined(element);
-        
+
         String id = "identifier";
 
         Element child = Browser.getDocument().createElement("div");
@@ -379,15 +379,15 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
         ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
                 requestedId, id);
-        
+
         setupShadowRoot();
-        
+
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
         StateNode shadowRootNode = (StateNode) map
                 .getProperty(NodeProperties.SHADOW_ROOT).getValue();
         NodeList list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
         list.add(0, elementNode);
-        
+
         addChildElement(element, child);
         runWhenDefined(element);
 
@@ -425,7 +425,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                 .getExistingElementMap();
         assertNull(existingElements.getElement(requestedId));
     }
-    
+
     public void testAttachCustomElement__notCustomElementInitially_elementIsAlreadyAssociated() {
         mockWhenDefined(element);
         Element child = Browser.getDocument().createElement("div");
@@ -439,7 +439,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         path.set(0, 0);
         ExecuteJavaScriptElementUtils.attachCustomElement(node, "div",
                 requestedId, path);
-        
+
         setupShadowRoot();
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
         StateNode shadowRootNode = (StateNode) map

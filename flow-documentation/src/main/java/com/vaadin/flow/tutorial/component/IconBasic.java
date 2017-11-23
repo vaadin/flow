@@ -27,7 +27,7 @@ public class IconBasic {
         Icon icon = VaadinIcons.VAADIN_H.create();
         new Button("Vaadin", icon);
     }
-    
+
     public void customCollection() {
         Icon icon = new Icon("valo", "clock");
         new Button("Clock", icon);

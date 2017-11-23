@@ -37,11 +37,11 @@ public interface Focusable<T extends Component> extends HasElement,
      * <li>A negative value (usually <code>tabindex = -1</code> means that the
      * component should be focusable, but should not be reachable via sequential
      * keyboard navigation.</li>
-     * 
+     *
      * <li><code>tabindex = 0</code> means that the component should be
      * focusable in sequential keyboard navigation, but its order is defined by
      * the document's source order.</li>
-     * 
+     *
      * <li>A positive value means the component should be focusable in
      * sequential keyboard navigation, with its order defined by the value of
      * the number. That is, <code>tabindex = 4</code> would be focused before
@@ -50,7 +50,7 @@ public interface Focusable<T extends Component> extends HasElement,
      * relative to each other follows their position in the document
      * source.</li>
      * </ul>
-     * 
+     *
      * @param tabIndex
      *            the tabindex attribute
      * @return this instance, for method chaining
@@ -72,7 +72,7 @@ public interface Focusable<T extends Component> extends HasElement,
      * element, which depends on the element and on the browser. If the
      * attribute cannot be parsed to <code>int</code>, then an
      * {@link IllegalStateException} is thrown.
-     * 
+     *
      * @return the tabindex attribute, or 0 if none
      * @throws IllegalStateException
      *             if the returned tabindex from the element is empty or can not
@@ -100,7 +100,7 @@ public interface Focusable<T extends Component> extends HasElement,
     /**
      * Calls the <code>focus</code> function at the client, making the component
      * keyboard focused.
-     * 
+     *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus
      *      at MDN</a>
@@ -112,7 +112,7 @@ public interface Focusable<T extends Component> extends HasElement,
     /**
      * Calls the <code>blur</code> function at the client, making the component
      * lose keyboard focus.
-     * 
+     *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/blur">blur
      *      at MDN</a>

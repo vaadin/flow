@@ -24,9 +24,9 @@ import com.googlecode.gentyref.GenericTypeReflector;
  * Interface for implementing type conversions in template models together with
  * the {@link Convert} annotation. Used for enabling the use of types in
  * template model methods that are not natively supported by the framework.
- * 
+ *
  * @see Convert
- * 
+ *
  * @author Vaadin Ltd
  *
  * @param <M>
@@ -39,7 +39,7 @@ public interface ModelConverter<M, P extends Serializable>
 
     /**
      * Get the model type of this converter.
-     * 
+     *
      * @return the application type
      */
     @SuppressWarnings("unchecked")
@@ -57,7 +57,7 @@ public interface ModelConverter<M, P extends Serializable>
 
     /**
      * Get the presentation type of this converter.
-     * 
+     *
      * @return the model type
      */
     @SuppressWarnings("unchecked")
@@ -75,7 +75,7 @@ public interface ModelConverter<M, P extends Serializable>
 
     /**
      * Converts the given value from model type to presentation type.
-     * 
+     *
      * @param modelValue
      *            the value to convert
      * @return the converted value
@@ -84,7 +84,7 @@ public interface ModelConverter<M, P extends Serializable>
 
     /**
      * Converts the given value from presentation type to model type.
-     * 
+     *
      * @param presentationValue
      *            the value to convert
      * @return the converted value

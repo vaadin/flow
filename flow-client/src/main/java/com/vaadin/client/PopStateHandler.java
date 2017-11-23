@@ -59,8 +59,8 @@ public class PopStateHandler {
     public void bind() {
         // track the location after the latest response from server
         registry.getRequestResponseTracker().addResponseHandlingEndedHandler(
-                event -> pathAfterPreviousResponse = Browser.getWindow()                
-                .getLocation().getPathname());                
+                event -> pathAfterPreviousResponse = Browser.getWindow()
+                .getLocation().getPathname());
 
         Browser.getWindow().setOnpopstate(this::onPopStateEvent);
     }

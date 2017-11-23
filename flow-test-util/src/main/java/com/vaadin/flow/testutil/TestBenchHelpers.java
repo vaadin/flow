@@ -311,7 +311,7 @@ public class TestBenchHelpers extends ParallelTest {
     /**
      * Gets the log entries from the browser that have the given logging level
      * or higher.
-     * 
+     *
      * @param level
      *            the minimum severity of logs included
      * @return log entries from the browser
@@ -329,7 +329,7 @@ public class TestBenchHelpers extends ParallelTest {
     /**
      * Checks browser's log entries, throws an error for any client-side error
      * and logs any client-side warnings.
-     * 
+     *
      * @throws AssertionError
      *             if an error is found in the browser logs
      */

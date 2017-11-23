@@ -80,7 +80,7 @@ public class DefaultRouteResolver implements RouteResolver {
 
         /**
          * Constructor for path with segment details.
-         * 
+         *
          * @param path
          *            path
          * @param segments

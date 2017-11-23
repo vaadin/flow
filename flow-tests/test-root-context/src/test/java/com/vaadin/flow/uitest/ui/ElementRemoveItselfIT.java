@@ -24,7 +24,7 @@ import com.vaadin.testbench.By;
 
 /**
  * @author Vaadin Ltd
- * 
+ *
  */
 public class ElementRemoveItselfIT extends ChromeBrowserTest {
 

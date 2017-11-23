@@ -949,7 +949,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Override default deserialization logic to account for transient
      * {@link #pendingAccessQueue}.
-     * 
+     *
      * @param stream
      *            the object to read
      * @throws IOException

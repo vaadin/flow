@@ -27,7 +27,7 @@ public final class StreamingErrorEventImpl extends AbstractStreamingEvent
 
     /**
      * Streaming error event constructor.
-     * 
+     *
      * @param filename
      *            filename
      * @param type

@@ -36,7 +36,7 @@ public class Postpone implements Serializable {
 
     /**
      * Set any remaining {@link BeforeLeaveObserver}s to be continued from.
-     * 
+     *
      * @param beforeLeave
      *            listeners to continue calling
      * @return uncalled listeners to continue from
@@ -61,7 +61,7 @@ public class Postpone implements Serializable {
     /**
      * Get {@link BeforeLeaveObserver}s that have been left over from a
      * postpone.
-     * 
+     *
      * @return remaining BeforeLeaveObservers or empty ArrayDeque
      */
     public Deque<BeforeLeaveObserver> getLeaveObservers() {
@@ -71,7 +71,7 @@ public class Postpone implements Serializable {
     /**
      * Get {@link BeforeNavigationObserver}s that have been left over from a
      * postpone.
-     * 
+     *
      * @return remaining BeforeNavigationObservers or empty ArrayDeque
      */
     public Deque<BeforeNavigationObserver> getNavigationObservers() {

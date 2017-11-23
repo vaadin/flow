@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -45,7 +45,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code month} property from the webcomponent
      */
     protected JsonObject protectedGetMonth() {
@@ -60,7 +60,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * A {@code Date} object defining the month to be displayed. Only year and
      * month properties are actually used.
      * </p>
-     * 
+     *
      * @param month
      *            the JsonObject value to set
      */
@@ -78,7 +78,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code selectedDate} property from the webcomponent
      */
     protected JsonObject protectedGetSelectedDate() {
@@ -92,7 +92,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * <p>
      * A {@code Date} object for the currently selected date.
      * </p>
-     * 
+     *
      * @param selectedDate
      *            the JsonObject value to set
      */
@@ -110,7 +110,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code focusedDate} property from the webcomponent
      */
     protected JsonObject protectedGetFocusedDate() {
@@ -124,7 +124,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * <p>
      * A {@code Date} object for the currently focused date.
      * </p>
-     * 
+     *
      * @param focusedDate
      *            the JsonObject value to set
      */
@@ -135,7 +135,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code showWeekNumbers} property from the webcomponent
      */
     public boolean isShowWeekNumbers() {
@@ -153,7 +153,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code i18n} property from the webcomponent
      */
     protected JsonObject protectedGetI18n() {
@@ -178,7 +178,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code ignoreTaps} property from the webcomponent
      */
     public boolean isIgnoreTaps() {
@@ -192,7 +192,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * <p>
      * Flag stating whether taps on the component should be ignored.
      * </p>
-     * 
+     *
      * @param ignoreTaps
      *            the boolean value to set
      */
@@ -211,7 +211,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code minDate} property from the webcomponent
      */
     protected JsonObject protectedGetMinDate() {
@@ -226,7 +226,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * The earliest date that can be selected. All earlier dates will be
      * disabled.
      * </p>
-     * 
+     *
      * @param minDate
      *            the JsonObject value to set
      */
@@ -244,7 +244,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code maxDate} property from the webcomponent
      */
     protected JsonObject protectedGetMaxDate() {
@@ -258,7 +258,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * <p>
      * The latest date that can be selected. All later dates will be disabled.
      * </p>
-     * 
+     *
      * @param maxDate
      *            the JsonObject value to set
      */
@@ -269,7 +269,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     public boolean isDisabled() {
@@ -287,7 +287,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
     /**
      * Adds a listener for {@code selected-date-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */

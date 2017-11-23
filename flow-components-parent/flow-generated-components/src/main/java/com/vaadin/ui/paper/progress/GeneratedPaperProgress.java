@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -48,7 +48,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * This property is synchronized automatically from client side when a
      * 'value-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code value} property from the webcomponent
      */
     @Synchronize(property = "value", value = "value-changed")
@@ -64,7 +64,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * <p>
      * The number that represents the current value.
      * </p>
-     * 
+     *
      * @param value
      *            the double value to set
      */
@@ -84,7 +84,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * <p>
      * The number that represents the current value.
      * </p>
-     * 
+     *
      * @param value
      *            the Number value to set
      * @see #setValue(Double)
@@ -107,7 +107,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * This property is synchronized automatically from client side when a
      * 'min-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code min} property from the webcomponent
      */
     @Synchronize(property = "min", value = "min-changed")
@@ -122,7 +122,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * <p>
      * The number that indicates the minimum value of the range.
      * </p>
-     * 
+     *
      * @param min
      *            the double value to set
      */
@@ -140,7 +140,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * This property is synchronized automatically from client side when a
      * 'max-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code max} property from the webcomponent
      */
     @Synchronize(property = "max", value = "max-changed")
@@ -155,7 +155,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * <p>
      * The number that indicates the maximum value of the range.
      * </p>
-     * 
+     *
      * @param max
      *            the double value to set
      */
@@ -173,7 +173,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * This property is synchronized automatically from client side when a
      * 'step-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code step} property from the webcomponent
      */
     @Synchronize(property = "step", value = "step-changed")
@@ -188,7 +188,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * <p>
      * Specifies the value granularity of the range's value.
      * </p>
-     * 
+     *
      * @param step
      *            the double value to set
      */
@@ -206,7 +206,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * This property is synchronized automatically from client side when a
      * 'ratio-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code ratio} property from the webcomponent
      */
     @Synchronize(property = "ratio", value = "ratio-changed")
@@ -224,7 +224,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code secondaryProgress} property from the webcomponent
      */
     public double getSecondaryProgress() {
@@ -238,7 +238,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * <p>
      * The number that represents the current secondary progress.
      * </p>
-     * 
+     *
      * @param secondaryProgress
      *            the double value to set
      */
@@ -256,7 +256,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code secondaryRatio} property from the webcomponent
      */
     public double getSecondaryRatio() {
@@ -273,7 +273,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code indeterminate} property from the webcomponent
      */
     public boolean isIndeterminate() {
@@ -287,7 +287,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * <p>
      * Use an indeterminate progress indicator.
      * </p>
-     * 
+     *
      * @param indeterminate
      *            the boolean value to set
      */
@@ -305,7 +305,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     public boolean isDisabled() {
@@ -319,7 +319,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * <p>
      * True if the progress is disabled.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -337,7 +337,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 
     /**
      * Adds a listener for {@code min-changed} events fired by the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -357,7 +357,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 
     /**
      * Adds a listener for {@code max-changed} events fired by the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -378,7 +378,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
     /**
      * Adds a listener for {@code step-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -399,7 +399,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
     /**
      * Adds a listener for {@code ratio-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */

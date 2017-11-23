@@ -26,7 +26,7 @@ public interface AfterNavigationObserver {
 
     /**
      * Method called after navigation has been executed.
-     * 
+     *
      * @param event
      *            after navigation event with event details
      */

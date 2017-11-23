@@ -23,7 +23,7 @@ import com.vaadin.ui.renderers.TemplateRenderer;
 
 /**
  * Mixin interface for {@link Grid} columns.
- * 
+ *
  * @param <T>
  *            the subclass type
  *
@@ -105,7 +105,7 @@ public interface ColumnBase<T extends ColumnBase<T>> extends HasElement {
 
     /**
      * Sets a header text to the column.
-     * 
+     *
      * @param labelText
      *            the text to be shown at the column header
      * @return this column, for method chaining
@@ -117,7 +117,7 @@ public interface ColumnBase<T extends ColumnBase<T>> extends HasElement {
 
     /**
      * Sets a header template to the column.
-     * 
+     *
      * @param renderer
      *            the template renderer to be used to render the header of the
      *            column
@@ -127,7 +127,7 @@ public interface ColumnBase<T extends ColumnBase<T>> extends HasElement {
 
     /**
      * Sets a footer text to the column.
-     * 
+     *
      * @param labelText
      *            the text to be shown at the column footer
      * @return this column, for method chaining
@@ -139,7 +139,7 @@ public interface ColumnBase<T extends ColumnBase<T>> extends HasElement {
 
     /**
      * Sets a footer template to the column.
-     * 
+     *
      * @param renderer
      *            the template renderer to be used to render the footer of the
      *            column

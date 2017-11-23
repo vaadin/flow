@@ -54,7 +54,7 @@ public final class JsonSerializer {
      * of primitive type or enum to a {@link JsonValue}.
      * <p>
      * When a bean is used, a {@link JsonObject} is returned.
-     * 
+     *
      * @param bean
      *            Java object to be converted
      * @return the json representation of the Java object
@@ -103,7 +103,7 @@ public final class JsonSerializer {
     /**
      * Converts a collection of object into a {@link JsonArray}, converting each
      * item of the collection individually.
-     * 
+     *
      * @param beans
      *            the collection of objects to be converted
      * @return the json representation of the objects in the collectios. An
@@ -156,7 +156,7 @@ public final class JsonSerializer {
      * Converts a JsonValue to the corresponding Java object. The Java object
      * can be a Java bean, {@link JsonSerializable} instance, String, wrapper of
      * primitive types or an enum.
-     * 
+     *
      * @param type
      *            the type of the Java object convert the json to
      * @param json
@@ -267,7 +267,7 @@ public final class JsonSerializer {
      * Converts a JsonArray into a collection of Java objects. The Java objects
      * can be Java beans, {@link JsonSerializable} instances, Strings, wrappers
      * of primitive types or enums.
-     * 
+     *
      * @param type
      *            the type of the elements in the array
      * @param json

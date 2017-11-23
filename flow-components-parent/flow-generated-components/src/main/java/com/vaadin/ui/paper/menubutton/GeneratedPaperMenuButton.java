@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -47,7 +47,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code keyEventTarget} property from the webcomponent
      */
     protected JsonObject protectedGetKeyEventTarget() {
@@ -62,7 +62,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * The EventTarget that will be firing relevant KeyboardEvents. Set it to
      * {@code null} to disable the listeners.
      * </p>
-     * 
+     *
      * @param keyEventTarget
      *            the JsonObject value to set
      */
@@ -81,7 +81,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
@@ -97,7 +97,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * If true, this property will cause the implementing element to
      * automatically stop propagation on any handled KeyboardEvents.
      * </p>
-     * 
+     *
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
@@ -118,7 +118,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code keyBindings} property from the webcomponent
      */
     protected JsonObject protectedGetKeyBindings() {
@@ -133,7 +133,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * To be used to express what combination of keys will trigger the relative
      * callback. e.g. {@code keyBindings: 'esc': '_onEscPressed'}}
      * </p>
-     * 
+     *
      * @param keyBindings
      *            the JsonObject value to set
      */
@@ -151,7 +151,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is synchronized automatically from client side when a
      * 'focused-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
@@ -169,7 +169,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is synchronized automatically from client side when a
      * 'disabled-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     @Synchronize(property = "disabled", value = "disabled-changed")
@@ -184,7 +184,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * <p>
      * If true, the user cannot interact with this element.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -202,7 +202,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is synchronized automatically from client side when a
      * 'opened-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
@@ -217,7 +217,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * <p>
      * True if the content is currently displayed.
      * </p>
-     * 
+     *
      * @param opened
      *            the boolean value to set
      */
@@ -236,7 +236,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code horizontalAlign} property from the webcomponent
      */
     public String getHorizontalAlign() {
@@ -251,7 +251,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * The orientation against which to align the menu dropdown horizontally
      * relative to the dropdown trigger.
      * </p>
-     * 
+     *
      * @param horizontalAlign
      *            the String value to set
      */
@@ -271,7 +271,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code verticalAlign} property from the webcomponent
      */
     public String getVerticalAlign() {
@@ -286,7 +286,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * The orientation against which to align the menu dropdown vertically
      * relative to the dropdown trigger.
      * </p>
-     * 
+     *
      * @param verticalAlign
      *            the String value to set
      */
@@ -308,7 +308,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code dynamicAlign} property from the webcomponent
      */
     public boolean isDynamicAlign() {
@@ -325,7 +325,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * positioning the dropdown and may be changed if doing so reduces the area
      * of the dropdown falling outside of {@code fitInto}.
      * </p>
-     * 
+     *
      * @param dynamicAlign
      *            the boolean value to set
      */
@@ -345,7 +345,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code horizontalOffset} property from the webcomponent
      */
     public double getHorizontalOffset() {
@@ -361,7 +361,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * {@code horizontalAlign}. Use a negative value to offset to the left, or a
      * positive value to offset to the right.
      * </p>
-     * 
+     *
      * @param horizontalOffset
      *            the double value to set
      */
@@ -381,7 +381,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code verticalOffset} property from the webcomponent
      */
     public double getVerticalOffset() {
@@ -397,7 +397,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * {@code verticalAlign}. Use a negative value to offset towards the top, or
      * a positive value to offset towards the bottom.
      * </p>
-     * 
+     *
      * @param verticalOffset
      *            the double value to set
      */
@@ -416,7 +416,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noOverlap} property from the webcomponent
      */
     public boolean isNoOverlap() {
@@ -431,7 +431,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * If true, the dropdown will be positioned so that it doesn't overlap the
      * button.
      * </p>
-     * 
+     *
      * @param noOverlap
      *            the boolean value to set
      */
@@ -449,7 +449,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noAnimations} property from the webcomponent
      */
     public boolean isNoAnimations() {
@@ -463,7 +463,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * <p>
      * Set to true to disable animations when opening and closing the dropdown.
      * </p>
-     * 
+     *
      * @param noAnimations
      *            the boolean value to set
      */
@@ -482,7 +482,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code ignoreSelect} property from the webcomponent
      */
     public boolean isIgnoreSelect() {
@@ -497,7 +497,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * Set to true to disable automatically closing the dropdown after a
      * selection has been made.
      * </p>
-     * 
+     *
      * @param ignoreSelect
      *            the boolean value to set
      */
@@ -516,7 +516,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code closeOnActivate} property from the webcomponent
      */
     public boolean isCloseOnActivate() {
@@ -531,7 +531,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * Set to true to enable automatically closing the dropdown after an item
      * has been activated, even if the selection did not change.
      * </p>
-     * 
+     *
      * @param closeOnActivate
      *            the boolean value to set
      */
@@ -550,7 +550,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code openAnimationConfig} property from the webcomponent
      */
     protected JsonObject protectedGetOpenAnimationConfig() {
@@ -565,7 +565,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * An animation config. If provided, this will be used to animate the
      * opening of the dropdown.
      * </p>
-     * 
+     *
      * @param openAnimationConfig
      *            the JsonObject value to set
      */
@@ -586,7 +586,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code closeAnimationConfig} property from the webcomponent
      */
     protected JsonObject protectedGetCloseAnimationConfig() {
@@ -601,7 +601,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * An animation config. If provided, this will be used to animate the
      * closing of the dropdown.
      * </p>
-     * 
+     *
      * @param closeAnimationConfig
      *            the JsonObject value to set
      */
@@ -623,7 +623,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code allowOutsideScroll} property from the webcomponent
      */
     public boolean isAllowOutsideScroll() {
@@ -639,7 +639,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * when opened. Set to true in order to prevent scroll from being
      * constrained to the dropdown when it opens.
      * </p>
-     * 
+     *
      * @param allowOutsideScroll
      *            the boolean value to set
      */
@@ -657,7 +657,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code restoreFocusOnClose} property from the webcomponent
      */
     public boolean isRestoreFocusOnClose() {
@@ -671,7 +671,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * <p>
      * Whether focus should be restored to the button when the menu closes.
      * </p>
-     * 
+     *
      * @param restoreFocusOnClose
      *            the boolean value to set
      */
@@ -689,7 +689,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code contentElement} property from the webcomponent
      */
     protected JsonObject protectedGetContentElement() {
@@ -703,7 +703,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * <p>
      * The content element that is contained by the menu button, if any.
      * </p>
-     * 
+     *
      * @param contentElement
      *            the JsonObject value to set
      */
@@ -720,7 +720,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * element. This is the imperative equivalent of declaring a keybinding in
      * the {@code keyBindings} prototype property.
      * </p>
-     * 
+     *
      * @param eventString
      *            Missing documentation!
      * @param handlerName
@@ -754,7 +754,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param event
      *            Missing documentation!
      * @param eventString
@@ -813,7 +813,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
     /**
      * Adds a listener for {@code focused-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -834,7 +834,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
     /**
      * Adds a listener for {@code disabled-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -855,7 +855,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
     /**
      * Adds a listener for {@code paper-dropdown-close} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -876,7 +876,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
     /**
      * Adds a listener for {@code paper-dropdown-open} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -897,7 +897,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
     /**
      * Adds a listener for {@code opened-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -918,7 +918,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
     /**
      * Adds a listener for {@code horizontal-offset-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -939,7 +939,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
     /**
      * Adds a listener for {@code vertical-offset-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -952,7 +952,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
     /**
      * Adds the given components as children of this component at the slot
      * 'dropdown-trigger'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -974,7 +974,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
     /**
      * Adds the given components as children of this component at the slot
      * 'dropdown-content'.
-     * 
+     *
      * @param components
      *            The components to add.
      * @see <a
@@ -995,7 +995,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 
     /**
      * Removes the given child components from this component.
-     * 
+     *
      * @param components
      *            The components to remove.
      * @throws IllegalArgumentException

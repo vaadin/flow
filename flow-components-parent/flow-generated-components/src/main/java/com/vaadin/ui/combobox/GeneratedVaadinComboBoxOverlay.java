@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -54,7 +54,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * This property is synchronized automatically from client side when a
      * 'opened-changed' event happens.
-     * 
+     *
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
@@ -73,7 +73,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * This property is synchronized automatically from client side when a
      * 'template-changed' event happens.
-     * 
+     *
      * @return the {@code template} property from the webcomponent
      */
     @Synchronize(property = "template", value = "template-changed")
@@ -92,7 +92,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * This property is synchronized automatically from client side when a
      * 'content-changed' event happens.
-     * 
+     *
      * @return the {@code content} property from the webcomponent
      */
     @Synchronize(property = "content", value = "content-changed")
@@ -111,7 +111,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code withBackdrop} property from the webcomponent
      */
     public boolean isWithBackdrop() {
@@ -137,7 +137,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code modeless} property from the webcomponent
      */
     public boolean isModeless() {
@@ -152,7 +152,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
      * When true the overlay won't disable the main content, showing it doesn’t
      * change the functionality of the user interface.
      * </p>
-     * 
+     *
      * @param modeless
      *            the boolean value to set
      */
@@ -171,7 +171,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code focusTrap} property from the webcomponent
      */
     public boolean isFocusTrap() {
@@ -186,7 +186,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
      * When true move focus to the first focusable element in the overlay, or to
      * the overlay if there are no focusable elements.
      * </p>
-     * 
+     *
      * @param focusTrap
      *            the boolean value to set
      */
@@ -213,7 +213,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * Adds a listener for {@code vaadin-overlay-close} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -234,7 +234,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * Adds a listener for {@code vaadin-overlay-escape-press} events fired by
      * the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -255,7 +255,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * Adds a listener for {@code vaadin-overlay-open} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -276,7 +276,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * Adds a listener for {@code vaadin-overlay-outside-click} events fired by
      * the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -297,7 +297,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * Adds a listener for {@code opened-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -318,7 +318,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * Adds a listener for {@code template-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -339,7 +339,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * Adds a listener for {@code content-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */

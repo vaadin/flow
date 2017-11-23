@@ -57,7 +57,7 @@ public class AfterNavigationEvent extends EventObject {
 
     /**
      * Get the active chain that we have after navigation.
-     * 
+     *
      * @return unmodifiable list of active view chain
      */
     public List<HasElement> getActiveChain() {

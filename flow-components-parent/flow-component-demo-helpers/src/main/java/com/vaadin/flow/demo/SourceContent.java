@@ -22,7 +22,7 @@ import com.vaadin.ui.html.Div;
 /**
  * This builds up source samples and sets it up so that it can be annotated by
  * <a href="http://prismjs.com/">prism</a>
- * 
+ *
  * @author Vaadin Ltd
  */
 @StyleSheet("src/css/sources.css")

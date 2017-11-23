@@ -36,7 +36,7 @@ public class SortOrderBuildersTest {
         Column<String> col1 = grid.addColumn(string -> string);
         Column<String> col2 = grid.addColumn(string -> string);
         Column<String> col3 = grid.addColumn(string -> string);
-                
+
 
         // construct with asc
         verifySortOrders(

@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -47,7 +47,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is synchronized automatically from client side when a
      * 'focused-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
@@ -65,7 +65,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is synchronized automatically from client side when a
      * 'disabled-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     @Synchronize(property = "disabled", value = "disabled-changed")
@@ -80,7 +80,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * <p>
      * If true, the user cannot interact with this element.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -99,7 +99,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code keyEventTarget} property from the webcomponent
      */
     protected JsonObject protectedGetKeyEventTarget() {
@@ -114,7 +114,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * The EventTarget that will be firing relevant KeyboardEvents. Set it to
      * {@code null} to disable the listeners.
      * </p>
-     * 
+     *
      * @param keyEventTarget
      *            the JsonObject value to set
      */
@@ -133,7 +133,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
@@ -149,7 +149,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * If true, this property will cause the implementing element to
      * automatically stop propagation on any handled KeyboardEvents.
      * </p>
-     * 
+     *
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
@@ -162,7 +162,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code keyBindings} property from the webcomponent
      */
     protected JsonObject protectedGetKeyBindings() {
@@ -187,7 +187,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code pressed} property from the webcomponent
      */
     public boolean isPressed() {
@@ -205,7 +205,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code toggles} property from the webcomponent
      */
     public boolean isToggles() {
@@ -220,7 +220,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * If true, the button toggles the active state with each tap or press of
      * the spacebar.
      * </p>
-     * 
+     *
      * @param toggles
      *            the boolean value to set
      */
@@ -238,7 +238,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is synchronized automatically from client side when a
      * 'active-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code active} property from the webcomponent
      */
     @Synchronize(property = "active", value = "active-changed")
@@ -253,7 +253,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * <p>
      * If true, the button is a toggle and is currently in the active state.
      * </p>
-     * 
+     *
      * @param active
      *            the boolean value to set
      */
@@ -273,7 +273,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code pointerDown} property from the webcomponent
      */
     public boolean isPointerDown() {
@@ -291,7 +291,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code receivedFocusFromKeyboard} property from the
      *         webcomponent
      */
@@ -310,7 +310,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code ariaActiveAttribute} property from the webcomponent
      */
     public String getAriaActiveAttribute() {
@@ -325,7 +325,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * The aria attribute to be set if the button is a toggle and in the active
      * state.
      * </p>
-     * 
+     *
      * @param ariaActiveAttribute
      *            the String value to set
      */
@@ -345,7 +345,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code noink} property from the webcomponent
      */
     public boolean isNoink() {
@@ -360,7 +360,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * If true, the element will not produce a ripple effect when interacted
      * with via the pointer.
      * </p>
-     * 
+     *
      * @param noink
      *            the boolean value to set
      */
@@ -379,7 +379,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code link} property from the webcomponent
      */
     public boolean isLink() {
@@ -394,7 +394,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * If true, the tab will forward keyboard clicks (enter/space) to the first
      * anchor element found in its descendants
      * </p>
-     * 
+     *
      * @param link
      *            the boolean value to set
      */
@@ -411,7 +411,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * element. This is the imperative equivalent of declaring a keybinding in
      * the {@code keyBindings} prototype property.
      * </p>
-     * 
+     *
      * @param eventString
      *            Missing documentation!
      * @param handlerName
@@ -445,7 +445,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param event
      *            Missing documentation!
      * @param eventString
@@ -464,7 +464,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * Ensures this element contains a ripple effect. For startup efficiency the
      * ripple effect is dynamically on demand when needed.
      * </p>
-     * 
+     *
      * @param optTriggeringEvent
      *            (optional) event that triggered the ripple.
      */
@@ -513,7 +513,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
     /**
      * Adds a listener for {@code focused-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -534,7 +534,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
     /**
      * Adds a listener for {@code disabled-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -555,7 +555,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
     /**
      * Adds a listener for {@code active-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -567,7 +567,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
 
     /**
      * Adds the given components as children of this component.
-     * 
+     *
      * @param components
      *            the components to add
      * @see HasComponents#add(Component...)

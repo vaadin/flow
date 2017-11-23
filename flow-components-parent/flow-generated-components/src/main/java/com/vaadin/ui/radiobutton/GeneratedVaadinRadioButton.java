@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -128,7 +128,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autofocus} property from the webcomponent
      */
     public boolean isAutofocus() {
@@ -142,7 +142,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * <p>
      * Specify that this control should have input focus when the page loads.
      * </p>
-     * 
+     *
      * @param autofocus
      *            the boolean value to set
      */
@@ -160,7 +160,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     public boolean isDisabled() {
@@ -174,7 +174,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * <p>
      * If true, the user cannot interact with this element.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -185,7 +185,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code name} property from the webcomponent
      */
     public String getName() {
@@ -210,7 +210,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * This property is synchronized automatically from client side when a
      * 'checked-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code checked} property from the webcomponent
      */
     @Synchronize(property = "checked", value = "checked-changed")
@@ -225,7 +225,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * <p>
      * True if the radio button is checked.
      * </p>
-     * 
+     *
      * @param checked
      *            the boolean value to set
      */
@@ -243,7 +243,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code value} property from the webcomponent
      */
     public String getValue() {
@@ -257,7 +257,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * <p>
      * The value for this element.
      * </p>
-     * 
+     *
      * @param value
      *            the String value to set
      */
@@ -276,7 +276,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
     /**
      * Adds a listener for {@code checked-changed} events fired by the
      * webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      */
@@ -288,7 +288,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
 
     /**
      * Adds the given components as children of this component.
-     * 
+     *
      * @param components
      *            the components to add
      * @see HasComponents#add(Component...)

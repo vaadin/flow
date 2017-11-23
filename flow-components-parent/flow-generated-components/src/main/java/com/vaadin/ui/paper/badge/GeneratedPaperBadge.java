@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -42,7 +42,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code for} property from the webcomponent
      */
     public String getFor() {
@@ -57,7 +57,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * The id of the element that the badge is anchored to. This element must be
      * a sibling of the badge.
      * </p>
-     * 
+     *
      * @param _for
      *            the String value to set
      */
@@ -76,7 +76,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code label} property from the webcomponent
      */
     public String getLabel() {
@@ -91,7 +91,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * The label displayed in the badge. The label is centered, and ideally
      * should have very few characters.
      * </p>
-     * 
+     *
      * @param label
      *            the String value to set
      */
@@ -112,7 +112,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code icon} property from the webcomponent
      */
     public String getIcon() {
@@ -129,7 +129,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * label text. However, the label text will still be used for accessibility
      * purposes.
      * </p>
-     * 
+     *
      * @param icon
      *            the String value to set
      */
@@ -149,7 +149,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code target} property from the webcomponent
      */
     protected JsonObject protectedGetTarget() {
@@ -165,7 +165,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * the element given by the {@code for} attribute, or the immediate parent
      * of the badge.
      * </p>
-     * 
+     *
      * @param target
      *            the JsonObject value to set
      */
@@ -194,7 +194,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * Used to assign the closest resizable ancestor to this resizable if the
      * ancestor detects a request for notifications.
      * </p>
-     * 
+     *
      * @param parentResizable
      *            Missing documentation!
      */
@@ -211,7 +211,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * Used to remove a resizable descendant from the list of descendants that
      * should be notified of a resize change.
      * </p>
-     * 
+     *
      * @param target
      *            Missing documentation!
      */
@@ -233,7 +233,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param element
      *            A candidate descendant element that implements
      *            `IronResizableBehavior`.

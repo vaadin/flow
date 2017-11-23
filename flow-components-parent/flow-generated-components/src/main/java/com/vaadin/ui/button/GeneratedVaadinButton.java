@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -103,7 +103,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code autofocus} property from the webcomponent
      */
     public boolean isAutofocus() {
@@ -117,7 +117,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      * <p>
      * Specify that this control should have input focus when the page loads.
      * </p>
-     * 
+     *
      * @param autofocus
      *            the boolean value to set
      */
@@ -135,7 +135,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     public boolean isDisabled() {
@@ -149,7 +149,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      * <p>
      * If true, the user cannot interact with this element.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -159,7 +159,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
 
     /**
      * Sets the given string as the content of this component.
-     * 
+     *
      * @param the
      *            text content to set
      * @see HasText#setText(String)

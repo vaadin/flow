@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -44,7 +44,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code rootPath} property from the webcomponent
      */
     public String getRootPath() {
@@ -62,7 +62,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code importPath} property from the webcomponent
      */
     public String getImportPath() {
@@ -81,7 +81,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code root} property from the webcomponent
      */
     protected JsonObject protectedGetRoot() {
@@ -99,7 +99,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code $} property from the webcomponent
      */
     protected JsonObject protectedGet$() {
@@ -124,7 +124,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code touchDevice} property from the webcomponent
      */
     public boolean isTouchDevice() {
@@ -138,7 +138,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * <p>
      * True if the device supports touch events.
      * </p>
-     * 
+     *
      * @param touchDevice
      *            the boolean value to set
      */
@@ -149,7 +149,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * 
+     *
      * @return the {@code opened} property from the webcomponent
      */
     public boolean isOpened() {
@@ -174,7 +174,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code loading} property from the webcomponent
      */
     public boolean isLoading() {
@@ -188,7 +188,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * <p>
      * {@code true} when new items are being loaded.
      * </p>
-     * 
+     *
      * @param loading
      *            the boolean value to set
      */
@@ -206,7 +206,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code verticalOffset} property from the webcomponent
      */
     public double getVerticalOffset() {
@@ -220,7 +220,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * <p>
      * Vertical offset for the overlay position.
      * </p>
-     * 
+     *
      * @param verticalOffset
      *            the double value to set
      */
@@ -240,7 +240,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Property names must be simple properties, not paths. Batched path
      * propagation is not supported.
      * </p>
-     * 
+     *
      * @param props
      *            Bag of one or more key-value pairs whose key is a property and
      *            value is the new value to set for that property.
@@ -262,7 +262,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Aliases one data path as another, such that path notifications from one
      * are routed to the other.
      * </p>
-     * 
+     *
      * @param to
      *            Target path to link.
      * @param from
@@ -280,7 +280,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Aliases one data path as another, such that path notifications from one
      * are routed to the other.
      * </p>
-     * 
+     *
      * @param to
      *            Target path to link.
      * @param from
@@ -299,7 +299,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Aliases one data path as another, such that path notifications from one
      * are routed to the other.
      * </p>
-     * 
+     *
      * @param to
      *            Target path to link.
      * @param from
@@ -318,7 +318,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Aliases one data path as another, such that path notifications from one
      * are routed to the other.
      * </p>
-     * 
+     *
      * @param to
      *            Target path to link.
      * @param from
@@ -340,7 +340,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Note, the path to unlink should be the target ({@code to}) used when
      * linking the paths.
      * </p>
-     * 
+     *
      * @param path
      *            Target path to unlink.
      */
@@ -359,7 +359,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Note, the path to unlink should be the target ({@code to}) used when
      * linking the paths.
      * </p>
-     * 
+     *
      * @param path
      *            Target path to unlink.
      */
@@ -377,7 +377,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * <p>
      * Example:
      * </p>
-     * 
+     *
      * <pre>
      * <code>this.items = [ {name: 'Jim'}, {name: 'Todd'}, {name: 'Bill'} ];
      * 	...
@@ -389,7 +389,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 	]);
      * 	</code>
      * </pre>
-     * 
+     *
      * @param path
      *            Path that should be notified.
      * @param splices
@@ -399,7 +399,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            array of items that were removed from this index addedCount:
      *            number of new items added at this index object: a reference to
      *            the array in question type: the string literal 'splice'
-     * 
+     *
      *            Note that splice records _must_ be normalized such that they
      *            are reported in index order (raw results from `Object.observe`
      *            are not ordered and must be normalized/merged before
@@ -425,7 +425,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>elemental.json.JsonObject</code>. Functions with return types
      * different than void are not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to the value to read. The path may be specified as a
      *            string (e.g. `foo.bar.baz`) or an array of path parts (e.g.
@@ -457,7 +457,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>elemental.json.JsonObject</code>. Functions with return types
      * different than void are not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to the value to read. The path may be specified as a
      *            string (e.g. `foo.bar.baz`) or an array of path parts (e.g.
@@ -487,7 +487,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * method does nothing (this method does not throw when dereferencing
      * undefined paths).
      * </p>
-     * 
+     *
      * @param path
      *            Path to the value to write. The path may be specified as a
      *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
@@ -520,7 +520,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * method does nothing (this method does not throw when dereferencing
      * undefined paths).
      * </p>
-     * 
+     *
      * @param path
      *            Path to the value to write. The path may be specified as a
      *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
@@ -559,7 +559,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>double</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to array.
      * @param ...items Missing documentation!
@@ -588,7 +588,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>double</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to array.
      * @param ...items Missing documentation!
@@ -617,7 +617,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>elemental.json.JsonObject</code>. Functions with return types
      * different than void are not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to array.
      */
@@ -644,7 +644,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>elemental.json.JsonObject</code>. Functions with return types
      * different than void are not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to array.
      */
@@ -672,7 +672,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>elemental.json.JsonArray</code>. Functions with return types
      * different than void are not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to array.
      * @param start
@@ -706,7 +706,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>elemental.json.JsonArray</code>. Functions with return types
      * different than void are not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to array.
      * @param start
@@ -739,7 +739,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>elemental.json.JsonObject</code>. Functions with return types
      * different than void are not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to array.
      */
@@ -766,7 +766,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>elemental.json.JsonObject</code>. Functions with return types
      * different than void are not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to array.
      */
@@ -793,7 +793,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>double</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to array.
      * @param ...items Missing documentation!
@@ -822,7 +822,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>double</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param path
      *            Path to array.
      * @param ...items Missing documentation!
@@ -842,13 +842,13 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * <p>
      * Example:
      * </p>
-     * 
+     *
      * <pre>
      * <code>this.item.user.name = 'Bob';
      * 	this.notifyPath('item.user.name');
      * 	</code>
      * </pre>
-     * 
+     *
      * @param path
      *            Path that should be notified.
      * @param value
@@ -879,7 +879,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * <p>
      * These properties are retained unless a value of {@code null} is set.
      * </p>
-     * 
+     *
      * @param properties
      *            Bag of custom property key/values to apply to this element.
      */
@@ -901,7 +901,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>java.lang.String</code>. Functions with return types different than
      * void are not supported at this moment.
-     * 
+     *
      * @param url
      *            URL to resolve.
      * @param base
@@ -924,7 +924,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>double</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
+     *
      * @param label
      *            Missing documentation!
      */
@@ -943,7 +943,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * This function is not supported by Flow because it returns a
      * <code>java.lang.String</code>. Functions with return types different than
      * void are not supported at this moment.
-     * 
+     *
      * @param item
      *            Missing documentation!
      */

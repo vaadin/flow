@@ -47,7 +47,7 @@ public abstract class AbstractBindingValueProvider
      * has two methods
      *
      * <pre>
-     * <code>  
+     * <code>
      *  String getType();
      *  String getValue();
      *  </code>

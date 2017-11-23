@@ -85,7 +85,7 @@ public class StreamResourceRegistry implements Serializable {
      * needed anymore. Note that it is the developer's responsibility to
      * unregister resources. Otherwise resources won't be garbage collected
      * until the session expires which causes memory leak.
-     * 
+     *
      * @param resource
      *            stream resource to register
      * @return registration handler
@@ -102,7 +102,7 @@ public class StreamResourceRegistry implements Serializable {
 
     /**
      * Unregister a stream receiver resource.
-     * 
+     *
      * @param resource
      *            stream receiver resource to unregister
      */
@@ -152,7 +152,7 @@ public class StreamResourceRegistry implements Serializable {
 
     /**
      * Get a registered resource of given type.
-     * 
+     *
      * @param type
      *            resource class type
      * @param uri

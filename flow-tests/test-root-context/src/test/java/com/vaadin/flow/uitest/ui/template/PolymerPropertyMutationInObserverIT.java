@@ -30,7 +30,7 @@ public class PolymerPropertyMutationInObserverIT extends ChromeBrowserTest {
     @Test
     public void property_mutation_inside_observers_synced_correctly() {
         open();
-        
+
         List<WebElement> modelValueDivs = findElements(
                 By.className("model-value"));
         Assert.assertEquals("Value changed twice initially", 2,

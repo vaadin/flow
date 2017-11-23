@@ -39,7 +39,7 @@ import com.vaadin.util.JsonSerializer;
  * {@link TemplateRenderer}s inside cells, headers, footers and detail rows.
  * <p>
  * This class is not meant to be used outside the scope of the Grid.
- * 
+ *
  * @author Vaadin Ltd.
  */
 class GridTemplateRendererUtil {
@@ -47,7 +47,7 @@ class GridTemplateRendererUtil {
     /**
      * Internal object to hold {@link ComponentTemplateRenderer}s and their generated
      * {@link Component}s together.
-     * 
+     *
      * @param <T>
      *            the model item attached to the component
      */
@@ -57,7 +57,7 @@ class GridTemplateRendererUtil {
 
         /**
          * Default constructor.
-         * 
+         *
          * @param component
          *            the generated component
          * @param componentRenderer
@@ -71,7 +71,7 @@ class GridTemplateRendererUtil {
 
         /**
          * Gets the current generated component.
-         * 
+         *
          * @return the generated component by the renderer
          */
         public Component getComponent() {
@@ -82,7 +82,7 @@ class GridTemplateRendererUtil {
          * Recreates the component by calling
          * {@link ComponentTemplateRenderer#createComponent(Object)}, and sets the
          * internal component returned by {@link #getComponent()}.
-         * 
+         *
          * @param item
          *            the model item to be attached to the component instance
          * @return the new generated component returned by the renderer

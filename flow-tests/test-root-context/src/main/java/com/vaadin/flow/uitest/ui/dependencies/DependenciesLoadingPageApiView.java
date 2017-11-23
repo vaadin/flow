@@ -8,7 +8,7 @@ import com.vaadin.ui.UI;
 /**
  * See {@link DependenciesLoadingAnnotationsView} for more details about the
  * test.
- * 
+ *
  * @author Vaadin Ltd.
  * @see DependenciesLoadingAnnotationsView
  */

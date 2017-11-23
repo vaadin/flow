@@ -26,7 +26,7 @@ import com.vaadin.ui.common.HtmlImport;
 
 /**
  * Server-side component for the {@code <vaadin-grid-column-group>} element.
- * 
+ *
  * @author Vaadin Ltd.
  */
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column-group.html")
@@ -66,7 +66,7 @@ public class ColumnGroup extends AbstractColumn<ColumnGroup> {
 
     /**
      * Gets the child columns of this column group.
-     * 
+     *
      * @return the child columns of this column group
      */
     public List<ColumnBase<?>> getChildColumns() {

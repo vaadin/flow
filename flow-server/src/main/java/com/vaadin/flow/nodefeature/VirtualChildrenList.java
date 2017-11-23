@@ -48,7 +48,7 @@ public class VirtualChildrenList extends StateNodeNodeList {
 
     /**
      * Appends an item as last in the list.
-     * 
+     *
      * @param node
      *            the item to append
      */

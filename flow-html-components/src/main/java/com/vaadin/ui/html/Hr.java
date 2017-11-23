@@ -25,7 +25,7 @@ import com.vaadin.ui.common.HtmlComponent;
  */
 @Tag(Tag.HR)
 public class Hr extends HtmlComponent {
-    
+
     /**
      * Creates a new hr.
      */

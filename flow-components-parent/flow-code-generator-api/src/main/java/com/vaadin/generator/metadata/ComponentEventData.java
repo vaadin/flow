@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * Class that represents an event the webcomponent can trigger.
- * 
+ *
  * @see ComponentMetadata
  */
 public class ComponentEventData {
@@ -31,7 +31,7 @@ public class ComponentEventData {
 
     /**
      * Gets the name of the event, such as "click".
-     * 
+     *
      * @return The name of the event.
      */
     public String getName() {
@@ -40,7 +40,7 @@ public class ComponentEventData {
 
     /**
      * Sets the name of the event, such as "click".
-     * 
+     *
      * @param name
      *            The name of the event.
      */
@@ -51,7 +51,7 @@ public class ComponentEventData {
     /**
      * Gets the public description of the event, that can be used to generate
      * the corresponding Javadoc at the Java class.
-     * 
+     *
      * @return The event-level description.
      */
     public String getDescription() {
@@ -61,7 +61,7 @@ public class ComponentEventData {
     /**
      * Sets the public description of the event, that can be used to generate
      * the corresponding Javadoc at the Java class.
-     * 
+     *
      * @param description
      *            The event-level description.
      */
@@ -72,7 +72,7 @@ public class ComponentEventData {
     /**
      * Gets the list of properties that are part of the event. Each property is
      * represented by the {@link ComponentPropertyBaseData} object.
-     * 
+     *
      * @return The list of properties that are part of the event.
      */
     public List<ComponentPropertyBaseData> getProperties() {
@@ -82,7 +82,7 @@ public class ComponentEventData {
     /**
      * Sets the list of properties that are part of the event. Each property is
      * represented by the {@link ComponentPropertyBaseData} object.
-     * 
+     *
      * @param properties
      *            The list of properties that are part of the event.
      */

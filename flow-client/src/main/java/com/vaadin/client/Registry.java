@@ -274,7 +274,7 @@ public class Registry {
 
     /**
      * Gets the {@link ConstantPool} singleton.
-     * 
+     *
      * @return the {@link ConstantPool} singleton
      */
     public ConstantPool getConstantPool() {
@@ -292,7 +292,7 @@ public class Registry {
 
     /**
      * Gets the {@link ExistingElementMap} singleton.
-     * 
+     *
      * @return the {@link ExistingElementMap} singleton
      */
     public ExistingElementMap getExistingElementMap() {
@@ -301,7 +301,7 @@ public class Registry {
 
     /**
      * Gets the {@link InitialPropertiesHandler} singleton.
-     * 
+     *
      * @return the {@link InitialPropertiesHandler} singleton
      */
     public InitialPropertiesHandler getInitialPropertiesHandler() {

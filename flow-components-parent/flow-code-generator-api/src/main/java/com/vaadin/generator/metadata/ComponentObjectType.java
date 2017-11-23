@@ -101,9 +101,9 @@ public class ComponentObjectType implements ComponentType {
 
     /**
      * Get the list of actual types contained in this ComponentObjectType.
-     * 
+     *
      * @see ComponentObjectTypeInnerType
-     * 
+     *
      * @return the list of inner types within this ComponentObjectType
      */
     public List<ComponentObjectTypeInnerType> getInnerTypes() {
@@ -112,9 +112,9 @@ public class ComponentObjectType implements ComponentType {
 
     /**
      * Sets the list of actual types contained in this ComponentObjectType.
-     * 
+     *
      * @see ComponentObjectTypeInnerType
-     * 
+     *
      * @param innerTypes
      *            the list of inner types to set
      */

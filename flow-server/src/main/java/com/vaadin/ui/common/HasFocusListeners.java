@@ -34,7 +34,7 @@ public interface HasFocusListeners<T extends Component>
 
     /**
      * Add a listener to focus DOM events.
-     * 
+     *
      * @param listener
      *            the focus listener
      * @return a registration that can be used to unregister the listener
@@ -49,7 +49,7 @@ public interface HasFocusListeners<T extends Component>
 
     /**
      * Class that represents the DOM event "focus".
-     * 
+     *
      * @param <C>
      *            The source component type.
      */
@@ -58,7 +58,7 @@ public interface HasFocusListeners<T extends Component>
 
         /**
          * FocusEvent base constructor.
-         * 
+         *
          * @param source
          *            the source component
          * @param fromClient

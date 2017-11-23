@@ -29,7 +29,7 @@ import com.vaadin.flow.nodefeature.ShadowRootHost;
 /**
  * Abstract implementation of the {@link ElementStateProvider} related to the
  * composition essence of the provider.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -49,7 +49,7 @@ public abstract class AbstractNodeStateProvider
 
     /**
      * Returns the features supported by the provider.
-     * 
+     *
      * @return features supported by the provider
      */
     protected abstract Class<? extends NodeFeature>[] getProviderFeatures();
@@ -146,7 +146,7 @@ public abstract class AbstractNodeStateProvider
     /**
      * Gets the flyweight instance for the {@code node} supported by the
      * provider.
-     * 
+     *
      * @see #supports(StateNode)
      * @param node
      *            the node to wrap into flyweight

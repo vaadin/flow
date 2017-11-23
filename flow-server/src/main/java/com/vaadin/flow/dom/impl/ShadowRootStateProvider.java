@@ -44,7 +44,7 @@ import com.vaadin.ui.event.PropertyChangeListener;
  * <p>
  * The data is stored directly in the state node but this should be considered
  * an implementation detail which can change.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -68,7 +68,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
 
     /**
      * Create a new shadow root node for the given element {@code node}.
-     * 
+     *
      * @param node
      *            the node to create the shadow root for
      * @return the shadow root node
@@ -211,7 +211,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
 
     /**
      * Insert the given virtual child at the given position.
-     * 
+     *
      * @param node
      *            node containing data
      * @param child

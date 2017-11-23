@@ -145,7 +145,7 @@ public class StateTree {
      * for this state tree.
      * <p>
      * Logs a warning if there was a problem with the node.
-     * 
+     *
      * @param node
      *            node to test
      * @return node is valid

@@ -30,7 +30,7 @@ import com.vaadin.server.VaadinSession;
  * <p>
  * It allows to not produce the same content for the favicon as for any other
  * resource if servlet mapping is "/*".
- * 
+ *
  * @author Vaadin Ltd
  */
 public class FaviconHandler implements RequestHandler {

@@ -30,7 +30,7 @@ import com.vaadin.generator.metadata.ComponentType;
 /**
  * Utility class for generating all possible combinations of allowed parameters
  * for ComponentFunctionData.
- * 
+ *
  * @author Vaadin Ltd
  */
 public class FunctionParameterVariantCombinator {
@@ -42,7 +42,7 @@ public class FunctionParameterVariantCombinator {
      * Utility method for generating all possible combinations of allowed
      * parameters for ComponentFunctionData. Returns a list of all possible
      * lists of ComponentTypes the given function accepts as parameters.
-     * 
+     *
      * @param function
      *            the function to generate parameter variants for
      * @return all the valid combinations of function parameter types

@@ -34,7 +34,7 @@ public @interface RoutePrefix {
 
     /**
      * Get the route prefix defined for class.
-     * 
+     *
      * @return route prefix to add
      */
     String value();
@@ -42,7 +42,7 @@ public @interface RoutePrefix {
     /**
      * Have the rout chain break on defined class and not take into notice any
      * more parent layout route prefixes.
-     * 
+     *
      * @return route up to here should be absolute
      */
     boolean absolute() default false;

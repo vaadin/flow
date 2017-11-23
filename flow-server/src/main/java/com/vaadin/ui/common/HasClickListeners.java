@@ -34,7 +34,7 @@ public interface HasClickListeners<T extends Component>
 
     /**
      * Add a listener to click DOM events.
-     * 
+     *
      * @param listener
      *            The click listener.
      * @return A registration that can be used to unregister the listener.
@@ -49,7 +49,7 @@ public interface HasClickListeners<T extends Component>
 
     /**
      * Class that represents the DOM event "click".
-     * 
+     *
      * @param <C>
      *            The source component type.
      */
@@ -58,7 +58,7 @@ public interface HasClickListeners<T extends Component>
 
         /**
          * ComponentEvent base constructor.
-         * 
+         *
          * @param source
          *            the source component
          * @param fromClient

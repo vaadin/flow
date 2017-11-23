@@ -281,7 +281,7 @@ public class NavigationStateRenderer implements NavigationHandler {
     /**
      * First inform any {@link BeforeNavigationObserver}s in attaching element
      * chain, the inform {@link BeforeEnterObserver}s.
-     * 
+     *
      * @param beforeNavigation
      *            navigation event sent to observers
      * @param elements

@@ -20,7 +20,7 @@ import com.vaadin.flow.StateNode;
 /**
  * Marker feature for a {@link StateNode} which is a shadow root for some
  * elemement.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -28,7 +28,7 @@ public class ShadowRootHost extends ServerSideFeature {
 
     /**
      * Creates a new instance of the feature for the given {@code node}.
-     * 
+     *
      * @param node
      *            the node to create the feature for
      */
@@ -38,7 +38,7 @@ public class ShadowRootHost extends ServerSideFeature {
 
     /**
      * Gets the host state node of the shadow root node.
-     * 
+     *
      * @return the host element node
      */
     public StateNode getHost() {
