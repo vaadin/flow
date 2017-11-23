@@ -16,7 +16,9 @@
 
 package com.vaadin.data;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -801,5 +803,65 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertEquals("Binding still affects bean even after unbind",
                 ageBeforeUnbind, String.valueOf(item.getAge()));
 
+    }
+
+    static class MyBindingHandler implements BindingValidationStatusHandler {
+
+        boolean expectingError = false;
+        int callCount = 0;
+
+        @Override
+        public void statusChange(BindingValidationStatus<?> statusChange) {
+            ++callCount;
+            if (expectingError) {
+                assertTrue("Expecting error", statusChange.isError());
+            } else {
+                assertFalse("Unexpected error", statusChange.isError());
+            }
+        }
+    }
+
+    @Test
+    public void execute_binding_status_handler_from_binder_status_handler() {
+        MyBindingHandler bindingHandler = new MyBindingHandler();
+        binder.forField(nameField)
+                .withValidator(t -> !t.isEmpty(), "No empty values.")
+                .withValidationStatusHandler(bindingHandler)
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        String ageError = "CONVERSIONERROR";
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(ageError))
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setValidationStatusHandler(
+                BinderValidationStatus::notifyBindingValidationStatusHandlers);
+
+        String initialName = item.getFirstName();
+        int initialAge = item.getAge();
+
+        binder.setBean(item);
+
+        // Test specific error handling.
+        bindingHandler.expectingError = true;
+        nameField.setValue("");
+
+        // Test default error handling.
+        ageField.setValue("foo");
+        assertThat("Error message is not what was expected",
+                ageField.getErrorMessage(), containsString(ageError));
+
+        // Restore values and test no errors.
+        ageField.setValue(String.valueOf(initialAge));
+        assertThat("There should be no error",
+                ageField.getErrorMessage(), is(""));
+
+        bindingHandler.expectingError = false;
+        nameField.setValue(initialName);
+
+        // Assert that the handler was called.
+        assertEquals(
+                "Unexpected callCount to binding validation status handler", 4,
+                bindingHandler.callCount);
     }
 }

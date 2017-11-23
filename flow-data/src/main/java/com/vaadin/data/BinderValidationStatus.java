@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.vaadin.data.Binder.BindingBuilder;
+import com.vaadin.function.SerializablePredicate;
 
 /**
  * Binder validation status change. Represents the outcome of binder level
@@ -184,5 +185,31 @@ public class BinderValidationStatus<BEAN> implements Serializable {
     public List<ValidationResult> getBeanValidationErrors() {
         return binderStatuses.stream().filter(ValidationResult::isError)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Notifies all validation status handlers in bindings.
+     *
+     * @see #notifyBindingValidationStatusHandlers(SerializablePredicate)
+     */
+    public void notifyBindingValidationStatusHandlers() {
+        notifyBindingValidationStatusHandlers(t -> true);
+    }
+
+    /**
+     * Notifies validation status handlers for bindings that pass given filter.
+     * The filter should return {@code true} for each
+     * {@link BindingValidationStatus} that should be delegated to the status
+     * handler in the binding.
+     *
+     * @see #notifyBindingValidationStatusHandlers()
+     *
+     * @param filter
+     *            the filter to select bindings to run status handling for
+     */
+    public void notifyBindingValidationStatusHandlers(
+            SerializablePredicate<BindingValidationStatus<?>> filter) {
+        bindingStatuses.stream().filter(filter).forEach(s -> s.getBinding()
+                .getValidationStatusHandler().statusChange(s));
     }
 }
