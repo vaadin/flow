@@ -126,9 +126,9 @@ public class Binder<BEAN> implements Serializable {
         BindingValidationStatus<TARGET> validate();
 
         /**
-         * Unbinds the binding from its respective {@code Binder}
+         * Unbinds the binding from its respective {@code Binder}.
          * Removes any {@code ValueChangeListener} {@code Registration} from
-         * associated {@code HasValue}
+         * associated {@code HasValue}.
          */
         void unbind();    }
 
@@ -822,7 +822,7 @@ public class Binder<BEAN> implements Serializable {
 
         /**
          * Removes this binding from its binder and unregisters the
-         * {@code ValueChangeListener} from any bound {@code HasValue}
+         * {@code ValueChangeListener} from any bound {@code HasValue}.
          */
         @Override
         public void unbind() {
