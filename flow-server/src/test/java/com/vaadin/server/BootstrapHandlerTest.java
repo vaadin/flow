@@ -1,9 +1,6 @@
 package com.vaadin.server;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -11,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.Document;
@@ -39,6 +34,12 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class BootstrapHandlerTest {
 
@@ -343,32 +344,63 @@ public class BootstrapHandlerTest {
     }
 
     @Test
+    public void frontendProtocol_productionModeAndWithProperties_useProperties() {
+        initUI(testUI);
+        deploymentConfiguration.setProductionMode(true);
+        WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
+        Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
+
+        String es6Prefix = "bar/es6/";
+        deploymentConfiguration.setApplicationOrSystemProperty(
+                Constants.FRONTEND_URL_ES6, es6Prefix);
+
+        String es5Prefix = "bar/es5/";
+        deploymentConfiguration.setApplicationOrSystemProperty(
+                Constants.FRONTEND_URL_ES5, es5Prefix);
+        String urlPart = "foo";
+
+        Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
+        String urlES6 = context.getUriResolver().resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
+        assertThat(String.format("In development mode, es6 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_ES6),
+                urlES6, is(es6Prefix + urlPart));
+
+        Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
+        String urlES5 = context.getUriResolver().resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
+        assertThat(String.format("In development mode, es5 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_ES5),
+                urlES5, is(es5Prefix + urlPart));
+
+        Mockito.verify(session, Mockito.times(3)).getBrowser();
+        Mockito.verify(mockedWebBrowser, Mockito.times(2)).isEs6Supported();
+    }
+
+    @Test
     public void frontendProtocol_notInProductionModeAndWithProperties_useProperties() {
         initUI(testUI);
         deploymentConfiguration.setProductionMode(false);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
 
+        String devPrefix = "bar/dev/";
         deploymentConfiguration.setApplicationOrSystemProperty(
-                Constants.FRONTEND_URL_ES6, "bar/es6/");
-        deploymentConfiguration.setApplicationOrSystemProperty(
-                Constants.FRONTEND_URL_ES5, "bar/es5/");
+                Constants.FRONTEND_URL_DEV, devPrefix);
+        String urlPart = "foo";
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
-
         String urlES6 = context.getUriResolver().resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
-
-        assertEquals("bar/es6/foo", urlES6);
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
+        assertThat(String.format("In development mode, es6 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_DEV),
+                urlES6, is(devPrefix + urlPart));
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
-
         String urlES5 = context.getUriResolver().resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
-
-        assertEquals("bar/es5/foo", urlES5);
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
+        assertThat(String.format("In development mode, es5 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_DEV),
+                urlES5, is(devPrefix + urlPart));
 
         Mockito.verify(session, Mockito.times(3)).getBrowser();
+        Mockito.verify(mockedWebBrowser, Mockito.times(2)).isEs6Supported();
     }
 
     @Test
