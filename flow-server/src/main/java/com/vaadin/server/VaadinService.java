@@ -141,7 +141,7 @@ public abstract class VaadinService implements Serializable {
     private static final String REQUEST_START_TIME_ATTRIBUTE = "requestStartTime";
 
     /**
-     * Should never be used directly, always use {@link #getDeploymentConfiguration()}
+     * Should never be used directly, always use {@link #getDeploymentConfiguration()}.
      */
     private final DeploymentConfiguration deploymentConfiguration;
 
