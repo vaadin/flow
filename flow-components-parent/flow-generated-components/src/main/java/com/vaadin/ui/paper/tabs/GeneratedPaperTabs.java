@@ -100,8 +100,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return the {@code selected} property from the webcomponent
      */
     @Synchronize(property = "selected", value = "selected-changed")
-    public String getSelectedString() {
-        return getElement().getProperty("selected");
+    public double getSelectedNumber() {
+        return getElement().getProperty("selected", 0.0);
     }
 
     /**
@@ -119,24 +119,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return the {@code selected} property from the webcomponent
      */
     @Synchronize(property = "selected", value = "selected-changed")
-    public double getSelectedNumber() {
-        return getElement().getProperty("selected", 0.0);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Gets or sets the selected element. The default is to use the index of the
-     * item.
-     * </p>
-     * 
-     * @param selected
-     *            the String value to set
-     */
-    public void setSelected(java.lang.String selected) {
-        getElement().setProperty("selected", selected == null ? "" : selected);
+    public String getSelectedString() {
+        return getElement().getProperty("selected");
     }
 
     /**
@@ -153,6 +137,22 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      */
     public void setSelected(double selected) {
         getElement().setProperty("selected", selected);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Gets or sets the selected element. The default is to use the index of the
+     * item.
+     * </p>
+     * 
+     * @param selected
+     *            the String value to set
+     */
+    public void setSelected(java.lang.String selected) {
+        getElement().setProperty("selected", selected == null ? "" : selected);
     }
 
     /**
@@ -1028,7 +1028,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(java.lang.String value) {
+    public void select(double value) {
         getElement().callFunction("select", value);
     }
 
@@ -1045,7 +1045,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(double value) {
+    public void select(java.lang.String value) {
         getElement().callFunction("select", value);
     }
 

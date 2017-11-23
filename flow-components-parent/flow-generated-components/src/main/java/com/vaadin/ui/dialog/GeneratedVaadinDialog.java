@@ -35,8 +35,8 @@ import com.vaadin.shared.Registration;
  * {@code <vaadin-dialog>} is a Polymer 2 element for customised modal dialogs.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-dialog opened&gt; &lt;template&gt; Sample dialog &lt;/template&gt; &lt;/vaadin-dialog&gt; {@code }</code>
+ * &lt;vaadin-dialog opened&gt; &lt;template&gt; Sample dialog &lt;/template&gt;
+ * &lt;/vaadin-dialog&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>

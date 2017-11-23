@@ -37,11 +37,17 @@ import com.vaadin.ui.event.EventData;
  * </p>
  * <p>
  * {@code <vaadin-date-picker>} is a date selection field which includes a
- * scrollable month calendar view. {@code }
- * <code>html &lt;vaadin-date-picker label=&quot;Birthday&quot;&gt;&lt;/vaadin-date-picker&gt; {@code }</code>
- * {@code }<code>js datePicker.value = '2016-03-02'; {@code }</code> When the
- * selected {@code value} is changed, a {@code value-changed} event is
- * triggered.
+ * scrollable month calendar view.
+ * </p>
+ * <p>
+ * &lt;vaadin-date-picker
+ * label=&quot;Birthday&quot;&gt;&lt;/vaadin-date-picker&gt;
+ * </p>
+ * <p>
+ * {@code js
+datePicker.value = '2016-03-02';
+} When the selected {@code value} is changed, a {@code value-changed}
+ * event is triggered.
  * </p>
  * <h3>Styling</h3>
  * <p>

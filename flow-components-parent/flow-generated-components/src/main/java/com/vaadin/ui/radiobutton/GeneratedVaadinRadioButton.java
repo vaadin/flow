@@ -15,19 +15,19 @@
  */
 package com.vaadin.ui.radiobutton;
 
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.Focusable;
-import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.Focusable;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.Synchronize;
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -37,8 +37,8 @@ import com.vaadin.ui.event.Synchronize;
  * {@code <vaadin-radio-button>} is a Polymer element for radio buttons.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-radio-button value=&quot;foo&quot;&gt;Foo&lt;/vaadin-radio-button&gt; {@code }</code>
+ * &lt;vaadin-radio-button
+ * value=&quot;foo&quot;&gt;Foo&lt;/vaadin-radio-button&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -116,7 +116,7 @@ import com.vaadin.ui.event.Synchronize;
 @HtmlImport("frontend://bower_components/vaadin-radio-button/vaadin-radio-button.html")
 public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
         extends Component
-        implements HasStyle, Focusable<R>, HasComponents {
+        implements ComponentSupplier<R>, HasStyle, Focusable<R>, HasComponents {
 
     /**
      * <p>

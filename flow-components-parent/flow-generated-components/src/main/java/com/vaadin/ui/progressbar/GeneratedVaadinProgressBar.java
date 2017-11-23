@@ -30,8 +30,8 @@ import com.vaadin.ui.common.HtmlImport;
  * {@code <vaadin-progress-bar>} is a Polymer 2 progress bar.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-progress-bar value=&quot;30&quot; min=&quot;10&quot; max=&quot;100&quot;&gt; &lt;/vaadin-progress-bar&gt; {@code }</code>
+ * &lt;vaadin-progress-bar value=&quot;30&quot; min=&quot;10&quot;
+ * max=&quot;100&quot;&gt; &lt;/vaadin-progress-bar&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
