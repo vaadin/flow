@@ -348,8 +348,7 @@ public class BeforeNavigationEvent extends EventObject {
      * 
      * @return error parameter
      */
-    @SuppressWarnings("rawtypes")
-    public ErrorParameter getErrorParameter() {
+    public ErrorParameter<?> getErrorParameter() {
         return errorParameter;
     }
 

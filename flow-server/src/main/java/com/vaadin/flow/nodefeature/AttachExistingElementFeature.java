@@ -90,8 +90,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
      *            the registered state node
      * @return the registered parent for the {@code node}
      */
-    @SuppressWarnings("rawtypes")
-    public Node getParent(StateNode node) {
+    public Node<?> getParent(StateNode node) {
         return parentNodes.get(node);
     }
 

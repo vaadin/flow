@@ -58,8 +58,7 @@ public class ErrorNavigationEvent extends NavigationEvent {
      *
      * @return set error parameter or null if not set
      */
-    @SuppressWarnings("rawtypes")
-    public ErrorParameter getErrorParameter() {
+    public ErrorParameter<?> getErrorParameter() {
         return errorParameter;
     }
 }
