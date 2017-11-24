@@ -15,26 +15,24 @@
  */
 package com.vaadin.ui.combobox;
 
-import java.util.Objects;
-
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasValue;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import elemental.json.JsonArray;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
+import elemental.json.JsonObject;
 import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.event.Synchronize;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -83,8 +81,8 @@ import elemental.json.JsonObject;
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
-        extends Component
-        implements HasStyle, HasValue<R, String>, HasComponents {
+        extends Component implements ComponentSupplier<R>, HasStyle,
+        HasValue<R, String>, HasComponents {
 
     /**
      * <p>
@@ -866,11 +864,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
     public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
             extends ComponentEvent<R> {
         private final JsonObject detail;
-        private final String detailValue;
+        private final JsonObject detailValue;
 
         public SelectedItemChangeEvent(R source, boolean fromClient,
                 @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.value") java.lang.String detailValue) {
+                @EventData("event.detail.value") elemental.json.JsonObject detailValue) {
             super(source, fromClient);
             this.detail = detail;
             this.detailValue = detailValue;
@@ -880,7 +878,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
             return detail;
         }
 
-        public String getDetailValue() {
+        public JsonObject getDetailValue() {
             return detailValue;
         }
     }

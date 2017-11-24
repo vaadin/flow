@@ -15,25 +15,23 @@
  */
 package com.vaadin.ui.datepicker;
 
-import java.util.Objects;
-
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasValue;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
+import elemental.json.JsonObject;
 import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.EventData;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.event.Synchronize;
-
-import elemental.json.JsonObject;
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -71,8 +69,8 @@ import elemental.json.JsonObject;
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
 public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R>>
-        extends Component
-        implements HasStyle, HasValue<R, String>, HasComponents {
+        extends Component implements ComponentSupplier<R>, HasStyle,
+        HasValue<R, String>, HasComponents {
 
     /**
      * <p>
