@@ -978,10 +978,6 @@ public class Binder<BEAN> implements Serializable {
         public BindingValidationStatusHandler getValidationStatusHandler() {
             return statusHandler;
         }
-
-        private void notifyStatusHandler(BindingValidationStatus<?> status) {
-            statusHandler.statusChange(status);
-        }
     }
 
     /**
