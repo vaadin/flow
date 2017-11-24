@@ -41,8 +41,8 @@ import com.vaadin.ui.event.EventData;
  * forms.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-text-field label=&quot;First Name&quot;&gt; &lt;/vaadin-text-field&gt; {@code }</code>
+ * &lt;vaadin-text-field label=&quot;First Name&quot;&gt;
+ * &lt;/vaadin-text-field&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>

@@ -41,8 +41,8 @@ import com.vaadin.ui.event.EventData;
  * forms.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-text-area label=&quot;Add description&quot;&gt; &lt;/vaadin-text-area&gt; {@code }</code>
+ * &lt;vaadin-text-area label=&quot;Add description&quot;&gt;
+ * &lt;/vaadin-text-area&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>

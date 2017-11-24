@@ -28,8 +28,8 @@ import com.vaadin.ui.common.HtmlImport;
  * control in forms.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-password-field label=&quot;Password&quot;&gt; &lt;/vaadin-password-field&gt; {@code }</code>
+ * &lt;vaadin-password-field label=&quot;Password&quot;&gt;
+ * &lt;/vaadin-password-field&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>

@@ -50,8 +50,8 @@ import com.vaadin.ui.common.HasComponents;
  * with {@code iron-input}.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-date-picker-light&gt; &lt;iron-input&gt; &lt;input/&gt; &lt;/iron-input&gt; &lt;/vaadin-date-picker-light&gt; {@code }</code>
+ * &lt;vaadin-date-picker-light&gt; &lt;iron-input&gt; &lt;input/&gt;
+ * &lt;/iron-input&gt; &lt;/vaadin-date-picker-light&gt;
  * </p>
  * <p>
  * If you are using other custom input fields like {@code <paper-input>}, you
@@ -59,8 +59,9 @@ import com.vaadin.ui.common.HasComponents;
  * property.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-date-picker-light attr-for-value=&quot;value&quot;&gt; &lt;paper-input label=&quot;Birthday&quot;&gt; &lt;/paper-input&gt; &lt;/vaadin-date-picker-light&gt; {@code }</code>
+ * &lt;vaadin-date-picker-light attr-for-value=&quot;value&quot;&gt;
+ * &lt;paper-input label=&quot;Birthday&quot;&gt; &lt;/paper-input&gt;
+ * &lt;/vaadin-date-picker-light&gt;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",

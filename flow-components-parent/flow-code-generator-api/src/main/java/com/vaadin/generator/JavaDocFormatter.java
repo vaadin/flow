@@ -18,8 +18,10 @@ package com.vaadin.generator;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.parser.Parser;
@@ -35,7 +37,9 @@ class JavaDocFormatter {
     private static final String JAVA_DOC_CLOSE_ESCAPED = "&#42;&#47;";
 
     private static final Pattern MULTI_LINE_CODE_PARTS = Pattern
-            .compile("```(.*?)```");
+            .compile("```(.*?)```", Pattern.DOTALL);
+    private static final Pattern MULTI_LINE_CODE_PARTS_HTML = Pattern
+            .compile("```html(.*?)```", Pattern.DOTALL);
     private static final Pattern SINGLE_LINE_CODE_PARTS = Pattern
             .compile("`(.*?)`");
     private static final Pattern JAVA_DOC_CLOSE = Pattern.compile("\\*/");
@@ -55,7 +59,7 @@ class JavaDocFormatter {
      * Formats a javadoc string as much as possible.
      *
      * Currently javadocs are based on polymer-analyzer output, which is a
-     * markdown text. In order to format them, we parse them first and only them
+     * markdown text. In order to format them, we parse them first and only then
      * produce the output.
      *
      * @param javaDoc
@@ -78,14 +82,24 @@ class JavaDocFormatter {
 
     private String replaceCodeParts(String documentation) {
         return replaceByPattern(
-                replaceByPattern(documentation, MULTI_LINE_CODE_PARTS,
-                        JAVA_DOC_CODE_SECTION),
+                replaceByPattern(replaceHtml(documentation),
+                        MULTI_LINE_CODE_PARTS, JAVA_DOC_CODE_SECTION),
                 SINGLE_LINE_CODE_PARTS, JAVA_DOC_CODE_SECTION);
     }
 
     private String escapeCommentCloseSign(String documentation) {
         return replaceByPattern(documentation, JAVA_DOC_CLOSE,
                 JAVA_DOC_CLOSE_ESCAPED);
+    }
+
+    private String replaceHtml(String documentation) {
+        Matcher matcher = MULTI_LINE_CODE_PARTS_HTML.matcher(documentation);
+        while (matcher.find()) {
+            String html = matcher.group(1);
+            html = StringEscapeUtils.escapeHtml4(html);
+            documentation = documentation.replace(matcher.group(), html);
+        }
+        return documentation;
     }
 
     private String replaceByPattern(String original, Pattern pattern,

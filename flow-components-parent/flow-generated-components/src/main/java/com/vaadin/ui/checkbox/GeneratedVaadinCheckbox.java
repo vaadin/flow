@@ -40,8 +40,7 @@ import com.vaadin.ui.common.HasComponents;
  * {@code <vaadin-checkbox>} is a Polymer 2 element for customized checkboxes.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-checkbox&gt; Make my profile visible &lt;/vaadin-checkbox&gt; {@code }</code>
+ * &lt;vaadin-checkbox&gt; Make my profile visible &lt;/vaadin-checkbox&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>

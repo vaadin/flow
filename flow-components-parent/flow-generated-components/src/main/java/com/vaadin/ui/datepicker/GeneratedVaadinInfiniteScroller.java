@@ -275,7 +275,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param path
      *            Target path to unlink.
      */
-    protected void unlinkPaths(elemental.json.JsonObject path) {
+    public void unlinkPaths(java.lang.String path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -294,7 +294,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param path
      *            Target path to unlink.
      */
-    public void unlinkPaths(java.lang.String path) {
+    protected void unlinkPaths(elemental.json.JsonObject path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -553,7 +553,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Path to array.
      */
     @NotSupported
-    protected void pop(elemental.json.JsonObject path) {
+    protected void pop(java.lang.String path) {
     }
 
     /**
@@ -580,7 +580,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Path to array.
      */
     @NotSupported
-    protected void pop(java.lang.String path) {
+    protected void pop(elemental.json.JsonObject path) {
     }
 
     /**
@@ -675,7 +675,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Path to array.
      */
     @NotSupported
-    protected void shift(elemental.json.JsonObject path) {
+    protected void shift(java.lang.String path) {
     }
 
     /**
@@ -702,7 +702,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Path to array.
      */
     @NotSupported
-    protected void shift(java.lang.String path) {
+    protected void shift(elemental.json.JsonObject path) {
     }
 
     /**

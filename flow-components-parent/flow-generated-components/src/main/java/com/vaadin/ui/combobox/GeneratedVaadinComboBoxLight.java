@@ -53,8 +53,8 @@ import com.vaadin.ui.common.HasComponents;
  * simplest possible example using a {@code <vaadin-text-field>} element.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box-light&gt; &lt;vaadin-text-field&gt; &lt;/vaadin-text-field&gt; &lt;/vaadin-combo-box-light&gt; {@code }</code>
+ * &lt;vaadin-combo-box-light&gt; &lt;vaadin-text-field&gt;
+ * &lt;/vaadin-text-field&gt; &lt;/vaadin-combo-box-light&gt;
  * </p>
  * <p>
  * If you are using other custom input fields like {@code <iron-input>}, you
@@ -62,8 +62,9 @@ import com.vaadin.ui.common.HasComponents;
  * {@code attrForValue} attribute.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box-light attr-for-value=&quot;bind-value&quot;&gt; &lt;iron-input&gt; &lt;input&gt; &lt;/iron-input&gt; &lt;/vaadin-combo-box-light&gt; {@code }</code>
+ * &lt;vaadin-combo-box-light attr-for-value=&quot;bind-value&quot;&gt;
+ * &lt;iron-input&gt; &lt;input&gt; &lt;/iron-input&gt;
+ * &lt;/vaadin-combo-box-light&gt;
  * </p>
  * <p>
  * In the next example you can see how to create a custom input field based on a
@@ -71,8 +72,13 @@ import com.vaadin.ui.common.HasComponents;
  * {@code <paper-button>}s to act as the clear and toggle controls.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box-light&gt; &lt;paper-input label=&quot;Elements&quot; class=&quot;input&quot;&gt; &lt;iron-icon icon=&quot;toll&quot; prefix&gt;&lt;/iron-icon&gt; &lt;paper-button slot=&quot;suffix&quot; class=&quot;clear-button&quot;&gt;Clear&lt;/paper-button&gt; &lt;paper-button slot=&quot;suffix&quot; class=&quot;toggle-button&quot;&gt;Toggle&lt;/paper-button&gt; &lt;/paper-input&gt; &lt;/vaadin-combo-box-light&gt; {@code }</code>
+ * &lt;vaadin-combo-box-light&gt; &lt;paper-input label=&quot;Elements&quot;
+ * class=&quot;input&quot;&gt; &lt;iron-icon icon=&quot;toll&quot;
+ * prefix&gt;&lt;/iron-icon&gt; &lt;paper-button slot=&quot;suffix&quot;
+ * class=&quot;clear-button&quot;&gt;Clear&lt;/paper-button&gt; &lt;paper-button
+ * slot=&quot;suffix&quot;
+ * class=&quot;toggle-button&quot;&gt;Toggle&lt;/paper-button&gt;
+ * &lt;/paper-input&gt; &lt;/vaadin-combo-box-light&gt;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
@@ -864,11 +870,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
     public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
             extends ComponentEvent<R> {
         private final JsonObject detail;
-        private final JsonObject detailValue;
+        private final String detailValue;
 
         public SelectedItemChangeEvent(R source, boolean fromClient,
                 @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.value") elemental.json.JsonObject detailValue) {
+                @EventData("event.detail.value") java.lang.String detailValue) {
             super(source, fromClient);
             this.detail = detail;
             this.detailValue = detailValue;
@@ -878,7 +884,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
             return detail;
         }
 
-        public JsonObject getDetailValue() {
+        public String getDetailValue() {
             return detailValue;
         }
     }

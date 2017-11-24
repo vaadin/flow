@@ -35,8 +35,7 @@ import com.vaadin.ui.common.HasComponents;
  * customizable button.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-button&gt; &lt;/vaadin-button&gt; {@code }</code>
+ * &lt;vaadin-button&gt; &lt;/vaadin-button&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>

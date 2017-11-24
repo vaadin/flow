@@ -32,8 +32,13 @@ import com.vaadin.ui.common.HasComponents;
  * vaadin-radio-buttons.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-radio-group&gt; &lt;vaadin-radio-button name=&quot;foo&quot;&gt;Foo&lt;/vaadin-radio-button&gt; &lt;vaadin-radio-button name=&quot;bar&quot;&gt;Bar&lt;/vaadin-radio-button&gt; &lt;vaadin-radio-button name=&quot;baz&quot;&gt;Baz&lt;/vaadin-radio-button&gt; &lt;/vaadin-radio-group&gt; {@code }</code>
+ * &lt;vaadin-radio-group&gt; &lt;vaadin-radio-button
+ * name=&quot;foo&quot;&gt;Foo&lt;/vaadin-radio-button&gt;
+ * &lt;vaadin-radio-button
+ * name=&quot;bar&quot;&gt;Bar&lt;/vaadin-radio-button&gt;
+ * &lt;vaadin-radio-button
+ * name=&quot;baz&quot;&gt;Baz&lt;/vaadin-radio-button&gt;
+ * &lt;/vaadin-radio-group&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>

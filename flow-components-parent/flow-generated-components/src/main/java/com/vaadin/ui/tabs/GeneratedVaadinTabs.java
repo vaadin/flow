@@ -32,8 +32,14 @@ import com.vaadin.ui.common.HasComponents;
  * different view
  * </p>
  * <p>
- * {@code }
- * <code>&lt;vaadin-tabs selected=&quot;4&quot;&gt; &lt;vaadin-tab&gt;Page 1&lt;/vaadin-tab&gt; &lt;vaadin-tab&gt;Page 2&lt;/vaadin-tab&gt; &lt;vaadin-tab&gt;Page 3&lt;/vaadin-tab&gt; &lt;vaadin-tab&gt;Page 4&lt;/vaadin-tab&gt; &lt;/vaadin-tabs&gt; {@code }</code>
+ * {@code
+<vaadin-tabs selected="4">
+<vaadin-tab>Page 1</vaadin-tab>
+<vaadin-tab>Page 2</vaadin-tab>
+<vaadin-tab>Page 3</vaadin-tab>
+<vaadin-tab>Page 4</vaadin-tab>
+</vaadin-tabs>
+}
  * </p>
  * <h3>Styling</h3>
  * <p>

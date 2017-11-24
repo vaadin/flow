@@ -37,8 +37,8 @@ import com.vaadin.ui.common.HasComponents;
  * {@code <vaadin-radio-button>} is a Polymer element for radio buttons.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-radio-button value=&quot;foo&quot;&gt;Foo&lt;/vaadin-radio-button&gt; {@code }</code>
+ * &lt;vaadin-radio-button
+ * value=&quot;foo&quot;&gt;Foo&lt;/vaadin-radio-button&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
