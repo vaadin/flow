@@ -6,16 +6,33 @@ layout: page
 
 = Setup your project to use Flow components
 
-Flow provides some pre-built server-side components for Vaadin webcomponents,
-such as `Button`, `TextField` and so on. Those components are part of
-the `flow-components` package, that can be added as an optional dependency to
+Flow provides pre-built server-side components for Vaadin webcomponents.
+
+Currently there are the following implementations:
+
+- https://github.com/vaadin/vaadin-button-flow[vaadin-button-flow]
+- https://github.com/vaadin/vaadin-checkbox-flow[vaadin-checkbox-flow]
+- https://github.com/vaadin/vaadin-combo-box-flow[vaadin-combo-box-flow]
+- https://github.com/vaadin/vaadin-date-picker-flow[vaadin-date-picker-flow]
+- https://github.com/vaadin/vaadin-dialog-flow[vaadin-dialog-flow]
+- https://github.com/vaadin/vaadin-form-layout-flow[vaadin-form-layout-flow]
+- https://github.com/vaadin/vaadin-grid-flow[vaadin-grid-flow]
+- https://github.com/vaadin/vaadin-icons-flow[vaadin-icons-flow]
+- https://github.com/vaadin/vaadin-ordered-layout-flow[vaadin-ordered-layout-flow]
+- https://github.com/vaadin/vaadin-progress-bar-flow[vaadin-progress-bar-flow]
+- https://github.com/vaadin/vaadin-split-layout-flow[vaadin-split-layout-flow]
+- https://github.com/vaadin/vaadin-tabs-flow[vaadin-tabs-flow]
+- https://github.com/vaadin/vaadin-text-field-flow[vaadin-text-field-flow]
+- https://github.com/vaadin/vaadin-upload-flow[vaadin-upload-flow]
+
+These components are available as optional dependencies that can be added to
 any Flow project.
 
 = Overview
 
-`flow-components` package consists of two main sections:
+A Flow component package consists of two main sections:
 
-* java api classes (`Button`, `TextField`, etc)
+* java api classes
 * web components' files (html, js, css etc)
 
 All sections are used by Flow to display the components in web pages correctly.
@@ -44,29 +61,28 @@ extra maven configuration (extra repository + bom file declaration) is required.
 
 == Maven configuration to use webjars
 
-The first step is to add the `bom` and `flow-components` package to your project
-dependencies. This package is released alongside Flow and shares the same
-version number. When using Maven you can add it into your `pom.xml` as this:
+The first step is to add the `bom` and the wanted `flow-component` (e.g. `vaadin-button-flow`)
+package to your project dependencies.
+
+When using Maven you can add a the button component into your `pom.xml` as this:
 
 [source,xml]
 ----
 <repositories>
     <repository>
-        <!-- Limitation: Not all webjars are synced into Maven Central now -->
-        <id>webjars</id>
-        <url>https://dl.bintray.com/webjars/maven</url>
+        <id>flow-component-base</id>
+        <url>https://maven.vaadin.com/vaadin-prereleases</url>
     </repository>
 </repositories>
 
 <dependencyManagement>
     <dependencies>
         <dependency>
-            <!-- Limitation: A bom file to fix webjars' transitive dependencies -->
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-webjars-bom</artifactId>
+            <artifactId>vaadin-bom</artifactId>
+            <version>10.0.0.alpha8</version>
             <type>pom</type>
             <scope>import</scope>
-            <version>${flow.version}</version>
         </dependency>
     </dependencies>
 </dependencyManagement>
@@ -74,11 +90,10 @@ version number. When using Maven you can add it into your `pom.xml` as this:
 <dependencies>
     <!-- other dependencies -->
 
-    <!-- the dependency with webjars -->
+    <!-- component dependency -->
     <dependency>
         <groupId>com.vaadin</groupId>
-        <artifactId>flow-components</artifactId>
-        <version>${flow.version}</version>
+        <artifactId>vaadin-button-flow</artifactId>
     </dependency>
 
     <!-- other dependencies -->
@@ -97,8 +112,7 @@ If webjar dependencies are not needed, they can be excluded from the project usi
     <!-- the dependency with webjars excluded -->
     <dependency>
         <groupId>com.vaadin</groupId>
-        <artifactId>flow-components</artifactId>
-        <version>${flow.version}</version>
+        <artifactId>vaadin-button-flow</artifactId>
         <exclusions>
             <exclusion>
                 <groupId>org.webjars.bower</groupId>
@@ -113,52 +127,3 @@ If webjar dependencies are not needed, they can be excluded from the project usi
 
 More documentation on webjars in can be found here: <<tutorial-flow-webjars#,WebJars in Flow>>
 General webJars usage manual is here: <<tutorial-how-to-use-webjars#, How to use webjars>>
-
-== bower.json configuration
-
-Currently `bower.json` is needed for production mode and in cases when you'd like to be able
-to manipulate web component's files before adding them to the application (transpile, minify, check, bundle etc).
-It also can be used in developmentMode as a webjars' substitution.
-
-In your `bower.json` file, which is located at `${frontend.working.directory}`, you
-need to add the webcomponent dependencies to each desired webcomponent. Here is
-an example that adds all supported elements:
-
-[source,json]
-----
-{
-  // [...] other properties
-  "dependencies": {
-    "polymer": "2.0.2",
-    "vaadin-text-field": "1.1.0-alpha2",
-    "vaadin-button": "1.0.0",
-    "vaadin-checkbox": "1.0.0-alpha1",
-    "vaadin-combo-box": "2.0.0",
-    "vaadin-form-layout": "1.0.0"
-  }
-}
-----
-
-The full list of Vaadin webcomponents and their latest versions can be found
-https://www.webcomponents.org/collection/vaadin/vaadin-core-elements[here].
-
-You only need to add the webcomponents you are going to use in your project.
-There's no harm to add webcomponents that you are not going to use at the
-server-side, except that the final `war` size will be larger for no reason.
-
-[TIP]
-To enable compilation to ES5 (for browsers that lack of ES6 support, such as
-  IE11), you need extra configuration, which is described at
-  <<../web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
-
-[NOTE]
-How to integrate java and web components' files is explained in
-<<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
-
-== Demo and code samples
-
-The Flow components demo at http://flow.app.fi contains examples of
-the usage of each supported component, with code samples for common use cases.
-
-You can also download the demo project directly from
-https://github.com/vaadin/flow/tree/master/flow-components-parent/demo-flow-components[GitHub]
