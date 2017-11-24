@@ -299,7 +299,6 @@
                                 <resourceBases>
                                     <!-- these paths are relative to the
                                         project where the profile is triggered -->
-                                    <resourceBase>${project.basedir}/../flow-components/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-push/src/main/resources/META-INF/resources</resourceBase>
                                 </resourceBases>
