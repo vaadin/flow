@@ -54,7 +54,7 @@
             https://oss.sonatype.org/content/repositories/vaadin-snapshots/
         </flow.snapshot.repo.url>
         <flow.release.repo.url>
-            https://repo.vaadin.com/nexus/content/repositories/flow/
+            https://maven.vaadin.com/vaadin-prereleases/
         </flow.release.repo.url>
         <flow.deployment.repo.url>${flow.snapshot.repo.url}
         </flow.deployment.repo.url>
