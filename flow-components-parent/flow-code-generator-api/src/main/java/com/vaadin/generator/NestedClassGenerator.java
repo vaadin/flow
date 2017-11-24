@@ -21,12 +21,12 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
-import com.vaadin.ui.common.JsonSerializable;
-import com.vaadin.ui.common.NotSupported;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
+import com.vaadin.ui.common.JsonSerializable;
+import com.vaadin.ui.common.NotSupported;
 
 import elemental.json.JsonObject;
 
@@ -168,7 +168,8 @@ public class NestedClassGenerator {
 
         String formattedName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(object.getName());
-        method.addParameter(javaType, formattedName);
+        ComponentGeneratorUtils.addMethodParameter(javaClass, method, javaType,
+                formattedName);
 
         method.setBody(String.format("this.internalObject.put(\"%s\", %s);",
                 object.getName(), formattedName));

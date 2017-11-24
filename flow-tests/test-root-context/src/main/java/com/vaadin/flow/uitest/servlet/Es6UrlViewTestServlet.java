@@ -15,19 +15,20 @@
  */
 package com.vaadin.flow.uitest.servlet;
 
-import java.util.Properties;
-
 import javax.servlet.annotation.WebServlet;
+import java.util.Properties;
 
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.Constants;
+import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.shared.ApplicationConstants;
 
 /**
  * Servlet created to test the environment when the property
  * {@link Constants#FRONTEND_URL_ES6} is set.
  */
-@WebServlet(asyncSupported = true, urlPatterns = { "/view-es6-url/*" })
+@WebServlet(asyncSupported = true, urlPatterns = "/view-es6-url/*")
+@VaadinServletConfiguration(productionMode = true)
 public class Es6UrlViewTestServlet extends ViewTestServlet {
 
     @Override

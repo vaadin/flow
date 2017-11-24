@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.tabs;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -35,7 +35,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("paper-tab")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tab.html")
 public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
-        implements ComponentSupplier<R>, HasStyle, HasComponents {
+        implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
      * <p>
@@ -118,7 +118,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param keyEventTarget
      *            the JsonObject value to set
      */
-    protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+    protected void setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
     }
 
@@ -173,7 +173,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param keyBindings
      *            the JsonObject value to set
      */
-    protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
+    protected void setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
     }
 
@@ -329,7 +329,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param ariaActiveAttribute
      *            the String value to set
      */
-    public void setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+    public void setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
     }
@@ -417,8 +417,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -452,8 +451,8 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      *            Missing documentation!
      */
     @NotSupported
-    protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+    protected void keyboardEventMatchesKeys(JsonObject event,
+            String eventString) {
     }
 
     /**
@@ -468,7 +467,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param optTriggeringEvent
      *            (optional) event that triggered the ripple.
      */
-    protected void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
+    protected void ensureRipple(JsonObject optTriggeringEvent) {
         getElement().callFunction("ensureRipple", optTriggeringEvent);
     }
 

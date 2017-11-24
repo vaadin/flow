@@ -20,8 +20,10 @@ import java.util.Properties;
 
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -207,6 +209,43 @@ public class DefaultDeploymentConfigurationTest {
                 "incorrectValue");
 
         createDeploymentConfig(initParameters);
+    }
+
+    @Test
+    public void frontendPrefixes_developmentMode() {
+        String developmentPrefix = "context://";
+
+        Properties initParameters = new Properties();
+        initParameters.setProperty(Constants.FRONTEND_URL_DEV, developmentPrefix);
+        initParameters.setProperty(Constants.FRONTEND_URL_ES5, "context://build/frontend-es5/");
+        initParameters.setProperty(Constants.FRONTEND_URL_ES6, "context://build/frontend-es6/");
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.FALSE.toString());
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
+        assertThat(String.format("In development mode, both es5 and es6 prefixes should be equal to '%s' parameter value", Constants.FRONTEND_URL_DEV),
+                config.getEs5FrontendPrefix(), is(developmentPrefix));
+        assertThat(String.format("In development mode, both es5 and es6 prefixes should be equal to '%s' parameter value", Constants.FRONTEND_URL_DEV),
+                config.getEs6FrontendPrefix(), is(developmentPrefix));
+    }
+
+    @Test
+    public void frontendPrefixes_productionMode() {
+        String es5Prefix = "context://build/frontend-es5/";
+        String es6Prefix = "context://build/frontend-es6/";
+
+        Properties initParameters = new Properties();
+        initParameters.setProperty(Constants.FRONTEND_URL_DEV, "context://");
+        initParameters.setProperty(Constants.FRONTEND_URL_ES5, es5Prefix);
+        initParameters.setProperty(Constants.FRONTEND_URL_ES6, es6Prefix);
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.TRUE.toString());
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+
+        assertThat(String.format("In production mode, es5 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_ES5),
+                config.getEs5FrontendPrefix(), is(es5Prefix));
+        assertThat(String.format("In production mode, es6 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_ES6),
+                config.getEs6FrontendPrefix(), is(es6Prefix));
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(

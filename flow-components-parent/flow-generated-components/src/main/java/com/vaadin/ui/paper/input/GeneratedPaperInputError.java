@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.input;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -31,7 +31,7 @@ import com.vaadin.ui.common.HasComponents;
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
 public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
         extends Component
-        implements ComponentSupplier<R>, HasStyle, HasComponents {
+        implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
      * <p>
@@ -78,7 +78,7 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
             return internalObject.getObject("inputElement");
         }
 
-        public void setInputElement(elemental.json.JsonObject inputElement) {
+        public void setInputElement(JsonObject inputElement) {
             this.internalObject.put("inputElement", inputElement);
         }
 
@@ -86,7 +86,7 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
             return internalObject.getString("value");
         }
 
-        public void setValue(java.lang.String value) {
+        public void setValue(String value) {
             this.internalObject.put("value", value);
         }
 

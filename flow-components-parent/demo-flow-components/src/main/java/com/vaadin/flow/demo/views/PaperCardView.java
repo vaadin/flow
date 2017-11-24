@@ -35,7 +35,7 @@ public class PaperCardView extends DemoView {
     public void initView() {
         // begin-source-example
         // source-example-heading: Card with image and actions
-        GeneratedPaperCard card = new GeneratedPaperCard();
+        GeneratedPaperCard<?> card = new GeneratedPaperCard<>();
         card.setImage(
                 "https://vaadin.com/image/image_gallery?uuid=42c717c0-b63b-4c39-8ee8-3a14b6f477f6&groupId=10187&t=1359960061382");
         Div cardContent = new Div();
@@ -52,10 +52,10 @@ public class PaperCardView extends DemoView {
 
         card.add(cardContent, cardActions);
 
-        GeneratedPaperButton reserve = new GeneratedPaperButton();
+        GeneratedPaperButton<?> reserve = new GeneratedPaperButton<>();
         reserve.setText("Reserve");
 
-        GeneratedPaperButton visit = new GeneratedPaperButton();
+        GeneratedPaperButton<?> visit = new GeneratedPaperButton<>();
         visit.setText("Visit page");
 
         buttons.add(visit, reserve);

@@ -16,8 +16,8 @@
 package com.vaadin.ui.datepicker;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -33,7 +33,7 @@ import com.vaadin.shared.Registration;
 @Tag("vaadin-date-picker-overlay")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-overlay.html")
 public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePickerOverlay<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -63,7 +63,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param selectedDate
      *            the JsonObject value to set
      */
-    protected void setSelectedDate(elemental.json.JsonObject selectedDate) {
+    protected void setSelectedDate(JsonObject selectedDate) {
         getElement().setPropertyJson("selectedDate", selectedDate);
     }
 
@@ -95,7 +95,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param focusedDate
      *            the JsonObject value to set
      */
-    protected void setFocusedDate(elemental.json.JsonObject focusedDate) {
+    protected void setFocusedDate(JsonObject focusedDate) {
         getElement().setPropertyJson("focusedDate", focusedDate);
     }
 
@@ -127,8 +127,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param initialPosition
      *            the JsonObject value to set
      */
-    protected void setInitialPosition(
-            elemental.json.JsonObject initialPosition) {
+    protected void setInitialPosition(JsonObject initialPosition) {
         getElement().setPropertyJson("initialPosition", initialPosition);
     }
 
@@ -146,7 +145,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param i18n
      *            the JsonObject value to set
      */
-    protected void setI18n(elemental.json.JsonObject i18n) {
+    protected void setI18n(JsonObject i18n) {
         getElement().setPropertyJson("i18n", i18n);
     }
 
@@ -198,7 +197,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param minDate
      *            the JsonObject value to set
      */
-    protected void setMinDate(elemental.json.JsonObject minDate) {
+    protected void setMinDate(JsonObject minDate) {
         getElement().setPropertyJson("minDate", minDate);
     }
 
@@ -230,7 +229,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param maxDate
      *            the JsonObject value to set
      */
-    protected void setMaxDate(elemental.json.JsonObject maxDate) {
+    protected void setMaxDate(JsonObject maxDate) {
         getElement().setPropertyJson("maxDate", maxDate);
     }
 
@@ -262,7 +261,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -295,8 +294,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param animate
      *            Missing documentation!
      */
-    protected void scrollToDate(elemental.json.JsonObject date,
-            elemental.json.JsonObject animate) {
+    protected void scrollToDate(JsonObject date, JsonObject animate) {
         getElement().callFunction("scrollToDate", date, animate);
     }
 
@@ -311,7 +309,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param date
      *            Missing documentation!
      */
-    protected void revealDate(elemental.json.JsonObject date) {
+    protected void revealDate(JsonObject date) {
         getElement().callFunction("revealDate", date);
     }
 

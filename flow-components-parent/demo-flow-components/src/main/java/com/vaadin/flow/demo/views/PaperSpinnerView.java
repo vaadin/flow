@@ -33,7 +33,7 @@ public class PaperSpinnerView extends DemoView {
     public void initView() {
         // begin-source-example
         // source-example-heading: Basic spinner
-        GeneratedPaperSpinner paperSpinner = new GeneratedPaperSpinner();
+        GeneratedPaperSpinner<?> paperSpinner = new GeneratedPaperSpinner<>();
         paperSpinner.setActive(true);
         // end-source-example
 

@@ -15,20 +15,19 @@
  */
 package com.vaadin.ui.paper.progress;
 
-import java.util.Objects;
-
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.common.ComponentSupplier;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.Synchronize;
+import com.vaadin.shared.Registration;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-progress#2.0.1", "Flow#1.0-SNAPSHOT" })
@@ -36,7 +35,7 @@ import com.vaadin.ui.event.Synchronize;
 @HtmlImport("frontend://bower_components/paper-progress/paper-progress.html")
 public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
         extends Component
-        implements HasStyle, HasValue<R, Double> {
+        implements HasStyle, ComponentSupplier<R>, HasValue<R, Double> {
 
     /**
      * <p>
@@ -69,7 +68,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      *            the double value to set
      */
     @Override
-    public void setValue(java.lang.Double value) {
+    public void setValue(Double value) {
         Objects.requireNonNull(value,
                 "GeneratedPaperProgress value must not be null");
         if (!Objects.equals(value, getValue())) {
@@ -89,7 +88,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      *            the Number value to set
      * @see #setValue(Double)
      */
-    public void setValue(java.lang.Number value) {
+    public void setValue(Number value) {
         Objects.requireNonNull(value,
                 "GeneratedPaperProgress value must not be null");
         if (!Objects.equals(value, getValue())) {

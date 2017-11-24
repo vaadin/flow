@@ -16,8 +16,8 @@
 package com.vaadin.ui.dialog;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -49,7 +49,7 @@ import com.vaadin.shared.Registration;
 @Tag("vaadin-dialog-overlay")
 @HtmlImport("frontend://bower_components/vaadin-dialog/vaadin-dialog.html")
 public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * This property is synchronized automatically from client side when a
@@ -85,7 +85,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param template
      *            the JsonObject value to set
      */
-    protected void setTemplate(elemental.json.JsonObject template) {
+    protected void setTemplate(JsonObject template) {
         getElement().setPropertyJson("template", template);
     }
 
@@ -104,7 +104,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param content
      *            the JsonObject value to set
      */
-    protected void setContent(elemental.json.JsonObject content) {
+    protected void setContent(JsonObject content) {
         getElement().setPropertyJson("content", content);
     }
 
@@ -198,7 +198,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param sourceEvent
      *            Missing documentation!
      */
-    protected void close(elemental.json.JsonObject sourceEvent) {
+    protected void close(JsonObject sourceEvent) {
         getElement().callFunction("close", sourceEvent);
     }
 

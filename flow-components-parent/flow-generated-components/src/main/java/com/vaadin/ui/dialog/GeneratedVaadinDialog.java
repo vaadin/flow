@@ -16,8 +16,8 @@
 package com.vaadin.ui.dialog;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -35,8 +35,8 @@ import com.vaadin.shared.Registration;
  * {@code <vaadin-dialog>} is a Polymer 2 element for customised modal dialogs.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-dialog opened&gt; &lt;template&gt; Sample dialog &lt;/template&gt; &lt;/vaadin-dialog&gt; {@code }</code>
+ * &lt;vaadin-dialog opened&gt; &lt;template&gt; Sample dialog &lt;/template&gt;
+ * &lt;/vaadin-dialog&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -56,7 +56,7 @@ import com.vaadin.shared.Registration;
 @Tag("vaadin-dialog")
 @HtmlImport("frontend://bower_components/vaadin-dialog/vaadin-dialog.html")
 public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>

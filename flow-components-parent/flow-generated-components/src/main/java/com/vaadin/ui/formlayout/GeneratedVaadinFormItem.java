@@ -16,9 +16,9 @@
 package com.vaadin.ui.formlayout;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HasClickListeners;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -37,23 +37,27 @@ import com.vaadin.ui.common.HasComponents;
  * content, and also has a separate named {@code label} slot:
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-form-item&gt; &lt;label slot=&quot;label&quot;&gt;Label aside&lt;/label&gt; &lt;input&gt; &lt;/vaadin-form-item&gt; {@code }</code>
+ * &lt;vaadin-form-item&gt; &lt;label slot=&quot;label&quot;&gt;Label
+ * aside&lt;/label&gt; &lt;input&gt; &lt;/vaadin-form-item&gt;
  * </p>
  * <p>
  * Any content can be used. For instance, you can have multiple input elements
  * with surrounding text. The label can be an element of any type:
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-form-item&gt; &lt;span slot=&quot;label&quot;&gt;Date of Birth&lt;/span&gt; &lt;input placeholder=&quot;YYYY&quot; size=&quot;4&quot;&gt; - &lt;input placeholder=&quot;MM&quot; size=&quot;2&quot;&gt; - &lt;input placeholder=&quot;DD&quot; size=&quot;2&quot;&gt;&lt;br&gt; &lt;em&gt;Example: 1900-01-01&lt;/em&gt; &lt;/vaadin-form-item&gt; {@code }</code>
+ * &lt;vaadin-form-item&gt; &lt;span slot=&quot;label&quot;&gt;Date of
+ * Birth&lt;/span&gt; &lt;input placeholder=&quot;YYYY&quot;
+ * size=&quot;4&quot;&gt; - &lt;input placeholder=&quot;MM&quot;
+ * size=&quot;2&quot;&gt; - &lt;input placeholder=&quot;DD&quot;
+ * size=&quot;2&quot;&gt;&lt;br&gt; &lt;em&gt;Example: 1900-01-01&lt;/em&gt;
+ * &lt;/vaadin-form-item&gt;
  * </p>
  * <p>
  * The label is optional and can be omitted:
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-form-item&gt; &lt;input type=&quot;checkbox&quot;&gt; Subscribe to our Newsletter &lt;/vaadin-form-item&gt; {@code }</code>
+ * &lt;vaadin-form-item&gt; &lt;input type=&quot;checkbox&quot;&gt; Subscribe to
+ * our Newsletter &lt;/vaadin-form-item&gt;
  * </p>
  * <p>
  * By default, the {@code label} slot content is displayed aside of the input
@@ -61,8 +65,9 @@ import com.vaadin.ui.common.HasComponents;
  * {@code label} slot content is displayed on top:
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-form-item label-position=&quot;top&quot;&gt; &lt;label slot=&quot;label&quot;&gt;Label on top&lt;/label&gt; &lt;input&gt; &lt;/vaadin-form-item&gt; {@code }</code>
+ * &lt;vaadin-form-item label-position=&quot;top&quot;&gt; &lt;label
+ * slot=&quot;label&quot;&gt;Label on top&lt;/label&gt; &lt;input&gt;
+ * &lt;/vaadin-form-item&gt;
  * </p>
  * <p>
  * <strong>Note:</strong> Normally, {@code <vaadin-form-item>} is used as a
@@ -79,8 +84,9 @@ import com.vaadin.ui.common.HasComponents;
  * {@code full-width} class:
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-form-item&gt; &lt;label slot=&quot;label&quot;&gt;Label&lt;/label&gt; &lt;input class=&quot;full-width&quot;&gt; &lt;/vaadin-form-item&gt; {@code }</code>
+ * &lt;vaadin-form-item&gt; &lt;label
+ * slot=&quot;label&quot;&gt;Label&lt;/label&gt; &lt;input
+ * class=&quot;full-width&quot;&gt; &lt;/vaadin-form-item&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -158,8 +164,8 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("vaadin-form-item")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-item.html")
 public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle,
-        HasClickListeners<R>, HasComponents {
+        extends Component implements HasStyle, HasClickListeners<R>,
+        ComponentSupplier<R>, HasComponents {
 
     /**
      * Adds the given components as children of this component at the slot

@@ -16,9 +16,9 @@
 package com.vaadin.ui.datepicker;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HasClickListeners;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -37,11 +37,17 @@ import com.vaadin.ui.event.EventData;
  * </p>
  * <p>
  * {@code <vaadin-date-picker>} is a date selection field which includes a
- * scrollable month calendar view. {@code }
- * <code>html &lt;vaadin-date-picker label=&quot;Birthday&quot;&gt;&lt;/vaadin-date-picker&gt; {@code }</code>
- * {@code }<code>js datePicker.value = '2016-03-02'; {@code }</code> When the
- * selected {@code value} is changed, a {@code value-changed} event is
- * triggered.
+ * scrollable month calendar view.
+ * </p>
+ * <p>
+ * &lt;vaadin-date-picker
+ * label=&quot;Birthday&quot;&gt;&lt;/vaadin-date-picker&gt;
+ * </p>
+ * <p>
+ * {@code js
+datePicker.value = '2016-03-02';
+} When the selected {@code value} is changed, a {@code value-changed}
+ * event is triggered.
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -189,7 +195,7 @@ import com.vaadin.ui.event.EventData;
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker.html")
 public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
         extends Component
-        implements ComponentSupplier<R>, HasStyle, HasClickListeners<R> {
+        implements HasStyle, HasClickListeners<R>, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -236,7 +242,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param valueAsString
      *            the String value to set
      */
-    public void setValueAsString(java.lang.String valueAsString) {
+    public void setValueAsString(String valueAsString) {
         getElement().setProperty("value",
                 valueAsString == null ? "" : valueAsString);
     }
@@ -301,7 +307,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -356,7 +362,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param initialPosition
      *            the String value to set
      */
-    public void setInitialPosition(java.lang.String initialPosition) {
+    public void setInitialPosition(String initialPosition) {
         getElement().setProperty("initialPosition",
                 initialPosition == null ? "" : initialPosition);
     }
@@ -389,7 +395,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -635,7 +641,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param i18n
      *            the JsonObject value to set
      */
-    protected void setI18n(elemental.json.JsonObject i18n) {
+    protected void setI18n(JsonObject i18n) {
         getElement().setPropertyJson("i18n", i18n);
     }
 
@@ -685,7 +691,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param minAsString
      *            the String value to set
      */
-    public void setMinAsString(java.lang.String minAsString) {
+    public void setMinAsString(String minAsString) {
         getElement().setProperty("min", minAsString == null ? "" : minAsString);
     }
 
@@ -733,7 +739,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param maxAsString
      *            the String value to set
      */
-    public void setMaxAsString(java.lang.String maxAsString) {
+    public void setMaxAsString(String maxAsString) {
         getElement().setProperty("max", maxAsString == null ? "" : maxAsString);
     }
 
@@ -797,7 +803,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param errorMessage
      *            the String value to set
      */
-    public void setErrorMessage(java.lang.String errorMessage) {
+    public void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
     }
@@ -832,7 +838,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(java.lang.String placeholder) {
+    public void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -943,7 +949,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      *            Missing documentation!
      */
     @NotSupported
-    protected void validate(elemental.json.JsonObject value) {
+    protected void validate(JsonObject value) {
     }
 
     /**
@@ -961,7 +967,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param value
      *            Missing documentation!
      */
-    protected void checkValidity(elemental.json.JsonObject value) {
+    protected void checkValidity(JsonObject value) {
         getElement().callFunction("checkValidity", value);
     }
 
@@ -992,7 +998,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
         private final String value;
 
         public ValueAsStringChangeEvent(R source, boolean fromClient,
-                @EventData("event.value") java.lang.String value) {
+                @EventData("event.value") String value) {
             super(source, fromClient);
             this.value = value;
         }

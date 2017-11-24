@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.menubutton;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -29,7 +29,7 @@ import elemental.json.JsonObject;
 @Tag("paper-menu-grow-height-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuGrowHeightAnimation<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -59,8 +59,7 @@ public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuG
      * @param animationTiming
      *            the JsonObject value to set
      */
-    protected void setAnimationTiming(
-            elemental.json.JsonObject animationTiming) {
+    protected void setAnimationTiming(JsonObject animationTiming) {
         getElement().setPropertyJson("animationTiming", animationTiming);
     }
 
@@ -108,7 +107,7 @@ public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuG
      * @param config
      *            Missing documentation!
      */
-    protected void timingFromConfig(elemental.json.JsonObject config) {
+    protected void timingFromConfig(JsonObject config) {
         getElement().callFunction("timingFromConfig", config);
     }
 
@@ -128,9 +127,8 @@ public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuG
      * @param value
      *            Missing documentation!
      */
-    protected void setPrefixedProperty(elemental.json.JsonObject node,
-            elemental.json.JsonObject property,
-            elemental.json.JsonObject value) {
+    protected void setPrefixedProperty(JsonObject node, JsonObject property,
+            JsonObject value) {
         getElement().callFunction("setPrefixedProperty", node, property, value);
     }
 

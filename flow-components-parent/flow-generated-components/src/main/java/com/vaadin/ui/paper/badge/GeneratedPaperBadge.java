@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.badge;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -29,7 +29,7 @@ import com.vaadin.ui.common.NotSupported;
 @Tag("paper-badge")
 @HtmlImport("frontend://bower_components/paper-badge/paper-badge.html")
 public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -61,7 +61,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param _for
      *            the String value to set
      */
-    public void setFor(java.lang.String _for) {
+    public void setFor(String _for) {
         getElement().setProperty("for", _for == null ? "" : _for);
     }
 
@@ -95,7 +95,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -133,7 +133,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param icon
      *            the String value to set
      */
-    public void setIcon(java.lang.String icon) {
+    public void setIcon(String icon) {
         getElement().setProperty("icon", icon == null ? "" : icon);
     }
 
@@ -169,7 +169,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param target
      *            the JsonObject value to set
      */
-    protected void setTarget(elemental.json.JsonObject target) {
+    protected void setTarget(JsonObject target) {
         getElement().setPropertyJson("target", target);
     }
 
@@ -198,8 +198,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param parentResizable
      *            Missing documentation!
      */
-    protected void assignParentResizable(
-            elemental.json.JsonObject parentResizable) {
+    protected void assignParentResizable(JsonObject parentResizable) {
         getElement().callFunction("assignParentResizable", parentResizable);
     }
 
@@ -215,8 +214,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param target
      *            Missing documentation!
      */
-    protected void stopResizeNotificationsFor(
-            elemental.json.JsonObject target) {
+    protected void stopResizeNotificationsFor(JsonObject target) {
         getElement().callFunction("stopResizeNotificationsFor", target);
     }
 
@@ -239,7 +237,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      *            `IronResizableBehavior`.
      */
     @NotSupported
-    protected void resizerShouldNotify(elemental.json.JsonObject element) {
+    protected void resizerShouldNotify(JsonObject element) {
     }
 
     /**

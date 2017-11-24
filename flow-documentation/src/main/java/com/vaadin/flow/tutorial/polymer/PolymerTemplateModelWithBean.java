@@ -58,11 +58,6 @@ public class PolymerTemplateModelWithBean {
             getModel().setPerson(person);
         }
 
-        @Override
-        protected FormModel getModel() {
-            return (FormModel) super.getModel();
-        }
-
         @EventHandler
         public void setNameToJeff() {
             getModel().getPerson().setFirstName("Jeff");

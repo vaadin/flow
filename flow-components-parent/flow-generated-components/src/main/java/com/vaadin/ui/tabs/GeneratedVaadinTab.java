@@ -16,8 +16,8 @@
 package com.vaadin.ui.tabs;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -36,7 +36,11 @@ import com.vaadin.ui.common.HtmlImport;
  * >Generic styling/theming documentation</a>
  * </p>
  * <p>
- * {@code }<code>&lt;vaadin-tab&gt; Tab 1 &lt;/vaadin-tab&gt; {@code }</code>
+ * {@code
+<vaadin-tab>
+Tab 1
+</vaadin-tab>
+}
  * </p>
  * <p>
  * The following state attributes are available for styling:
@@ -88,7 +92,7 @@ import com.vaadin.ui.common.HtmlImport;
 @Tag("vaadin-tab")
 @HtmlImport("frontend://bower_components/vaadin-tabs/vaadin-tab.html")
 public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -182,7 +186,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * @param value
      *            the String value to set
      */
-    public void setValue(java.lang.String value) {
+    public void setValue(String value) {
         getElement().setProperty("value", value == null ? "" : value);
     }
 }

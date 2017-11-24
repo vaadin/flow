@@ -33,7 +33,7 @@ public class PaperInputView extends DemoView {
     public void initView() {
         // begin-source-example
         // source-example-heading: Basic input
-        GeneratedPaperInput input = new GeneratedPaperInput();
+        GeneratedPaperInput<?> input = new GeneratedPaperInput<>();
         input.setLabel("Name");
         input.setPlaceholder("John Doe");
         // end-source-example

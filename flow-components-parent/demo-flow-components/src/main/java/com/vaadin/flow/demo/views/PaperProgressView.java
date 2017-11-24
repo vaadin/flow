@@ -37,15 +37,15 @@ public class PaperProgressView extends DemoView {
         // begin-source-example
         // source-example-heading: Modified and default indeterminate and static
         // progress
-        GeneratedPaperProgress slowBlue = new GeneratedPaperProgress();
+        GeneratedPaperProgress<?> slowBlue = new GeneratedPaperProgress<>();
         slowBlue.setIndeterminate(true);
         slowBlue.getElement().setAttribute("class", "slow blue");
 
-        GeneratedPaperProgress red = new GeneratedPaperProgress();
+        GeneratedPaperProgress<?> red = new GeneratedPaperProgress<>();
         red.setIndeterminate(true);
         red.getElement().setAttribute("class", "red");
 
-        GeneratedPaperProgress staticGreen = new GeneratedPaperProgress();
+        GeneratedPaperProgress<?> staticGreen = new GeneratedPaperProgress<>();
         staticGreen.setValue(45);
         staticGreen.setSecondaryProgress(70);
         // end-source-example

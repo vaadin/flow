@@ -46,7 +46,8 @@ public class LocaleUtilTest {
 
         // request locales are returned as Enumeration
         Mockito.when(request.getLocales()).thenReturn(
-                new Vector(Arrays.asList(new Locale("fi"), LOCALE_EN)).elements());
+                new Vector<>(Arrays.asList(new Locale("fi"), LOCALE_EN))
+                        .elements());
     }
 
     @Test

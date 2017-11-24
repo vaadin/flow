@@ -326,6 +326,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag(TAG)
+    @SuppressWarnings("rawtypes")
     private static class NoModelTemplate extends PolymerTemplate {
 
         NoModelTemplate() {
@@ -378,7 +379,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
                 @Override
                 public ExecutionCanceler executeJavaScript(String expression,
-                        Serializable[] parameters) {
+                        Serializable... parameters) {
                     executionOrder.add(expression);
                     return () -> true;
                 }

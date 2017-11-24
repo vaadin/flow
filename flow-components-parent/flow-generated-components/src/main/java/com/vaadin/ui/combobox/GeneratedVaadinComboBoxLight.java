@@ -15,26 +15,24 @@
  */
 package com.vaadin.ui.combobox;
 
-import java.util.Objects;
-
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.common.ComponentSupplier;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import elemental.json.JsonArray;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
+import elemental.json.JsonObject;
 import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.event.Synchronize;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -55,8 +53,8 @@ import elemental.json.JsonObject;
  * simplest possible example using a {@code <vaadin-text-field>} element.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box-light&gt; &lt;vaadin-text-field&gt; &lt;/vaadin-text-field&gt; &lt;/vaadin-combo-box-light&gt; {@code }</code>
+ * &lt;vaadin-combo-box-light&gt; &lt;vaadin-text-field&gt;
+ * &lt;/vaadin-text-field&gt; &lt;/vaadin-combo-box-light&gt;
  * </p>
  * <p>
  * If you are using other custom input fields like {@code <iron-input>}, you
@@ -64,8 +62,9 @@ import elemental.json.JsonObject;
  * {@code attrForValue} attribute.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box-light attr-for-value=&quot;bind-value&quot;&gt; &lt;iron-input&gt; &lt;input&gt; &lt;/iron-input&gt; &lt;/vaadin-combo-box-light&gt; {@code }</code>
+ * &lt;vaadin-combo-box-light attr-for-value=&quot;bind-value&quot;&gt;
+ * &lt;iron-input&gt; &lt;input&gt; &lt;/iron-input&gt;
+ * &lt;/vaadin-combo-box-light&gt;
  * </p>
  * <p>
  * In the next example you can see how to create a custom input field based on a
@@ -73,8 +72,13 @@ import elemental.json.JsonObject;
  * {@code <paper-button>}s to act as the clear and toggle controls.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box-light&gt; &lt;paper-input label=&quot;Elements&quot; class=&quot;input&quot;&gt; &lt;iron-icon icon=&quot;toll&quot; prefix&gt;&lt;/iron-icon&gt; &lt;paper-button slot=&quot;suffix&quot; class=&quot;clear-button&quot;&gt;Clear&lt;/paper-button&gt; &lt;paper-button slot=&quot;suffix&quot; class=&quot;toggle-button&quot;&gt;Toggle&lt;/paper-button&gt; &lt;/paper-input&gt; &lt;/vaadin-combo-box-light&gt; {@code }</code>
+ * &lt;vaadin-combo-box-light&gt; &lt;paper-input label=&quot;Elements&quot;
+ * class=&quot;input&quot;&gt; &lt;iron-icon icon=&quot;toll&quot;
+ * prefix&gt;&lt;/iron-icon&gt; &lt;paper-button slot=&quot;suffix&quot;
+ * class=&quot;clear-button&quot;&gt;Clear&lt;/paper-button&gt; &lt;paper-button
+ * slot=&quot;suffix&quot;
+ * class=&quot;toggle-button&quot;&gt;Toggle&lt;/paper-button&gt;
+ * &lt;/paper-input&gt; &lt;/vaadin-combo-box-light&gt;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
@@ -83,8 +87,8 @@ import elemental.json.JsonObject;
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
-        extends Component
-        implements HasStyle, HasValue<R, String>, HasComponents {
+        extends Component implements HasStyle, ComponentSupplier<R>,
+        HasValue<R, String>, HasComponents {
 
     /**
      * <p>
@@ -213,7 +217,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param items
      *            the JsonArray value to set
      */
-    protected void setItems(elemental.json.JsonArray items) {
+    protected void setItems(JsonArray items) {
         getElement().setPropertyJson("items", items);
     }
 
@@ -287,7 +291,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param filteredItems
      *            the JsonArray value to set
      */
-    protected void setFilteredItems(elemental.json.JsonArray filteredItems) {
+    protected void setFilteredItems(JsonArray filteredItems) {
         getElement().setPropertyJson("filteredItems", filteredItems);
     }
 
@@ -338,7 +342,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      *            the String value to set
      */
     @Override
-    public void setValue(java.lang.String value) {
+    public void setValue(String value) {
         if (!Objects.equals(value, getValue())) {
             getElement().setProperty("value", value == null ? "" : value);
         }
@@ -425,7 +429,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param filter
      *            the String value to set
      */
-    public void setFilter(java.lang.String filter) {
+    public void setFilter(String filter) {
         getElement().setProperty("filter", filter == null ? "" : filter);
     }
 
@@ -457,7 +461,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param selectedItem
      *            the JsonObject value to set
      */
-    protected void setSelectedItem(elemental.json.JsonObject selectedItem) {
+    protected void setSelectedItem(JsonObject selectedItem) {
         getElement().setPropertyJson("selectedItem", selectedItem);
     }
 
@@ -511,7 +515,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param itemLabelPath
      *            the String value to set
      */
-    public void setItemLabelPath(java.lang.String itemLabelPath) {
+    public void setItemLabelPath(String itemLabelPath) {
         getElement().setProperty("itemLabelPath",
                 itemLabelPath == null ? "" : itemLabelPath);
     }
@@ -556,7 +560,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param itemValuePath
      *            the String value to set
      */
-    public void setItemValuePath(java.lang.String itemValuePath) {
+    public void setItemValuePath(String itemValuePath) {
         getElement().setProperty("itemValuePath",
                 itemValuePath == null ? "" : itemValuePath);
     }
@@ -621,7 +625,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -688,7 +692,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param attrForValue
      *            the String value to set
      */
-    public void setAttrForValue(java.lang.String attrForValue) {
+    public void setAttrForValue(String attrForValue) {
         getElement().setProperty("attrForValue",
                 attrForValue == null ? "" : attrForValue);
     }
@@ -791,7 +795,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      *            Missing documentation!
      */
     @NotSupported
-    protected void validate(elemental.json.JsonObject value) {
+    protected void validate(JsonObject value) {
     }
 
     /**
@@ -809,7 +813,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param value
      *            Missing documentation!
      */
-    protected void checkValidity(elemental.json.JsonObject value) {
+    protected void checkValidity(JsonObject value) {
         getElement().callFunction("checkValidity", value);
     }
 
@@ -839,7 +843,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
         private final String detail;
 
         public CustomValueSetEvent(R source, boolean fromClient,
-                @EventData("event.detail") java.lang.String detail) {
+                @EventData("event.detail") String detail) {
             super(source, fromClient);
             this.detail = detail;
         }
@@ -869,8 +873,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
         private final String detailValue;
 
         public SelectedItemChangeEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.value") java.lang.String detailValue) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.value") String detailValue) {
             super(source, fromClient);
             this.detail = detail;
             this.detailValue = detailValue;
@@ -933,7 +937,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
         private final String filter;
 
         public FilterChangeEvent(R source, boolean fromClient,
-                @EventData("event.filter") java.lang.String filter) {
+                @EventData("event.filter") String filter) {
             super(source, fromClient);
             this.filter = filter;
         }

@@ -15,32 +15,30 @@
  */
 package com.vaadin.ui.paper.button;
 
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.Focusable;
-import com.vaadin.ui.common.HasClickListeners;
-import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HasText;
+import com.vaadin.ui.common.Focusable;
+import com.vaadin.ui.common.HasClickListeners;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import elemental.json.JsonObject;
+import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.Synchronize;
-
-import elemental.json.JsonObject;
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.common.HasComponents;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-button#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
 public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
-        extends Component implements HasStyle, HasText,
-        Focusable<R>, HasClickListeners<R>, HasComponents {
+        extends Component implements HasStyle, HasText, Focusable<R>,
+        HasClickListeners<R>, HasComponents {
 
     /**
      * <p>
@@ -72,7 +70,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * @param keyEventTarget
      *            the JsonObject value to set
      */
-    protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+    protected void setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
     }
 
@@ -127,7 +125,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * @param keyBindings
      *            the JsonObject value to set
      */
-    protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
+    protected void setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
     }
 
@@ -283,7 +281,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * @param ariaActiveAttribute
      *            the String value to set
      */
-    public void setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+    public void setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
     }
@@ -439,8 +437,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -474,8 +471,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      *            Missing documentation!
      */
     @NotSupported
-    protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+    protected void keyboardEventMatchesKeys(JsonObject event,
+            String eventString) {
     }
 
     /**
@@ -490,7 +487,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * @param optTriggeringEvent
      *            (optional) event that triggered the ripple.
      */
-    protected void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
+    protected void ensureRipple(JsonObject optTriggeringEvent) {
         getElement().callFunction("ensureRipple", optTriggeringEvent);
     }
 
@@ -615,7 +612,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      *            text content to set
      * @see HasText#setText(String)
      */
-    public GeneratedPaperButton(java.lang.String text) {
+    public GeneratedPaperButton(String text) {
         setText(text);
     }
 

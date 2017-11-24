@@ -85,6 +85,7 @@ These tutorials show how the different features are used.
 ** <<spring/tutorial-spring-configuration#,Vaadin Spring Configuration>>
 ** <<spring/tutorial-spring-examples#,Getting Started with Spring and Flow>>
 * Misc
+** <<miscellaneous/tutorial-i18n-localization#,I18N localization>>
 ** <<miscellaneous/tutorial-execute-javascript#,Executing JavaScript>>
 ** <<miscellaneous/tutorial-history-api#,The History API>>
 ** <<miscellaneous/tutorial-dynamic-content#,Dynamic Content>>

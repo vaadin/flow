@@ -15,12 +15,13 @@
  */
 package com.vaadin.router;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
@@ -237,7 +238,7 @@ public class NavigationStateRenderer implements NavigationHandler {
                 postponed = null;
             }
         } else {
-            leaveObservers = new ArrayDeque(
+            leaveObservers = new ArrayDeque<>(
                     EventUtil.collectBeforeLeaveObservers(element));
         }
 
@@ -258,7 +259,7 @@ public class NavigationStateRenderer implements NavigationHandler {
             navigationObservers = postponed.getNavigationObservers();
             postponed = null;
         } else {
-            navigationObservers = new ArrayDeque(
+            navigationObservers = new ArrayDeque<>(
                     EventUtil.collectBeforeNavigationObservers(element));
         }
 
