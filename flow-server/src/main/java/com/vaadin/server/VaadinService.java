@@ -140,6 +140,9 @@ public abstract class VaadinService implements Serializable {
 
     private static final String REQUEST_START_TIME_ATTRIBUTE = "requestStartTime";
 
+    /**
+     * Should never be used directly, always use {@link #getDeploymentConfiguration()}.
+     */
     private final DeploymentConfiguration deploymentConfiguration;
 
     /*
@@ -214,6 +217,18 @@ public abstract class VaadinService implements Serializable {
         if (getClassLoader() == null) {
             setDefaultClassLoader();
         }
+    }
+
+    /**
+     * Creates a service. This method is for use by dependency injection
+     * frameworks etc. and must be followed by a call to
+     * {@link #setClassLoader(ClassLoader)} or {@link #setDefaultClassLoader()}
+     * before use. Furthermore {@link #getDeploymentConfiguration()} should be
+     * overridden (or otherwise intercepted) so it does not return
+     * <code>null</code>.
+     */
+    protected VaadinService() {
+        this.deploymentConfiguration = null;
     }
 
     /**
@@ -444,7 +459,10 @@ public abstract class VaadinService implements Serializable {
     public abstract String getMimeType(String resourceName);
 
     /**
-     * Gets the deployment configuration.
+     * Gets the deployment configuration. Should be overridden (or otherwise
+     * intercepted) if the no-arg constructor is used in order to prevent
+     * NPEs.
+     *
      *
      * @return the deployment configuration
      */

@@ -15,16 +15,16 @@
  */
 package com.vaadin.ui.button;
 
-import javax.annotation.Generated;
-
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.Focusable;
-import com.vaadin.ui.common.HasClickListeners;
-import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HasClickListeners;
 import com.vaadin.ui.common.HasText;
+import com.vaadin.ui.common.Focusable;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -35,8 +35,7 @@ import com.vaadin.ui.common.HtmlImport;
  * customizable button.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-button&gt; &lt;/vaadin-button&gt; {@code }</code>
+ * &lt;vaadin-button&gt; &lt;/vaadin-button&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -90,8 +89,8 @@ import com.vaadin.ui.common.HtmlImport;
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
 public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
-        extends Component implements HasStyle, HasClickListeners<R>, HasText,
-        Focusable<R>, HasComponents {
+        extends Component implements ComponentSupplier<R>, HasStyle,
+        HasClickListeners<R>, HasText, Focusable<R>, HasComponents {
 
     /**
      * <p>

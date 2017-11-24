@@ -74,7 +74,7 @@ public class ModelMap extends NodeMap {
      *         no value stored, or if <code>null</code> is stored as a value
      */
     public Serializable getValue(String key) {
-        return (Serializable) get(key);
+        return get(key);
     }
 
     /**

@@ -15,26 +15,24 @@
  */
 package com.vaadin.ui.combobox;
 
-import java.util.Objects;
-
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasValue;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import elemental.json.JsonArray;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
+import elemental.json.JsonObject;
 import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.event.Synchronize;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -55,8 +53,8 @@ import elemental.json.JsonObject;
  * simplest possible example using a {@code <vaadin-text-field>} element.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box-light&gt; &lt;vaadin-text-field&gt; &lt;/vaadin-text-field&gt; &lt;/vaadin-combo-box-light&gt; {@code }</code>
+ * &lt;vaadin-combo-box-light&gt; &lt;vaadin-text-field&gt;
+ * &lt;/vaadin-text-field&gt; &lt;/vaadin-combo-box-light&gt;
  * </p>
  * <p>
  * If you are using other custom input fields like {@code <iron-input>}, you
@@ -64,8 +62,9 @@ import elemental.json.JsonObject;
  * {@code attrForValue} attribute.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box-light attr-for-value=&quot;bind-value&quot;&gt; &lt;iron-input&gt; &lt;input&gt; &lt;/iron-input&gt; &lt;/vaadin-combo-box-light&gt; {@code }</code>
+ * &lt;vaadin-combo-box-light attr-for-value=&quot;bind-value&quot;&gt;
+ * &lt;iron-input&gt; &lt;input&gt; &lt;/iron-input&gt;
+ * &lt;/vaadin-combo-box-light&gt;
  * </p>
  * <p>
  * In the next example you can see how to create a custom input field based on a
@@ -73,8 +72,13 @@ import elemental.json.JsonObject;
  * {@code <paper-button>}s to act as the clear and toggle controls.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box-light&gt; &lt;paper-input label=&quot;Elements&quot; class=&quot;input&quot;&gt; &lt;iron-icon icon=&quot;toll&quot; prefix&gt;&lt;/iron-icon&gt; &lt;paper-button slot=&quot;suffix&quot; class=&quot;clear-button&quot;&gt;Clear&lt;/paper-button&gt; &lt;paper-button slot=&quot;suffix&quot; class=&quot;toggle-button&quot;&gt;Toggle&lt;/paper-button&gt; &lt;/paper-input&gt; &lt;/vaadin-combo-box-light&gt; {@code }</code>
+ * &lt;vaadin-combo-box-light&gt; &lt;paper-input label=&quot;Elements&quot;
+ * class=&quot;input&quot;&gt; &lt;iron-icon icon=&quot;toll&quot;
+ * prefix&gt;&lt;/iron-icon&gt; &lt;paper-button slot=&quot;suffix&quot;
+ * class=&quot;clear-button&quot;&gt;Clear&lt;/paper-button&gt; &lt;paper-button
+ * slot=&quot;suffix&quot;
+ * class=&quot;toggle-button&quot;&gt;Toggle&lt;/paper-button&gt;
+ * &lt;/paper-input&gt; &lt;/vaadin-combo-box-light&gt;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
@@ -83,8 +87,8 @@ import elemental.json.JsonObject;
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
-        extends Component
-        implements HasStyle, HasValue<R, String>, HasComponents {
+        extends Component implements ComponentSupplier<R>, HasStyle,
+        HasValue<R, String>, HasComponents {
 
     /**
      * <p>

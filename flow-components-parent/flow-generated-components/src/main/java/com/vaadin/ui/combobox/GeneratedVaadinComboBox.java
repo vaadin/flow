@@ -49,12 +49,13 @@ import com.vaadin.shared.Registration;
  * JavaScript property.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box label=&quot;Fruit&quot; items=&quot;[[data]]&quot;&gt; &lt;/vaadin-combo-box&gt; {@code }</code>
+ * &lt;vaadin-combo-box label=&quot;Fruit&quot; items=&quot;[[data]]&quot;&gt;
+ * &lt;/vaadin-combo-box&gt;
  * </p>
  * <p>
- * {@code }
- * <code>js combobox.items = ['apple', 'orange', 'banana']; {@code }</code>
+ * {@code js
+combobox.items = ['apple', 'orange', 'banana'];
+}
  * </p>
  * <p>
  * When the selected {@code value} is changed, a {@code value-changed} event is
@@ -69,8 +70,10 @@ import com.vaadin.shared.Registration;
  * the light DOM:
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-combo-box items='[{&quot;label&quot;: &quot;Hydrogen&quot;, &quot;value&quot;: &quot;H&quot;}]'&gt; &lt;template&gt; [[index]]: [[item.label]] &lt;b&gt;[[item.value]&lt;/b&gt; &lt;/template&gt; &lt;/vaadin-combo-box&gt; {@code }</code>
+ * &lt;vaadin-combo-box items='[{&quot;label&quot;: &quot;Hydrogen&quot;,
+ * &quot;value&quot;: &quot;H&quot;}]'&gt; &lt;template&gt; [[index]]:
+ * [[item.label]] &lt;b&gt;[[item.value]&lt;/b&gt; &lt;/template&gt;
+ * &lt;/vaadin-combo-box&gt;
  * </p>
  * <p>
  * The following properties are available for item template bindings:

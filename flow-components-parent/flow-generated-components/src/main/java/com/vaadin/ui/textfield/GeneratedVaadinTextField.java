@@ -15,23 +15,22 @@
  */
 package com.vaadin.ui.textfield;
 
-import java.util.Objects;
-
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.Focusable;
+import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.common.Focusable;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
 import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.event.Synchronize;
 
 /**
  * <p>
@@ -42,8 +41,8 @@ import com.vaadin.ui.event.Synchronize;
  * forms.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-text-field label=&quot;First Name&quot;&gt; &lt;/vaadin-text-field&gt; {@code }</code>
+ * &lt;vaadin-text-field label=&quot;First Name&quot;&gt;
+ * &lt;/vaadin-text-field&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -129,8 +128,8 @@ import com.vaadin.ui.event.Synchronize;
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
 public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
-        extends Component
-        implements HasStyle, Focusable<R>, HasValue<R, String> {
+        extends Component implements ComponentSupplier<R>, HasStyle,
+        Focusable<R>, HasValue<R, String> {
 
     /**
      * <p>

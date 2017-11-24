@@ -1082,4 +1082,32 @@ public class ComponentGeneratorTest {
         Assert.assertFalse("Callback methods are generated",
                 generatedClass.contains(callback));
     }
+
+    @Test
+    public void htmlJavaDoc() {
+        ComponentFunctionData functionData = new ComponentFunctionData();
+        functionData.setName("my-method");
+        // @formatter:off
+        functionData.setDescription(""
+                + "This is my method documentation,"
+                + "```html\n" 
+                + "<my-component\n" 
+                + "label=\"myLabel\">\n" 
+                + "</my-component>\n"
+                + "```");
+        // @formatter:on
+
+        componentMetadata.setMethods(Collections.singletonList(functionData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue("JavaDoc must have escaped HTML",
+                generatedClass.contains("&lt;my-component"));
+        Assert.assertTrue("JavaDoc must have escaped HTML",
+                generatedClass.contains("label=&quot;myLabel&quot;&gt;"));
+        Assert.assertFalse("JavaDoc must not have @code",
+                generatedClass.contains("@code"));
+    }
+
 }

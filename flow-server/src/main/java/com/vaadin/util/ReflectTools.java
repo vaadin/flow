@@ -576,12 +576,12 @@ public class ReflectTools implements Serializable {
         Type[] genericInterfaces = clazz.getGenericInterfaces();
         ParameterizedType parameterizedType = null;
         for (Type genericInterface : genericInterfaces) {
-            Class interfaceClass;
+            Class<?> interfaceClass;
             if (genericInterface instanceof ParameterizedType) {
-                interfaceClass = (Class) ((ParameterizedType) genericInterface)
+                interfaceClass = (Class<?>) ((ParameterizedType) genericInterface)
                         .getRawType();
             } else if (genericInterface instanceof Class) {
-                interfaceClass = (Class) genericInterface;
+                interfaceClass = (Class<?>) genericInterface;
             } else {
                 interfaceClass = genericInterface.getClass();
             }

@@ -36,7 +36,11 @@ import com.vaadin.ui.common.HtmlImport;
  * >Generic styling/theming documentation</a>
  * </p>
  * <p>
- * {@code }<code>&lt;vaadin-tab&gt; Tab 1 &lt;/vaadin-tab&gt; {@code }</code>
+ * {@code
+<vaadin-tab>
+Tab 1
+</vaadin-tab>
+}
  * </p>
  * <p>
  * The following state attributes are available for styling:

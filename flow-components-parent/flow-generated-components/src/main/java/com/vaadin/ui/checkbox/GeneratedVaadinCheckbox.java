@@ -15,23 +15,22 @@
  */
 package com.vaadin.ui.checkbox;
 
-import java.util.Objects;
-
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.Focusable;
 import com.vaadin.ui.common.HasClickListeners;
-import com.vaadin.ui.common.HasComponents;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasValue;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.Synchronize;
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -41,8 +40,7 @@ import com.vaadin.ui.event.Synchronize;
  * {@code <vaadin-checkbox>} is a Polymer 2 element for customized checkboxes.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-checkbox&gt; Make my profile visible &lt;/vaadin-checkbox&gt; {@code }</code>
+ * &lt;vaadin-checkbox&gt; Make my profile visible &lt;/vaadin-checkbox&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -123,8 +121,8 @@ import com.vaadin.ui.event.Synchronize;
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
         extends Component
-        implements HasStyle, Focusable<R>, HasClickListeners<R>,
-        HasValue<R, Boolean>, HasComponents {
+        implements ComponentSupplier<R>, HasStyle, Focusable<R>,
+        HasClickListeners<R>, HasValue<R, Boolean>, HasComponents {
 
     /**
      * <p>
