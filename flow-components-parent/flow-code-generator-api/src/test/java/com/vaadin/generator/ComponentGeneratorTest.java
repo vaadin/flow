@@ -196,7 +196,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
         Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setName(java.lang.String name)"));
+                .contains("public void setName(String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
@@ -221,7 +221,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
         Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setName(java.lang.String name)"));
+                .contains("public void setName(String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
@@ -431,7 +431,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setName(java.lang.String name)"));
+                .contains("public void setName(String name)"));
 
         Assert.assertTrue("Setter doesn't check for null value",
                 generatedClass.contains(propertyData.getName()
@@ -777,11 +777,11 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass.contains(
-                "public void callSomething(java.lang.String firstParam, java.lang.String secondParam)"));
+                "public void callSomething(String firstParam, String secondParam)"));
         Assert.assertTrue(generatedClass.contains(
-                "public void callSomething(java.lang.String firstParam, boolean secondParam)"));
+                "public void callSomething(String firstParam, boolean secondParam)"));
         Assert.assertTrue(generatedClass.contains(
-                "public void callSomething(boolean firstParam, java.lang.String secondParam)"));
+                "public void callSomething(boolean firstParam, String secondParam)"));
         Assert.assertTrue(generatedClass.contains(
                 "public void callSomething(boolean firstParam, boolean secondParam)"));
     }
@@ -821,7 +821,7 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass.contains(
-                "public void callSomething(CallSomethingFirstParam firstParam, java.lang.String secondParam)"));
+                "public void callSomething(CallSomethingFirstParam firstParam, String secondParam)"));
         Assert.assertTrue(generatedClass.contains(
                 "public void callSomething(CallSomethingFirstParam firstParam, boolean secondParam)"));
     }
@@ -848,7 +848,7 @@ public class ComponentGeneratorTest {
         Assert.assertThat(generatedClass, CoreMatchers
                 .containsString("@Override public String getValue()"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public void setValue(java.lang.String value)"));
+                "@Override public void setValue(String value)"));
     }
 
     @Test
@@ -870,7 +870,7 @@ public class ComponentGeneratorTest {
         Assert.assertThat(generatedClass, CoreMatchers
                 .containsString("@Override public String getValue()"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public void setValue(java.lang.String value)"));
+                "@Override public void setValue(String value)"));
     }
 
     @Test
@@ -891,7 +891,7 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass.contains(
-                "@Override public void setValue(java.lang.String value) { if (!Objects.equals(value, getValue())) {"));
+                "@Override public void setValue(String value) { if (!Objects.equals(value, getValue())) {"));
     }
 
     @Test
@@ -916,9 +916,9 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 generatedClass.contains("@Override public Double getValue()"));
         Assert.assertTrue(generatedClass.contains(
-                "@Override public void setValue(java.lang.Double value)"));
+                "@Override public void setValue(Double value)"));
         Assert.assertTrue(generatedClass
-                .contains("public void setValue(java.lang.Number value)"));
+                .contains("public void setValue(Number value)"));
     }
 
     @Test
@@ -939,9 +939,9 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass.contains(
-                "@Override public void setValue(java.lang.Double value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
+                "@Override public void setValue(Double value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
         Assert.assertTrue(generatedClass.contains(
-                "public void setValue(java.lang.Number value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
+                "public void setValue(Number value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
     }
 
     @Test
@@ -982,18 +982,18 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(generatedClass
                 .contains("protected JsonObject protectedGetObjectProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected void setObjectProperty(elemental.json.JsonObject objectProperty)"));
+                "protected void setObjectProperty(JsonObject objectProperty)"));
         Assert.assertTrue(generatedClass
                 .contains("protected JsonArray protectedGetArrayProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected void setArrayProperty(elemental.json.JsonArray arrayProperty)"));
+                "protected void setArrayProperty(JsonArray arrayProperty)"));
         Assert.assertTrue(generatedClass.contains(
                 "protected JsonValue protectedGetUndefinedProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected void setUndefinedProperty( elemental.json.JsonValue undefinedProperty)"));
+                "protected void setUndefinedProperty(JsonValue undefinedProperty)"));
 
         Assert.assertTrue(generatedClass.contains(
-                "protected void callSomething(elemental.json.JsonObject objectParam)"));
+                "protected void callSomething(JsonObject objectParam)"));
     }
 
     @Test
@@ -1040,11 +1040,11 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(generatedClass.contains(
                 "protected void callSomethingWithObject(JsonObject objectParam)"));
         Assert.assertTrue(generatedClass.contains(
-                "protected void callSomethingWithObjectAndString( elemental.json.JsonObject objectParam, java.lang.String stringParam)"));
+                "protected void callSomethingWithObjectAndString(JsonObject objectParam, String stringParam)"));
         Assert.assertTrue(generatedClass.contains(
-                "public void callSomethingWithMultiTypes(java.lang.String multiParam)"));
+                "public void callSomethingWithMultiTypes(String multiParam)"));
         Assert.assertTrue(generatedClass.contains(
-                "protected void callSomethingWithMultiTypes( elemental.json.JsonObject multiParam)"));
+                "protected void callSomethingWithMultiTypes(JsonObject multiParam)"));
         Assert.assertTrue(generatedClass.contains(
                 "protected void callSomethingWithMultiTypes(JsonArray multiParam)"));
         Assert.assertTrue(generatedClass.contains(
@@ -1066,7 +1066,7 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "public void setSomething(java.lang.String something) {"));
+                "public void setSomething(String something) {"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "public Registration addSomethingChangeListener( ComponentEventListener<SomethingChangeEvent<R>> listener) {"));
     }

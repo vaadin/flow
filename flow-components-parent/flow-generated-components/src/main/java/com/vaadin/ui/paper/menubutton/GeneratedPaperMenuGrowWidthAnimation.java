@@ -59,8 +59,7 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
      * @param animationTiming
      *            the JsonObject value to set
      */
-    protected void setAnimationTiming(
-            elemental.json.JsonObject animationTiming) {
+    protected void setAnimationTiming(JsonObject animationTiming) {
         getElement().setPropertyJson("animationTiming", animationTiming);
     }
 
@@ -108,7 +107,7 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
      * @param config
      *            Missing documentation!
      */
-    protected void timingFromConfig(elemental.json.JsonObject config) {
+    protected void timingFromConfig(JsonObject config) {
         getElement().callFunction("timingFromConfig", config);
     }
 
@@ -128,9 +127,8 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
      * @param value
      *            Missing documentation!
      */
-    protected void setPrefixedProperty(elemental.json.JsonObject node,
-            elemental.json.JsonObject property,
-            elemental.json.JsonObject value) {
+    protected void setPrefixedProperty(JsonObject node, JsonObject property,
+            JsonObject value) {
         getElement().callFunction("setPrefixedProperty", node, property, value);
     }
 

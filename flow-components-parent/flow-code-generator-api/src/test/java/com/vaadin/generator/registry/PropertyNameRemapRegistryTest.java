@@ -103,7 +103,7 @@ public class PropertyNameRemapRegistryTest {
 
         Assert.assertTrue("Setter for renamed property should be present",
                 generatedSource
-                        .contains("setRenamed(java.lang.String renamed)"));
+                        .contains("setRenamed(String renamed)"));
         Assert.assertTrue(
                 "Setter should use the original property name for setting the value through the element API",
                 generatedSource.contains(

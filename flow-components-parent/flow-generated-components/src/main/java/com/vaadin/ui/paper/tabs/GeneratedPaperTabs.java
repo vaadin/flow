@@ -80,28 +80,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param attrForSelected
      *            the String value to set
      */
-    public void setAttrForSelected(java.lang.String attrForSelected) {
+    public void setAttrForSelected(String attrForSelected) {
         getElement().setProperty("attrForSelected",
                 attrForSelected == null ? "" : attrForSelected);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Gets or sets the selected element. The default is to use the index of the
-     * item.
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'selected-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code selected} property from the webcomponent
-     */
-    @Synchronize(property = "selected", value = "selected-changed")
-    public double getSelectedNumber() {
-        return getElement().getProperty("selected", 0.0);
     }
 
     /**
@@ -130,13 +111,16 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * <p>
      * Gets or sets the selected element. The default is to use the index of the
      * item.
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'selected-changed' event happens.
      * </p>
      * 
-     * @param selected
-     *            the double value to set
+     * @return the {@code selected} property from the webcomponent
      */
-    public void setSelected(double selected) {
-        getElement().setProperty("selected", selected);
+    @Synchronize(property = "selected", value = "selected-changed")
+    public double getSelectedNumber() {
+        return getElement().getProperty("selected", 0.0);
     }
 
     /**
@@ -151,8 +135,24 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selected
      *            the String value to set
      */
-    public void setSelected(java.lang.String selected) {
+    public void setSelected(String selected) {
         getElement().setProperty("selected", selected == null ? "" : selected);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Gets or sets the selected element. The default is to use the index of the
+     * item.
+     * </p>
+     * 
+     * @param selected
+     *            the double value to set
+     */
+    public void setSelected(double selected) {
+        getElement().setProperty("selected", selected);
     }
 
     /**
@@ -204,7 +204,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param activateEvent
      *            the String value to set
      */
-    public void setActivateEvent(java.lang.String activateEvent) {
+    public void setActivateEvent(String activateEvent) {
         getElement().setProperty("activateEvent",
                 activateEvent == null ? "" : activateEvent);
     }
@@ -223,7 +223,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectable
      *            the String value to set
      */
-    public void setSelectable(java.lang.String selectable) {
+    public void setSelectable(String selectable) {
         getElement().setProperty("selectable",
                 selectable == null ? "" : selectable);
     }
@@ -256,7 +256,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectedClass
      *            the String value to set
      */
-    public void setSelectedClass(java.lang.String selectedClass) {
+    public void setSelectedClass(String selectedClass) {
         getElement().setProperty("selectedClass",
                 selectedClass == null ? "" : selectedClass);
     }
@@ -289,7 +289,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectedAttribute
      *            the String value to set
      */
-    public void setSelectedAttribute(java.lang.String selectedAttribute) {
+    public void setSelectedAttribute(String selectedAttribute) {
         getElement().setProperty("selectedAttribute",
                 selectedAttribute == null ? "" : selectedAttribute);
     }
@@ -324,7 +324,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param fallbackSelection
      *            the String value to set
      */
-    public void setFallbackSelection(java.lang.String fallbackSelection) {
+    public void setFallbackSelection(String fallbackSelection) {
         getElement().setProperty("fallbackSelection",
                 fallbackSelection == null ? "" : fallbackSelection);
     }
@@ -409,7 +409,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectedValues
      *            the JsonArray value to set
      */
-    protected void setSelectedValues(elemental.json.JsonArray selectedValues) {
+    protected void setSelectedValues(JsonArray selectedValues) {
         getElement().setPropertyJson("selectedValues", selectedValues);
     }
 
@@ -460,7 +460,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param keyEventTarget
      *            the JsonObject value to set
      */
-    protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+    protected void setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
     }
 
@@ -515,7 +515,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param keyBindings
      *            the JsonObject value to set
      */
-    protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
+    protected void setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
     }
 
@@ -568,7 +568,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param attrForItemTitle
      *            the String value to set
      */
-    public void setAttrForItemTitle(java.lang.String attrForItemTitle) {
+    public void setAttrForItemTitle(String attrForItemTitle) {
         getElement().setProperty("attrForItemTitle",
                 attrForItemTitle == null ? "" : attrForItemTitle);
     }
@@ -952,8 +952,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param parentResizable
      *            Missing documentation!
      */
-    protected void assignParentResizable(
-            elemental.json.JsonObject parentResizable) {
+    protected void assignParentResizable(JsonObject parentResizable) {
         getElement().callFunction("assignParentResizable", parentResizable);
     }
 
@@ -969,8 +968,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param target
      *            Missing documentation!
      */
-    protected void stopResizeNotificationsFor(
-            elemental.json.JsonObject target) {
+    protected void stopResizeNotificationsFor(JsonObject target) {
         getElement().callFunction("stopResizeNotificationsFor", target);
     }
 
@@ -993,7 +991,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      *            `IronResizableBehavior`.
      */
     @NotSupported
-    protected void resizerShouldNotify(elemental.json.JsonObject element) {
+    protected void resizerShouldNotify(JsonObject element) {
     }
 
     /**
@@ -1012,7 +1010,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      *            Missing documentation!
      */
     @NotSupported
-    protected void indexOf(elemental.json.JsonObject item) {
+    protected void indexOf(JsonObject item) {
     }
 
     /**
@@ -1028,7 +1026,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(double value) {
+    public void select(String value) {
         getElement().callFunction("select", value);
     }
 
@@ -1045,7 +1043,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(java.lang.String value) {
+    public void select(double value) {
         getElement().callFunction("select", value);
     }
 
@@ -1084,7 +1082,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param index
      *            Missing documentation!
      */
-    protected void selectIndex(elemental.json.JsonObject index) {
+    protected void selectIndex(JsonObject index) {
         getElement().callFunction("selectIndex", index);
     }
 
@@ -1115,7 +1113,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param multi
      *            Missing documentation!
      */
-    protected void multiChanged(elemental.json.JsonObject multi) {
+    protected void multiChanged(JsonObject multi) {
         getElement().callFunction("multiChanged", multi);
     }
 
@@ -1134,8 +1132,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -1169,8 +1166,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      *            Missing documentation!
      */
     @NotSupported
-    protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+    protected void keyboardEventMatchesKeys(JsonObject event,
+            String eventString) {
     }
 
     @DomEvent("iron-activate")

@@ -107,8 +107,8 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code item} property from the webcomponent
      */
-    protected JsonObject protectedGetItemObject() {
-        return (JsonObject) getElement().getPropertyRaw("item");
+    public String getItemString() {
+        return getElement().getProperty("item");
     }
 
     /**
@@ -124,23 +124,8 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code item} property from the webcomponent
      */
-    public String getItemString() {
-        return getElement().getProperty("item");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The item to render
-     * </p>
-     * 
-     * @param item
-     *            the JsonObject value to set
-     */
-    protected void setItem(elemental.json.JsonObject item) {
-        getElement().setPropertyJson("item", item);
+    protected JsonObject protectedGetItemObject() {
+        return (JsonObject) getElement().getPropertyRaw("item");
     }
 
     /**
@@ -154,8 +139,23 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param item
      *            the String value to set
      */
-    public void setItem(java.lang.String item) {
+    public void setItem(String item) {
         getElement().setProperty("item", item == null ? "" : item);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The item to render
+     * </p>
+     * 
+     * @param item
+     *            the JsonObject value to set
+     */
+    protected void setItem(JsonObject item) {
+        getElement().setPropertyJson("item", item);
     }
 
     /**
@@ -186,7 +186,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 

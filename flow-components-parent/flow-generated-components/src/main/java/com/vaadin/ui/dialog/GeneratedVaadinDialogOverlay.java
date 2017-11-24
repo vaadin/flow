@@ -85,7 +85,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param template
      *            the JsonObject value to set
      */
-    protected void setTemplate(elemental.json.JsonObject template) {
+    protected void setTemplate(JsonObject template) {
         getElement().setPropertyJson("template", template);
     }
 
@@ -104,7 +104,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param content
      *            the JsonObject value to set
      */
-    protected void setContent(elemental.json.JsonObject content) {
+    protected void setContent(JsonObject content) {
         getElement().setPropertyJson("content", content);
     }
 
@@ -198,7 +198,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param sourceEvent
      *            Missing documentation!
      */
-    protected void close(elemental.json.JsonObject sourceEvent) {
+    protected void close(JsonObject sourceEvent) {
         getElement().callFunction("close", sourceEvent);
     }
 

@@ -24,6 +24,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.MethodSource;
+import org.jboss.forge.roaster.model.source.ParameterSource;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
@@ -363,6 +366,31 @@ public final class ComponentGeneratorUtils {
             }
         }
         return builder.toString();
+    }
+
+    /**
+     * Adds a parameter with the specified {@code type} and {@code name} to the
+     * given {@code method}, considering simple name for {@code java.lang}
+     * package.
+     * 
+     * @param javaClass
+     *            the java class
+     * @param method
+     *            the method to add the parameter to
+     * @param type
+     *            the parameter type
+     * @param name
+     *            the parameter name
+     * @return the added parameter
+     */
+    public static ParameterSource<JavaClassSource> addMethodParameter(
+            JavaClassSource javaClass, MethodSource<JavaClassSource> method,
+            Class<?> type, String name) {
+        if (!type.isPrimitive()
+                && !"java.lang".equals(type.getPackage().getName())) {
+            javaClass.addImport(type);
+        }
+        return method.addParameter(type.getSimpleName(), name);
     }
 
 }
