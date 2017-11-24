@@ -199,7 +199,27 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param from
      *            Source path to link.
      */
-    public void linkPaths(java.lang.String to, java.lang.String from) {
+    protected void linkPaths(elemental.json.JsonObject to,
+            elemental.json.JsonObject from) {
+        getElement().callFunction("linkPaths", to, from);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Aliases one data path as another, such that path notifications from one
+     * are routed to the other.
+     * </p>
+     * 
+     * @param to
+     *            Target path to link.
+     * @param from
+     *            Source path to link.
+     */
+    protected void linkPaths(elemental.json.JsonObject to,
+            java.lang.String from) {
         getElement().callFunction("linkPaths", to, from);
     }
 
@@ -236,27 +256,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param from
      *            Source path to link.
      */
-    protected void linkPaths(elemental.json.JsonObject to,
-            elemental.json.JsonObject from) {
-        getElement().callFunction("linkPaths", to, from);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Aliases one data path as another, such that path notifications from one
-     * are routed to the other.
-     * </p>
-     * 
-     * @param to
-     *            Target path to link.
-     * @param from
-     *            Source path to link.
-     */
-    protected void linkPaths(elemental.json.JsonObject to,
-            java.lang.String from) {
+    public void linkPaths(java.lang.String to, java.lang.String from) {
         getElement().callFunction("linkPaths", to, from);
     }
 
@@ -369,7 +369,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Root object from which the path is evaluated.
      */
     @NotSupported
-    protected void get(java.lang.String path, elemental.json.JsonObject root) {
+    protected void get(elemental.json.JsonObject path,
+            elemental.json.JsonObject root) {
     }
 
     /**
@@ -401,8 +402,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Root object from which the path is evaluated.
      */
     @NotSupported
-    protected void get(elemental.json.JsonObject path,
-            elemental.json.JsonObject root) {
+    protected void get(java.lang.String path, elemental.json.JsonObject root) {
     }
 
     /**
@@ -496,7 +496,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void push(java.lang.String path,
+    protected void push(elemental.json.JsonObject path,
             elemental.json.JsonObject _Items) {
     }
 
@@ -525,7 +525,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void push(elemental.json.JsonObject path,
+    protected void push(java.lang.String path,
             elemental.json.JsonObject _Items) {
     }
 
@@ -613,7 +613,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void splice(java.lang.String path, double start,
+    protected void splice(elemental.json.JsonObject path, double start,
             double deleteCount, elemental.json.JsonObject _Items) {
     }
 
@@ -647,7 +647,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void splice(elemental.json.JsonObject path, double start,
+    protected void splice(java.lang.String path, double start,
             double deleteCount, elemental.json.JsonObject _Items) {
     }
 
@@ -730,7 +730,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void unshift(java.lang.String path,
+    protected void unshift(elemental.json.JsonObject path,
             elemental.json.JsonObject _Items) {
     }
 
@@ -759,7 +759,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param ...items Missing documentation!
      */
     @NotSupported
-    protected void unshift(elemental.json.JsonObject path,
+    protected void unshift(java.lang.String path,
             elemental.json.JsonObject _Items) {
     }
 
