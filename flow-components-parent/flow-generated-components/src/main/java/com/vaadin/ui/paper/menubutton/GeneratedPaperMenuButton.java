@@ -814,6 +814,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -835,6 +836,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -856,6 +858,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addPaperDropdownCloseListener(
             ComponentEventListener<PaperDropdownCloseEvent<R>> listener) {
         return addListener(PaperDropdownCloseEvent.class,
@@ -877,6 +880,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addPaperDropdownOpenListener(
             ComponentEventListener<PaperDropdownOpenEvent<R>> listener) {
         return addListener(PaperDropdownOpenEvent.class,
@@ -898,6 +902,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -919,6 +924,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addHorizontalOffsetChangeListener(
             ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
         return addListener(HorizontalOffsetChangeEvent.class,
@@ -940,6 +946,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVerticalOffsetChangeListener(
             ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
         return addListener(VerticalOffsetChangeEvent.class,

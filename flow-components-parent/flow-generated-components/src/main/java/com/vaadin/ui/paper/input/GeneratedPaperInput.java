@@ -1484,6 +1484,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -1505,6 +1506,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -1525,6 +1527,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addChangeListener(
             ComponentEventListener<ChangeEvent<R>> listener) {
         return addListener(ChangeEvent.class,
@@ -1546,6 +1549,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -1567,6 +1571,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -1588,6 +1593,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,

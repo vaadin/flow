@@ -949,6 +949,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addCustomValueSetListener(
             ComponentEventListener<CustomValueSetEvent<R>> listener) {
         return addListener(CustomValueSetEvent.class,
@@ -978,6 +979,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -1007,6 +1009,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFilterChangeListener(
             ComponentEventListener<FilterChangeEvent<R>> listener) {
         return addListener(FilterChangeEvent.class,
@@ -1036,6 +1039,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,

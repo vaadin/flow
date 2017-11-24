@@ -340,6 +340,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addMinChangeListener(
             ComponentEventListener<MinChangeEvent<R>> listener) {
         return addListener(MinChangeEvent.class,
@@ -360,6 +361,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addMaxChangeListener(
             ComponentEventListener<MaxChangeEvent<R>> listener) {
         return addListener(MaxChangeEvent.class,
@@ -381,6 +383,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addStepChangeListener(
             ComponentEventListener<StepChangeEvent<R>> listener) {
         return addListener(StepChangeEvent.class,
@@ -402,6 +405,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addRatioChangeListener(
             ComponentEventListener<RatioChangeEvent<R>> listener) {
         return addListener(RatioChangeEvent.class,

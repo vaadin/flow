@@ -743,6 +743,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,

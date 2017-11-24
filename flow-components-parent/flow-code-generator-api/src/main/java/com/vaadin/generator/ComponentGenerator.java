@@ -1150,7 +1150,7 @@ public class ComponentGenerator {
             ComponentFunctionData function, List<ComponentType> typeVariant,
             Map<ComponentObjectType, JavaClassSource> nestedClassesMap) {
         int paramIndex = 0;
-        StringBuilder sb = new StringBuilder("");
+        StringBuilder sb = new StringBuilder();
         for (ComponentType paramType : typeVariant) {
             String paramName = function.getParameters().get(paramIndex)
                     .getName();

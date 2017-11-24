@@ -648,6 +648,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -669,6 +670,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
@@ -698,6 +700,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,

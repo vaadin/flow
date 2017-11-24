@@ -230,6 +230,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinComboBoxDropdownClosedListener(
             ComponentEventListener<VaadinComboBoxDropdownClosedEvent<R>> listener) {
         return addListener(VaadinComboBoxDropdownClosedEvent.class,
@@ -251,6 +252,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinComboBoxDropdownOpenedListener(
             ComponentEventListener<VaadinComboBoxDropdownOpenedEvent<R>> listener) {
         return addListener(VaadinComboBoxDropdownOpenedEvent.class,
@@ -272,6 +274,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -293,6 +296,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addTemplateChangeListener(
             ComponentEventListener<TemplateChangeEvent<R>> listener) {
         return addListener(TemplateChangeEvent.class,

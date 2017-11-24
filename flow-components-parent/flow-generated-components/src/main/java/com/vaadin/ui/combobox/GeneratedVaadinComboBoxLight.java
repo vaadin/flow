@@ -831,6 +831,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addChangeListener(
             ComponentEventListener<ChangeEvent<R>> listener) {
         return addListener(ChangeEvent.class,
@@ -860,6 +861,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addCustomValueSetListener(
             ComponentEventListener<CustomValueSetEvent<R>> listener) {
         return addListener(CustomValueSetEvent.class,
@@ -896,6 +898,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
@@ -925,6 +928,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -954,6 +958,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFilterChangeListener(
             ComponentEventListener<FilterChangeEvent<R>> listener) {
         return addListener(FilterChangeEvent.class,
@@ -983,6 +988,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,

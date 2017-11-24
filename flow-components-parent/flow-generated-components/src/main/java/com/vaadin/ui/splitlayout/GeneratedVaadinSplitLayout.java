@@ -230,6 +230,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronResizeListener(
             ComponentEventListener<IronResizeEvent<R>> listener) {
         return addListener(IronResizeEvent.class,

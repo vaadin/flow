@@ -217,6 +217,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinOverlayCloseListener(
             ComponentEventListener<VaadinOverlayCloseEvent<R>> listener) {
         return addListener(VaadinOverlayCloseEvent.class,
@@ -238,6 +239,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinOverlayEscapePressListener(
             ComponentEventListener<VaadinOverlayEscapePressEvent<R>> listener) {
         return addListener(VaadinOverlayEscapePressEvent.class,
@@ -259,6 +261,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinOverlayOpenListener(
             ComponentEventListener<VaadinOverlayOpenEvent<R>> listener) {
         return addListener(VaadinOverlayOpenEvent.class,
@@ -280,6 +283,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinOverlayOutsideClickListener(
             ComponentEventListener<VaadinOverlayOutsideClickEvent<R>> listener) {
         return addListener(VaadinOverlayOutsideClickEvent.class,
@@ -301,6 +305,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -322,6 +327,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addTemplateChangeListener(
             ComponentEventListener<TemplateChangeEvent<R>> listener) {
         return addListener(TemplateChangeEvent.class,
@@ -343,6 +349,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addContentChangeListener(
             ComponentEventListener<ContentChangeEvent<R>> listener) {
         return addListener(ContentChangeEvent.class,

@@ -96,6 +96,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileAbortListener(
             ComponentEventListener<FileAbortEvent<R>> listener) {
         return addListener(FileAbortEvent.class,
@@ -131,6 +132,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileRemoveListener(
             ComponentEventListener<FileRemoveEvent<R>> listener) {
         return addListener(FileRemoveEvent.class,
@@ -166,6 +168,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileRetryListener(
             ComponentEventListener<FileRetryEvent<R>> listener) {
         return addListener(FileRetryEvent.class,
@@ -201,6 +204,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileStartListener(
             ComponentEventListener<FileStartEvent<R>> listener) {
         return addListener(FileStartEvent.class,

@@ -250,6 +250,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,

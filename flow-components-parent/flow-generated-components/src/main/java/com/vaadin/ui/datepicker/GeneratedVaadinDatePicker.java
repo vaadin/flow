@@ -986,6 +986,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -1015,6 +1016,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addValueAsStringChangeListener(
             ComponentEventListener<ValueAsStringChangeEvent<R>> listener) {
         return addListener(ValueAsStringChangeEvent.class,
@@ -1044,6 +1046,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
