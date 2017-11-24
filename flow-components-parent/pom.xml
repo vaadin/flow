@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
@@ -9,13 +10,13 @@
     </parent>
     <artifactId>flow-components-parent</artifactId>
     <name>Flow components parent project</name>
-    <description>Modules for Flow components based on code generation</description>
+    <description>Modules for Flow components based on code generation
+    </description>
     <packaging>pom</packaging>
 
     <modules>
         <module>flow-code-generator-api</module>
         <module>flow-code-generator</module>
-        <module>flow-components</module>
         <module>flow-component-demo-helpers</module>
         <module>flow-component</module>
     </modules>

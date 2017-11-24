@@ -45,14 +45,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!--  REMOVE WHEN GRID HAS ITS OWN REPO -->
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>flow-components</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<!--  REMOVE WHEN GRID HAS ITS OWN REPO -->
-
 		<dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-spring-addon</artifactId>
@@ -98,6 +90,11 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-form-layout-flow</artifactId>
+			<version>1.0.0.alpha1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-grid-flow</artifactId>
 			<version>1.0.0.alpha1</version>
 		</dependency>
 		<dependency>
