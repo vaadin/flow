@@ -16,8 +16,8 @@
 package com.vaadin.ui.combobox;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -39,7 +39,7 @@ import com.vaadin.ui.common.NotSupported;
 @Tag("vaadin-combo-box-dropdown-wrapper")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-dropdown-wrapper.html")
 public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinComboBoxDropdownWrapper<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * This property is not synchronized automatically from the client side, so
@@ -344,7 +344,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param path
      *            Target path to unlink.
      */
-    public void unlinkPaths(java.lang.String path) {
+    protected void unlinkPaths(elemental.json.JsonObject path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -363,7 +363,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param path
      *            Target path to unlink.
      */
-    protected void unlinkPaths(elemental.json.JsonObject path) {
+    public void unlinkPaths(java.lang.String path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -622,7 +622,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void pop(java.lang.String path) {
+    protected void pop(elemental.json.JsonObject path) {
     }
 
     /**
@@ -649,7 +649,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void pop(elemental.json.JsonObject path) {
+    protected void pop(java.lang.String path) {
     }
 
     /**
@@ -744,7 +744,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void shift(java.lang.String path) {
+    protected void shift(elemental.json.JsonObject path) {
     }
 
     /**
@@ -771,7 +771,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void shift(elemental.json.JsonObject path) {
+    protected void shift(java.lang.String path) {
     }
 
     /**

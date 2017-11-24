@@ -16,8 +16,8 @@
 package com.vaadin.ui.tabs;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -100,7 +100,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("vaadin-tabs")
 @HtmlImport("frontend://bower_components/vaadin-tabs/vaadin-tabs.html")
 public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
-        Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     public void focus() {
         getElement().callFunction("focus");

@@ -16,8 +16,8 @@
 package com.vaadin.ui.formlayout;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -141,7 +141,7 @@ import com.vaadin.ui.common.HasComponents;
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-layout.html")
 public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
         extends Component
-        implements ComponentSupplier<R>, HasStyle, HasComponents {
+        implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
     	 * <p>Description copied from corresponding location in WebComponent:</p>

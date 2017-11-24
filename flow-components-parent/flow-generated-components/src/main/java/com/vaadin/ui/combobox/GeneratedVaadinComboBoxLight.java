@@ -16,8 +16,8 @@
 package com.vaadin.ui.combobox;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -87,7 +87,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle,
+        extends Component implements HasStyle, ComponentSupplier<R>,
         HasValue<R, String>, HasComponents {
 
     /**
@@ -870,11 +870,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
     public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
             extends ComponentEvent<R> {
         private final JsonObject detail;
-        private final String detailValue;
+        private final JsonObject detailValue;
 
         public SelectedItemChangeEvent(R source, boolean fromClient,
                 @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.value") java.lang.String detailValue) {
+                @EventData("event.detail.value") elemental.json.JsonObject detailValue) {
             super(source, fromClient);
             this.detail = detail;
             this.detailValue = detailValue;
@@ -884,7 +884,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
             return detail;
         }
 
-        public String getDetailValue() {
+        public JsonObject getDetailValue() {
             return detailValue;
         }
     }

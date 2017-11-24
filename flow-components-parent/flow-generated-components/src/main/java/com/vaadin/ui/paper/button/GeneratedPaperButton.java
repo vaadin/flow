@@ -16,7 +16,6 @@
 package com.vaadin.ui.paper.button;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.common.Focusable;
@@ -38,8 +37,8 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
 public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle, HasText,
-        Focusable<R>, HasClickListeners<R>, HasComponents {
+        extends Component implements HasStyle, HasText, Focusable<R>,
+        HasClickListeners<R>, HasComponents {
 
     /**
      * <p>

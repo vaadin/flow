@@ -16,8 +16,8 @@
 package com.vaadin.ui.progressbar;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -97,7 +97,7 @@ import com.vaadin.ui.common.HtmlImport;
 @Tag("vaadin-progress-bar")
 @HtmlImport("frontend://bower_components/vaadin-progress-bar/vaadin-progress-bar.html")
 public class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgressBar<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>

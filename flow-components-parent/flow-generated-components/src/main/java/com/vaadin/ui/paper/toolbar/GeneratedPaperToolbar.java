@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.toolbar;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -27,7 +27,7 @@ import com.vaadin.ui.common.HtmlImport;
 @Tag("paper-toolbar")
 @HtmlImport("frontend://bower_components/paper-toolbar/paper-toolbar.html")
 public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>

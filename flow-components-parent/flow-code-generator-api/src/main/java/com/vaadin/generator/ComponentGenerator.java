@@ -471,9 +471,6 @@ public class ComponentGenerator {
     private void addInterfaces(ComponentMetadata metadata,
             JavaClassSource javaClass) {
 
-        javaClass.addInterface(
-                ComponentSupplier.class.getName() + GENERIC_TYPE_DECLARATION);
-
         // all components have styles
         javaClass.addInterface(HasStyle.class);
 
@@ -490,6 +487,7 @@ public class ComponentGenerator {
 
         Set<Class<?>> interfaces = BehaviorRegistry
                 .getClassesForBehaviors(classBehaviorsAndMixins);
+
         interfaces.forEach(clazz -> {
             if (clazz.getTypeParameters().length > 0) {
                 javaClass.addInterface(
@@ -498,6 +496,14 @@ public class ComponentGenerator {
                 javaClass.addInterface(clazz);
             }
         });
+
+        boolean componentSupplierAdded = interfaces.stream()
+                .filter(ComponentSupplier.class::isAssignableFrom).count() > 0;
+
+        if (!componentSupplierAdded) {
+            javaClass.addInterface(ComponentSupplier.class.getName()
+                    + GENERIC_TYPE_DECLARATION);
+        }
     }
 
     private void generateGettersAndSetters(ComponentMetadata metadata,
