@@ -870,11 +870,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
     public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
             extends ComponentEvent<R> {
         private final JsonObject detail;
-        private final JsonObject detailValue;
+        private final String detailValue;
 
         public SelectedItemChangeEvent(R source, boolean fromClient,
                 @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.value") elemental.json.JsonObject detailValue) {
+                @EventData("event.detail.value") java.lang.String detailValue) {
             super(source, fromClient);
             this.detail = detail;
             this.detailValue = detailValue;
@@ -884,7 +884,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
             return detail;
         }
 
-        public JsonObject getDetailValue() {
+        public String getDetailValue() {
             return detailValue;
         }
     }
