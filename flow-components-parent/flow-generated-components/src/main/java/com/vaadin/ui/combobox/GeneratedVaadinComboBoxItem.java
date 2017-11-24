@@ -107,8 +107,8 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code item} property from the webcomponent
      */
-    public String getItemString() {
-        return getElement().getProperty("item");
+    protected JsonObject protectedGetItemObject() {
+        return (JsonObject) getElement().getPropertyRaw("item");
     }
 
     /**
@@ -124,23 +124,8 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code item} property from the webcomponent
      */
-    protected JsonObject protectedGetItemObject() {
-        return (JsonObject) getElement().getPropertyRaw("item");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The item to render
-     * </p>
-     * 
-     * @param item
-     *            the String value to set
-     */
-    public void setItem(java.lang.String item) {
-        getElement().setProperty("item", item == null ? "" : item);
+    public String getItemString() {
+        return getElement().getProperty("item");
     }
 
     /**
@@ -156,6 +141,21 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      */
     protected void setItem(elemental.json.JsonObject item) {
         getElement().setPropertyJson("item", item);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The item to render
+     * </p>
+     * 
+     * @param item
+     *            the String value to set
+     */
+    public void setItem(java.lang.String item) {
+        getElement().setProperty("item", item == null ? "" : item);
     }
 
     /**

@@ -15,15 +15,17 @@
  */
 package com.vaadin.ui.combobox;
 
+import javax.annotation.Generated;
+
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import elemental.json.JsonObject;
-import elemental.json.JsonArray;
 import com.vaadin.ui.common.NotSupported;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -380,14 +382,14 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * <pre>
      * <code>this.items = [ {name: 'Jim'}, {name: 'Todd'}, {name: 'Bill'} ];
-     * 	...
-     * 	this.items.splice(1, 1, {name: 'Sam'});
-     * 	this.items.push({name: 'Bob'});
-     * 	this.notifySplices('items', [
-     * 	  { index: 1, removed: [{name: 'Todd'}], addedCount: 1, object: this.items, type: 'splice' },
-     * 	  { index: 3, removed: [], addedCount: 1, object: this.items, type: 'splice'}
-     * 	]);
-     * 	</code>
+     *  ...
+     *  this.items.splice(1, 1, {name: 'Sam'});
+     *  this.items.push({name: 'Bob'});
+     *  this.notifySplices('items', [
+     *    { index: 1, removed: [{name: 'Todd'}], addedCount: 1, object: this.items, type: 'splice' },
+     *    { index: 3, removed: [], addedCount: 1, object: this.items, type: 'splice'}
+     *  ]);
+     *  </code>
      * </pre>
      * 
      * @param path
@@ -845,8 +847,8 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * <pre>
      * <code>this.item.user.name = 'Bob';
-     * 	this.notifyPath('item.user.name');
-     * 	</code>
+     *  this.notifyPath('item.user.name');
+     *  </code>
      * </pre>
      * 
      * @param path

@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -35,6 +36,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToDoubleConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
@@ -709,5 +711,95 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         BindingBuilder<Person, String> forField = binder.forField(nameField);
         forField.withConverter(new StringToDoubleConverter("Failed"));
         forField.bind(Person::getFirstName, Person::setFirstName);
+    }
+
+    @Test
+    public void remove_field_binding() {
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
+
+        // Test that the binding does work
+        assertTrue("Field not initially empty", ageField.isEmpty());
+        binder.setBean(item);
+        assertEquals("Binding did not work",
+                String.valueOf(item.getAge()), ageField.getValue());
+        binder.setBean(null);
+        assertTrue("Field not cleared", ageField.isEmpty());
+
+        // Remove the binding
+        binder.removeBinding(ageField);
+
+        // Test that it does not work anymore
+        binder.setBean(item);
+        assertNotEquals("Binding was not removed",
+                String.valueOf(item.getAge()), ageField.getValue());
+    }
+
+    @Test
+    public void remove_propertyname_binding() {
+        // Use a bean aware binder
+        Binder<Person> binder = new Binder<>(Person.class);
+
+        binder.bind(nameField, "firstName");
+
+        // Test that the binding does work
+        assertTrue("Field not initially empty", nameField.isEmpty());
+        binder.setBean(item);
+        assertEquals("Binding did not work", item.getFirstName(),
+                nameField.getValue());
+        binder.setBean(null);
+        assertTrue("Field not cleared", nameField.isEmpty());
+
+        // Remove the binding
+        binder.removeBinding("firstName");
+
+        // Test that it does not work anymore
+        binder.setBean(item);
+        assertNotEquals("Binding was not removed", item.getFirstName(),
+                nameField.getValue());
+    }
+
+    @Test
+    public void remove_binding() {
+        Binding<Person, Integer> binding = binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
+
+        // Test that the binding does work
+        assertTrue("Field not initially empty", ageField.isEmpty());
+        binder.setBean(item);
+        assertEquals("Binding did not work",
+                String.valueOf(item.getAge()), ageField.getValue());
+        binder.setBean(null);
+        assertTrue("Field not cleared", ageField.isEmpty());
+
+        // Remove the binding
+        binder.removeBinding(binding);
+
+        // Test that it does not work anymore
+        binder.setBean(item);
+        assertNotEquals("Binding was not removed",
+                String.valueOf(item.getAge()), ageField.getValue());
+    }
+
+    @Test
+    public void removed_binding_not_updates_value() {
+        Binding<Person, Integer> binding = binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setBean(item);
+
+        String modifiedAge = String.valueOf(item.getAge() + 10);
+        String ageBeforeUnbind = String.valueOf(item.getAge());
+
+        binder.removeBinding(binding);
+
+        ageField.setValue(modifiedAge);
+
+        assertEquals("Binding still affects bean even after unbind",
+                ageBeforeUnbind, String.valueOf(item.getAge()));
+
     }
 }

@@ -15,15 +15,17 @@
  */
 package com.vaadin.ui.datepicker;
 
+import javax.annotation.Generated;
+
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import elemental.json.JsonObject;
-import elemental.json.JsonArray;
 import com.vaadin.ui.common.NotSupported;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: InfiniteScrollerElement#2.0.5", "Flow#1.0-SNAPSHOT" })

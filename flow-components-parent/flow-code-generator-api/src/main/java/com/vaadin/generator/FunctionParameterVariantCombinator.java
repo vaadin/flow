@@ -18,9 +18,10 @@ package com.vaadin.generator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.vaadin.generator.metadata.ComponentFunctionData;
@@ -68,7 +69,8 @@ public class FunctionParameterVariantCombinator {
                     .collect(Collectors.toSet());
         }
         List<ComponentFunctionParameterData> copy = new ArrayList<>(rest);
-        Set<List<ComponentType>> ret = new HashSet<>();
+        Set<List<ComponentType>> ret = new TreeSet<>(
+                Comparator.comparing(List::toString));
         for (List<ComponentType> subCombinations : generateCombinations(
                 copy.remove(0), copy)) {
             for (ComponentType typeVariants : getTypeVariants(paramData)) {
