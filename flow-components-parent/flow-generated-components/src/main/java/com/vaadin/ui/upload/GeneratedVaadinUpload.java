@@ -108,7 +108,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param target
      *            the String value to set
      */
-    public void setTarget(java.lang.String target) {
+    public void setTarget(String target) {
         getElement().setProperty("target", target == null ? "" : target);
     }
 
@@ -140,7 +140,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param method
      *            the String value to set
      */
-    public void setMethod(java.lang.String method) {
+    public void setMethod(String method) {
         getElement().setProperty("method", method == null ? "" : method);
     }
 
@@ -390,7 +390,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param accept
      *            the String value to set
      */
-    public void setAccept(java.lang.String accept) {
+    public void setAccept(String accept) {
         getElement().setProperty("accept", accept == null ? "" : accept);
     }
 
@@ -460,7 +460,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param formDataName
      *            the String value to set
      */
-    public void setFormDataName(java.lang.String formDataName) {
+    public void setFormDataName(String formDataName) {
         getElement().setProperty("formDataName",
                 formDataName == null ? "" : formDataName);
     }

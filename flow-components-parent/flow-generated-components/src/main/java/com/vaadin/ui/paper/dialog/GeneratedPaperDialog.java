@@ -207,7 +207,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(java.lang.String horizontalAlign) {
+    public void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -244,7 +244,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(java.lang.String verticalAlign) {
+    public void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -794,7 +794,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param scrollAction
      *            the String value to set
      */
-    public void setScrollAction(java.lang.String scrollAction) {
+    public void setScrollAction(String scrollAction) {
         getElement().setProperty("scrollAction",
                 scrollAction == null ? "" : scrollAction);
     }
@@ -896,7 +896,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param entryAnimation
      *            the String value to set
      */
-    public void setEntryAnimation(java.lang.String entryAnimation) {
+    public void setEntryAnimation(String entryAnimation) {
         getElement().setProperty("entryAnimation",
                 entryAnimation == null ? "" : entryAnimation);
     }
@@ -933,7 +933,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param exitAnimation
      *            the String value to set
      */
-    public void setExitAnimation(java.lang.String exitAnimation) {
+    public void setExitAnimation(String exitAnimation) {
         getElement().setProperty("exitAnimation",
                 exitAnimation == null ? "" : exitAnimation);
     }

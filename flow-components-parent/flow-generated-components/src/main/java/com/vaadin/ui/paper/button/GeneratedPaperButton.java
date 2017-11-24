@@ -281,7 +281,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * @param ariaActiveAttribute
      *            the String value to set
      */
-    public void setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+    public void setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
     }
@@ -437,8 +437,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -473,7 +472,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      */
     @NotSupported
     protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+            String eventString) {
     }
 
     /**
@@ -613,7 +612,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      *            text content to set
      * @see HasText#setText(String)
      */
-    public GeneratedPaperButton(java.lang.String text) {
+    public GeneratedPaperButton(String text) {
         setText(text);
     }
 

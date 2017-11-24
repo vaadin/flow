@@ -154,7 +154,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param item
      *            the String value to set
      */
-    public void setItem(java.lang.String item) {
+    public void setItem(String item) {
         getElement().setProperty("item", item == null ? "" : item);
     }
 
@@ -186,7 +186,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 

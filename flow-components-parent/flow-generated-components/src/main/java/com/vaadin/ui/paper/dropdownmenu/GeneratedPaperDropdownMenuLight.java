@@ -277,7 +277,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param ariaActiveAttribute
      *            the String value to set
      */
-    public void setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+    public void setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
     }
@@ -395,7 +395,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -489,7 +489,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param validator
      *            the String value to set
      */
-    public void setValidator(java.lang.String validator) {
+    public void setValidator(String validator) {
         getElement().setProperty("validator",
                 validator == null ? "" : validator);
     }
@@ -594,7 +594,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -626,7 +626,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(java.lang.String placeholder) {
+    public void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -830,7 +830,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(java.lang.String horizontalAlign) {
+    public void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -865,7 +865,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(java.lang.String verticalAlign) {
+    public void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -927,8 +927,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -963,7 +962,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      */
     @NotSupported
     protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+            String eventString) {
     }
 
     /**

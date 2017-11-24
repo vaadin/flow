@@ -93,7 +93,7 @@ public class GeneratedPaperSpinner<R extends GeneratedPaperSpinner<R>>
      * @param alt
      *            the String value to set
      */
-    public void setAlt(java.lang.String alt) {
+    public void setAlt(String alt) {
         getElement().setProperty("alt", alt == null ? "" : alt);
     }
 }

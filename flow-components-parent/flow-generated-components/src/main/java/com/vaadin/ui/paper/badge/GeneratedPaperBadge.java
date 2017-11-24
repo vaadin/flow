@@ -61,7 +61,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param _for
      *            the String value to set
      */
-    public void setFor(java.lang.String _for) {
+    public void setFor(String _for) {
         getElement().setProperty("for", _for == null ? "" : _for);
     }
 
@@ -95,7 +95,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -133,7 +133,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param icon
      *            the String value to set
      */
-    public void setIcon(java.lang.String icon) {
+    public void setIcon(String icon) {
         getElement().setProperty("icon", icon == null ? "" : icon);
     }
 

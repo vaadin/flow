@@ -100,7 +100,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param entryAnimation
      *            the String value to set
      */
-    public void setEntryAnimation(java.lang.String entryAnimation) {
+    public void setEntryAnimation(String entryAnimation) {
         getElement().setProperty("entryAnimation",
                 entryAnimation == null ? "" : entryAnimation);
     }
@@ -137,7 +137,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param exitAnimation
      *            the String value to set
      */
-    public void setExitAnimation(java.lang.String exitAnimation) {
+    public void setExitAnimation(String exitAnimation) {
         getElement().setProperty("exitAnimation",
                 exitAnimation == null ? "" : exitAnimation);
     }
@@ -172,7 +172,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param _for
      *            the String value to set
      */
-    public void setFor(java.lang.String _for) {
+    public void setFor(String _for) {
         getElement().setProperty("for", _for == null ? "" : _for);
     }
 
@@ -238,7 +238,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param position
      *            the String value to set
      */
-    public void setPosition(java.lang.String position) {
+    public void setPosition(String position) {
         getElement().setProperty("position", position == null ? "" : position);
     }
 

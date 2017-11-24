@@ -441,7 +441,7 @@ public class ComponentGenerator {
             generateDefaultConstructor = true;
             MethodSource<JavaClassSource> constructor = javaClass.addMethod()
                     .setConstructor(true).setPublic().setBody("setText(text);");
-            constructor.addParameter(String.class, "text");
+            constructor.addParameter(String.class.getSimpleName(), "text");
             constructor.getJavaDoc().setText(
                     "Sets the given string as the content of this component.")
                     .addTagValue(JAVADOC_PARAM, "the text content to set")
@@ -983,7 +983,7 @@ public class ComponentGenerator {
 
                 String parameterName = ComponentGeneratorUtils
                         .formatStringToValidJavaIdentifier(propertyJavaName);
-                method.addParameter(setterType, parameterName);
+                addMethodParameter(method, setterType, parameterName);
 
                 method.setBody(
                         ComponentGeneratorUtils.generateElementApiSetterForType(
@@ -1017,6 +1017,29 @@ public class ComponentGenerator {
     }
 
     /**
+     * Adds a parameter with the specified {@code type} and {@code name} to the
+     * given {@code method}, considering simple name for {@code java.lang}
+     * package.
+     * 
+     * @param method
+     *            the method to add the parameter to
+     * @param type
+     *            the parameter type
+     * @param name
+     *            the parameter name
+     * @return the added parameter
+     */
+    static ParameterSource<JavaClassSource> addMethodParameter(
+            MethodSource<JavaClassSource> method,
+            Class<?> type, String name) {
+        if (!type.isPrimitive()
+                && "java.lang".equals(type.getPackage().getName())) {
+            return method.addParameter(type.getSimpleName(), name);
+        }
+        return method.addParameter(type, name);
+    }
+
+    /**
      * HasValue interface use a generic type for the value, and generics can't
      * be used with primitive types. This method converts any boolean or double
      * parameters to {@link Boolean} and {@link Double} respectively.
@@ -1030,13 +1053,13 @@ public class ComponentGenerator {
             String parameterName) {
         method.removeParameter(setterType, parameterName);
         setterType = ClassUtils.primitiveToWrapper(setterType);
-        method.addParameter(setterType, parameterName);
+        addMethodParameter(method, setterType, parameterName);
         preventNullArgument(javaClass, parameterName, method);
 
         if (setterType.equals(Double.class)) {
             MethodSource<JavaClassSource> overloadMethod = javaClass.addMethod()
                     .setName(method.getName()).setPublic();
-            overloadMethod.addParameter(Number.class, parameterName);
+            addMethodParameter(overloadMethod, Number.class, parameterName);
             overloadMethod.setBody(String.format("setValue(%s.doubleValue());",
                     parameterName));
 
@@ -1161,8 +1184,8 @@ public class ComponentGenerator {
 
             if (paramType.isBasicType()) {
                 ComponentBasicType bt = (ComponentBasicType) paramType;
-                method.addParameter(ComponentGeneratorUtils.toJavaType(bt),
-                        formattedName);
+                addMethodParameter(method,
+                        ComponentGeneratorUtils.toJavaType(bt), formattedName);
                 sb.append(", ").append(formattedName);
             } else {
                 ComponentObjectType ot = (ComponentObjectType) paramType;
@@ -1304,8 +1327,8 @@ public class ComponentGenerator {
                         .setAccessible(true).setMutable(false);
             }
 
-            ParameterSource<JavaClassSource> parameter = eventConstructor
-                    .addParameter(propertyJavaType, normalizedProperty);
+            ParameterSource<JavaClassSource> parameter = addMethodParameter(
+                    eventConstructor, propertyJavaType, normalizedProperty);
             parameter.addAnnotation(EventData.class)
                     .setStringValue(String.format("event.%s", propertyName));
 

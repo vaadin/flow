@@ -129,7 +129,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @param attrForValue
      *            the String value to set
      */
-    public void setAttrForValue(java.lang.String attrForValue) {
+    public void setAttrForValue(String attrForValue) {
         getElement().setProperty("attrForValue",
                 attrForValue == null ? "" : attrForValue);
     }

@@ -228,7 +228,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param autocomplete
      *            the String value to set
      */
-    public void setAutocomplete(java.lang.String autocomplete) {
+    public void setAutocomplete(String autocomplete) {
         getElement().setProperty("autocomplete",
                 autocomplete == null ? "" : autocomplete);
     }
@@ -261,7 +261,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param errorMessage
      *            the String value to set
      */
-    public void setErrorMessage(java.lang.String errorMessage) {
+    public void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
     }
@@ -294,7 +294,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -394,7 +394,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -426,7 +426,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(java.lang.String placeholder) {
+    public void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -530,7 +530,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      *            the String value to set
      */
     @Override
-    public void setValue(java.lang.String value) {
+    public void setValue(String value) {
         if (!Objects.equals(value, getValue())) {
             getElement().setProperty("value", value == null ? "" : value);
         }

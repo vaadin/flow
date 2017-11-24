@@ -67,7 +67,7 @@ public class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCou
             return internalObject.getString("value");
         }
 
-        public void setValue(java.lang.String value) {
+        public void setValue(String value) {
             this.internalObject.put("value", value);
         }
 

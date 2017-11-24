@@ -342,7 +342,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      *            the String value to set
      */
     @Override
-    public void setValue(java.lang.String value) {
+    public void setValue(String value) {
         if (!Objects.equals(value, getValue())) {
             getElement().setProperty("value", value == null ? "" : value);
         }
@@ -429,7 +429,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param filter
      *            the String value to set
      */
-    public void setFilter(java.lang.String filter) {
+    public void setFilter(String filter) {
         getElement().setProperty("filter", filter == null ? "" : filter);
     }
 
@@ -515,7 +515,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param itemLabelPath
      *            the String value to set
      */
-    public void setItemLabelPath(java.lang.String itemLabelPath) {
+    public void setItemLabelPath(String itemLabelPath) {
         getElement().setProperty("itemLabelPath",
                 itemLabelPath == null ? "" : itemLabelPath);
     }
@@ -560,7 +560,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param itemValuePath
      *            the String value to set
      */
-    public void setItemValuePath(java.lang.String itemValuePath) {
+    public void setItemValuePath(String itemValuePath) {
         getElement().setProperty("itemValuePath",
                 itemValuePath == null ? "" : itemValuePath);
     }
@@ -625,7 +625,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -692,7 +692,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * @param attrForValue
      *            the String value to set
      */
-    public void setAttrForValue(java.lang.String attrForValue) {
+    public void setAttrForValue(String attrForValue) {
         getElement().setProperty("attrForValue",
                 attrForValue == null ? "" : attrForValue);
     }
@@ -843,7 +843,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
         private final String detail;
 
         public CustomValueSetEvent(R source, boolean fromClient,
-                @EventData("event.detail") java.lang.String detail) {
+                @EventData("event.detail") String detail) {
             super(source, fromClient);
             this.detail = detail;
         }
@@ -937,7 +937,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
         private final String filter;
 
         public FilterChangeEvent(R source, boolean fromClient,
-                @EventData("event.filter") java.lang.String filter) {
+                @EventData("event.filter") String filter) {
             super(source, fromClient);
             this.filter = filter;
         }

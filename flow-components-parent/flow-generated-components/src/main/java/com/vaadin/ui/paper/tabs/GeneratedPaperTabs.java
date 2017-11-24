@@ -80,7 +80,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param attrForSelected
      *            the String value to set
      */
-    public void setAttrForSelected(java.lang.String attrForSelected) {
+    public void setAttrForSelected(String attrForSelected) {
         getElement().setProperty("attrForSelected",
                 attrForSelected == null ? "" : attrForSelected);
     }
@@ -151,7 +151,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selected
      *            the String value to set
      */
-    public void setSelected(java.lang.String selected) {
+    public void setSelected(String selected) {
         getElement().setProperty("selected", selected == null ? "" : selected);
     }
 
@@ -204,7 +204,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param activateEvent
      *            the String value to set
      */
-    public void setActivateEvent(java.lang.String activateEvent) {
+    public void setActivateEvent(String activateEvent) {
         getElement().setProperty("activateEvent",
                 activateEvent == null ? "" : activateEvent);
     }
@@ -223,7 +223,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectable
      *            the String value to set
      */
-    public void setSelectable(java.lang.String selectable) {
+    public void setSelectable(String selectable) {
         getElement().setProperty("selectable",
                 selectable == null ? "" : selectable);
     }
@@ -256,7 +256,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectedClass
      *            the String value to set
      */
-    public void setSelectedClass(java.lang.String selectedClass) {
+    public void setSelectedClass(String selectedClass) {
         getElement().setProperty("selectedClass",
                 selectedClass == null ? "" : selectedClass);
     }
@@ -289,7 +289,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectedAttribute
      *            the String value to set
      */
-    public void setSelectedAttribute(java.lang.String selectedAttribute) {
+    public void setSelectedAttribute(String selectedAttribute) {
         getElement().setProperty("selectedAttribute",
                 selectedAttribute == null ? "" : selectedAttribute);
     }
@@ -324,7 +324,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param fallbackSelection
      *            the String value to set
      */
-    public void setFallbackSelection(java.lang.String fallbackSelection) {
+    public void setFallbackSelection(String fallbackSelection) {
         getElement().setProperty("fallbackSelection",
                 fallbackSelection == null ? "" : fallbackSelection);
     }
@@ -568,7 +568,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param attrForItemTitle
      *            the String value to set
      */
-    public void setAttrForItemTitle(java.lang.String attrForItemTitle) {
+    public void setAttrForItemTitle(String attrForItemTitle) {
         getElement().setProperty("attrForItemTitle",
                 attrForItemTitle == null ? "" : attrForItemTitle);
     }
@@ -1045,7 +1045,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(java.lang.String value) {
+    public void select(String value) {
         getElement().callFunction("select", value);
     }
 
@@ -1134,8 +1134,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -1170,7 +1169,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      */
     @NotSupported
     protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+            String eventString) {
     }
 
     @DomEvent("iron-activate")

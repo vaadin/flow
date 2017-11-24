@@ -262,7 +262,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 

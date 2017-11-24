@@ -221,7 +221,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -256,7 +256,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      *            the String value to set
      */
     @Override
-    public void setValue(java.lang.String value) {
+    public void setValue(String value) {
         if (!Objects.equals(value, getValue())) {
             getElement().setProperty("value", value == null ? "" : value);
         }
@@ -343,7 +343,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param allowedPattern
      *            the String value to set
      */
-    public void setAllowedPattern(java.lang.String allowedPattern) {
+    public void setAllowedPattern(String allowedPattern) {
         getElement().setProperty("allowedPattern",
                 allowedPattern == null ? "" : allowedPattern);
     }
@@ -386,7 +386,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param type
      *            the String value to set
      */
-    public void setType(java.lang.String type) {
+    public void setType(String type) {
         getElement().setProperty("type", type == null ? "" : type);
     }
 
@@ -424,7 +424,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param list
      *            the String value to set
      */
-    public void setList(java.lang.String list) {
+    public void setList(String list) {
         getElement().setProperty("list", list == null ? "" : list);
     }
 
@@ -460,7 +460,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param pattern
      *            the String value to set
      */
-    public void setPattern(java.lang.String pattern) {
+    public void setPattern(String pattern) {
         getElement().setProperty("pattern", pattern == null ? "" : pattern);
     }
 
@@ -538,7 +538,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param errorMessage
      *            the String value to set
      */
-    public void setErrorMessage(java.lang.String errorMessage) {
+    public void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
     }
@@ -719,7 +719,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param validator
      *            the String value to set
      */
-    public void setValidator(java.lang.String validator) {
+    public void setValidator(String validator) {
         getElement().setProperty("validator",
                 validator == null ? "" : validator);
     }
@@ -756,7 +756,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param autocomplete
      *            the String value to set
      */
-    public void setAutocomplete(java.lang.String autocomplete) {
+    public void setAutocomplete(String autocomplete) {
         getElement().setProperty("autocomplete",
                 autocomplete == null ? "" : autocomplete);
     }
@@ -829,7 +829,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param inputmode
      *            the String value to set
      */
-    public void setInputmode(java.lang.String inputmode) {
+    public void setInputmode(String inputmode) {
         getElement().setProperty("inputmode",
                 inputmode == null ? "" : inputmode);
     }
@@ -938,7 +938,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param min
      *            the String value to set
      */
-    public void setMin(java.lang.String min) {
+    public void setMin(String min) {
         getElement().setProperty("min", min == null ? "" : min);
     }
 
@@ -976,7 +976,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param max
      *            the String value to set
      */
-    public void setMax(java.lang.String max) {
+    public void setMax(String max) {
         getElement().setProperty("max", max == null ? "" : max);
     }
 
@@ -1012,7 +1012,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param step
      *            the String value to set
      */
-    public void setStep(java.lang.String step) {
+    public void setStep(String step) {
         getElement().setProperty("step", step == null ? "" : step);
     }
 
@@ -1044,7 +1044,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -1078,7 +1078,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(java.lang.String placeholder) {
+    public void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -1187,7 +1187,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param autocapitalize
      *            the String value to set
      */
-    public void setAutocapitalize(java.lang.String autocapitalize) {
+    public void setAutocapitalize(String autocapitalize) {
         getElement().setProperty("autocapitalize",
                 autocapitalize == null ? "" : autocapitalize);
     }
@@ -1224,7 +1224,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param autocorrect
      *            the String value to set
      */
-    public void setAutocorrect(java.lang.String autocorrect) {
+    public void setAutocorrect(String autocorrect) {
         getElement().setProperty("autocorrect",
                 autocorrect == null ? "" : autocorrect);
     }
@@ -1261,7 +1261,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param autosave
      *            the String value to set
      */
-    public void setAutosave(java.lang.String autosave) {
+    public void setAutosave(String autosave) {
         getElement().setProperty("autosave", autosave == null ? "" : autosave);
     }
 
@@ -1333,7 +1333,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param accept
      *            the String value to set
      */
-    public void setAccept(java.lang.String accept) {
+    public void setAccept(String accept) {
         getElement().setProperty("accept", accept == null ? "" : accept);
     }
 
@@ -1454,8 +1454,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -1490,7 +1489,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      */
     @NotSupported
     protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+            String eventString) {
     }
 
     /**
@@ -1532,7 +1531,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param newValue
      *            The value that should be saved.
      */
-    public void updateValueAndPreserveCaret(java.lang.String newValue) {
+    public void updateValueAndPreserveCaret(String newValue) {
         getElement().callFunction("updateValueAndPreserveCaret", newValue);
     }
 

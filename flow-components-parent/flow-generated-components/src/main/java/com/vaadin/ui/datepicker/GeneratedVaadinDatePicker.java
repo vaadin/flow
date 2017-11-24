@@ -242,7 +242,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param valueAsString
      *            the String value to set
      */
-    public void setValueAsString(java.lang.String valueAsString) {
+    public void setValueAsString(String valueAsString) {
         getElement().setProperty("value",
                 valueAsString == null ? "" : valueAsString);
     }
@@ -307,7 +307,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -362,7 +362,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param initialPosition
      *            the String value to set
      */
-    public void setInitialPosition(java.lang.String initialPosition) {
+    public void setInitialPosition(String initialPosition) {
         getElement().setProperty("initialPosition",
                 initialPosition == null ? "" : initialPosition);
     }
@@ -395,7 +395,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -691,7 +691,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param minAsString
      *            the String value to set
      */
-    public void setMinAsString(java.lang.String minAsString) {
+    public void setMinAsString(String minAsString) {
         getElement().setProperty("min", minAsString == null ? "" : minAsString);
     }
 
@@ -739,7 +739,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param maxAsString
      *            the String value to set
      */
-    public void setMaxAsString(java.lang.String maxAsString) {
+    public void setMaxAsString(String maxAsString) {
         getElement().setProperty("max", maxAsString == null ? "" : maxAsString);
     }
 
@@ -803,7 +803,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param errorMessage
      *            the String value to set
      */
-    public void setErrorMessage(java.lang.String errorMessage) {
+    public void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
     }
@@ -838,7 +838,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(java.lang.String placeholder) {
+    public void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -998,7 +998,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
         private final String value;
 
         public ValueAsStringChangeEvent(R source, boolean fromClient,
-                @EventData("event.value") java.lang.String value) {
+                @EventData("event.value") String value) {
             super(source, fromClient);
             this.value = value;
         }

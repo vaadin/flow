@@ -255,7 +255,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(java.lang.String horizontalAlign) {
+    public void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -290,7 +290,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(java.lang.String verticalAlign) {
+    public void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -726,8 +726,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -762,7 +761,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      */
     @NotSupported
     protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+            String eventString) {
     }
 
     /**

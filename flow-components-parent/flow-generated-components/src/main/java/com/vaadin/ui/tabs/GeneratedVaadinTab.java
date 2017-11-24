@@ -186,7 +186,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * @param value
      *            the String value to set
      */
-    public void setValue(java.lang.String value) {
+    public void setValue(String value) {
         getElement().setProperty("value", value == null ? "" : value);
     }
 }

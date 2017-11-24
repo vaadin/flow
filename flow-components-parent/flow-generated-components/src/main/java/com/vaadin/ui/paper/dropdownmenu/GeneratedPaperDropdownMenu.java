@@ -277,7 +277,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param ariaActiveAttribute
      *            the String value to set
      */
-    public void setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+    public void setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
     }
@@ -361,7 +361,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -455,7 +455,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param validator
      *            the String value to set
      */
-    public void setValidator(java.lang.String validator) {
+    public void setValidator(String validator) {
         getElement().setProperty("validator",
                 validator == null ? "" : validator);
     }
@@ -560,7 +560,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -592,7 +592,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(java.lang.String placeholder) {
+    public void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -625,7 +625,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param errorMessage
      *            the String value to set
      */
-    public void setErrorMessage(java.lang.String errorMessage) {
+    public void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
     }
@@ -829,7 +829,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(java.lang.String horizontalAlign) {
+    public void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -864,7 +864,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(java.lang.String verticalAlign) {
+    public void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -986,8 +986,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -1022,7 +1021,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      */
     @NotSupported
     protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+            String eventString) {
     }
 
     /**

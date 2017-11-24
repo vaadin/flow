@@ -120,7 +120,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      *            the String value to set
      */
     @Override
-    public void setValue(java.lang.String value) {
+    public void setValue(String value) {
         if (!Objects.equals(value, getValue())) {
             getElement().setProperty("value", value == null ? "" : value);
         }
@@ -186,7 +186,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -241,7 +241,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param initialPosition
      *            the String value to set
      */
-    public void setInitialPosition(java.lang.String initialPosition) {
+    public void setInitialPosition(String initialPosition) {
         getElement().setProperty("initialPosition",
                 initialPosition == null ? "" : initialPosition);
     }
@@ -274,7 +274,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -570,7 +570,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param min
      *            the String value to set
      */
-    public void setMin(java.lang.String min) {
+    public void setMin(String min) {
         getElement().setProperty("min", min == null ? "" : min);
     }
 
@@ -618,7 +618,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param max
      *            the String value to set
      */
-    public void setMax(java.lang.String max) {
+    public void setMax(String max) {
         getElement().setProperty("max", max == null ? "" : max);
     }
 
@@ -652,7 +652,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param attrForValue
      *            the String value to set
      */
-    public void setAttrForValue(java.lang.String attrForValue) {
+    public void setAttrForValue(String attrForValue) {
         getElement().setProperty("attrForValue",
                 attrForValue == null ? "" : attrForValue);
     }

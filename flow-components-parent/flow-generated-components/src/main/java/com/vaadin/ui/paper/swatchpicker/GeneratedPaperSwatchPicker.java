@@ -64,7 +64,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param color
      *            the String value to set
      */
-    public void setColor(java.lang.String color) {
+    public void setColor(String color) {
         getElement().setProperty("color", color == null ? "" : color);
     }
 
@@ -176,7 +176,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(java.lang.String horizontalAlign) {
+    public void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -211,7 +211,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(java.lang.String verticalAlign) {
+    public void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
