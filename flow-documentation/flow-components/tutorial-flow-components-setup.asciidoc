@@ -64,34 +64,25 @@ extra maven configuration (extra repository + bom file declaration) is required.
 The first step is to add the `bom` and the wanted `flow-component` (e.g. `vaadin-button-flow`)
 package to your project dependencies.
 
-The components are released at their own pace as needed so the compliant Flow version should be
-confirmed from ...?
-
-When using Maven you can add a component into your `pom.xml` as this:
+When using Maven you can add a the button component into your `pom.xml` as this:
 
 [source,xml]
 ----
-<properties>
-    <component.id>vaadin-button-flow</component.id>
-    <component.version>1.0.0.alpha2</component.version>
-</properties>
 <repositories>
     <repository>
-        <!-- Limitation: Not all webjars are synced into Maven Central now -->
-        <id>webjars</id>
-        <url>https://dl.bintray.com/webjars/maven</url>
+        <id>flow-component-base</id>
+        <url>https://maven.vaadin.com/vaadin-prereleases</url>
     </repository>
 </repositories>
 
 <dependencyManagement>
     <dependencies>
         <dependency>
-            <!-- Limitation: A bom file to fix webjars' transitive dependencies -->
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-webjars-bom</artifactId>
+            <artifactId>vaadin-bom</artifactId>
+            <version>10.0.0.alpha8</version>
             <type>pom</type>
             <scope>import</scope>
-            <version>${flow.version}</version>
         </dependency>
     </dependencies>
 </dependencyManagement>
@@ -99,11 +90,10 @@ When using Maven you can add a component into your `pom.xml` as this:
 <dependencies>
     <!-- other dependencies -->
 
-    <!-- the dependency with webjars -->
+    <!-- component dependency -->
     <dependency>
         <groupId>com.vaadin</groupId>
-        <artifactId>${component.id}</artifactId>
-        <version>${component.version}</version>
+        <artifactId>vaadin-button-flow</artifactId>
     </dependency>
 
     <!-- other dependencies -->
@@ -122,8 +112,7 @@ If webjar dependencies are not needed, they can be excluded from the project usi
     <!-- the dependency with webjars excluded -->
     <dependency>
         <groupId>com.vaadin</groupId>
-        <artifactId>${component.id}</artifactId>
-        <version>${component.version}</version>
+        <artifactId>vaadin-button-flow</artifactId>
         <exclusions>
             <exclusion>
                 <groupId>org.webjars.bower</groupId>
