@@ -16,8 +16,8 @@
 package com.vaadin.ui.combobox;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -60,7 +60,7 @@ import elemental.json.JsonObject;
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-item.html")
 public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -107,8 +107,8 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code item} property from the webcomponent
      */
-    public String getItemString() {
-        return getElement().getProperty("item");
+    protected JsonObject protectedGetItemObject() {
+        return (JsonObject) getElement().getPropertyRaw("item");
     }
 
     /**
@@ -124,23 +124,8 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code item} property from the webcomponent
      */
-    protected JsonObject protectedGetItemObject() {
-        return (JsonObject) getElement().getPropertyRaw("item");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The item to render
-     * </p>
-     * 
-     * @param item
-     *            the String value to set
-     */
-    public void setItem(java.lang.String item) {
-        getElement().setProperty("item", item == null ? "" : item);
+    public String getItemString() {
+        return getElement().getProperty("item");
     }
 
     /**
@@ -156,6 +141,21 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      */
     protected void setItem(elemental.json.JsonObject item) {
         getElement().setPropertyJson("item", item);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The item to render
+     * </p>
+     * 
+     * @param item
+     *            the String value to set
+     */
+    public void setItem(java.lang.String item) {
+        getElement().setProperty("item", item == null ? "" : item);
     }
 
     /**

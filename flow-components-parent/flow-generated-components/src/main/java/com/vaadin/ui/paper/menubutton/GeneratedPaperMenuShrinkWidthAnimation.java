@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.menubutton;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -29,7 +29,7 @@ import elemental.json.JsonObject;
 @Tag("paper-menu-shrink-width-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenuShrinkWidthAnimation<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>

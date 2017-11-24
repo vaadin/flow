@@ -16,7 +16,6 @@
 package com.vaadin.ui.radiobutton;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.Focusable;
 import javax.annotation.Generated;
@@ -115,8 +114,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("vaadin-radio-button")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/vaadin-radio-button.html")
 public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
-        extends Component
-        implements ComponentSupplier<R>, HasStyle, Focusable<R>, HasComponents {
+        extends Component implements HasStyle, Focusable<R>, HasComponents {
 
     /**
      * <p>

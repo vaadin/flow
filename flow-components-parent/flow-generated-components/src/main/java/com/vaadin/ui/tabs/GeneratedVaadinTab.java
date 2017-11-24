@@ -16,8 +16,8 @@
 package com.vaadin.ui.tabs;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -92,7 +92,7 @@ Tab 1
 @Tag("vaadin-tab")
 @HtmlImport("frontend://bower_components/vaadin-tabs/vaadin-tab.html")
 public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>

@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.spinner;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -27,7 +27,7 @@ import com.vaadin.ui.common.HtmlImport;
 @Tag("paper-spinner")
 @HtmlImport("frontend://bower_components/paper-spinner/paper-spinner.html")
 public class GeneratedPaperSpinner<R extends GeneratedPaperSpinner<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>

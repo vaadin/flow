@@ -16,7 +16,6 @@
 package com.vaadin.ui.textfield;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.Focusable;
 import javax.annotation.Generated;
@@ -128,8 +127,8 @@ import com.vaadin.ui.event.EventData;
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
 public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle,
-        Focusable<R>, HasValue<R, String> {
+        extends Component
+        implements HasStyle, Focusable<R>, HasValue<R, String> {
 
     /**
      * <p>

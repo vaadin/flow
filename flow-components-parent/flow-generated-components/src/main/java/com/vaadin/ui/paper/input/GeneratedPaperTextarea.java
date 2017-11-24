@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.input;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -37,7 +37,7 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
         extends Component
-        implements ComponentSupplier<R>, HasStyle, HasValue<R, String> {
+        implements HasStyle, ComponentSupplier<R>, HasValue<R, String> {
 
     /**
      * <p>

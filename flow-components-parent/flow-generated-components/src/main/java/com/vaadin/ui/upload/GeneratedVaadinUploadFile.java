@@ -16,8 +16,8 @@
 package com.vaadin.ui.upload;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -33,7 +33,7 @@ import com.vaadin.shared.Registration;
 @Tag("vaadin-upload-file")
 @HtmlImport("frontend://bower_components/vaadin-upload/vaadin-upload-file.html")
 public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>

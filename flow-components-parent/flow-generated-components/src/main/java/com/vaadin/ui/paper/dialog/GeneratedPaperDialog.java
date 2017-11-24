@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.dialog;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -35,7 +35,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("paper-dialog")
 @HtmlImport("frontend://bower_components/paper-dialog/paper-dialog.html")
 public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
-        Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
      * <p>
