@@ -151,7 +151,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * <p>
      * Key-Value map to send to the server. If you set this property as an
      * attribute, use a valid JSON string, for example: {@code <vaadin-upload
-     * headers=' "X-Foo": "Bar"}'></vaadin-upload> }
+     * headers=' "X-Foo": "Bar"}'></vaadin-upload>}
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
@@ -170,7 +170,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * <p>
      * Key-Value map to send to the server. If you set this property as an
      * attribute, use a valid JSON string, for example: {@code <vaadin-upload
-     * headers=' "X-Foo": "Bar"}'></vaadin-upload> }
+     * headers=' "X-Foo": "Bar"}'></vaadin-upload>}
      * </p>
      * 
      * @param headers

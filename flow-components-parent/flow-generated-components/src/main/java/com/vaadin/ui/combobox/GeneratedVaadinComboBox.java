@@ -53,9 +53,7 @@ import com.vaadin.shared.Registration;
  * &lt;/vaadin-combo-box&gt;
  * </p>
  * <p>
- * {@code js
-combobox.items = ['apple', 'orange', 'banana'];
-}
+ * {@code combobox.items = ['apple', 'orange', 'banana'];}
  * </p>
  * <p>
  * When the selected {@code value} is changed, a {@code value-changed} event is
