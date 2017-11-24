@@ -79,7 +79,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @param template
      *            the JsonObject value to set
      */
-    protected void setTemplate(elemental.json.JsonObject template) {
+    protected void setTemplate(JsonObject template) {
         getElement().setPropertyJson("template", template);
     }
 
@@ -143,7 +143,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @param positionTarget
      *            the JsonObject value to set
      */
-    protected void setPositionTarget(elemental.json.JsonObject positionTarget) {
+    protected void setPositionTarget(JsonObject positionTarget) {
         getElement().setPropertyJson("positionTarget", positionTarget);
     }
 

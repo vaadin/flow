@@ -217,7 +217,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      *            the boolean value to set
      */
     @Override
-    public void setValue(java.lang.Boolean value) {
+    public void setValue(Boolean value) {
         Objects.requireNonNull(value,
                 "GeneratedVaadinCheckbox value must not be null");
         if (!Objects.equals(value, getValue())) {
@@ -292,7 +292,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -326,7 +326,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * @param postValue
      *            the String value to set
      */
-    public void setPostValue(java.lang.String postValue) {
+    public void setPostValue(String postValue) {
         getElement().setProperty("value", postValue == null ? "" : postValue);
     }
 

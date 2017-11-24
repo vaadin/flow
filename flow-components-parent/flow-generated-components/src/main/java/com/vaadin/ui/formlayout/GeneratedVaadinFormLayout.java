@@ -229,8 +229,7 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
     
     	 * @param responsiveSteps the JsonObject value to set
     	 */
-    protected void setResponsiveSteps(
-            elemental.json.JsonObject responsiveSteps) {
+    protected void setResponsiveSteps(JsonObject responsiveSteps) {
         getElement().setPropertyJson("responsiveSteps", responsiveSteps);
     }
 
@@ -244,7 +243,7 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
      * 
      * @param ...args Missing documentation!
      */
-    protected void updateStyles(elemental.json.JsonObject _Args) {
+    protected void updateStyles(JsonObject _Args) {
         getElement().callFunction("updateStyles", _Args);
     }
 

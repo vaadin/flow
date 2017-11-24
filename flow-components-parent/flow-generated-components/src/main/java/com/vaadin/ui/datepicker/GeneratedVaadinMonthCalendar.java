@@ -64,7 +64,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * @param month
      *            the JsonObject value to set
      */
-    protected void setMonth(elemental.json.JsonObject month) {
+    protected void setMonth(JsonObject month) {
         getElement().setPropertyJson("month", month);
     }
 
@@ -96,7 +96,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * @param selectedDate
      *            the JsonObject value to set
      */
-    protected void setSelectedDate(elemental.json.JsonObject selectedDate) {
+    protected void setSelectedDate(JsonObject selectedDate) {
         getElement().setPropertyJson("selectedDate", selectedDate);
     }
 
@@ -128,7 +128,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * @param focusedDate
      *            the JsonObject value to set
      */
-    protected void setFocusedDate(elemental.json.JsonObject focusedDate) {
+    protected void setFocusedDate(JsonObject focusedDate) {
         getElement().setPropertyJson("focusedDate", focusedDate);
     }
 
@@ -164,7 +164,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * @param i18n
      *            the JsonObject value to set
      */
-    protected void setI18n(elemental.json.JsonObject i18n) {
+    protected void setI18n(JsonObject i18n) {
         getElement().setPropertyJson("i18n", i18n);
     }
 
@@ -230,7 +230,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * @param minDate
      *            the JsonObject value to set
      */
-    protected void setMinDate(elemental.json.JsonObject minDate) {
+    protected void setMinDate(JsonObject minDate) {
         getElement().setPropertyJson("minDate", minDate);
     }
 
@@ -262,7 +262,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * @param maxDate
      *            the JsonObject value to set
      */
-    protected void setMaxDate(elemental.json.JsonObject maxDate) {
+    protected void setMaxDate(JsonObject maxDate) {
         getElement().setPropertyJson("maxDate", maxDate);
     }
 

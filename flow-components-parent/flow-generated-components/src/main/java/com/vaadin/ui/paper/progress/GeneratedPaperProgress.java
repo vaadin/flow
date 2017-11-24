@@ -68,7 +68,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      *            the double value to set
      */
     @Override
-    public void setValue(java.lang.Double value) {
+    public void setValue(Double value) {
         Objects.requireNonNull(value,
                 "GeneratedPaperProgress value must not be null");
         if (!Objects.equals(value, getValue())) {
@@ -88,7 +88,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      *            the Number value to set
      * @see #setValue(Double)
      */
-    public void setValue(java.lang.Number value) {
+    public void setValue(Number value) {
         Objects.requireNonNull(value,
                 "GeneratedPaperProgress value must not be null");
         if (!Objects.equals(value, getValue())) {

@@ -441,7 +441,7 @@ public class ComponentGenerator {
             generateDefaultConstructor = true;
             MethodSource<JavaClassSource> constructor = javaClass.addMethod()
                     .setConstructor(true).setPublic().setBody("setText(text);");
-            constructor.addParameter(String.class, "text");
+            constructor.addParameter(String.class.getSimpleName(), "text");
             constructor.getJavaDoc().setText(
                     "Sets the given string as the content of this component.")
                     .addTagValue(JAVADOC_PARAM, "the text content to set")
@@ -983,7 +983,8 @@ public class ComponentGenerator {
 
                 String parameterName = ComponentGeneratorUtils
                         .formatStringToValidJavaIdentifier(propertyJavaName);
-                method.addParameter(setterType, parameterName);
+                ComponentGeneratorUtils.addMethodParameter(javaClass, method,
+                        setterType, parameterName);
 
                 method.setBody(
                         ComponentGeneratorUtils.generateElementApiSetterForType(
@@ -1030,13 +1031,15 @@ public class ComponentGenerator {
             String parameterName) {
         method.removeParameter(setterType, parameterName);
         setterType = ClassUtils.primitiveToWrapper(setterType);
-        method.addParameter(setterType, parameterName);
+        ComponentGeneratorUtils.addMethodParameter(javaClass, method,
+                setterType, parameterName);
         preventNullArgument(javaClass, parameterName, method);
 
         if (setterType.equals(Double.class)) {
             MethodSource<JavaClassSource> overloadMethod = javaClass.addMethod()
                     .setName(method.getName()).setPublic();
-            overloadMethod.addParameter(Number.class, parameterName);
+            ComponentGeneratorUtils.addMethodParameter(javaClass,
+                    overloadMethod, Number.class, parameterName);
             overloadMethod.setBody(String.format("setValue(%s.doubleValue());",
                     parameterName));
 
@@ -1161,8 +1164,8 @@ public class ComponentGenerator {
 
             if (paramType.isBasicType()) {
                 ComponentBasicType bt = (ComponentBasicType) paramType;
-                method.addParameter(ComponentGeneratorUtils.toJavaType(bt),
-                        formattedName);
+                ComponentGeneratorUtils.addMethodParameter(javaClass, method,
+                        ComponentGeneratorUtils.toJavaType(bt), formattedName);
                 sb.append(", ").append(formattedName);
             } else {
                 ComponentObjectType ot = (ComponentObjectType) paramType;
@@ -1304,8 +1307,10 @@ public class ComponentGenerator {
                         .setAccessible(true).setMutable(false);
             }
 
-            ParameterSource<JavaClassSource> parameter = eventConstructor
-                    .addParameter(propertyJavaType, normalizedProperty);
+            ParameterSource<JavaClassSource> parameter = ComponentGeneratorUtils
+                    .addMethodParameter(javaClass, eventConstructor,
+                            propertyJavaType,
+                            normalizedProperty);
             parameter.addAnnotation(EventData.class)
                     .setStringValue(String.format("event.%s", propertyName));
 

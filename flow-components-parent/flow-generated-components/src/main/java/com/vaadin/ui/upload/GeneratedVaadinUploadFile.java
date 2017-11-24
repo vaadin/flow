@@ -63,7 +63,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * @param file
      *            the JsonObject value to set
      */
-    protected void setFile(elemental.json.JsonObject file) {
+    protected void setFile(JsonObject file) {
         getElement().setPropertyJson("file", file);
     }
 
@@ -74,8 +74,8 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         private final JsonObject detailFile;
 
         public FileAbortEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailFile = detailFile;
@@ -109,8 +109,8 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         private final JsonObject detailFile;
 
         public FileRemoveEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailFile = detailFile;
@@ -144,8 +144,8 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         private final JsonObject detailFile;
 
         public FileRetryEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailFile = detailFile;
@@ -179,8 +179,8 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         private final JsonObject detailFile;
 
         public FileStartEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailFile = detailFile;

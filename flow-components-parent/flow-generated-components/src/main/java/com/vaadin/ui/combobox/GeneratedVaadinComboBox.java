@@ -341,7 +341,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param items
      *            the JsonArray value to set
      */
-    protected void setItems(elemental.json.JsonArray items) {
+    protected void setItems(JsonArray items) {
         getElement().setPropertyJson("items", items);
     }
 
@@ -415,7 +415,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param filteredItems
      *            the JsonArray value to set
      */
-    protected void setFilteredItems(elemental.json.JsonArray filteredItems) {
+    protected void setFilteredItems(JsonArray filteredItems) {
         getElement().setPropertyJson("filteredItems", filteredItems);
     }
 
@@ -500,7 +500,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param filter
      *            the String value to set
      */
-    public void setFilter(java.lang.String filter) {
+    public void setFilter(String filter) {
         getElement().setProperty("filter", filter == null ? "" : filter);
     }
 
@@ -564,7 +564,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -629,7 +629,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -693,7 +693,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param allowedPattern
      *            the String value to set
      */
-    public void setAllowedPattern(java.lang.String allowedPattern) {
+    public void setAllowedPattern(String allowedPattern) {
         getElement().setProperty("allowedPattern",
                 allowedPattern == null ? "" : allowedPattern);
     }
@@ -726,7 +726,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param pattern
      *            the String value to set
      */
-    public void setPattern(java.lang.String pattern) {
+    public void setPattern(String pattern) {
         getElement().setProperty("pattern", pattern == null ? "" : pattern);
     }
 
@@ -758,7 +758,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param errorMessage
      *            the String value to set
      */
-    public void setErrorMessage(java.lang.String errorMessage) {
+    public void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
     }
@@ -795,7 +795,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param inputmode
      *            the String value to set
      */
-    public void setInputmode(java.lang.String inputmode) {
+    public void setInputmode(String inputmode) {
         getElement().setProperty("inputmode",
                 inputmode == null ? "" : inputmode);
     }
@@ -828,7 +828,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(java.lang.String placeholder) {
+    public void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -922,7 +922,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @param value
      *            Missing documentation!
      */
-    protected void checkValidity(elemental.json.JsonObject value) {
+    protected void checkValidity(JsonObject value) {
         getElement().callFunction("checkValidity", value);
     }
 
@@ -932,7 +932,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
         private final String detail;
 
         public CustomValueSetEvent(R source, boolean fromClient,
-                @EventData("event.detail") java.lang.String detail) {
+                @EventData("event.detail") String detail) {
             super(source, fromClient);
             this.detail = detail;
         }
@@ -990,7 +990,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
         private final String filter;
 
         public FilterChangeEvent(R source, boolean fromClient,
-                @EventData("event.filter") java.lang.String filter) {
+                @EventData("event.filter") String filter) {
             super(source, fromClient);
             this.filter = filter;
         }

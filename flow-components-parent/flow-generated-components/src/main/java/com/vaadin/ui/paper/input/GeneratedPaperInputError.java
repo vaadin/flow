@@ -78,7 +78,7 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
             return internalObject.getObject("inputElement");
         }
 
-        public void setInputElement(elemental.json.JsonObject inputElement) {
+        public void setInputElement(JsonObject inputElement) {
             this.internalObject.put("inputElement", inputElement);
         }
 
@@ -86,7 +86,7 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
             return internalObject.getString("value");
         }
 
-        public void setValue(java.lang.String value) {
+        public void setValue(String value) {
             this.internalObject.put("value", value);
         }
 

@@ -162,7 +162,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      *            text content to set
      * @see HasText#setText(String)
      */
-    public GeneratedVaadinButton(java.lang.String text) {
+    public GeneratedVaadinButton(String text) {
         setText(text);
     }
 

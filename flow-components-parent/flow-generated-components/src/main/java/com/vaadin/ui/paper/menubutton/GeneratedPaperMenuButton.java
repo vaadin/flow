@@ -66,7 +66,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param keyEventTarget
      *            the JsonObject value to set
      */
-    protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+    protected void setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
     }
 
@@ -137,7 +137,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param keyBindings
      *            the JsonObject value to set
      */
-    protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
+    protected void setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
     }
 
@@ -255,7 +255,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(java.lang.String horizontalAlign) {
+    public void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -290,7 +290,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(java.lang.String verticalAlign) {
+    public void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -569,8 +569,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param openAnimationConfig
      *            the JsonObject value to set
      */
-    protected void setOpenAnimationConfig(
-            elemental.json.JsonObject openAnimationConfig) {
+    protected void setOpenAnimationConfig(JsonObject openAnimationConfig) {
         getElement().setPropertyJson("openAnimationConfig",
                 openAnimationConfig);
     }
@@ -605,8 +604,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param closeAnimationConfig
      *            the JsonObject value to set
      */
-    protected void setCloseAnimationConfig(
-            elemental.json.JsonObject closeAnimationConfig) {
+    protected void setCloseAnimationConfig(JsonObject closeAnimationConfig) {
         getElement().setPropertyJson("closeAnimationConfig",
                 closeAnimationConfig);
     }
@@ -707,7 +705,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param contentElement
      *            the JsonObject value to set
      */
-    protected void setContentElement(elemental.json.JsonObject contentElement) {
+    protected void setContentElement(JsonObject contentElement) {
         getElement().setPropertyJson("contentElement", contentElement);
     }
 
@@ -726,8 +724,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -761,8 +758,8 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      *            Missing documentation!
      */
     @NotSupported
-    protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+    protected void keyboardEventMatchesKeys(JsonObject event,
+            String eventString) {
     }
 
     /**

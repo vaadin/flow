@@ -194,7 +194,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -259,7 +259,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @param value
      *            the String value to set
      */
-    public void setValue(java.lang.String value) {
+    public void setValue(String value) {
         getElement().setProperty("value", value == null ? "" : value);
     }
 
