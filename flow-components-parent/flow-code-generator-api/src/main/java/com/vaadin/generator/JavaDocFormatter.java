@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.parser.Parser;
@@ -95,19 +96,10 @@ class JavaDocFormatter {
         Matcher matcher = MULTI_LINE_CODE_PARTS_HTML.matcher(documentation);
         while (matcher.find()) {
             String html = matcher.group(1);
-            html = escapeHtml(html);
+            html = StringEscapeUtils.escapeHtml4(html);
             documentation = documentation.replace(matcher.group(), html);
         }
         return documentation;
-    }
-
-    /**
-     * Could be replaced by {@code org.apache.commons.text.StringEscapeUtils} if
-     * exists as a dependency.
-     */
-    private static String escapeHtml(String input) {
-        return input.replace("&", "&amp;").replace("\"", "&quot;")
-                .replace("<", "&lt;").replace(">", "&gt;");
     }
 
     private String replaceByPattern(String original, Pattern pattern,
