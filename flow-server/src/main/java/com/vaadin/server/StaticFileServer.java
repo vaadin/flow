@@ -21,8 +21,8 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -157,7 +157,7 @@ public class StaticFileServer implements Serializable {
             response.setDateHeader("Last-Modified", lastModifiedTime);
             return lastModifiedTime;
         } catch (Exception e) {
-            getLogger().log(Level.FINEST,
+            getLogger().trace(
                     "Failed to find out last modified timestamp. Continuing without it.",
                     e);
         } finally {
@@ -172,7 +172,7 @@ public class StaticFileServer implements Serializable {
                     }
                 }
             } catch (IOException e) {
-                getLogger().log(Level.WARNING,
+                getLogger().warn(
                         "Error closing URLConnection input stream", e);
             }
         }
@@ -291,14 +291,14 @@ public class StaticFileServer implements Serializable {
             }
         } catch (Exception e) {
             // Failed to parse header.
-            getLogger().log(Level.FINEST, "Unable to parse If-Modified-Since",
+            getLogger().trace("Unable to parse If-Modified-Since",
                     e);
         }
         return false;
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(StaticFileServer.class.getName());
+        return LoggerFactory.getLogger(StaticFileServer.class.getName());
     }
 
 }

@@ -23,8 +23,8 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -63,7 +63,7 @@ public class TranslationProvider implements I18NProvider {
     @Override
     public String getTranslation(String key, Object... params) {
         if (key == null) {
-            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
+            LoggerFactory.getLogger(TranslationProvider.class.getName()).warn(
                     "Got lang request for key with null value!");
             return "";
         }
@@ -73,7 +73,7 @@ public class TranslationProvider implements I18NProvider {
     @Override
     public String getTranslation(String key, Locale locale, Object... params) {
         if (key == null) {
-            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
+            LoggerFactory.getLogger(TranslationProvider.class.getName()).warn(
                     "Got lang request for key with null value!");
             return "";
         }
@@ -84,7 +84,7 @@ public class TranslationProvider implements I18NProvider {
         try {
             value = bundle.getString(key);
         } catch (final MissingResourceException e) {
-            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
+            LoggerFactory.getLogger(TranslationProvider.class.getName()).warn(
                     "Missing resource", e);
             return "!" + locale.getLanguage() + ": " + key;
         }
@@ -106,7 +106,7 @@ public class TranslationProvider implements I18NProvider {
             propertiesBundle = ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
                     cl);
         } catch (final MissingResourceException e) {
-            Logger.getLogger(TranslationProvider.class.getName()).log(Level.WARNING,
+            LoggerFactory.getLogger(TranslationProvider.class.getName()).warn(
                     "Missing resource", e);
         }
         return propertiesBundle;

@@ -15,8 +15,8 @@
  */
 package com.vaadin.router;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -50,9 +50,8 @@ public class InternalServerError extends Component
 
         Exception exception = parameter.getException();
         if (exception != null) {
-            getLogger().log(Level.SEVERE, exception,
-                    () -> String.format(EXCEPTION_TRYING_NAVIGATE_S,
-                            event.getLocation().getPath()));
+            getLogger().error(String.format(EXCEPTION_TRYING_NAVIGATE_S,
+                event.getLocation().getPath() ), exception);
         }
 
         getElement().setText(exceptionText);
@@ -60,6 +59,6 @@ public class InternalServerError extends Component
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(InternalServerError.class.getName());
+        return LoggerFactory.getLogger(InternalServerError.class.getName());
     }
 }

@@ -42,8 +42,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -92,7 +92,7 @@ public abstract class VaadinService implements Serializable {
     private static final String SEPARATOR = "\n=================================================================";
 
     public static final String INVALID_ATMOSPHERE_VERSION_WARNING = SEPARATOR
-            + "\nVaadin depends on Atmosphere {0} but version {1} was found.\n"
+            + "\nVaadin depends on Atmosphere {} but version {} was found.\n"
             + "This might cause compatibility problems if push is used."
             + SEPARATOR;
 
@@ -1256,7 +1256,7 @@ public abstract class VaadinService implements Serializable {
             if (session.getState() == VaadinSessionState.OPEN) {
                 closeSession(session);
                 if (session.getSession() != null) {
-                    getLogger().log(Level.FINE, "Closing inactive session {0}",
+                    getLogger().debug("Closing inactive session {}",
                             session.getSession().getId());
                 }
             }
@@ -1290,7 +1290,7 @@ public abstract class VaadinService implements Serializable {
                 ui.accessSynchronously(new Command() {
                     @Override
                     public void execute() {
-                        getLogger().log(Level.FINER, "Removing closed UI {0}",
+                        getLogger().debug("Removing closed UI {}",
                                 ui.getUIId());
                         session.removeUI(ui);
                     }
@@ -1312,8 +1312,8 @@ public abstract class VaadinService implements Serializable {
                 ui.accessSynchronously(new Command() {
                     @Override
                     public void execute() {
-                        getLogger().log(Level.FINE,
-                                "Closing inactive UI #{0} in session {1}",
+                        getLogger().debug(
+                                "Closing inactive UI #{} in session {}",
                                 new Object[] { ui.getUIId(), sessionId });
                         ui.close();
                     }
@@ -1420,7 +1420,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     private static final Logger getLogger() {
-        return Logger.getLogger(VaadinService.class.getName());
+        return LoggerFactory.getLogger(VaadinService.class.getName());
     }
 
     /**
@@ -1570,7 +1570,7 @@ public abstract class VaadinService implements Serializable {
                 } catch (IOException e) {
                     // An exception occurred while writing the response. Log
                     // it and continue handling only the original error.
-                    getLogger().log(Level.WARNING,
+                    getLogger().warn(
                             "Failed to write critical notification response to the client",
                             e);
                 }
@@ -1702,7 +1702,7 @@ public abstract class VaadinService implements Serializable {
             json.put(ApplicationConstants.SERVER_SYNC_ID, -1);
             return wrapJsonForClient(json);
         } catch (JsonException e) {
-            getLogger().log(Level.WARNING,
+            getLogger().warn(
                     "Error creating critical notification JSON message", e);
             return wrapJsonForClient(Json.createObject());
         }
@@ -1766,7 +1766,7 @@ public abstract class VaadinService implements Serializable {
         } else {
             if (!pushWarningEmitted) {
                 pushWarningEmitted = true;
-                getLogger().log(Level.WARNING, ATMOSPHERE_MISSING_ERROR);
+                getLogger().warn(ATMOSPHERE_MISSING_ERROR);
             }
             return false;
         }
@@ -1779,7 +1779,7 @@ public abstract class VaadinService implements Serializable {
         }
 
         if (!Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION.equals(rawVersion)) {
-            getLogger().log(Level.WARNING, INVALID_ATMOSPHERE_VERSION_WARNING,
+            getLogger().warn(INVALID_ATMOSPHERE_VERSION_WARNING,
                     new Object[] {
                             Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION,
                             rawVersion });
@@ -2031,7 +2031,7 @@ public abstract class VaadinService implements Serializable {
             setClassLoader(
                     VaadinServiceClassLoaderUtil.findDefaultClassLoader());
         } catch (SecurityException e) {
-            getLogger().log(Level.SEVERE, CANNOT_ACQUIRE_CLASSLOADER_SEVERE, e);
+            getLogger().error(CANNOT_ACQUIRE_CLASSLOADER_SEVERE, e);
             throw e;
         }
     }

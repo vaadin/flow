@@ -37,7 +37,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.shared.communication.PushMode;
@@ -150,7 +152,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // closing
         // Notify the service
         if (service == null) {
-            getLogger().warning(
+            getLogger().warn(
                     "A VaadinSession instance not associated to any service is getting unbound. "
                             + "Session destroy events will not be fired and UIs in the session will not get detached. "
                             + "This might happen if a session is deserialized but never used before it expires.");
@@ -812,8 +814,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         && newState == VaadinSessionState.CLOSED);
     }
 
-    private static final Logger getLogger() {
-        return Logger.getLogger(VaadinSession.class.getName());
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(VaadinSession.class.getName());
     }
 
     /**

@@ -17,7 +17,9 @@
 package com.vaadin.server.communication;
 
 import java.io.IOException;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -91,7 +93,7 @@ public class PushRequestHandler
         atmosphere = getPreInitializedAtmosphere(vaadinServletConfig);
         if (atmosphere == null) {
             // Not initialized by JSR356WebsocketInitializer
-            getLogger().fine("Initializing Atmosphere for servlet "
+            getLogger().debug("Initializing Atmosphere for servlet "
                     + vaadinServletConfig.getServletName());
             try {
                 atmosphere = initAtmosphere(vaadinServletConfig);
@@ -103,7 +105,7 @@ public class PushRequestHandler
                         e);
             }
         } else {
-            getLogger().fine("Using pre-initialized Atmosphere for servlet "
+            getLogger().debug("Using pre-initialized Atmosphere for servlet "
                     + vaadinServletConfig.getServletName());
         }
         pushHandler.setLongPollingSuspendTimeout(
@@ -139,7 +141,7 @@ public class PushRequestHandler
     }
 
     private static final Logger getLogger() {
-        return Logger.getLogger(PushRequestHandler.class.getName());
+        return LoggerFactory.getLogger(PushRequestHandler.class.getName());
     }
 
     /**

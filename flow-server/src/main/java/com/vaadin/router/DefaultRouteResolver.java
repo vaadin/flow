@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
@@ -66,7 +66,7 @@ public class DefaultRouteResolver implements RouteResolver {
             }
         } catch (NotFoundException nfe) {
             String message = "Exception while navigation to path " + path;
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING,
+            LoggerFactory.getLogger(this.getClass().getName()).warn(
                     message, nfe);
             throw nfe;
         }

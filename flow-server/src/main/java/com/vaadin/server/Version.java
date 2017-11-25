@@ -18,8 +18,8 @@ package com.vaadin.server;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides information about the current version of the framework.
@@ -63,7 +63,7 @@ public class Version implements Serializable {
                     Version.class.getResourceAsStream("version.properties"));
             flowVersion = properties.getProperty("flow.version");
         } catch (IOException e) {
-            Logger.getLogger(Version.class.getName()).log(Level.WARNING,
+            LoggerFactory.getLogger(Version.class.getName()).warn(
                     "Unable to determine Flow version number", e);
         }
 

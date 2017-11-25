@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.ConstantPool;
 import com.vaadin.flow.StateTree;
@@ -318,7 +318,7 @@ public class UIInternals implements Serializable {
                 try {
                     ComponentUtil.onComponentDetach(ui);
                 } catch (Exception e) {
-                    getLogger().log(Level.WARNING,
+                    getLogger().warn(
                             "Error while detaching UI from session", e);
                 }
                 // Disable push when the UI is detached. Otherwise the
@@ -673,7 +673,7 @@ public class UIInternals implements Serializable {
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(UIInternals.class.getName());
+        return LoggerFactory.getLogger(UIInternals.class.getName());
     }
 
     /**

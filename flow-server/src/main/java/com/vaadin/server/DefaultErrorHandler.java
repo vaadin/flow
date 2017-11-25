@@ -16,8 +16,8 @@
 
 package com.vaadin.server;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The default implementation of {@link ErrorHandler}.
@@ -30,7 +30,7 @@ public class DefaultErrorHandler implements ErrorHandler {
         Throwable t = findRelevantThrowable(event.getThrowable());
 
         // print the error on console
-        getLogger().log(Level.SEVERE, "", t);
+        getLogger().error("", t);
     }
 
     /**
@@ -49,7 +49,7 @@ public class DefaultErrorHandler implements ErrorHandler {
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(DefaultErrorHandler.class.getName());
+        return LoggerFactory.getLogger(DefaultErrorHandler.class.getName());
     }
 
 }

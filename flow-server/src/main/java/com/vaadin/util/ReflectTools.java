@@ -29,8 +29,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -679,8 +679,8 @@ public class ReflectTools implements Serializable {
                             "Received access exception for public field '%s' in class '%s'",
                             field.getName(), clazz.getSimpleName());
                     assert false : msg;
-                    Logger.getLogger(ReflectTools.class.getName())
-                            .log(Level.WARNING, msg, e);
+                    LoggerFactory.getLogger(ReflectTools.class.getName())
+                            .warn(msg, e);
                 }
             }
         }

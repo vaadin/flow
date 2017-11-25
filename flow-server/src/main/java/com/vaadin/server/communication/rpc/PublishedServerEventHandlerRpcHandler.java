@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -129,9 +129,9 @@ public class PublishedServerEventHandlerRpcHandler
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
-            Logger.getLogger(
+            LoggerFactory.getLogger(
                     PublishedServerEventHandlerRpcHandler.class.getName())
-                    .log(Level.FINE, null, e);
+                    .debug(null, e);
             throw new RuntimeException(e.getCause());
         }
     }
