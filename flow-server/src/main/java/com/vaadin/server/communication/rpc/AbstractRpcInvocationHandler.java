@@ -15,7 +15,8 @@
  */
 package com.vaadin.server.communication.rpc;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.shared.JsonConstants;
@@ -38,13 +39,13 @@ public abstract class AbstractRpcInvocationHandler
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
         if (node == null) {
-            getLogger().warning("Got an RPC for non-existent node: "
-                    + getNodeId(invocationJson));
+            getLogger().warn("Got an RPC for non-existent node: {}",
+                    getNodeId(invocationJson));
             return;
         }
         if (!node.isAttached()) {
-            getLogger().warning("Got an RPC for detached node: "
-                    + getNodeId(invocationJson));
+            getLogger().warn("Got an RPC for detached node: {}w",
+                    getNodeId(invocationJson));
             return;
         }
         handleNode(node, invocationJson);
@@ -54,7 +55,7 @@ public abstract class AbstractRpcInvocationHandler
             JsonObject invocationJson);
 
     private static Logger getLogger() {
-        return Logger.getLogger(AbstractRpcInvocationHandler.class.getName());
+        return LoggerFactory.getLogger(AbstractRpcInvocationHandler.class.getName());
     }
 
     private static int getNodeId(JsonObject invocationJson) {

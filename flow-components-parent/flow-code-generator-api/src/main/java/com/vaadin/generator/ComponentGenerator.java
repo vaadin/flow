@@ -32,8 +32,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -46,6 +44,7 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
@@ -1394,8 +1393,8 @@ public class ComponentGenerator {
             config.load(resourceAsStream);
             return config;
         } catch (IOException e) {
-            Logger.getLogger(getClass().getSimpleName()).log(Level.WARNING,
-                    "Failed to load properties file '" + fileName + "'", e);
+            LoggerFactory.getLogger(getClass().getSimpleName()).warn(
+                    "Failed to load properties file '{}'", fileName, e);
         }
 
         return config;

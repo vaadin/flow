@@ -30,8 +30,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -99,7 +99,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     static String clientEngineFile = readClientEngine();
 
     private static Logger getLogger() {
-        return Logger.getLogger(BootstrapHandler.class.getName());
+        return LoggerFactory.getLogger(BootstrapHandler.class.getName());
     }
 
     /**
@@ -857,8 +857,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             writeSecurityKeyUIDL(json, session);
         }
         writePushIdUIDL(json, session);
-        if (getLogger().isLoggable(Level.FINE)) {
-            getLogger().fine("Initial UIDL:" + json.asString());
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Initial UIDL:" + json.asString());
         }
         return json;
     }
@@ -1035,7 +1035,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
                         + properties.getProperty("jsFile");
             } else {
-                getLogger().warning(
+                getLogger().warn(
                         "No compile.properties available on initialization, "
                                 + "could not read client engine file name.");
             }

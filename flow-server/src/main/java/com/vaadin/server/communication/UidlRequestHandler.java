@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.server.ServletHelper;
 import com.vaadin.server.ServletHelper.RequestType;
@@ -89,13 +89,13 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
             writeUidl(uI, stringWriter);
         } catch (JsonException e) {
-            getLogger().log(Level.SEVERE, "Error writing JSON to response", e);
+            getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
             writeRefresh(response);
             return true;
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().log(Level.WARNING,
-                    "Invalid security key received from {0}",
+            getLogger().warn(
+                    "Invalid security key received from {}",
                     request.getRemoteHost());
             // Refresh on client side
             writeRefresh(response);
@@ -123,7 +123,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     private static final Logger getLogger() {
-        return Logger.getLogger(UidlRequestHandler.class.getName());
+        return LoggerFactory.getLogger(UidlRequestHandler.class.getName());
     }
 
     /*

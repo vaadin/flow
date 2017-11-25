@@ -17,8 +17,8 @@ package com.vaadin.server.communication;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -43,7 +43,7 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
     }
 
     private static final Logger getLogger() {
-        return Logger.getLogger(PushAtmosphereHandler.class.getName());
+        return LoggerFactory.getLogger(PushAtmosphereHandler.class.getName());
     }
 
     @Override
@@ -51,7 +51,7 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
             throws IOException {
         super.onStateChange(event);
         if (pushHandler == null) {
-            getLogger().warning(
+            getLogger().warn(
                     "AtmosphereHandler.onStateChange called before PushHandler has been set. This should really not happen");
             return;
         }
@@ -64,7 +64,7 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
     @Override
     public void onRequest(AtmosphereResource resource) {
         if (pushHandler == null) {
-            getLogger().warning(
+            getLogger().warn(
                     "AtmosphereHandler.onRequest called before PushHandler has been set. This should really not happen");
             return;
         }
@@ -113,7 +113,7 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
 
         @Override
         public void onThrowable(AtmosphereResourceEvent event) {
-            getLogger().log(Level.SEVERE, "Exception in push connection",
+            getLogger().error("Exception in push connection",
                     event.throwable());
             pushHandler.connectionLost(event);
         }

@@ -22,8 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
@@ -52,7 +52,7 @@ public class DependencyList implements Serializable {
     }
 
     private Logger getLogger() {
-        return Logger.getLogger(DependencyList.class.getName());
+        return LoggerFactory.getLogger(DependencyList.class.getName());
     }
 
     /**
@@ -84,12 +84,11 @@ public class DependencyList implements Serializable {
     private void checkDuplicateDependency(Dependency newDependency,
             Dependency currentDependency) {
         if (newDependency.getLoadMode() != currentDependency.getLoadMode()) {
-            getLogger().log(Level.WARNING,
-                    () -> String.format(
-                            "Dependency with url %s was imported with two different loading strategies: %s and %s. "
-                                    + "The loading strategy is changed to %s to avoid conflicts. This may impact performance.",
+            getLogger().warn(
+                            "Dependency with url {} was imported with two different loading strategies: {} and {}. "
+                            + "The loading strategy is changed to {} to avoid conflicts. This may impact performance.",
                             newDependency.getUrl(), newDependency.getLoadMode(),
-                            currentDependency.getLoadMode(), LoadMode.EAGER));
+                            currentDependency.getLoadMode(), LoadMode.EAGER);
             if (currentDependency.getLoadMode() != newDependency
                     .getLoadMode()) {
                 throw new IllegalStateException(String.format(

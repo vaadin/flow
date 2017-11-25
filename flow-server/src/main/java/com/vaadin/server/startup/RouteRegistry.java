@@ -28,8 +28,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
@@ -417,7 +417,7 @@ public class RouteRegistry implements Serializable {
             Class<? extends Component> navigationTarget,
             Collection<String> aliases)
             throws InvalidRouteConfigurationException {
-        Logger logger = Logger.getLogger(RouteRegistry.class.getName());
+        Logger logger = LoggerFactory.getLogger(RouteRegistry.class.getName());
         for (String alias : aliases) {
             if (routesMap.containsKey(alias)) {
                 routesMap.get(alias).addRoute(navigationTarget);
@@ -425,7 +425,7 @@ public class RouteRegistry implements Serializable {
                 String message = String.format(
                         "Registering route '%s' to navigation target '%s'.",
                         alias, navigationTarget.getName());
-                logger.log(Level.FINE, message);
+                logger.debug(message);
 
                 routesMap.put(alias, new RouteTarget(navigationTarget));
             }
