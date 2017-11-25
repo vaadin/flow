@@ -19,8 +19,8 @@ package com.vaadin.data;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.function.SerializablePredicate;
 
@@ -136,7 +136,7 @@ public interface Validator<T>
                             .error(errorMessageProvider.apply(context));
                 }
             } catch (Exception e) {
-                Logger.getLogger(Validator.class.getName()).log(Level.INFO,
+                LoggerFactory.getLogger(Validator.class.getName()).info(
                         "An exception is thrown during validation", e);
                 return ValidationResult
                         .error(errorMessageProvider.apply(context));

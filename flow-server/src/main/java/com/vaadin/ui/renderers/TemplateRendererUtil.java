@@ -18,8 +18,8 @@ package com.vaadin.ui.renderers;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
@@ -121,16 +121,14 @@ public class TemplateRendererUtil {
             if (item != null) {
                 consumer.accept(item);
             } else {
-                Logger.getLogger(TemplateRendererUtil.class.getName())
-                        .log(Level.INFO, () -> String.format(
-                                "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
-                                handlerName, itemKey));
+                LoggerFactory.getLogger(TemplateRendererUtil.class.getName())
+                        .info("Received an event for the handler '{}' with item key '{}', but the item is not present in the KeyMapper. Ignoring event.",
+                                handlerName, itemKey);
             }
         } else {
-            Logger.getLogger(TemplateRendererUtil.class.getName())
-                    .log(Level.INFO, () -> String.format(
-                            "Received an event for the handler '%s' without any data. Ignoring event.",
-                            handlerName));
+            LoggerFactory.getLogger(TemplateRendererUtil.class.getName())
+                    .info("Received an event for the handler '{}' without any data. Ignoring event.",
+                            handlerName);
         }
     }
 

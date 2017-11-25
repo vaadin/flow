@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -131,9 +131,9 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
                     initAtmosphereForVaadinServlet(servletRegistration,
                             servletContext);
                 } catch (Exception e) {
-                    getLogger().log(Level.WARNING,
-                            "Failed to initialize Atmosphere for "
-                                    + servletName,
+                    getLogger().warn(
+                            "Failed to initialize Atmosphere for {}",
+                                    servletName,
                             e);
                 }
             }
@@ -159,14 +159,14 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
 
         if (servletContext.getAttribute(attributeName) != null) {
             // Already initialized
-            getLogger().warning("Atmosphere already initialized");
+            getLogger().warn("Atmosphere already initialized");
             return;
         }
-        getLogger().finer("Creating AtmosphereFramework for " + servletName);
+        getLogger().debug("Creating AtmosphereFramework for {}", servletName);
         AtmosphereFramework framework = PushRequestHandler.initAtmosphere(
                 new FakeServletConfig(servletRegistration, servletContext));
         servletContext.setAttribute(attributeName, framework);
-        getLogger().finer("Created AtmosphereFramework for " + servletName);
+        getLogger().debug("Created AtmosphereFramework for {}", servletName);
 
     }
 
@@ -231,7 +231,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
     }
 
     private static final Logger getLogger() {
-        return Logger.getLogger(JSR356WebsocketInitializer.class.getName());
+        return LoggerFactory.getLogger(JSR356WebsocketInitializer.class.getName());
     }
 
     @Override

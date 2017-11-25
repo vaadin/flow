@@ -23,8 +23,8 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.server.RequestHandler;
@@ -95,7 +95,7 @@ public class StreamRequestHandler implements RequestHandler {
                 receiverHandler.handleRequest(session, request, response,
                         streamReceiver, parts[0], parts[1]);
             } else {
-                getLog().warning("Received unknown stream resource.");
+                getLogger().warn("Received unknown stream resource.");
             }
         }
         return true;
@@ -147,7 +147,7 @@ public class StreamRequestHandler implements RequestHandler {
         int index = path.lastIndexOf('/');
         boolean hasPrefix = index >= 0;
         if (!hasPrefix) {
-            getLog().info("Unsupported path structure, path=" + path);
+            getLogger().info("Unsupported path structure, path={}", path);
             return Optional.empty();
         }
         String prefix = path.substring(0, index + 1);
@@ -162,13 +162,12 @@ public class StreamRequestHandler implements RequestHandler {
             // UTF8 has to be supported
             throw new RuntimeException(e);
         } catch (URISyntaxException e) {
-            getLog().log(Level.INFO, "Path '" + path
-                    + "' is not correct URI (it violates RFC 2396)", e);
+            getLogger().info("Path '{}' is not correct URI (it violates RFC 2396)", path, e);
             return Optional.empty();
         }
     }
 
-    private static Logger getLog() {
-        return Logger.getLogger(StreamResourceHandler.class.getName());
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(StreamResourceHandler.class.getName());
     }
 }

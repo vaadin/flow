@@ -17,8 +17,8 @@ package com.vaadin.server;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Encapsulates a {@link Command} submitted using
@@ -86,11 +86,11 @@ public class FutureAccess extends FutureTask<Void> {
                 errorHandler.error(errorEvent);
             }
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, e.getMessage(), e);
+            getLogger().error(e.getMessage(), e);
         }
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(FutureAccess.class.getName());
+        return LoggerFactory.getLogger(FutureAccess.class.getName());
     }
 }
