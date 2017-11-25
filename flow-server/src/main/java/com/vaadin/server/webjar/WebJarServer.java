@@ -24,7 +24,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -102,10 +102,8 @@ public class WebJarServer implements Serializable {
             WebJarBowerDependency newDependency) {
         int comparison = oldDependency.compareVersions(newDependency);
         if (comparison == 0) {
-            Logger.getLogger(getClass().getName())
-                    .config(() -> String.format(
-                            "Have found multiple webJars with name and version: '%s'",
-                            oldDependency));
+            LoggerFactory.getLogger(getClass().getName())
+                    .info("Have found multiple webJars with name and version: '{}'", oldDependency);
             return oldDependency;
         } else if (comparison > 0) {
             return oldDependency;

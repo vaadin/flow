@@ -28,7 +28,9 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.ui.Component;
 
@@ -102,13 +104,13 @@ public class ViewClassLocator {
                     }
                 }
             } catch (Exception e) {
-                getLogger().warning("Unable to load class " + className);
+                getLogger().warn("Unable to load class {}", className);
             }
         }
     }
 
     private Logger getLogger() {
-        return Logger.getLogger(ViewClassLocator.class.getName());
+        return LoggerFactory.getLogger(ViewClassLocator.class.getName());
     }
 
     public Collection<Class<? extends Component>> getAllViewClasses() {

@@ -26,7 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 import com.vaadin.server.VaadinRequest;
@@ -122,7 +124,7 @@ public class ServerRpcHandler implements Serializable {
                         .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID);
             } else {
                 getLogger()
-                        .warning("Server message without client id received");
+                        .warn("Server message without client id received");
                 clientToServerMessageId = -1;
             }
             invocations = json.getArray(ApplicationConstants.RPC_INVOCATIONS);
@@ -268,11 +270,10 @@ public class ServerRpcHandler implements Serializable {
                 // It has already been handled by the server so it is safe to
                 // ignore
                 getLogger()
-                        .fine("Ignoring old message from the client. Expected: "
-                                + expectedId + ", got: "
-                                + rpcRequest.getClientToServerId());
+                        .debug("Ignoring old message from the client. Expected: {}, got: {}",
+                            expectedId, rpcRequest.getClientToServerId());
             } else {
-                getLogger().warning(
+                getLogger().warn(
                         "Unexpected message id from the client. Expected: "
                                 + expectedId + ", got: "
                                 + rpcRequest.getClientToServerId());
@@ -374,8 +375,8 @@ public class ServerRpcHandler implements Serializable {
         return sb.toString();
     }
 
-    private static final Logger getLogger() {
-        return Logger.getLogger(ServerRpcHandler.class.getName());
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ServerRpcHandler.class.getName());
     }
 
     private static RpcInvocationHandler resolveHandlerConflicts(

@@ -15,8 +15,8 @@
  */
 package com.vaadin.server.startup;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -50,8 +50,8 @@ public class ServletDeployer implements ServletContextListener {
         if (!RouteRegistry.getInstance(sce.getServletContext())
                 .hasNavigationTargets()) {
             getLogger()
-                    .config(() -> SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE
-                            + "there are no navigation targets annotated with @Route");
+                    .info("{} there are no navigation targets annotated with @Route",
+                        SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
             return;
         }
 
@@ -60,18 +60,16 @@ public class ServletDeployer implements ServletContextListener {
         ServletRegistration rootServlet = findRootServlet(servletContext);
         if (rootServlet != null) {
             getLogger()
-                    .config(() -> SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE
-                            + "there is already a /* servlet with the name "
-                            + rootServlet.getName());
+                    .info("{} there is already a /* servlet with the name {}",
+                        SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE, rootServlet.getName());
             return;
         }
 
         ServletRegistration vaadinServlet = findVaadinServlet(servletContext);
         if (vaadinServlet != null) {
             getLogger()
-                    .config(() -> SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE
-                            + "there is already a Vaadin servlet with the name "
-                            + vaadinServlet.getName());
+                    .info("{} there is already a Vaadin servlet with the name {}",
+                        SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE, vaadinServlet.getName());
             return;
         }
 
@@ -81,9 +79,8 @@ public class ServletDeployer implements ServletContextListener {
         if (registration == null) {
             // Not expected to ever happen
             getLogger()
-                    .config(() -> SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE
-                            + "there is already a servlet with the name "
-                            + servletName);
+                    .info("{} there is already a servlet with the name {}",
+                        SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE, servletName);
             return;
         }
 
@@ -116,8 +113,8 @@ public class ServletDeployer implements ServletContextListener {
             return VaadinServlet.class
                     .isAssignableFrom(classLoader.loadClass(className));
         } catch (ClassNotFoundException e) {
-            getLogger().log(Level.CONFIG,
-                    "Assuming " + className + " is not a Vaadin servlet", e);
+            getLogger().info(
+                    "Assuming {} is not a Vaadin servlet", className, e);
             return false;
         }
     }
@@ -128,6 +125,6 @@ public class ServletDeployer implements ServletContextListener {
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(ServletDeployer.class.getName());
+        return LoggerFactory.getLogger(ServletDeployer.class.getName());
     }
 }
