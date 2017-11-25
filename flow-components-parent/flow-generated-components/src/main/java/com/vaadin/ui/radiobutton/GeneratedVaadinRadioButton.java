@@ -292,7 +292,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinRadioButton(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinRadioButton(Component... components) {
         add(components);
     }
 

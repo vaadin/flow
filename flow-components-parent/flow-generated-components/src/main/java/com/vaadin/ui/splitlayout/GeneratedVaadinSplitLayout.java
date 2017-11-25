@@ -251,7 +251,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrimary(com.vaadin.ui.Component... components) {
+    public R addToPrimary(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "primary");
             getElement().appendChild(component.getElement());
@@ -273,7 +273,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSecondary(com.vaadin.ui.Component... components) {
+    public R addToSecondary(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "secondary");
             getElement().appendChild(component.getElement());
@@ -289,7 +289,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

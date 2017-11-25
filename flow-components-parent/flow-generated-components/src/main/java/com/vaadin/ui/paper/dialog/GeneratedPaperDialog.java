@@ -1347,7 +1347,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperDialog(com.vaadin.ui.Component... components) {
+    public GeneratedPaperDialog(Component... components) {
         add(components);
     }
 

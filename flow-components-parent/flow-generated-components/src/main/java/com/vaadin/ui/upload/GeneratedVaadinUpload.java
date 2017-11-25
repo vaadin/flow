@@ -1158,7 +1158,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToAddButton(com.vaadin.ui.Component... components) {
+    public R addToAddButton(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "add-button");
             getElement().appendChild(component.getElement());
@@ -1180,7 +1180,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropLabelIcon(com.vaadin.ui.Component... components) {
+    public R addToDropLabelIcon(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "drop-label-icon");
             getElement().appendChild(component.getElement());
@@ -1202,7 +1202,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropLabel(com.vaadin.ui.Component... components) {
+    public R addToDropLabel(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "drop-label");
             getElement().appendChild(component.getElement());
@@ -1224,7 +1224,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToFileList(com.vaadin.ui.Component... components) {
+    public R addToFileList(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "file-list");
             getElement().appendChild(component.getElement());
@@ -1233,7 +1233,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     }
 
     @Override
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -1259,7 +1259,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinUpload(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinUpload(Component... components) {
         add(components);
     }
 

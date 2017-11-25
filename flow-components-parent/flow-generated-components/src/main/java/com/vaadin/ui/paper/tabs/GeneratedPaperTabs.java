@@ -1374,7 +1374,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperTabs(com.vaadin.ui.Component... components) {
+    public GeneratedPaperTabs(Component... components) {
         add(components);
     }
 

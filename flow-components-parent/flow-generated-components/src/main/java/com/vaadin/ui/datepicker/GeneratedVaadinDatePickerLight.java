@@ -757,8 +757,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinDatePickerLight(
-            com.vaadin.ui.Component... components) {
+    public GeneratedVaadinDatePickerLight(Component... components) {
         add(components);
     }
 

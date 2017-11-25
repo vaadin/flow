@@ -1058,7 +1058,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrefix(com.vaadin.ui.Component... components) {
+    public R addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
@@ -1074,7 +1074,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

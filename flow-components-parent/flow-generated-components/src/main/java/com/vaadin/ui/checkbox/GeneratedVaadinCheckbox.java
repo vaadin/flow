@@ -364,7 +364,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinCheckbox(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinCheckbox(Component... components) {
         add(components);
     }
 

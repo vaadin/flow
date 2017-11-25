@@ -452,8 +452,8 @@ public class ComponentGenerator {
             MethodSource<JavaClassSource> constructor = javaClass.addMethod()
                     .setConstructor(true).setPublic()
                     .setBody("add(components);");
-            constructor.addParameter(Component.class, "components")
-                    .setVarArgs(true);
+            ComponentGeneratorUtils.addMethodParameter(javaClass, constructor,
+                    Component.class, "components").setVarArgs(true);
             constructor.getJavaDoc().setText(
                     "Adds the given components as children of this component.")
                     .addTagValue(JAVADOC_PARAM,
@@ -551,7 +551,8 @@ public class ComponentGenerator {
                 .generateMethodNameForProperty("addTo", slot);
         MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
                 .setName(methodName);
-        method.addParameter(Component.class, "components").setVarArgs(true);
+        ComponentGeneratorUtils.addMethodParameter(javaClass, method,
+                Component.class, "components").setVarArgs(true);
         method.setBody(String.format(
                 "for (Component component : components) {%n component.getElement().setAttribute(\"slot\", \"%s\");%n getElement().appendChild(component.getElement());%n }",
                 slot));
@@ -572,8 +573,8 @@ public class ComponentGenerator {
 
         MethodSource<JavaClassSource> removeMethod = javaClass.addMethod()
                 .setPublic().setReturnTypeVoid().setName("remove");
-        removeMethod.addParameter(Component.class, "components")
-                .setVarArgs(true);
+        ComponentGeneratorUtils.addMethodParameter(javaClass, removeMethod,
+                Component.class, "components").setVarArgs(true);
         removeMethod.setBody(
                 String.format("for (Component component : components) {%n"
                         + "if (getElement().equals(component.getElement().getParent())) {%n"

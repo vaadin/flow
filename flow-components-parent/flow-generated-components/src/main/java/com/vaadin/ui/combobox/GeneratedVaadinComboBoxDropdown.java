@@ -310,8 +310,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinComboBoxDropdown(
-            com.vaadin.ui.Component... components) {
+    public GeneratedVaadinComboBoxDropdown(Component... components) {
         add(components);
     }
 

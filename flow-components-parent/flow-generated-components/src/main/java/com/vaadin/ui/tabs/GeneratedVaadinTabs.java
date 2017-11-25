@@ -112,7 +112,7 @@ public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinTabs(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinTabs(Component... components) {
         add(components);
     }
 

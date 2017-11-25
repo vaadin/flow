@@ -1002,7 +1002,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinComboBoxLight(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinComboBoxLight(Component... components) {
         add(components);
     }
 
