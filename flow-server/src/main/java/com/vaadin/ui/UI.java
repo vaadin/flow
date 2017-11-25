@@ -20,8 +20,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree.ExecutionRegistration;
@@ -460,7 +460,7 @@ public class UI extends Component
                                 .error(new ErrorEvent(exception));
                     }
                 } catch (Exception e) {
-                    getLogger().log(Level.SEVERE, e.getMessage(), e);
+                    getLogger().error(e.getMessage(), e);
                 }
             }
         });
@@ -585,7 +585,7 @@ public class UI extends Component
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(UI.class.getName());
+        return LoggerFactory.getLogger(UI.class.getName());
     }
 
     /**

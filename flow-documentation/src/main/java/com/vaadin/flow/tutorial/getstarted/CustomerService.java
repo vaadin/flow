@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 /**
@@ -23,7 +23,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 public class CustomerService {
 
     private static CustomerService instance;
-    private static final Logger LOGGER = Logger
+    private static final Logger LOGGER = LoggerFactory
             .getLogger(CustomerService.class.getName());
 
     private final Map<Long, Customer> contacts = new HashMap<>();
@@ -70,8 +70,8 @@ public class CustomerService {
                     arrayList.add(contact.clone());
                 }
             } catch (CloneNotSupportedException ex) {
-                Logger.getLogger(CustomerService.class.getName())
-                        .log(Level.SEVERE, null, ex);
+                LoggerFactory.getLogger(CustomerService.class.getName())
+                        .error("", ex);
             }
         }
         Collections.sort(arrayList, new Comparator<Customer>() {
@@ -109,8 +109,8 @@ public class CustomerService {
                     arrayList.add(contact.clone());
                 }
             } catch (CloneNotSupportedException ex) {
-                Logger.getLogger(CustomerService.class.getName())
-                        .log(Level.SEVERE, null, ex);
+                LoggerFactory.getLogger(CustomerService.class.getName())
+                        .error("", ex);
             }
         }
         Collections.sort(arrayList, new Comparator<Customer>() {
@@ -152,7 +152,7 @@ public class CustomerService {
      */
     public synchronized void save(Customer entry) {
         if (entry == null) {
-            LOGGER.log(Level.SEVERE,
+            LOGGER.error(
                     "Customer is null. Are you sure you have connected your form to the application as described in tutorial chapter 7?");
             return;
         }

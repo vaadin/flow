@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
@@ -118,8 +118,8 @@ public class CurrentInstance implements Serializable {
             Object instance = entry.getValue().instance.get();
             if (instance == null) {
                 iterator.remove();
-                getLogger().log(Level.FINE,
-                        "CurrentInstance for {0} has been garbage collected.",
+                getLogger().debug(
+                        "CurrentInstance for {} has been garbage collected.",
                         entry.getKey());
             }
         }
@@ -308,6 +308,6 @@ public class CurrentInstance implements Serializable {
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(CurrentInstance.class.getName());
+        return LoggerFactory.getLogger(CurrentInstance.class.getName());
     }
 }
