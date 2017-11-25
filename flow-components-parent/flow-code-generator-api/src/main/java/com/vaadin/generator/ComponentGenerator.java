@@ -48,6 +48,7 @@ import org.jboss.forge.roaster.model.source.ParameterSource;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
@@ -444,7 +445,7 @@ public class ComponentGenerator {
             constructor.addParameter(String.class.getSimpleName(), "text");
             constructor.getJavaDoc().setText(
                     "Sets the given string as the content of this component.")
-                    .addTagValue(JAVADOC_PARAM, "the text content to set")
+                    .addTagValue(JAVADOC_PARAM, "text the text content to set")
                     .addTagValue(JAVADOC_SEE, "HasText#setText(String)");
 
         } else if (javaClass.hasInterface(HasComponents.class)) {
@@ -602,6 +603,7 @@ public class ComponentGenerator {
         if (useOverrideAnnotation) {
             removeAllMethod.addAnnotation(Override.class);
         } else {
+            javaClass.addImport(Element.class);
             removeAllMethod.getJavaDoc().setText(String.format(
                     "Removes all contents from this component, this includes child components, "
                             + "text content as well as child elements that have been added directly to "
@@ -1187,7 +1189,7 @@ public class ComponentGenerator {
             }
 
             method.getJavaDoc().addTagValue(JAVADOC_PARAM,
-                    String.format("%s %s", paramName, paramDescription));
+                    String.format("%s %s", formattedName, paramDescription));
         }
         return sb.toString();
     }
@@ -1231,7 +1233,9 @@ public class ComponentGenerator {
         method.getJavaDoc().setText(String.format(
                 "Adds a listener for {@code %s} events fired by the webcomponent.",
                 event.getName()))
-                .addTagValue(JAVADOC_PARAM, "listener the listener");
+                .addTagValue(JAVADOC_PARAM, "listener the listener")
+                .addTagValue(JAVADOC_RETURN,
+                        "a {@link Registration} for removing the event listener");
 
         method.setBody(String.format(
                 "return addListener(%s.class, (ComponentEventListener) listener);",
