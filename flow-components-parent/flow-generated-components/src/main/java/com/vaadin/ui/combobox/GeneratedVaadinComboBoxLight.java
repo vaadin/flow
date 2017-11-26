@@ -17,7 +17,6 @@ package com.vaadin.ui.combobox;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -87,8 +86,8 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
-        extends Component implements HasStyle, ComponentSupplier<R>,
-        HasValue<R, String>, HasComponents {
+        extends Component
+        implements HasStyle, HasValue<R, String>, HasComponents {
 
     /**
      * <p>
