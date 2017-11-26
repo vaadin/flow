@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.shared.util.SharedUtil;
+import com.vaadin.ui.Component;
 
 /**
  * An util class with helpers for reflection operations. Used internally by
@@ -571,8 +572,9 @@ public class ReflectTools implements Serializable {
      *            class type of interface to get generic for
      * @return Class if found else {@code null}
      */
-    public static Class getGenericInterfaceType(Class clazz,
-            Class interfaceType) {
+    public static Class<?> getGenericInterfaceType(
+            Class<? extends Component> clazz,
+            Class<?> interfaceType) {
         Type[] genericInterfaces = clazz.getGenericInterfaces();
         ParameterizedType parameterizedType = null;
         for (Type genericInterface : genericInterfaces) {

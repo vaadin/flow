@@ -15,6 +15,7 @@
  */
 package com.vaadin.router;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
@@ -157,7 +158,7 @@ public interface HasUrlParameter<T> {
      * @return parameter is optional
      */
     static boolean isAnnotatedParameter(Class<?> navigationTarget,
-            Class parameterAnnotation) {
+            Class<? extends Annotation> parameterAnnotation) {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             return false;
         }
