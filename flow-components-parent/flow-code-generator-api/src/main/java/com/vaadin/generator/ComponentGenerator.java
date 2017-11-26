@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -737,6 +738,9 @@ public class ComponentGenerator {
 
         } else {
             boolean postfixWithVariableType = property.getType().size() > 1;
+            if (postfixWithVariableType) {
+                property.setType(new TreeSet<>(property.getType()));
+            }
             for (ComponentBasicType basicType : property.getType()) {
                 Class<?> javaType = ComponentGeneratorUtils
                         .toJavaType(basicType);
