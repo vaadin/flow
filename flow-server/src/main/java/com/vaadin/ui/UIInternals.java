@@ -80,8 +80,8 @@ public class UIInternals implements Serializable {
         public JavaScriptInvocation(String expression,
                 Serializable... parameters) {
             this.expression = expression;
-            for (int i = 0; i < parameters.length; i++) {
-                this.parameters.add(parameters[i]);
+            for (Serializable parameter : parameters) {
+                this.parameters.add(parameter);
             }
         }
 

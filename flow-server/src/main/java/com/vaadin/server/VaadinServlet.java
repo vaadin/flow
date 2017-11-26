@@ -601,8 +601,7 @@ public class VaadinServlet extends HttpServlet {
         }
         StringBuilder safe = new StringBuilder();
         char[] charArray = unsafe.toCharArray();
-        for (int i = 0; i < charArray.length; i++) {
-            char c = charArray[i];
+        for (char c : charArray) {
             if (isSafe(c)) {
                 safe.append(c);
             } else {
