@@ -789,6 +789,8 @@ public class ComponentGenerator {
                     }
                     javaClass.addInterface(HasValue.class.getName() + "<"
                             + GENERIC_TYPE + ", " + javaType.getName() + ">");
+                    javaClass.removeImport(ComponentSupplier.class);
+                    javaClass.removeInterface(ComponentSupplier.class);
                     method.addAnnotation(Override.class);
                 }
             }
