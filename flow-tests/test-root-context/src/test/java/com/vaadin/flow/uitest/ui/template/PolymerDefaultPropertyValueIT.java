@@ -34,7 +34,7 @@ public class PolymerDefaultPropertyValueIT extends ChromeBrowserTest {
         Assert.assertEquals("foo", text.getText());
 
         WebElement name = getInShadowRoot(template, By.id("name"));
-        Assert.assertEquals("", name.getText());
+        Assert.assertEquals("bar", name.getText());
 
         WebElement msg = getInShadowRoot(template, By.id("message"));
         Assert.assertEquals("updated-message", msg.getText());

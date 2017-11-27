@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.nodefeature;
 
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -24,9 +25,9 @@ import org.junit.Test;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeEvent;
 import com.vaadin.ui.event.PropertyChangeListener;
-import com.vaadin.shared.Registration;
 
 public class ElementPropertyMapTest {
 
@@ -47,8 +48,8 @@ public class ElementPropertyMapTest {
         PropertyChangeListener listener = ev -> {
             Assert.fail();
         };
-        Registration registration = map
-                .addPropertyChangeListener("foo", listener);
+        Registration registration = map.addPropertyChangeListener("foo",
+                listener);
         registration.remove();
 
         // listener is not called. Otherwise its assertion fails.
@@ -91,6 +92,24 @@ public class ElementPropertyMapTest {
         StateNode stateNode = (StateNode) map.get("foo");
         Assert.assertTrue(
                 stateNode.isReportedFeature(ElementPropertyMap.class));
+    }
+
+    @Test
+    public void put_ignoreSameValue() {
+        StateNode node = BasicElementStateProvider.createStateNode("div");
+        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
+
+        AtomicReference<Serializable> value = new AtomicReference<>();
+        map.addPropertyChangeListener("foo", event -> {
+            Assert.assertNull(value.get());
+            value.set(event.getValue());
+        });
+        map.setProperty("foo", "bar");
+
+        Assert.assertEquals("bar", value.get());
+
+        // Doesn't throw assertion error because listener is not called
+        map.setProperty("foo", "bar");
     }
 
     private void listenerIsNotified(boolean clientEvent) {

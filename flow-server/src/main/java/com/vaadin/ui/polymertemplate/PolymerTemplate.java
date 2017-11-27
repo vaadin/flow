@@ -19,13 +19,18 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.flow.StateNode;
 import com.vaadin.flow.model.ListModelType;
 import com.vaadin.flow.model.ModelDescriptor;
 import com.vaadin.flow.model.ModelType;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.model.TemplateModelProxyHandler;
+import com.vaadin.flow.nodefeature.ElementPropertyMap;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
@@ -56,10 +61,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     public PolymerTemplate(TemplateParser parser) {
         new TemplateInitializer(this, parser).initChildElements();
 
-        // This a workaround to propagate model to a Polymer template.
-        // Correct implementation will follow in
-        // https://github.com/vaadin/flow/issues/1371
-        getModel();
+        initModelProperties();
     }
 
     /**
@@ -154,7 +156,8 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                 descriptor);
     }
 
-    private static ModelType getModelTypeForListModel(Type type, ModelType mtype) {
+    private static ModelType getModelTypeForListModel(Type type,
+            ModelType mtype) {
         ModelType modelType = mtype;
         while (modelType instanceof ListModelType) {
             if (type.equals(modelType.getJavaType())) {
@@ -168,6 +171,56 @@ public abstract class PolymerTemplate<M extends TemplateModel>
             return modelType;
         }
         return null;
+    }
+
+    private JsonArray filterUnsetProperties(List<String> properties) {
+        JsonArray array = Json.createArray();
+        ElementPropertyMap map = getStateNode()
+                .getFeature(ElementPropertyMap.class);
+        int i = 0;
+        for (String property : properties) {
+            if (!map.hasProperty(property)) {
+                array.set(i, property);
+                i++;
+            }
+        }
+        return array;
+    }
+
+    private void initModelProperties() {
+        // initialize model: fill all model properties with their initial value
+        getModel();
+
+        // remove properties whose values are not StateNode from the property
+        // map and return their names as a list
+        List<String> propertyNames = removeSimpleProperties();
+
+        /*
+         * Now populate model properties on the client side. Only explicitly set
+         * by the developer properties are in the map at the moment of execution
+         * since all simple properties have been removed from the map above.
+         * Such properties are excluded from the argument list and won't be
+         * populated on the client side.
+         *
+         * All explicitly set model properties will be sent from the server as
+         * usual and will take precedence over the client side values.
+         */
+        getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
+                .beforeClientResponse(getStateNode(),
+                        () -> ui.getPage().executeJavaScript(
+                                "this.populateModelProperties($0, $1)",
+                                getElement(),
+                                filterUnsetProperties(propertyNames))));
+    }
+
+    private List<String> removeSimpleProperties() {
+        ElementPropertyMap map = getStateNode()
+                .getFeature(ElementPropertyMap.class);
+        List<String> props = map.getPropertyNames()
+                .filter(name -> !(map.getProperty(name) instanceof StateNode))
+                .collect(Collectors.toList());
+        props.forEach(map::removeProperty);
+        return props;
     }
 
 }

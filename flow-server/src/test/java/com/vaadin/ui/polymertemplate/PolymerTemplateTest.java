@@ -73,6 +73,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     private DeploymentConfiguration configuration;
 
     private List<Object> executionOrder = new ArrayList<>();
+    private List<Serializable[]> executionParams = new ArrayList<>();
 
     private static class TestTemplateParser implements TemplateParser {
 
@@ -124,6 +125,12 @@ public class PolymerTemplateTest extends HasCurrentService {
         String getMessage();
 
         String getTitle();
+    }
+
+    public interface TestModel extends ModelClass {
+        List<String> getList();
+
+        void setList(List<String> list);
     }
 
     @Tag(Tag.DIV)
@@ -345,7 +352,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag("template-initializer-test")
-    public class ExecutionOrder extends PolymerTemplate<TemplateModel> {
+    public static class ExecutionOrder extends PolymerTemplate<TemplateModel> {
         @Id("div")
         public CustomComponent element;
 
@@ -355,11 +362,20 @@ public class PolymerTemplateTest extends HasCurrentService {
         }
     }
 
+    @Tag("init-model-test")
+    public static class InitModelTemplate extends PolymerTemplate<TestModel> {
+
+        public InitModelTemplate() {
+            super(new SimpleTemplateParser());
+        }
+    }
+
     @SuppressWarnings("serial")
     @Before
     public void setUp() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         executionOrder.clear();
+        executionParams.clear();
 
         Field customElements = CustomElementRegistry.class
                 .getDeclaredField("customElements");
@@ -381,6 +397,7 @@ public class PolymerTemplateTest extends HasCurrentService {
                 public ExecutionCanceler executeJavaScript(String expression,
                         Serializable... parameters) {
                     executionOrder.add(expression);
+                    executionParams.add(parameters);
                     return () -> true;
                 }
             };
@@ -717,6 +734,48 @@ public class PolymerTemplateTest extends HasCurrentService {
         index = executionOrder
                 .indexOf("this.attachExistingElementById($0, $1, $2, $3);");
         Assert.assertEquals("foo", executionOrder.get(index + 1));
+    }
+
+    @Test
+    public void initModel_onlyExplicitelySetPropertiesAreSet() {
+        InitModelTemplate template = new InitModelTemplate();
+
+        template.getModel().setMessage("foo");
+
+        ElementPropertyMap map = template.getElement().getNode()
+                .getFeature(ElementPropertyMap.class);
+
+        // message has been explicitly set
+        Assert.assertTrue(map.hasProperty("message"));
+        Assert.assertNotNull(map.getProperty("message"));
+        // "list" is represented by StateNode so it's considered as explicitly
+        // set
+        Assert.assertTrue(map.hasProperty("list"));
+        Assert.assertNotNull(map.getProperty("list"));
+
+        // title has not been
+        Assert.assertFalse(map.hasProperty("title"));
+    }
+
+    @Test
+    public void initModel_requestPopulateModel_onlyUnsetPropertiesAreSent() {
+        UI ui = UI.getCurrent();
+        InitModelTemplate template = new InitModelTemplate();
+
+        template.getModel().setMessage("foo");
+
+        ui.add(template);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        Assert.assertEquals(1, executionOrder.size());
+        Assert.assertEquals("this.populateModelProperties($0, $1)",
+                executionOrder.get(0));
+
+        Serializable[] params = executionParams.get(0);
+        JsonArray properties = (JsonArray) params[1];
+        Assert.assertEquals(1, properties.length());
+        Assert.assertEquals("title", properties.get(0).asString());
     }
 
     private List<Integer> convertIntArray(JsonArray array) {

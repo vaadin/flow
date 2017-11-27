@@ -93,6 +93,9 @@ public abstract class NodeMap extends NodeFeature {
 
     // Internal method to avoid exposing non-serializable setter
     private void doPut(String key, Serializable value, boolean emitChange) {
+        if (contains(key) && Objects.equals(get(key), value)) {
+            return;
+        }
         if (emitChange) {
             setChanged(key);
         } else {

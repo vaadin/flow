@@ -17,6 +17,8 @@ package com.vaadin.client;
 
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
+import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.nodefeature.NodeFeatures;
@@ -55,6 +57,8 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
         private String sentExistingElementId;
 
+        private MapProperty syncedProperty;
+
         ExistingElementStateTree(Registry registry) {
             super(registry);
         }
@@ -77,6 +81,11 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
             sentExistingElementAssignedId = assignedId;
             sentExistingElementTagName = tagName;
             sentExistingElementId = id;
+        }
+
+        @Override
+        public void sendNodePropertySyncToServer(MapProperty property) {
+            syncedProperty = property;
         }
     }
 
@@ -189,13 +198,13 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         Element storedElement = map.getElement(requestedId);
         assertEquals(child, storedElement);
     }
-    
+
     public void testAttachExistingElementById_notCustomElementInitially_elementExistsInDom() {
         String id = "identifier";
 
         Element child = Browser.getDocument().createElement("div");
         child.setAttribute("id", id);
-        
+
         mockWhenDefined(element);
 
         ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
@@ -235,11 +244,11 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         Element storedElement = map.getElement(requestedId);
         assertEquals(anotherGrandChild, storedElement);
     }
-    
+
     public void testAttachCustomElement_notCustomElementInitially_elementExistsInDom() {
         Element child = Browser.getDocument().createElement("div");
         element.appendChild(child);
-        
+
         Element grandChild = Browser.getDocument().createElement("a");
         child.appendChild(grandChild);
         Element anotherGrandChild = Browser.getDocument().createElement("span");
@@ -248,12 +257,12 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         JsonArray path = Json.createArray();
         path.set(0, 0);
         path.set(1, 1);
-        
+
         mockWhenDefined(element);
 
         ExecuteJavaScriptElementUtils.attachCustomElement(node, "span",
                 requestedId, path);
-        
+
         setupShadowRoot();
         runWhenDefined(element);
 
@@ -285,13 +294,13 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         ExistingElementMap map = tree.getRegistry().getExistingElementMap();
         assertNull(map.getElement(requestedId));
     }
-    
+
     public void testAttachExistingElementById_notCustomElementInitially_elementMissingInDom() {
         mockWhenDefined(element);
 
         ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
                 requestedId, "not_found");
-        
+
         setupShadowRoot();
         runWhenDefined(element);
 
@@ -317,7 +326,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         ExistingElementMap map = tree.getRegistry().getExistingElementMap();
         assertNull(map.getElement(requestedId));
     }
-    
+
     public void testAttachCustomElement_notCustomElementInitially_elementMissingInDom() {
         mockWhenDefined(element);
 
@@ -328,7 +337,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         path.set(0, 1);
         ExecuteJavaScriptElementUtils.attachCustomElement(node, "div",
                 requestedId, path);
-        
+
         setupShadowRoot();
         runWhenDefined(element);
 
@@ -365,10 +374,10 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                 .getExistingElementMap();
         assertNull(existingElements.getElement(requestedId));
     }
-    
+
     public void testAttachExistingElementById_notCustomElementInitially_elementIsAlreadyAssociated() {
         mockWhenDefined(element);
-        
+
         String id = "identifier";
 
         Element child = Browser.getDocument().createElement("div");
@@ -379,15 +388,15 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
         ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
                 requestedId, id);
-        
+
         setupShadowRoot();
-        
+
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
         StateNode shadowRootNode = (StateNode) map
                 .getProperty(NodeProperties.SHADOW_ROOT).getValue();
         NodeList list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
         list.add(0, elementNode);
-        
+
         addChildElement(element, child);
         runWhenDefined(element);
 
@@ -425,12 +434,11 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                 .getExistingElementMap();
         assertNull(existingElements.getElement(requestedId));
     }
-    
+
     public void testAttachCustomElement__notCustomElementInitially_elementIsAlreadyAssociated() {
         mockWhenDefined(element);
         Element child = Browser.getDocument().createElement("div");
         element.appendChild(child);
-
 
         StateNode elementNode = new StateNode(99, tree);
         elementNode.setDomNode(child);
@@ -439,7 +447,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         path.set(0, 0);
         ExecuteJavaScriptElementUtils.attachCustomElement(node, "div",
                 requestedId, path);
-        
+
         setupShadowRoot();
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
         StateNode shadowRootNode = (StateNode) map
@@ -453,6 +461,29 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         ExistingElementMap existingElements = tree.getRegistry()
                 .getExistingElementMap();
         assertNull(existingElements.getElement(requestedId));
+    }
+
+    public void testPopulateModelProperties_propertyIsNotDefined_addIntoPropertiesMap() {
+        ExecuteJavaScriptElementUtils.populateModelProperties(node,
+                JsCollections.array("foo"));
+
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertTrue(map.hasPropertyValue("foo"));
+    }
+
+    public void testPopulateModelProperties_propertyIsDefined_syncToServer() {
+        defineProperty(element, "foo");
+
+        WidgetUtil.setJsProperty(element, "foo", "bar");
+
+        ExecuteJavaScriptElementUtils.populateModelProperties(node,
+                JsCollections.array("foo"));
+
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertTrue(map.hasPropertyValue("foo"));
+
+        assertEquals("bar", tree.syncedProperty.getValue());
+        assertEquals("foo", tree.syncedProperty.getName());
     }
 
     private void setupShadowRoot() {
@@ -532,5 +563,13 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
     private native void runWhenDefined(Element element)
     /*-{
         element.callback();
+    }-*/;
+
+    private native void defineProperty(Element element, String property)
+    /*-{
+        element["constructor"] ={};
+        element["constructor"]["properties"] ={};
+        element["constructor"]["properties"][property] ={};
+        element["constructor"]["properties"][property]["value"] ={};
     }-*/;
 }
