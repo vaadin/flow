@@ -33,11 +33,6 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
         return 9998;
     }
 
-    @Override
-    protected String getTestPath() {
-        return ("/");
-    }
-
     /**
      * Method run before each test.
      */
