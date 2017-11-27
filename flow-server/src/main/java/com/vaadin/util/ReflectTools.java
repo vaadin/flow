@@ -571,8 +571,8 @@ public class ReflectTools implements Serializable {
      *            class type of interface to get generic for
      * @return Class if found else {@code null}
      */
-    public static Class getGenericInterfaceType(Class clazz,
-            Class interfaceType) {
+    public static Class<?> getGenericInterfaceType(Class<?> clazz,
+            Class<?> interfaceType) {
         Type[] genericInterfaces = clazz.getGenericInterfaces();
         ParameterizedType parameterizedType = null;
         for (Type genericInterface : genericInterfaces) {
