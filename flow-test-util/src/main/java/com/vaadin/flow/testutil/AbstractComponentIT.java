@@ -22,6 +22,7 @@ public class AbstractComponentIT extends ChromeBrowserTest {
 
     @Override
     public void checkIfServerAvailable() {
+        // this check is not used for the component ITs
     }
 
     @Override
