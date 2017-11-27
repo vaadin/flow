@@ -15,17 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.server.RequestHandler;
 import com.vaadin.server.ServiceInitEvent;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinServiceInitListener;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 
@@ -38,14 +33,9 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
     public void serviceInit(ServiceInitEvent event) {
         initCount.incrementAndGet();
 
-        event.addRequestHandler(new RequestHandler() {
-            @Override
-            public boolean handleRequest(VaadinSession session,
-                    VaadinRequest request, VaadinResponse response)
-                    throws IOException {
-                requestCount.incrementAndGet();
-                return false;
-            }
+        event.addRequestHandler((session, request, response) -> {
+            requestCount.incrementAndGet();
+            return false;
         });
 
         event.addDependencyFilter((dependencies, context) -> {
