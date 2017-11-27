@@ -81,10 +81,9 @@ public class DefaultReconnectDialog implements ReconnectDialog {
 
         // Click to refresh after giving up
         if (!reconnecting) {
-            clickHandler = root.addEventListener("click", event -> {
-                // refresh
-                WidgetUtil.redirect(null);
-            }, false);
+            clickHandler = root.addEventListener("click",
+                    // refresh
+                    event -> WidgetUtil.redirect(null), false);
         } else {
             if (clickHandler != null) {
                 clickHandler.remove();
