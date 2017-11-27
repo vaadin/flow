@@ -190,15 +190,10 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     private void initModelProperties() {
         // initialize model: fill all model properties with their initial value
         getModel();
-        // now collect all property names
-        ElementPropertyMap properties = getStateNode()
-                .getFeature(ElementPropertyMap.class);
-        List<String> propertyNames = properties.getPropertyNames()
-                .collect(Collectors.toList());
 
         // remove properties whose values are not StateNode from the property
-        // map
-        removeSimpleProperties();
+        // map and return their names as a list
+        List<String> propertyNames = removeSimpleProperties();
 
         /*
          * Now populate model properties on the client side. Only explicitly set
@@ -218,13 +213,14 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                                 filterUnsetProperties(propertyNames))));
     }
 
-    private void removeSimpleProperties() {
+    private List<String> removeSimpleProperties() {
         ElementPropertyMap map = getStateNode()
                 .getFeature(ElementPropertyMap.class);
         List<String> props = map.getPropertyNames()
                 .filter(name -> !(map.getProperty(name) instanceof StateNode))
                 .collect(Collectors.toList());
         props.forEach(map::removeProperty);
+        return props;
     }
 
 }
