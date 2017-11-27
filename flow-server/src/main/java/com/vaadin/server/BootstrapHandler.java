@@ -336,6 +336,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 document.baseUri());
         document.appendChild(doctype);
         Element html = document.appendElement("html");
+        html.attr("lang", context.getUI().getLocale().getLanguage());
         Element head = html.appendElement("head");
         html.appendElement("body");
 
