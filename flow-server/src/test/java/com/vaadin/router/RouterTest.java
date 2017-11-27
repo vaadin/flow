@@ -2031,7 +2031,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     private void assertExceptionComponent(String exceptionText,
-            Class<? extends Component> errorClass) {
+            Class<?> errorClass) {
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
 
