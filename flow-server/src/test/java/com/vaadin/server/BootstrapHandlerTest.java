@@ -160,6 +160,26 @@ public class BootstrapHandlerTest {
         assertEquals(2, body.parent().childNodeSize());
     }
 
+    @Test // #2956
+    public void head_has_ui_lang() throws Exception {
+        initUI(testUI, createVaadinRequest());
+        testUI.setLocale(Locale.FRENCH);
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Element body = page.head().nextElementSibling();
+
+        assertEquals("Expected body element", "body", body.tagName());
+        assertEquals("Expected html element as parent to body element", "html",
+                body.parent().tagName());
+
+        assertTrue("Html tag was missing lang attribute",
+                body.parent().hasAttr("lang"));
+        assertEquals("Lang did not have UI defined language",
+                testUI.getLocale().getLanguage(), body.parent().attr("lang"));
+    }
+
     @Test
     public void headHasMetaTags() throws Exception {
         initUI(testUI, createVaadinRequest());
