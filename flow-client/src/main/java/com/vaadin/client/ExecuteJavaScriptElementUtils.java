@@ -322,7 +322,8 @@ public final class ExecuteJavaScriptElementUtils {
 
     private static native boolean isPropertyDefined(Node node, String property)
     /*-{
-        return node["constructor"] && node["constructor"]["properties"] &&
-            node["constructor"]["properties"][property] && node["constructor"]["properties"][property]["value"];
+        return !!(node["constructor"] && node["constructor"]["properties"] &&
+            node["constructor"]["properties"][property] &&
+                node["constructor"]["properties"][property]["value"]);
     }-*/;
 }
