@@ -145,9 +145,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * <p>
      * The virtual child is not really a child of the DOM element. The
      * client-side counterpart is created in the memory but it's not attached to
-     * the DOM tree. The resulting element can be retrieved via calling
-     * client-side JS function providing the node id as an argument (the result
-     * of <code>getNode().getId()</code> on the child element).
+     * the DOM tree. The resulting element is referenced via the server side
+     * {@link Element} in JS function call as usual.
      *
      * @param child
      *            the element to add
