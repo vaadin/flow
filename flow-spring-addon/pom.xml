@@ -13,7 +13,7 @@
 
     <properties>
         <spring.version>5.0.0.RELEASE</spring.version>
-        <spring-boot.version>1.5.8.RELEASE</spring-boot.version>
+        <spring-boot.version>2.0.0.M6</spring-boot.version>
     </properties>
 
     <dependencyManagement>
@@ -28,8 +28,18 @@
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
+    <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow</artifactId>

@@ -14,7 +14,7 @@
     </description>
 
     <properties>
-        <spring-boot.version>1.5.7.RELEASE</spring-boot.version>
+        <spring-boot.version>2.0.0.M6</spring-boot.version>
         <skipTests>true</skipTests>
     </properties>
 
@@ -29,6 +29,17 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
