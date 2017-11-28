@@ -16,6 +16,8 @@
 
 package com.vaadin.server;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -61,7 +63,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -807,7 +808,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      */
     protected static Optional<String> resolvePageTitle(
             BootstrapContext context) {
-        // check for explicitly set page title, eg. by PageTitleGenerator or
+        // check for explicitly set page title, e.g. by PageTitleGenerator or
         // View level title or page.setTitle
         String title = context.getUI().getInternals().getTitle();
         if (title != null) {
