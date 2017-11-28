@@ -184,4 +184,9 @@ public abstract class AbstractTextElementStateProvider
             Element previousSibling, ChildElementConsumer callback) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public void appendVirtualChild(StateNode node, Element child) {
+        throw new UnsupportedOperationException();
+    }
 }

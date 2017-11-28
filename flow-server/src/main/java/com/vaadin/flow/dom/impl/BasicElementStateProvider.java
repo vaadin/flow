@@ -329,11 +329,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    protected Class<? extends NodeFeature>[] getProviderFeatures() {
-        return features;
-    }
-
-    @Override
     public StateNode getShadowRoot(StateNode node) {
         return node.getFeature(ShadowRootData.class).getShadowRoot();
     }
@@ -345,8 +340,19 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
+    public void appendVirtualChild(StateNode node, Element child) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
     protected Node<?> getNode(StateNode node) {
         assert supports(node);
         return Element.get(node);
+    }
+
+    @Override
+    protected Class<? extends NodeFeature>[] getProviderFeatures() {
+        return features;
     }
 }

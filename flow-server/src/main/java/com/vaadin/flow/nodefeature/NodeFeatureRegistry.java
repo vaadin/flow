@@ -91,6 +91,8 @@ public class NodeFeatureRegistry {
                 AttachTemplateChildFeature::new);
         registerFeature(VirtualChildrenList.class, VirtualChildrenList::new);
         registerFeature(BasicTypeValue.class, BasicTypeValue::new);
+        registerFeature(NewVirtualChildrenList.class,
+                NewVirtualChildrenList::new);
     }
 
     private NodeFeatureRegistry() {

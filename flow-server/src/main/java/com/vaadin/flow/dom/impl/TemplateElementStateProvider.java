@@ -573,4 +573,9 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             Element previousSibling, ChildElementConsumer callback) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public void appendVirtualChild(StateNode node, Element child) {
+        throw new UnsupportedOperationException();
+    }
 }

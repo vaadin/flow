@@ -85,7 +85,7 @@ public class BasicTextElementStateProvider
     }
 
     @Override
-    public Node getParent(StateNode node) {
+    public Node<?> getParent(StateNode node) {
         return BasicElementStateProvider.get().getParent(node);
     }
 

@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.nodefeature;
 
-import com.vaadin.flow.nodefeature.BasicTypeValue;
-import com.vaadin.flow.nodefeature.ElementData;
-import com.vaadin.flow.nodefeature.ShadowRootData;
-import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.nodefeature.TextNodeMap;
-
 /**
  * Various node properties' ids.
  *
@@ -32,6 +26,12 @@ public final class NodeProperties {
      * Key for {@link ElementData#getTag()}.
      */
     public static final String TAG = "tag";
+
+    /**
+     * Key for {@link ElementData#getPayload()}.
+     */
+    public static final String PAYLOAD = "payload";
+
     /**
      * Key for {@link TextNodeMap#getText()}.
      */
@@ -52,6 +52,11 @@ public final class NodeProperties {
      * Key for {@link BasicTypeValue#getValue()}.
      */
     public static final String VALUE = "value";
+
+    /**
+     * JsonObject type key for {@link NewVirtualChildrenList}.
+     */
+    public static final String TYPE = "type";
 
     /** Key for id property. */
     public static final String ID = "id";
