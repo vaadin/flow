@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.flow;
 
-import com.vaadin.client.Console;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsSet;
@@ -61,7 +60,6 @@ public class TreeChangeProcessor {
             // Attach all nodes before doing anything else
             for (int i = 0; i < length; i++) {
                 JsonObject change = changes.getObject(i);
-                Console.log("i + " + i + " " + isAttach(change));
                 if (isAttach(change)) {
                     int nodeId = (int) change
                             .getNumber(JsonConstants.CHANGE_NODE);
@@ -75,7 +73,6 @@ public class TreeChangeProcessor {
             // Then process all non-attach changes
             for (int i = 0; i < length; i++) {
                 JsonObject change = changes.getObject(i);
-                Console.log("unattachedd + " + i + " " + !isAttach(change));
                 if (!isAttach(change)) {
                     nodes.add(processChange(tree, change));
                 }

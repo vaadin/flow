@@ -362,7 +362,6 @@ public class MessageHandler {
      *            the time stamp when processing started
      */
     private void processMessage(ValueMap valueMap, Object lock, Date start) {
-
         assert getServerId(valueMap) == -1
                 || getServerId(valueMap) == lastSeenServerSyncId;
 
@@ -371,7 +370,6 @@ public class MessageHandler {
 
             JsonObject json = valueMap.cast();
 
-            Console.log("json " + json);
             if (json.hasKey("templates")) {
                 TemplateRegistry templates = registry.getTemplateRegistry();
                 JsonObject templatesJson = json.getObject("templates");
@@ -784,7 +782,8 @@ public class MessageHandler {
 
     /**
      * Sets a temporary handler for session expiration. This handler will be
-     * triggered if and only if the next server message tells that the session has expired.
+     * triggered if and only if the next server message tells that the session
+     * has expired.
      *
      * @param nextResponseSessionExpiredHandler
      *            the handler to use or null to remove a previously set handler

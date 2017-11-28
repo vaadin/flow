@@ -339,7 +339,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 : path + "." + property.getName();
         NativeFunction setValueFunction = NativeFunction.create("path", "value",
                 "this.set(path, value)");
-        Console.log("setSubProperties " + property.getName() + ':' + property.getValue());
         if (property.getValue() instanceof StateNode) {
             StateNode subNode = (StateNode) property.getValue();
 
@@ -450,7 +449,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
         String name = mapProperty.getName();
-        Console.log("updateProperty " + name);
         if (mapProperty.hasValue()) {
             Object treeValue = mapProperty.getValue();
             Object domValue = WidgetUtil.getJsProperty(element, name);
