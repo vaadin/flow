@@ -457,9 +457,6 @@ public class BootstrapHandlerTest {
         Element head = initTestUI();
 
         checkInlinedScript(head, "es6-collections.js", true);
-        assertTrue(
-                "Webcomponent adapter is expected to be included to a bootstrap page when ES6 is not supported",
-                head.toString().contains("custom-elements-es5-adapter.js"));
         checkInlinedScript(head, "babel-helpers.min.js", true);
     }
 
@@ -471,9 +468,6 @@ public class BootstrapHandlerTest {
 
         checkInlinedScript(head, "es6-collections.js", false);
         checkInlinedScript(head, "babel-helpers.min.js", false);
-        assertFalse(
-                "Webcomponent adapter should NOT be included to a bootstrap page when ES6 is not supported",
-                head.toString().contains("custom-elements-es5-adapter.js"));
     }
 
     private Element initTestUI() {
