@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.function.SerializableFunction;
@@ -1057,7 +1058,7 @@ public class Binder<BEAN> implements Serializable {
 
     private final Map<HasValue<?, ?>, ConverterDelegate<?>> initialConverters = new IdentityHashMap<>();
 
-    private Map<Class<?>, List<Consumer<?>>> listeners = new HashMap<>();
+    private HashMap<Class<?>, List<Consumer<?>>> listeners = new HashMap<>();
 
     private HasText statusLabel;
 

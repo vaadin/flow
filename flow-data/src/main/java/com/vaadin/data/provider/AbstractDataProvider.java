@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import com.vaadin.data.provider.DataChangeEvent.DataRefreshEvent;
@@ -39,7 +38,7 @@ import com.vaadin.shared.Registration;
  */
 public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
 
-    private Map<Class<?>, List<Consumer<?>>> listeners = new HashMap<>();
+    private HashMap<Class<?>, List<Consumer<?>>> listeners = new HashMap<>();
 
     @Override
     public Registration addDataProviderListener(
