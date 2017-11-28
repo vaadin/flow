@@ -88,11 +88,12 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void fireEvent(EventObject event) {
-        List<Consumer<?>> list = listeners.get(event.getClass());
-        if (list != null) {
-            for (Consumer listener : list) {
-                listener.accept(event);
-            }
-        }
+        listeners.entrySet().stream().filter(
+                entry -> entry.getKey().isAssignableFrom(event.getClass()))
+                .forEach(entry -> {
+                    for (Consumer consumer : entry.getValue()) {
+                        consumer.accept(event);
+                    }
+                });
     }
 }

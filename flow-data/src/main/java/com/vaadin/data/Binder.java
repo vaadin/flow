@@ -2135,12 +2135,13 @@ public class Binder<BEAN> implements Serializable {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void fireEvent(Object event) {
-        List<Consumer<?>> consumers = listeners.get(event.getClass());
-        if (consumers != null) {
-            for (Consumer c : consumers) {
-                c.accept(event);
-            }
-        }
+        listeners.entrySet().stream().filter(
+                entry -> entry.getKey().isAssignableFrom(event.getClass()))
+                .forEach(entry -> {
+                    for (Consumer consumer : entry.getValue()) {
+                        consumer.accept(event);
+                    }
+                });
     }
 
     private <FIELDVALUE> Converter<FIELDVALUE, FIELDVALUE> createNullRepresentationAdapter(
