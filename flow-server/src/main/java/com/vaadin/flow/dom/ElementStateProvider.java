@@ -426,7 +426,12 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @param child
      *            the child element to add
+     * @param type
+     *            the type of additional payload data
+     * @param payload
+     *            the additional payload data
      */
-    void appendVirtualChild(StateNode node, Element child);
+    void appendVirtualChild(StateNode node, Element child, String type,
+            String payload);
 
 }

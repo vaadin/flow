@@ -186,7 +186,8 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void appendVirtualChild(StateNode node, Element child) {
+    public void appendVirtualChild(StateNode node, Element child, String type,
+            String payload) {
         throw new UnsupportedOperationException();
     }
 }

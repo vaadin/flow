@@ -23,13 +23,14 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
+import com.vaadin.flow.nodefeature.NewVirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
 
 /**
  * Abstract implementation of the {@link ElementStateProvider} related to the
  * composition essence of the provider.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -49,7 +50,7 @@ public abstract class AbstractNodeStateProvider
 
     /**
      * Returns the features supported by the provider.
-     * 
+     *
      * @return features supported by the provider
      */
     protected abstract Class<? extends NodeFeature>[] getProviderFeatures();
@@ -143,10 +144,21 @@ public abstract class AbstractNodeStateProvider
         });
     }
 
+    @Override
+    public void appendVirtualChild(StateNode node, Element child, String type,
+            String payload) {
+        if (node.hasFeature(NewVirtualChildrenList.class)) {
+            node.getFeature(NewVirtualChildrenList.class)
+                    .append(child.getNode(), type, payload);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     /**
      * Gets the flyweight instance for the {@code node} supported by the
      * provider.
-     * 
+     *
      * @see #supports(StateNode)
      * @param node
      *            the node to wrap into flyweight

@@ -58,6 +58,11 @@ public final class NodeProperties {
      */
     public static final String TYPE = "type";
 
+    /**
+     * JsonObject type value for {@link NewVirtualChildrenList}.
+     */
+    public static final String IN_MEMORY_CHILD = "inMemory";
+
     /** Key for id property. */
     public static final String ID = "id";
 

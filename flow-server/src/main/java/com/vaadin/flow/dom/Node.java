@@ -21,6 +21,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.nodefeature.NodeProperties;
 
 /**
  * A class representing a node in the DOM.
@@ -139,27 +140,33 @@ public abstract class Node<N extends Node<N>> implements Serializable {
         return getSelf();
     }
 
-    public N appendVirtualChild(Element... children) {
-        if (children == null) {
+    /**
+     * Appends the given child as the virtual child of the element.
+     * <p>
+     * The virtual child is not really a child of the DOM element. The
+     * client-side counterpart is created in the memory but it's not attached to
+     * the DOM tree. The resulting element can be retrieved via calling
+     * client-side JS function providing the node id as an argument (the result
+     * of <code>getNode().getId()</code> on the child element).
+     *
+     * @param child
+     *            the element to add
+     * @return this element
+     */
+    public N appendVirtualChild(Element child) {
+        if (child == null) {
             throw new IllegalArgumentException(
-                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+                    "Element to insert must not be null");
         }
-
-        for (int i = 0; i < children.length; i++) {
-            Element child = children[i];
-            if (child == null) {
-                throw new IllegalArgumentException(
-                        "Element to insert must not be null");
-            }
-            Node<?> parentNode = child.getParentNode();
-            if (parentNode != null) {
-                throw new IllegalArgumentException(
-                        "Element to insert already has a parent and can't "
-                                + "be added as a virtual child");
-            }
-            getStateProvider().appendVirtualChild(node, child);
-            ensureChildHasParent(child, true);
+        Node<?> parentNode = child.getParentNode();
+        if (parentNode != null) {
+            throw new IllegalArgumentException(
+                    "Element to insert already has a parent and can't "
+                            + "be added as a virtual child");
         }
+        getStateProvider().appendVirtualChild(getNode(), child,
+                NodeProperties.IN_MEMORY_CHILD, null);
+        ensureChildHasParent(child, true);
 
         return getSelf();
     }

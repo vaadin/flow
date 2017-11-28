@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.nodefeature;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.StateNode;
 
 import elemental.json.Json;
@@ -42,15 +44,11 @@ public class NewVirtualChildrenList extends StateNodeNodeList {
         super(node);
     }
 
-    public void add(int index, StateNode node, String type, String payload) {
+    public void add(int index, StateNode node, String type,
+            Serializable payload) {
         assert node != null;
 
         JsonObject object = Json.createObject();
-        object.put(NodeProperties.TYPE, type);
-        if (payload != null) {
-            object.put(NodeProperties.PAYLOAD, payload);
-        }
-
         node.getFeature(ElementData.class).setPyload(object);
         super.add(index, node);
     }
@@ -65,7 +63,7 @@ public class NewVirtualChildrenList extends StateNodeNodeList {
      * @param node
      *            the item to append
      */
-    public void append(StateNode node, String type, String payload) {
+    public void append(StateNode node, String type, Serializable payload) {
         add(size(), node, type, payload);
     }
 
