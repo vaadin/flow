@@ -20,6 +20,7 @@
         <module>flow-html-components</module>
         <module>flow-spring-addon</module>
         <module>flow-spring-boot-starter</module>
+        <module>flow-guice-addon</module>
         <module>flow-documentation</module>
         <module>flow-test-util</module>
         <module>flow-tests</module>
