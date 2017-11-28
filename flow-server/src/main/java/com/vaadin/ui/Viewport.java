@@ -25,11 +25,6 @@ import java.lang.annotation.Target;
 /**
  * Defines a viewport tag that will be added to the HTML of the host page of a
  * UI class.
- * <p>
- * If you want to dynamically provide different viewport values for different
- * browser, you should use {@link ViewportGeneratorClass} instead.
- *
- * @since 7.4
  *
  * @author Vaadin Ltd
  */

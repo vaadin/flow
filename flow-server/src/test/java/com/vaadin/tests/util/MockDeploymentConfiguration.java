@@ -120,6 +120,6 @@ public class MockDeploymentConfiguration
 
     @Override
     public boolean isUsingNewRouting() {
-        return false;
+        return true;
     }
 }

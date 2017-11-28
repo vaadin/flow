@@ -67,6 +67,31 @@ public final class RouterUtil {
     }
 
     /**
+     * Get the top most parent layout for navigation target.
+     * 
+     * @param component
+     *            navigation target to get top most parent for
+     * @return top parent layout for target or null if none found
+     */
+    public static Class<? extends RouterLayout> getTopParentLayout(
+            Class<?> component) {
+        Class<? extends RouterLayout> top = null;
+        Optional<Route> router = AnnotationReader.getAnnotationFor(component,
+                Route.class);
+        Optional<ParentLayout> parentLayout = AnnotationReader
+                .getAnnotationFor(component, ParentLayout.class);
+
+        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
+            top = getTopParentLayout(router.get().layout());
+        } else if (parentLayout.isPresent()) {
+            top = getTopParentLayout(parentLayout.get().value());
+        } else if (RouterLayout.class.isAssignableFrom(component)) {
+            top = (Class<? extends RouterLayout>) component;
+        }
+        return top;
+    }
+
+    /**
      * Updates the page title according to the currently visible component.
      * <p>
      * Uses {@link HasDynamicTitle#getPageTitle()} if implemented, or else the

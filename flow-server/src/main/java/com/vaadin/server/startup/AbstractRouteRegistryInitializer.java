@@ -15,7 +15,9 @@
  */
 package com.vaadin.server.startup;
 
+import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,8 +26,12 @@ import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouteAlias;
+import com.vaadin.router.RouterLayout;
+import com.vaadin.router.util.RouterUtil;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.Viewport;
 
 /**
  * Common validation methods for route registry initializer.
@@ -80,5 +86,37 @@ public abstract class AbstractRouteRegistryInitializer {
                     "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
                     route.getName()));
         }
+
+        if (route.isAnnotationPresent(Viewport.class) && !UI.class
+                .equals(route.getAnnotation(Route.class).layout())) {
+            throw new InvalidRouteLayoutConfigurationException(
+                    "Viewport annotation needs to be on the top parent layout not on "
+                            + route.getName());
+        }
+        if (!UI.class.equals(route.getAnnotation(Route.class).layout())) {
+            List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+                    .getParentLayouts(route);
+            Class<? extends RouterLayout> topParentLayout = RouterUtil
+                    .getTopParentLayout(route);
+
+            Supplier<Stream<Class<? extends RouterLayout>>> streamSupplier = () -> parentLayouts
+                    .stream().filter(layout -> layout
+                            .isAnnotationPresent(Viewport.class));
+            if (streamSupplier.get().count() > 1) {
+                throw new InvalidRouteLayoutConfigurationException(
+                        "Only one Viewport annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                                + streamSupplier.get().map(Class::getName)
+                                        .collect(Collectors.joining(", ")));
+            }
+
+            streamSupplier.get().findFirst().ifPresent(layout -> {
+                if (!layout.equals(topParentLayout)) {
+                    throw new InvalidRouteLayoutConfigurationException(
+                            "Viewport annotation should be on the top most route layout. Offending class: "
+                                    + layout.getName());
+                }
+            });
+        }
+
     }
 }

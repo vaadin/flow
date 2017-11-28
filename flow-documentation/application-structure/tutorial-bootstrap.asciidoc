@@ -15,6 +15,41 @@ Also it is possible to include additional JavaScripts, HTML imports and Style Sh
 Sometimes you may want to customize the page header and add there some additional data, e.g. custom `meta` tags.
 Such markup is required to enable your web page to become a rich object in a social graph using http://ogp.me/[OpenGraph protocol].
 
+== Viewport annotation
+
+Viewport meta-tag can be set to the initial page by annotating the navigation target with `@Route` or
+the top most `RouterLayout` that builds the navigation target chain.
+
+[source,java]
+----
+@Route("")
+@Viewport("width=device-width")
+public class MyApp extends Div {
+  public MyApp() {
+    setText("Hello world");
+  }
+}
+----
+
+[source,java]
+----
+@Route(value = "", layout = MyLayout.class)
+public class MyView extends Div {
+  public MyView() {
+    setText("Hello world");
+  }
+}
+
+@Viewport("width=device-width")
+public class MyLayout extends Div implements RouterLayout {
+}
+----
+
+[NOTE]
+If the Viewport annotation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
+
+== BootstrapListener
+
 To be able to modify default bootstrap page and add your custom meta tags on the page you should use
 your `BootstrapListener` implementation and add it to the `ServiceInitEvent` instance available
 in a `VaadinServiceInitListener`.

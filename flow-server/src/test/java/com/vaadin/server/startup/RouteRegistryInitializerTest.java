@@ -15,14 +15,13 @@
  */
 package com.vaadin.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,6 +43,8 @@ import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.Viewport;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -481,4 +482,101 @@ public class RouteRegistryInitializerTest {
                 navigationTarget.isPresent());
         Assert.assertEquals(errorMessage, routeClass, navigationTarget.get());
     }
+
+    /* @Viewport tests */
+
+    @Route("single")
+    @Tag(Tag.DIV)
+    @Viewport("width=device-width")
+    public static class SingleNavigationTarget extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class Parent extends Component implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(Parent.class)
+    @Viewport("width=device-width")
+    public static class MiddleParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(MiddleParentLayout.class)
+    @Viewport("width=device-width")
+    public static class MultiMiddleParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Route(value = "", layout = Parent.class)
+    @Tag(Tag.DIV)
+    public static class RootWithParent extends Component {
+    }
+
+    @Route(value = "", layout = Parent.class)
+    @Tag(Tag.DIV)
+    @Viewport("width=device-width")
+    public static class RootViewportWithParent extends Component {
+    }
+
+    @Route(value = "", layout = MiddleParentLayout.class)
+    @Tag(Tag.DIV)
+    public static class RootWithParents extends Component {
+    }
+
+    @Route(value = "", layout = MultiMiddleParentLayout.class)
+    @Tag(Tag.DIV)
+    public static class MultiViewport extends Component {
+    }
+
+    @Test
+    public void onStartUp_wrong_position_view_layout_throws()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                "Viewport annotation should be on the top most route layout. Offending class: "
+                        + MiddleParentLayout.class.getName());
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(RootWithParents.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_only_one_viewport_in_route_chain()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                "Only one Viewport annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                        + MultiMiddleParentLayout.class.getName() + ", "
+                        + MiddleParentLayout.class.getName());
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(MultiViewport.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_route_can_not_contain_viewport_if_has_parent()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                "Viewport annotation needs to be on the top parent layout not on "
+                        + RootViewportWithParent.class.getName());
+
+        routeRegistryInitializer.onStartup(Stream
+                .of(RootViewportWithParent.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_one_viewport_in_chain_and_one_for_route_passes()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(SingleNavigationTarget.class, RootWithParent.class)
+                        .collect(Collectors.toSet()),
+                servletContext);
+    }
+
 }

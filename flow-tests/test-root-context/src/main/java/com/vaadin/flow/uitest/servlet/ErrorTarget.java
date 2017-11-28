@@ -5,11 +5,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.NotFoundException;
-import com.vaadin.router.ParentLayout;
 import com.vaadin.router.RouteNotFoundError;
 import com.vaadin.router.event.BeforeNavigationEvent;
 
-@ParentLayout(ViewTestLayout.class)
 public class ErrorTarget extends RouteNotFoundError {
 
     @Override

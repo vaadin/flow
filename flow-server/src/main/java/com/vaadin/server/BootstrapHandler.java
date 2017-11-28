@@ -42,6 +42,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 
 import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.router.NavigationState;
+import com.vaadin.router.Router;
+import com.vaadin.router.RouterLayout;
+import com.vaadin.router.util.RouterUtil;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
@@ -49,9 +53,9 @@ import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Viewport;
-import com.vaadin.ui.ViewportGeneratorClass;
 import com.vaadin.ui.WebComponents;
 import com.vaadin.util.AnnotationReader;
 import com.vaadin.util.ReflectTools;
@@ -485,9 +489,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendElement("base").attr("href", getServiceUrl(context));
 
-        getViewportContent(context.getUI().getClass(), context.getRequest())
-                .ifPresent(content -> head.appendElement(META_TAG)
-                        .attr("name", "viewport")
+        getViewportContent(context.getUI(), context.getRequest()).ifPresent(
+                content -> head.appendElement(META_TAG).attr("name", "viewport")
                         .attr(CONTENT_ATTRIBUTE, content));
 
         resolvePageTitle(context).ifPresent(title -> {
@@ -966,40 +969,48 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Returns the specified viewport content for the given UI class, specified
-     * with {@link Viewport} or {@link ViewportGeneratorClass} annotations.
+     * Returns the specified viewport content for the target route chain that
+     * was navigated to, specified with {@link Viewport} on the
+     * {@link com.vaadin.router.Route} annotated class or the
+     * {@link com.vaadin.router.ParentLayout} of the route.
      *
-     * @param uiClass
-     *            the ui class whose viewport to get
+     * @param ui
+     *            the application ui
      * @param request
      *            the request for the ui
      * @return the content value string for viewport meta tag
      */
-    private static Optional<String> getViewportContent(
-            Class<? extends UI> uiClass, VaadinRequest request) {
-        Optional<Viewport> viewportAnnotation = AnnotationReader
-                .getAnnotationFor(uiClass, Viewport.class);
-        Optional<ViewportGeneratorClass> viewportGeneratorClassAnnotation = AnnotationReader
-                .getAnnotationFor(uiClass, ViewportGeneratorClass.class);
-        if (viewportAnnotation.isPresent()
-                && viewportGeneratorClassAnnotation.isPresent()) {
-            throw new IllegalStateException(uiClass.getCanonicalName()
-                    + " cannot be annotated with both @"
-                    + Viewport.class.getSimpleName() + " and @"
-                    + ViewportGeneratorClass.class.getSimpleName());
-        }
-
+    private static Optional<String> getViewportContent(UI ui,
+            VaadinRequest request) {
         String viewportContent = null;
-        if (viewportAnnotation.isPresent()) {
-            viewportContent = viewportAnnotation.get().value();
-        } else if (viewportGeneratorClassAnnotation.isPresent()) {
-            Class<? extends ViewportGenerator> viewportGeneratorClass = viewportGeneratorClassAnnotation
-                    .get().value();
-            viewportContent = ReflectTools
-                    .createInstance(viewportGeneratorClass)
-                    .getViewport(request);
+
+        if (ui.getRouter().isPresent()) {
+            Router router = ui.getRouter().get();
+            NavigationState navigationState = router.resolveNavigationTarget(
+                    request.getPathInfo(), request.getParameterMap());
+            if (navigationState != null) {
+                Optional<Viewport> viewportAnnotation = getViewportAnnotation(
+                        navigationState.getNavigationTarget());
+
+                if (viewportAnnotation.isPresent()) {
+                    viewportContent = viewportAnnotation.get().value();
+                }
+            }
         }
         return Optional.ofNullable(viewportContent);
+    }
+
+    private static Optional<Viewport> getViewportAnnotation(
+            Class<? extends Component> navigationTarget) {
+
+        Class<? extends RouterLayout> parentLayout = RouterUtil
+                .getTopParentLayout(navigationTarget);
+
+        if (parentLayout == null) {
+            return AnnotationReader.getAnnotationFor(navigationTarget,
+                    Viewport.class);
+        }
+        return AnnotationReader.getAnnotationFor(parentLayout, Viewport.class);
     }
 
     private static String readResource(String fileName) {

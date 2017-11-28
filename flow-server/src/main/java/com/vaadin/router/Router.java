@@ -18,6 +18,7 @@ package com.vaadin.router;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -94,6 +95,35 @@ public class Router implements RouterInterface {
         if (response != null) {
             response.setStatus(statusCode);
         }
+    }
+
+    /**
+     * Resolve the navigation target for given path and parameter map using the
+     * router routeResolver.
+     * 
+     * @param pathInfo
+     *            the path relative to the application
+     * @param parameterMap
+     *            A mapping of parameter names to arrays of parameter values
+     * @return NavigationState containing the NavigationTarget and UrlParameters
+     */
+    public NavigationState resolveNavigationTarget(String pathInfo,
+            Map<String, String[]> parameterMap) {
+
+        final String path;
+        if (pathInfo == null) {
+            path = "";
+        } else {
+            assert pathInfo.startsWith("/");
+            path = pathInfo.substring(1);
+        }
+
+        final QueryParameters queryParameters = QueryParameters
+                .full(parameterMap);
+
+        Location location = new Location(path, queryParameters);
+
+        return getRouteResolver().resolve(new ResolveRequest(this, location));
     }
 
     @Override
