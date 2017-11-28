@@ -15,11 +15,14 @@
  */
 package com.vaadin.data.provider;
 
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import com.vaadin.data.provider.DataChangeEvent.DataRefreshEvent;
-import com.vaadin.data.event.EventRouter;
 import com.vaadin.shared.Registration;
 
 /**
@@ -36,13 +39,12 @@ import com.vaadin.shared.Registration;
  */
 public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
 
-    private EventRouter eventRouter;
+    private Map<Class<?>, List<Consumer<?>>> listeners = new HashMap<>();
 
     @Override
     public Registration addDataProviderListener(
             DataProviderListener<T> listener) {
-        return addListener(DataChangeEvent.class, listener,
-                DataProviderListener.class.getMethods()[0]);
+        return addListener(DataChangeEvent.class, listener::onDataChange);
     }
 
     @Override
@@ -64,18 +66,18 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
      * @param eventType
      *            the type of the listened event. Events of this type or its
      *            subclasses activate the listener.
-     * @param listener
-     *            the object instance who owns the activation method.
      * @param method
-     *            the activation method.
+     *            the consumer to receive the event.
+     * @param <E>
+     *            the event type
      * @return a registration for the listener
      */
-    protected Registration addListener(Class<?> eventType,
-            DataProviderListener<T> listener, Method method) {
-        if (eventRouter == null) {
-            eventRouter = new EventRouter();
-        }
-        return eventRouter.addListener(eventType, listener, method);
+    protected <E> Registration addListener(Class<E> eventType,
+            Consumer<E> method) {
+        List<Consumer<?>> list = listeners.computeIfAbsent(eventType,
+                key -> new ArrayList<>());
+        list.add(method);
+        return () -> list.remove(method);
     }
 
     /**
@@ -84,9 +86,13 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
      * @param event
      *            the Event to be sent to all listeners.
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void fireEvent(EventObject event) {
-        if (eventRouter != null) {
-            eventRouter.fireEvent(event);
+        List<Consumer<?>> list = listeners.get(event.getClass());
+        if (list != null) {
+            for (Consumer listener : list) {
+                listener.accept(event);
+            }
         }
     }
 }
