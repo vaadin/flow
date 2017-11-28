@@ -31,7 +31,7 @@ public class OverrideElementData extends NodeValue<Integer> {
 
     /**
      * Name of the key used for storing the id of the template node that the
-     * overriden element corresponds to.
+     * overridden element corresponds to.
      */
     public static final String TEMPLATE_NODE_ID_PROPERTY = "node";
 

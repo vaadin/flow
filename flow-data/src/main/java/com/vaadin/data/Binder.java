@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.function.SerializableFunction;
@@ -1494,7 +1493,7 @@ public class Binder<BEAN> implements Serializable {
                 restoreBeanState(bean, oldValues);
             } else if (getBean() == null || bean.equals(getBean())) {
                 /*
-                 * Changes have been succesfully saved. The set is only cleared
+                 * Changes have been successfully saved. The set is only cleared
                  * if using readBean/writeBean or when the changes are stored in
                  * the currently set bean.
                  *

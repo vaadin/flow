@@ -255,7 +255,7 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Gets the the URL from which frontend resources should be loaded in ES5
+     * Gets the URL from which frontend resources should be loaded in ES5
      * compatible browsers.
      *
      * @return the ES5 resource URL

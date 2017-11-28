@@ -352,7 +352,7 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Sets the internal push connection object used by the the related UI. This
+     * Sets the internal push connection object used by the related UI. This
      * method should only be called by the framework.
      * <p>
      * The {@code pushConnection} argument must be non-null if and only if
@@ -472,7 +472,7 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Shows a view in a chain of layouts in the the related UI. This method is
+     * Shows a view in a chain of layouts in the related UI. This method is
      * intended for framework use only. Use {@link UI#navigateTo(String)} to
      * change the view that is shown in a UI.
      *
@@ -650,7 +650,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Gets the location of the currently shown view. The location is relative
-     * the the servlet mapping used for serving the related UI.
+     * the servlet mapping used for serving the related UI.
      *
      * @return the view location, not <code>null</code>
      */

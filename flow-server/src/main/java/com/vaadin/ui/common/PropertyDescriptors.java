@@ -207,8 +207,8 @@ public final class PropertyDescriptors {
     /**
      * Creates a descriptor for an optional attribute of the component's root
      * element with a non-null default value. The getter will return an empty
-     * optional if the the element doesn't have the attribute, or if its value
-     * is the default value.
+     * optional if the element doesn't have the attribute, or if its value is
+     * the default value.
      *
      * @param name
      *            the name of the element attribute, not <code>null</code>
@@ -225,8 +225,8 @@ public final class PropertyDescriptors {
     /**
      * Creates a descriptor for an optional attribute of the component's root
      * element with a non-null default value. The getter will return an empty
-     * optional if the the element doesn't have the attribute, or if its value
-     * is the default value.
+     * optional if the element doesn't have the attribute, or if its value is
+     * the default value.
      *
      * @param name
      *            the name of the element attribute, not <code>null</code>

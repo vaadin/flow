@@ -47,8 +47,8 @@ public interface VaadinRequest {
      *
      * @param parameter
      *            the name of the parameter
-     * @return The paramter value, or <code>null</code> if no parameter with the
-     *         given name is present
+     * @return The parameter value, or <code>null</code> if no parameter with
+     *         the given name is present
      */
     String getParameter(String parameter);
 
