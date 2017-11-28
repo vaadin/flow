@@ -82,8 +82,8 @@ public interface HasStyle extends HasElement {
      * also reflected in the value of the <code>class</code> attribute.
      * <p>
      * Despite the name implying a list being returned, the return type is
-     * actually a {@link Set} since the the in-browser return value behaves like
-     * a <code>Set</code> in Java.
+     * actually a {@link Set} since the in-browser return value behaves like a
+     * <code>Set</code> in Java.
      *
      * @see Element#getClassList()
      *

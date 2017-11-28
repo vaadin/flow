@@ -77,7 +77,7 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      * Gets the value of this component. For textual input components, the value
      * is the text displayed in the component.
      *
-     * @return the the value, by default <code>""</code>
+     * @return the value, by default <code>""</code>
      */
     @Synchronize("change")
     public String getValue() {

@@ -50,7 +50,7 @@ public class EventHandlerView extends PolymerTemplate<TemplateModel> {
             @EventData("event.srcElement.tagName") String tag) {
         Element container = ElementFactory.createDiv();
         container.appendChild(ElementFactory
-                .createDiv("Recieved event from the client with the data:"));
+                .createDiv("Received event from the client with the data:"));
         container.appendChild(ElementFactory.createDiv("button: " + button));
         container.appendChild(ElementFactory.createDiv("type: " + type));
         container.appendChild(ElementFactory

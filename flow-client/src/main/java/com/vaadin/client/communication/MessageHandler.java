@@ -782,7 +782,8 @@ public class MessageHandler {
 
     /**
      * Sets a temporary handler for session expiration. This handler will be
-     * triggered iff the next server message tells that the session has expired.
+     * triggered if and only if the next server message tells that the session
+     * has expired.
      *
      * @param nextResponseSessionExpiredHandler
      *            the handler to use or null to remove a previously set handler

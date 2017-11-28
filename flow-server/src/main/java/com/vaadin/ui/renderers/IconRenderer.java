@@ -64,8 +64,8 @@ public class IconRenderer<ITEM> implements ComponentRenderer<Component, ITEM> {
     }
 
     /**
-     * Creates a new renderer instance using the the provided
-     * {@code iconGenerator} and {@code itemLabelGenerator}.
+     * Creates a new renderer instance using the provided {@code iconGenerator}
+     * and {@code itemLabelGenerator}.
      *
      * @param iconGenerator
      *            the icon component generator
