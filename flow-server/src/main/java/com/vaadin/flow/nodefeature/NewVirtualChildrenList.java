@@ -91,6 +91,10 @@ public class NewVirtualChildrenList extends StateNodeNodeList {
      *
      * @param node
      *            the item to append
+     * @param type
+     *            the payload type
+     * @param payload
+     *            the payload data
      */
     public void append(StateNode node, String type, String payload) {
         add(size(), node, type, payload);
@@ -101,6 +105,8 @@ public class NewVirtualChildrenList extends StateNodeNodeList {
      *
      * @param node
      *            the item to append
+     * @param type
+     *            the payload type
      */
     public void append(StateNode node, String type) {
         append(node, type, null);
