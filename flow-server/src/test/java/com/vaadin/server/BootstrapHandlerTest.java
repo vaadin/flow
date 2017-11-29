@@ -26,6 +26,7 @@ import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
+import com.vaadin.router.RouteAlias;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.TestRouteRegistry;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
@@ -98,6 +99,12 @@ public class BootstrapHandlerTest {
     @Route(value = "", layout = MiddleParent.class)
     @Tag(Tag.DIV)
     public static class RootWithParents extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = Parent.class)
+    @Tag(Tag.DIV)
+    public static class AliasLayout extends Component {
     }
 
     private TestUI testUI;
@@ -241,8 +248,9 @@ public class BootstrapHandlerTest {
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
-        Assert.assertTrue(page.toString().contains(
-                "<meta name=\"viewport\" content=\"width=device-width\">"));
+        Assert.assertTrue("Viewport meta tag was missing",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
     }
 
     @Test // #3008
@@ -255,8 +263,9 @@ public class BootstrapHandlerTest {
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
-        Assert.assertTrue(page.toString().contains(
-                "<meta name=\"viewport\" content=\"width=device-width\">"));
+        Assert.assertTrue("Viewport meta tag was missing",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
     }
 
     @Test // #3008
@@ -269,8 +278,38 @@ public class BootstrapHandlerTest {
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
-        Assert.assertTrue(page.toString().contains(
-                "<meta name=\"viewport\" content=\"width=device-width\">"));
+        Assert.assertTrue("Viewport meta tag was missing",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
+    }
+
+    @Test // #3008
+    public void bootstrap_page_has_viewport_for_route_alias_parent()
+            throws InvalidRouteConfigurationException {
+        HttpServletRequest httpRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.doAnswer(invocation -> "").when(httpRequest).getServletPath();
+        VaadinServletRequest vaadinRequest = new VaadinServletRequest(
+                httpRequest, service);
+
+        initUI(testUI, vaadinRequest, Collections.singleton(AliasLayout.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(vaadinRequest, null, session, testUI));
+
+        Assert.assertFalse("Viewport found even though not part of Route",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
+
+        Mockito.doAnswer(invocation -> "/alias").when(httpRequest)
+                .getPathInfo();
+
+        page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(vaadinRequest, null, session, testUI));
+
+        Assert.assertTrue(
+                "Viewport meta tag was missing even tough alias route parent has annotation",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
     }
 
     @Test

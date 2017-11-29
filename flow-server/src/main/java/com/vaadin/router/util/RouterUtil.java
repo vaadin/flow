@@ -27,6 +27,7 @@ import com.vaadin.router.LocationChangeEvent;
 import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
+import com.vaadin.router.RouteAlias;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
@@ -40,55 +41,123 @@ import com.vaadin.util.AnnotationReader;
 public final class RouterUtil {
 
     /**
-     * Get parent layouts for navigation target.
-     * 
+     * Get parent layouts for navigation target {@link Route} annotation.
+     *
      * @param component
      *            navigation target to get parents for
      * @return parent layouts for target
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             Class<?> component) {
+        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
+                Route.class);
+        if (route.isPresent() && !route.get().layout().equals(UI.class)) {
+            return collectRouteParentLayouts(route.get().layout());
+        }
+        return new ArrayList<>(0);
+    }
+
+    /**
+     * Get parent layouts for navigation target according to the {@link Route}
+     * or {@link RouteAlias} annotation.
+     * 
+     * @param component
+     *            navigation target to get parents for
+     * @return parent layouts for target
+     */
+    public static List<Class<? extends RouterLayout>> getParentLayouts(
+            Class<?> component, String path) {
         List<Class<? extends RouterLayout>> list = new ArrayList<>();
 
-        Optional<Route> router = AnnotationReader.getAnnotationFor(component,
+        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
-        Optional<ParentLayout> parentLayout = AnnotationReader
-                .getAnnotationFor(component, ParentLayout.class);
-
-        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
-            list.add(router.get().layout());
-            list.addAll(getParentLayouts(router.get().layout()));
-        } else if (parentLayout.isPresent()) {
-            list.add(parentLayout.get().value());
-            list.addAll(getParentLayouts(parentLayout.get().value()));
+        List<RouteAlias> routeAliases = AnnotationReader
+                .getAnnotationsFor(component, RouteAlias.class);
+        if (route.isPresent() && path.equals(route.get().value())
+                && !route.get().layout().equals(UI.class)) {
+            list.addAll(collectRouteParentLayouts(route.get().layout()));
+        } else {
+            for (RouteAlias alias : routeAliases) {
+                if (path.equals(alias.value())
+                        && !alias.layout().equals(UI.class)) {
+                    list.addAll(collectRouteParentLayouts(alias.layout()));
+                    break;
+                }
+            }
         }
 
         return list;
     }
 
+    private static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
+            Class<? extends RouterLayout> layout) {
+        List<Class<? extends RouterLayout>> layouts = new ArrayList<>();
+        layouts.add(layout);
+
+        Optional<ParentLayout> parentLayout = AnnotationReader
+                .getAnnotationFor(layout, ParentLayout.class);
+        if (parentLayout.isPresent()) {
+            layouts.addAll(collectRouteParentLayouts(parentLayout.get().value()));
+        }
+        return layouts;
+    }
+
     /**
-     * Get the top most parent layout for navigation target.
-     * 
+     * Get the top most parent layout for navigation target {@link Route}
+     * annotation.
+     *
      * @param component
      *            navigation target to get top most parent for
      * @return top parent layout for target or null if none found
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
             Class<?> component) {
-        Class<? extends RouterLayout> top = null;
-        Optional<Route> router = AnnotationReader.getAnnotationFor(component,
-                Route.class);
-        Optional<ParentLayout> parentLayout = AnnotationReader
-                .getAnnotationFor(component, ParentLayout.class);
-
-        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
-            top = getTopParentLayout(router.get().layout());
-        } else if (parentLayout.isPresent()) {
-            top = getTopParentLayout(parentLayout.get().value());
-        } else if (RouterLayout.class.isAssignableFrom(component)) {
-            top = (Class<? extends RouterLayout>) component;
+        Optional<Route> route = AnnotationReader
+                .getAnnotationFor(component, Route.class);
+        if(route.isPresent() && !route.get().layout().equals(UI.class)) {
+            return recuseToTopLayout(route.get().layout());
         }
-        return top;
+        return null;
+    }
+
+    /**
+     * Get the top most parent layout for navigation target according to the
+     * {@link Route} or {@link RouteAlias} annotation.
+     *
+     * @param component
+     *            navigation target to get top most parent for
+     * @return top parent layout for target or null if none found
+     */
+    public static Class<? extends RouterLayout> getTopParentLayout(
+            Class<?> component, String path) {
+        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
+                Route.class);
+        List<RouteAlias> routeAliases = AnnotationReader
+                .getAnnotationsFor(component, RouteAlias.class);
+        if (route.isPresent() && path.equals(route.get().value())
+                && !route.get().layout().equals(UI.class)) {
+            return recuseToTopLayout(route.get().layout());
+        } else {
+            for (RouteAlias alias : routeAliases) {
+                if (path.equals(alias.value())
+                        && !alias.layout().equals(UI.class)) {
+                    return recuseToTopLayout(alias.layout());
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static Class<? extends RouterLayout> recuseToTopLayout(
+            Class<? extends RouterLayout> layout) {
+        Optional<ParentLayout> parentLayout = AnnotationReader
+                .getAnnotationFor(layout, ParentLayout.class);
+
+        if (parentLayout.isPresent()) {
+            return recuseToTopLayout(parentLayout.get().value());
+        }
+        return layout;
     }
 
     /**

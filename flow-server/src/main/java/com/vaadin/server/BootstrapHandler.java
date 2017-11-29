@@ -42,6 +42,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 
 import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.router.NavigationState;
 import com.vaadin.router.Router;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.util.RouterUtil;
@@ -52,7 +53,6 @@ import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Viewport;
 import com.vaadin.ui.WebComponents;
@@ -985,7 +985,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         Optional<Router> router = ui.getRouter();
         if (router.isPresent()) {
-            Optional<Class<? extends Component>> navigationTarget = router.get()
+            Optional<NavigationState> navigationTarget = router.get()
                     .resolveNavigationTarget(request.getPathInfo(),
                             request.getParameterMap());
 
@@ -997,14 +997,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static Optional<Viewport> getViewportAnnotation(
-            Class<? extends Component> navigationTarget) {
+            NavigationState state) {
 
         Class<? extends RouterLayout> parentLayout = RouterUtil
-                .getTopParentLayout(navigationTarget);
+                .getTopParentLayout(state.getNavigationTarget(),
+                        state.getResolvedPath());
 
         if (parentLayout == null) {
-            return AnnotationReader.getAnnotationFor(navigationTarget,
-                    Viewport.class);
+            return AnnotationReader.getAnnotationFor(
+                    state.getNavigationTarget(), Viewport.class);
         }
         return AnnotationReader.getAnnotationFor(parentLayout, Viewport.class);
     }

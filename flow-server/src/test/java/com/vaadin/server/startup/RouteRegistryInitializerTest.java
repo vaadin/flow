@@ -530,13 +530,26 @@ public class RouteRegistryInitializerTest {
     public static class MultiViewport extends Component {
     }
 
+    @Route("")
+    @RouteAlias(value = "alias", layout = Parent.class)
+    @Tag(Tag.DIV)
+    @Viewport("width=device-width")
+    public static class FailingAliasView extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = Parent.class)
+    @Tag(Tag.DIV)
+    public static class AliasView extends Component {
+    }
+
     @Test
     public void onStartUp_wrong_position_view_layout_throws()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(
-                "Viewport annotation should be on the top most route layout. Offending class: "
-                        + MiddleParentLayout.class.getName());
+        expectedEx.expectMessage(String.format(
+                "Viewport annotation should be on the top most route layout '%s'. Offending class: '%s'",
+                Parent.class.getName(), MiddleParentLayout.class.getName()));
 
         routeRegistryInitializer.onStartup(
                 Stream.of(RootWithParents.class).collect(Collectors.toSet()),
@@ -561,9 +574,10 @@ public class RouteRegistryInitializerTest {
     public void onStartUp_route_can_not_contain_viewport_if_has_parent()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(
-                "Viewport annotation needs to be on the top parent layout not on "
-                        + RootViewportWithParent.class.getName());
+        expectedEx.expectMessage(String.format(
+                "Viewport annotation needs to be on the top parent layout '%s' not on '%s'",
+                Parent.class.getName(),
+                RootViewportWithParent.class.getName()));
 
         routeRegistryInitializer.onStartup(Stream
                 .of(RootViewportWithParent.class).collect(Collectors.toSet()),
@@ -579,4 +593,24 @@ public class RouteRegistryInitializerTest {
                 servletContext);
     }
 
+    @Test
+    public void onStartUp_check_also_faulty_alias_route()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "Viewport annotation needs to be on the top parent layout '%s' not on '%s'",
+                Parent.class.getName(), FailingAliasView.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(FailingAliasView.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_valid_alias_does_not_throw() throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(AliasView.class).collect(Collectors.toSet()),
+                servletContext);
+
+    }
 }
