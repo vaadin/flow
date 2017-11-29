@@ -15,6 +15,7 @@
  */
 package com.vaadin.router;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -220,8 +221,8 @@ public class Router implements RouterInterface {
 
     private boolean isAnnotatedParameter(
             Class<? extends Component> navigationTarget,
-            Class... parameterAnnotations) {
-        for (Class annotation : parameterAnnotations) {
+            Class<? extends Annotation>... parameterAnnotations) {
+        for (Class<? extends Annotation> annotation : parameterAnnotations) {
             if (HasUrlParameter.isAnnotatedParameter(navigationTarget,
                     annotation)) {
                 return true;

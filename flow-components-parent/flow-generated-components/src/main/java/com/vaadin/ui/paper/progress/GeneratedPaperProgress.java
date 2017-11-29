@@ -17,7 +17,6 @@ package com.vaadin.ui.paper.progress;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -34,8 +33,7 @@ import com.vaadin.shared.Registration;
 @Tag("paper-progress")
 @HtmlImport("frontend://bower_components/paper-progress/paper-progress.html")
 public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
-        extends Component
-        implements HasStyle, ComponentSupplier<R>, HasValue<R, Double> {
+        extends Component implements HasStyle, HasValue<R, Double> {
 
     /**
      * <p>
@@ -340,6 +338,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addMinChangeListener(
             ComponentEventListener<MinChangeEvent<R>> listener) {
         return addListener(MinChangeEvent.class,
@@ -360,6 +359,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addMaxChangeListener(
             ComponentEventListener<MaxChangeEvent<R>> listener) {
         return addListener(MaxChangeEvent.class,
@@ -381,6 +381,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addStepChangeListener(
             ComponentEventListener<StepChangeEvent<R>> listener) {
         return addListener(StepChangeEvent.class,
@@ -402,6 +403,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addRatioChangeListener(
             ComponentEventListener<RatioChangeEvent<R>> listener) {
         return addListener(RatioChangeEvent.class,

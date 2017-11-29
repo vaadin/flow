@@ -64,13 +64,14 @@ public class FunctionParameterVariantCombinator {
     private static Set<List<ComponentType>> generateCombinations(
             ComponentFunctionParameterData paramData,
             List<ComponentFunctionParameterData> rest) {
+        Comparator<List<ComponentType>> listComparator = Comparator
+                .comparing(List::toString);
         if (rest.isEmpty()) {
             return getTypeVariants(paramData).stream().map(Arrays::asList)
-                    .collect(Collectors.toSet());
+                    .sorted(listComparator).collect(Collectors.toSet());
         }
         List<ComponentFunctionParameterData> copy = new ArrayList<>(rest);
-        Set<List<ComponentType>> ret = new TreeSet<>(
-                Comparator.comparing(List::toString));
+        Set<List<ComponentType>> ret = new TreeSet<>(listComparator);
         for (List<ComponentType> subCombinations : generateCombinations(
                 copy.remove(0), copy)) {
             for (ComponentType typeVariants : getTypeVariants(paramData)) {

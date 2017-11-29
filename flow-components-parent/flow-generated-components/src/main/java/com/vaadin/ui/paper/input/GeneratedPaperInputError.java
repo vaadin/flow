@@ -104,7 +104,7 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
         }
 
         @Override
-        public UpdateState readJson(elemental.json.JsonObject value) {
+        public UpdateState readJson(JsonObject value) {
             internalObject = value;
             return this;
         }
@@ -117,7 +117,7 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperInputError(com.vaadin.ui.Component... components) {
+    public GeneratedPaperInputError(Component... components) {
         add(components);
     }
 

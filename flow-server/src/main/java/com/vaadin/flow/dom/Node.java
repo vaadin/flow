@@ -258,9 +258,9 @@ public abstract class Node<N extends Node<N>> implements Serializable {
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
-        for (int i = 0; i < children.length; i++) {
-            ensureChildHasParent(children[i], false);
-            getStateProvider().removeChild(getNode(), children[i]);
+        for (Element child : children) {
+            ensureChildHasParent(child, false);
+            getStateProvider().removeChild(getNode(), child);
         }
         return getSelf();
     }

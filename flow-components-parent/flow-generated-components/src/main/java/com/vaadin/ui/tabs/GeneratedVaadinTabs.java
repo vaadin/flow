@@ -38,8 +38,7 @@ import com.vaadin.ui.common.HasComponents;
 <vaadin-tab>Page 2</vaadin-tab>
 <vaadin-tab>Page 3</vaadin-tab>
 <vaadin-tab>Page 4</vaadin-tab>
-</vaadin-tabs>
-}
+</vaadin-tabs>}
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -113,7 +112,7 @@ public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinTabs(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinTabs(Component... components) {
         add(components);
     }
 

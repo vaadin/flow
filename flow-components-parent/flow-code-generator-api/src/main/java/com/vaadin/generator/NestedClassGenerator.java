@@ -193,7 +193,8 @@ public class NestedClassGenerator {
                 .setReturnType(javaClass).setName("readJson");
 
         method.addAnnotation(Override.class);
-        method.addParameter(JsonObject.class, "value");
+        ComponentGeneratorUtils.addMethodParameter(javaClass, method,
+                JsonObject.class, "value");
         method.setBody("internalObject = value; return this;");
     }
 

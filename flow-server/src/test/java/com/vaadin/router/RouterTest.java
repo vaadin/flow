@@ -15,7 +15,11 @@
  */
 package com.vaadin.router;
 
-import javax.servlet.http.HttpServletResponse;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +29,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,10 +58,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.i18n.LocaleChangeEvent;
 import com.vaadin.ui.i18n.LocaleChangeObserver;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -2029,7 +2031,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     private void assertExceptionComponent(String exceptionText,
-            Class errorClass) {
+            Class<?> errorClass) {
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
 

@@ -142,7 +142,7 @@ public interface SelectionModel<T>
          * By default this does not clear any previous selection. To do that,
          * use {@link #deselectAll()}.
          * <p>
-         * If the the item was already selected, this is a NO-OP.
+         * If the item was already selected, this is a NO-OP.
          *
          * @param item
          *            the item to add to selection, not {@code null}

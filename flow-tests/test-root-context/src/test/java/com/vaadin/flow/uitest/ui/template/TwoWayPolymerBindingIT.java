@@ -33,12 +33,19 @@ public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
         WebElement template = findElement(By.id("template"));
         WebElement input = getInShadowRoot(template, By.id("input"));
 
+        // The initial client-side value should be sent from the client to the
+        // model
+        waitUntil(driver -> "Value: foo".equals(getStatusMessage()));
+
+        // now make explicit updates from the client side
+        input.clear();
         input.sendKeys("a");
         Assert.assertEquals("Value: a", getStatusMessage());
 
         input.sendKeys("b");
         Assert.assertEquals("Value: ab", getStatusMessage());
 
+        // Reset the model value from the server-side
         getInShadowRoot(template, By.id("reset")).click();
         Assert.assertEquals("Value:", getStatusMessage());
         Assert.assertEquals("", getValueProperty(input));

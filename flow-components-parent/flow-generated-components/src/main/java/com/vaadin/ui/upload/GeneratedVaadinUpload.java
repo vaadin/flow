@@ -151,7 +151,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * <p>
      * Key-Value map to send to the server. If you set this property as an
      * attribute, use a valid JSON string, for example: {@code <vaadin-upload
-     * headers=' "X-Foo": "Bar"}'></vaadin-upload> }
+     * headers=' "X-Foo": "Bar"}'></vaadin-upload>}
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
@@ -170,7 +170,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * <p>
      * Key-Value map to send to the server. If you set this property as an
      * attribute, use a valid JSON string, for example: {@code <vaadin-upload
-     * headers=' "X-Foo": "Bar"}'></vaadin-upload> }
+     * headers=' "X-Foo": "Bar"}'></vaadin-upload>}
      * </p>
      * 
      * @param headers
@@ -683,6 +683,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileRejectListener(
             ComponentEventListener<FileRejectEvent<R>> listener) {
         return addListener(FileRejectEvent.class,
@@ -726,6 +727,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadAbortListener(
             ComponentEventListener<UploadAbortEvent<R>> listener) {
         return addListener(UploadAbortEvent.class,
@@ -776,6 +778,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadBeforeListener(
             ComponentEventListener<UploadBeforeEvent<R>> listener) {
         return addListener(UploadBeforeEvent.class,
@@ -819,6 +822,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadErrorListener(
             ComponentEventListener<UploadErrorEvent<R>> listener) {
         return addListener(UploadErrorEvent.class,
@@ -862,6 +866,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadProgressListener(
             ComponentEventListener<UploadProgressEvent<R>> listener) {
         return addListener(UploadProgressEvent.class,
@@ -912,6 +917,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadRequestListener(
             ComponentEventListener<UploadRequestEvent<R>> listener) {
         return addListener(UploadRequestEvent.class,
@@ -955,6 +961,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadResponseListener(
             ComponentEventListener<UploadResponseEvent<R>> listener) {
         return addListener(UploadResponseEvent.class,
@@ -998,6 +1005,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadRetryListener(
             ComponentEventListener<UploadRetryEvent<R>> listener) {
         return addListener(UploadRetryEvent.class,
@@ -1041,6 +1049,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadStartListener(
             ComponentEventListener<UploadStartEvent<R>> listener) {
         return addListener(UploadStartEvent.class,
@@ -1084,6 +1093,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadSuccessListener(
             ComponentEventListener<UploadSuccessEvent<R>> listener) {
         return addListener(UploadSuccessEvent.class,
@@ -1105,6 +1115,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFilesChangeListener(
             ComponentEventListener<FilesChangeEvent<R>> listener) {
         return addListener(FilesChangeEvent.class,
@@ -1126,6 +1137,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addMaxFilesReachedChangeListener(
             ComponentEventListener<MaxFilesReachedChangeEvent<R>> listener) {
         return addListener(MaxFilesReachedChangeEvent.class,
@@ -1146,7 +1158,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToAddButton(com.vaadin.ui.Component... components) {
+    public R addToAddButton(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "add-button");
             getElement().appendChild(component.getElement());
@@ -1168,7 +1180,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropLabelIcon(com.vaadin.ui.Component... components) {
+    public R addToDropLabelIcon(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "drop-label-icon");
             getElement().appendChild(component.getElement());
@@ -1190,7 +1202,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropLabel(com.vaadin.ui.Component... components) {
+    public R addToDropLabel(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "drop-label");
             getElement().appendChild(component.getElement());
@@ -1212,7 +1224,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToFileList(com.vaadin.ui.Component... components) {
+    public R addToFileList(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "file-list");
             getElement().appendChild(component.getElement());
@@ -1221,7 +1233,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     }
 
     @Override
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -1247,7 +1259,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinUpload(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinUpload(Component... components) {
         add(components);
     }
 

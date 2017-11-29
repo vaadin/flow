@@ -145,7 +145,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
          * For non-static bindings always fetch an attribute from the override
          * node first if it exists. In contrast with properties attributes may
          * be defined in the template inlined. But this definition may be
-         * overriden and overriden value should be used if any.
+         * overridden and overridden value should be used if any.
          *
          * All static bindings attributes have been copied to override node at
          * its creation time.
@@ -171,7 +171,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
          * For non-static bindings always check an attribute from the override
          * node first if it exists. In contrast with properties attributes may
          * be defined in the template inlined. But this definition may be
-         * overriden and overriden value should be used if any.
+         * overridden and overridden value should be used if any.
          *
          * All static bindings attributes have been copied to override node at
          * its creation time.

@@ -19,6 +19,7 @@ package com.vaadin.flow.nodefeature;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
@@ -26,10 +27,12 @@ import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateNodeTest;
+import com.vaadin.flow.StateTree;
 import com.vaadin.flow.change.MapPutChange;
 import com.vaadin.flow.change.MapRemoveChange;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.server.Command;
+import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -41,16 +44,16 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
 
     @Test
     public void testBasicFunctionality() {
-        Assert.assertFalse(nodeMap.contains("key"));
-        Assert.assertNull(nodeMap.get("key"));
+        Assert.assertFalse(nodeMap.contains(KEY));
+        Assert.assertNull(nodeMap.get(KEY));
 
-        nodeMap.put("key", "value");
-        Assert.assertTrue(nodeMap.contains("key"));
-        Assert.assertEquals("value", nodeMap.get("key"));
+        nodeMap.put(KEY, "value");
+        Assert.assertTrue(nodeMap.contains(KEY));
+        Assert.assertEquals("value", nodeMap.get(KEY));
 
-        nodeMap.remove("key");
-        Assert.assertFalse(nodeMap.contains("key"));
-        Assert.assertNull(nodeMap.get("key"));
+        nodeMap.remove(KEY);
+        Assert.assertFalse(nodeMap.contains(KEY));
+        Assert.assertNull(nodeMap.get(KEY));
     }
 
     @Test
@@ -58,52 +61,52 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         List<NodeChange> initialChanges = collectChanges(nodeMap);
         Assert.assertEquals(0, initialChanges.size());
 
-        nodeMap.put("key", "value");
+        nodeMap.put(KEY, "value");
         List<NodeChange> putChanges = collectChanges(nodeMap);
         Assert.assertEquals(1, putChanges.size());
 
         MapPutChange putChange = (MapPutChange) putChanges.get(0);
-        Assert.assertEquals("key", putChange.getKey());
+        Assert.assertEquals(KEY, putChange.getKey());
         Assert.assertEquals("value", putChange.getValue());
 
-        nodeMap.put("key", null);
+        nodeMap.put(KEY, null);
         List<NodeChange> putNullChanges = collectChanges(nodeMap);
         Assert.assertEquals(1, putNullChanges.size());
 
         MapPutChange putNullChange = (MapPutChange) putNullChanges.get(0);
-        Assert.assertEquals("key", putNullChange.getKey());
+        Assert.assertEquals(KEY, putNullChange.getKey());
         Assert.assertEquals(null, putNullChange.getValue());
 
-        nodeMap.remove("key");
+        nodeMap.remove(KEY);
 
         List<NodeChange> removeChanges = collectChanges(nodeMap);
         Assert.assertEquals(1, removeChanges.size());
 
         MapRemoveChange removeChange = (MapRemoveChange) removeChanges.get(0);
-        Assert.assertEquals("key", removeChange.getKey());
+        Assert.assertEquals(KEY, removeChange.getKey());
     }
 
     @Test
     public void testNoChangeEvent() {
-        nodeMap.put("key", "value", false);
+        nodeMap.put(KEY, "value", false);
         List<NodeChange> changes = collectChanges(nodeMap);
         Assert.assertEquals(0, changes.size());
-        nodeMap.put("key", "value", true);
+        nodeMap.put(KEY, "value", true);
         changes = collectChanges(nodeMap);
         Assert.assertEquals(0, changes.size());
-        nodeMap.put("key", "bar", true);
+        nodeMap.put(KEY, "bar", true);
         changes = collectChanges(nodeMap);
         Assert.assertEquals(1, changes.size());
     }
 
     @Test
     public void testNoChangeOverwritesOldChanges() {
-        nodeMap.put("key", "value", true);
-        nodeMap.put("key", "foobar", false);
+        nodeMap.put(KEY, "value", true);
+        nodeMap.put(KEY, "foobar", false);
         List<NodeChange> changes = collectChanges(nodeMap);
         Assert.assertEquals(0, changes.size());
 
-        nodeMap.put("key", "urk");
+        nodeMap.put(KEY, "urk");
         changes = collectChanges(nodeMap);
         Assert.assertEquals(1, changes.size());
         Assert.assertEquals("urk", ((MapPutChange) changes.get(0)).getValue());
@@ -112,8 +115,8 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
 
     @Test
     public void testCoalescePutRemove() {
-        nodeMap.put("key", "value");
-        nodeMap.remove("key");
+        nodeMap.put(KEY, "value");
+        nodeMap.remove(KEY);
 
         List<NodeChange> changes = collectChanges(nodeMap);
         Assert.assertEquals(0, changes.size());
@@ -121,8 +124,8 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
 
     @Test
     public void testCoalesceDoublePut() {
-        nodeMap.put("key", "value1");
-        nodeMap.put("key", "value2");
+        nodeMap.put(KEY, "value1");
+        nodeMap.put(KEY, "value2");
 
         List<NodeChange> changes = collectChanges(nodeMap);
         Assert.assertEquals(1, changes.size());
@@ -132,22 +135,22 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
 
     @Test
     public void testCoalescePutSame() {
-        nodeMap.put("key", "value");
+        nodeMap.put(KEY, "value");
         collectChanges(nodeMap);
 
-        nodeMap.put("key", "otherValue");
-        nodeMap.put("key", "value");
+        nodeMap.put(KEY, "otherValue");
+        nodeMap.put(KEY, "value");
         List<NodeChange> changes = collectChanges(nodeMap);
         Assert.assertEquals(0, changes.size());
     }
 
     @Test
     public void testCoalesceRemovePut() {
-        nodeMap.put("key", "value");
+        nodeMap.put(KEY, "value");
         collectChanges(nodeMap);
 
-        nodeMap.remove("key");
-        nodeMap.put("key", "value");
+        nodeMap.remove(KEY);
+        nodeMap.put(KEY, "value");
 
         List<NodeChange> changes = collectChanges(nodeMap);
         Assert.assertEquals(0, changes.size());
@@ -155,7 +158,7 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
 
     @Test
     public void testResetChanges() {
-        nodeMap.put("key", "value");
+        nodeMap.put(KEY, "value");
         collectChanges(nodeMap);
 
         nodeMap.generateChangesFromEmpty();
@@ -168,11 +171,11 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
 
     @Test
     public void testCoalesceRemoveReset() {
-        nodeMap.put("key", "value");
+        nodeMap.put(KEY, "value");
         collectChanges(nodeMap);
 
         nodeMap.generateChangesFromEmpty();
-        nodeMap.remove("key");
+        nodeMap.remove(KEY);
 
         List<NodeChange> changes = collectChanges(nodeMap);
         Assert.assertEquals(0, changes.size());
@@ -202,11 +205,11 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
 
         Assert.assertNull(child.getParent());
 
-        nodeMap.put("key", child);
+        nodeMap.put(KEY, child);
 
         Assert.assertSame(nodeMap.getNode(), child.getParent());
 
-        nodeMap.put("key", "foo");
+        nodeMap.put(KEY, "foo");
 
         Assert.assertNull(child.getParent());
     }
@@ -215,11 +218,11 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
     public void testRemoveDetachChildren() {
         StateNode child = StateNodeTest.createEmptyNode("child");
 
-        nodeMap.put("key", child);
+        nodeMap.put(KEY, child);
 
         Assert.assertSame(nodeMap.getNode(), child.getParent());
 
-        nodeMap.remove("key");
+        nodeMap.remove(KEY);
 
         Assert.assertNull(child.getParent());
     }
@@ -321,5 +324,27 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         Assert.assertFalse(nodeMap.hasProperty("foo"));
         Assert.assertFalse(nodeMap.hasProperty("bar"));
         Assert.assertFalse(nodeMap.hasProperty("baz"));
+    }
+
+    @Test
+    public void put_sameValue_hasNoEffect() {
+        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        StateNode child = new StateNode();
+
+        AtomicBoolean listenerIsCalled = new AtomicBoolean();
+        child.addAttachListener(() -> {
+            Assert.assertFalse(listenerIsCalled.get());
+            listenerIsCalled.set(true);
+        });
+
+        nodeMap.put("foo", child);
+
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(child.getParent());
+
+        Assert.assertTrue(listenerIsCalled.get());
+
+        // The attach listener is not called one more time
+        nodeMap.put("foo", child);
     }
 }

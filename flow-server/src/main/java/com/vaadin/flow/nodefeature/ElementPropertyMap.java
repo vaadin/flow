@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,8 +66,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *            the value to store
      * @return a runnable for firing the deferred change event
      */
-    public Runnable deferredUpdateFromClient(String key,
-            Serializable value) {
+    public Runnable deferredUpdateFromClient(String key, Serializable value) {
         if (!mayUpdateFromClient(key, value)) {
             throw new IllegalArgumentException(String.format(
                     "Feature '%s' doesn't allow the client to update '%s'",
@@ -101,7 +101,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     /**
      * Adds a property change listener.
-     * 
+     *
      * @param name
      *            the property name to add the listener for
      * @param listener
@@ -128,7 +128,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         Serializable oldValue = get(key);
         super.put(key, value, emitChange);
 
-        if (hasElement()) {
+        if (hasElement() && !Objects.equals(oldValue, value)) {
             PropertyChangeEvent event = new PropertyChangeEvent(
                     Element.get(getNode()), key, oldValue, !emitChange);
             return () -> fireEvent(event);

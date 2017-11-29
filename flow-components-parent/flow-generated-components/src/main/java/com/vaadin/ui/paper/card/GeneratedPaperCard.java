@@ -322,7 +322,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperCard(com.vaadin.ui.Component... components) {
+    public GeneratedPaperCard(Component... components) {
         add(components);
     }
 

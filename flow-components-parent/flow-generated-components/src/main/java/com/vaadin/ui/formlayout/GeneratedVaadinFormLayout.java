@@ -254,7 +254,7 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinFormLayout(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinFormLayout(Component... components) {
         add(components);
     }
 

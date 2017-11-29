@@ -160,6 +160,26 @@ public class BootstrapHandlerTest {
         assertEquals(2, body.parent().childNodeSize());
     }
 
+    @Test // #2956
+    public void head_has_ui_lang() throws Exception {
+        initUI(testUI, createVaadinRequest());
+        testUI.setLocale(Locale.FRENCH);
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Element body = page.head().nextElementSibling();
+
+        assertEquals("Expected body element", "body", body.tagName());
+        assertEquals("Expected html element as parent to body element", "html",
+                body.parent().tagName());
+
+        assertTrue("Html tag was missing lang attribute",
+                body.parent().hasAttr("lang"));
+        assertEquals("Lang did not have UI defined language",
+                testUI.getLocale().getLanguage(), body.parent().attr("lang"));
+    }
+
     @Test
     public void headHasMetaTags() throws Exception {
         initUI(testUI, createVaadinRequest());
@@ -437,9 +457,6 @@ public class BootstrapHandlerTest {
         Element head = initTestUI();
 
         checkInlinedScript(head, "es6-collections.js", true);
-        assertTrue(
-                "Webcomponent adapter is expected to be included to a bootstrap page when ES6 is not supported",
-                head.toString().contains("custom-elements-es5-adapter.js"));
         checkInlinedScript(head, "babel-helpers.min.js", true);
     }
 
@@ -451,9 +468,6 @@ public class BootstrapHandlerTest {
 
         checkInlinedScript(head, "es6-collections.js", false);
         checkInlinedScript(head, "babel-helpers.min.js", false);
-        assertFalse(
-                "Webcomponent adapter should NOT be included to a bootstrap page when ES6 is not supported",
-                head.toString().contains("custom-elements-es5-adapter.js"));
     }
 
     private Element initTestUI() {
