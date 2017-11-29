@@ -118,6 +118,7 @@ public class SimpleEventBus extends EventBus {
      *            the index
      * @param <H>
      *            the handler type
+     * @return the handler
      *
      * @deprecated required by legacy features in GWT's old HandlerManager
      */

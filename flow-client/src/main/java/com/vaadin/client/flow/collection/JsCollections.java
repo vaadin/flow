@@ -192,6 +192,10 @@ public class JsCollections {
      *
      * @param map
      *            the map to check
+     * @param <K>
+     *            the key type
+     * @param <V>
+     *            the value type
      * @return {@code true} if the map is empty, {@code false} otherwise
      * 
      * @deprecated please use {@link JsMap#isEmpty()} instead
@@ -206,6 +210,8 @@ public class JsCollections {
      *
      * @param set
      *            the set to check
+     * @param <V>
+     *            the set type
      * @return {@code true} if the set is empty, {@code false} otherwise
      *
      * @deprecated please use {@link JsSet#isEmpty()} instead

@@ -142,8 +142,6 @@ public class JsMap<K, V> {
     /**
      * Returns an array of the values in this {@link JsMap}.
      *
-     * @param map
-     *            the source map
      * @return an array of the values in the map
      */
     @JsOverlay
