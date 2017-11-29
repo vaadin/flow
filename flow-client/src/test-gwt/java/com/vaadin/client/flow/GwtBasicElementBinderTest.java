@@ -262,6 +262,29 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("child", childElement.getId());
     }
 
+    public void testVirtualChild() {
+        Binder.bind(node, element);
+
+        StateNode childNode = createChildNode("child");
+
+        NodeMap elementData = childNode.getMap(NodeFeatures.ELEMENT_DATA);
+        JsonObject object = Json.createObject();
+        object.put(NodeProperties.TYPE, NodeProperties.IN_MEMORY_CHILD);
+        elementData.getProperty(NodeProperties.PAYLOAD).setValue(object);
+
+        NodeList virtialChildren = node
+                .getList(NodeFeatures.NEW_VIRTUAL_CHILDREN);
+        virtialChildren.add(0, childNode);
+
+        Reactive.flush();
+
+        assertEquals(element.getChildElementCount(), 0);
+
+        Element childElement = (Element) childNode.getDomNode();
+        assertEquals("SPAN", childElement.getTagName());
+        assertEquals("child", childElement.getId());
+    }
+
     public void testInsertChild() {
         Binder.bind(node, element);
 
