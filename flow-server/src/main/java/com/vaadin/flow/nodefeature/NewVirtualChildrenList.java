@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.nodefeature;
 
+import java.util.Iterator;
+
 import com.vaadin.flow.StateNode;
 
 import elemental.json.Json;
@@ -102,6 +104,16 @@ public class NewVirtualChildrenList extends StateNodeNodeList {
      */
     public void append(StateNode node, String type) {
         append(node, type, null);
+    }
+
+    @Override
+    public StateNode get(int index) {
+        return super.get(index);
+    }
+
+    @Override
+    public Iterator<StateNode> iterator() {
+        return super.iterator();
     }
 
     @Override
