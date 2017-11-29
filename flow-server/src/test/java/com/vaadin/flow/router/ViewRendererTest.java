@@ -23,15 +23,15 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.router.PageTitle;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.PageTitle;
 import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
+import com.vaadin.ui.common.HasText;
 import com.vaadin.util.ReflectTools;
 
 public class ViewRendererTest {
@@ -274,7 +274,7 @@ public class ViewRendererTest {
     }
 
     @Test
-    public void routeParamtersInEvent() {
+    public void routeParametersInEvent() {
         router.reconfigure(c -> c.setRoute("foo/{name}/*", TestView.class));
         router.navigate(ui, new Location("foo/bar/baz/"),
                 NavigationTrigger.PROGRAMMATIC);

@@ -1053,8 +1053,8 @@ public class Element extends Node<Element> {
      * also reflected in the value of the <code>class</code> attribute.
      * <p>
      * Despite the name implying a list being returned, the return type is
-     * actually a {@link Set} since the the in-browser return value behaves like
-     * a <code>Set</code> in Java.
+     * actually a {@link Set} since the in-browser return value behaves like a
+     * <code>Set</code> in Java.
      *
      * @return a list of class names, never <code>null</code>
      */

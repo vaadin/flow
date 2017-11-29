@@ -17,7 +17,6 @@ package com.vaadin.ui.paper.input;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -36,8 +35,7 @@ import com.vaadin.shared.Registration;
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
-        extends Component
-        implements HasStyle, ComponentSupplier<R>, HasValue<R, String> {
+        extends Component implements HasStyle, HasValue<R, String> {
 
     /**
      * <p>
@@ -1550,6 +1548,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -1571,6 +1570,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -1591,6 +1591,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addChangeListener(
             ComponentEventListener<ChangeEvent<R>> listener) {
         return addListener(ChangeEvent.class,
@@ -1612,6 +1613,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -1633,6 +1635,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -1654,6 +1657,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,

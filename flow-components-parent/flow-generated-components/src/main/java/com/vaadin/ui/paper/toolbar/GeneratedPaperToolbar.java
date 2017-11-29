@@ -153,7 +153,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToTop(com.vaadin.ui.Component... components) {
+    public R addToTop(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top");
             getElement().appendChild(component.getElement());
@@ -175,7 +175,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToMiddle(com.vaadin.ui.Component... components) {
+    public R addToMiddle(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "middle");
             getElement().appendChild(component.getElement());
@@ -197,7 +197,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToBottom(com.vaadin.ui.Component... components) {
+    public R addToBottom(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom");
             getElement().appendChild(component.getElement());
@@ -213,7 +213,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

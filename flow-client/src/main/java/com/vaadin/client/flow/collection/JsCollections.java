@@ -60,6 +60,8 @@ public class JsCollections {
     /**
      * Creates a new JavaScript Array.
      *
+     * @param <T>
+     *            the array type
      * @return a new JS array instance
      */
     public static <T> JsArray<T> array() {
@@ -74,6 +76,8 @@ public class JsCollections {
      *
      * @param values
      *            the values of the new array
+     * @param <T>
+     *            the array type
      *
      * @return a new JS array instance
      */
@@ -88,6 +92,10 @@ public class JsCollections {
     /**
      * Creates a new JavaScript Map.
      *
+     * @param <K>
+     *            the key type
+     * @param <V>
+     *            the value type
      * @return a new JS map instance
      */
     public static <K, V> JsMap<K, V> map() {
@@ -101,6 +109,10 @@ public class JsCollections {
     /**
      * Creates a new JavaScript WeakMap.
      *
+     * @param <K>
+     *            the key type
+     * @param <V>
+     *            the value type
      * @return a new JS weak map instance
      */
     public static <K, V> JsWeakMap<K, V> weakMap() {
@@ -114,6 +126,8 @@ public class JsCollections {
     /**
      * Creates a new empty JavaScript Set.
      *
+     * @param <V>
+     *            the set type
      * @return a new empty JS Set instance
      */
     public static <V> JsSet<V> set() {
@@ -129,6 +143,8 @@ public class JsCollections {
      *
      * @param values
      *            a set of values to add to the new set
+     * @param <T>
+     *            the set type
      * @return a new JS Set with the provided contents
      */
     public static <T> JsSet<T> set(JsSet<T> values) {
@@ -148,6 +164,10 @@ public class JsCollections {
      *
      * @param map
      *            the source map
+     * @param <K>
+     *            the key type
+     * @param <V>
+     *            the value type
      * @return an array of the values in the map
      * 
      * @deprecated please use {@link JsMap#mapValues()} instead

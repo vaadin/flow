@@ -37,17 +37,10 @@ import com.vaadin.ui.event.EventData;
  * </p>
  * <p>
  * {@code <vaadin-date-picker>} is a date selection field which includes a
- * scrollable month calendar view.
- * </p>
- * <p>
- * &lt;vaadin-date-picker
+ * scrollable month calendar view. &lt;vaadin-date-picker
  * label=&quot;Birthday&quot;&gt;&lt;/vaadin-date-picker&gt;
- * </p>
- * <p>
- * {@code js
-datePicker.value = '2016-03-02';
-} When the selected {@code value} is changed, a {@code value-changed}
- * event is triggered.
+ * {@code datePicker.value = '2016-03-02';} When the selected {@code value} is
+ * changed, a {@code value-changed} event is triggered.
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -986,6 +979,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -1015,6 +1009,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addValueAsStringChangeListener(
             ComponentEventListener<ValueAsStringChangeEvent<R>> listener) {
         return addListener(ValueAsStringChangeEvent.class,
@@ -1044,6 +1039,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -1064,7 +1060,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrefix(com.vaadin.ui.Component... components) {
+    public R addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
@@ -1080,7 +1076,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

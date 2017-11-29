@@ -34,14 +34,15 @@ import org.commonmark.renderer.html.HtmlRenderer;
  */
 class JavaDocFormatter {
     private static final String JAVA_DOC_CODE_SECTION = "{@code $1}";
+    private static final String JAVA_DOC_CODE_SECTION_MULTI = "{@code $2}";
     private static final String JAVA_DOC_CLOSE_ESCAPED = "&#42;&#47;";
 
     private static final Pattern MULTI_LINE_CODE_PARTS = Pattern
-            .compile("```(.*?)```", Pattern.DOTALL);
+            .compile("```(js)?\\s*?(.*?)\\s*?```", Pattern.DOTALL);
     private static final Pattern MULTI_LINE_CODE_PARTS_HTML = Pattern
-            .compile("```html(.*?)```", Pattern.DOTALL);
+            .compile("```html\\s*(.*?)\\s*```", Pattern.DOTALL);
     private static final Pattern SINGLE_LINE_CODE_PARTS = Pattern
-            .compile("`(.*?)`");
+            .compile("`\\s*(.*?)\\s*`");
     private static final Pattern JAVA_DOC_CLOSE = Pattern.compile("\\*/");
 
     private final HtmlRenderer renderer;
@@ -83,7 +84,7 @@ class JavaDocFormatter {
     private String replaceCodeParts(String documentation) {
         return replaceByPattern(
                 replaceByPattern(replaceHtml(documentation),
-                        MULTI_LINE_CODE_PARTS, JAVA_DOC_CODE_SECTION),
+                        MULTI_LINE_CODE_PARTS, JAVA_DOC_CODE_SECTION_MULTI),
                 SINGLE_LINE_CODE_PARTS, JAVA_DOC_CODE_SECTION);
     }
 
