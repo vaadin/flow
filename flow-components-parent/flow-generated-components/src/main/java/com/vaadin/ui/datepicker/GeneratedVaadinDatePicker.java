@@ -30,6 +30,7 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.EventData;
+import com.vaadin.flow.dom.Element;
 
 /**
  * <p>
@@ -978,6 +979,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
@@ -1008,6 +1010,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addValueAsStringChangeListener(
@@ -1038,6 +1041,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(

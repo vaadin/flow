@@ -28,6 +28,7 @@ import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.flow.dom.Element;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#1.0-SNAPSHOT" })
@@ -1083,6 +1084,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addActiveChangeListener(
@@ -1105,6 +1107,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
@@ -1127,6 +1130,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
@@ -1149,6 +1153,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementRegisterListener(
@@ -1171,6 +1176,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementUnregisterListener(
@@ -1193,6 +1199,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addValueChangeListener(
@@ -1215,6 +1222,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
@@ -1237,6 +1245,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemLabelChangeListener(
@@ -1259,6 +1268,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemChangeListener(
@@ -1281,6 +1291,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(

@@ -1222,6 +1222,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addHorizontalOffsetChangeListener(
@@ -1244,6 +1245,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVerticalOffsetChangeListener(
@@ -1266,6 +1268,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
@@ -1288,6 +1291,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronOverlayCanceledListener(
@@ -1310,6 +1314,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronOverlayClosedListener(
@@ -1332,6 +1337,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronOverlayOpenedListener(

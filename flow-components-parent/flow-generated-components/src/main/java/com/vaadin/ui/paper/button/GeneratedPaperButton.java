@@ -535,6 +535,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addActiveChangeListener(
@@ -557,6 +558,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
@@ -579,6 +581,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
@@ -601,6 +604,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addTransitionendListener(
@@ -612,8 +616,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
     /**
      * Sets the given string as the content of this component.
      * 
-     * @param the
-     *            text content to set
+     * @param text
+     *            the text content to set
      * @see HasText#setText(String)
      */
     public GeneratedPaperButton(String text) {

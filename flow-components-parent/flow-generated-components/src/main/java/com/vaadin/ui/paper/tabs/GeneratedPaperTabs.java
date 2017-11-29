@@ -1184,6 +1184,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronActivateListener(
@@ -1206,6 +1207,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronDeselectListener(
@@ -1228,6 +1230,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronItemsChangeListener(
@@ -1249,6 +1252,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronSelectListener(
@@ -1271,6 +1275,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedChangeListener(
@@ -1293,6 +1298,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemChangeListener(
@@ -1315,6 +1321,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addItemsChangeListener(
@@ -1337,6 +1344,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedValuesChangeListener(
@@ -1359,6 +1367,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemsChangeListener(

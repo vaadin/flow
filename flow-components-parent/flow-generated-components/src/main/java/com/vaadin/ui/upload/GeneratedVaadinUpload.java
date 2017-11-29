@@ -682,6 +682,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileRejectListener(
@@ -726,6 +727,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadAbortListener(
@@ -777,6 +779,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadBeforeListener(
@@ -821,6 +824,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadErrorListener(
@@ -865,6 +869,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadProgressListener(
@@ -916,6 +921,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadRequestListener(
@@ -960,6 +966,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadResponseListener(
@@ -1004,6 +1011,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadRetryListener(
@@ -1048,6 +1056,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadStartListener(
@@ -1092,6 +1101,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadSuccessListener(
@@ -1114,6 +1124,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFilesChangeListener(
@@ -1136,6 +1147,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addMaxFilesReachedChangeListener(

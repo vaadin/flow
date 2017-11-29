@@ -337,6 +337,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addMinChangeListener(
@@ -358,6 +359,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addMaxChangeListener(
@@ -380,6 +382,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addStepChangeListener(
@@ -402,6 +405,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addRatioChangeListener(

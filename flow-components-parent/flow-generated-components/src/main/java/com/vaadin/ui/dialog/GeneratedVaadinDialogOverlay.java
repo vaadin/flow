@@ -216,6 +216,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinOverlayCloseListener(
@@ -238,6 +239,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinOverlayEscapePressListener(
@@ -260,6 +262,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinOverlayOpenListener(
@@ -282,6 +285,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinOverlayOutsideClickListener(
@@ -304,6 +308,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
@@ -326,6 +331,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addTemplateChangeListener(
@@ -348,6 +354,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addContentChangeListener(
