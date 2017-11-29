@@ -39,14 +39,6 @@ public class JsSet<V> {
     }
 
     /**
-     * Creates a new instance.
-     */
-    public JsSet(JsSet<V> set) {
-        // IE11 doesn't support the Set(Iterable) constructor
-        set.forEach(this::add);
-    }
-
-    /**
      * Adds a value to this set, overwriting any previous value if present.
      *
      * @param value

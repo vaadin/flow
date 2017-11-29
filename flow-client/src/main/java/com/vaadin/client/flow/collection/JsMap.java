@@ -147,7 +147,7 @@ public class JsMap<K, V> {
      */
     @JsOverlay
     @SuppressWarnings("unchecked")
-    public JsArray<V> mapValues() {
+    public final JsArray<V> mapValues() {
         JsArray<V> result = JsCollections.array();
         forEach((value, key) -> result.push(value));
 

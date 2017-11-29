@@ -139,7 +139,9 @@ public class JsCollections {
     public static <T> JsSet<T> set(JsSet<T> values) {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
-            return new JsSet<>(values);
+            JsSet<T> newSet = new JsSet<>();
+            values.forEach(newSet::add);
+            return newSet;
         }
         return new JreJsSet<>((JreJsSet<T>) values);
     }
