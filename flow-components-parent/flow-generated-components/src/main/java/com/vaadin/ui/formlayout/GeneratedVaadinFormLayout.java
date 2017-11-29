@@ -241,7 +241,8 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
      * Set custom CSS property values and update the layout.
      * </p>
      * 
-     * @param ...args Missing documentation!
+     * @param _Args
+     *            Missing documentation!
      */
     protected void updateStyles(JsonObject _Args) {
         getElement().callFunction("updateStyles", _Args);

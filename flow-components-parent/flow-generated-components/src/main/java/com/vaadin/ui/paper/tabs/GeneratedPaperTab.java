@@ -515,6 +515,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
@@ -537,6 +538,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
@@ -559,6 +561,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addActiveChangeListener(

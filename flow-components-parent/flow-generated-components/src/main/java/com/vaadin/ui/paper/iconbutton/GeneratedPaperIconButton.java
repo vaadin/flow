@@ -582,6 +582,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addActiveChangeListener(
@@ -604,6 +605,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
@@ -626,6 +628,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(

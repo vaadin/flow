@@ -486,7 +486,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @param path
      *            Path to array.
-     * @param ...items Missing documentation!
+     * @param _Items
+     *            Missing documentation!
      */
     @NotSupported
     protected void push(JsonObject path, JsonObject _Items) {
@@ -514,7 +515,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @param path
      *            Path to array.
-     * @param ...items Missing documentation!
+     * @param _Items
+     *            Missing documentation!
      */
     @NotSupported
     protected void push(String path, JsonObject _Items) {
@@ -601,7 +603,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Index from which to start removing/inserting.
      * @param deleteCount
      *            Number of items to remove.
-     * @param ...items Missing documentation!
+     * @param _Items
+     *            Missing documentation!
      */
     @NotSupported
     protected void splice(JsonObject path, double start, double deleteCount,
@@ -635,7 +638,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      *            Index from which to start removing/inserting.
      * @param deleteCount
      *            Number of items to remove.
-     * @param ...items Missing documentation!
+     * @param _Items
+     *            Missing documentation!
      */
     @NotSupported
     protected void splice(String path, double start, double deleteCount,
@@ -718,7 +722,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @param path
      *            Path to array.
-     * @param ...items Missing documentation!
+     * @param _Items
+     *            Missing documentation!
      */
     @NotSupported
     protected void unshift(JsonObject path, JsonObject _Items) {
@@ -746,7 +751,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @param path
      *            Path to array.
-     * @param ...items Missing documentation!
+     * @param _Items
+     *            Missing documentation!
      */
     @NotSupported
     protected void unshift(String path, JsonObject _Items) {

@@ -1547,6 +1547,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
@@ -1569,6 +1570,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
@@ -1590,6 +1592,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addChangeListener(
@@ -1612,6 +1615,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
@@ -1634,6 +1638,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementRegisterListener(
@@ -1656,6 +1661,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementUnregisterListener(
