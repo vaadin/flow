@@ -195,8 +195,8 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
-        Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setName(String name)"));
+        Assert.assertTrue("No setter found",
+                generatedClass.contains("public void setName(String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
@@ -892,6 +892,28 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue(generatedClass.contains(
                 "@Override public void setValue(String value) { if (!Objects.equals(value, getValue())) {"));
+    }
+
+    @Test
+    public void ComponentContainsStringValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTyeps() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setType(Collections.singleton(ComponentBasicType.STRING));
+        property.setNotify(true);
+        componentMetadata.setProperties(Collections.singletonList(property));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+        
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent", HasValue.class);
+
+        Assert.assertTrue(generatedClass
+                .contains(
+                        "@Override public String getValue() { return getElement().getProperty(\"value\") == null ? getEmptyValue() : getElement().getProperty(\"value\"); }"));
     }
 
     @Test
