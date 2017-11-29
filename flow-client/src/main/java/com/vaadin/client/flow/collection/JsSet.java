@@ -37,6 +37,7 @@ public class JsSet<V> {
      * Creates a new instance.
      */
     public JsSet() {
+        // handled by GWT
     }
 
     /**

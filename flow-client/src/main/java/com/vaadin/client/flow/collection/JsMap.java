@@ -60,6 +60,7 @@ public class JsMap<K, V> {
      * Creates a new instance.
      */
     public JsMap() {
+        // handled by GWT
     }
 
     /**

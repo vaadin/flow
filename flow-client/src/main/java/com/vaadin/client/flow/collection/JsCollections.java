@@ -159,24 +159,6 @@ public class JsCollections {
         return newSet;
     }
 
-    /**
-     * Returns an array of the values in a {@link JsMap}.
-     *
-     * @param map
-     *            the source map
-     * @param <K>
-     *            the key type
-     * @param <V>
-     *            the value type
-     * @return an array of the values in the map
-     * 
-     * @deprecated please use {@link JsMap#mapValues()} instead
-     */
-    @Deprecated
-    public static <K, V> JsArray<V> mapValues(JsMap<K, V> map) {
-        return map.mapValues();
-    }
-
     private static native <T> JsArray<T> asArray(Object values)
     /*-{
         return values;
@@ -186,40 +168,6 @@ public class JsCollections {
     /*-{
         return new $wnd.WeakMap();
     }-*/;
-
-    /**
-     * Checks if the given map is empty, i.e. has no mappings.
-     *
-     * @param map
-     *            the map to check
-     * @param <K>
-     *            the key type
-     * @param <V>
-     *            the value type
-     * @return {@code true} if the map is empty, {@code false} otherwise
-     * 
-     * @deprecated please use {@link JsMap#isEmpty()} instead
-     */
-    @Deprecated
-    public static <K, V> boolean isEmpty(JsMap<K, V> map) {
-        return map.size() == 0;
-    }
-
-    /**
-     * Checks if the given set is empty.
-     *
-     * @param set
-     *            the set to check
-     * @param <V>
-     *            the set type
-     * @return {@code true} if the set is empty, {@code false} otherwise
-     *
-     * @deprecated please use {@link JsSet#isEmpty()} instead
-     */
-    @Deprecated
-    public static <V> boolean isEmpty(JsSet<V> set) {
-        return set.size() == 0;
-    }
 
     private static void checkJunitPolyfillStatus() {
         // "emulated" for JUnit compiles, "native" for normal compiles
