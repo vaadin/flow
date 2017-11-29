@@ -42,7 +42,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 
 import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.router.NavigationState;
 import com.vaadin.router.Router;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.util.RouterUtil;
@@ -984,18 +983,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinRequest request) {
         String viewportContent = null;
 
-        if (ui.getRouter().isPresent()) {
-            Router router = ui.getRouter().get();
-            NavigationState navigationState = router.resolveNavigationTarget(
-                    request.getPathInfo(), request.getParameterMap());
-            if (navigationState != null) {
-                Optional<Viewport> viewportAnnotation = getViewportAnnotation(
-                        navigationState.getNavigationTarget());
+        Optional<Router> router = ui.getRouter();
+        if (router.isPresent()) {
+            Optional<Class<? extends Component>> navigationTarget = router.get()
+                    .resolveNavigationTarget(request.getPathInfo(),
+                            request.getParameterMap());
 
-                if (viewportAnnotation.isPresent()) {
-                    viewportContent = viewportAnnotation.get().value();
-                }
-            }
+            viewportContent = navigationTarget
+                    .flatMap(BootstrapHandler::getViewportAnnotation)
+                    .map(Viewport::value).orElse(null);
         }
         return Optional.ofNullable(viewportContent);
     }
