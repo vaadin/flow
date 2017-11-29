@@ -116,17 +116,19 @@ public class Router implements RouterInterface {
     public Optional<Class<? extends Component>> resolveNavigationTarget(
             String pathInfo, Map<String, String[]> parameterMap) {
         Location location = getLocationForRequest(pathInfo, parameterMap);
-
+        Class<? extends Component> target = null;
         try {
             NavigationState resolve = getRouteResolver()
                     .resolve(new ResolveRequest(this, location));
-            return Optional.ofNullable(resolve.getNavigationTarget());
+            if (resolve != null) {
+                target = resolve.getNavigationTarget();
+            }
         } catch (NotFoundException nfe) {
             Logger.getLogger(Router.class.getName()).log(Level.WARNING, nfe,
                     () -> "Failed to resolve navigation target for path: "
                             + pathInfo);
-            return Optional.empty();
         }
+        return Optional.ofNullable(target);
     }
 
     @Override
