@@ -99,6 +99,7 @@ public class Profiler {
          * Create a new node with the given name.
          *
          * @param name
+         *            the name of the node
          */
         public Node(String name) {
             this.name = name;
@@ -379,6 +380,8 @@ public class Profiler {
      * Returns time relative to the particular page load time. The value should
      * not be used directly but rather difference between two values returned by
      * this method should be used to compare measurements.
+     * 
+     * @return the relative time in milliseconds
      *
      * @since 7.6
      */

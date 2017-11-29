@@ -121,7 +121,9 @@ public class ExecuteJavaScriptProcessor {
      *            an array consisting of parameter names followed by the
      *            JavaScript expression to execute
      * @param parameters
-     *            and array of parameter values
+     *            an array of parameter values
+     * @param nodeParameters
+     *            the node parameters
      */
     @SuppressWarnings("static-method")
     protected void invoke(String[] parameterNamesAndCode,
