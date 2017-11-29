@@ -63,6 +63,9 @@ public final class RouterUtil {
      * 
      * @param component
      *            navigation target to get parents for
+     * @param path
+     *            path used to get navigation target so we know which annotation
+     *            to handle
      * @return parent layouts for target
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
@@ -97,7 +100,8 @@ public final class RouterUtil {
         Optional<ParentLayout> parentLayout = AnnotationReader
                 .getAnnotationFor(layout, ParentLayout.class);
         if (parentLayout.isPresent()) {
-            layouts.addAll(collectRouteParentLayouts(parentLayout.get().value()));
+            layouts.addAll(
+                    collectRouteParentLayouts(parentLayout.get().value()));
         }
         return layouts;
     }
@@ -112,9 +116,9 @@ public final class RouterUtil {
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
             Class<?> component) {
-        Optional<Route> route = AnnotationReader
-                .getAnnotationFor(component, Route.class);
-        if(route.isPresent() && !route.get().layout().equals(UI.class)) {
+        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
+                Route.class);
+        if (route.isPresent() && !route.get().layout().equals(UI.class)) {
             return recuseToTopLayout(route.get().layout());
         }
         return null;
@@ -126,6 +130,9 @@ public final class RouterUtil {
      *
      * @param component
      *            navigation target to get top most parent for
+     * @param path
+     *            path used to get navigation target so we know which annotation
+     *            to handle
      * @return top parent layout for target or null if none found
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
