@@ -42,6 +42,20 @@ public class NewVirtualChildrenList extends StateNodeNodeList {
         super(node);
     }
 
+    /**
+     * Inserts an item supplied with payload data at the given index of the
+     * list.
+     *
+     *
+     * @param index
+     *            index to insert at
+     * @param node
+     *            the item to append
+     * @param type
+     *            the payload type
+     * @param payload
+     *            the payload data
+     */
     public void add(int index, StateNode node, String type, String payload) {
         assert node != null;
 
@@ -55,12 +69,23 @@ public class NewVirtualChildrenList extends StateNodeNodeList {
         super.add(index, node);
     }
 
+    /**
+     * Inserts an item supplied with payload type at the given index of the
+     * list.
+     *
+     * @param index
+     *            index to insert at
+     * @param node
+     *            the item to append
+     * @param type
+     *            the payload type
+     */
     public void add(int index, StateNode node, String type) {
         add(index, node, type, null);
     }
 
     /**
-     * Appends an item as last in the list.
+     * Appends an item supplied with payload data as last in the list.
      *
      * @param node
      *            the item to append
@@ -70,7 +95,7 @@ public class NewVirtualChildrenList extends StateNodeNodeList {
     }
 
     /**
-     * Appends an item as last in the list.
+     * Appends an item supplied with payload type as last in the list.
      *
      * @param node
      *            the item to append

@@ -61,7 +61,7 @@ public class ElementData extends NodeValue<Serializable[]> {
     public void setTag(String tag) {
         Serializable[] value = new Serializable[2];
         value[0] = tag;
-        value[1] = getPyload();
+        value[1] = getPayload();
         setValue(value);
     }
 
@@ -91,7 +91,7 @@ public class ElementData extends NodeValue<Serializable[]> {
      * Gets the payload data of the element.
      *
      */
-    public JsonValue getPyload() {
+    public JsonValue getPayload() {
         Serializable[] value = getValue();
         return value == null ? null : (JsonValue) value[1];
     }
@@ -115,9 +115,9 @@ public class ElementData extends NodeValue<Serializable[]> {
             if (!Objects.equals(previousValue[0], getTag())) {
                 collector.accept(new MapPutChange(this, getKey(), getTag()));
             }
-            if (!Objects.equals(previousValue[1], getPyload())) {
+            if (!Objects.equals(previousValue[1], getPayload())) {
                 collector.accept(new MapPutChange(this, NodeProperties.PAYLOAD,
-                        getPyload()));
+                        getPayload()));
             }
         } else if (change instanceof EmptyChange) {
             collector.accept(change);

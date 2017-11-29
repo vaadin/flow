@@ -141,31 +141,39 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     }
 
     /**
-     * Appends the given child as the virtual child of the element.
+     * Appends the given children as the virtual children of the element.
      * <p>
      * The virtual child is not really a child of the DOM element. The
      * client-side counterpart is created in the memory but it's not attached to
      * the DOM tree. The resulting element is referenced via the server side
      * {@link Element} in JS function call as usual.
      *
-     * @param child
-     *            the element to add
+     * @param children
+     *            the element(s) to add
      * @return this element
      */
-    public N appendVirtualChild(Element child) {
-        if (child == null) {
+    public N appendVirtualChild(Element... children) {
+        if (children == null) {
             throw new IllegalArgumentException(
-                    "Element to insert must not be null");
+                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
-        Node<?> parentNode = child.getParentNode();
-        if (parentNode != null) {
-            throw new IllegalArgumentException(
-                    "Element to insert already has a parent and can't "
-                            + "be added as a virtual child");
+
+        for (int i = 0; i < children.length; i++) {
+            Element child = children[i];
+            if (child == null) {
+                throw new IllegalArgumentException(
+                        "Element to insert must not be null");
+            }
+            Node<?> parentNode = child.getParentNode();
+            if (parentNode != null) {
+                throw new IllegalArgumentException(
+                        "Element to insert already has a parent and can't "
+                                + "be added as a virtual child");
+            }
+            getStateProvider().appendVirtualChild(getNode(), child,
+                    NodeProperties.IN_MEMORY_CHILD, null);
+            ensureChildHasParent(child, true);
         }
-        getStateProvider().appendVirtualChild(getNode(), child,
-                NodeProperties.IN_MEMORY_CHILD, null);
-        ensureChildHasParent(child, true);
 
         return getSelf();
     }
