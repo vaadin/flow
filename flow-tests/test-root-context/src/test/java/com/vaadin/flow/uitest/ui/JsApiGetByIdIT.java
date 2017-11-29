@@ -28,14 +28,14 @@ public class JsApiGetByIdIT extends ChromeBrowserTest {
     public void getByNodeId_JsAPI() {
         open();
 
-        WebElement target = findElement(By.id("source"));
-        String text = target.getText();
-        WebElement source = findElement(By.id("target"));
+        WebElement source = findElement(By.id("source"));
+        String text = source.getText();
+        WebElement target = findElement(By.id("target"));
 
-        Assert.assertNotEquals(text, source.getText());
+        Assert.assertNotEquals(text, target.getText());
 
         findElement(By.id("update")).click();
 
-        Assert.assertEquals(text, source.getText());
+        Assert.assertEquals(text, target.getText());
     }
 }

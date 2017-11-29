@@ -17,8 +17,6 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
@@ -37,13 +35,10 @@ public class JsApiGetByIdView extends Div {
         target.setId("target");
         add(target);
 
-        String appId = UI.getCurrent().getSession().getService().getMainDivId(
-                UI.getCurrent().getSession(), VaadinRequest.getCurrent());
         getElement().getNode()
                 .runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                        "window.jsApiConnector.jsFunction($0, this.$appId, $2)",
-                        target, appId.replaceAll("-\\d+$", ""),
-                        label.getElement().getNode().getId()));
+                        "window.jsApiConnector.jsFunction($0, this.$appId, $1)",
+                        target, label.getElement().getNode().getId()));
 
         NativeButton button = new NativeButton("Update target",
                 event -> target.getElement().callFunction("operation"));
