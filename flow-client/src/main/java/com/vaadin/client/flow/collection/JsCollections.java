@@ -65,9 +65,8 @@ public class JsCollections {
     public static <T> JsArray<T> array() {
         if (GWT.isScript()) {
             return asArray(JavaScriptObject.createArray());
-        } else {
-            return new JreJsArray<>();
         }
+        return new JreJsArray<>();
     }
 
     /**
@@ -82,9 +81,8 @@ public class JsCollections {
     public static <T> JsArray<T> array(T... values) {
         if (GWT.isScript()) {
             return asArray(values);
-        } else {
-            return new JreJsArray<>(values);
         }
+        return new JreJsArray<>(values);
     }
 
     /**
@@ -96,9 +94,8 @@ public class JsCollections {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
             return new JsMap<>();
-        } else {
-            return new JreJsMap<>();
         }
+        return new JreJsMap<>();
     }
 
     /**
@@ -110,9 +107,8 @@ public class JsCollections {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
             return createNativeWeakMap();
-        } else {
-            return new JreJsWeakMap<>();
         }
+        return new JreJsWeakMap<>();
     }
 
     /**
@@ -124,9 +120,8 @@ public class JsCollections {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
             return new JsSet<>();
-        } else {
-            return new JreJsSet<>();
         }
+        return new JreJsSet<>();
     }
 
     /**
@@ -137,13 +132,15 @@ public class JsCollections {
      * @return a new JS Set with the provided contents
      */
     public static <T> JsSet<T> set(JsSet<T> values) {
+        final JsSet<T> newSet;
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
-            JsSet<T> newSet = new JsSet<>();
-            values.forEach(newSet::add);
-            return newSet;
+            newSet = new JsSet<>();
+        } else {
+            newSet = new JreJsSet<>();
         }
-        return new JreJsSet<>((JreJsSet<T>) values);
+        values.forEach(newSet::add);
+        return newSet;
     }
 
     /**

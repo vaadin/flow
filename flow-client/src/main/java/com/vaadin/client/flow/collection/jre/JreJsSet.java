@@ -42,16 +42,6 @@ public class JreJsSet<V> extends JsSet<V> {
         // Nothing to do
     }
 
-    /**
-     * Creates a new JRE Set with the contents of another Set.
-     *
-     * @param otherSet
-     *            the Set to copy the contents from
-     */
-    public JreJsSet(JreJsSet<V> otherSet) {
-        this.values.addAll(otherSet.values);
-    }
-
     @Override
     public JsSet<V> add(V value) {
         values.add(value);
