@@ -15,10 +15,11 @@
  */
 package com.vaadin.client.flow.collection;
 
-import com.vaadin.client.flow.collection.JsCollections.ForEachCallback;
-
+import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+
+import com.vaadin.client.flow.collection.JsCollections.ForEachCallback;
 
 /**
  * Native JS Set interface with an alternative implementation for JRE usage. Use
@@ -29,7 +30,14 @@ import jsinterop.annotations.JsType;
  *            the value type
  */
 @JsType(isNative = true)
-public interface JsSet<V> {
+public class JsSet<V> {
+
+    /**
+     * Should not be directly created.
+     */
+    protected JsSet() {
+        // prevent direct instantiation
+    }
 
     /**
      * Adds a value to this set, overwriting any previous value if present.
@@ -38,32 +46,31 @@ public interface JsSet<V> {
      *            the value to add
      * @return this set, for chaining.
      */
-    JsSet<V> add(V value);
+    public native JsSet<V> add(V value);
 
     /**
      * Checks whether this set contains the given value.
      *
      * @param value
      *            the value to check for
-     * @return <code>true</code> if the value is in the set; <code>false</code>
-     *         otherwise
+     * @return {@code true} if the value is in the set; {@code false} otherwise
      */
-    boolean has(V value);
+    public native boolean has(V value);
 
     /**
      * Removes the given value from the set.
      *
      * @param value
      *            the value to remove
-     * @return <code>true</code> if the map contained the value prior to calling
-     *         this method; <code>false</code> otherwise
+     * @return {@code true} if the map contained the value prior to calling this
+     *         method; {@code false} otherwise
      */
-    boolean delete(V value);
+    public native boolean delete(V value);
 
     /**
      * Removes all values from this set.
      */
-    void clear();
+    public native void clear();
 
     /**
      * Invokes the provided callback for each value in this set.
@@ -71,7 +78,7 @@ public interface JsSet<V> {
      * @param callback
      *            the callback to invoke for each value
      */
-    void forEach(ForEachCallback<V> callback);
+    public native void forEach(ForEachCallback<V> callback);
 
     /**
      * Gets the number of values in this set.
@@ -79,6 +86,16 @@ public interface JsSet<V> {
      * @return the value count
      */
     @JsProperty(name = "size")
-    int size();
+    public native int size();
+
+    /**
+     * Checks if the set is empty (size == 0).
+     *
+     * @return {@code true} if the set is empty, {@code false} otherwise
+     */
+    @JsOverlay
+    public final boolean isEmpty() {
+        return size() == 0;
+    }
 
 }

@@ -15,14 +15,15 @@
  */
 package com.vaadin.client.flow.collection;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.vaadin.client.flow.collection.jre.JreJsArray;
 import com.vaadin.client.flow.collection.jre.JreJsMap;
 import com.vaadin.client.flow.collection.jre.JreJsSet;
 import com.vaadin.client.flow.collection.jre.JreJsWeakMap;
-
-import jsinterop.annotations.JsFunction;
 
 /**
  * Factory for JavaScript collection implementations with support for
@@ -139,25 +140,22 @@ public class JsCollections {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
             return createNativeSet(values);
-        } else {
-            return new JreJsSet<>((JreJsSet<T>) values);
         }
+        return new JreJsSet<>((JreJsSet<T>) values);
     }
 
-    // TODO Make non static and move to JsMap so it is easier to use
     /**
      * Returns an array of the values in a {@link JsMap}.
      *
      * @param map
      *            the source map
      * @return an array of the values in the map
+     * 
+     * @deprecated please use {@link JsMap#mapValues()} instead
      */
-    @SuppressWarnings("unchecked")
+    @Deprecated
     public static <K, V> JsArray<V> mapValues(JsMap<K, V> map) {
-        JsArray<V> result = JsCollections.array();
-        map.forEach((value, key) -> result.push(value));
-
-        return result;
+        return map.mapValues();
     }
 
     private static native <T> JsArray<T> asArray(Object values)
@@ -195,8 +193,11 @@ public class JsCollections {
      *
      * @param map
      *            the map to check
-     * @return <code>true</code> if the map is empty, false otherwise
+     * @return {@code true} if the map is empty, {@code false} otherwise
+     * 
+     * @deprecated please use {@link JsMap#isEmpty()} instead
      */
+    @Deprecated
     public static <K, V> boolean isEmpty(JsMap<K, V> map) {
         return map.size() == 0;
     }
@@ -206,8 +207,11 @@ public class JsCollections {
      *
      * @param set
      *            the set to check
-     * @return <code>true</code> if the set is empty, false otherwise
+     * @return {@code true} if the set is empty, {@code false} otherwise
+     *
+     * @deprecated please use {@link JsSet#isEmpty()} instead
      */
+    @Deprecated
     public static <V> boolean isEmpty(JsSet<V> set) {
         return set.size() == 0;
     }

@@ -32,7 +32,7 @@ import com.vaadin.client.flow.collection.JsSet;
  *            the value type
  */
 @Deprecated
-public class JreJsSet<V> implements JsSet<V> {
+public class JreJsSet<V> extends JsSet<V> {
     private final Set<V> values = new HashSet<>();
 
     /**

@@ -19,6 +19,7 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.Event.Type;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -314,7 +315,7 @@ public class SimpleEventBus extends EventBus {
         assert pruned != null : "Can't prune what wasn't there";
         assert pruned.isEmpty() : "Pruned unempty list!";
 
-        if (JsCollections.isEmpty(sourceMap)) {
+        if (sourceMap.isEmpty()) {
             map.delete(type);
         }
     }
