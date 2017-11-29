@@ -591,50 +591,44 @@ public abstract class VaadinService implements Serializable {
      */
     public void fireSessionDestroy(VaadinSession vaadinSession) {
         final VaadinSession session = vaadinSession;
-        session.access(new Command() {
-            @Override
-            public void execute() {
-                if (session.getState() == VaadinSessionState.CLOSED) {
-                    return;
-                }
-                if (session.getState() == VaadinSessionState.OPEN) {
-                    closeSession(session);
-                }
-                ArrayList<UI> uis = new ArrayList<>(session.getUIs());
-                for (final UI ui : uis) {
-                    ui.accessSynchronously(new Command() {
-                        @Override
-                        public void execute() {
-                            /*
-                             * close() called here for consistency so that it is
-                             * always called before a UI is removed.
-                             * UI.isClosing() is thus always true in UI.detach()
-                             * and associated detach listeners.
-                             */
-                            if (!ui.isClosing()) {
-                                ui.close();
-                            }
-                            session.removeUI(ui);
-                        }
-                    });
-                }
-                SessionDestroyEvent event = new SessionDestroyEvent(
-                        VaadinService.this, session);
-                for (SessionDestroyListener listener : sessionDestroyListeners) {
-                    try {
-                        listener.sessionDestroy(event);
-                    } catch (Exception e) {
-                        /*
-                         * for now, use the session error handler; in the
-                         * future, could have an API for using some other
-                         * handler for session init and destroy listeners
-                         */
-                        session.getErrorHandler().error(new ErrorEvent(e));
-                    }
-                }
-
-                session.setState(VaadinSessionState.CLOSED);
+        session.access(() -> {
+            if (session.getState() == VaadinSessionState.CLOSED) {
+                return;
             }
+            if (session.getState() == VaadinSessionState.OPEN) {
+                closeSession(session);
+            }
+            ArrayList<UI> uis = new ArrayList<>(session.getUIs());
+            for (final UI ui : uis) {
+                ui.accessSynchronously(() -> {
+                    /*
+                     * close() called here for consistency so that it is always
+                     * called before a UI is removed. UI.isClosing() is thus
+                     * always true in UI.detach() and associated detach
+                     * listeners.
+                     */
+                    if (!ui.isClosing()) {
+                        ui.close();
+                    }
+                    session.removeUI(ui);
+                });
+            }
+            SessionDestroyEvent event = new SessionDestroyEvent(
+                    VaadinService.this, session);
+            for (SessionDestroyListener listener : sessionDestroyListeners) {
+                try {
+                    listener.sessionDestroy(event);
+                } catch (Exception e) {
+                    /*
+                     * for now, use the session error handler; in the future,
+                     * could have an API for using some other handler for
+                     * session init and destroy listeners
+                     */
+                    session.getErrorHandler().error(new ErrorEvent(e));
+                }
+            }
+
+            session.setState(VaadinSessionState.CLOSED);
         });
     }
 
@@ -1287,13 +1281,10 @@ public abstract class VaadinService implements Serializable {
         ArrayList<UI> uis = new ArrayList<>(session.getUIs());
         for (final UI ui : uis) {
             if (ui.isClosing()) {
-                ui.accessSynchronously(new Command() {
-                    @Override
-                    public void execute() {
-                        getLogger().log(Level.FINER, "Removing closed UI {0}",
-                                ui.getUIId());
-                        session.removeUI(ui);
-                    }
+                ui.accessSynchronously(() -> {
+                    getLogger().log(Level.FINER, "Removing closed UI {0}",
+                            ui.getUIId());
+                    session.removeUI(ui);
                 });
             }
         }
@@ -1309,14 +1300,11 @@ public abstract class VaadinService implements Serializable {
         final String sessionId = session.getSession().getId();
         for (final UI ui : session.getUIs()) {
             if (!isUIActive(ui) && !ui.isClosing()) {
-                ui.accessSynchronously(new Command() {
-                    @Override
-                    public void execute() {
-                        getLogger().log(Level.FINE,
-                                "Closing inactive UI #{0} in session {1}",
-                                new Object[] { ui.getUIId(), sessionId });
-                        ui.close();
-                    }
+                ui.accessSynchronously(() -> {
+                    getLogger().log(Level.FINE,
+                            "Closing inactive UI #{0} in session {1}",
+                            new Object[] { ui.getUIId(), sessionId });
+                    ui.close();
                 });
             }
         }

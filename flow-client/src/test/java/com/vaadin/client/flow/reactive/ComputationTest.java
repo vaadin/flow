@@ -145,12 +145,7 @@ public class ComputationTest {
     public void testReactiveListeners() {
         Reactive.runWhenDependenciesChange(() -> {
             if (computeCount.get() == 0) {
-                router.addListener(new ReactiveValueChangeListener() {
-                    @Override
-                    public void onValueChange(ReactiveValueChangeEvent event) {
-                        computeCount.incrementAndGet();
-                    }
-                });
+                router.addListener(event -> computeCount.incrementAndGet());
                 router.registerRead();
             }
         });

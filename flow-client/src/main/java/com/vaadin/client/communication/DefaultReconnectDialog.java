@@ -16,14 +16,11 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.WidgetUtil;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Visibility;
 import elemental.dom.Element;
-import elemental.events.Event;
-import elemental.events.EventListener;
 import elemental.events.EventRemover;
 
 /**
@@ -84,15 +81,9 @@ public class DefaultReconnectDialog implements ReconnectDialog {
 
         // Click to refresh after giving up
         if (!reconnecting) {
-            clickHandler = root.addEventListener("click", new EventListener() {
-
-                @Override
-                public void handleEvent(Event evt) {
+            clickHandler = root.addEventListener("click",
                     // refresh
-                    WidgetUtil.redirect(null);
-
-                }
-            }, false);
+                    event -> WidgetUtil.redirect(null), false);
         } else {
             if (clickHandler != null) {
                 clickHandler.remove();
@@ -116,14 +107,10 @@ public class DefaultReconnectDialog implements ReconnectDialog {
         root.getStyle().setVisibility(Visibility.HIDDEN);
         root.getClassList().add(STYLE_RECONNECTING);
 
-        Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-
-            @Override
-            public void execute() {
-                root.getStyle().setVisibility(Visibility.VISIBLE);
-                root.getClassList().remove(STYLE_RECONNECTING);
-                hide();
-            }
+        Scheduler.get().scheduleDeferred(() -> {
+            root.getStyle().setVisibility(Visibility.VISIBLE);
+            root.getClassList().remove(STYLE_RECONNECTING);
+            hide();
         });
     }
 

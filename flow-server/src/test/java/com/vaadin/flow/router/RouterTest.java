@@ -77,13 +77,10 @@ public class RouterTest {
                 NavigationEvent eventToResolve) {
             Assert.assertNull(resolvedLocation.get());
             resolvedLocation.set(eventToResolve.getLocation());
-            return Optional.of(new NavigationHandler() {
-                @Override
-                public int handle(NavigationEvent eventToHandle) {
-                    Assert.assertNull(handledEvent.get());
-                    handledEvent.set(eventToHandle);
-                    return HttpServletResponse.SC_OK;
-                }
+            return Optional.of(event -> {
+                Assert.assertNull(handledEvent.get());
+                handledEvent.set(event);
+                return HttpServletResponse.SC_OK;
             });
         }
     }

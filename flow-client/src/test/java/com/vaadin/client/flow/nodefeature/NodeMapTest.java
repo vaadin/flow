@@ -61,14 +61,9 @@ public class NodeMapTest {
         AtomicReference<MapPropertyAddEvent> lastEvent = new AtomicReference<>();
 
         EventRemover remover = map
-                .addPropertyAddListener(new MapPropertyAddListener() {
-                    @Override
-                    public void onPropertyAdd(MapPropertyAddEvent event) {
-                        Assert.assertNull("Got unexpected event",
-                                lastEvent.get());
-
-                        lastEvent.set(event);
-                    }
+                .addPropertyAddListener(event -> {
+                    Assert.assertNull("Got unexpected event", lastEvent.get());
+                    lastEvent.set(event);
                 });
 
         Assert.assertNull(lastEvent.get());
