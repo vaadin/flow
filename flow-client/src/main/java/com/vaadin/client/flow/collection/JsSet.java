@@ -16,6 +16,7 @@
 package com.vaadin.client.flow.collection;
 
 import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -29,7 +30,7 @@ import com.vaadin.client.flow.collection.JsCollections.ForEachCallback;
  * @param <V>
  *            the value type
  */
-@JsType(isNative = true)
+@JsType(isNative = true, name = "Set", namespace = JsPackage.GLOBAL)
 public class JsSet<V> {
 
     /**

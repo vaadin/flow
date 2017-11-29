@@ -17,6 +17,7 @@ package com.vaadin.client.flow.collection;
 
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -30,7 +31,7 @@ import jsinterop.annotations.JsType;
  * @param <V>
  *            the value type
  */
-@JsType(isNative = true)
+@JsType(isNative = true, name = "Map", namespace = JsPackage.GLOBAL)
 public class JsMap<K, V> {
 
     /**
