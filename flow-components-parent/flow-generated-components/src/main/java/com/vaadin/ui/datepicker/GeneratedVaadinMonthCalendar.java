@@ -291,6 +291,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
         return addListener(SelectedDateChangeEvent.class,

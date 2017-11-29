@@ -85,7 +85,7 @@ public class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCou
         }
 
         @Override
-        public UpdateState readJson(elemental.json.JsonObject value) {
+        public UpdateState readJson(JsonObject value) {
             internalObject = value;
             return this;
         }

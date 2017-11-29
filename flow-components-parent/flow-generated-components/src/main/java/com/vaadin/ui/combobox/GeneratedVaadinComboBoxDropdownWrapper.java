@@ -340,7 +340,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param path
      *            Target path to unlink.
      */
-    public void unlinkPaths(String path) {
+    protected void unlinkPaths(JsonObject path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -359,7 +359,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param path
      *            Target path to unlink.
      */
-    protected void unlinkPaths(JsonObject path) {
+    public void unlinkPaths(String path) {
         getElement().callFunction("unlinkPaths", path);
     }
 
@@ -613,7 +613,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void pop(String path) {
+    protected void pop(JsonObject path) {
     }
 
     /**
@@ -640,7 +640,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void pop(JsonObject path) {
+    protected void pop(String path) {
     }
 
     /**
@@ -735,7 +735,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void shift(String path) {
+    protected void shift(JsonObject path) {
     }
 
     /**
@@ -762,7 +762,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void shift(JsonObject path) {
+    protected void shift(String path) {
     }
 
     /**

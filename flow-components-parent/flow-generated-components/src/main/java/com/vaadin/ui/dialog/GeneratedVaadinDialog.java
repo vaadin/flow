@@ -171,6 +171,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * @param listener
      *            the listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,

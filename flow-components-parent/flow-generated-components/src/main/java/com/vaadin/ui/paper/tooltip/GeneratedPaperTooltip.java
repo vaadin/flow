@@ -480,7 +480,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperTooltip(com.vaadin.ui.Component... components) {
+    public GeneratedPaperTooltip(Component... components) {
         add(components);
     }
 
