@@ -27,6 +27,7 @@ import com.vaadin.client.flow.binding.Binder;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
+import elemental.dom.Node;
 
 /**
  * Main class for an application / UI.
@@ -132,25 +133,27 @@ public class ApplicationConnection {
             return ap.@com.vaadin.client.ApplicationConnection::isActive()();
         });
         client.getByNodeId = $entry(function(nodeId) {
-            var tree = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getStateTree()();
-            var node = tree.@com.vaadin.client.flow.StateTree::getNode(*)(nodeId);
-            return node.@com.vaadin.client.flow.StateNode::getDomNode()();
+            return ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId);
         });
-
+    
         $wnd.vaadin.resolveUri = $entry(function(uriToResolve) {
-            var ur = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
+            var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
-
+    
         $wnd.vaadin.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
-            var sc = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
+            var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
-
+    
         client.initializing = false;
-
+    
         $wnd.vaadin.clients[applicationId] = client;
     }-*/;
+
+    private Node getDomElementByNodeId(int id) {
+        return registry.getStateTree().getNode(id).getDomNode();
+    }
 
     /**
      * Methods published to JavaScript on when NOT running in production mode.
@@ -169,7 +172,7 @@ public class ApplicationConnection {
         client.getVersionInfo = $entry(function(parameter) {
             return { "flow": servletVersion};
         });
-    
+
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler()();
             var pd = [
