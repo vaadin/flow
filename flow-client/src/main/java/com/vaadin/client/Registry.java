@@ -61,6 +61,8 @@ public class Registry {
      *            the type to store
      * @param instance
      *            the instance to store
+     * @param <T>
+     *            the type
      */
     protected final <T> void set(Class<T> type, T instance) {
         assert !lookupTable.has(type) : "Registry already has a class of type "

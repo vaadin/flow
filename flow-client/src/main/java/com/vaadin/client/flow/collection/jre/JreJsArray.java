@@ -145,6 +145,8 @@ public class JreJsArray<T> extends JsArray<T> {
      *
      * @param array
      *            the js array to get the values from
+     * @param <T>
+     *            the array type
      *
      * @return the values as a list
      */

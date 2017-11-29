@@ -67,6 +67,8 @@ public class ConstantPool {
      *
      * @param key
      *            the key to get a constant for, not <code>null</code>
+     * @param <T>
+     *            the constant type
      * @return the constant value, or <code>null</code> if there is no constant
      *         with the given key
      */
