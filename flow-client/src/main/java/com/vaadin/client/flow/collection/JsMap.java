@@ -56,10 +56,9 @@ public class JsMap<K, V> {
     }
 
     /**
-     * Should not be directly created.
+     * Creates a new instance.
      */
-    protected JsMap() {
-        // prevent direct instantiation
+    public JsMap() {
     }
 
     /**

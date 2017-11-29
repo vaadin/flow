@@ -33,10 +33,17 @@ import com.vaadin.client.flow.collection.JsCollections.ForEachCallback;
 public class JsSet<V> {
 
     /**
-     * Should not be directly created.
+     * Creates a new instance.
      */
-    protected JsSet() {
-        // prevent direct instantiation
+    public JsSet() {
+    }
+
+    /**
+     * Creates a new instance.
+     */
+    public JsSet(JsSet<V> set) {
+        // IE11 doesn't support the Set(Iterable) constructor
+        set.forEach(this::add);
     }
 
     /**

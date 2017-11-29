@@ -95,7 +95,7 @@ public class JsCollections {
     public static <K, V> JsMap<K, V> map() {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
-            return createNativeMap();
+            return new JsMap<>();
         } else {
             return new JreJsMap<>();
         }
@@ -123,7 +123,7 @@ public class JsCollections {
     public static <V> JsSet<V> set() {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
-            return createNativeSet();
+            return new JsSet<>();
         } else {
             return new JreJsSet<>();
         }
@@ -139,7 +139,7 @@ public class JsCollections {
     public static <T> JsSet<T> set(JsSet<T> values) {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
-            return createNativeSet(values);
+            return new JsSet<>(values);
         }
         return new JreJsSet<>((JreJsSet<T>) values);
     }
@@ -163,29 +163,9 @@ public class JsCollections {
         return values;
     }-*/;
 
-    private static native <K, V> JsMap<K, V> createNativeMap()
-    /*-{
-        return new $wnd.Map();
-    }-*/;
-
     private static native <K, V> JsWeakMap<K, V> createNativeWeakMap()
     /*-{
         return new $wnd.WeakMap();
-    }-*/;
-
-    private static native <V> JsSet<V> createNativeSet()
-    /*-{
-        return new $wnd.Set();
-    }-*/;
-
-    private static native <V> JsSet<V> createNativeSet(JsSet<V> values)
-    /*-{
-        var set = new $wnd.Set(values);
-        if (set.size == 0 && values.size != 0) {
-            // IE11 doesn't support the Set(Iterable) constructor
-            values.forEach(function(v) { set.add(v); });
-        }
-        return set;
     }-*/;
 
     /**
