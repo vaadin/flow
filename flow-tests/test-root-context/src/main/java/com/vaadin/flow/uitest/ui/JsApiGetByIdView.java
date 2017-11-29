@@ -41,8 +41,8 @@ public class JsApiGetByIdView extends Div {
                 UI.getCurrent().getSession(), VaadinRequest.getCurrent());
         getElement().getNode()
                 .runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                        "window.jsApiConnector.jsFunction($0, $1, $2)", target,
-                        appId.replaceAll("-\\d+$", ""),
+                        "window.jsApiConnector.jsFunction($0, this.$appId, $2)",
+                        target, appId.replaceAll("-\\d+$", ""),
                         label.getElement().getNode().getId()));
 
         NativeButton button = new NativeButton("Update target",
