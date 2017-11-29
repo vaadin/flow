@@ -23,8 +23,8 @@ import com.vaadin.ui.html.Label;
 import com.vaadin.ui.html.NativeButton;
 
 @JavaScript("frontend://in-memory-connector.js")
-@Route(value = "com.vaadin.flow.uitest.ui.InMemoryChildren", layout = ViewTestLayout.class)
-public class InMemoryChildren extends AbstractDivView {
+@Route(value = "com.vaadin.flow.uitest.ui.InMemoryChildrenView", layout = ViewTestLayout.class)
+public class InMemoryChildrenView extends AbstractDivView {
 
     @Override
     protected void onShow() {
