@@ -131,6 +131,11 @@ public class ApplicationConnection {
         client.isActive = $entry(function() {
             return ap.@com.vaadin.client.ApplicationConnection::isActive()();
         });
+        client.getByNodeId = $entry(function(nodeId) {
+            var tree = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getStateTree()();
+            var node = tree.@com.vaadin.client.flow.StateTree::getNode(*)(nodeId);
+            return node.@com.vaadin.client.flow.StateNode::getDomNode()();
+        });
 
         $wnd.vaadin.resolveUri = $entry(function(uriToResolve) {
             var ur = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
