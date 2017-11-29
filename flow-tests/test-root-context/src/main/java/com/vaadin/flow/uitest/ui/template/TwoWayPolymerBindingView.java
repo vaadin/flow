@@ -30,6 +30,9 @@ public class TwoWayPolymerBindingView
         extends PolymerTemplate<TwoWayPolymerBindingView.TwoWayModel> {
     public TwoWayPolymerBindingView() {
         setId("template");
+
+        getElement().addPropertyChangeListener("value",
+                event -> valueUpdated());
     }
 
     public interface TwoWayModel extends TemplateModel {

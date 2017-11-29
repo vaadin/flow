@@ -53,4 +53,5 @@ public class PolymerPropertyMutationInObserverView extends AbstractDivView {
         template.setText("initially set value");
         add(template);
     }
+
 }

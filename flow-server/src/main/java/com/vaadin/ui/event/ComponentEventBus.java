@@ -25,7 +25,6 @@ import java.util.List;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.DomEvent;
-import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
@@ -176,12 +175,7 @@ public class ComponentEventBus implements Serializable {
         // This needs to be an anonymous class and not a lambda because of
         // https://github.com/vaadin/flow/issues/575
         Registration remover = element.addEventListener(domEventType,
-                new DomEventListener() {
-            @Override
-            public void handleEvent(DomEvent e) {
-                handleDomEvent(eventType, e);
-            }
-        }, eventData);
+                event -> handleDomEvent(eventType, event), eventData);
         componentEventData.computeIfAbsent(eventType,
                 t -> new ComponentEventData()).domEventRemover = remover;
     }

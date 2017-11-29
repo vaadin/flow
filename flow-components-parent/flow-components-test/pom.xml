@@ -33,14 +33,6 @@
             <artifactId>flow</artifactId>
         </dependency>
 
-        <!--  REMOVE WHEN GRID HAS ITS OWN REPO -->
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-components</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!--  REMOVE WHEN GRID HAS ITS OWN REPO -->
-
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
@@ -83,6 +75,11 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-form-layout-flow</artifactId>
+            <version>1.0.0.alpha1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-grid-flow</artifactId>
             <version>1.0.0.alpha1</version>
         </dependency>
         <dependency>
@@ -302,7 +299,6 @@
                                 <resourceBases>
                                     <!-- these paths are relative to the
                                         project where the profile is triggered -->
-                                    <resourceBase>${project.basedir}/../flow-components/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-push/src/main/resources/META-INF/resources</resourceBase>
                                 </resourceBases>

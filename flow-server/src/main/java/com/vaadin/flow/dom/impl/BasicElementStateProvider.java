@@ -345,7 +345,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    protected Node getNode(StateNode node) {
+    protected Node<?> getNode(StateNode node) {
         assert supports(node);
         return Element.get(node);
     }

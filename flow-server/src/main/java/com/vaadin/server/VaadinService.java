@@ -16,7 +16,9 @@
 
 package com.vaadin.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -47,10 +49,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.router.RouterConfigurator;
@@ -79,6 +77,8 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -1149,8 +1149,7 @@ public abstract class VaadinService implements Serializable {
         // Stores all attributes (security key, reference to this context
         // instance) so they can be added to the new session
         Set<String> attributeNames = oldSession.getAttributeNames();
-        Map<String, Object> attrs = new HashMap<>(
-                attributeNames.size() * 2);
+        Map<String, Object> attrs = new HashMap<>(attributeNames.size() * 2);
         for (String name : attributeNames) {
             Object value = oldSession.getAttribute(name);
             if (value instanceof VaadinSession) {

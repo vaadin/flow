@@ -17,12 +17,12 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
-import com.vaadin.router.PageTitle;
-import com.vaadin.util.AnnotationReader;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.router.PageTitle;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HasElement;
+import com.vaadin.util.AnnotationReader;
 
 /**
  * A view that can be shown in a {@link UI} or {@link HasChildView}.
@@ -53,7 +53,7 @@ public interface View extends HasElement, Serializable {
 
     /**
      * Called when the location changes. This method is called for all view
-     * instances that will be in use for the new location, starting from the the
+     * instances that will be in use for the new location, starting from the
      * actual view and progressing upwards in the hierarchy through each used
      * parent view. It is called for both newly created view instances and
      * instances that were used for the previous location but that are now

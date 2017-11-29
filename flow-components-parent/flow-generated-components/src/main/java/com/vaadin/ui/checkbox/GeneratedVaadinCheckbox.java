@@ -15,23 +15,21 @@
  */
 package com.vaadin.ui.checkbox;
 
-import java.util.Objects;
-
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.Focusable;
 import com.vaadin.ui.common.HasClickListeners;
-import com.vaadin.ui.common.HasComponents;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasValue;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.Synchronize;
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -41,8 +39,7 @@ import com.vaadin.ui.event.Synchronize;
  * {@code <vaadin-checkbox>} is a Polymer 2 element for customized checkboxes.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-checkbox&gt; Make my profile visible &lt;/vaadin-checkbox&gt; {@code }</code>
+ * &lt;vaadin-checkbox&gt; Make my profile visible &lt;/vaadin-checkbox&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -122,9 +119,8 @@ import com.vaadin.ui.event.Synchronize;
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
-        extends Component
-        implements HasStyle, Focusable<R>, HasClickListeners<R>,
-        HasValue<R, Boolean>, HasComponents {
+        extends Component implements HasStyle, Focusable<R>,
+        HasClickListeners<R>, HasValue<R, Boolean>, HasComponents {
 
     /**
      * <p>
@@ -221,7 +217,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      *            the boolean value to set
      */
     @Override
-    public void setValue(java.lang.Boolean value) {
+    public void setValue(Boolean value) {
         Objects.requireNonNull(value,
                 "GeneratedVaadinCheckbox value must not be null");
         if (!Objects.equals(value, getValue())) {
@@ -296,7 +292,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -330,7 +326,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * @param postValue
      *            the String value to set
      */
-    public void setPostValue(java.lang.String postValue) {
+    public void setPostValue(String postValue) {
         getElement().setProperty("value", postValue == null ? "" : postValue);
     }
 
@@ -353,7 +349,9 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIndeterminateChangeListener(
             ComponentEventListener<IndeterminateChangeEvent<R>> listener) {
         return addListener(IndeterminateChangeEvent.class,
@@ -367,7 +365,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinCheckbox(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinCheckbox(Component... components) {
         add(components);
     }
 

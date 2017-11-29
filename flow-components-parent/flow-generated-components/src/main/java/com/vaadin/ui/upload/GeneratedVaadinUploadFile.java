@@ -16,8 +16,8 @@
 package com.vaadin.ui.upload;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -33,7 +33,7 @@ import com.vaadin.shared.Registration;
 @Tag("vaadin-upload-file")
 @HtmlImport("frontend://bower_components/vaadin-upload/vaadin-upload-file.html")
 public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -63,7 +63,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * @param file
      *            the JsonObject value to set
      */
-    protected void setFile(elemental.json.JsonObject file) {
+    protected void setFile(JsonObject file) {
         getElement().setPropertyJson("file", file);
     }
 
@@ -74,8 +74,8 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         private final JsonObject detailFile;
 
         public FileAbortEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailFile = detailFile;
@@ -95,7 +95,9 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileAbortListener(
             ComponentEventListener<FileAbortEvent<R>> listener) {
         return addListener(FileAbortEvent.class,
@@ -109,8 +111,8 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         private final JsonObject detailFile;
 
         public FileRemoveEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailFile = detailFile;
@@ -130,7 +132,9 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileRemoveListener(
             ComponentEventListener<FileRemoveEvent<R>> listener) {
         return addListener(FileRemoveEvent.class,
@@ -144,8 +148,8 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         private final JsonObject detailFile;
 
         public FileRetryEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailFile = detailFile;
@@ -165,7 +169,9 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileRetryListener(
             ComponentEventListener<FileRetryEvent<R>> listener) {
         return addListener(FileRetryEvent.class,
@@ -179,8 +185,8 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         private final JsonObject detailFile;
 
         public FileStartEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailFile = detailFile;
@@ -200,7 +206,9 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileStartListener(
             ComponentEventListener<FileStartEvent<R>> listener) {
         return addListener(FileStartEvent.class,

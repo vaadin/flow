@@ -44,7 +44,7 @@ public class ApplicationConstants implements Serializable {
     public static final String FRONTEND_PROTOCOL_PREFIX = "frontend://";
 
     /**
-     * Protocol used for referencing resources relative the the base URI of the
+     * Protocol used for referencing resources relative the base URI of the
      * loaded page.
      */
     public static final String BASE_PROTOCOL_PREFIX = "base://";

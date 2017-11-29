@@ -16,8 +16,8 @@
 package com.vaadin.ui.combobox;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -60,7 +60,7 @@ import elemental.json.JsonObject;
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-item.html")
 public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -139,7 +139,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param item
      *            the String value to set
      */
-    public void setItem(java.lang.String item) {
+    public void setItem(String item) {
         getElement().setProperty("item", item == null ? "" : item);
     }
 
@@ -154,7 +154,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param item
      *            the JsonObject value to set
      */
-    protected void setItem(elemental.json.JsonObject item) {
+    protected void setItem(JsonObject item) {
         getElement().setPropertyJson("item", item);
     }
 
@@ -186,7 +186,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 

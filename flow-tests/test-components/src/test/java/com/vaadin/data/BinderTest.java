@@ -16,15 +16,6 @@
 
 package com.vaadin.data;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToDoubleConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
@@ -43,6 +35,18 @@ import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.textfield.TextField;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
@@ -516,9 +520,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         textField.setValue(textField.getEmptyValue());
         Assert.assertEquals("foobar", componentErrors.get(textField));
-        // validation is run twice, once for the field, then for all the fields
-        // for cross field validation...
-        Assert.assertEquals(2, invokes.get());
+        // validation is done for the whole bean at once.
+        Assert.assertEquals(1, invokes.get());
 
         textField.setValue("value");
         assertThat(textField.getErrorMessage(), isEmptyOrNullString());
@@ -709,5 +712,242 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         BindingBuilder<Person, String> forField = binder.forField(nameField);
         forField.withConverter(new StringToDoubleConverter("Failed"));
         forField.bind(Person::getFirstName, Person::setFirstName);
+    }
+
+    @Test
+    public void remove_field_binding() {
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
+
+        // Test that the binding does work
+        assertTrue("Field not initially empty", ageField.isEmpty());
+        binder.setBean(item);
+        assertEquals("Binding did not work",
+                String.valueOf(item.getAge()), ageField.getValue());
+        binder.setBean(null);
+        assertTrue("Field not cleared", ageField.isEmpty());
+
+        // Remove the binding
+        binder.removeBinding(ageField);
+
+        // Test that it does not work anymore
+        binder.setBean(item);
+        assertNotEquals("Binding was not removed",
+                String.valueOf(item.getAge()), ageField.getValue());
+    }
+
+    @Test
+    public void remove_propertyname_binding() {
+        // Use a bean aware binder
+        Binder<Person> binder = new Binder<>(Person.class);
+
+        binder.bind(nameField, "firstName");
+
+        // Test that the binding does work
+        assertTrue("Field not initially empty", nameField.isEmpty());
+        binder.setBean(item);
+        assertEquals("Binding did not work", item.getFirstName(),
+                nameField.getValue());
+        binder.setBean(null);
+        assertTrue("Field not cleared", nameField.isEmpty());
+
+        // Remove the binding
+        binder.removeBinding("firstName");
+
+        // Test that it does not work anymore
+        binder.setBean(item);
+        assertNotEquals("Binding was not removed", item.getFirstName(),
+                nameField.getValue());
+    }
+
+    @Test
+    public void remove_binding() {
+        Binding<Person, Integer> binding = binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
+
+        // Test that the binding does work
+        assertTrue("Field not initially empty", ageField.isEmpty());
+        binder.setBean(item);
+        assertEquals("Binding did not work",
+                String.valueOf(item.getAge()), ageField.getValue());
+        binder.setBean(null);
+        assertTrue("Field not cleared", ageField.isEmpty());
+
+        // Remove the binding
+        binder.removeBinding(binding);
+
+        // Test that it does not work anymore
+        binder.setBean(item);
+        assertNotEquals("Binding was not removed",
+                String.valueOf(item.getAge()), ageField.getValue());
+    }
+
+    @Test
+    public void removed_binding_not_updates_value() {
+        Binding<Person, Integer> binding = binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setBean(item);
+
+        String modifiedAge = String.valueOf(item.getAge() + 10);
+        String ageBeforeUnbind = String.valueOf(item.getAge());
+
+        binder.removeBinding(binding);
+
+        ageField.setValue(modifiedAge);
+
+        assertEquals("Binding still affects bean even after unbind",
+                ageBeforeUnbind, String.valueOf(item.getAge()));
+
+    }
+
+    static class MyBindingHandler implements BindingValidationStatusHandler {
+
+        boolean expectingError = false;
+        int callCount = 0;
+
+        @Override
+        public void statusChange(BindingValidationStatus<?> statusChange) {
+            ++callCount;
+            if (expectingError) {
+                assertTrue("Expecting error", statusChange.isError());
+            } else {
+                assertFalse("Unexpected error", statusChange.isError());
+            }
+        }
+    }
+
+    @Test
+    public void execute_binding_status_handler_from_binder_status_handler() {
+        MyBindingHandler bindingHandler = new MyBindingHandler();
+        binder.forField(nameField)
+                .withValidator(t -> !t.isEmpty(), "No empty values.")
+                .withValidationStatusHandler(bindingHandler)
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        String ageError = "CONVERSIONERROR";
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(ageError))
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setValidationStatusHandler(
+                BinderValidationStatus::notifyBindingValidationStatusHandlers);
+
+        String initialName = item.getFirstName();
+        int initialAge = item.getAge();
+
+        binder.setBean(item);
+
+        // Test specific error handling.
+        bindingHandler.expectingError = true;
+        nameField.setValue("");
+
+        // Test default error handling.
+        ageField.setValue("foo");
+        assertThat("Error message is not what was expected",
+                ageField.getErrorMessage(), containsString(ageError));
+
+        // Restore values and test no errors.
+        ageField.setValue(String.valueOf(initialAge));
+        assertThat("There should be no error", ageField.getErrorMessage(),
+                is(""));
+
+        bindingHandler.expectingError = false;
+        nameField.setValue(initialName);
+
+        // Assert that the handler was called.
+        assertEquals(
+                "Unexpected callCount to binding validation status handler", 6,
+                bindingHandler.callCount);
+    }
+
+    @Test
+    public void beanvalidation_two_fields_not_equal() {
+        TextField lastNameField = new TextField();
+        setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
+
+        item.setLastName("Valid");
+        binder.setBean(item);
+
+        Assert.assertFalse("Should not have changes initially",
+                binder.hasChanges());
+        Assert.assertTrue("Should be ok initially", binder.validate().isOk());
+        Assert.assertNotEquals(
+                "First name and last name are not same initially",
+                item.getFirstName(), item.getLastName());
+
+        nameField.setValue("Invalid");
+
+        Assert.assertFalse("First name change not handled",
+                binder.hasChanges());
+        Assert.assertTrue(
+                "Changing first name to something else than last name should be ok",
+                binder.validate().isOk());
+
+        lastNameField.setValue("Invalid");
+
+        Assert.assertTrue("Last name should not be saved yet",
+                binder.hasChanges());
+        Assert.assertFalse(
+                "Binder validation should fail with pending illegal value",
+                binder.validate().isOk());
+        Assert.assertNotEquals("Illegal last name should not be stored to bean",
+                item.getFirstName(), item.getLastName());
+
+        nameField.setValue("Valid");
+
+        Assert.assertFalse("With new first name both changes should be saved",
+                binder.hasChanges());
+        Assert.assertTrue("Everything should be ok for 'Valid Invalid'",
+                binder.validate().isOk());
+        Assert.assertNotEquals("First name and last name should never match.",
+                item.getFirstName(), item.getLastName());
+    }
+
+    @Test
+    public void beanvalidation_initially_broken_bean() {
+        TextField lastNameField = new TextField();
+        setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
+
+        item.setLastName(item.getFirstName());
+        binder.setBean(item);
+
+        Assert.assertFalse(binder.isValid());
+        Assert.assertFalse(binder.validate().isOk());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void beanvalidation_isValid_throws_with_readBean() {
+        TextField lastNameField = new TextField();
+        setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
+
+        binder.readBean(item);
+
+        Assert.assertTrue(binder.isValid());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void beanvalidation_validate_throws_with_readBean() {
+        TextField lastNameField = new TextField();
+        setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
+
+        binder.readBean(item);
+
+        Assert.assertTrue(binder.validate().isOk());
+    }
+
+    protected void setBeanValidationFirstNameNotEqualsLastName(
+            TextField firstNameField, TextField lastNameField) {
+        binder.bind(firstNameField, Person::getFirstName, Person::setFirstName);
+        binder.forField(lastNameField)
+                .withValidator(t -> !"foo".equals(t),
+                        "Last name cannot be 'foo'")
+                .bind(Person::getLastName, Person::setLastName);
+
+        binder.withValidator(p -> !p.getFirstName().equals(p.getLastName()),
+                "First name and last name can't be the same");
     }
 }

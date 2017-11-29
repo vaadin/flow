@@ -15,19 +15,18 @@
  */
 package com.vaadin.ui.radiobutton;
 
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.Focusable;
-import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.Focusable;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.Synchronize;
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -37,8 +36,8 @@ import com.vaadin.ui.event.Synchronize;
  * {@code <vaadin-radio-button>} is a Polymer element for radio buttons.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-radio-button value=&quot;foo&quot;&gt;Foo&lt;/vaadin-radio-button&gt; {@code }</code>
+ * &lt;vaadin-radio-button
+ * value=&quot;foo&quot;&gt;Foo&lt;/vaadin-radio-button&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -115,8 +114,7 @@ import com.vaadin.ui.event.Synchronize;
 @Tag("vaadin-radio-button")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/vaadin-radio-button.html")
 public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
-        extends Component
-        implements HasStyle, Focusable<R>, HasComponents {
+        extends Component implements HasStyle, Focusable<R>, HasComponents {
 
     /**
      * <p>
@@ -196,7 +194,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -261,7 +259,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @param value
      *            the String value to set
      */
-    public void setValue(java.lang.String value) {
+    public void setValue(String value) {
         getElement().setProperty("value", value == null ? "" : value);
     }
 
@@ -279,7 +277,9 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addCheckedChangeListener(
             ComponentEventListener<CheckedChangeEvent<R>> listener) {
         return addListener(CheckedChangeEvent.class,
@@ -293,7 +293,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinRadioButton(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinRadioButton(Component... components) {
         add(components);
     }
 

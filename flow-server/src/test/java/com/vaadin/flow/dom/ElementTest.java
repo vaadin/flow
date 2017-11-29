@@ -1003,8 +1003,8 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     private void assertEqualsOne(String[] expected, String actual) {
-        for (int i = 0; i < expected.length; i++) {
-            if (expected[i].equals(actual)) {
+        for (String string : expected) {
+            if (string.equals(actual)) {
                 return;
             }
         }

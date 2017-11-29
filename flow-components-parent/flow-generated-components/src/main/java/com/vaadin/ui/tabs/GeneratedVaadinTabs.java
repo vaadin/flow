@@ -16,8 +16,8 @@
 package com.vaadin.ui.tabs;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -32,8 +32,13 @@ import com.vaadin.ui.common.HasComponents;
  * different view
  * </p>
  * <p>
- * {@code }
- * <code>&lt;vaadin-tabs selected=&quot;4&quot;&gt; &lt;vaadin-tab&gt;Page 1&lt;/vaadin-tab&gt; &lt;vaadin-tab&gt;Page 2&lt;/vaadin-tab&gt; &lt;vaadin-tab&gt;Page 3&lt;/vaadin-tab&gt; &lt;vaadin-tab&gt;Page 4&lt;/vaadin-tab&gt; &lt;/vaadin-tabs&gt; {@code }</code>
+ * {@code
+<vaadin-tabs selected="4">
+<vaadin-tab>Page 1</vaadin-tab>
+<vaadin-tab>Page 2</vaadin-tab>
+<vaadin-tab>Page 3</vaadin-tab>
+<vaadin-tab>Page 4</vaadin-tab>
+</vaadin-tabs>}
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -94,7 +99,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("vaadin-tabs")
 @HtmlImport("frontend://bower_components/vaadin-tabs/vaadin-tabs.html")
 public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
-        Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     public void focus() {
         getElement().callFunction("focus");
@@ -107,7 +112,7 @@ public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinTabs(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinTabs(Component... components) {
         add(components);
     }
 

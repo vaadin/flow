@@ -18,6 +18,7 @@ package com.vaadin.client.gwt.elemental.js.util;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.xhr.client.ReadyStateChangeHandler;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+
 import com.vaadin.client.Console;
 
 import elemental.client.Browser;
@@ -80,7 +81,9 @@ public class Xhr {
      * <code>callback</code>.
      *
      * @param url
+     *            the URL
      * @param callback
+     *            the callback to be notified
      * @return a reference to the sent XmlHttpRequest
      */
     public static XMLHttpRequest get(String url, Callback callback) {
@@ -95,7 +98,9 @@ public class Xhr {
      *            the window object used to access the XMLHttpRequest
      *            constructor
      * @param url
+     *            the URL
      * @param callback
+     *            the callback to be notified
      * @return a reference to the sent XmlHttpRequest
      */
     public static XMLHttpRequest get(Window window, String url,
@@ -108,7 +113,9 @@ public class Xhr {
      * <code>callback</code>.
      *
      * @param url
+     *            the URL
      * @param callback
+     *            the callback to be notified
      * @return a reference to the sent XmlHttpRequest
      */
     public static XMLHttpRequest head(String url, Callback callback) {
@@ -123,7 +130,9 @@ public class Xhr {
      *            the window object used to access the XMLHttpRequest
      *            constructor
      * @param url
+     *            the URL
      * @param callback
+     *            the callback to be notified
      * @return a reference to the sent XmlHttpRequest
      */
     public static XMLHttpRequest head(Window window, String url,
@@ -136,6 +145,7 @@ public class Xhr {
      * <code>callback</code>.
      *
      * @param url
+     *            the URL
      * @param requestData
      *            the data to be passed to XMLHttpRequest.send
      * @param contentType
@@ -157,6 +167,7 @@ public class Xhr {
      *            the window object used to access the XMLHttpRequest
      *            constructor
      * @param url
+     *            the URL
      * @param requestData
      *            the data to be passed to XMLHttpRequest.send
      * @param contentType
@@ -179,9 +190,10 @@ public class Xhr {
      * control of which window object is used to access the XMLHttpRequest
      * constructor.
      */
-    private static native XMLHttpRequest create(Window window) /*-{
-                                                               return new window.XMLHttpRequest();
-                                                               }-*/;
+    private static native XMLHttpRequest create(Window window)
+    /*-{
+        return new window.XMLHttpRequest();
+    }-*/;
 
     private static XMLHttpRequest request(XMLHttpRequest xhr, String method,
             String url, String requestData, String contentType,

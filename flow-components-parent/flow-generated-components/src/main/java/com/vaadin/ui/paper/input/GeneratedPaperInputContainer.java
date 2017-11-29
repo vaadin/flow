@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.input;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -27,13 +27,14 @@ import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.flow.dom.Element;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-input-container#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input-container")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-container.html")
 public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -129,7 +130,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @param attrForValue
      *            the String value to set
      */
-    public void setAttrForValue(java.lang.String attrForValue) {
+    public void setAttrForValue(String attrForValue) {
         getElement().setProperty("attrForValue",
                 attrForValue == null ? "" : attrForValue);
     }
@@ -249,7 +250,9 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -270,7 +273,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrefix(com.vaadin.ui.Component... components) {
+    public R addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
@@ -292,7 +295,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToLabel(com.vaadin.ui.Component... components) {
+    public R addToLabel(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "label");
             getElement().appendChild(component.getElement());
@@ -314,7 +317,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToInput(com.vaadin.ui.Component... components) {
+    public R addToInput(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "input");
             getElement().appendChild(component.getElement());
@@ -336,7 +339,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSuffix(com.vaadin.ui.Component... components) {
+    public R addToSuffix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "suffix");
             getElement().appendChild(component.getElement());
@@ -358,7 +361,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToAddOn(com.vaadin.ui.Component... components) {
+    public R addToAddOn(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "add-on");
             getElement().appendChild(component.getElement());
@@ -374,7 +377,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

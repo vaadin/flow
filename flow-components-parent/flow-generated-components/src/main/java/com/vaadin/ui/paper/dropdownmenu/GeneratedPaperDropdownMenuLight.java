@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.dropdownmenu;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -28,13 +28,14 @@ import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.flow.dom.Element;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-dropdown-menu-light")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu-light.html")
 public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMenuLight<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -66,7 +67,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param keyEventTarget
      *            the JsonObject value to set
      */
-    protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+    protected void setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
     }
 
@@ -121,7 +122,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param keyBindings
      *            the JsonObject value to set
      */
-    protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
+    protected void setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
     }
 
@@ -277,7 +278,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param ariaActiveAttribute
      *            the String value to set
      */
-    public void setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+    public void setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
     }
@@ -395,7 +396,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -489,7 +490,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param validator
      *            the String value to set
      */
-    public void setValidator(java.lang.String validator) {
+    public void setValidator(String validator) {
         getElement().setProperty("validator",
                 validator == null ? "" : validator);
     }
@@ -594,7 +595,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -626,7 +627,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(java.lang.String placeholder) {
+    public void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -830,7 +831,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(java.lang.String horizontalAlign) {
+    public void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -865,7 +866,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(java.lang.String verticalAlign) {
+    public void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -908,7 +909,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param contentElement
      *            the JsonObject value to set
      */
-    protected void setContentElement(elemental.json.JsonObject contentElement) {
+    protected void setContentElement(JsonObject contentElement) {
         getElement().setPropertyJson("contentElement", contentElement);
     }
 
@@ -927,8 +928,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -962,8 +962,8 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      *            Missing documentation!
      */
     @NotSupported
-    protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+    protected void keyboardEventMatchesKeys(JsonObject event,
+            String eventString) {
     }
 
     /**
@@ -978,7 +978,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @param optTriggeringEvent
      *            (optional) event that triggered the ripple.
      */
-    protected void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
+    protected void ensureRipple(JsonObject optTriggeringEvent) {
         getElement().callFunction("ensureRipple", optTriggeringEvent);
     }
 
@@ -1043,7 +1043,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      *            element's `value` property is used, if it exists.
      */
     @NotSupported
-    protected void validate(elemental.json.JsonObject value) {
+    protected void validate(JsonObject value) {
     }
 
     /**
@@ -1084,7 +1084,9 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addActiveChangeListener(
             ComponentEventListener<ActiveChangeEvent<R>> listener) {
         return addListener(ActiveChangeEvent.class,
@@ -1105,7 +1107,9 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -1126,7 +1130,9 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -1147,7 +1153,9 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -1168,7 +1176,9 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
@@ -1189,7 +1199,9 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return addListener(ValueChangeEvent.class,
@@ -1210,7 +1222,9 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -1231,7 +1245,9 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemLabelChangeListener(
             ComponentEventListener<SelectedItemLabelChangeEvent<R>> listener) {
         return addListener(SelectedItemLabelChangeEvent.class,
@@ -1252,7 +1268,9 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
@@ -1273,7 +1291,9 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -1294,7 +1314,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropdownContent(com.vaadin.ui.Component... components) {
+    public R addToDropdownContent(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "dropdown-content");
             getElement().appendChild(component.getElement());
@@ -1310,7 +1330,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

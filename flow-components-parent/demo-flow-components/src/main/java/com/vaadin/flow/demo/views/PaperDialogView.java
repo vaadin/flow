@@ -55,10 +55,11 @@ public class PaperDialogView extends DemoView {
     private void createPlainDialog() {
         // begin-source-example
         // source-example-heading: Plain dialog
-        GeneratedPaperDialog dialog = createDialog("Plain dialog",
+        GeneratedPaperDialog<?> dialog = createDialog("Plain dialog",
                 "Plain dialog with plain text. Click anywhere on the page to close.");
 
-        GeneratedPaperButton open = new GeneratedPaperButton("Plain dialog");
+        GeneratedPaperButton<?> open = new GeneratedPaperButton<>(
+                "Plain dialog");
         open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
         // end-source-example
@@ -69,15 +70,17 @@ public class PaperDialogView extends DemoView {
     private void createModalDialog() {
         // begin-source-example
         // source-example-heading: Modal dialog
-        GeneratedPaperDialog dialog = createDialog("Modal dialog",
+        GeneratedPaperDialog<?> dialog = createDialog("Modal dialog",
                 "Modal dialog with plain text.");
         dialog.setModal(true);
 
-        GeneratedPaperButton close = new GeneratedPaperButton("Close dialog");
+        GeneratedPaperButton<?> close = new GeneratedPaperButton<>(
+                "Close dialog");
         close.addClickListener(evt -> dialog.close());
         dialog.add(createDivForButton(close));
 
-        GeneratedPaperButton open = new GeneratedPaperButton("Modal dialog");
+        GeneratedPaperButton<?> open = new GeneratedPaperButton<>(
+                "Modal dialog");
         open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
         // end-source-example
@@ -88,19 +91,20 @@ public class PaperDialogView extends DemoView {
     private void createNestedDialogs() {
         // begin-source-example
         // source-example-heading: Nested dialogs
-        GeneratedPaperDialog dialog = createDialog("Nested dialogs",
+        GeneratedPaperDialog<?> dialog = createDialog("Nested dialogs",
                 "Click on the button to open the nested dialog. Click anywhere on the page to close.");
 
-        GeneratedPaperDialog second = createDialog("Second dialog",
+        GeneratedPaperDialog<?> second = createDialog("Second dialog",
                 "This is the second dialog. Click anywhere on the page to close.");
         second.setId("second-dialog");
 
-        GeneratedPaperButton openSecond = new GeneratedPaperButton(
+        GeneratedPaperButton<?> openSecond = new GeneratedPaperButton<>(
                 "Open second dialog");
         openSecond.addClickListener(evt -> addAndOpen(second));
         dialog.add(createDivForButton(openSecond));
 
-        GeneratedPaperButton open = new GeneratedPaperButton("Nested dialogs");
+        GeneratedPaperButton<?> open = new GeneratedPaperButton<>(
+                "Nested dialogs");
         open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
         // end-source-example
@@ -111,22 +115,22 @@ public class PaperDialogView extends DemoView {
     private void createDialogWithActions() {
         // begin-source-example
         // source-example-heading: Dialog with actions
-        GeneratedPaperDialog dialog = createDialog("Dialog with actions",
+        GeneratedPaperDialog<?> dialog = createDialog("Dialog with actions",
                 "A dialog can have any number of actions. Click anywhere on the page to close.");
 
-        GeneratedPaperButton dummyAction = new GeneratedPaperButton(
+        GeneratedPaperButton<?> dummyAction = new GeneratedPaperButton<>(
                 "Do nothing");
 
-        GeneratedPaperButton decline = new GeneratedPaperButton("Decline");
+        GeneratedPaperButton<?> decline = new GeneratedPaperButton<>("Decline");
         decline.getElement().setAttribute("dialog-dismiss", true);
 
-        GeneratedPaperButton accept = new GeneratedPaperButton("Accept");
+        GeneratedPaperButton<?> accept = new GeneratedPaperButton<>("Accept");
         accept.getElement().setAttribute("dialog-confirm", true);
         accept.getElement().setAttribute("autofocus", true);
 
         dialog.add(createDivForButton(dummyAction, decline, accept));
 
-        GeneratedPaperButton open = new GeneratedPaperButton(
+        GeneratedPaperButton<?> open = new GeneratedPaperButton<>(
                 "Dialog with actions");
         open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
@@ -138,14 +142,15 @@ public class PaperDialogView extends DemoView {
     private void createAnimatedDialog() {
         // begin-source-example
         // source-example-heading: Animated dialog
-        GeneratedPaperDialog dialog = createDialog("Animated dialog",
+        GeneratedPaperDialog<?> dialog = createDialog("Animated dialog",
                 "Isn't it cool? Click anywhere on the page to close.");
 
         dialog.setEntryAnimation("scale-up-animation");
         dialog.setExitAnimation("scale-down-animation");
         dialog.setWithBackdrop(true);
 
-        GeneratedPaperButton open = new GeneratedPaperButton("Animated dialog");
+        GeneratedPaperButton<?> open = new GeneratedPaperButton<>(
+                "Animated dialog");
         open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
         // end-source-example
@@ -159,8 +164,8 @@ public class PaperDialogView extends DemoView {
 
     // begin-source-example
     // source-example-heading: Helper methods
-    private GeneratedPaperDialog createDialog(String title, String text) {
-        GeneratedPaperDialog dialog = new GeneratedPaperDialog();
+    private GeneratedPaperDialog<?> createDialog(String title, String text) {
+        GeneratedPaperDialog<?> dialog = new GeneratedPaperDialog<>();
         dialog.add(new H2(title));
         HtmlComponent p = new HtmlComponent("p");
         p.getElement().setText(text);
@@ -171,13 +176,13 @@ public class PaperDialogView extends DemoView {
         return dialog;
     }
 
-    private Div createDivForButton(GeneratedPaperButton... buttons) {
+    private Div createDivForButton(GeneratedPaperButton<?>... buttons) {
         Div div = new Div(buttons);
         div.setClassName("buttons");
         return div;
     }
 
-    private void addAndOpen(GeneratedPaperDialog dialog) {
+    private void addAndOpen(GeneratedPaperDialog<?> dialog) {
         if (dialog.getElement().getParent() == null) {
             getUI().ifPresent(ui -> ui.add(dialog));
         }

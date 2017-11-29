@@ -16,13 +16,12 @@
 
 package com.vaadin.server;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.communication.PushRequestHandler;
@@ -35,6 +34,10 @@ import com.vaadin.shared.ApplicationConstants;
  * @author Vaadin Ltd
  */
 public class VaadinServletService extends VaadinService {
+
+    /**
+     * Should never be used directly, always use {@link #getServlet()}.
+     */
     private final VaadinServlet servlet;
 
     /**
@@ -50,6 +53,15 @@ public class VaadinServletService extends VaadinService {
             DeploymentConfiguration deploymentConfiguration) {
         super(deploymentConfiguration);
         this.servlet = servlet;
+    }
+
+    /**
+     * Creates a servlet service. This method is for use by dependency injection
+     * frameworks etc. {@link #getServlet()} should be overridden (or otherwise
+     * intercepted) so it does not return <code>null</code>.
+     */
+    protected VaadinServletService() {
+        this.servlet = null;
     }
 
     @Override
@@ -74,6 +86,8 @@ public class VaadinServletService extends VaadinService {
 
     /**
      * Retrieves a reference to the servlet associated with this service.
+     * Should be overridden (or otherwise intercepted) if the no-arg
+     * constructor is used to prevent NPEs.
      *
      * @return A reference to the VaadinServlet this service is using
      */

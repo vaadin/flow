@@ -160,7 +160,7 @@ public class CustomerService {
             entry.setId(nextId++);
         }
         try {
-            entry = (Customer) entry.clone();
+            entry = entry.clone();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.tooltip;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -29,7 +29,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("paper-tooltip")
 @HtmlImport("frontend://bower_components/paper-tooltip/paper-tooltip.html")
 public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
-        Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
      * <p>
@@ -63,8 +63,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param animationConfig
      *            the JsonObject value to set
      */
-    protected void setAnimationConfig(
-            elemental.json.JsonObject animationConfig) {
+    protected void setAnimationConfig(JsonObject animationConfig) {
         getElement().setPropertyJson("animationConfig", animationConfig);
     }
 
@@ -100,7 +99,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param entryAnimation
      *            the String value to set
      */
-    public void setEntryAnimation(java.lang.String entryAnimation) {
+    public void setEntryAnimation(String entryAnimation) {
         getElement().setProperty("entryAnimation",
                 entryAnimation == null ? "" : entryAnimation);
     }
@@ -137,7 +136,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param exitAnimation
      *            the String value to set
      */
-    public void setExitAnimation(java.lang.String exitAnimation) {
+    public void setExitAnimation(String exitAnimation) {
         getElement().setProperty("exitAnimation",
                 exitAnimation == null ? "" : exitAnimation);
     }
@@ -172,7 +171,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param _for
      *            the String value to set
      */
-    public void setFor(java.lang.String _for) {
+    public void setFor(String _for) {
         getElement().setProperty("for", _for == null ? "" : _for);
     }
 
@@ -238,7 +237,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param position
      *            the String value to set
      */
-    public void setPosition(java.lang.String position) {
+    public void setPosition(String position) {
         getElement().setProperty("position", position == null ? "" : position);
     }
 
@@ -410,7 +409,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param target
      *            the JsonObject value to set
      */
-    protected void setTarget(elemental.json.JsonObject target) {
+    protected void setTarget(JsonObject target) {
         getElement().setPropertyJson("target", target);
     }
 
@@ -429,7 +428,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param type
      *            Missing documentation!
      */
-    protected void getAnimationConfig(elemental.json.JsonObject type) {
+    protected void getAnimationConfig(JsonObject type) {
         getElement().callFunction("getAnimationConfig", type);
     }
 
@@ -446,8 +445,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param cookie
      *            Missing documentation!
      */
-    protected void playAnimation(elemental.json.JsonObject type,
-            elemental.json.JsonObject cookie) {
+    protected void playAnimation(JsonObject type, JsonObject cookie) {
         getElement().callFunction("playAnimation", type, cookie);
     }
 
@@ -482,7 +480,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperTooltip(com.vaadin.ui.Component... components) {
+    public GeneratedPaperTooltip(Component... components) {
         add(components);
     }
 

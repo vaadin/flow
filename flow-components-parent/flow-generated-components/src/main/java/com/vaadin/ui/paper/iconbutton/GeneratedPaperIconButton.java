@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.iconbutton;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -34,7 +34,7 @@ import com.vaadin.shared.Registration;
 @Tag("paper-icon-button")
 @HtmlImport("frontend://bower_components/paper-icon-button/paper-icon-button.html")
 public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -66,7 +66,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param keyEventTarget
      *            the JsonObject value to set
      */
-    protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+    protected void setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
     }
 
@@ -121,7 +121,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param keyBindings
      *            the JsonObject value to set
      */
-    protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
+    protected void setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
     }
 
@@ -277,7 +277,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param ariaActiveAttribute
      *            the String value to set
      */
-    public void setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+    public void setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
     }
@@ -397,7 +397,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param src
      *            the String value to set
      */
-    public void setSrc(java.lang.String src) {
+    public void setSrc(String src) {
         getElement().setProperty("src", src == null ? "" : src);
     }
 
@@ -433,7 +433,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param icon
      *            the String value to set
      */
-    public void setIcon(java.lang.String icon) {
+    public void setIcon(String icon) {
         getElement().setProperty("icon", icon == null ? "" : icon);
     }
 
@@ -465,7 +465,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param alt
      *            the String value to set
      */
-    public void setAlt(java.lang.String alt) {
+    public void setAlt(String alt) {
         getElement().setProperty("alt", alt == null ? "" : alt);
     }
 
@@ -484,8 +484,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -519,8 +518,8 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      *            Missing documentation!
      */
     @NotSupported
-    protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+    protected void keyboardEventMatchesKeys(JsonObject event,
+            String eventString) {
     }
 
     /**
@@ -535,7 +534,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param optTriggeringEvent
      *            (optional) event that triggered the ripple.
      */
-    protected void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
+    protected void ensureRipple(JsonObject optTriggeringEvent) {
         getElement().callFunction("ensureRipple", optTriggeringEvent);
     }
 
@@ -583,7 +582,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addActiveChangeListener(
             ComponentEventListener<ActiveChangeEvent<R>> listener) {
         return addListener(ActiveChangeEvent.class,
@@ -604,7 +605,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -625,7 +628,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,

@@ -35,7 +35,7 @@ public class PaperSwatchPickerView extends DemoView {
     public void initView() {
         // begin-source-example
         // source-example-heading: Basic color selector
-        GeneratedPaperSwatchPicker picker = new GeneratedPaperSwatchPicker();
+        GeneratedPaperSwatchPicker<?> picker = new GeneratedPaperSwatchPicker<>();
         picker.setColor("#f4511e");
         final Label color = new Label("Picker color: " + picker.getColor());
 

@@ -121,7 +121,9 @@ public class ExecuteJavaScriptProcessor {
      *            an array consisting of parameter names followed by the
      *            JavaScript expression to execute
      * @param parameters
-     *            and array of parameter values
+     *            an array of parameter values
+     * @param nodeParameters
+     *            the node parameters
      */
     @SuppressWarnings("static-method")
     protected void invoke(String[] parameterNamesAndCode,
@@ -179,6 +181,9 @@ public class ExecuteJavaScriptProcessor {
           };
           object.attachCustomElement = function(parent, tagName, serverSideId, path){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::attachCustomElement(*)(object.getNode(parent), tagName, serverSideId, path);
+          };
+          object.populateModelProperties = function(element, properties){
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::populateModelProperties(*)(object.getNode(element), properties);
           };
           return object;
     }-*/;

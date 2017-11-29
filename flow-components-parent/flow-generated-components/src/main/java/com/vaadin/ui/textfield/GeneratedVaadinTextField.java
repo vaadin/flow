@@ -15,23 +15,22 @@
  */
 package com.vaadin.ui.textfield;
 
-import java.util.Objects;
-
-import javax.annotation.Generated;
-
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.Focusable;
 import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.common.Focusable;
+import javax.annotation.Generated;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
 import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.event.Synchronize;
+import com.vaadin.flow.dom.Element;
 
 /**
  * <p>
@@ -42,8 +41,8 @@ import com.vaadin.ui.event.Synchronize;
  * forms.
  * </p>
  * <p>
- * {@code }
- * <code>html &lt;vaadin-text-field label=&quot;First Name&quot;&gt; &lt;/vaadin-text-field&gt; {@code }</code>
+ * &lt;vaadin-text-field label=&quot;First Name&quot;&gt;
+ * &lt;/vaadin-text-field&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -230,7 +229,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @param autocomplete
      *            the String value to set
      */
-    public void setAutocomplete(java.lang.String autocomplete) {
+    public void setAutocomplete(String autocomplete) {
         getElement().setProperty("autocomplete",
                 autocomplete == null ? "" : autocomplete);
     }
@@ -263,7 +262,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @param errorMessage
      *            the String value to set
      */
-    public void setErrorMessage(java.lang.String errorMessage) {
+    public void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
     }
@@ -296,7 +295,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(java.lang.String label) {
+    public void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -396,7 +395,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -428,7 +427,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(java.lang.String placeholder) {
+    public void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -532,7 +531,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      *            the String value to set
      */
     @Override
-    public void setValue(java.lang.String value) {
+    public void setValue(String value) {
         if (!Objects.equals(value, getValue())) {
             getElement().setProperty("value", value == null ? "" : value);
         }
@@ -639,7 +638,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @param autocorrect
      *            the String value to set
      */
-    public void setAutocorrect(java.lang.String autocorrect) {
+    public void setAutocorrect(String autocorrect) {
         getElement().setProperty("autocorrect",
                 autocorrect == null ? "" : autocorrect);
     }
@@ -674,7 +673,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @param list
      *            the String value to set
      */
-    public void setList(java.lang.String list) {
+    public void setList(String list) {
         getElement().setProperty("list", list == null ? "" : list);
     }
 
@@ -708,7 +707,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @param pattern
      *            the String value to set
      */
-    public void setPattern(java.lang.String pattern) {
+    public void setPattern(String pattern) {
         getElement().setProperty("pattern", pattern == null ? "" : pattern);
     }
 
@@ -740,7 +739,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @param title
      *            the String value to set
      */
-    public void setTitle(java.lang.String title) {
+    public void setTitle(String title) {
         getElement().setProperty("title", title == null ? "" : title);
     }
 
@@ -788,7 +787,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -809,7 +810,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
@@ -838,7 +841,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -859,7 +864,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrefix(com.vaadin.ui.Component... components) {
+    public R addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
@@ -881,7 +886,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSuffix(com.vaadin.ui.Component... components) {
+    public R addToSuffix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "suffix");
             getElement().appendChild(component.getElement());
@@ -897,7 +902,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

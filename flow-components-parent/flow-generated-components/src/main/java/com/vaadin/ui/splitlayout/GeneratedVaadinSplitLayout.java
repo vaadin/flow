@@ -16,8 +16,8 @@
 package com.vaadin.ui.splitlayout;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -25,6 +25,7 @@ import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.flow.dom.Element;
 
 /**
  * <p>
@@ -35,10 +36,10 @@ import com.vaadin.shared.Registration;
  * layout for two content elements with a draggable splitter between them.
  * </p>
  * <p>
- * {@code }`html <vaadin-split-layout>
+ * &lt;vaadin-split-layout&gt; &lt;div&gt;First content element&lt;/div&gt;
+ * &lt;div&gt;Second content element&lt;/div&gt; &lt;/vaadin-split-layout&gt;
  * </p>
- * <div>First content element</div> <div>Second content element</div>
- * </vaadin-split-layout> {@code }` <h3>Horizontal and Vertical Layouts</h3>
+ * <h3>Horizontal and Vertical Layouts</h3>
  * <p>
  * By default, the split is horizontal, meaning that the content elements are
  * positioned side by side in a flex container with a horizontal layout.
@@ -48,10 +49,11 @@ import com.vaadin.shared.Registration;
  * attribute:
  * </p>
  * <p>
- * {@code }`html <vaadin-split-layout vertical>
+ * &lt;vaadin-split-layout vertical&gt; &lt;div&gt;Content on the
+ * top&lt;/div&gt; &lt;div&gt;Content on the bottom&lt;/div&gt;
+ * &lt;/vaadin-split-layout&gt;
  * </p>
- * <div>Content on the top</div> <div>Content on the bottom</div>
- * </vaadin-split-layout> {@code }` <h3>Layouts Combination</h3>
+ * <h3>Layouts Combination</h3>
  * <p>
  * For the layout contents, we usually use {@code <div>} elements in the
  * examples, although you can use any other elements as well.
@@ -62,11 +64,11 @@ import com.vaadin.shared.Registration;
  * element inside another split layout:
  * </p>
  * <p>
- * {@code }`html <vaadin-split-layout>
+ * &lt;vaadin-split-layout&gt; &lt;div&gt;First content element&lt;/div&gt;
+ * &lt;vaadin-split-layout vertical&gt; &lt;div&gt;Second content
+ * element&lt;/div&gt; &lt;div&gt;Third content element&lt;/div&gt;
+ * &lt;/vaadin-split-layout&gt; &lt;/vaadin-split-layout&gt;
  * </p>
- * <div>First content element</div> <vaadin-split-layout vertical> <div>Second
- * content element</div> <div>Third content element</div> </vaadin-split-layout>
- * </vaadin-split-layout> {@code }`
  * <p>
  * You can also trigger the vertical mode by setting the property:
  * {@code splitLayout.vertical = true;}.
@@ -82,10 +84,10 @@ import com.vaadin.shared.Registration;
  * any block element:
  * </p>
  * <p>
- * {@code }`html <vaadin-split-layout style="height: 200px;">
+ * &lt;vaadin-split-layout style=&quot;height: 200px;&quot;&gt; &lt;div&gt;First
+ * content element&lt;/div&gt; &lt;div&gt;Second content element&lt;/div&gt;
+ * &lt;/vaadin-split-layout&gt;
  * </p>
- * <div>First content element</div> <div>Second content element</div>
- * </vaadin-split-layout> {@code }`
  * <p>
  * It is possible to define percentage height as well. Note that you have to set
  * the parent height in order to make percentages work correctly. In the
@@ -94,21 +96,22 @@ import com.vaadin.shared.Registration;
  * the {@code <body>}:
  * </p>
  * <p>
- * {@code }`html
+ * &lt;body style=&quot;height: 100vh; margin: 0;&quot;&gt;
+ * &lt;vaadin-split-layout style=&quot;height: 100%;&quot;&gt;
+ * &lt;div&gt;First&lt;/div&gt; &lt;div&gt;Second&lt;/div&gt;
+ * &lt;/vaadin-split-layout&gt; &lt;/body&gt;
  * </p>
- * <body style="height: 100vh; margin: 0;"> <vaadin-split-layout
- * style="height: 100%;"> <div>First</div> <div>Second</div>
- * </vaadin-split-layout> </body> {@code }`
  * <p>
  * Alternatively, you can use a flexbox layout to make
  * {@code <vaadin-split-layout>} fill up the parent:
  * </p>
  * <p>
- * {@code }`html
+ * &lt;body style=&quot;height: 100vh; margin: 0; display: flex;&quot;&gt;
+ * &lt;vaadin-split-layout style=&quot;flex: 1;&quot;&gt;
+ * &lt;div&gt;First&lt;/div&gt; &lt;div&gt;Second&lt;/div&gt;
+ * &lt;/vaadin-split-layout&gt; &lt;/body&gt;
  * </p>
- * <body style="height: 100vh; margin: 0; display: flex;"> <vaadin-split-layout
- * style="flex: 1;"> <div>First</div> <div>Second</div> </vaadin-split-layout>
- * </body> {@code }` <h3>Initial Splitter Position</h3>
+ * <h3>Initial Splitter Position</h3>
  * <p>
  * The initial splitter position is determined from the sizes of the content
  * elements inside the split layout. Therefore, changing {@code width} on the
@@ -124,10 +127,11 @@ import com.vaadin.shared.Registration;
  * recommended to assing the size for both content elements:
  * </p>
  * <p>
- * {@code }`html <vaadin-split-layout>
+ * &lt;vaadin-split-layout&gt; &lt;div style=&quot;width: 75%;&quot;&gt;Three
+ * fourths&lt;/div&gt; &lt;div style=&quot;width: 25%;&quot;&gt;One
+ * fourth&lt;/div&gt; &lt;/vaadin-split-layout&gt;
  * </p>
- * <div style="width: 75%;">Three fourths</div> <div style="width: 25%;">One
- * fourth</div> </vaadin-split-layout> {@code }` <h3>Size Limits</h3>
+ * <h3>Size Limits</h3>
  * <p>
  * The {@code min-width}/{@code min-height}, and {@code max-width}/
  * {@code max-height} CSS size values for the content elements are respected and
@@ -138,10 +142,11 @@ import com.vaadin.shared.Registration;
  * to avoid size conflicts:
  * </p>
  * <p>
- * {@code }`html <vaadin-split-layout>
+ * &lt;vaadin-split-layout&gt; &lt;div style=&quot;min-width: 50px; max-width:
+ * 150px;&quot;&gt;First&lt;/div&gt; &lt;div&gt;Second&lt;/div&gt;
+ * &lt;/vaadin-split-layout&gt;
  * </p>
- * <div style="min-width: 50px; max-width: 150px;">First</div> <div>Second</div>
- * </vaadin-split-layout> {@code }` <h3>Resize Notification</h3>
+ * <h3>Resize Notification</h3>
  * <p>
  * This element implements {@code IronResizableBehavior} to notify the nested
  * resizables when the splitter is dragged. In order to define a resizable and
@@ -178,7 +183,7 @@ import com.vaadin.shared.Registration;
 @Tag("vaadin-split-layout")
 @HtmlImport("frontend://bower_components/vaadin-split-layout/vaadin-split-layout.html")
 public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -225,7 +230,9 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronResizeListener(
             ComponentEventListener<IronResizeEvent<R>> listener) {
         return addListener(IronResizeEvent.class,
@@ -246,7 +253,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrimary(com.vaadin.ui.Component... components) {
+    public R addToPrimary(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "primary");
             getElement().appendChild(component.getElement());
@@ -268,7 +275,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSecondary(com.vaadin.ui.Component... components) {
+    public R addToSecondary(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "secondary");
             getElement().appendChild(component.getElement());
@@ -284,7 +291,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

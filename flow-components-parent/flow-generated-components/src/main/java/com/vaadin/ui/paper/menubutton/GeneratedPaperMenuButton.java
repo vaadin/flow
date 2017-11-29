@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.menubutton;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -28,13 +28,14 @@ import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.flow.dom.Element;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: PaperMenuButton#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-menu-button")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button.html")
 public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -66,7 +67,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param keyEventTarget
      *            the JsonObject value to set
      */
-    protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+    protected void setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
     }
 
@@ -137,7 +138,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param keyBindings
      *            the JsonObject value to set
      */
-    protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
+    protected void setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
     }
 
@@ -255,7 +256,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(java.lang.String horizontalAlign) {
+    public void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -290,7 +291,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(java.lang.String verticalAlign) {
+    public void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -569,8 +570,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param openAnimationConfig
      *            the JsonObject value to set
      */
-    protected void setOpenAnimationConfig(
-            elemental.json.JsonObject openAnimationConfig) {
+    protected void setOpenAnimationConfig(JsonObject openAnimationConfig) {
         getElement().setPropertyJson("openAnimationConfig",
                 openAnimationConfig);
     }
@@ -605,8 +605,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param closeAnimationConfig
      *            the JsonObject value to set
      */
-    protected void setCloseAnimationConfig(
-            elemental.json.JsonObject closeAnimationConfig) {
+    protected void setCloseAnimationConfig(JsonObject closeAnimationConfig) {
         getElement().setPropertyJson("closeAnimationConfig",
                 closeAnimationConfig);
     }
@@ -707,7 +706,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param contentElement
      *            the JsonObject value to set
      */
-    protected void setContentElement(elemental.json.JsonObject contentElement) {
+    protected void setContentElement(JsonObject contentElement) {
         getElement().setPropertyJson("contentElement", contentElement);
     }
 
@@ -726,8 +725,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -761,8 +759,8 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      *            Missing documentation!
      */
     @NotSupported
-    protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+    protected void keyboardEventMatchesKeys(JsonObject event,
+            String eventString) {
     }
 
     /**
@@ -816,7 +814,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -837,7 +837,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -858,7 +860,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addPaperDropdownCloseListener(
             ComponentEventListener<PaperDropdownCloseEvent<R>> listener) {
         return addListener(PaperDropdownCloseEvent.class,
@@ -879,7 +883,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addPaperDropdownOpenListener(
             ComponentEventListener<PaperDropdownOpenEvent<R>> listener) {
         return addListener(PaperDropdownOpenEvent.class,
@@ -900,7 +906,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -921,7 +929,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addHorizontalOffsetChangeListener(
             ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
         return addListener(HorizontalOffsetChangeEvent.class,
@@ -942,7 +952,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVerticalOffsetChangeListener(
             ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
         return addListener(VerticalOffsetChangeEvent.class,
@@ -963,7 +975,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropdownTrigger(com.vaadin.ui.Component... components) {
+    public R addToDropdownTrigger(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "dropdown-trigger");
             getElement().appendChild(component.getElement());
@@ -985,7 +997,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropdownContent(com.vaadin.ui.Component... components) {
+    public R addToDropdownContent(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "dropdown-content");
             getElement().appendChild(component.getElement());
@@ -1001,7 +1013,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

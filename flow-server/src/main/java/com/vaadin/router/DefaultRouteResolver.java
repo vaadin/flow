@@ -103,10 +103,10 @@ public class DefaultRouteResolver implements RouteResolver {
         if (!"".equals(pathSegments.get(0))) {
             paths.push(new PathDetails("", pathSegments));
         }
-        paths.push(new PathDetails(pathBuilder.toString(),
-                pathSegments.subList(1, pathSegments.size())));
-        for (int i = 1; i < pathSegments.size(); i++) {
-            pathBuilder.append("/").append(pathSegments.get(i));
+        for (int i = 0; i < pathSegments.size(); i++) {
+            if (i != 0) {
+                pathBuilder.append("/").append(pathSegments.get(i));
+            }
             paths.push(new PathDetails(pathBuilder.toString(),
                     pathSegments.subList(i + 1, pathSegments.size())));
         }

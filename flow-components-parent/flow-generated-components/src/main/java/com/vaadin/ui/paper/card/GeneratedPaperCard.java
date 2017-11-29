@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.card;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -28,7 +28,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("paper-card")
 @HtmlImport("frontend://bower_components/paper-card/paper-card.html")
 public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
-        Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
      * <p>
@@ -58,7 +58,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param heading
      *            the String value to set
      */
-    public void setHeading(java.lang.String heading) {
+    public void setHeading(String heading) {
         getElement().setProperty("heading", heading == null ? "" : heading);
     }
 
@@ -90,7 +90,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param image
      *            the String value to set
      */
-    public void setImage(java.lang.String image) {
+    public void setImage(String image) {
         getElement().setProperty("image", image == null ? "" : image);
     }
 
@@ -122,7 +122,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param alt
      *            the String value to set
      */
-    public void setAlt(java.lang.String alt) {
+    public void setAlt(String alt) {
         getElement().setProperty("alt", alt == null ? "" : alt);
     }
 
@@ -226,7 +226,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param placeholderImage
      *            the String value to set
      */
-    public void setPlaceholderImage(java.lang.String placeholderImage) {
+    public void setPlaceholderImage(String placeholderImage) {
         getElement().setProperty("placeholderImage",
                 placeholderImage == null ? "" : placeholderImage);
     }
@@ -322,7 +322,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperCard(com.vaadin.ui.Component... components) {
+    public GeneratedPaperCard(Component... components) {
         add(components);
     }
 

@@ -249,25 +249,21 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the ES6 resource URL
      */
     default String getEs6FrontendPrefix() {
-        String defaultUrl = isProductionMode()
-                ? Constants.FRONTEND_URL_ES6_DEFAULT_VALUE
+        return isProductionMode()
+                ? getStringProperty(Constants.FRONTEND_URL_ES6, Constants.FRONTEND_URL_ES6_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
-
-        return getStringProperty(Constants.FRONTEND_URL_ES6, defaultUrl);
     }
 
     /**
-     * Gets the the URL from which frontend resources should be loaded in ES5
+     * Gets the URL from which frontend resources should be loaded in ES5
      * compatible browsers.
      *
      * @return the ES5 resource URL
      */
     default String getEs5FrontendPrefix() {
-        String defaultUrl = isProductionMode()
-                ? Constants.FRONTEND_URL_ES5_DEFAULT_VALUE
+        return isProductionMode()
+                ? getStringProperty(Constants.FRONTEND_URL_ES5, Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
-
-        return getStringProperty(Constants.FRONTEND_URL_ES5, defaultUrl);
     }
 
     /**

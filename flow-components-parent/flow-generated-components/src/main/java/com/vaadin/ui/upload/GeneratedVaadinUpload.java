@@ -16,8 +16,8 @@
 package com.vaadin.ui.upload;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -36,7 +36,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("vaadin-upload")
 @HtmlImport("frontend://bower_components/vaadin-upload/vaadin-upload.html")
 public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
-        Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
      * <p>
@@ -108,7 +108,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param target
      *            the String value to set
      */
-    public void setTarget(java.lang.String target) {
+    public void setTarget(String target) {
         getElement().setProperty("target", target == null ? "" : target);
     }
 
@@ -140,7 +140,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param method
      *            the String value to set
      */
-    public void setMethod(java.lang.String method) {
+    public void setMethod(String method) {
         getElement().setProperty("method", method == null ? "" : method);
     }
 
@@ -150,8 +150,8 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * </p>
      * <p>
      * Key-Value map to send to the server. If you set this property as an
-     * attribute, use a valid JSON string, for example: {@code }
-     * <code>&lt;vaadin-upload headers='{&quot;X-Foo&quot;: &quot;Bar&quot;}'&gt;&lt;/vaadin-upload&gt; {@code }</code>
+     * attribute, use a valid JSON string, for example: {@code <vaadin-upload
+     * headers=' "X-Foo": "Bar"}'></vaadin-upload>}
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
@@ -169,14 +169,14 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * </p>
      * <p>
      * Key-Value map to send to the server. If you set this property as an
-     * attribute, use a valid JSON string, for example: {@code }
-     * <code>&lt;vaadin-upload headers='{&quot;X-Foo&quot;: &quot;Bar&quot;}'&gt;&lt;/vaadin-upload&gt; {@code }</code>
+     * attribute, use a valid JSON string, for example: {@code <vaadin-upload
+     * headers=' "X-Foo": "Bar"}'></vaadin-upload>}
      * </p>
      * 
      * @param headers
      *            the JsonObject value to set
      */
-    protected void setHeaders(elemental.json.JsonObject headers) {
+    protected void setHeaders(JsonObject headers) {
         getElement().setPropertyJson("headers", headers);
     }
 
@@ -297,7 +297,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param files
      *            the JsonArray value to set
      */
-    protected void setFiles(elemental.json.JsonArray files) {
+    protected void setFiles(JsonArray files) {
         getElement().setPropertyJson("files", files);
     }
 
@@ -390,7 +390,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param accept
      *            the String value to set
      */
-    public void setAccept(java.lang.String accept) {
+    public void setAccept(String accept) {
         getElement().setProperty("accept", accept == null ? "" : accept);
     }
 
@@ -460,7 +460,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param formDataName
      *            the String value to set
      */
-    public void setFormDataName(java.lang.String formDataName) {
+    public void setFormDataName(String formDataName) {
         getElement().setProperty("formDataName",
                 formDataName == null ? "" : formDataName);
     }
@@ -628,7 +628,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param i18n
      *            the JsonObject value to set
      */
-    protected void setI18n(elemental.json.JsonObject i18n) {
+    protected void setI18n(JsonObject i18n) {
         getElement().setPropertyJson("i18n", i18n);
     }
 
@@ -643,7 +643,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * @param files
      *            Missing documentation!
      */
-    protected void uploadFiles(elemental.json.JsonObject files) {
+    protected void uploadFiles(JsonObject files) {
         getElement().callFunction("uploadFiles", files);
     }
 
@@ -655,9 +655,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         private final JsonObject detailError;
 
         public FileRejectEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile,
-                @EventData("event.detail.error") elemental.json.JsonObject detailError) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.file") JsonObject detailFile,
+                @EventData("event.detail.error") JsonObject detailError) {
             super(source, fromClient);
             this.detail = detail;
             this.detailFile = detailFile;
@@ -682,7 +682,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFileRejectListener(
             ComponentEventListener<FileRejectEvent<R>> listener) {
         return addListener(FileRejectEvent.class,
@@ -697,9 +699,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         private final JsonObject detailFile;
 
         public UploadAbortEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.xhr") elemental.json.JsonObject detailXhr,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.xhr") JsonObject detailXhr,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailXhr = detailXhr;
@@ -725,7 +727,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadAbortListener(
             ComponentEventListener<UploadAbortEvent<R>> listener) {
         return addListener(UploadAbortEvent.class,
@@ -741,10 +745,10 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         private final JsonObject detailFileUploadTarget;
 
         public UploadBeforeEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.xhr") elemental.json.JsonObject detailXhr,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile,
-                @EventData("event.detail.file.uploadTarget") elemental.json.JsonObject detailFileUploadTarget) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.xhr") JsonObject detailXhr,
+                @EventData("event.detail.file") JsonObject detailFile,
+                @EventData("event.detail.file.uploadTarget") JsonObject detailFileUploadTarget) {
             super(source, fromClient);
             this.detail = detail;
             this.detailXhr = detailXhr;
@@ -775,7 +779,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadBeforeListener(
             ComponentEventListener<UploadBeforeEvent<R>> listener) {
         return addListener(UploadBeforeEvent.class,
@@ -790,9 +796,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         private final JsonObject detailFile;
 
         public UploadErrorEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.xhr") elemental.json.JsonObject detailXhr,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.xhr") JsonObject detailXhr,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailXhr = detailXhr;
@@ -818,7 +824,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadErrorListener(
             ComponentEventListener<UploadErrorEvent<R>> listener) {
         return addListener(UploadErrorEvent.class,
@@ -833,9 +841,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         private final JsonObject detailFile;
 
         public UploadProgressEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.xhr") elemental.json.JsonObject detailXhr,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.xhr") JsonObject detailXhr,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailXhr = detailXhr;
@@ -861,7 +869,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadProgressListener(
             ComponentEventListener<UploadProgressEvent<R>> listener) {
         return addListener(UploadProgressEvent.class,
@@ -877,10 +887,10 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         private final JsonObject detailFormData;
 
         public UploadRequestEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.xhr") elemental.json.JsonObject detailXhr,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile,
-                @EventData("event.detail.formData") elemental.json.JsonObject detailFormData) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.xhr") JsonObject detailXhr,
+                @EventData("event.detail.file") JsonObject detailFile,
+                @EventData("event.detail.formData") JsonObject detailFormData) {
             super(source, fromClient);
             this.detail = detail;
             this.detailXhr = detailXhr;
@@ -911,7 +921,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadRequestListener(
             ComponentEventListener<UploadRequestEvent<R>> listener) {
         return addListener(UploadRequestEvent.class,
@@ -926,9 +938,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         private final JsonObject detailFile;
 
         public UploadResponseEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.xhr") elemental.json.JsonObject detailXhr,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.xhr") JsonObject detailXhr,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailXhr = detailXhr;
@@ -954,7 +966,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadResponseListener(
             ComponentEventListener<UploadResponseEvent<R>> listener) {
         return addListener(UploadResponseEvent.class,
@@ -969,9 +983,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         private final JsonObject detailFile;
 
         public UploadRetryEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.xhr") elemental.json.JsonObject detailXhr,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.xhr") JsonObject detailXhr,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailXhr = detailXhr;
@@ -997,7 +1011,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadRetryListener(
             ComponentEventListener<UploadRetryEvent<R>> listener) {
         return addListener(UploadRetryEvent.class,
@@ -1012,9 +1028,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         private final JsonObject detailFile;
 
         public UploadStartEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.xhr") elemental.json.JsonObject detailXhr,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.xhr") JsonObject detailXhr,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailXhr = detailXhr;
@@ -1040,7 +1056,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadStartListener(
             ComponentEventListener<UploadStartEvent<R>> listener) {
         return addListener(UploadStartEvent.class,
@@ -1055,9 +1073,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         private final JsonObject detailFile;
 
         public UploadSuccessEvent(R source, boolean fromClient,
-                @EventData("event.detail") elemental.json.JsonObject detail,
-                @EventData("event.detail.xhr") elemental.json.JsonObject detailXhr,
-                @EventData("event.detail.file") elemental.json.JsonObject detailFile) {
+                @EventData("event.detail") JsonObject detail,
+                @EventData("event.detail.xhr") JsonObject detailXhr,
+                @EventData("event.detail.file") JsonObject detailFile) {
             super(source, fromClient);
             this.detail = detail;
             this.detailXhr = detailXhr;
@@ -1083,7 +1101,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addUploadSuccessListener(
             ComponentEventListener<UploadSuccessEvent<R>> listener) {
         return addListener(UploadSuccessEvent.class,
@@ -1104,7 +1124,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFilesChangeListener(
             ComponentEventListener<FilesChangeEvent<R>> listener) {
         return addListener(FilesChangeEvent.class,
@@ -1125,7 +1147,9 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addMaxFilesReachedChangeListener(
             ComponentEventListener<MaxFilesReachedChangeEvent<R>> listener) {
         return addListener(MaxFilesReachedChangeEvent.class,
@@ -1146,7 +1170,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToAddButton(com.vaadin.ui.Component... components) {
+    public R addToAddButton(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "add-button");
             getElement().appendChild(component.getElement());
@@ -1168,7 +1192,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropLabelIcon(com.vaadin.ui.Component... components) {
+    public R addToDropLabelIcon(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "drop-label-icon");
             getElement().appendChild(component.getElement());
@@ -1190,7 +1214,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropLabel(com.vaadin.ui.Component... components) {
+    public R addToDropLabel(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "drop-label");
             getElement().appendChild(component.getElement());
@@ -1212,7 +1236,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToFileList(com.vaadin.ui.Component... components) {
+    public R addToFileList(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "file-list");
             getElement().appendChild(component.getElement());
@@ -1221,7 +1245,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
     }
 
     @Override
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -1247,7 +1271,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinUpload(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinUpload(Component... components) {
         add(components);
     }
 

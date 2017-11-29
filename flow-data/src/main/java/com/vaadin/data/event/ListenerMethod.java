@@ -224,9 +224,8 @@ public class ListenerMethod implements EventListener, Serializable {
     /**
      * <p>
      * Constructs a new event listener from the trigger method and it's
-     * arguments. Since the the index to the replaced parameter is not specified
-     * the event triggering this listener will not be passed to the trigger
-     * method.
+     * arguments. Since the index to the replaced parameter is not specified the
+     * event triggering this listener will not be passed to the trigger method.
      * </p>
      *
      * <p>
@@ -268,9 +267,8 @@ public class ListenerMethod implements EventListener, Serializable {
     /**
      * <p>
      * Constructs a new event listener from a trigger method name and it's
-     * arguments. Since the the index to the replaced parameter is not specified
-     * the event triggering this listener will not be passed to the trigger
-     * method.
+     * arguments. Since the index to the replaced parameter is not specified the
+     * event triggering this listener will not be passed to the trigger method.
      * </p>
      *
      * <p>

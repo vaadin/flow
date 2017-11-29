@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.swatchpicker;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -33,7 +33,7 @@ import com.vaadin.shared.Registration;
 @Tag("paper-swatch-picker")
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
 public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
-        extends Component implements ComponentSupplier<R>, HasStyle {
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -64,7 +64,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param color
      *            the String value to set
      */
-    public void setColor(java.lang.String color) {
+    public void setColor(String color) {
         getElement().setProperty("color", color == null ? "" : color);
     }
 
@@ -104,7 +104,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param colorList
      *            the JsonArray value to set
      */
-    protected void setColorList(elemental.json.JsonArray colorList) {
+    protected void setColorList(JsonArray colorList) {
         getElement().setPropertyJson("colorList", colorList);
     }
 
@@ -176,7 +176,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(java.lang.String horizontalAlign) {
+    public void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -211,7 +211,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(java.lang.String verticalAlign) {
+    public void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -264,7 +264,9 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addColorPickerSelectedListener(
             ComponentEventListener<ColorPickerSelectedEvent<R>> listener) {
         return addListener(ColorPickerSelectedEvent.class,
@@ -285,7 +287,9 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addColorChangeListener(
             ComponentEventListener<ColorChangeEvent<R>> listener) {
         return addListener(ColorChangeEvent.class,

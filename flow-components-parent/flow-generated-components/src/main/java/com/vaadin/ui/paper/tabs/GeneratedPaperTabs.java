@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.tabs;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -36,7 +36,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("paper-tabs")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tabs.html")
 public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
-        Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
      * <p>
@@ -80,28 +80,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param attrForSelected
      *            the String value to set
      */
-    public void setAttrForSelected(java.lang.String attrForSelected) {
+    public void setAttrForSelected(String attrForSelected) {
         getElement().setProperty("attrForSelected",
                 attrForSelected == null ? "" : attrForSelected);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Gets or sets the selected element. The default is to use the index of the
-     * item.
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'selected-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code selected} property from the webcomponent
-     */
-    @Synchronize(property = "selected", value = "selected-changed")
-    public String getSelectedString() {
-        return getElement().getProperty("selected");
     }
 
     /**
@@ -130,13 +111,16 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * <p>
      * Gets or sets the selected element. The default is to use the index of the
      * item.
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'selected-changed' event happens.
      * </p>
      * 
-     * @param selected
-     *            the String value to set
+     * @return the {@code selected} property from the webcomponent
      */
-    public void setSelected(java.lang.String selected) {
-        getElement().setProperty("selected", selected == null ? "" : selected);
+    @Synchronize(property = "selected", value = "selected-changed")
+    public String getSelectedString() {
+        return getElement().getProperty("selected");
     }
 
     /**
@@ -153,6 +137,22 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      */
     public void setSelected(double selected) {
         getElement().setProperty("selected", selected);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Gets or sets the selected element. The default is to use the index of the
+     * item.
+     * </p>
+     * 
+     * @param selected
+     *            the String value to set
+     */
+    public void setSelected(String selected) {
+        getElement().setProperty("selected", selected == null ? "" : selected);
     }
 
     /**
@@ -204,7 +204,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param activateEvent
      *            the String value to set
      */
-    public void setActivateEvent(java.lang.String activateEvent) {
+    public void setActivateEvent(String activateEvent) {
         getElement().setProperty("activateEvent",
                 activateEvent == null ? "" : activateEvent);
     }
@@ -223,7 +223,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectable
      *            the String value to set
      */
-    public void setSelectable(java.lang.String selectable) {
+    public void setSelectable(String selectable) {
         getElement().setProperty("selectable",
                 selectable == null ? "" : selectable);
     }
@@ -256,7 +256,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectedClass
      *            the String value to set
      */
-    public void setSelectedClass(java.lang.String selectedClass) {
+    public void setSelectedClass(String selectedClass) {
         getElement().setProperty("selectedClass",
                 selectedClass == null ? "" : selectedClass);
     }
@@ -289,7 +289,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectedAttribute
      *            the String value to set
      */
-    public void setSelectedAttribute(java.lang.String selectedAttribute) {
+    public void setSelectedAttribute(String selectedAttribute) {
         getElement().setProperty("selectedAttribute",
                 selectedAttribute == null ? "" : selectedAttribute);
     }
@@ -324,7 +324,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param fallbackSelection
      *            the String value to set
      */
-    public void setFallbackSelection(java.lang.String fallbackSelection) {
+    public void setFallbackSelection(String fallbackSelection) {
         getElement().setProperty("fallbackSelection",
                 fallbackSelection == null ? "" : fallbackSelection);
     }
@@ -409,7 +409,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectedValues
      *            the JsonArray value to set
      */
-    protected void setSelectedValues(elemental.json.JsonArray selectedValues) {
+    protected void setSelectedValues(JsonArray selectedValues) {
         getElement().setPropertyJson("selectedValues", selectedValues);
     }
 
@@ -460,7 +460,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param keyEventTarget
      *            the JsonObject value to set
      */
-    protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+    protected void setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
     }
 
@@ -515,7 +515,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param keyBindings
      *            the JsonObject value to set
      */
-    protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
+    protected void setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
     }
 
@@ -568,7 +568,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param attrForItemTitle
      *            the String value to set
      */
-    public void setAttrForItemTitle(java.lang.String attrForItemTitle) {
+    public void setAttrForItemTitle(String attrForItemTitle) {
         getElement().setProperty("attrForItemTitle",
                 attrForItemTitle == null ? "" : attrForItemTitle);
     }
@@ -952,8 +952,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param parentResizable
      *            Missing documentation!
      */
-    protected void assignParentResizable(
-            elemental.json.JsonObject parentResizable) {
+    protected void assignParentResizable(JsonObject parentResizable) {
         getElement().callFunction("assignParentResizable", parentResizable);
     }
 
@@ -969,8 +968,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param target
      *            Missing documentation!
      */
-    protected void stopResizeNotificationsFor(
-            elemental.json.JsonObject target) {
+    protected void stopResizeNotificationsFor(JsonObject target) {
         getElement().callFunction("stopResizeNotificationsFor", target);
     }
 
@@ -993,7 +991,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      *            `IronResizableBehavior`.
      */
     @NotSupported
-    protected void resizerShouldNotify(elemental.json.JsonObject element) {
+    protected void resizerShouldNotify(JsonObject element) {
     }
 
     /**
@@ -1012,24 +1010,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      *            Missing documentation!
      */
     @NotSupported
-    protected void indexOf(elemental.json.JsonObject item) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Selects the given value. If the {@code multi} property is true, then the
-     * selected state of the {@code value} will be toggled; otherwise the
-     * {@code value} will be selected.
-     * </p>
-     * 
-     * @param value
-     *            the value to select.
-     */
-    public void select(java.lang.String value) {
-        getElement().callFunction("select", value);
+    protected void indexOf(JsonObject item) {
     }
 
     /**
@@ -1046,6 +1027,23 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      *            the value to select.
      */
     public void select(double value) {
+        getElement().callFunction("select", value);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Selects the given value. If the {@code multi} property is true, then the
+     * selected state of the {@code value} will be toggled; otherwise the
+     * {@code value} will be selected.
+     * </p>
+     * 
+     * @param value
+     *            the value to select.
+     */
+    public void select(String value) {
         getElement().callFunction("select", value);
     }
 
@@ -1084,7 +1082,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param index
      *            Missing documentation!
      */
-    protected void selectIndex(elemental.json.JsonObject index) {
+    protected void selectIndex(JsonObject index) {
         getElement().callFunction("selectIndex", index);
     }
 
@@ -1115,7 +1113,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param multi
      *            Missing documentation!
      */
-    protected void multiChanged(elemental.json.JsonObject multi) {
+    protected void multiChanged(JsonObject multi) {
         getElement().callFunction("multiChanged", multi);
     }
 
@@ -1134,8 +1132,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(java.lang.String eventString,
-            java.lang.String handlerName) {
+    public void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -1169,8 +1166,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      *            Missing documentation!
      */
     @NotSupported
-    protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
-            java.lang.String eventString) {
+    protected void keyboardEventMatchesKeys(JsonObject event,
+            String eventString) {
     }
 
     @DomEvent("iron-activate")
@@ -1187,7 +1184,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronActivateListener(
             ComponentEventListener<IronActivateEvent<R>> listener) {
         return addListener(IronActivateEvent.class,
@@ -1208,7 +1207,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronDeselectListener(
             ComponentEventListener<IronDeselectEvent<R>> listener) {
         return addListener(IronDeselectEvent.class,
@@ -1229,7 +1230,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronItemsChangeListener(
             ComponentEventListener<IronItemsChangeEvent<R>> listener) {
         return addListener(IronItemsChangeEvent.class,
@@ -1249,7 +1252,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronSelectListener(
             ComponentEventListener<IronSelectEvent<R>> listener) {
         return addListener(IronSelectEvent.class,
@@ -1270,7 +1275,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedChangeListener(
             ComponentEventListener<SelectedChangeEvent<R>> listener) {
         return addListener(SelectedChangeEvent.class,
@@ -1291,7 +1298,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
@@ -1312,7 +1321,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addItemsChangeListener(
             ComponentEventListener<ItemsChangeEvent<R>> listener) {
         return addListener(ItemsChangeEvent.class,
@@ -1333,7 +1344,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedValuesChangeListener(
             ComponentEventListener<SelectedValuesChangeEvent<R>> listener) {
         return addListener(SelectedValuesChangeEvent.class,
@@ -1354,7 +1367,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemsChangeListener(
             ComponentEventListener<SelectedItemsChangeEvent<R>> listener) {
         return addListener(SelectedItemsChangeEvent.class,
@@ -1368,7 +1383,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperTabs(com.vaadin.ui.Component... components) {
+    public GeneratedPaperTabs(Component... components) {
         add(components);
     }
 

@@ -28,7 +28,7 @@ package com.vaadin.server;
  * by default change the message for all users of the application.
  * <p>
  * The default behavior is to show a notification, and restart the application
- * the the user clicks the message.<br>
+ * the user clicks the message.<br>
  * Instead of restarting the application, you can set a specific URL that the
  * user is taken to.<br>
  * Setting both caption and message to null will restart the application (or go
@@ -39,7 +39,7 @@ package com.vaadin.server;
  * <ul>
  * <li>Session expired: the user session has expired, usually due to inactivity.
  * <li>Communication error: the client failed to contact the server, or the
- * server returned and invalid response.
+ * server returned an invalid response.
  * <li>Internal error: unhandled critical server error (e.g out of memory,
  * database crash)
  * </ul>

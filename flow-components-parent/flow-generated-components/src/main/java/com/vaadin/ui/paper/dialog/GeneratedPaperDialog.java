@@ -16,8 +16,8 @@
 package com.vaadin.ui.paper.dialog;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
@@ -35,7 +35,7 @@ import com.vaadin.ui.common.HasComponents;
 @Tag("paper-dialog")
 @HtmlImport("frontend://bower_components/paper-dialog/paper-dialog.html")
 public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
-        Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
      * <p>
@@ -71,7 +71,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param sizingTarget
      *            the JsonObject value to set
      */
-    protected void setSizingTarget(elemental.json.JsonObject sizingTarget) {
+    protected void setSizingTarget(JsonObject sizingTarget) {
         getElement().setPropertyJson("sizingTarget", sizingTarget);
     }
 
@@ -103,7 +103,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param fitInto
      *            the JsonObject value to set
      */
-    protected void setFitInto(elemental.json.JsonObject fitInto) {
+    protected void setFitInto(JsonObject fitInto) {
         getElement().setPropertyJson("fitInto", fitInto);
     }
 
@@ -171,7 +171,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param positionTarget
      *            the JsonObject value to set
      */
-    protected void setPositionTarget(elemental.json.JsonObject positionTarget) {
+    protected void setPositionTarget(JsonObject positionTarget) {
         getElement().setPropertyJson("positionTarget", positionTarget);
     }
 
@@ -207,7 +207,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(java.lang.String horizontalAlign) {
+    public void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -244,7 +244,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(java.lang.String verticalAlign) {
+    public void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -658,7 +658,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param closingReason
      *            the JsonObject value to set
      */
-    protected void setClosingReason(elemental.json.JsonObject closingReason) {
+    protected void setClosingReason(JsonObject closingReason) {
         getElement().setPropertyJson("closingReason", closingReason);
     }
 
@@ -794,7 +794,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param scrollAction
      *            the String value to set
      */
-    public void setScrollAction(java.lang.String scrollAction) {
+    public void setScrollAction(String scrollAction) {
         getElement().setProperty("scrollAction",
                 scrollAction == null ? "" : scrollAction);
     }
@@ -859,8 +859,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param animationConfig
      *            the JsonObject value to set
      */
-    protected void setAnimationConfig(
-            elemental.json.JsonObject animationConfig) {
+    protected void setAnimationConfig(JsonObject animationConfig) {
         getElement().setPropertyJson("animationConfig", animationConfig);
     }
 
@@ -896,7 +895,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param entryAnimation
      *            the String value to set
      */
-    public void setEntryAnimation(java.lang.String entryAnimation) {
+    public void setEntryAnimation(String entryAnimation) {
         getElement().setProperty("entryAnimation",
                 entryAnimation == null ? "" : entryAnimation);
     }
@@ -933,7 +932,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param exitAnimation
      *            the String value to set
      */
-    public void setExitAnimation(java.lang.String exitAnimation) {
+    public void setExitAnimation(String exitAnimation) {
         getElement().setProperty("exitAnimation",
                 exitAnimation == null ? "" : exitAnimation);
     }
@@ -1043,8 +1042,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param parentResizable
      *            Missing documentation!
      */
-    protected void assignParentResizable(
-            elemental.json.JsonObject parentResizable) {
+    protected void assignParentResizable(JsonObject parentResizable) {
         getElement().callFunction("assignParentResizable", parentResizable);
     }
 
@@ -1060,8 +1058,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param target
      *            Missing documentation!
      */
-    protected void stopResizeNotificationsFor(
-            elemental.json.JsonObject target) {
+    protected void stopResizeNotificationsFor(JsonObject target) {
         getElement().callFunction("stopResizeNotificationsFor", target);
     }
 
@@ -1084,7 +1081,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      *            `IronResizableBehavior`.
      */
     @NotSupported
-    protected void resizerShouldNotify(elemental.json.JsonObject element) {
+    protected void resizerShouldNotify(JsonObject element) {
     }
 
     /**
@@ -1146,7 +1143,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param event
      *            The original event
      */
-    protected void cancel(elemental.json.JsonObject event) {
+    protected void cancel(JsonObject event) {
         getElement().callFunction("cancel", event);
     }
 
@@ -1178,7 +1175,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param type
      *            Missing documentation!
      */
-    protected void getAnimationConfig(elemental.json.JsonObject type) {
+    protected void getAnimationConfig(JsonObject type) {
         getElement().callFunction("getAnimationConfig", type);
     }
 
@@ -1195,8 +1192,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param cookie
      *            Missing documentation!
      */
-    protected void playAnimation(elemental.json.JsonObject type,
-            elemental.json.JsonObject cookie) {
+    protected void playAnimation(JsonObject type, JsonObject cookie) {
         getElement().callFunction("playAnimation", type, cookie);
     }
 
@@ -1226,7 +1222,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addHorizontalOffsetChangeListener(
             ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
         return addListener(HorizontalOffsetChangeEvent.class,
@@ -1247,7 +1245,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVerticalOffsetChangeListener(
             ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
         return addListener(VerticalOffsetChangeEvent.class,
@@ -1268,7 +1268,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -1289,7 +1291,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronOverlayCanceledListener(
             ComponentEventListener<IronOverlayCanceledEvent<R>> listener) {
         return addListener(IronOverlayCanceledEvent.class,
@@ -1310,7 +1314,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronOverlayClosedListener(
             ComponentEventListener<IronOverlayClosedEvent<R>> listener) {
         return addListener(IronOverlayClosedEvent.class,
@@ -1331,7 +1337,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronOverlayOpenedListener(
             ComponentEventListener<IronOverlayOpenedEvent<R>> listener) {
         return addListener(IronOverlayOpenedEvent.class,
@@ -1345,7 +1353,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperDialog(com.vaadin.ui.Component... components) {
+    public GeneratedPaperDialog(Component... components) {
         add(components);
     }
 
