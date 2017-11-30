@@ -21,11 +21,12 @@ import com.vaadin.flow.StateNode;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * List of nodes describing the virtually connected child elements of an
  * element.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -56,6 +57,24 @@ public class VirtualChildrenList extends StateNodeNodeList {
      *            the payload data
      */
     public void add(int index, StateNode node, String type, String payload) {
+        add(index, node, type, payload == null ? null : Json.create(payload));
+    }
+
+    /**
+     * Inserts an item supplied with payload data at the given index of the
+     * list.
+     *
+     *
+     * @param index
+     *            index to insert at
+     * @param node
+     *            the item to append
+     * @param type
+     *            the payload type
+     * @param payload
+     *            the payload data
+     */
+    public void add(int index, StateNode node, String type, JsonValue payload) {
         assert node != null;
 
         JsonObject object = Json.createObject();
@@ -80,7 +99,7 @@ public class VirtualChildrenList extends StateNodeNodeList {
      *            the payload type
      */
     public void add(int index, StateNode node, String type) {
-        add(index, node, type, null);
+        add(index, node, type, (String) null);
     }
 
     /**
@@ -98,6 +117,20 @@ public class VirtualChildrenList extends StateNodeNodeList {
     }
 
     /**
+     * Appends an item supplied with payload data as last in the list.
+     *
+     * @param node
+     *            the item to append
+     * @param type
+     *            the payload type
+     * @param payload
+     *            the payload data
+     */
+    public void append(StateNode node, String type, JsonValue payload) {
+        add(size(), node, type, payload);
+    }
+
+    /**
      * Appends an item supplied with payload type as last in the list.
      *
      * @param node
@@ -106,7 +139,7 @@ public class VirtualChildrenList extends StateNodeNodeList {
      *            the payload type
      */
     public void append(StateNode node, String type) {
-        append(node, type, null);
+        append(node, type, (String) null);
     }
 
     @Override
