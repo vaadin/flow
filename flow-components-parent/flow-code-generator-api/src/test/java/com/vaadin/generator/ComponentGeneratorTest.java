@@ -683,10 +683,10 @@ public class ComponentGeneratorTest {
                 generatedClass, "MyComponent", HasValue.class);
 
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public ValueProperty getValue() { JsonObject _obj = (JsonObject) getElement().getPropertyRaw(\"value\"); return _obj == null ? getEmptyValue() : new ValueProperty() .readJson(_obj); }"));
+                "@Override public ValueProperty getValue() { JsonObject _obj = (JsonObject) getElement().getPropertyRaw("));
 
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public void setValue(ValueProperty property) { if (!Objects.equals(property, getValue())) { getElement().setPropertyJson(\"value\", property.toJson()); } } }"));
+                "@Override public void setValue(ValueProperty property) { if (!Objects.equals(property, getValue()))"));
     
     }
 
@@ -899,9 +899,9 @@ public class ComponentGeneratorTest {
                 generatedClass, "MyComponent", HasValue.class);
         Assert.assertThat(generatedClass, CoreMatchers
                 .containsString(
-                        "@Override public String getValue() { return getElement().getProperty(\"value\") == null ? getEmptyValue() : getElement().getProperty(\"value\"); }"));
+                        "@Override public String getValue()"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public void setValue(String value) { if (!Objects.equals(value, getValue())) { getElement().setProperty(\"value\", value == null ? \"\" : value); } } }"));
+                "@Override public void setValue(String value)"));
     }
 
     @Test
