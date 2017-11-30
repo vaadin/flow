@@ -212,9 +212,11 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * 
      * @param vertical
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setVertical(boolean vertical) {
+    public R setVertical(boolean vertical) {
         getElement().setProperty("vertical", vertical);
+        return get();
     }
 
     @DomEvent("iron-resize")

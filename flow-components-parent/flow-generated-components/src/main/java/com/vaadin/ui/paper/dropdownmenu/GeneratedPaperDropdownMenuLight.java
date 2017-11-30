@@ -66,9 +66,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param keyEventTarget
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setKeyEventTarget(JsonObject keyEventTarget) {
+    protected R setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
+        return get();
     }
 
     /**
@@ -101,11 +103,13 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setStopKeyboardEventPropagation(
+    public R setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
+        return get();
     }
 
     /**
@@ -121,9 +125,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
     /**
      * @param keyBindings
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setKeyBindings(JsonObject keyBindings) {
+    protected R setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
+        return get();
     }
 
     /**
@@ -172,9 +178,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param toggles
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setToggles(boolean toggles) {
+    public R setToggles(boolean toggles) {
         getElement().setProperty("toggles", toggles);
+        return get();
     }
 
     /**
@@ -205,9 +213,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param active
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setActive(boolean active) {
+    public R setActive(boolean active) {
         getElement().setProperty("active", active);
+        return get();
     }
 
     /**
@@ -277,10 +287,12 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param ariaActiveAttribute
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAriaActiveAttribute(String ariaActiveAttribute) {
+    public R setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
+        return get();
     }
 
     /**
@@ -329,9 +341,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**
@@ -363,9 +377,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param noink
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoink(boolean noink) {
+    public R setNoink(boolean noink) {
         getElement().setProperty("noink", noink);
+        return get();
     }
 
     /**
@@ -395,9 +411,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param name
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setName(String name) {
+    public R setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
+        return get();
     }
 
     /**
@@ -457,9 +475,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param required
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setRequired(boolean required) {
+    public R setRequired(boolean required) {
         getElement().setProperty("required", required);
+        return get();
     }
 
     /**
@@ -489,10 +509,12 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param validator
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setValidator(String validator) {
+    public R setValidator(String validator) {
         getElement().setProperty("validator",
                 validator == null ? "" : validator);
+        return get();
     }
 
     /**
@@ -523,9 +545,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param invalid
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setInvalid(boolean invalid) {
+    public R setInvalid(boolean invalid) {
         getElement().setProperty("invalid", invalid);
+        return get();
     }
 
     /**
@@ -594,9 +618,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param label
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setLabel(String label) {
+    public R setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
+        return get();
     }
 
     /**
@@ -626,10 +652,12 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param placeholder
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setPlaceholder(String placeholder) {
+    public R setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
+        return get();
     }
 
     /**
@@ -660,9 +688,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param opened
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setOpened(boolean opened) {
+    public R setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
+        return get();
     }
 
     /**
@@ -696,9 +726,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param allowOutsideScroll
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAllowOutsideScroll(boolean allowOutsideScroll) {
+    public R setAllowOutsideScroll(boolean allowOutsideScroll) {
         getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
+        return get();
     }
 
     /**
@@ -730,9 +762,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param noLabelFloat
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoLabelFloat(boolean noLabelFloat) {
+    public R setNoLabelFloat(boolean noLabelFloat) {
         getElement().setProperty("noLabelFloat", noLabelFloat);
+        return get();
     }
 
     /**
@@ -764,9 +798,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param alwaysFloatLabel
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+    public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
         getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
+        return get();
     }
 
     /**
@@ -796,9 +832,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param noAnimations
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoAnimations(boolean noAnimations) {
+    public R setNoAnimations(boolean noAnimations) {
         getElement().setProperty("noAnimations", noAnimations);
+        return get();
     }
 
     /**
@@ -830,10 +868,12 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param horizontalAlign
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setHorizontalAlign(String horizontalAlign) {
+    public R setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
+        return get();
     }
 
     /**
@@ -865,10 +905,12 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param verticalAlign
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setVerticalAlign(String verticalAlign) {
+    public R setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
+        return get();
     }
 
     /**
@@ -908,9 +950,11 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
      * 
      * @param contentElement
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setContentElement(JsonObject contentElement) {
+    protected R setContentElement(JsonObject contentElement) {
         getElement().setPropertyJson("contentElement", contentElement);
+        return get();
     }
 
     /**

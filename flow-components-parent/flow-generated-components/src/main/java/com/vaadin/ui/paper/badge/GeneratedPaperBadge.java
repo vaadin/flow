@@ -60,9 +60,11 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * 
      * @param _for
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setFor(String _for) {
+    public R setFor(String _for) {
         getElement().setProperty("for", _for == null ? "" : _for);
+        return get();
     }
 
     /**
@@ -94,9 +96,11 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * 
      * @param label
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setLabel(String label) {
+    public R setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
+        return get();
     }
 
     /**
@@ -132,9 +136,11 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * 
      * @param icon
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setIcon(String icon) {
+    public R setIcon(String icon) {
         getElement().setProperty("icon", icon == null ? "" : icon);
+        return get();
     }
 
     /**
@@ -168,9 +174,11 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * 
      * @param target
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setTarget(JsonObject target) {
+    protected R setTarget(JsonObject target) {
         getElement().setPropertyJson("target", target);
+        return get();
     }
 
     /**

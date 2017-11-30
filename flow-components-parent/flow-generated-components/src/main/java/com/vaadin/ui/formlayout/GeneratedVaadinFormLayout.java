@@ -228,9 +228,11 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
     	</dl>
     
     	 * @param responsiveSteps the JsonObject value to set
+    	 * @return this instance, for method chaining
     	 */
-    protected void setResponsiveSteps(JsonObject responsiveSteps) {
+    protected R setResponsiveSteps(JsonObject responsiveSteps) {
         getElement().setPropertyJson("responsiveSteps", responsiveSteps);
+        return get();
     }
 
     /**

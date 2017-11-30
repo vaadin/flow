@@ -56,9 +56,11 @@ public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
      * 
      * @param active
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setActive(boolean active) {
+    public R setActive(boolean active) {
         getElement().setProperty("active", active);
+        return get();
     }
 
     /**
@@ -92,8 +94,10 @@ public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
      * 
      * @param alt
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAlt(String alt) {
+    public R setAlt(String alt) {
         getElement().setProperty("alt", alt == null ? "" : alt);
+        return get();
     }
 }

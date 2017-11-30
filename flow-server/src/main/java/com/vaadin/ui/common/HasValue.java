@@ -130,7 +130,7 @@ public interface HasValue<C extends Component, V>
      * @throws IllegalArgumentException
      *             if the value is invalid
      */
-    void setValue(V value);
+    C setValue(V value);
 
     /**
      * Returns the current value of this object.
@@ -150,6 +150,7 @@ public interface HasValue<C extends Component, V>
      *            the value change listener, not null
      * @return a registration for the listener
      */
+    @SuppressWarnings("unchecked")
     default Registration addValueChangeListener(
             ValueChangeListener<C, V> listener) {
         get().getElement().synchronizeProperty(getClientValuePropertyName(),

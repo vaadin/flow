@@ -69,9 +69,11 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param keyEventTarget
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setKeyEventTarget(JsonObject keyEventTarget) {
+    protected R setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
+        return get();
     }
 
     /**
@@ -104,11 +106,13 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setStopKeyboardEventPropagation(
+    public R setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
+        return get();
     }
 
     /**
@@ -124,9 +128,11 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
     /**
      * @param keyBindings
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setKeyBindings(JsonObject keyBindings) {
+    protected R setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
+        return get();
     }
 
     /**
@@ -175,9 +181,11 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param toggles
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setToggles(boolean toggles) {
+    public R setToggles(boolean toggles) {
         getElement().setProperty("toggles", toggles);
+        return get();
     }
 
     /**
@@ -208,9 +216,11 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param active
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setActive(boolean active) {
+    public R setActive(boolean active) {
         getElement().setProperty("active", active);
+        return get();
     }
 
     /**
@@ -280,10 +290,12 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param ariaActiveAttribute
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAriaActiveAttribute(String ariaActiveAttribute) {
+    public R setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
+        return get();
     }
 
     /**
@@ -332,9 +344,11 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**
@@ -366,9 +380,11 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param noink
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoink(boolean noink) {
+    public R setNoink(boolean noink) {
         getElement().setProperty("noink", noink);
+        return get();
     }
 
     /**
@@ -417,9 +433,11 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
      * 
      * @param raised
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setRaised(boolean raised) {
+    public R setRaised(boolean raised) {
         getElement().setProperty("raised", raised);
+        return get();
     }
 
     /**

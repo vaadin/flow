@@ -65,9 +65,11 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * @param opened
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setOpened(boolean opened) {
+    public R setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
+        return get();
     }
 
     /**
@@ -84,9 +86,11 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * @param template
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setTemplate(JsonObject template) {
+    protected R setTemplate(JsonObject template) {
         getElement().setPropertyJson("template", template);
+        return get();
     }
 
     /**
@@ -103,9 +107,11 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * @param content
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setContent(JsonObject content) {
+    protected R setContent(JsonObject content) {
         getElement().setPropertyJson("content", content);
+        return get();
     }
 
     /**
@@ -121,9 +127,11 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
     /**
      * @param withBackdrop
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setWithBackdrop(boolean withBackdrop) {
+    public R setWithBackdrop(boolean withBackdrop) {
         getElement().setProperty("withBackdrop", withBackdrop);
+        return get();
     }
 
     /**
@@ -155,9 +163,11 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
      * 
      * @param modeless
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setModeless(boolean modeless) {
+    public R setModeless(boolean modeless) {
         getElement().setProperty("modeless", modeless);
+        return get();
     }
 
     /**
@@ -189,9 +199,11 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
      * 
      * @param focusTrap
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setFocusTrap(boolean focusTrap) {
+    public R setFocusTrap(boolean focusTrap) {
         getElement().setProperty("focusTrap", focusTrap);
+        return get();
     }
 
     /**

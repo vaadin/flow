@@ -255,9 +255,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param opened
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setOpened(boolean opened) {
+    public R setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
+        return get();
     }
 
     /**
@@ -287,9 +289,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**
@@ -305,9 +309,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
     /**
      * @param readonly
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setReadonly(boolean readonly) {
+    public R setReadonly(boolean readonly) {
         getElement().setProperty("readonly", readonly);
+        return get();
     }
 
     /**
@@ -339,9 +345,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param items
      *            the JsonArray value to set
+     * @return this instance, for method chaining
      */
-    protected void setItems(JsonArray items) {
+    protected R setItems(JsonArray items) {
         getElement().setPropertyJson("items", items);
+        return get();
     }
 
     /**
@@ -377,9 +385,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param allowCustomValue
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAllowCustomValue(boolean allowCustomValue) {
+    public R setAllowCustomValue(boolean allowCustomValue) {
         getElement().setProperty("allowCustomValue", allowCustomValue);
+        return get();
     }
 
     /**
@@ -413,9 +423,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param filteredItems
      *            the JsonArray value to set
+     * @return this instance, for method chaining
      */
-    protected void setFilteredItems(JsonArray filteredItems) {
+    protected R setFilteredItems(JsonArray filteredItems) {
         getElement().setPropertyJson("filteredItems", filteredItems);
+        return get();
     }
 
     /**
@@ -465,9 +477,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param loading
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setLoading(boolean loading) {
+    public R setLoading(boolean loading) {
         getElement().setProperty("loading", loading);
+        return get();
     }
 
     /**
@@ -498,9 +512,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param filter
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setFilter(String filter) {
+    public R setFilter(String filter) {
         getElement().setProperty("filter", filter == null ? "" : filter);
+        return get();
     }
 
     /**
@@ -530,9 +546,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param required
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setRequired(boolean required) {
+    public R setRequired(boolean required) {
         getElement().setProperty("required", required);
+        return get();
     }
 
     /**
@@ -562,9 +580,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param name
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setName(String name) {
+    public R setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
+        return get();
     }
 
     /**
@@ -595,9 +615,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param invalid
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setInvalid(boolean invalid) {
+    public R setInvalid(boolean invalid) {
         getElement().setProperty("invalid", invalid);
+        return get();
     }
 
     /**
@@ -627,9 +649,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param label
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setLabel(String label) {
+    public R setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
+        return get();
     }
 
     /**
@@ -659,9 +683,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param preventInvalidInput
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setPreventInvalidInput(boolean preventInvalidInput) {
+    public R setPreventInvalidInput(boolean preventInvalidInput) {
         getElement().setProperty("preventInvalidInput", preventInvalidInput);
+        return get();
     }
 
     /**
@@ -691,10 +717,12 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param allowedPattern
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAllowedPattern(String allowedPattern) {
+    public R setAllowedPattern(String allowedPattern) {
         getElement().setProperty("allowedPattern",
                 allowedPattern == null ? "" : allowedPattern);
+        return get();
     }
 
     /**
@@ -724,9 +752,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param pattern
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setPattern(String pattern) {
+    public R setPattern(String pattern) {
         getElement().setProperty("pattern", pattern == null ? "" : pattern);
+        return get();
     }
 
     /**
@@ -756,10 +786,12 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param errorMessage
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setErrorMessage(String errorMessage) {
+    public R setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
+        return get();
     }
 
     /**
@@ -775,9 +807,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
     /**
      * @param autofocus
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAutofocus(boolean autofocus) {
+    public R setAutofocus(boolean autofocus) {
         getElement().setProperty("autofocus", autofocus);
+        return get();
     }
 
     /**
@@ -793,10 +827,12 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
     /**
      * @param inputmode
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setInputmode(String inputmode) {
+    public R setInputmode(String inputmode) {
         getElement().setProperty("inputmode",
                 inputmode == null ? "" : inputmode);
+        return get();
     }
 
     /**
@@ -826,10 +862,12 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
      * 
      * @param placeholder
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setPlaceholder(String placeholder) {
+    public R setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
+        return get();
     }
 
     /**
@@ -845,9 +883,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
     /**
      * @param size
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setSize(double size) {
+    public R setSize(double size) {
         getElement().setProperty("size", size);
+        return get();
     }
 
     /**

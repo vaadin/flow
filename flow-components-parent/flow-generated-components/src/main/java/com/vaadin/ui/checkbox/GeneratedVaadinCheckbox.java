@@ -149,9 +149,11 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * 
      * @param autofocus
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAutofocus(boolean autofocus) {
+    public R setAutofocus(boolean autofocus) {
         getElement().setProperty("autofocus", autofocus);
+        return get();
     }
 
     /**
@@ -181,9 +183,11 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**
@@ -215,14 +219,16 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * 
      * @param value
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
     @Override
-    public void setValue(Boolean value) {
+    public R setValue(Boolean value) {
         Objects.requireNonNull(value,
                 "GeneratedVaadinCheckbox value must not be null");
         if (!Objects.equals(value, getValue())) {
             getElement().setProperty("checked", value);
         }
+        return get();
     }
 
     /**
@@ -259,9 +265,11 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * 
      * @param indeterminate
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setIndeterminate(boolean indeterminate) {
+    public R setIndeterminate(boolean indeterminate) {
         getElement().setProperty("indeterminate", indeterminate);
+        return get();
     }
 
     /**
@@ -291,9 +299,11 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * 
      * @param name
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setName(String name) {
+    public R setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
+        return get();
     }
 
     /**
@@ -325,9 +335,11 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * 
      * @param postValue
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setPostValue(String postValue) {
+    public R setPostValue(String postValue) {
         getElement().setProperty("value", postValue == null ? "" : postValue);
+        return get();
     }
 
     @Override

@@ -54,9 +54,11 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     /**
      * @param rootPath
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setRootPath(String rootPath) {
+    public R setRootPath(String rootPath) {
         getElement().setProperty("rootPath", rootPath == null ? "" : rootPath);
+        return get();
     }
 
     /**
@@ -72,10 +74,12 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     /**
      * @param importPath
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setImportPath(String importPath) {
+    public R setImportPath(String importPath) {
         getElement().setProperty("importPath",
                 importPath == null ? "" : importPath);
+        return get();
     }
 
     /**
@@ -91,9 +95,11 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     /**
      * @param root
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setRoot(JsonObject root) {
+    protected R setRoot(JsonObject root) {
         getElement().setPropertyJson("root", root);
+        return get();
     }
 
     /**
@@ -109,9 +115,11 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     /**
      * @param $
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void set$(JsonObject $) {
+    protected R set$(JsonObject $) {
         getElement().setPropertyJson("$", $);
+        return get();
     }
 
     /**
@@ -141,9 +149,11 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @param touchDevice
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setTouchDevice(boolean touchDevice) {
+    public R setTouchDevice(boolean touchDevice) {
         getElement().setProperty("touchDevice", touchDevice);
+        return get();
     }
 
     /**
@@ -159,9 +169,11 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     /**
      * @param opened
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setOpened(boolean opened) {
+    public R setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
+        return get();
     }
 
     /**
@@ -191,9 +203,11 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @param loading
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setLoading(boolean loading) {
+    public R setLoading(boolean loading) {
         getElement().setProperty("loading", loading);
+        return get();
     }
 
     /**
@@ -223,9 +237,11 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @param verticalOffset
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setVerticalOffset(double verticalOffset) {
+    public R setVerticalOffset(double verticalOffset) {
         getElement().setProperty("verticalOffset", verticalOffset);
+        return get();
     }
 
     /**
