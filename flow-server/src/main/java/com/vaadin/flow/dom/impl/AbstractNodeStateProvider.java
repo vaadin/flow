@@ -23,7 +23,7 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.NewVirtualChildrenList;
+import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
 
@@ -147,8 +147,8 @@ public abstract class AbstractNodeStateProvider
     @Override
     public void appendVirtualChild(StateNode node, Element child, String type,
             String payload) {
-        if (node.hasFeature(NewVirtualChildrenList.class)) {
-            node.getFeature(NewVirtualChildrenList.class)
+        if (node.hasFeature(VirtualChildrenList.class)) {
+            node.getFeature(VirtualChildrenList.class)
                     .append(child.getNode(), type, payload);
         } else {
             throw new UnsupportedOperationException();

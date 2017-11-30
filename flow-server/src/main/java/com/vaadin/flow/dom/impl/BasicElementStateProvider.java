@@ -41,7 +41,7 @@ import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementListenerMap;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.nodefeature.NewVirtualChildrenList;
+import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
 import com.vaadin.flow.nodefeature.PolymerEventListenerMap;
@@ -80,7 +80,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
             ClientDelegateHandlers.class, PolymerEventListenerMap.class,
             ShadowRootData.class, AttachExistingElementFeature.class,
-            NewVirtualChildrenList.class };
+            VirtualChildrenList.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist

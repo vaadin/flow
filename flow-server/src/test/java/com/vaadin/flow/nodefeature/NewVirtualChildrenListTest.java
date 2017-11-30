@@ -30,9 +30,9 @@ import elemental.json.JsonObject;
 
 public class NewVirtualChildrenListTest {
 
-    private StateNode node = new StateNode(NewVirtualChildrenList.class);
-    private NewVirtualChildrenList list = node
-            .getFeature(NewVirtualChildrenList.class);
+    private StateNode node = new StateNode(VirtualChildrenList.class);
+    private VirtualChildrenList list = node
+            .getFeature(VirtualChildrenList.class);
 
     private StateNode child = new StateNode(ElementData.class);
 

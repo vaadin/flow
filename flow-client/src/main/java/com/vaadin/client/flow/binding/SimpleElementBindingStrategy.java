@@ -572,7 +572,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private EventRemover bindNewVirtualChildren(BindingContext context) {
         NodeList children = context.node
-                .getList(NodeFeatures.NEW_VIRTUAL_CHILDREN);
+                .getList(NodeFeatures.VIRTUAL_CHILDREN);
 
         for (int i = 0; i < children.length(); i++) {
             appendVirtualChild(context, (StateNode) children.get(i));

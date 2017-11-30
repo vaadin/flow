@@ -27,7 +27,7 @@ import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.NewVirtualChildrenList;
+import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
@@ -54,7 +54,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     @SuppressWarnings("unchecked")
     private static final Class<? extends NodeFeature>[] FEATURES = new Class[] {
             ElementChildrenList.class, ShadowRootHost.class,
-            AttachExistingElementFeature.class, NewVirtualChildrenList.class };
+            AttachExistingElementFeature.class, VirtualChildrenList.class };
 
     /**
      * Gets the one and only instance.

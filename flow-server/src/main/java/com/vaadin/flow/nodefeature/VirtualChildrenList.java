@@ -25,14 +25,11 @@ import elemental.json.JsonObject;
 /**
  * List of nodes describing the virtually connected child elements of an
  * element.
- * <p>
- * TODO: this is temporary class. It will replace {@link VirtualChildrenList}
- * (and will be renamed) along with rewriting {@code @Id} functionality.
- *
+ * 
  * @author Vaadin Ltd
  *
  */
-public class NewVirtualChildrenList extends StateNodeNodeList {
+public class VirtualChildrenList extends StateNodeNodeList {
 
     /**
      * Creates a new element virtual children list for the given node.
@@ -40,7 +37,7 @@ public class NewVirtualChildrenList extends StateNodeNodeList {
      * @param node
      *            the node that the list belongs to
      */
-    public NewVirtualChildrenList(StateNode node) {
+    public VirtualChildrenList(StateNode node) {
         super(node);
     }
 

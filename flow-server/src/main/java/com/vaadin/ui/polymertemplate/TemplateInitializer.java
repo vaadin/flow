@@ -31,7 +31,7 @@ import org.jsoup.select.Elements;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.nodefeature.NewVirtualChildrenList;
+import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.VaadinService;
@@ -209,8 +209,8 @@ public class TemplateInitializer {
 
         Element element = new Element(tag);
         // TODO: should this be exposed as Element API ?
-        NewVirtualChildrenList list = getElement().getNode()
-                .getFeature(NewVirtualChildrenList.class);
+        VirtualChildrenList list = getElement().getNode()
+                .getFeature(VirtualChildrenList.class);
         list.append(element.getNode(), NodeProperties.INJECT_BY_ID, id);
 
         // anything else
@@ -395,8 +395,8 @@ public class TemplateInitializer {
         if (element == null) {
             element = new Element(tagName);
             // TODO: should this be exposed as Element API ?
-            NewVirtualChildrenList list = getElement().getNode()
-                    .getFeature(NewVirtualChildrenList.class);
+            VirtualChildrenList list = getElement().getNode()
+                    .getFeature(VirtualChildrenList.class);
             list.append(element.getNode(), NodeProperties.INJECT_BY_ID, id);
         }
         injectTemplateElement(element, field);

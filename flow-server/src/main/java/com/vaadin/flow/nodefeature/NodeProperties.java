@@ -54,17 +54,17 @@ public final class NodeProperties {
     public static final String VALUE = "value";
 
     /**
-     * JsonObject type key for {@link NewVirtualChildrenList}.
+     * JsonObject type key for {@link VirtualChildrenList}.
      */
     public static final String TYPE = "type";
 
     /**
-     * JsonObject type value for {@link NewVirtualChildrenList}.
+     * JsonObject type value for {@link VirtualChildrenList}.
      */
     public static final String IN_MEMORY_CHILD = "inMemory";
 
     /**
-     * JsonObject type value for {@link NewVirtualChildrenList}.
+     * JsonObject type value for {@link VirtualChildrenList}.
      */
     public static final String INJECT_BY_ID = "@id";
 
