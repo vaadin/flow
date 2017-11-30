@@ -87,14 +87,22 @@ public abstract class AbstractRouteRegistryInitializer {
                     route.getName()));
         }
 
-        if (route.isAnnotationPresent(Viewport.class) && !UI.class
-                .equals(route.getAnnotation(Route.class).layout())) {
-            throw new InvalidRouteLayoutConfigurationException(String.format(
-                    "Viewport annotation needs to be on the top parent layout '%s' not on '%s'",
-                    RouterUtil.getTopParentLayout(route).getName(),
-                    route.getName()));
+        validateRouteViewport(route);
+
+        for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
+            validateRouteAliasViewport(route, alias);
         }
+    }
+
+    private void validateRouteViewport(Class<?> route) {
         if (!UI.class.equals(route.getAnnotation(Route.class).layout())) {
+            if (route.isAnnotationPresent(Viewport.class)) {
+                throw new InvalidRouteLayoutConfigurationException(String
+                        .format("Viewport annotation needs to be on the top parent layout '%s' not on '%s'",
+                                RouterUtil.getTopParentLayout(route).getName(),
+                                route.getName()));
+            }
+
             List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
                     .getParentLayouts(route);
             Class<? extends RouterLayout> topParentLayout = RouterUtil
@@ -102,15 +110,18 @@ public abstract class AbstractRouteRegistryInitializer {
 
             validateParentViewport(parentLayouts, topParentLayout);
         }
-        for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
-            if (route.isAnnotationPresent(Viewport.class)
-                    && !UI.class.equals(alias.layout())) {
+    }
+
+    private void validateRouteAliasViewport(Class<?> route, RouteAlias alias) {
+        if (!UI.class.equals(alias.layout())) {
+            if (route.isAnnotationPresent(Viewport.class)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("Viewport annotation needs to be on the top parent layout '%s' not on '%s'",
                                 RouterUtil.getTopParentLayout(route,
                                         alias.value()).getName(),
                                 route.getName()));
             }
+
             List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
                     .getParentLayouts(route, alias.value());
             Class<? extends RouterLayout> topParentLayout = RouterUtil
@@ -135,10 +146,9 @@ public abstract class AbstractRouteRegistryInitializer {
 
         streamSupplier.get().findFirst().ifPresent(layout -> {
             if (!layout.equals(topParentLayout)) {
-                throw new InvalidRouteLayoutConfigurationException(
-                        String.format(
-                        "Viewport annotation should be on the top most route layout '%s'. Offending class: '%s'", topParentLayout.getName(),
-                                layout.getName()));
+                throw new InvalidRouteLayoutConfigurationException(String
+                        .format("Viewport annotation should be on the top most route layout '%s'. Offending class: '%s'",
+                                topParentLayout.getName(), layout.getName()));
             }
         });
     }

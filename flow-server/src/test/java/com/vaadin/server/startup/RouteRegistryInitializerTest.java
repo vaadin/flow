@@ -611,6 +611,5 @@ public class RouteRegistryInitializerTest {
         routeRegistryInitializer.onStartup(
                 Stream.of(AliasView.class).collect(Collectors.toSet()),
                 servletContext);
-
     }
 }

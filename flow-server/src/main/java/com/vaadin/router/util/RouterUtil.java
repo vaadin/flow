@@ -70,7 +70,7 @@ public final class RouterUtil {
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             Class<?> component, String path) {
-        List<Class<? extends RouterLayout>> list = new ArrayList<>();
+        final List<Class<? extends RouterLayout>> list = new ArrayList<>();
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
@@ -80,16 +80,22 @@ public final class RouterUtil {
                 && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
         } else {
-            for (RouteAlias alias : routeAliases) {
-                if (path.equals(alias.value())
-                        && !alias.layout().equals(UI.class)) {
-                    list.addAll(collectRouteParentLayouts(alias.layout()));
-                    break;
-                }
+
+            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(path,
+                    routeAliases);
+            if (matchingRoute.isPresent()) {
+                list.addAll(collectRouteParentLayouts(
+                        matchingRoute.get().layout()));
             }
         }
 
         return list;
+    }
+
+    private static Optional<RouteAlias> getMatchingRouteAlias(String path,
+            List<RouteAlias> routeAliases) {
+        return routeAliases.stream().filter(alias -> path.equals(alias.value())
+                && !alias.layout().equals(UI.class)).findFirst();
     }
 
     private static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
@@ -136,7 +142,7 @@ public final class RouterUtil {
      * @return top parent layout for target or null if none found
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
-            Class<?> component, String path) {
+            final Class<?> component, final String path) {
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
         List<RouteAlias> routeAliases = AnnotationReader
@@ -145,11 +151,10 @@ public final class RouterUtil {
                 && !route.get().layout().equals(UI.class)) {
             return recuseToTopLayout(route.get().layout());
         } else {
-            for (RouteAlias alias : routeAliases) {
-                if (path.equals(alias.value())
-                        && !alias.layout().equals(UI.class)) {
-                    return recuseToTopLayout(alias.layout());
-                }
+            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(path,
+                    routeAliases);
+            if (matchingRoute.isPresent()) {
+                return recuseToTopLayout(matchingRoute.get().layout());
             }
         }
 
