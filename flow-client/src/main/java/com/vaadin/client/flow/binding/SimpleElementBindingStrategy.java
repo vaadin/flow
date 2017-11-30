@@ -22,7 +22,6 @@ import java.util.function.Supplier;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
-import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
@@ -183,9 +182,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(bindSynchronizedPropertyEvents(context));
 
-        listeners.push(bindChildren(context));
+        listeners.push(bindVirtualChildren(context));
 
-        listeners.push(bindNewVirtualChildren(context));
+        listeners.push(bindChildren(context));
 
         listeners.push(stateNode.addUnregisterListener(
                 e -> remove(listeners, context, computationsCollection)));
@@ -311,7 +310,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BindingContext newContext = new BindingContext(shadowRootNode,
                     shadowRoot, context.binderContext);
             bindChildren(newContext);
-            bindVirtualChildren(newContext);
         }
     }
 
@@ -547,17 +545,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
 
-            ExistingElementMap existingElementMap = childNode.getTree()
-                    .getRegistry().getExistingElementMap();
-            Node child = existingElementMap.getElement(childNode.getId());
-            if (child != null) {
-                existingElementMap.remove(childNode.getId());
-                childNode.setDomNode(child);
-                context.binderContext.createAndBind(childNode);
-            } else {
-                child = context.binderContext.createAndBind(childNode);
-                DomApi.wrap(context.htmlNode).appendChild(child);
-            }
+            Node child = context.binderContext.createAndBind(childNode);
+            DomApi.wrap(context.htmlNode).appendChild(child);
         }
 
         return children.addSpliceListener(e -> {
@@ -570,9 +559,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         });
     }
 
-    private EventRemover bindNewVirtualChildren(BindingContext context) {
-        NodeList children = context.node
-                .getList(NodeFeatures.VIRTUAL_CHILDREN);
+    private EventRemover bindVirtualChildren(BindingContext context) {
+        NodeList children = context.node.getList(NodeFeatures.VIRTUAL_CHILDREN);
 
         for (int i = 0; i < children.length(); i++) {
             appendVirtualChild(context, (StateNode) children.get(i));
@@ -603,59 +591,52 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
             context.binderContext.createAndBind(node);
+        } else if (NodeProperties.INJECT_BY_ID.equals(type)) {
+            String id = object.getString(NodeProperties.PAYLOAD);
+            // TODO : check whether the element is already "attached"
+            Element existingElement = getDomElementById(context.htmlNode, id);
+            verifyAttachedElement(existingElement, node, id, context);
+
+            node.setDomNode(existingElement);
+            context.binderContext.createAndBind(node);
+        } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
+
+        } else {
+            assert false : "Unexpected payload type " + type;
         }
     }
 
-    private EventRemover bindVirtualChildren(BindingContext context) {
-        NodeList children = context.node
-                .getList(NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
+    private void verifyAttachedElement(Element element, StateNode attachNode,
+            String id, BindingContext context) {
+        StateNode node = context.node;
 
-        for (int i = 0; i < children.length(); i++) {
-            StateNode childNode = (StateNode) children.get(i);
-            if (childNode.getDomNode() == null) {
-                invokeWhenNodeIsConstructed(
-                        getBindingCommand(context, childNode), childNode);
-            } else {
-                context.binderContext.bind(childNode, childNode.getDomNode());
-            }
-        }
+        String tag = getTag(attachNode);
 
-        return children.addSpliceListener(e -> {
-            /*
-             * Handle lazily so we can create the children we need to insert.
-             * The change that gives a child node an element tag name might not
-             * yet have been applied at this point.
-             */
-            Reactive.addFlushListener(
-                    () -> handleVirtualChildrenSplice(e, context));
-        });
-    }
+        if (element != null && hasTag(element, tag)) {
+            NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+            StateNode shadowRootNode = (StateNode) map
+                    .getProperty(NodeProperties.SHADOW_ROOT).getValue();
+            NodeList list = shadowRootNode
+                    .getList(NodeFeatures.ELEMENT_CHILDREN);
+            Integer existingId = null;
 
-    private Command getBindingCommand(BindingContext context,
-            StateNode childNode) {
-        Node parentNode = context.node.getDomNode();
-        if (parentNode instanceof ShadowRoot) {
-            Optional<String> childId = extractNodeId(childNode);
-            if (childId.isPresent()) {
-                return () -> bindElementFromShadowRootById(
-                        context.binderContext, childNode, childId.get(),
-                        (ShadowRoot) parentNode);
-            } else {
-                String childTag = getTag(childNode);
-                if (childTag == null) {
-                    throw new IllegalStateException(
-                            "Received element with no id and tag information, element node id = '"
-                                    + childNode.getId() + "', parent node = "
-                                    + parentNode);
+            for (int i = 0; i < list.length(); i++) {
+                StateNode stateNode = (StateNode) list.get(i);
+                Node domNode = stateNode.getDomNode();
+
+                if (domNode.equals(element)) {
+                    existingId = stateNode.getId();
+                    break;
                 }
-                return () -> bindElementFromShadowRootByTagName(
-                        context.binderContext, childNode, childTag,
-                        (ShadowRoot) parentNode);
+            }
+
+            if (existingId != null) {
+                node.getTree().sendExistingElementWithIdAttachToServer(node,
+                        attachNode.getId(), existingId, id);
             }
         } else {
-            throw new IllegalStateException(
-                    "Expected parent element to be a shadow root to bind elements to, but got "
-                            + parentNode);
+            node.getTree().sendExistingElementWithIdAttachToServer(node,
+                    attachNode.getId(), -1, id);
         }
     }
 
@@ -682,20 +663,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             throw new IllegalStateException(
                     "Could not locate element imported with @Id annotation, tag = '"
                             + childTag
-                            + "', in shadow root of a parent element");
-        }
-        binderContext.bind(childNode, shadowRootElement);
-    }
-
-    private static void bindElementFromShadowRootById(
-            BinderContext binderContext, StateNode childNode, String childId,
-            ShadowRoot shadowRoot) {
-        Node shadowRootElement = PolymerUtils
-                .getElementInShadowRootById(shadowRoot, childId);
-        if (shadowRootElement == null) {
-            throw new IllegalStateException(
-                    "Could not locate element imported with @Id annotation, id = '"
-                            + childId
                             + "', in shadow root of a parent element");
         }
         binderContext.bind(childNode, shadowRootElement);
@@ -752,19 +719,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Object newChildObject = add.get(i);
             StateNode newChild = (StateNode) newChildObject;
 
-            ExistingElementMap existingElementMap = newChild.getTree()
-                    .getRegistry().getExistingElementMap();
-            Node childNode = existingElementMap.getElement(newChild.getId());
-            if (childNode != null) {
-                existingElementMap.remove(newChild.getId());
-                newChild.setDomNode(childNode);
-                context.binderContext.createAndBind(newChild);
-            } else {
-                childNode = context.binderContext.createAndBind(newChild);
+            Node childNode = context.binderContext.createAndBind(newChild);
 
-                DomApi.wrap(context.htmlNode).insertBefore(childNode,
-                        beforeRef);
-            }
+            DomApi.wrap(context.htmlNode).insertBefore(childNode, beforeRef);
 
             beforeRef = DomApi.wrap(childNode).getNextSibling();
         }
@@ -786,30 +743,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
         }
         return node;
-    }
-
-    private void handleVirtualChildrenSplice(ListSpliceEvent event,
-            BindingContext context) {
-        // Actually removing of a virtual element from the dom is not supported.
-
-        JsArray<?> add = event.getAdd();
-        if (!add.isEmpty()) {
-            for (int i = 0; i < add.length(); i++) {
-                StateNode newChild = (StateNode) add.get(i);
-
-                ExistingElementMap existingElementMap = newChild.getTree()
-                        .getRegistry().getExistingElementMap();
-                Node childNode = existingElementMap
-                        .getElement(newChild.getId());
-                if (childNode != null) {
-                    existingElementMap.remove(newChild.getId());
-                    newChild.setDomNode(childNode);
-                    context.binderContext.createAndBind(newChild);
-                } else {
-                    context.binderContext.createAndBind(newChild);
-                }
-            }
-        }
     }
 
     /**
@@ -971,6 +904,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         return expression;
+    }
+
+    private static native Element getDomElementById(Node shadowRootParent,
+            String id)
+    /*-{
+        return shadowRootParent.$[id];
+    }-*/;
+
+    private static boolean hasTag(Node node, String tag) {
+        return node instanceof Element
+                && tag.equalsIgnoreCase(((Element) node).getTagName());
     }
 
 }

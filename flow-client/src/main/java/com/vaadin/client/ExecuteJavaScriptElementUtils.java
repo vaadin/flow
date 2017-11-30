@@ -15,7 +15,6 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
@@ -24,9 +23,7 @@ import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
-import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.nodefeature.NodeFeatures;
-import com.vaadin.flow.nodefeature.NodeProperties;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -119,41 +116,6 @@ public final class ExecuteJavaScriptElementUtils {
     }
 
     /**
-     * Find element for given id and collect data required for server side
-     * callback to attach existing element and send it to the server.
-     *
-     * @param parent
-     *            the parent node containing the shadow root containing the
-     *            element requested to attach
-     * @param tagName
-     *            the tag name of the element requested to attach
-     * @param serverSideId
-     *            the identifier of the server side node which is requested to
-     *            be a counterpart of the client side element
-     * @param id
-     *            the id attribute of the element to wire to
-     */
-    public static void attachExistingElementById(StateNode parent,
-            String tagName, int serverSideId, String id) {
-        if (parent.getDomNode() == null) {
-            Reactive.addPostFlushListener(() -> Scheduler.get()
-                    .scheduleDeferred(() -> attachExistingElementById(parent,
-                            tagName, serverSideId, id)));
-        } else if (getDomRoot(parent.getDomNode()) == null) {
-            invokeWhenDefined(parent.getDomNode(),
-                    () -> attachExistingElementById(parent, tagName,
-                            serverSideId, id));
-            return;
-        } else {
-            Element existingElement = getDomElementById(
-                    (Element) parent.getDomNode(), id);
-
-            respondExistingElement(parent, tagName, serverSideId, id,
-                    existingElement);
-        }
-    }
-
-    /**
      * Find element by the given {@code path} in the {@code parent} and collect
      * data required for server side callback to attach existing element and
      * send it to the server.
@@ -216,39 +178,6 @@ public final class ExecuteJavaScriptElementUtils {
         }
     }
 
-    private static void respondExistingElement(StateNode parent, String tagName,
-            int serverSideId, String id, Element existingElement) {
-        if (existingElement != null && hasTag(existingElement, tagName)) {
-            NodeMap map = parent.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-            StateNode shadowRootNode = (StateNode) map
-                    .getProperty(NodeProperties.SHADOW_ROOT).getValue();
-            NodeList list = shadowRootNode
-                    .getList(NodeFeatures.ELEMENT_CHILDREN);
-            Integer existingId = null;
-
-            for (int i = 0; i < list.length(); i++) {
-                StateNode stateNode = (StateNode) list.get(i);
-                Node domNode = stateNode.getDomNode();
-
-                if (domNode.equals(existingElement)) {
-                    existingId = stateNode.getId();
-                    break;
-                }
-            }
-
-            existingId = getExistingIdOrUpdate(shadowRootNode, serverSideId,
-                    existingElement, existingId);
-
-            // Return this as attach to parent which will delegate it to the
-            // underlying shadowRoot as a virtual child.
-            parent.getTree().sendExistingElementWithIdAttachToServer(parent,
-                    serverSideId, existingId, existingElement.getTagName(), id);
-        } else {
-            parent.getTree().sendExistingElementWithIdAttachToServer(parent,
-                    serverSideId, -1, tagName, id);
-        }
-    }
-
     private static Element getCustomElement(Node root, JsonArray path) {
         Node current = root;
         for (int i = 0; i < path.length(); i++) {
@@ -296,21 +225,6 @@ public final class ExecuteJavaScriptElementUtils {
     /*-{
         return templateElement.root;
     }-*/;
-
-    private static Integer getExistingIdOrUpdate(StateNode parent,
-            int serverSideId, Element existingElement, Integer existingId) {
-        if (existingId == null) {
-            ExistingElementMap map = parent.getTree().getRegistry()
-                    .getExistingElementMap();
-            Integer fromMap = map.getId(existingElement);
-            if (fromMap == null) {
-                map.add(serverSideId, existingElement);
-                return serverSideId;
-            }
-            return fromMap;
-        }
-        return existingId;
-    }
 
     private static native void invokeWhenDefined(Node node, Runnable runnable)
     /*-{

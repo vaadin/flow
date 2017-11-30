@@ -202,14 +202,13 @@ public class ServerConnector {
      *            id of requested element
      */
     public void sendExistingElementWithIdAttachToServer(StateNode parent,
-            int requestedId, int assignedId, String tagName, String id) {
+            int requestedId, int assignedId, String id) {
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_TYPE,
                 JsonConstants.RPC_ATTACH_EXISTING_ELEMENT_BY_ID);
         message.put(JsonConstants.RPC_NODE, parent.getId());
         message.put(JsonConstants.RPC_ATTACH_REQUESTED_ID, requestedId);
         message.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, assignedId);
-        message.put(JsonConstants.RPC_ATTACH_TAG_NAME, tagName);
         message.put(JsonConstants.RPC_ATTACH_ID, id);
 
         sendMessage(message);

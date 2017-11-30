@@ -145,7 +145,7 @@ public class StateTree {
      * for this state tree.
      * <p>
      * Logs a warning if there was a problem with the node.
-     * 
+     *
      * @param node
      *            node to test
      * @return node is valid
@@ -292,11 +292,11 @@ public class StateTree {
      *            id of requested element
      */
     public void sendExistingElementWithIdAttachToServer(StateNode parent,
-            int requestedId, int assignedId, String tagName, String id) {
+            int requestedId, int assignedId, String id) {
         assert assertValidNode(parent);
 
         registry.getServerConnector().sendExistingElementWithIdAttachToServer(
-                parent, requestedId, assignedId, tagName, id);
+                parent, requestedId, assignedId, id);
     }
 
     /**
@@ -375,9 +375,7 @@ public class StateTree {
                     "shadowRootHost");
             nodeFeatureDebugName.set(NodeFeatures.ATTACH_EXISTING_ELEMENT,
                     "attachExistingElementFeature");
-            nodeFeatureDebugName.set(NodeFeatures.ATTACH_TEMPLATE_CHILD_ELEMENT,
-                    "attachTemplateChildFeature");
-            nodeFeatureDebugName.set(NodeFeatures.VIRTUAL_CHILD_ELEMENTS,
+            nodeFeatureDebugName.set(NodeFeatures.VIRTUAL_CHILDREN,
                     "virtualChildrenList");
             nodeFeatureDebugName.set(NodeFeatures.BASIC_TYPE_VALUE,
                     "basicTypeValue");
