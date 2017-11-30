@@ -125,7 +125,6 @@ public class ExecuteJavaScriptProcessor {
      * @param nodeParameters
      *            the node parameters
      */
-    @SuppressWarnings("static-method")
     protected void invoke(String[] parameterNamesAndCode,
             JsArray<Object> parameters,
             JsMap<Object, StateNode> nodeParameters) {
@@ -180,9 +179,6 @@ public class ExecuteJavaScriptProcessor {
           object.$appId = this.@ExecuteJavaScriptProcessor::getAppId()().replace(/-\d+$/, '');
           object.attachExistingElement = function(parent, previousSibling, tagName, id){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
-          };
-          object.attachExistingElementById = function(parent, tagName, serverSideId, id){
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElementById(*)(object.getNode(parent), tagName, serverSideId, id);
           };
           object.attachCustomElement = function(parent, tagName, serverSideId, path){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::attachCustomElement(*)(object.getNode(parent), tagName, serverSideId, path);

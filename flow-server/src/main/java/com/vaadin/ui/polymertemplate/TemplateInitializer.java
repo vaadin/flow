@@ -29,11 +29,9 @@ import java.util.stream.Stream;
 
 import org.jsoup.select.Elements;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
+import com.vaadin.flow.nodefeature.NewVirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.VaadinService;
@@ -115,6 +113,7 @@ public class TemplateInitializer {
      * @param parser
      *            a template parser instance
      */
+    @SuppressWarnings("unchecked")
     public TemplateInitializer(PolymerTemplate<?> template,
             TemplateParser parser) {
         this.template = template;
@@ -208,24 +207,17 @@ public class TemplateInitializer {
         // make sure that shadow root is available
         getShadowRoot();
 
-        StateNode stateNode = getElement().getNode();
+        Element element = new Element(tag);
+        // TODO: should this be exposed as Element API ?
+        NewVirtualChildrenList list = getElement().getNode()
+                .getFeature(NewVirtualChildrenList.class);
+        list.append(element.getNode(), NodeProperties.INJECT_BY_ID, id);
 
-        StateNode customNode = BasicElementStateProvider.createStateNode(tag);
-        customNode.runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                "this.attachCustomElement($0, $1, $2, $3);", getElement(), tag,
-                customNode.getId(), path));
-
-        stateNode.getFeature(AttachTemplateChildFeature.class)
-                .register(getElement(), customNode);
-
-        // The Component should be created only after the code above which
-        // guarantees that "attachCustomElement" JS call is executed before
         // anything else
-        Element customElement = Element.get(customNode);
-        CustomElementRegistry.getInstance().wrapElementIfNeeded(customElement);
+        CustomElementRegistry.getInstance().wrapElementIfNeeded(element);
 
         if (id != null) {
-            registeredElementIdToCustomElement.put(id, customElement);
+            registeredElementIdToCustomElement.put(id, element);
         }
     }
 
@@ -401,23 +393,11 @@ public class TemplateInitializer {
 
         Element element = registeredCustomElements.get(id);
         if (element == null) {
-            /*
-             * create a node that should represent the client-side element. This
-             * node won't be available anywhere and will be removed if there is
-             * no appropriate element on the client-side. This node will be used
-             * after client-side roundtrip for the appropriate element.
-             */
-            StateNode proposedNode = BasicElementStateProvider
-                    .createStateNode(tagName);
-            element = Element.get(proposedNode);
-            element.setAttribute(NodeProperties.ID, id);
-            StateNode templateNode = getElement().getNode();
-
-            proposedNode.runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                    "this.attachExistingElementById($0, $1, $2, $3);",
-                    getElement(), tagName, proposedNode.getId(), id));
-            templateNode.getFeature(AttachTemplateChildFeature.class)
-                    .register(getElement(), proposedNode);
+            element = new Element(tagName);
+            // TODO: should this be exposed as Element API ?
+            NewVirtualChildrenList list = getElement().getNode()
+                    .getFeature(NewVirtualChildrenList.class);
+            list.append(element.getNode(), NodeProperties.INJECT_BY_ID, id);
         }
         injectTemplateElement(element, field);
     }

@@ -148,24 +148,19 @@ public final class NodeFeatures {
     public static final int ATTACH_EXISTING_ELEMENT = 27;
 
     /**
-     * Id for {@link AttachTemplateChildFeature}.
-     */
-    public static final int ATTACH_TEMPLATE_CHILD_ELEMENT = 28;
-
-    /**
      * Id for {@link VirtualChildrenList}.
      */
-    public static final int VIRTUAL_CHILD_ELEMENTS = 29;
+    public static final int VIRTUAL_CHILD_ELEMENTS = 28;
 
     /**
      * {@link NewVirtualChildrenList} Id for {@link BasicTypeValue}.
      */
-    public static final int BASIC_TYPE_VALUE = 30;
+    public static final int BASIC_TYPE_VALUE = 29;
 
     /**
      * Id for {@link NewVirtualChildrenList}.
      */
-    public static final int NEW_VIRTUAL_CHILDREN = 31;
+    public static final int NEW_VIRTUAL_CHILDREN = 30;
 
     private NodeFeatures() {
         // Only static
