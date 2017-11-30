@@ -868,9 +868,10 @@ public class ComponentGeneratorTest {
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
                 generatedClass, "MyComponent", HasValue.class);
         Assert.assertThat(generatedClass, CoreMatchers
-                .containsString("@Override public String getValue()"));
+                .containsString(
+                        "@Override public String getValue() { return getElement().getProperty(\"value\") == null ? getEmptyValue() : getElement().getProperty(\"value\"); }"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public void setValue(String value)"));
+                "@Override public void setValue(String value) { if (!Objects.equals(value, getValue())) { getElement().setProperty(\"value\", value == null ? \"\" : value); } } }"));
     }
 
     @Test
@@ -904,7 +905,7 @@ public class ComponentGeneratorTest {
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
-        
+
         generatedClass = ComponentGeneratorTestUtils
                 .removeIndentation(generatedClass);
 
@@ -915,6 +916,7 @@ public class ComponentGeneratorTest {
                 .contains(
                         "@Override public String getValue() { return getElement().getProperty(\"value\") == null ? getEmptyValue() : getElement().getProperty(\"value\"); }"));
     }
+
 
     @Test
     public void componentContainsNumberValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTypes() {
