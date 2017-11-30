@@ -21,12 +21,13 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.nodefeature.NodeProperties;
 
 /**
  * A class representing a node in the DOM.
  * <p>
  * Contains methods for updating and querying hierarchical structure.
- * 
+ *
  * @author Vaadin Ltd
  *
  * @param <N>
@@ -88,7 +89,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     /**
      * Gets the number of child elements.
-     * 
+     *
      * @return the number of child elements
      */
     public int getChildCount() {
@@ -97,7 +98,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     /**
      * Returns the child element at the given position.
-     * 
+     *
      * @param index
      *            the index of the child element to return
      * @return the child element
@@ -135,6 +136,44 @@ public abstract class Node<N extends Node<N>> implements Serializable {
         }
 
         insertChild(getChildCount(), children);
+
+        return getSelf();
+    }
+
+    /**
+     * Appends the given children as the virtual children of the element.
+     * <p>
+     * The virtual child is not really a child of the DOM element. The
+     * client-side counterpart is created in the memory but it's not attached to
+     * the DOM tree. The resulting element is referenced via the server side
+     * {@link Element} in JS function call as usual.
+     *
+     * @param children
+     *            the element(s) to add
+     * @return this element
+     */
+    public N appendVirtualChild(Element... children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+        }
+
+        for (int i = 0; i < children.length; i++) {
+            Element child = children[i];
+            if (child == null) {
+                throw new IllegalArgumentException(
+                        "Element to insert must not be null");
+            }
+            Node<?> parentNode = child.getParentNode();
+            if (parentNode != null) {
+                throw new IllegalArgumentException(
+                        "Element to insert already has a parent and can't "
+                                + "be added as a virtual child");
+            }
+            getStateProvider().appendVirtualChild(getNode(), child,
+                    NodeProperties.IN_MEMORY_CHILD, null);
+            ensureChildHasParent(child, true);
+        }
 
         return getSelf();
     }
@@ -297,7 +336,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     /**
      * Gets the parent node.
-     * 
+     *
      * @return the parent node or null if this element does not have a parent
      */
     @SuppressWarnings("rawtypes")
@@ -307,7 +346,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     /**
      * Gets the narrow typed reference to this object.
-     * 
+     *
      * @return this object casted to its type
      */
     protected abstract N getSelf();
@@ -341,7 +380,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * <p>
      * Default implementation doesn't do anything. Subclasses may override the
      * method to implement their own behavior.
-     * 
+     *
      * @param child
      *            the element to check for its parent
      * @param internalCheck
@@ -377,7 +416,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * doesn't exist.
      * <p>
      * This API is experimental and disabled for public usage.
-     * 
+     *
      * @param tagName
      *            the tag name of the element to attach, not {@code null}
      * @param previousSibling

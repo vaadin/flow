@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.nodefeature;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,17 +34,17 @@ public class NodeValueEmptyRequiredFeatureTest {
 
     private StateNode node;
 
-    private NodeValue<String> nodeValue;
+    private NodeValue<Serializable> nodeValue;
 
     @Before
     public void setUp() {
-        node = new StateNode(Arrays.asList(ElementData.class)) {
+        node = new StateNode(Arrays.asList(BasicTypeValue.class)) {
             @Override
             public boolean isAttached() {
                 return true;
             }
         };
-        nodeValue = node.getFeature(ElementData.class);
+        nodeValue = node.getFeature(BasicTypeValue.class);
     }
 
     @Test

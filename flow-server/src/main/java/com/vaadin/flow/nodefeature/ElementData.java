@@ -16,14 +16,25 @@
 
 package com.vaadin.flow.nodefeature;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.change.EmptyChange;
+import com.vaadin.flow.change.MapPutChange;
+import com.vaadin.flow.change.NodeChange;
+
+import elemental.json.JsonValue;
 
 /**
  * Map of basic element information.
  *
  * @author Vaadin Ltd
  */
-public class ElementData extends NodeValue<String> {
+public class ElementData extends NodeValue<Serializable[]> {
 
     /**
      * Creates a new element data map for the given node.
@@ -48,7 +59,10 @@ public class ElementData extends NodeValue<String> {
      *            the tag name
      */
     public void setTag(String tag) {
-        setValue(tag);
+        Serializable[] value = new Serializable[2];
+        value[0] = tag;
+        value[1] = getPayload();
+        setValue(value);
     }
 
     /**
@@ -57,7 +71,56 @@ public class ElementData extends NodeValue<String> {
      * @return the tag name
      */
     public String getTag() {
-        return getValue();
+        return getValue() == null ? null : (String) getValue()[0];
     }
 
+    /**
+     * Sets the payload data of the element.
+     *
+     * @param payload
+     *            the payload data
+     */
+    public void setPyload(JsonValue payload) {
+        Serializable[] value = new Serializable[2];
+        value[0] = getTag();
+        value[1] = payload;
+        setValue(value);
+    }
+
+    /**
+     * Gets the payload data of the element.
+     *
+     */
+    public JsonValue getPayload() {
+        Serializable[] value = getValue();
+        return value == null ? null : (JsonValue) value[1];
+    }
+
+    @Override
+    public void collectChanges(Consumer<NodeChange> collector) {
+        List<NodeChange> changes = new ArrayList<>(1);
+        super.collectChanges(changes::add);
+
+        Serializable[] previousValue;
+        Serializable tracker = getNode().getChangeTracker(this, () -> null);
+
+        if (tracker instanceof Serializable[]) {
+            previousValue = (Serializable[]) tracker;
+        } else {
+            previousValue = new Serializable[2];
+        }
+
+        NodeChange change = changes.get(0);
+        if (change instanceof MapPutChange) {
+            if (!Objects.equals(previousValue[0], getTag())) {
+                collector.accept(new MapPutChange(this, getKey(), getTag()));
+            }
+            if (!Objects.equals(previousValue[1], getPayload())) {
+                collector.accept(new MapPutChange(this, NodeProperties.PAYLOAD,
+                        getPayload()));
+            }
+        } else if (change instanceof EmptyChange) {
+            collector.accept(change);
+        }
+    }
 }

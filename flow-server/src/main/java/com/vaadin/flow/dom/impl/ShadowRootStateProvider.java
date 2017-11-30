@@ -28,6 +28,7 @@ import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
+import com.vaadin.flow.nodefeature.NewVirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
@@ -44,7 +45,7 @@ import com.vaadin.ui.event.PropertyChangeListener;
  * <p>
  * The data is stored directly in the state node but this should be considered
  * an implementation detail which can change.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -55,7 +56,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     @SuppressWarnings("unchecked")
     private static final Class<? extends NodeFeature>[] FEATURES = new Class[] {
             ElementChildrenList.class, ShadowRootHost.class,
-            AttachExistingElementFeature.class, VirtualChildrenList.class };
+            AttachExistingElementFeature.class, VirtualChildrenList.class,
+            NewVirtualChildrenList.class };
 
     /**
      * Gets the one and only instance.
@@ -68,7 +70,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
 
     /**
      * Create a new shadow root node for the given element {@code node}.
-     * 
+     *
      * @param node
      *            the node to create the shadow root for
      * @return the shadow root node
@@ -211,7 +213,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
 
     /**
      * Insert the given virtual child at the given position.
-     * 
+     *
      * @param node
      *            node containing data
      * @param child
@@ -220,4 +222,5 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     public void insertVirtualChild(StateNode node, Element child) {
         node.getFeature(VirtualChildrenList.class).append(child.getNode());
     }
+
 }

@@ -42,6 +42,7 @@ import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementListenerMap;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ElementStylePropertyMap;
+import com.vaadin.flow.nodefeature.NewVirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
 import com.vaadin.flow.nodefeature.PolymerEventListenerMap;
@@ -80,7 +81,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
             ClientDelegateHandlers.class, PolymerEventListenerMap.class,
             ShadowRootData.class, AttachExistingElementFeature.class,
-            AttachTemplateChildFeature.class };
+            AttachTemplateChildFeature.class, NewVirtualChildrenList.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -329,11 +330,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    protected Class<? extends NodeFeature>[] getProviderFeatures() {
-        return features;
-    }
-
-    @Override
     public StateNode getShadowRoot(StateNode node) {
         return node.getFeature(ShadowRootData.class).getShadowRoot();
     }
@@ -348,5 +344,10 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     protected Node<?> getNode(StateNode node) {
         assert supports(node);
         return Element.get(node);
+    }
+
+    @Override
+    protected Class<? extends NodeFeature>[] getProviderFeatures() {
+        return features;
     }
 }

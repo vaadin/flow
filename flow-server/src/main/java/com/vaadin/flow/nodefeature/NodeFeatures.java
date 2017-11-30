@@ -15,36 +15,7 @@
  */
 package com.vaadin.flow.nodefeature;
 
-import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
-import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
-import com.vaadin.flow.nodefeature.BasicTypeValue;
-import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
-import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.flow.nodefeature.ElementAttributeMap;
-import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.ElementClassList;
-import com.vaadin.flow.nodefeature.ElementData;
-import com.vaadin.flow.nodefeature.ElementListenerMap;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.nodefeature.OverrideElementData;
-import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
-import com.vaadin.flow.nodefeature.PollConfigurationMap;
-import com.vaadin.flow.nodefeature.PolymerEventListenerMap;
-import com.vaadin.flow.nodefeature.PolymerServerEventHandlers;
-import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
-import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.nodefeature.ShadowRootData;
-import com.vaadin.flow.nodefeature.ShadowRootHost;
-import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
-import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.nodefeature.TemplateOverridesMap;
-import com.vaadin.flow.nodefeature.TextNodeMap;
-import com.vaadin.flow.nodefeature.VirtualChildrenList;
 
 /**
  * Registry of node feature id numbers and map keys shared between server and
@@ -187,9 +158,14 @@ public final class NodeFeatures {
     public static final int VIRTUAL_CHILD_ELEMENTS = 29;
 
     /**
-     * Id for {@link BasicTypeValue}.
+     * {@link NewVirtualChildrenList} Id for {@link BasicTypeValue}.
      */
     public static final int BASIC_TYPE_VALUE = 30;
+
+    /**
+     * Id for {@link NewVirtualChildrenList}.
+     */
+    public static final int NEW_VIRTUAL_CHILDREN = 31;
 
     private NodeFeatures() {
         // Only static

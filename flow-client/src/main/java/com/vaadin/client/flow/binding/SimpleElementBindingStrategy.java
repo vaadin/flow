@@ -185,6 +185,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(bindChildren(context));
 
+        listeners.push(bindNewVirtualChildren(context));
+
         listeners.push(stateNode.addUnregisterListener(
                 e -> remove(listeners, context, computationsCollection)));
 
@@ -566,6 +568,42 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
              */
             Reactive.addFlushListener(() -> handleChildrenSplice(e, context));
         });
+    }
+
+    private EventRemover bindNewVirtualChildren(BindingContext context) {
+        NodeList children = context.node
+                .getList(NodeFeatures.NEW_VIRTUAL_CHILDREN);
+
+        for (int i = 0; i < children.length(); i++) {
+            appendVirtualChild(context, (StateNode) children.get(i));
+        }
+
+        return children.addSpliceListener(e -> {
+            /*
+             * Handle lazily so we can create the children we need to insert.
+             * The change that gives a child node an element tag name might not
+             * yet have been applied at this point.
+             */
+            Reactive.addFlushListener(() -> {
+                JsArray<?> add = e.getAdd();
+                if (!add.isEmpty()) {
+                    for (int i = 0; i < add.length(); i++) {
+                        appendVirtualChild(context, (StateNode) add.get(i));
+                    }
+                }
+            });
+        });
+    }
+
+    private void appendVirtualChild(BindingContext context, StateNode node) {
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
+        JsonObject object = (JsonObject) map.getProperty(NodeProperties.PAYLOAD)
+                .getValue();
+        String type = object.getString(NodeProperties.TYPE);
+
+        if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
+            context.binderContext.createAndBind(node);
+        }
     }
 
     private EventRemover bindVirtualChildren(BindingContext context) {
