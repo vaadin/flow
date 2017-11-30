@@ -14,7 +14,7 @@
     </description>
 
     <properties>
-        <spring-boot.version>2.0.0.M6</spring-boot.version>
+        <spring-boot.version>2.0.0.M7</spring-boot.version>
         <skipTests>true</skipTests>
     </properties>
 
