@@ -57,9 +57,11 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @param heading
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setHeading(String heading) {
+    public R setHeading(String heading) {
         getElement().setProperty("heading", heading == null ? "" : heading);
+        return get();
     }
 
     /**
@@ -89,9 +91,11 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @param image
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setImage(String image) {
+    public R setImage(String image) {
         getElement().setProperty("image", image == null ? "" : image);
+        return get();
     }
 
     /**
@@ -121,9 +125,11 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @param alt
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAlt(String alt) {
+    public R setAlt(String alt) {
         getElement().setProperty("alt", alt == null ? "" : alt);
+        return get();
     }
 
     /**
@@ -155,9 +161,11 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @param preloadImage
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setPreloadImage(boolean preloadImage) {
+    public R setPreloadImage(boolean preloadImage) {
         getElement().setProperty("preloadImage", preloadImage);
+        return get();
     }
 
     /**
@@ -189,9 +197,11 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @param fadeImage
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setFadeImage(boolean fadeImage) {
+    public R setFadeImage(boolean fadeImage) {
         getElement().setProperty("fadeImage", fadeImage);
+        return get();
     }
 
     /**
@@ -225,10 +235,12 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @param placeholderImage
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setPlaceholderImage(String placeholderImage) {
+    public R setPlaceholderImage(String placeholderImage) {
         getElement().setProperty("placeholderImage",
                 placeholderImage == null ? "" : placeholderImage);
+        return get();
     }
 
     /**
@@ -258,9 +270,11 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @param elevation
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setElevation(double elevation) {
+    public R setElevation(double elevation) {
         getElement().setProperty("elevation", elevation);
+        return get();
     }
 
     /**
@@ -292,9 +306,11 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @param animatedShadow
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAnimatedShadow(boolean animatedShadow) {
+    public R setAnimatedShadow(boolean animatedShadow) {
         getElement().setProperty("animatedShadow", animatedShadow);
+        return get();
     }
 
     /**

@@ -64,14 +64,16 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param value
      *            the double value to set
+     * @return this instance, for method chaining
      */
     @Override
-    public void setValue(Double value) {
+    public R setValue(Double value) {
         Objects.requireNonNull(value,
                 "GeneratedPaperProgress value must not be null");
         if (!Objects.equals(value, getValue())) {
             getElement().setProperty("value", value);
         }
+        return get();
     }
 
     /**
@@ -85,13 +87,15 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param value
      *            the Number value to set
      * @see #setValue(Double)
+     * @return this instance, for method chaining
      */
-    public void setValue(Number value) {
+    public R setValue(Number value) {
         Objects.requireNonNull(value,
                 "GeneratedPaperProgress value must not be null");
         if (!Objects.equals(value, getValue())) {
             setValue(value.doubleValue());
         }
+        return get();
     }
 
     /**
@@ -122,9 +126,11 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param min
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setMin(double min) {
+    public R setMin(double min) {
         getElement().setProperty("min", min);
+        return get();
     }
 
     /**
@@ -155,9 +161,11 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param max
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setMax(double max) {
+    public R setMax(double max) {
         getElement().setProperty("max", max);
+        return get();
     }
 
     /**
@@ -188,9 +196,11 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param step
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setStep(double step) {
+    public R setStep(double step) {
         getElement().setProperty("step", step);
+        return get();
     }
 
     /**
@@ -238,9 +248,11 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param secondaryProgress
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setSecondaryProgress(double secondaryProgress) {
+    public R setSecondaryProgress(double secondaryProgress) {
         getElement().setProperty("secondaryProgress", secondaryProgress);
+        return get();
     }
 
     /**
@@ -287,9 +299,11 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param indeterminate
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setIndeterminate(boolean indeterminate) {
+    public R setIndeterminate(boolean indeterminate) {
         getElement().setProperty("indeterminate", indeterminate);
+        return get();
     }
 
     /**
@@ -319,9 +333,11 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     @DomEvent("min-changed")

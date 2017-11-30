@@ -86,9 +86,11 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * 
      * @param opened
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setOpened(boolean opened) {
+    public R setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
+        return get();
     }
 
     /**
@@ -118,10 +120,12 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * 
      * @param noCloseOnOutsideClick
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoCloseOnOutsideClick(boolean noCloseOnOutsideClick) {
+    public R setNoCloseOnOutsideClick(boolean noCloseOnOutsideClick) {
         getElement().setProperty("noCloseOnOutsideClick",
                 noCloseOnOutsideClick);
+        return get();
     }
 
     /**
@@ -151,9 +155,11 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * 
      * @param noCloseOnEsc
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoCloseOnEsc(boolean noCloseOnEsc) {
+    public R setNoCloseOnEsc(boolean noCloseOnEsc) {
         getElement().setProperty("noCloseOnEsc", noCloseOnEsc);
+        return get();
     }
 
     @DomEvent("opened-changed")

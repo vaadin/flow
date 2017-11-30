@@ -126,9 +126,11 @@ public class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgressBar<R>>
      * 
      * @param value
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setValue(double value) {
+    public R setValue(double value) {
         getElement().setProperty("value", value);
+        return get();
     }
 
     /**
@@ -158,9 +160,11 @@ public class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgressBar<R>>
      * 
      * @param min
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setMin(double min) {
+    public R setMin(double min) {
         getElement().setProperty("min", min);
+        return get();
     }
 
     /**
@@ -190,9 +194,11 @@ public class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgressBar<R>>
      * 
      * @param max
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setMax(double max) {
+    public R setMax(double max) {
         getElement().setProperty("max", max);
+        return get();
     }
 
     /**
@@ -222,8 +228,10 @@ public class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgressBar<R>>
      * 
      * @param indeterminate
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setIndeterminate(boolean indeterminate) {
+    public R setIndeterminate(boolean indeterminate) {
         getElement().setProperty("indeterminate", indeterminate);
+        return get();
     }
 }

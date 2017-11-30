@@ -143,9 +143,11 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * 
      * @param autofocus
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAutofocus(boolean autofocus) {
+    public R setAutofocus(boolean autofocus) {
         getElement().setProperty("autofocus", autofocus);
+        return get();
     }
 
     /**
@@ -175,9 +177,11 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**
@@ -193,9 +197,11 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
     /**
      * @param name
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setName(String name) {
+    public R setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
+        return get();
     }
 
     /**
@@ -226,9 +232,11 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * 
      * @param checked
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setChecked(boolean checked) {
+    public R setChecked(boolean checked) {
         getElement().setProperty("checked", checked);
+        return get();
     }
 
     /**
@@ -258,9 +266,11 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * 
      * @param value
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setValue(String value) {
+    public R setValue(String value) {
         getElement().setProperty("value", value == null ? "" : value);
+        return get();
     }
 
     @DomEvent("checked-changed")

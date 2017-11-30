@@ -63,9 +63,11 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @param month
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setMonth(JsonObject month) {
+    protected R setMonth(JsonObject month) {
         getElement().setPropertyJson("month", month);
+        return get();
     }
 
     /**
@@ -95,9 +97,11 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @param selectedDate
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setSelectedDate(JsonObject selectedDate) {
+    protected R setSelectedDate(JsonObject selectedDate) {
         getElement().setPropertyJson("selectedDate", selectedDate);
+        return get();
     }
 
     /**
@@ -127,9 +131,11 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @param focusedDate
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setFocusedDate(JsonObject focusedDate) {
+    protected R setFocusedDate(JsonObject focusedDate) {
         getElement().setPropertyJson("focusedDate", focusedDate);
+        return get();
     }
 
     /**
@@ -145,9 +151,11 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
     /**
      * @param showWeekNumbers
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setShowWeekNumbers(boolean showWeekNumbers) {
+    public R setShowWeekNumbers(boolean showWeekNumbers) {
         getElement().setProperty("showWeekNumbers", showWeekNumbers);
+        return get();
     }
 
     /**
@@ -163,9 +171,11 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
     /**
      * @param i18n
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setI18n(JsonObject i18n) {
+    protected R setI18n(JsonObject i18n) {
         getElement().setPropertyJson("i18n", i18n);
+        return get();
     }
 
     /**
@@ -195,9 +205,11 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @param ignoreTaps
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setIgnoreTaps(boolean ignoreTaps) {
+    public R setIgnoreTaps(boolean ignoreTaps) {
         getElement().setProperty("ignoreTaps", ignoreTaps);
+        return get();
     }
 
     /**
@@ -229,9 +241,11 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @param minDate
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setMinDate(JsonObject minDate) {
+    protected R setMinDate(JsonObject minDate) {
         getElement().setPropertyJson("minDate", minDate);
+        return get();
     }
 
     /**
@@ -261,9 +275,11 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @param maxDate
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setMaxDate(JsonObject maxDate) {
+    protected R setMaxDate(JsonObject maxDate) {
         getElement().setPropertyJson("maxDate", maxDate);
+        return get();
     }
 
     /**

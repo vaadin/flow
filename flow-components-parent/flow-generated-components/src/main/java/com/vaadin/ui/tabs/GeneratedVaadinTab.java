@@ -120,9 +120,11 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**
@@ -152,9 +154,11 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * 
      * @param selected
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setSelected(boolean selected) {
+    public R setSelected(boolean selected) {
         getElement().setProperty("selected", selected);
+        return get();
     }
 
     /**
@@ -184,8 +188,10 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * 
      * @param value
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setValue(String value) {
+    public R setValue(String value) {
         getElement().setProperty("value", value == null ? "" : value);
+        return get();
     }
 }

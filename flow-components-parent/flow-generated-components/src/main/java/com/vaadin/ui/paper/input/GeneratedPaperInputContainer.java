@@ -65,9 +65,11 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @param noLabelFloat
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoLabelFloat(boolean noLabelFloat) {
+    public R setNoLabelFloat(boolean noLabelFloat) {
         getElement().setProperty("noLabelFloat", noLabelFloat);
+        return get();
     }
 
     /**
@@ -97,9 +99,11 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @param alwaysFloatLabel
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+    public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
         getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
+        return get();
     }
 
     /**
@@ -129,10 +133,12 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @param attrForValue
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAttrForValue(String attrForValue) {
+    public R setAttrForValue(String attrForValue) {
         getElement().setProperty("attrForValue",
                 attrForValue == null ? "" : attrForValue);
+        return get();
     }
 
     /**
@@ -162,9 +168,11 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @param autoValidate
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAutoValidate(boolean autoValidate) {
+    public R setAutoValidate(boolean autoValidate) {
         getElement().setProperty("autoValidate", autoValidate);
+        return get();
     }
 
     /**
@@ -198,9 +206,11 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @param invalid
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setInvalid(boolean invalid) {
+    public R setInvalid(boolean invalid) {
         getElement().setProperty("invalid", invalid);
+        return get();
     }
 
     /**

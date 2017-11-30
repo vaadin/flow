@@ -130,7 +130,7 @@ public interface HasValue<C extends Component, V>
      * @throws IllegalArgumentException
      *             if the value is invalid
      */
-    void setValue(V value);
+    C setValue(V value);
 
     /**
      * Returns the current value of this object.

@@ -73,9 +73,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param nodrop
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNodrop(boolean nodrop) {
+    public R setNodrop(boolean nodrop) {
         getElement().setProperty("nodrop", nodrop);
+        return get();
     }
 
     /**
@@ -107,9 +109,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param target
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setTarget(String target) {
+    public R setTarget(String target) {
         getElement().setProperty("target", target == null ? "" : target);
+        return get();
     }
 
     /**
@@ -139,9 +143,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param method
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setMethod(String method) {
+    public R setMethod(String method) {
         getElement().setProperty("method", method == null ? "" : method);
+        return get();
     }
 
     /**
@@ -175,9 +181,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param headers
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setHeaders(JsonObject headers) {
+    protected R setHeaders(JsonObject headers) {
         getElement().setPropertyJson("headers", headers);
+        return get();
     }
 
     /**
@@ -211,9 +219,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param timeout
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setTimeout(double timeout) {
+    public R setTimeout(double timeout) {
         getElement().setProperty("timeout", timeout);
+        return get();
     }
 
     /**
@@ -296,9 +306,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param files
      *            the JsonArray value to set
+     * @return this instance, for method chaining
      */
-    protected void setFiles(JsonArray files) {
+    protected R setFiles(JsonArray files) {
         getElement().setPropertyJson("files", files);
+        return get();
     }
 
     /**
@@ -330,9 +342,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param maxFiles
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setMaxFiles(double maxFiles) {
+    public R setMaxFiles(double maxFiles) {
         getElement().setProperty("maxFiles", maxFiles);
+        return get();
     }
 
     /**
@@ -389,9 +403,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param accept
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAccept(String accept) {
+    public R setAccept(String accept) {
         getElement().setProperty("accept", accept == null ? "" : accept);
+        return get();
     }
 
     /**
@@ -427,9 +443,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param maxFileSize
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setMaxFileSize(double maxFileSize) {
+    public R setMaxFileSize(double maxFileSize) {
         getElement().setProperty("maxFileSize", maxFileSize);
+        return get();
     }
 
     /**
@@ -459,10 +477,12 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param formDataName
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setFormDataName(String formDataName) {
+    public R setFormDataName(String formDataName) {
         getElement().setProperty("formDataName",
                 formDataName == null ? "" : formDataName);
+        return get();
     }
 
     /**
@@ -496,9 +516,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param noAuto
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoAuto(boolean noAuto) {
+    public R setNoAuto(boolean noAuto) {
         getElement().setProperty("noAuto", noAuto);
+        return get();
     }
 
     /**
@@ -627,9 +649,11 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * 
      * @param i18n
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setI18n(JsonObject i18n) {
+    protected R setI18n(JsonObject i18n) {
         getElement().setPropertyJson("i18n", i18n);
+        return get();
     }
 
     /**

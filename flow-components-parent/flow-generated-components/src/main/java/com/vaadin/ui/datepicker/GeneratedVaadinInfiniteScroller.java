@@ -45,9 +45,11 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
     /**
      * @param rootPath
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setRootPath(String rootPath) {
+    public R setRootPath(String rootPath) {
         getElement().setProperty("rootPath", rootPath == null ? "" : rootPath);
+        return get();
     }
 
     /**
@@ -63,10 +65,12 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
     /**
      * @param importPath
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setImportPath(String importPath) {
+    public R setImportPath(String importPath) {
         getElement().setProperty("importPath",
                 importPath == null ? "" : importPath);
+        return get();
     }
 
     /**
@@ -82,9 +86,11 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
     /**
      * @param root
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setRoot(JsonObject root) {
+    protected R setRoot(JsonObject root) {
         getElement().setPropertyJson("root", root);
+        return get();
     }
 
     /**
@@ -100,9 +106,11 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
     /**
      * @param $
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void set$(JsonObject $) {
+    protected R set$(JsonObject $) {
         getElement().setPropertyJson("$", $);
+        return get();
     }
 
     /**
@@ -136,9 +144,11 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @param bufferSize
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setBufferSize(double bufferSize) {
+    public R setBufferSize(double bufferSize) {
         getElement().setProperty("bufferSize", bufferSize);
+        return get();
     }
 
     /**
@@ -154,9 +164,11 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
     /**
      * @param active
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setActive(boolean active) {
+    public R setActive(boolean active) {
         getElement().setProperty("active", active);
+        return get();
     }
 
     /**

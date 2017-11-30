@@ -58,9 +58,11 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
      * 
      * @param animationTiming
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setAnimationTiming(JsonObject animationTiming) {
+    protected R setAnimationTiming(JsonObject animationTiming) {
         getElement().setPropertyJson("animationTiming", animationTiming);
+        return get();
     }
 
     /**
@@ -90,9 +92,11 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
      * 
      * @param isNeonAnimation
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setIsNeonAnimation(boolean isNeonAnimation) {
+    public R setIsNeonAnimation(boolean isNeonAnimation) {
         getElement().setProperty("isNeonAnimation", isNeonAnimation);
+        return get();
     }
 
     /**

@@ -89,9 +89,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**
@@ -123,9 +125,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param keyEventTarget
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setKeyEventTarget(JsonObject keyEventTarget) {
+    protected R setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
+        return get();
     }
 
     /**
@@ -158,11 +162,13 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setStopKeyboardEventPropagation(
+    public R setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
+        return get();
     }
 
     /**
@@ -178,9 +184,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
     /**
      * @param keyBindings
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setKeyBindings(JsonObject keyBindings) {
+    protected R setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
+        return get();
     }
 
     /**
@@ -218,9 +226,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param label
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setLabel(String label) {
+    public R setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
+        return get();
     }
 
     /**
@@ -252,12 +262,14 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param value
      *            the String value to set
+     * @return this instance, for method chaining
      */
     @Override
-    public void setValue(String value) {
+    public R setValue(String value) {
         if (!Objects.equals(value, getValue())) {
             getElement().setProperty("value", value == null ? "" : value);
         }
+        return get();
     }
 
     /**
@@ -302,9 +314,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param invalid
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setInvalid(boolean invalid) {
+    public R setInvalid(boolean invalid) {
         getElement().setProperty("invalid", invalid);
+        return get();
     }
 
     /**
@@ -340,10 +354,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param allowedPattern
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAllowedPattern(String allowedPattern) {
+    public R setAllowedPattern(String allowedPattern) {
         getElement().setProperty("allowedPattern",
                 allowedPattern == null ? "" : allowedPattern);
+        return get();
     }
 
     /**
@@ -383,9 +399,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param type
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setType(String type) {
+    public R setType(String type) {
         getElement().setProperty("type", type == null ? "" : type);
+        return get();
     }
 
     /**
@@ -421,9 +439,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param list
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setList(String list) {
+    public R setList(String list) {
         getElement().setProperty("list", list == null ? "" : list);
+        return get();
     }
 
     /**
@@ -457,9 +477,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param pattern
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setPattern(String pattern) {
+    public R setPattern(String pattern) {
         getElement().setProperty("pattern", pattern == null ? "" : pattern);
+        return get();
     }
 
     /**
@@ -499,9 +521,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param required
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setRequired(boolean required) {
+    public R setRequired(boolean required) {
         getElement().setProperty("required", required);
+        return get();
     }
 
     /**
@@ -535,10 +559,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param errorMessage
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setErrorMessage(String errorMessage) {
+    public R setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
+        return get();
     }
 
     /**
@@ -568,9 +594,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param charCounter
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setCharCounter(boolean charCounter) {
+    public R setCharCounter(boolean charCounter) {
         getElement().setProperty("charCounter", charCounter);
+        return get();
     }
 
     /**
@@ -606,9 +634,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param noLabelFloat
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoLabelFloat(boolean noLabelFloat) {
+    public R setNoLabelFloat(boolean noLabelFloat) {
         getElement().setProperty("noLabelFloat", noLabelFloat);
+        return get();
     }
 
     /**
@@ -642,9 +672,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param alwaysFloatLabel
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+    public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
         getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
+        return get();
     }
 
     /**
@@ -680,9 +712,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param autoValidate
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAutoValidate(boolean autoValidate) {
+    public R setAutoValidate(boolean autoValidate) {
         getElement().setProperty("autoValidate", autoValidate);
+        return get();
     }
 
     /**
@@ -716,10 +750,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param validator
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setValidator(String validator) {
+    public R setValidator(String validator) {
         getElement().setProperty("validator",
                 validator == null ? "" : validator);
+        return get();
     }
 
     /**
@@ -753,10 +789,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param autocomplete
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAutocomplete(String autocomplete) {
+    public R setAutocomplete(String autocomplete) {
         getElement().setProperty("autocomplete",
                 autocomplete == null ? "" : autocomplete);
+        return get();
     }
 
     /**
@@ -790,9 +828,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param autofocus
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAutofocus(boolean autofocus) {
+    public R setAutofocus(boolean autofocus) {
         getElement().setProperty("autofocus", autofocus);
+        return get();
     }
 
     /**
@@ -826,10 +866,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param inputmode
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setInputmode(String inputmode) {
+    public R setInputmode(String inputmode) {
         getElement().setProperty("inputmode",
                 inputmode == null ? "" : inputmode);
+        return get();
     }
 
     /**
@@ -863,9 +905,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param minlength
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setMinlength(double minlength) {
+    public R setMinlength(double minlength) {
         getElement().setProperty("minlength", minlength);
+        return get();
     }
 
     /**
@@ -899,9 +943,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param maxlength
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setMaxlength(double maxlength) {
+    public R setMaxlength(double maxlength) {
         getElement().setProperty("maxlength", maxlength);
+        return get();
     }
 
     /**
@@ -935,9 +981,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param min
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setMin(String min) {
+    public R setMin(String min) {
         getElement().setProperty("min", min == null ? "" : min);
+        return get();
     }
 
     /**
@@ -973,9 +1021,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param max
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setMax(String max) {
+    public R setMax(String max) {
         getElement().setProperty("max", max == null ? "" : max);
+        return get();
     }
 
     /**
@@ -1009,9 +1059,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param step
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setStep(String step) {
+    public R setStep(String step) {
         getElement().setProperty("step", step == null ? "" : step);
+        return get();
     }
 
     /**
@@ -1041,9 +1093,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param name
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setName(String name) {
+    public R setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
+        return get();
     }
 
     /**
@@ -1075,10 +1129,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param placeholder
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setPlaceholder(String placeholder) {
+    public R setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
+        return get();
     }
 
     /**
@@ -1112,9 +1168,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param readonly
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setReadonly(boolean readonly) {
+    public R setReadonly(boolean readonly) {
         getElement().setProperty("readonly", readonly);
+        return get();
     }
 
     /**
@@ -1148,9 +1206,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param size
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setSize(double size) {
+    public R setSize(double size) {
         getElement().setProperty("size", size);
+        return get();
     }
 
     /**
@@ -1184,10 +1244,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param autocapitalize
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAutocapitalize(String autocapitalize) {
+    public R setAutocapitalize(String autocapitalize) {
         getElement().setProperty("autocapitalize",
                 autocapitalize == null ? "" : autocapitalize);
+        return get();
     }
 
     /**
@@ -1221,10 +1283,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param autocorrect
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAutocorrect(String autocorrect) {
+    public R setAutocorrect(String autocorrect) {
         getElement().setProperty("autocorrect",
                 autocorrect == null ? "" : autocorrect);
+        return get();
     }
 
     /**
@@ -1258,9 +1322,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param autosave
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAutosave(String autosave) {
+    public R setAutosave(String autosave) {
         getElement().setProperty("autosave", autosave == null ? "" : autosave);
+        return get();
     }
 
     /**
@@ -1294,9 +1360,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param results
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setResults(double results) {
+    public R setResults(double results) {
         getElement().setProperty("results", results);
+        return get();
     }
 
     /**
@@ -1330,9 +1398,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param accept
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAccept(String accept) {
+    public R setAccept(String accept) {
         getElement().setProperty("accept", accept == null ? "" : accept);
+        return get();
     }
 
     /**
@@ -1366,9 +1436,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param multiple
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setMultiple(boolean multiple) {
+    public R setMultiple(boolean multiple) {
         getElement().setProperty("multiple", multiple);
+        return get();
     }
 
     /**
@@ -1398,9 +1470,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param rows
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setRows(double rows) {
+    public R setRows(double rows) {
         getElement().setProperty("rows", rows);
+        return get();
     }
 
     /**
@@ -1432,9 +1506,11 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
      * 
      * @param maxRows
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setMaxRows(double maxRows) {
+    public R setMaxRows(double maxRows) {
         getElement().setProperty("maxRows", maxRows);
+        return get();
     }
 
     /**

@@ -103,9 +103,11 @@ public class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**

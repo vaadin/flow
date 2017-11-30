@@ -78,24 +78,27 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
             return internalObject.getObject("inputElement");
         }
 
-        public void setInputElement(JsonObject inputElement) {
+        public UpdateState setInputElement(JsonObject inputElement) {
             this.internalObject.put("inputElement", inputElement);
+            return this;
         }
 
         public String getValue() {
             return internalObject.getString("value");
         }
 
-        public void setValue(String value) {
+        public UpdateState setValue(String value) {
             this.internalObject.put("value", value);
+            return this;
         }
 
         public boolean isInvalid() {
             return internalObject.getBoolean("invalid");
         }
 
-        public void setInvalid(boolean invalid) {
+        public UpdateState setInvalid(boolean invalid) {
             this.internalObject.put("invalid", invalid);
+            return this;
         }
 
         @Override

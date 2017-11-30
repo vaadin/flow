@@ -59,9 +59,11 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
     /**
      * @param opened
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setOpened(boolean opened) {
+    public R setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
+        return get();
     }
 
     /**
@@ -78,9 +80,11 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
     /**
      * @param template
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setTemplate(JsonObject template) {
+    protected R setTemplate(JsonObject template) {
         getElement().setPropertyJson("template", template);
+        return get();
     }
 
     /**
@@ -110,9 +114,11 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @param touchDevice
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setTouchDevice(boolean touchDevice) {
+    public R setTouchDevice(boolean touchDevice) {
         getElement().setProperty("touchDevice", touchDevice);
+        return get();
     }
 
     /**
@@ -142,9 +148,11 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @param positionTarget
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setPositionTarget(JsonObject positionTarget) {
+    protected R setPositionTarget(JsonObject positionTarget) {
         getElement().setPropertyJson("positionTarget", positionTarget);
+        return get();
     }
 
     /**
@@ -174,9 +182,11 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @param verticalOffset
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setVerticalOffset(double verticalOffset) {
+    public R setVerticalOffset(double verticalOffset) {
         getElement().setProperty("verticalOffset", verticalOffset);
+        return get();
     }
 
     /**
@@ -206,9 +216,11 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @param alignedAbove
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAlignedAbove(boolean alignedAbove) {
+    public R setAlignedAbove(boolean alignedAbove) {
         getElement().setProperty("alignedAbove", alignedAbove);
+        return get();
     }
 
     public void notifyResize() {

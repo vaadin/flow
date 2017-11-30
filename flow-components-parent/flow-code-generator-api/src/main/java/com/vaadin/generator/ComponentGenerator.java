@@ -15,7 +15,7 @@
  */
 package com.vaadin.generator;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import javax.annotation.Generated;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +35,9 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Generated;
-
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -46,9 +47,6 @@ import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
@@ -81,6 +79,8 @@ import com.vaadin.ui.event.Synchronize;
 
 import elemental.json.JsonObject;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Base class of the component generation process. It takes a
  * {@link ComponentMetadata} as input and generates the corresponding Java class
@@ -107,8 +107,7 @@ public class ComponentGenerator {
     private String classNamePrefix;
     private String licenseNote;
     private String frontendDirectory = "bower_components/";
-    // https://github.com/vaadin/flow/issues/2370
-    private boolean fluentSetters;
+    private boolean fluentSetters = true;
 
     private final JavaDocFormatter javaDocFormatter = new JavaDocFormatter();
 
@@ -855,9 +854,12 @@ public class ComponentGenerator {
         case BOOLEAN:
         case DATE:
             return true;
+        case ARRAY:
+        case OBJECT:
+        case UNDEFINED:
+        default:
+            return false;
         }
-
-        return false;
     }
 
     private void addSynchronizeAnnotationAndJavadocToGetter(
@@ -967,14 +969,14 @@ public class ComponentGenerator {
             method.getJavaDoc().addTagValue(JAVADOC_PARAM,
                     "property the property to set");
 
-            if (fluentSetters) {
-                addFluentReturnToMethod(method);
-            }
-
             if ("value".equals(propertyJavaName)
                     && shouldImplementHasValue(metadata)) {
                 method.addAnnotation(Override.class);
                 preventSettingTheSameValue(javaClass, "property", method);
+            }
+
+            if (fluentSetters) {
+                addFluentReturnToMethod(method);
             }
 
         } else {
@@ -1008,9 +1010,6 @@ public class ComponentGenerator {
                         String.format("%s the %s value to set", parameterName,
                                 setterType.getSimpleName()));
 
-                if (fluentSetters) {
-                    addFluentReturnToMethod(method);
-                }
                 if ("value".equals(propertyJavaName)
                         && shouldImplementHasValue(metadata)) {
 
@@ -1021,6 +1020,9 @@ public class ComponentGenerator {
                         implementHasValueSetterWithPimitiveType(javaClass,
                                 property, method, setterType, parameterName);
                     }
+                }
+                if (fluentSetters) {
+                    addFluentReturnToMethod(method);
                 }
             }
         }

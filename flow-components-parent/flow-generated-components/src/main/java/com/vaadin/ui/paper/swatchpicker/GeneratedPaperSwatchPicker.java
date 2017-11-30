@@ -63,9 +63,11 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @param color
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setColor(String color) {
+    public R setColor(String color) {
         getElement().setProperty("color", color == null ? "" : color);
+        return get();
     }
 
     /**
@@ -103,9 +105,11 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @param colorList
      *            the JsonArray value to set
+     * @return this instance, for method chaining
      */
-    protected void setColorList(JsonArray colorList) {
+    protected R setColorList(JsonArray colorList) {
         getElement().setPropertyJson("colorList", colorList);
+        return get();
     }
 
     /**
@@ -141,9 +145,11 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @param columnCount
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setColumnCount(double columnCount) {
+    public R setColumnCount(double columnCount) {
         getElement().setProperty("columnCount", columnCount);
+        return get();
     }
 
     /**
@@ -175,10 +181,12 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @param horizontalAlign
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setHorizontalAlign(String horizontalAlign) {
+    public R setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
+        return get();
     }
 
     /**
@@ -210,10 +218,12 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @param verticalAlign
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setVerticalAlign(String verticalAlign) {
+    public R setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
+        return get();
     }
 
     /**
@@ -245,9 +255,11 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @param noink
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoink(boolean noink) {
+    public R setNoink(boolean noink) {
         getElement().setProperty("noink", noink);
+        return get();
     }
 
     @DomEvent("color-picker-selected")

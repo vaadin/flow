@@ -62,9 +62,11 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param animationConfig
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setAnimationConfig(JsonObject animationConfig) {
+    protected R setAnimationConfig(JsonObject animationConfig) {
         getElement().setPropertyJson("animationConfig", animationConfig);
+        return get();
     }
 
     /**
@@ -98,10 +100,12 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param entryAnimation
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setEntryAnimation(String entryAnimation) {
+    public R setEntryAnimation(String entryAnimation) {
         getElement().setProperty("entryAnimation",
                 entryAnimation == null ? "" : entryAnimation);
+        return get();
     }
 
     /**
@@ -135,10 +139,12 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param exitAnimation
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setExitAnimation(String exitAnimation) {
+    public R setExitAnimation(String exitAnimation) {
         getElement().setProperty("exitAnimation",
                 exitAnimation == null ? "" : exitAnimation);
+        return get();
     }
 
     /**
@@ -170,9 +176,11 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param _for
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setFor(String _for) {
+    public R setFor(String _for) {
         getElement().setProperty("for", _for == null ? "" : _for);
+        return get();
     }
 
     /**
@@ -204,9 +212,11 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param manualMode
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setManualMode(boolean manualMode) {
+    public R setManualMode(boolean manualMode) {
         getElement().setProperty("manualMode", manualMode);
+        return get();
     }
 
     /**
@@ -236,9 +246,11 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param position
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setPosition(String position) {
+    public R setPosition(String position) {
         getElement().setProperty("position", position == null ? "" : position);
+        return get();
     }
 
     /**
@@ -268,9 +280,11 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param fitToVisibleBounds
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setFitToVisibleBounds(boolean fitToVisibleBounds) {
+    public R setFitToVisibleBounds(boolean fitToVisibleBounds) {
         getElement().setProperty("fitToVisibleBounds", fitToVisibleBounds);
+        return get();
     }
 
     /**
@@ -302,9 +316,11 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param offset
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setOffset(double offset) {
+    public R setOffset(double offset) {
         getElement().setProperty("offset", offset);
+        return get();
     }
 
     /**
@@ -338,9 +354,11 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param marginTop
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setMarginTop(double marginTop) {
+    public R setMarginTop(double marginTop) {
         getElement().setProperty("marginTop", marginTop);
+        return get();
     }
 
     /**
@@ -372,9 +390,11 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param animationDelay
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setAnimationDelay(double animationDelay) {
+    public R setAnimationDelay(double animationDelay) {
         getElement().setProperty("animationDelay", animationDelay);
+        return get();
     }
 
     /**
@@ -408,9 +428,11 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @param target
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setTarget(JsonObject target) {
+    protected R setTarget(JsonObject target) {
         getElement().setPropertyJson("target", target);
+        return get();
     }
 
     /**

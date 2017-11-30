@@ -62,9 +62,11 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * 
      * @param file
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setFile(JsonObject file) {
+    protected R setFile(JsonObject file) {
         getElement().setPropertyJson("file", file);
+        return get();
     }
 
     @DomEvent("file-abort")

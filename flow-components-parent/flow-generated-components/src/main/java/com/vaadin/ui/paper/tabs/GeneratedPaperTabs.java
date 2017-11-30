@@ -79,10 +79,12 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param attrForSelected
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAttrForSelected(String attrForSelected) {
+    public R setAttrForSelected(String attrForSelected) {
         getElement().setProperty("attrForSelected",
                 attrForSelected == null ? "" : attrForSelected);
+        return get();
     }
 
     /**
@@ -134,9 +136,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param selected
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setSelected(double selected) {
+    public R setSelected(double selected) {
         getElement().setProperty("selected", selected);
+        return get();
     }
 
     /**
@@ -150,9 +154,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param selected
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setSelected(String selected) {
+    public R setSelected(String selected) {
         getElement().setProperty("selected", selected == null ? "" : selected);
+        return get();
     }
 
     /**
@@ -203,10 +209,12 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param activateEvent
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setActivateEvent(String activateEvent) {
+    public R setActivateEvent(String activateEvent) {
         getElement().setProperty("activateEvent",
                 activateEvent == null ? "" : activateEvent);
+        return get();
     }
 
     /**
@@ -222,10 +230,12 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * @param selectable
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setSelectable(String selectable) {
+    public R setSelectable(String selectable) {
         getElement().setProperty("selectable",
                 selectable == null ? "" : selectable);
+        return get();
     }
 
     /**
@@ -255,10 +265,12 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param selectedClass
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setSelectedClass(String selectedClass) {
+    public R setSelectedClass(String selectedClass) {
         getElement().setProperty("selectedClass",
                 selectedClass == null ? "" : selectedClass);
+        return get();
     }
 
     /**
@@ -288,10 +300,12 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param selectedAttribute
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setSelectedAttribute(String selectedAttribute) {
+    public R setSelectedAttribute(String selectedAttribute) {
         getElement().setProperty("selectedAttribute",
                 selectedAttribute == null ? "" : selectedAttribute);
+        return get();
     }
 
     /**
@@ -323,10 +337,12 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param fallbackSelection
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setFallbackSelection(String fallbackSelection) {
+    public R setFallbackSelection(String fallbackSelection) {
         getElement().setProperty("fallbackSelection",
                 fallbackSelection == null ? "" : fallbackSelection);
+        return get();
     }
 
     /**
@@ -374,9 +390,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param multi
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setMulti(boolean multi) {
+    public R setMulti(boolean multi) {
         getElement().setProperty("multi", multi);
+        return get();
     }
 
     /**
@@ -408,9 +426,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param selectedValues
      *            the JsonArray value to set
+     * @return this instance, for method chaining
      */
-    protected void setSelectedValues(JsonArray selectedValues) {
+    protected R setSelectedValues(JsonArray selectedValues) {
         getElement().setPropertyJson("selectedValues", selectedValues);
+        return get();
     }
 
     /**
@@ -459,9 +479,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param keyEventTarget
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setKeyEventTarget(JsonObject keyEventTarget) {
+    protected R setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
+        return get();
     }
 
     /**
@@ -494,11 +516,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setStopKeyboardEventPropagation(
+    public R setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
+        return get();
     }
 
     /**
@@ -514,9 +538,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * @param keyBindings
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setKeyBindings(JsonObject keyBindings) {
+    protected R setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
+        return get();
     }
 
     /**
@@ -567,10 +593,12 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param attrForItemTitle
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAttrForItemTitle(String attrForItemTitle) {
+    public R setAttrForItemTitle(String attrForItemTitle) {
         getElement().setProperty("attrForItemTitle",
                 attrForItemTitle == null ? "" : attrForItemTitle);
+        return get();
     }
 
     /**
@@ -586,9 +614,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
     /**
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**
@@ -622,9 +652,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param noink
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoink(boolean noink) {
+    public R setNoink(boolean noink) {
         getElement().setProperty("noink", noink);
+        return get();
     }
 
     /**
@@ -654,9 +686,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param noBar
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoBar(boolean noBar) {
+    public R setNoBar(boolean noBar) {
         getElement().setProperty("noBar", noBar);
+        return get();
     }
 
     /**
@@ -686,9 +720,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param noSlide
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoSlide(boolean noSlide) {
+    public R setNoSlide(boolean noSlide) {
         getElement().setProperty("noSlide", noSlide);
+        return get();
     }
 
     /**
@@ -720,9 +756,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param scrollable
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setScrollable(boolean scrollable) {
+    public R setScrollable(boolean scrollable) {
         getElement().setProperty("scrollable", scrollable);
+        return get();
     }
 
     /**
@@ -754,9 +792,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param fitContainer
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setFitContainer(boolean fitContainer) {
+    public R setFitContainer(boolean fitContainer) {
         getElement().setProperty("fitContainer", fitContainer);
+        return get();
     }
 
     /**
@@ -786,9 +826,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param disableDrag
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisableDrag(boolean disableDrag) {
+    public R setDisableDrag(boolean disableDrag) {
         getElement().setProperty("disableDrag", disableDrag);
+        return get();
     }
 
     /**
@@ -820,9 +862,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param hideScrollButtons
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setHideScrollButtons(boolean hideScrollButtons) {
+    public R setHideScrollButtons(boolean hideScrollButtons) {
         getElement().setProperty("hideScrollButtons", hideScrollButtons);
+        return get();
     }
 
     /**
@@ -854,9 +898,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param alignBottom
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAlignBottom(boolean alignBottom) {
+    public R setAlignBottom(boolean alignBottom) {
         getElement().setProperty("alignBottom", alignBottom);
+        return get();
     }
 
     /**
@@ -886,9 +932,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param autoselect
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAutoselect(boolean autoselect) {
+    public R setAutoselect(boolean autoselect) {
         getElement().setProperty("autoselect", autoselect);
+        return get();
     }
 
     /**
@@ -922,9 +970,11 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param autoselectDelay
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setAutoselectDelay(double autoselectDelay) {
+    public R setAutoselectDelay(double autoselectDelay) {
         getElement().setProperty("autoselectDelay", autoselectDelay);
+        return get();
     }
 
     /**

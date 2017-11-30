@@ -62,9 +62,11 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @param selectedDate
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setSelectedDate(JsonObject selectedDate) {
+    protected R setSelectedDate(JsonObject selectedDate) {
         getElement().setPropertyJson("selectedDate", selectedDate);
+        return get();
     }
 
     /**
@@ -94,9 +96,11 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @param focusedDate
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setFocusedDate(JsonObject focusedDate) {
+    protected R setFocusedDate(JsonObject focusedDate) {
         getElement().setPropertyJson("focusedDate", focusedDate);
+        return get();
     }
 
     /**
@@ -126,9 +130,11 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @param initialPosition
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setInitialPosition(JsonObject initialPosition) {
+    protected R setInitialPosition(JsonObject initialPosition) {
         getElement().setPropertyJson("initialPosition", initialPosition);
+        return get();
     }
 
     /**
@@ -144,9 +150,11 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
     /**
      * @param i18n
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setI18n(JsonObject i18n) {
+    protected R setI18n(JsonObject i18n) {
         getElement().setPropertyJson("i18n", i18n);
+        return get();
     }
 
     /**
@@ -162,9 +170,11 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
     /**
      * @param showWeekNumbers
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setShowWeekNumbers(boolean showWeekNumbers) {
+    public R setShowWeekNumbers(boolean showWeekNumbers) {
         getElement().setProperty("showWeekNumbers", showWeekNumbers);
+        return get();
     }
 
     /**
@@ -196,9 +206,11 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @param minDate
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setMinDate(JsonObject minDate) {
+    protected R setMinDate(JsonObject minDate) {
         getElement().setPropertyJson("minDate", minDate);
+        return get();
     }
 
     /**
@@ -228,9 +240,11 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @param maxDate
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setMaxDate(JsonObject maxDate) {
+    protected R setMaxDate(JsonObject maxDate) {
         getElement().setPropertyJson("maxDate", maxDate);
+        return get();
     }
 
     /**
@@ -260,9 +274,11 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @param label
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setLabel(String label) {
+    public R setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
+        return get();
     }
 
     public void announceFocusedDate() {

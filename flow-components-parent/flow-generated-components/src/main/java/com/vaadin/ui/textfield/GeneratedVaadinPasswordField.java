@@ -112,9 +112,11 @@ public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField
      * 
      * @param revealButtonHidden
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setRevealButtonHidden(boolean revealButtonHidden) {
+    public R setRevealButtonHidden(boolean revealButtonHidden) {
         getElement().setProperty("revealButtonHidden", revealButtonHidden);
+        return get();
     }
 
     /**

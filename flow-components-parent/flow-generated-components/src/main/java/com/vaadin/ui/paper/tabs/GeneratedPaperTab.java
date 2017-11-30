@@ -83,9 +83,11 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**
@@ -117,9 +119,11 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param keyEventTarget
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setKeyEventTarget(JsonObject keyEventTarget) {
+    protected R setKeyEventTarget(JsonObject keyEventTarget) {
         getElement().setPropertyJson("keyEventTarget", keyEventTarget);
+        return get();
     }
 
     /**
@@ -152,11 +156,13 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setStopKeyboardEventPropagation(
+    public R setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
+        return get();
     }
 
     /**
@@ -172,9 +178,11 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
     /**
      * @param keyBindings
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setKeyBindings(JsonObject keyBindings) {
+    protected R setKeyBindings(JsonObject keyBindings) {
         getElement().setPropertyJson("keyBindings", keyBindings);
+        return get();
     }
 
     /**
@@ -223,9 +231,11 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param toggles
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setToggles(boolean toggles) {
+    public R setToggles(boolean toggles) {
         getElement().setProperty("toggles", toggles);
+        return get();
     }
 
     /**
@@ -256,9 +266,11 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param active
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setActive(boolean active) {
+    public R setActive(boolean active) {
         getElement().setProperty("active", active);
+        return get();
     }
 
     /**
@@ -328,10 +340,12 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param ariaActiveAttribute
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAriaActiveAttribute(String ariaActiveAttribute) {
+    public R setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
+        return get();
     }
 
     /**
@@ -363,9 +377,11 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param noink
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setNoink(boolean noink) {
+    public R setNoink(boolean noink) {
         getElement().setProperty("noink", noink);
+        return get();
     }
 
     /**
@@ -397,9 +413,11 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @param link
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setLink(boolean link) {
+    public R setLink(boolean link) {
         getElement().setProperty("link", link);
+        return get();
     }
 
     /**

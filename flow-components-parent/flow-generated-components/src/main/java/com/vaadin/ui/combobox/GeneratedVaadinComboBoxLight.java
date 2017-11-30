@@ -117,9 +117,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param opened
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setOpened(boolean opened) {
+    public R setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
+        return get();
     }
 
     /**
@@ -149,9 +151,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param disabled
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setDisabled(boolean disabled) {
+    public R setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+        return get();
     }
 
     /**
@@ -181,9 +185,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param readonly
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setReadonly(boolean readonly) {
+    public R setReadonly(boolean readonly) {
         getElement().setProperty("readonly", readonly);
+        return get();
     }
 
     /**
@@ -215,9 +221,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param items
      *            the JsonArray value to set
+     * @return this instance, for method chaining
      */
-    protected void setItems(JsonArray items) {
+    protected R setItems(JsonArray items) {
         getElement().setPropertyJson("items", items);
+        return get();
     }
 
     /**
@@ -253,9 +261,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param allowCustomValue
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setAllowCustomValue(boolean allowCustomValue) {
+    public R setAllowCustomValue(boolean allowCustomValue) {
         getElement().setProperty("allowCustomValue", allowCustomValue);
+        return get();
     }
 
     /**
@@ -289,9 +299,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param filteredItems
      *            the JsonArray value to set
+     * @return this instance, for method chaining
      */
-    protected void setFilteredItems(JsonArray filteredItems) {
+    protected R setFilteredItems(JsonArray filteredItems) {
         getElement().setPropertyJson("filteredItems", filteredItems);
+        return get();
     }
 
     /**
@@ -339,12 +351,14 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param value
      *            the String value to set
+     * @return this instance, for method chaining
      */
     @Override
-    public void setValue(String value) {
+    public R setValue(String value) {
         if (!Objects.equals(value, getValue())) {
             getElement().setProperty("value", value == null ? "" : value);
         }
+        return get();
     }
 
     /**
@@ -394,9 +408,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param loading
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setLoading(boolean loading) {
+    public R setLoading(boolean loading) {
         getElement().setProperty("loading", loading);
+        return get();
     }
 
     /**
@@ -427,9 +443,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param filter
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setFilter(String filter) {
+    public R setFilter(String filter) {
         getElement().setProperty("filter", filter == null ? "" : filter);
+        return get();
     }
 
     /**
@@ -459,9 +477,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param selectedItem
      *            the JsonObject value to set
+     * @return this instance, for method chaining
      */
-    protected void setSelectedItem(JsonObject selectedItem) {
+    protected R setSelectedItem(JsonObject selectedItem) {
         getElement().setPropertyJson("selectedItem", selectedItem);
+        return get();
     }
 
     /**
@@ -513,10 +533,12 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param itemLabelPath
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setItemLabelPath(String itemLabelPath) {
+    public R setItemLabelPath(String itemLabelPath) {
         getElement().setProperty("itemLabelPath",
                 itemLabelPath == null ? "" : itemLabelPath);
+        return get();
     }
 
     /**
@@ -558,10 +580,12 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param itemValuePath
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setItemValuePath(String itemValuePath) {
+    public R setItemValuePath(String itemValuePath) {
         getElement().setProperty("itemValuePath",
                 itemValuePath == null ? "" : itemValuePath);
+        return get();
     }
 
     /**
@@ -591,9 +615,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param required
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setRequired(boolean required) {
+    public R setRequired(boolean required) {
         getElement().setProperty("required", required);
+        return get();
     }
 
     /**
@@ -623,9 +649,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param name
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setName(String name) {
+    public R setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
+        return get();
     }
 
     /**
@@ -656,9 +684,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param invalid
      *            the boolean value to set
+     * @return this instance, for method chaining
      */
-    public void setInvalid(boolean invalid) {
+    public R setInvalid(boolean invalid) {
         getElement().setProperty("invalid", invalid);
+        return get();
     }
 
     /**
@@ -690,10 +720,12 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param attrForValue
      *            the String value to set
+     * @return this instance, for method chaining
      */
-    public void setAttrForValue(String attrForValue) {
+    public R setAttrForValue(String attrForValue) {
         getElement().setProperty("attrForValue",
                 attrForValue == null ? "" : attrForValue);
+        return get();
     }
 
     /**
@@ -725,10 +757,12 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * 
      * @param overlayVerticalOffset
      *            the double value to set
+     * @return this instance, for method chaining
      */
-    public void setOverlayVerticalOffset(double overlayVerticalOffset) {
+    public R setOverlayVerticalOffset(double overlayVerticalOffset) {
         getElement().setProperty("overlayVerticalOffset",
                 overlayVerticalOffset);
+        return get();
     }
 
     /**
