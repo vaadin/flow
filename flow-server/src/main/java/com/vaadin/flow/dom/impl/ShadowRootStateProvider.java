@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.Style;
@@ -32,7 +31,6 @@ import com.vaadin.flow.nodefeature.NewVirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
-import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeListener;
@@ -56,8 +54,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     @SuppressWarnings("unchecked")
     private static final Class<? extends NodeFeature>[] FEATURES = new Class[] {
             ElementChildrenList.class, ShadowRootHost.class,
-            AttachExistingElementFeature.class, VirtualChildrenList.class,
-            NewVirtualChildrenList.class };
+            AttachExistingElementFeature.class, NewVirtualChildrenList.class };
 
     /**
      * Gets the one and only instance.
@@ -209,18 +206,6 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     protected Node<?> getNode(StateNode node) {
         assert supports(node);
         return ShadowRoot.get(node);
-    }
-
-    /**
-     * Insert the given virtual child at the given position.
-     *
-     * @param node
-     *            node containing data
-     * @param child
-     *            element to insert
-     */
-    public void insertVirtualChild(StateNode node, Element child) {
-        node.getFeature(VirtualChildrenList.class).append(child.getNode());
     }
 
 }
