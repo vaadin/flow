@@ -22,7 +22,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 
 @SpringBootApplication
-//@EnableAuthorizationServer
+@EnableAuthorizationServer
 @Configuration
 @EnableWebSecurity
 public class TestServletInitializer {
