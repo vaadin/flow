@@ -150,6 +150,7 @@ public interface HasValue<C extends Component, V>
      *            the value change listener, not null
      * @return a registration for the listener
      */
+    @SuppressWarnings("unchecked")
     default Registration addValueChangeListener(
             ValueChangeListener<C, V> listener) {
         get().getElement().synchronizeProperty(getClientValuePropertyName(),

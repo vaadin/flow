@@ -196,7 +196,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
         Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setName(String name)"));
+                .contains("public R setName(String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
@@ -221,7 +221,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
         Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setName(String name)"));
+                .contains("public R setName(String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
@@ -431,7 +431,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setName(String name)"));
+                .contains("public R setName(String name)"));
 
         Assert.assertTrue("Setter doesn't check for null value",
                 generatedClass.contains(propertyData.getName()
@@ -451,7 +451,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setRequired(boolean required)"));
+                .contains("public R setRequired(boolean required)"));
 
         Assert.assertFalse("Setter checks for null value",
                 generatedClass.contains(propertyData.getName()
@@ -657,7 +657,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated class should contain the setSomething method",
                 generatedClass.contains(
-                        "public void setSomething(SomethingProperty property)"));
+                        "public R setSomething(SomethingProperty property)"));
     }
 
     @Test
@@ -848,7 +848,7 @@ public class ComponentGeneratorTest {
         Assert.assertThat(generatedClass, CoreMatchers
                 .containsString("@Override public String getValue()"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public void setValue(String value)"));
+                "@Override public R setValue(String value)"));
     }
 
     @Test
@@ -870,7 +870,7 @@ public class ComponentGeneratorTest {
         Assert.assertThat(generatedClass, CoreMatchers
                 .containsString("@Override public String getValue()"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public void setValue(String value)"));
+                "@Override public R setValue(String value)"));
     }
 
     @Test
@@ -891,7 +891,7 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass.contains(
-                "@Override public void setValue(String value) { if (!Objects.equals(value, getValue())) {"));
+                "@Override public R setValue(String value) { if (!Objects.equals(value, getValue())) {"));
     }
 
     @Test
@@ -916,9 +916,9 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 generatedClass.contains("@Override public Double getValue()"));
         Assert.assertTrue(generatedClass.contains(
-                "@Override public void setValue(Double value)"));
+                "@Override public R setValue(Double value)"));
         Assert.assertTrue(generatedClass
-                .contains("public void setValue(Number value)"));
+                .contains("public R setValue(Number value)"));
     }
 
     @Test
@@ -939,9 +939,9 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass.contains(
-                "@Override public void setValue(Double value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
+                "@Override public R setValue(Double value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
         Assert.assertTrue(generatedClass.contains(
-                "public void setValue(Number value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
+                "public R setValue(Number value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
     }
 
     @Test
@@ -982,15 +982,15 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(generatedClass
                 .contains("protected JsonObject protectedGetObjectProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected void setObjectProperty(JsonObject objectProperty)"));
+                "protected R setObjectProperty(JsonObject objectProperty)"));
         Assert.assertTrue(generatedClass
                 .contains("protected JsonArray protectedGetArrayProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected void setArrayProperty(JsonArray arrayProperty)"));
+                "protected R setArrayProperty(JsonArray arrayProperty)"));
         Assert.assertTrue(generatedClass.contains(
                 "protected JsonValue protectedGetUndefinedProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected void setUndefinedProperty(JsonValue undefinedProperty)"));
+                "protected R setUndefinedProperty(JsonValue undefinedProperty)"));
 
         Assert.assertTrue(generatedClass.contains(
                 "protected void callSomething(JsonObject objectParam)"));
@@ -1066,7 +1066,7 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "public void setSomething(String something) {"));
+                "public R setSomething(String something) {"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "public Registration addSomethingChangeListener( ComponentEventListener<SomethingChangeEvent<R>> listener) {"));
     }
