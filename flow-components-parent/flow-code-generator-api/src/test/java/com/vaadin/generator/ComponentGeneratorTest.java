@@ -661,6 +661,36 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void classContainsObjectProperty_componentContainsValueProperty_generatedClassImplementsHasValue() {
+
+        ComponentObjectType objectType = new ComponentObjectType();
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setObjectType(Collections.singletonList(objectType));
+        componentMetadata.setProperties(Collections.singletonList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("value-changed");
+        componentMetadata.setEvents(Collections.singletonList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent", HasValue.class);
+
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "@Override public ValueProperty getValue() { JsonObject _obj = (JsonObject) getElement().getPropertyRaw(\"value\"); return _obj == null ? getEmptyValue() : new ValueProperty() .readJson(_obj); }"));
+
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "@Override public void setValue(ValueProperty property) { if (!Objects.equals(property, getValue())) { getElement().setPropertyJson(\"value\", property.toJson()); } } }"));
+    
+    }
+
+    @Test
     public void classContainsMethodWithObjectParameter_generatedClassContainsInnerClass() {
         // note: the tests for the nested class are covered by the
         // NestedClassGeneratorTest
