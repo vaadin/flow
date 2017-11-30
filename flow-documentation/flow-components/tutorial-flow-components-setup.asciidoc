@@ -26,7 +26,27 @@ Currently there are the following implementations:
 - https://github.com/vaadin/vaadin-upload-flow[vaadin-upload-flow]
 
 These components are available as optional dependencies that can be added to
-any Flow project.
+any Flow project. Besides, you can add `vaadin-platform` dependency, if you need flow components for your project.
+[source,xml]
+----
+<repositories>
+    <repository>
+    <id>vaadin-platform</id>
+    <url>https://repo.vaadin.com/nexus/content/repositories/flow</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <!-- other dependencies -->
+    <!-- component dependency -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin</artifactId>
+        <version>10.0.0.alpha8</version>
+    </dependency>
+</dependencies>
+----
+
 
 = Overview
 
