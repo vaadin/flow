@@ -26,9 +26,9 @@ import java.util.function.Function;
  * @author Vaadin Ltd
  *
  * @param <T>
- *            the type of the the first function parameter
+ *            the type of the first function parameter
  * @param <U>
- *            the type of the the second function parameter
+ *            the type of the second function parameter
  * @param <R>
  *            the type of the result of the function
  */

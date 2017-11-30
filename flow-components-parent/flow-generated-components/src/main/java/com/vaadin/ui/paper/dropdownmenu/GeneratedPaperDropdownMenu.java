@@ -28,6 +28,7 @@ import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.flow.dom.Element;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-dropdown-menu#2.0.0", "Flow#1.0-SNAPSHOT" })
@@ -1096,7 +1097,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addActiveChangeListener(
             ComponentEventListener<ActiveChangeEvent<R>> listener) {
         return addListener(ActiveChangeEvent.class,
@@ -1117,7 +1120,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -1138,7 +1143,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -1159,7 +1166,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -1180,7 +1189,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
@@ -1201,7 +1212,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return addListener(ValueChangeEvent.class,
@@ -1222,7 +1235,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -1243,7 +1258,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemLabelChangeListener(
             ComponentEventListener<SelectedItemLabelChangeEvent<R>> listener) {
         return addListener(SelectedItemLabelChangeEvent.class,
@@ -1264,7 +1281,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
@@ -1285,7 +1304,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -1306,7 +1327,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropdownContent(com.vaadin.ui.Component... components) {
+    public R addToDropdownContent(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "dropdown-content");
             getElement().appendChild(component.getElement());
@@ -1322,7 +1343,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

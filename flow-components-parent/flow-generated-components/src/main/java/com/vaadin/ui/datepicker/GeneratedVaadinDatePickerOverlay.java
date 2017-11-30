@@ -342,7 +342,9 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addScrollAnimationFinishedListener(
             ComponentEventListener<ScrollAnimationFinishedEvent<R>> listener) {
         return addListener(ScrollAnimationFinishedEvent.class,
@@ -363,7 +365,9 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
         return addListener(SelectedDateChangeEvent.class,
@@ -384,7 +388,9 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedDateChangeListener(
             ComponentEventListener<FocusedDateChangeEvent<R>> listener) {
         return addListener(FocusedDateChangeEvent.class,

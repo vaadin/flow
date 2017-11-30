@@ -1222,7 +1222,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addHorizontalOffsetChangeListener(
             ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
         return addListener(HorizontalOffsetChangeEvent.class,
@@ -1243,7 +1245,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVerticalOffsetChangeListener(
             ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
         return addListener(VerticalOffsetChangeEvent.class,
@@ -1264,7 +1268,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -1285,7 +1291,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronOverlayCanceledListener(
             ComponentEventListener<IronOverlayCanceledEvent<R>> listener) {
         return addListener(IronOverlayCanceledEvent.class,
@@ -1306,7 +1314,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronOverlayClosedListener(
             ComponentEventListener<IronOverlayClosedEvent<R>> listener) {
         return addListener(IronOverlayClosedEvent.class,
@@ -1327,7 +1337,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronOverlayOpenedListener(
             ComponentEventListener<IronOverlayOpenedEvent<R>> listener) {
         return addListener(IronOverlayOpenedEvent.class,
@@ -1341,7 +1353,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperDialog(com.vaadin.ui.Component... components) {
+    public GeneratedPaperDialog(Component... components) {
         add(components);
     }
 

@@ -158,8 +158,8 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
     /**
      * Sets the given string as the content of this component.
      * 
-     * @param the
-     *            text content to set
+     * @param text
+     *            the text content to set
      * @see HasText#setText(String)
      */
     public GeneratedVaadinButton(String text) {

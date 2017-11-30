@@ -60,12 +60,9 @@ public class NodeListTest {
     public void testSpliceEvents() {
         AtomicReference<ListSpliceEvent> lastEvent = new AtomicReference<>();
 
-        EventRemover remover = list.addSpliceListener(new ListSpliceListener() {
-            @Override
-            public void onSplice(ListSpliceEvent event) {
-                Assert.assertNull("Got unexpected event", lastEvent.get());
-                lastEvent.set(event);
-            }
+        EventRemover remover = list.addSpliceListener(event -> {
+            Assert.assertNull("Got unexpected event", lastEvent.get());
+            lastEvent.set(event);
         });
 
         list.splice(0, 0, JsCollections.array("1", "2", "3"));

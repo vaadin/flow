@@ -25,6 +25,7 @@ import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.flow.dom.Element;
 
 /**
  * <p>
@@ -229,7 +230,9 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronResizeListener(
             ComponentEventListener<IronResizeEvent<R>> listener) {
         return addListener(IronResizeEvent.class,
@@ -250,7 +253,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrimary(com.vaadin.ui.Component... components) {
+    public R addToPrimary(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "primary");
             getElement().appendChild(component.getElement());
@@ -272,7 +275,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSecondary(com.vaadin.ui.Component... components) {
+    public R addToSecondary(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "secondary");
             getElement().appendChild(component.getElement());
@@ -288,7 +291,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

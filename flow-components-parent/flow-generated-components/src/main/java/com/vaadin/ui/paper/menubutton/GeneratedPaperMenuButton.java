@@ -28,6 +28,7 @@ import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.flow.dom.Element;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: PaperMenuButton#2.0.0", "Flow#1.0-SNAPSHOT" })
@@ -813,7 +814,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
@@ -834,7 +837,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
@@ -855,7 +860,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addPaperDropdownCloseListener(
             ComponentEventListener<PaperDropdownCloseEvent<R>> listener) {
         return addListener(PaperDropdownCloseEvent.class,
@@ -876,7 +883,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addPaperDropdownOpenListener(
             ComponentEventListener<PaperDropdownOpenEvent<R>> listener) {
         return addListener(PaperDropdownOpenEvent.class,
@@ -897,7 +906,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -918,7 +929,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addHorizontalOffsetChangeListener(
             ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
         return addListener(HorizontalOffsetChangeEvent.class,
@@ -939,7 +952,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVerticalOffsetChangeListener(
             ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
         return addListener(VerticalOffsetChangeEvent.class,
@@ -960,7 +975,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropdownTrigger(com.vaadin.ui.Component... components) {
+    public R addToDropdownTrigger(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "dropdown-trigger");
             getElement().appendChild(component.getElement());
@@ -982,7 +997,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropdownContent(com.vaadin.ui.Component... components) {
+    public R addToDropdownContent(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "dropdown-content");
             getElement().appendChild(component.getElement());
@@ -998,7 +1013,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

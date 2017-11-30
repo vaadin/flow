@@ -115,7 +115,7 @@ public class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinRadioGroup(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinRadioGroup(Component... components) {
         add(components);
     }
 

@@ -19,6 +19,7 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.Event.Type;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -88,6 +89,14 @@ public class SimpleEventBus extends EventBus {
      * Not documented in GWT, required by legacy features in GWT's old
      * HandlerManager.
      *
+     * @param type
+     *            the type
+     * @param source
+     *            the source
+     * @param handler
+     *            the handler
+     * @param <H>
+     *            the handler type
      * @deprecated required by legacy features in GWT's old HandlerManager
      */
     @Deprecated
@@ -102,6 +111,13 @@ public class SimpleEventBus extends EventBus {
     /**
      * Not documented in GWT, required by legacy features in GWT's old
      * HandlerManager.
+     * 
+     * @param type
+     *            the type
+     * @param index
+     *            the index
+     * @param <H>
+     *            the handler type
      *
      * @deprecated required by legacy features in GWT's old HandlerManager
      */
@@ -119,6 +135,10 @@ public class SimpleEventBus extends EventBus {
      * Not documented in GWT, required by legacy features in GWT's old
      * HandlerManager.
      *
+     * @param eventKey
+     *            the event type
+     * @return the handlers count
+     *
      * @deprecated required by legacy features in GWT's old HandlerManager
      */
     @Deprecated
@@ -130,6 +150,9 @@ public class SimpleEventBus extends EventBus {
      * Not documented in GWT, required by legacy features in GWT's old
      * HandlerManager.
      *
+     * @param eventKey
+     *            the event type
+     * @return {@code true} if the event is handled, {@code false} otherwise
      * @deprecated required by legacy features in GWT's old HandlerManager
      */
     @Deprecated
@@ -160,12 +183,7 @@ public class SimpleEventBus extends EventBus {
             doAddNow(type, source, handler);
         }
 
-        return new HandlerRegistration() {
-            @Override
-            public void removeHandler() {
-                doRemove(type, source, handler);
-            }
-        };
+        return () -> doRemove(type, source, handler);
     }
 
     @SuppressWarnings("unchecked")
@@ -225,22 +243,12 @@ public class SimpleEventBus extends EventBus {
 
     private <H> void enqueueAdd(final Event.Type<H> type, final Object source,
             final H handler) {
-        defer(new Command() {
-            @Override
-            public void execute() {
-                doAddNow(type, source, handler);
-            }
-        });
+        defer(() -> doAddNow(type, source, handler));
     }
 
     private <H> void enqueueRemove(final Event.Type<H> type,
             final Object source, final H handler) {
-        defer(new Command() {
-            @Override
-            public void execute() {
-                doRemoveNow(type, source, handler);
-            }
-        });
+        defer(() -> doRemoveNow(type, source, handler));
     }
 
     private <H> JsArray<H> ensureHandlerList(Event.Type<H> type,

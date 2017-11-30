@@ -169,21 +169,18 @@ public class VaadinSessionTest {
 
         // this simulates servlet container's session invalidation from another
         // thread
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(150); // delay selected so that VaadinSession
-                                       // will be already locked by the main
-                                       // thread
-                                       // when we get here
-                    httpSessionLock.lock();// simulating servlet container's
-                                           // session lock
-                    mockService.fireSessionDestroy(session);
-                    httpSessionLock.unlock();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+        new Thread(() -> {
+            try {
+                Thread.sleep(150); // delay selected so that VaadinSession
+                // will be already locked by the main
+                // thread
+                // when we get here
+                httpSessionLock.lock();// simulating servlet container's
+                // session lock
+                mockService.fireSessionDestroy(session);
+                httpSessionLock.unlock();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }).start();
 

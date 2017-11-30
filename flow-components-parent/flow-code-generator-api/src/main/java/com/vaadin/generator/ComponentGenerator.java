@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,6 +49,7 @@ import org.jboss.forge.roaster.model.source.ParameterSource;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
@@ -444,7 +446,7 @@ public class ComponentGenerator {
             constructor.addParameter(String.class.getSimpleName(), "text");
             constructor.getJavaDoc().setText(
                     "Sets the given string as the content of this component.")
-                    .addTagValue(JAVADOC_PARAM, "the text content to set")
+                    .addTagValue(JAVADOC_PARAM, "text the text content to set")
                     .addTagValue(JAVADOC_SEE, "HasText#setText(String)");
 
         } else if (javaClass.hasInterface(HasComponents.class)) {
@@ -452,8 +454,8 @@ public class ComponentGenerator {
             MethodSource<JavaClassSource> constructor = javaClass.addMethod()
                     .setConstructor(true).setPublic()
                     .setBody("add(components);");
-            constructor.addParameter(Component.class, "components")
-                    .setVarArgs(true);
+            ComponentGeneratorUtils.addMethodParameter(javaClass, constructor,
+                    Component.class, "components").setVarArgs(true);
             constructor.getJavaDoc().setText(
                     "Adds the given components as children of this component.")
                     .addTagValue(JAVADOC_PARAM,
@@ -551,7 +553,8 @@ public class ComponentGenerator {
                 .generateMethodNameForProperty("addTo", slot);
         MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
                 .setName(methodName);
-        method.addParameter(Component.class, "components").setVarArgs(true);
+        ComponentGeneratorUtils.addMethodParameter(javaClass, method,
+                Component.class, "components").setVarArgs(true);
         method.setBody(String.format(
                 "for (Component component : components) {%n component.getElement().setAttribute(\"slot\", \"%s\");%n getElement().appendChild(component.getElement());%n }",
                 slot));
@@ -572,8 +575,8 @@ public class ComponentGenerator {
 
         MethodSource<JavaClassSource> removeMethod = javaClass.addMethod()
                 .setPublic().setReturnTypeVoid().setName("remove");
-        removeMethod.addParameter(Component.class, "components")
-                .setVarArgs(true);
+        ComponentGeneratorUtils.addMethodParameter(javaClass, removeMethod,
+                Component.class, "components").setVarArgs(true);
         removeMethod.setBody(
                 String.format("for (Component component : components) {%n"
                         + "if (getElement().equals(component.getElement().getParent())) {%n"
@@ -602,6 +605,7 @@ public class ComponentGenerator {
         if (useOverrideAnnotation) {
             removeAllMethod.addAnnotation(Override.class);
         } else {
+            javaClass.addImport(Element.class);
             removeAllMethod.getJavaDoc().setText(String.format(
                     "Removes all contents from this component, this includes child components, "
                             + "text content as well as child elements that have been added directly to "
@@ -736,6 +740,9 @@ public class ComponentGenerator {
 
         } else {
             boolean postfixWithVariableType = property.getType().size() > 1;
+            if (postfixWithVariableType) {
+                property.setType(new TreeSet<>(property.getType()));
+            }
             for (ComponentBasicType basicType : property.getType()) {
                 Class<?> javaType = ComponentGeneratorUtils
                         .toJavaType(basicType);
@@ -788,6 +795,8 @@ public class ComponentGenerator {
                     }
                     javaClass.addInterface(HasValue.class.getName() + "<"
                             + GENERIC_TYPE + ", " + javaType.getName() + ">");
+                    javaClass.removeImport(ComponentSupplier.class);
+                    javaClass.removeInterface(ComponentSupplier.class);
                     method.addAnnotation(Override.class);
                 }
             }
@@ -1150,7 +1159,7 @@ public class ComponentGenerator {
             ComponentFunctionData function, List<ComponentType> typeVariant,
             Map<ComponentObjectType, JavaClassSource> nestedClassesMap) {
         int paramIndex = 0;
-        StringBuilder sb = new StringBuilder("");
+        StringBuilder sb = new StringBuilder();
         for (ComponentType paramType : typeVariant) {
             String paramName = function.getParameters().get(paramIndex)
                     .getName();
@@ -1187,7 +1196,7 @@ public class ComponentGenerator {
             }
 
             method.getJavaDoc().addTagValue(JAVADOC_PARAM,
-                    String.format("%s %s", paramName, paramDescription));
+                    String.format("%s %s", formattedName, paramDescription));
         }
         return sb.toString();
     }
@@ -1231,7 +1240,12 @@ public class ComponentGenerator {
         method.getJavaDoc().setText(String.format(
                 "Adds a listener for {@code %s} events fired by the webcomponent.",
                 event.getName()))
-                .addTagValue(JAVADOC_PARAM, "listener the listener");
+                .addTagValue(JAVADOC_PARAM, "listener the listener")
+                .addTagValue(JAVADOC_RETURN,
+                        "a {@link Registration} for removing the event listener");
+
+        method.addAnnotation(SuppressWarnings.class)
+                .setStringArrayValue(new String[] { "rawtypes", "unchecked" });
 
         method.setBody(String.format(
                 "return addListener(%s.class, (ComponentEventListener) listener);",

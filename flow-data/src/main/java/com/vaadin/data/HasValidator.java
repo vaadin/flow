@@ -29,7 +29,7 @@ public interface HasValidator<V> {
     /**
      * Returns a validator that checks the state of the Value. This should be
      * overridden for components with internal value conversion or validation,
-     * eg. when the user is providing a string that has to be parsed into a
+     * e.g. when the user is providing a string that has to be parsed into a
      * date. An invalid input from user will be exposed to a {@code Binder} and
      * can be seen as a validation failure.
      *

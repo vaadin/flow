@@ -39,8 +39,7 @@ import com.vaadin.ui.common.HtmlImport;
  * {@code
 <vaadin-tab>
 Tab 1
-</vaadin-tab>
-}
+</vaadin-tab>}
  * </p>
  * <p>
  * The following state attributes are available for styling:

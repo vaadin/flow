@@ -15,10 +15,12 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.event.shared.EventHandler;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+
+import com.google.gwt.event.shared.EventHandler;
+
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 
 /**
@@ -74,6 +76,9 @@ public class UILifecycle {
 
     /**
      * Check if the state is {@link UIState#RUNNING}.
+     * 
+     * @return {@code true} if the status is {@link UIState#RUNNING},
+     *         {@code false} otherwise
      */
     public boolean isRunning() {
         return getState() == UIState.RUNNING;
@@ -81,6 +86,9 @@ public class UILifecycle {
 
     /**
      * Check if the state is {@link UIState#TERMINATED}.
+     * 
+     * @return {@code true} if the status is {@link UIState#TERMINATED},
+     *         {@code false} otherwise
      */
     public boolean isTerminated() {
         return getState() == UIState.TERMINATED;
@@ -91,6 +99,8 @@ public class UILifecycle {
      *
      * @param handler
      *            the handler to add
+     * @param <H>
+     *            the handler type
      * @return a handler registration object which can be used to remove the
      *         handler
      */

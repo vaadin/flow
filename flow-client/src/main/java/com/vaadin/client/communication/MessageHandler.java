@@ -22,6 +22,7 @@ import java.util.Map;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.DependencyLoader;
@@ -531,7 +532,6 @@ public class MessageHandler {
             return true;
         }
         return false;
-
     }
 
     private int getServerId(ValueMap json) {
@@ -576,6 +576,7 @@ public class MessageHandler {
      * period of time (e.g. to avoid the rendering process during animation).
      *
      * @param lock
+     *            the lock
      */
     public void suspendReponseHandling(Object lock) {
         responseHandlingLocks.add(lock);
@@ -585,6 +586,7 @@ public class MessageHandler {
      * Resumes the rendering process once all locks have been removed.
      *
      * @param lock
+     *            the lock
      */
     public void resumeResponseHandling(Object lock) {
         responseHandlingLocks.delete(lock);
@@ -782,7 +784,8 @@ public class MessageHandler {
 
     /**
      * Sets a temporary handler for session expiration. This handler will be
-     * triggered iff the next server message tells that the session has expired.
+     * triggered if and only if the next server message tells that the session
+     * has expired.
      *
      * @param nextResponseSessionExpiredHandler
      *            the handler to use or null to remove a previously set handler

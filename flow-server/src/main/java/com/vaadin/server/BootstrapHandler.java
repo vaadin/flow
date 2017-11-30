@@ -16,8 +16,6 @@
 
 package com.vaadin.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -63,6 +61,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -526,13 +525,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // and
             // https://github.com/Polymer/polymer-cli/blob/master/src/build/optimize-streams.ts#L119
             head.appendChild(createInlineJavaScriptElement(BABEL_HELPERS_JS));
-            // This adapter is required by all webcomponents in order to work
-            // correctly in ES5 mode, comes in webcomponentsjs distribution
-            head.appendChild(createJavaScriptElement(
-                    context.getUriResolver()
-                            .resolveVaadinUri(webComponentsPolyfillBase
-                                    + "custom-elements-es5-adapter.js"),
-                    false));
         }
 
         boolean forceShadyDom = config.getBooleanProperty(
@@ -815,7 +807,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      */
     protected static Optional<String> resolvePageTitle(
             BootstrapContext context) {
-        // check for explicitly set page title, eg. by PageTitleGenerator or
+        // check for explicitly set page title, e.g. by PageTitleGenerator or
         // View level title or page.setTitle
         String title = context.getUI().getInternals().getTitle();
         if (title != null) {

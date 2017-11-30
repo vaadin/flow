@@ -264,7 +264,9 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addColorPickerSelectedListener(
             ComponentEventListener<ColorPickerSelectedEvent<R>> listener) {
         return addListener(ColorPickerSelectedEvent.class,
@@ -285,7 +287,9 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addColorChangeListener(
             ComponentEventListener<ColorChangeEvent<R>> listener) {
         return addListener(ColorChangeEvent.class,

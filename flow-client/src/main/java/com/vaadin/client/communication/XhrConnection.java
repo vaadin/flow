@@ -28,8 +28,6 @@ import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.util.SharedUtil;
 
 import elemental.client.Browser;
-import elemental.events.Event;
-import elemental.events.EventListener;
 import elemental.json.JsonObject;
 
 /**
@@ -61,18 +59,12 @@ public class XhrConnection {
     public XhrConnection(Registry registry) {
         this.registry = registry;
         Browser.getWindow().addEventListener("beforeunload",
-                new EventListener() {
-                    @Override
-                    public void handleEvent(Event evt) {
-                        webkitMaybeIgnoringRequests = true;
-                    }
-                }, false);
+                event -> webkitMaybeIgnoringRequests = true, false);
 
         registry.getRequestResponseTracker()
-                .addResponseHandlingEndedHandler(e -> {
+                .addResponseHandlingEndedHandler(event -> {
                     webkitMaybeIgnoringRequests = false;
                 });
-
     }
 
     protected XhrResponseHandler createResponseHandler() {

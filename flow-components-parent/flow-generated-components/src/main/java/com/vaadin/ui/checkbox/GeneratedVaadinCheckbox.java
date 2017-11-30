@@ -349,7 +349,9 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIndeterminateChangeListener(
             ComponentEventListener<IndeterminateChangeEvent<R>> listener) {
         return addListener(IndeterminateChangeEvent.class,
@@ -363,7 +365,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinCheckbox(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinCheckbox(Component... components) {
         add(components);
     }
 

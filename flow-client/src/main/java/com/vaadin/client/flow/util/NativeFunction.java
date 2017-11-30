@@ -15,12 +15,12 @@
  */
 package com.vaadin.client.flow.util;
 
-import com.vaadin.client.flow.collection.JsArray;
-
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
+
+import com.vaadin.client.flow.collection.JsArray;
 
 /**
  * JsInterop wrapper for interacting with the JavaScript Function type.
@@ -74,6 +74,8 @@ public class NativeFunction {
      *
      * @param paramsAndCode
      *            parameter names followed by the code of the function
+     * @param <T>
+     *            the function type
      * @return the native function
      */
     @SuppressWarnings("unchecked")

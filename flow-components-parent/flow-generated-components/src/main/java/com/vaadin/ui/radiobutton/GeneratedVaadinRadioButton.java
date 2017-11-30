@@ -277,7 +277,9 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addCheckedChangeListener(
             ComponentEventListener<CheckedChangeEvent<R>> listener) {
         return addListener(CheckedChangeEvent.class,
@@ -291,7 +293,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinRadioButton(com.vaadin.ui.Component... components) {
+    public GeneratedVaadinRadioButton(Component... components) {
         add(components);
     }
 

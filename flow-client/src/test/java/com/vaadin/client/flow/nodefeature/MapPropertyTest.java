@@ -22,10 +22,6 @@ import org.junit.Test;
 
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
-import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.client.flow.nodefeature.MapPropertyChangeEvent;
-import com.vaadin.client.flow.nodefeature.MapPropertyChangeListener;
-import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.CountingComputation;
 import com.vaadin.client.flow.reactive.Reactive;
 
@@ -51,13 +47,9 @@ public class MapPropertyTest {
         AtomicReference<MapPropertyChangeEvent> lastEvent = new AtomicReference<>();
 
         EventRemover remover = property
-                .addChangeListener(new MapPropertyChangeListener() {
-                    @Override
-                    public void onPropertyChange(MapPropertyChangeEvent event) {
-                        Assert.assertNull("Got unexpected event",
-                                lastEvent.get());
-                        lastEvent.set(event);
-                    }
+                .addChangeListener(event -> {
+                    Assert.assertNull("Got unexpected event", lastEvent.get());
+                    lastEvent.set(event);
                 });
 
         property.setValue("foo");
