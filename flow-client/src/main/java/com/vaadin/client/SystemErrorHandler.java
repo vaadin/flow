@@ -18,6 +18,7 @@ package com.vaadin.client;
 import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
+
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 import elemental.client.Browser;
@@ -99,10 +100,10 @@ public class SystemErrorHandler {
      * @param message
      *            the message body
      * @param details
-     *            message details or null if there are no details
+     *            message details or {@code null} if there are no details
      * @param url
-     *            a URL to redirect to when the user clicks the message or null
-     *            to refresh on click
+     *            a URL to redirect to when the user clicks the message or
+     *            {@code null} to refresh on click
      */
     public void handleUnrecoverableError(String caption, String message,
             String details, String url) {

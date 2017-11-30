@@ -18,6 +18,7 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.vaadin.client.flow.dom.DomApi;
 
 import elemental.client.Browser;
@@ -76,6 +77,8 @@ public class WidgetUtil {
      *
      * @param value
      *            anything
+     * @param <T>
+     *            the object type
      * @return the same stuff
      */
     public static native <T> T crazyJsCast(Object value)
@@ -90,6 +93,8 @@ public class WidgetUtil {
      *
      * @param value
      *            anything
+     * @param <T>
+     *            the object type
      * @return the same stuff
      */
     public static native <T extends JavaScriptObject> T crazyJsoCast(
@@ -170,12 +175,11 @@ public class WidgetUtil {
     /**
      * Retrieves the value of a JavaScript property.
      *
-     *
      * @param object
      *            the target object
      * @param name
      *            the property name
-     * @return
+     * @return the value
      */
     public static native Object getJsProperty(Object object, String name)
     /*-{

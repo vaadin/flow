@@ -21,6 +21,7 @@ import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.flow.dom.Element;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-toolbar#2.0.0", "Flow#1.0-SNAPSHOT" })
@@ -153,7 +154,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToTop(com.vaadin.ui.Component... components) {
+    public R addToTop(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top");
             getElement().appendChild(component.getElement());
@@ -175,7 +176,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToMiddle(com.vaadin.ui.Component... components) {
+    public R addToMiddle(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "middle");
             getElement().appendChild(component.getElement());
@@ -197,7 +198,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToBottom(com.vaadin.ui.Component... components) {
+    public R addToBottom(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom");
             getElement().appendChild(component.getElement());
@@ -213,7 +214,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

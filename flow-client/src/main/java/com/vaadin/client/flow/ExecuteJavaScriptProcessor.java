@@ -121,7 +121,9 @@ public class ExecuteJavaScriptProcessor {
      *            an array consisting of parameter names followed by the
      *            JavaScript expression to execute
      * @param parameters
-     *            and array of parameter values
+     *            an array of parameter values
+     * @param nodeParameters
+     *            the node parameters
      */
     @SuppressWarnings("static-method")
     protected void invoke(String[] parameterNamesAndCode,
@@ -160,7 +162,11 @@ public class ExecuteJavaScriptProcessor {
         return false;
     }
 
-    private static native JsonObject getContextExecutionObject(
+    private String getAppId() {
+        return registry.getApplicationConfiguration().getApplicationId();
+    }
+
+    private native JsonObject getContextExecutionObject(
             JsMap<Object, StateNode> nodeParameters)
     /*-{
           var object = {};
@@ -171,6 +177,7 @@ public class ExecuteJavaScriptProcessor {
               }
               return node;
           };
+          object.$appId = this.@ExecuteJavaScriptProcessor::getAppId()().replace(/-\d+$/, '');
           object.attachExistingElement = function(parent, previousSibling, tagName, id){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
           };

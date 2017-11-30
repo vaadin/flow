@@ -100,8 +100,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return the {@code selected} property from the webcomponent
      */
     @Synchronize(property = "selected", value = "selected-changed")
-    public String getSelectedString() {
-        return getElement().getProperty("selected");
+    public double getSelectedNumber() {
+        return getElement().getProperty("selected", 0.0);
     }
 
     /**
@@ -119,24 +119,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return the {@code selected} property from the webcomponent
      */
     @Synchronize(property = "selected", value = "selected-changed")
-    public double getSelectedNumber() {
-        return getElement().getProperty("selected", 0.0);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Gets or sets the selected element. The default is to use the index of the
-     * item.
-     * </p>
-     * 
-     * @param selected
-     *            the String value to set
-     */
-    public void setSelected(String selected) {
-        getElement().setProperty("selected", selected == null ? "" : selected);
+    public String getSelectedString() {
+        return getElement().getProperty("selected");
     }
 
     /**
@@ -153,6 +137,22 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      */
     public void setSelected(double selected) {
         getElement().setProperty("selected", selected);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Gets or sets the selected element. The default is to use the index of the
+     * item.
+     * </p>
+     * 
+     * @param selected
+     *            the String value to set
+     */
+    public void setSelected(String selected) {
+        getElement().setProperty("selected", selected == null ? "" : selected);
     }
 
     /**
@@ -1026,7 +1026,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(String value) {
+    public void select(double value) {
         getElement().callFunction("select", value);
     }
 
@@ -1043,7 +1043,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(double value) {
+    public void select(String value) {
         getElement().callFunction("select", value);
     }
 
@@ -1184,7 +1184,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronActivateListener(
             ComponentEventListener<IronActivateEvent<R>> listener) {
         return addListener(IronActivateEvent.class,
@@ -1205,7 +1207,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronDeselectListener(
             ComponentEventListener<IronDeselectEvent<R>> listener) {
         return addListener(IronDeselectEvent.class,
@@ -1226,7 +1230,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronItemsChangeListener(
             ComponentEventListener<IronItemsChangeEvent<R>> listener) {
         return addListener(IronItemsChangeEvent.class,
@@ -1246,7 +1252,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronSelectListener(
             ComponentEventListener<IronSelectEvent<R>> listener) {
         return addListener(IronSelectEvent.class,
@@ -1267,7 +1275,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedChangeListener(
             ComponentEventListener<SelectedChangeEvent<R>> listener) {
         return addListener(SelectedChangeEvent.class,
@@ -1288,7 +1298,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
@@ -1309,7 +1321,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addItemsChangeListener(
             ComponentEventListener<ItemsChangeEvent<R>> listener) {
         return addListener(ItemsChangeEvent.class,
@@ -1330,7 +1344,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedValuesChangeListener(
             ComponentEventListener<SelectedValuesChangeEvent<R>> listener) {
         return addListener(SelectedValuesChangeEvent.class,
@@ -1351,7 +1367,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addSelectedItemsChangeListener(
             ComponentEventListener<SelectedItemsChangeEvent<R>> listener) {
         return addListener(SelectedItemsChangeEvent.class,
@@ -1365,7 +1383,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedPaperTabs(com.vaadin.ui.Component... components) {
+    public GeneratedPaperTabs(Component... components) {
         add(components);
     }
 

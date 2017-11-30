@@ -30,6 +30,7 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.EventData;
+import com.vaadin.flow.dom.Element;
 
 /**
  * <p>
@@ -786,7 +787,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
@@ -807,7 +810,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
@@ -836,7 +841,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
@@ -857,7 +864,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrefix(com.vaadin.ui.Component... components) {
+    public R addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
@@ -879,7 +886,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSuffix(com.vaadin.ui.Component... components) {
+    public R addToSuffix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "suffix");
             getElement().appendChild(component.getElement());
@@ -895,7 +902,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(com.vaadin.ui.Component... components) {
+    public void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");

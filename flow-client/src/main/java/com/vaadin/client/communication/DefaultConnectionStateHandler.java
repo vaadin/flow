@@ -21,6 +21,7 @@ import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle.UIState;
@@ -489,12 +490,13 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      * Called when a communication error occurs and we cannot recover from it.
      *
      * @param details
+     *            message details or {@code null} if there are no details
      * @param statusCode
+     *            the status code
      */
     protected void handleCommunicationError(String details, int statusCode) {
         registry.getSystemErrorHandler().handleUnrecoverableError("", details,
                 "", null);
-
     }
 
     @Override

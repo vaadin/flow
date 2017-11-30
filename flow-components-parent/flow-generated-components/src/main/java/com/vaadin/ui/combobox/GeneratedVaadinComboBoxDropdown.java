@@ -229,7 +229,9 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinComboBoxDropdownClosedListener(
             ComponentEventListener<VaadinComboBoxDropdownClosedEvent<R>> listener) {
         return addListener(VaadinComboBoxDropdownClosedEvent.class,
@@ -250,7 +252,9 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addVaadinComboBoxDropdownOpenedListener(
             ComponentEventListener<VaadinComboBoxDropdownOpenedEvent<R>> listener) {
         return addListener(VaadinComboBoxDropdownOpenedEvent.class,
@@ -271,7 +275,9 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
@@ -292,7 +298,9 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @param listener
      *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Registration addTemplateChangeListener(
             ComponentEventListener<TemplateChangeEvent<R>> listener) {
         return addListener(TemplateChangeEvent.class,
@@ -306,8 +314,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinComboBoxDropdown(
-            com.vaadin.ui.Component... components) {
+    public GeneratedVaadinComboBoxDropdown(Component... components) {
         add(components);
     }
 
