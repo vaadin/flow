@@ -17,6 +17,7 @@
 package com.vaadin.client;
 
 import com.vaadin.client.flow.StateNode;
+import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.NodeFeatures;
@@ -25,6 +26,7 @@ import com.vaadin.flow.nodefeature.NodeProperties;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.dom.ShadowRoot;
+import elemental.html.HTMLCollection;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -168,9 +170,8 @@ public final class PolymerUtils {
      * Checks whether the {@code htmlNode} can turn into polymer 2 element
      * later.
      * <p>
-     * Lazy loaded dependencies can load Polymer later than
-     * the element itself gets processed by the Flow. This method helps to
-     * determine such elements.
+     * Lazy loaded dependencies can load Polymer later than the element itself
+     * gets processed by the Flow. This method helps to determine such elements.
      *
      * @param htmlNode
      *            HTML element to check
@@ -216,5 +217,66 @@ public final class PolymerUtils {
             String id)
     /*-{
         return shadowRoot.getElementById(id);
+    }-*/;
+
+    public static native Element getDomElementById(Node shadowRootParent,
+            String id)
+    /*-{
+        return shadowRootParent.$[id];
+    }-*/;
+
+    public static boolean hasTag(Node node, String tag) {
+        return node instanceof Element
+                && tag.equalsIgnoreCase(((Element) node).getTagName());
+    }
+
+    public static Element getCustomElement(Node root, JsonArray path) {
+        Node current = root;
+        for (int i = 0; i < path.length(); i++) {
+            JsonValue value = path.get(i);
+            current = getChildIgnoringStyles(current, (int) value.asNumber());
+        }
+        if (current instanceof Element) {
+            return (Element) current;
+        } else if (current == null) {
+            Console.warn(
+                    "There is no element addressed by the path '" + path + "'");
+        } else {
+            Console.warn("The node addressed by path " + path
+                    + " is not an Element");
+        }
+        return null;
+    }
+
+    public static Node getChildIgnoringStyles(Node parent, int index) {
+        HTMLCollection children = DomApi.wrap(parent).getChildren();
+        int filteredIndex = -1;
+        for (int i = 0; i < children.getLength(); i++) {
+            Node next = children.item(i);
+            assert next instanceof Element : "Unexpected element type in the collection of children. "
+                    + "DomElement::getChildren is supposed to return Element chidren only, but got "
+                    + next.getClass();
+            Element element = (Element) next;
+            if (!"style".equalsIgnoreCase(element.getTagName())) {
+                filteredIndex++;
+            }
+            if (filteredIndex == index) {
+                return next;
+            }
+        }
+        return null;
+    }
+
+    public static native Element getDomRoot(Node templateElement)
+    /*-{
+        return templateElement.root;
+    }-*/;
+
+    public static native void invokeWhenDefined(Node node, Runnable runnable)
+    /*-{
+        $wnd.customElements.whenDefined(node.localName).then(
+            function () {
+                runnable.@java.lang.Runnable::run(*)();
+            });
     }-*/;
 }

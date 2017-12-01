@@ -180,9 +180,6 @@ public class ExecuteJavaScriptProcessor {
           object.attachExistingElement = function(parent, previousSibling, tagName, id){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
           };
-          object.attachCustomElement = function(parent, tagName, serverSideId, path){
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::attachCustomElement(*)(object.getNode(parent), tagName, serverSideId, path);
-          };
           object.populateModelProperties = function(element, properties){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::populateModelProperties(*)(object.getNode(element), properties);
           };

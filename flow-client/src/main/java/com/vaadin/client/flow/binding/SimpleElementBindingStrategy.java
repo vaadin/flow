@@ -224,7 +224,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -563,7 +563,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         NodeList children = context.node.getList(NodeFeatures.VIRTUAL_CHILDREN);
 
         for (int i = 0; i < children.length(); i++) {
-            appendVirtualChild(context, (StateNode) children.get(i));
+            appendVirtualChild(context, (StateNode) children.get(i), true);
         }
 
         return children.addSpliceListener(e -> {
@@ -576,14 +576,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 JsArray<?> add = e.getAdd();
                 if (!add.isEmpty()) {
                     for (int i = 0; i < add.length(); i++) {
-                        appendVirtualChild(context, (StateNode) add.get(i));
+                        appendVirtualChild(context, (StateNode) add.get(i),
+                                true);
                     }
                 }
             });
         });
     }
 
-    private void appendVirtualChild(BindingContext context, StateNode node) {
+    private void appendVirtualChild(BindingContext context, StateNode node,
+            boolean reactivePhase) {
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
         JsonObject object = (JsonObject) map.getProperty(NodeProperties.PAYLOAD)
                 .getValue();
@@ -591,28 +593,73 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
             context.binderContext.createAndBind(node);
-        } else if (NodeProperties.INJECT_BY_ID.equals(type)) {
+            return;
+        }
+
+        if (NodeProperties.INJECT_BY_ID.equals(type)) {
+            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
+                PolymerUtils.invokeWhenDefined(context.htmlNode,
+                        () -> appendVirtualChild(context, node, false));
+                return;
+            }
+
             String id = object.getString(NodeProperties.PAYLOAD);
-            // TODO : check whether the element is already "attached"
-            Element existingElement = getDomElementById(context.htmlNode, id);
-            verifyAttachedElement(existingElement, node, id, context);
+
+            Element existingElement = PolymerUtils
+                    .getDomElementById(context.htmlNode, id);
+            verifyAttachedElement(existingElement, node, id, "id='" + id + "'",
+                    context);
 
             node.setDomNode(existingElement);
             context.binderContext.createAndBind(node);
         } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
+            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
+                PolymerUtils.invokeWhenDefined(context.htmlNode,
+                        () -> appendVirtualChild(context, node, false));
+                return;
+            }
 
+            JsonArray path = object.getArray(NodeProperties.PAYLOAD);
+            // TODO : check whether the element is already "attached"
+            Element customElement = PolymerUtils.getCustomElement(
+                    PolymerUtils.getDomRoot(context.htmlNode), path);
+            verifyAttachedElement(customElement, node, null,
+                    "path='" + path.toString() + "'", context);
+            node.setDomNode(customElement);
+            context.binderContext.createAndBind(node);
         } else {
             assert false : "Unexpected payload type " + type;
+        }
+        if (!reactivePhase) {
+            // Correct binding requires reactive involvement which doesn't
+            // happen automatically when we are out of the phase. So we should
+            // call <code>flush()</code> explicitly.
+            Reactive.flush();
         }
     }
 
     private void verifyAttachedElement(Element element, StateNode attachNode,
-            String id, BindingContext context) {
+            String id, String address, BindingContext context) {
         StateNode node = context.node;
 
         String tag = getTag(attachNode);
 
-        if (element != null && hasTag(element, tag)) {
+        boolean failure = false;
+        if (element == null) {
+            failure = true;
+            Console.warn("Element addressed by the " + address
+                    + " is not found. The requested tag name is '" + tag + "'");
+        } else if (!PolymerUtils.hasTag(element, tag)) {
+            failure = true;
+            Console.warn("Element addressed by the " + address
+                    + " has the wrong tag name '" + element.getTagName()
+                    + "', the requested tag name is '" + tag + "'");
+        }
+
+        if (failure) {
+            node.getTree().sendExistingElementWithIdAttachToServer(node,
+                    attachNode.getId(), -1, id);
+        } else {
             NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
             StateNode shadowRootNode = (StateNode) map
                     .getProperty(NodeProperties.SHADOW_ROOT).getValue();
@@ -631,12 +678,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
 
             if (existingId != null) {
+                Console.warn("Element addressed by the " + address
+                        + " has been already attached previously via the node id='"
+                        + existingId + "'");
                 node.getTree().sendExistingElementWithIdAttachToServer(node,
                         attachNode.getId(), existingId, id);
             }
-        } else {
-            node.getTree().sendExistingElementWithIdAttachToServer(node,
-                    attachNode.getId(), -1, id);
         }
     }
 
@@ -904,17 +951,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         return expression;
-    }
-
-    private static native Element getDomElementById(Node shadowRootParent,
-            String id)
-    /*-{
-        return shadowRootParent.$[id];
-    }-*/;
-
-    private static boolean hasTag(Node node, String tag) {
-        return node instanceof Element
-                && tag.equalsIgnoreCase(((Element) node).getTagName());
     }
 
 }
