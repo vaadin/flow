@@ -239,7 +239,8 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
     @Synchronize(property = "value", value = "value-changed")
     @Override
     public String getValue() {
-        return getElement().getProperty("value");
+        return getElement().getProperty("value") == null ? getEmptyValue()
+                : getElement().getProperty("value");
     }
 
     /**

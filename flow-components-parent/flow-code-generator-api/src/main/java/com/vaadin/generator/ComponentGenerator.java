@@ -736,6 +736,15 @@ public class ComponentGenerator {
                 javaClass.addInterface(HasValue.class.getName() + "<"
                         + GENERIC_TYPE + ", " + nestedClass.getName() + ">");
                 method.addAnnotation(Override.class);
+
+                method.setBody(String.format(
+                        "JsonObject _obj = (JsonObject) getElement().getPropertyRaw(\"%s\");"
+                                + "return _obj == null ? getEmptyValue() : new %s().readJson(_obj);",
+                        property.getName(), nestedClass.getName()));
+            } else {
+                method.setBody(String.format(
+                        "return new %s().readJson((JsonObject) getElement().getPropertyRaw(\"%s\"));",
+                        nestedClass.getName(), property.getName()));
             }
 
         } else {
@@ -779,9 +788,6 @@ public class ComponentGenerator {
                             + StringUtils.capitalize(method.getName()));
                 }
 
-                method.setBody(
-                        ComponentGeneratorUtils.generateElementApiGetterForType(
-                                basicType, property.getName()));
 
                 addSynchronizeAnnotationAndJavadocToGetter(method, property,
                         events);
@@ -798,6 +804,14 @@ public class ComponentGenerator {
                     javaClass.removeImport(ComponentSupplier.class);
                     javaClass.removeInterface(ComponentSupplier.class);
                     method.addAnnotation(Override.class);
+
+                    method.setBody(ComponentGeneratorUtils
+                            .generateElementApiValueGetterForType(
+                            basicType, property.getName()));
+                } else {
+                    method.setBody(ComponentGeneratorUtils
+                            .generateElementApiGetterForType(basicType,
+                                    property.getName()));
                 }
             }
         }
