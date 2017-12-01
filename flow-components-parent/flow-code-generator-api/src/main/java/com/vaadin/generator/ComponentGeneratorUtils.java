@@ -301,23 +301,31 @@ public final class ComponentGeneratorUtils {
             throw new IllegalArgumentException("propertyName can not be empty");
         }
 
+        String variableName = StringUtils
+                .uncapitalize(formatStringToValidJavaIdentifier(propertyName));
+
         switch (basicType) {
         case STRING:
         case DATE:
-            return String.format("return getElement().getProperty(\"%s\") == null ? getEmptyValue() : getElement().getProperty(\"%s\");",
-                    propertyName, propertyName);
+            return String.format(
+                    "String %s = getElement().getProperty(\"%s\");"
+                            + "return %s == null ? getEmptyValue() : %s;",
+                    variableName, propertyName, variableName, variableName);
         case ARRAY:
             return String.format(
-                    "return (JsonArray) (getElement().getPropertyRaw(\"%s\") == null ? getEmptyValue() : getElement().getPropertyRaw(\"%s\"));",
-                    propertyName, propertyName);
+                    "Object %s = getElement().getPropertyRaw(\"%s\");"
+                            + "return (JsonArray) (%s == null ? getEmptyValue() : %s);",
+                    variableName, propertyName, variableName, variableName);
         case OBJECT:
             return String.format(
-                    "return (JsonObject) (getElement().getPropertyRaw(\"%s\") == null ? getEmptyValue() : getElement().getPropertyRaw(\"%s\"));",
-                    propertyName, propertyName);
+                    "Object %s = getElement().getPropertyRaw(\"%s\");"
+                            + "return (JsonObject) (%s == null ? getEmptyValue() : %s);",
+                    variableName, propertyName, variableName, variableName);
         case UNDEFINED:
             return String.format(
-                    "return (JsonValue) (getElement().getPropertyRaw(\"%s\") == null ? getEmptyValue() : getElement().getPropertyRaw(\"%s\"));",
-                    propertyName, propertyName);
+                    "Object %s = getElement().getPropertyRaw(\"%s\");"
+                            + "return (JsonValue) (%s == null ? getEmptyValue() : %s);",
+                    variableName, propertyName, variableName, variableName);
         case BOOLEAN:
         case NUMBER:
             return generateElementApiGetterForType(basicType, propertyName);
