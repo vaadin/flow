@@ -23,7 +23,9 @@ import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
+import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.nodefeature.NodeProperties;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -126,10 +128,21 @@ public final class ExecuteJavaScriptElementUtils {
     public static void populateModelProperties(StateNode node,
             JsArray<String> properties) {
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        if (node.getDomNode() == null) {
+            PolymerUtils.invokeWhenDefined(
+                    node.getMap(NodeFeatures.ELEMENT_DATA)
+                            .getProperty(NodeProperties.TAG).getValue()
+                            .toString(),
+                    () -> Reactive.addPostFlushListener(
+                            () -> populateModelProperties(node, properties)));
+            return;
+        }
         for (int i = 0; i < properties.length(); i++) {
             String property = properties.get(i);
             if (!isPropertyDefined(node.getDomNode(), property)) {
-                map.getProperty(property).setValue(null);
+                if (!map.hasPropertyValue(property)) {
+                    map.getProperty(property).setValue(null);
+                }
             } else {
                 map.getProperty(property).syncToServer(
                         WidgetUtil.getJsProperty(node.getDomNode(), property));

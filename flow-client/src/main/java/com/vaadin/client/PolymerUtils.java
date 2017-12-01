@@ -272,11 +272,16 @@ public final class PolymerUtils {
         return templateElement.root;
     }-*/;
 
-    public static native void invokeWhenDefined(Node node, Runnable runnable)
+    public static native void invokeWhenDefined(String tagName,
+            Runnable runnable)
     /*-{
-        $wnd.customElements.whenDefined(node.localName).then(
+        $wnd.customElements.whenDefined(tagName).then(
             function () {
                 runnable.@java.lang.Runnable::run(*)();
             });
     }-*/;
+
+    public static void invokeWhenDefined(Node node, Runnable runnable) {
+        invokeWhenDefined(node.getLocalName(), runnable);
+    }
 }
