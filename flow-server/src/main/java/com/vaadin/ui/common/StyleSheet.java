@@ -43,7 +43,7 @@ import com.vaadin.ui.Component;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Repeatable(InternalContainerAnnotationForSS.class)
+@Repeatable(StyleSheet.Container.class)
 public @interface StyleSheet {
 
     /**
@@ -66,4 +66,28 @@ public @interface StyleSheet {
      * @return load mode for the dependency
      */
     LoadMode loadMode() default LoadMode.EAGER;
+
+    /**
+     * Annotation enabling using multiple {@link StyleSheet @StyleSheet}
+     * annotations.
+     * <p>
+     * <b>NOT meant to be used</b>, for multiple style sheet dependencies,
+     * {@link StyleSheet @StyleSheet} should be used instead.
+     *
+     * @author Vaadin Ltd
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Documented
+    public @interface Container {
+
+        /**
+         * Not to be used, instead multiple {@link StyleSheet @StyleSheet}
+         * annotations should be used.
+         *
+         * @return an array of the style sheet annotations
+         */
+        StyleSheet[] value();
+    }
+
 }

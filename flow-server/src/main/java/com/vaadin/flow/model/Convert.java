@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.model;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -34,7 +35,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Repeatable(InternalContainerAnnotationForConvert.class)
+@Repeatable(Convert.Container.class)
 public @interface Convert {
 
     /**
@@ -54,4 +55,26 @@ public @interface Convert {
      *         string by default
      */
     String path() default "";
+
+    /**
+     * Annotation enabling use of multiple {@link Convert} annotations.
+     * <p>
+     * <b>NOT meant to be used</b>, for multiple converters, {@link Convert}
+     * should be used instead.
+     *
+     * @author Vaadin Ltd
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @Documented
+    public @interface Container {
+
+        /**
+         * Not to be used, instead multiple {@link Convert} annotations should
+         * be used.
+         *
+         * @return an array of the Convert annotations
+         */
+        Convert[] value();
+    }
 }

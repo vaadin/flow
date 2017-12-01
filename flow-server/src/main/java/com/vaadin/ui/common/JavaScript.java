@@ -43,7 +43,7 @@ import com.vaadin.ui.Component;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Repeatable(InternalContainerAnnotationForJS.class)
+@Repeatable(JavaScript.Container.class)
 public @interface JavaScript {
 
     /**
@@ -66,4 +66,28 @@ public @interface JavaScript {
      * @return load mode for the dependency
      */
     LoadMode loadMode() default LoadMode.EAGER;
+
+    /**
+     * Annotation enabling using multiple {@link JavaScript @JavaScript}
+     * annotations.
+     * <p>
+     * <b>NOT meant to be used</b>, for multiple style sheet dependencies,
+     * {@link JavaScript @JavaScript} should be used instead.
+     *
+     * @author Vaadin Ltd
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Documented
+    public @interface Container {
+
+        /**
+         * Not to be used, instead multiple {@link JavaScript @JavaScript}
+         * annotations should be used.
+         *
+         * @return an array of the JavaScript annotations
+         */
+        JavaScript[] value();
+    }
+
 }

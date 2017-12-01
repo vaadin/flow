@@ -44,7 +44,7 @@ import com.vaadin.ui.UI;
 @Target(ElementType.TYPE)
 @Inherited
 @Documented
-@Repeatable(InternalContainerAnnotationForRoute.class)
+@Repeatable(RouteAlias.Container.class)
 public @interface RouteAlias {
 
     /**
@@ -72,4 +72,29 @@ public @interface RouteAlias {
      * @return route up to here should be absolute
      */
     boolean absolute() default false;
+
+    /**
+     * Annotation enabling using multiple {@link RouteAlias @RouteAlias}
+     * annotations.
+     * <p>
+     * <b>NOT meant to be used directly</b>, for multiple style sheet
+     * dependencies, {@link RouteAlias @RouteAlias} should be used instead.
+     *
+     * @author Vaadin Ltd
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Documented
+    @Inherited
+    public @interface Container {
+
+        /**
+         * Not to be used, instead multiple {@link RouteAlias @RouteAlias}
+         * annotations should be used.
+         *
+         * @return an array of the RouteAlias annotations
+         */
+        RouteAlias[] value();
+    }
+
 }
