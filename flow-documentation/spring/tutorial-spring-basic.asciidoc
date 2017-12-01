@@ -182,6 +182,6 @@ Flow, Flow Spring add-on and Spring web:
     <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-web</artifactId>
-        <version>5.0.0.RELEASE</version>
+        <version>5.0.2.RELEASE</version>
     </dependency>
 ----
