@@ -284,8 +284,7 @@ public class UIInternals implements Serializable {
         if (session == null) {
             return null;
         } else {
-            return session.toString() + " for "
-                    + session.getService().getServiceName();
+            return session + " for " + session.getService().getServiceName();
         }
     }
 
