@@ -19,8 +19,10 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.ui.Component;
@@ -38,7 +40,7 @@ import com.vaadin.ui.Component;
 @Documented
 @Retention(RUNTIME)
 @Target(TYPE)
-@Repeatable(InternalContainerAnnotationForUses.class)
+@Repeatable(Uses.Container.class)
 public @interface Uses {
 
     /**
@@ -47,4 +49,20 @@ public @interface Uses {
      * @return the component class to depend on
      */
     Class<? extends Component> value();
+
+    /**
+     * Internal annotation to enable use of multiple {@link Uses} annotations.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Documented
+    public @interface Container {
+
+        /**
+         * Internally used to enable use of multiple {@link Uses} annotations.
+         *
+         * @return an array of the uses annotations
+         */
+        Uses[] value();
+    }
 }
