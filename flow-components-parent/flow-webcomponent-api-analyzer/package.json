@@ -7,7 +7,7 @@
   "dependencies": {
     "bower": "^1.8.2",
     "coa": "~1.0.1",
-    "ejs": "~2.4.2",
+    "ejs": "~2.5.5",
     "fs-extra": "latest",
     "gulp": "latest",
     "gulp-bower": "latest",

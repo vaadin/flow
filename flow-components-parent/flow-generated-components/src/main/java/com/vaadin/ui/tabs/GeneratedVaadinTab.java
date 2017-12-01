@@ -98,6 +98,40 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * Submittable string value. The default value is the trimmed text content
+     * of the element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code value} property from the webcomponent
+     */
+    public String getValue() {
+        return getElement().getProperty("value");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Submittable string value. The default value is the trimmed text content
+     * of the element.
+     * </p>
+     * 
+     * @param value
+     *            the String value to set
+     */
+    public void setValue(String value) {
+        getElement().setProperty("value", value == null ? "" : value);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * If true, the user cannot interact with this element.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -155,37 +189,5 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      */
     public void setSelected(boolean selected) {
         getElement().setProperty("selected", selected);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * A property representing the value of this item
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code value} property from the webcomponent
-     */
-    public String getValue() {
-        return getElement().getProperty("value");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * A property representing the value of this item
-     * </p>
-     * 
-     * @param value
-     *            the String value to set
-     */
-    public void setValue(String value) {
-        getElement().setProperty("value", value == null ? "" : value);
     }
 }
