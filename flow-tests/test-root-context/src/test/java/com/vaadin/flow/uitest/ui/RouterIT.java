@@ -11,6 +11,8 @@ import com.vaadin.flow.uitest.servlet.RouterTestServlet.ChildNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooBarNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooNavigationTarget;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
+import com.vaadin.router.RouteAlias;
 
 public class RouterIT extends ChromeBrowserTest {
 
@@ -87,6 +89,37 @@ public class RouterIT extends ChromeBrowserTest {
         WebElement element = findElement(By.id("error-path"));
         Assert.assertNotNull(element);
         Assert.assertEquals("exception", element.getText());
+    }
+
+    @Test
+    public void routeWithRouteAliasHasNoParents() {
+        openRouteUrl(RouterTestServlet.AliasLayout.class
+                .getAnnotation(Route.class).value());
+
+        Assert.assertFalse(
+                "Found parent layouts even though none should be available.",
+                isElementPresent(By.id("mainLayout")));
+        Assert.assertFalse(
+                "Found parent layouts even though none should be available.",
+                isElementPresent(By.id("middleLayout")));
+        Assert.assertEquals("Layout content has the wrong class",
+                RouterTestServlet.AliasLayout.class.getSimpleName(),
+                findElement(By.id("name-div")).getText());
+    }
+
+    @Test
+    public void routeAliasHasTwoParentsWhenRouteHasNone() {
+        openRouteUrl(RouterTestServlet.AliasLayout.class
+                .getAnnotation(RouteAlias.class).value());
+
+        Assert.assertTrue("Missing top most level: main layout.",
+                isElementPresent(By.id("mainLayout")));
+        Assert.assertTrue("Missing center layout: middle layout.",
+                isElementPresent(By.id("middleLayout")));
+
+        Assert.assertEquals("Layout content has the wrong class",
+                RouterTestServlet.AliasLayout.class.getSimpleName(),
+                findElement(By.id("name-div")).getText());
     }
 
     private void openRouteUrl(String route) {

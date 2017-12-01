@@ -19,8 +19,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.router.Route;
+import com.vaadin.router.RouterLayout;
 import com.vaadin.server.BootstrapListener;
 import com.vaadin.server.BootstrapPageResponse;
+import com.vaadin.ui.Viewport;
+import com.vaadin.ui.html.Div;
 
 @CodeFor("application-structure/tutorial-bootstrap.asciidoc")
 public class BootstrapPage {
@@ -50,5 +54,24 @@ public class BootstrapPage {
             meta.attr("content", content);
             return meta;
         }
+    }
+
+    @Route("")
+    @Viewport("width=device-width")
+    public class MyApp extends Div {
+        public MyApp() {
+            setText("Hello world");
+        }
+    }
+
+    @Route(value = "", layout = MyLayout.class)
+    public class MyView extends Div {
+        public MyView() {
+            setText("Hello world");
+        }
+    }
+
+    @Viewport("width=device-width")
+    public class MyLayout extends Div implements RouterLayout {
     }
 }
