@@ -18,6 +18,7 @@ Currently there are the following implementations:
 - https://github.com/vaadin/vaadin-form-layout-flow[vaadin-form-layout-flow]
 - https://github.com/vaadin/vaadin-grid-flow[vaadin-grid-flow]
 - https://github.com/vaadin/vaadin-icons-flow[vaadin-icons-flow]
+- https://github.com/vaadin/vaadin-iron-list-flow[vaadin-iron-list-flow]
 - https://github.com/vaadin/vaadin-ordered-layout-flow[vaadin-ordered-layout-flow]
 - https://github.com/vaadin/vaadin-progress-bar-flow[vaadin-progress-bar-flow]
 - https://github.com/vaadin/vaadin-split-layout-flow[vaadin-split-layout-flow]
@@ -26,7 +27,7 @@ Currently there are the following implementations:
 - https://github.com/vaadin/vaadin-upload-flow[vaadin-upload-flow]
 
 These components are available as optional dependencies that can be added to
-any Flow project. Besides, you can add `vaadin-platform` dependency, if you need flow components for your project.
+any Flow project. Besides, you can add `vaadin-platform` dependency, if you need flow components for your project. It will automatically add dependencies to *ALL* available components.
 [source,xml]
 ----
 <repositories>
@@ -42,7 +43,7 @@ any Flow project. Besides, you can add `vaadin-platform` dependency, if you need
     <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin</artifactId>
-        <version>10.0.0.alpha8</version>
+        <version>${vaadin.platform.version}</version>
     </dependency>
 </dependencies>
 ----
@@ -100,7 +101,7 @@ When using Maven you can add a the button component into your `pom.xml` as this:
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-bom</artifactId>
-            <version>10.0.0.alpha8</version>
+            <version>${vaadin.platform.version}</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
