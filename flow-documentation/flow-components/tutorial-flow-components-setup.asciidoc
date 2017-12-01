@@ -47,7 +47,8 @@ any Flow project. Besides, you can add `vaadin-platform` dependency, if you need
     </dependency>
 </dependencies>
 ----
-
+[NOTE]
+`vaadin.platform` releases regularly and you can check the version number https://github.com/vaadin/platform/releases[here]
 
 = Overview
 
