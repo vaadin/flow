@@ -5,11 +5,49 @@ layout: page
 ---
 
 ifdef::env-github[:outfilesuffix: .asciidoc]
-= Flow
-:toc:
-== Product overview
+= Vaadin Flow
 
-Flow is a Java framework for building interactive web sites.
+Vaadin Flow, a part of Vaadin 10, is a new Java framework for building modern web apps and websites.
+Flow allows developers to be super productive by creating UIs with using only type safe Java on server side or
+by using HTML Templates for composing the UI and binding it to a backend with Java.
+
+At the heart of Vaadin Flow, there are powerful abtraction layers for easily building reusable UI components with high-level Java APIs,
+that are easily connected to any backend.
+// MAYBE REMOVE THE NEXT PARAGRAPH COMPLETELY ? It is from Joonas/Leif/Matti //
+Flow provides automated bi-directional communication between the server and the browser.
+Flow gives Java developers full access to all of the modern web and makes it easier to connect the UI to data via a robust Java backend,
+than using traditional REST based communication.
+
+You are reading the documentation for Flow. It is divided into the following subsections in recommended reading order :
+
+// not sure if basic concepts and getting started should be split ? //
+// The following will be the links to each the subtopic //
+* Basic Concepts and Architecture
+* Getting Started
+* Router
+* Vaadin Components
+* Creating New Components
+** Manipulating the DOM with Element API
+// web components and polymer templates were their own main level topics first, but moved here //
+** Integrating Web Components
+** Polymer Templates
+* Vaadin Data Model
+** Building Forms with Binder
+** DataProviders
+* Advanced Miscellaneous Topics
+// Not sure if these should be listed here, but it might help discoverablity since these are really mix of things //
+** <<advanced/tutorial-execute-javascript#,Executing JavaScript from Server Side>>
+** <<advanced/tutorial-bootstrap#,Modifying the bootstrap page>>
+** <<advanced/tutorial-service-init-listener#,Configure RequestHandlers, BootstrapListeners and DependencyFilters using VaadinServiceInitListener>>
+** <<advanced/tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
+** <<advanced/tutorial-dynamic-content#,Showing Dynamic Content>>
+** <<advanced/tutorial-loading-indicator#,Customizing the Loading Indicator>>
+** <<advanced/tutorial-history-api#,History API>>
+
+////
+THE REST WILL BE REMOVED FROM HERE AND MOVED TO INSIDE THE SUBTOPICS ABOVE
+
+Vaadin Flow is a Java framework for building interactive web sites.
 The heart of Flow will consist of three ways of interacting with the DOM in the user's web browser:
 
  1. HTML-based templates that are bound to server-side Model data.
@@ -141,3 +179,4 @@ The API allows you to:
 * Programmatically traverse the history.
 * Modify the history by adding a new entry or replacing the current entry.
 * Listen to user originated history traversal events from the browser.
+////
