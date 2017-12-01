@@ -333,9 +333,9 @@ public final class ComponentGeneratorUtils {
     private static String generateElementApiValueGetterForTypeRaw(
             String returnType, String propertyName, String variableName) {
         return String.format("Object %s = getElement().getPropertyRaw(\"%s\");"
-                + "return (" + returnType
-                + ") (%s == null ? getEmptyValue() : %s);",
-                variableName, propertyName, variableName, variableName);
+                + "return (%s) (%s == null ? getEmptyValue() : %s);",
+                variableName, propertyName, returnType, variableName,
+                variableName);
     }
 
     /**
