@@ -21,6 +21,13 @@ import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import elemental.json.JsonArray;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.event.EventData;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasComponents;
 
 /**
@@ -101,8 +108,57 @@ import com.vaadin.ui.common.HasComponents;
 public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
         Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The array of list items
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'items-changed' event happens.
+     * </p>
+     * 
+     * @return the {@code items} property from the webcomponent
+     */
+    @Synchronize(property = "items", value = "items-changed")
+    protected JsonArray protectedGetItems() {
+        return (JsonArray) getElement().getPropertyRaw("items");
+    }
+
     public void focus() {
         getElement().callFunction("focus");
+    }
+
+    @DomEvent("items-changed")
+    public static class ItemsChangeEvent<R extends GeneratedVaadinTabs<R>>
+            extends ComponentEvent<R> {
+        private final JsonArray items;
+
+        public ItemsChangeEvent(R source, boolean fromClient,
+                @EventData("event.items") JsonArray items) {
+            super(source, fromClient);
+            this.items = items;
+        }
+
+        public JsonArray getItems() {
+            return items;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code items-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public Registration addItemsChangeListener(
+            ComponentEventListener<ItemsChangeEvent<R>> listener) {
+        return addListener(ItemsChangeEvent.class,
+                (ComponentEventListener) listener);
     }
 
     /**

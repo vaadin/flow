@@ -5,6 +5,14 @@
   "version": "1.0.0-beta1",
   "properties": [
     {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Submittable string value. The default value is the trimmed text content of the element."
+    },
+    {
       "name": "disabled",
       "type": [
         "BOOLEAN"
@@ -19,17 +27,16 @@
       ],
       "objectType": [],
       "description": "If true, the item is in selected state.\n         "
-    },
-    {
-      "name": "value",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "A property representing the value of this item\n         "
     }
   ],
-  "methods": [],
+  "methods": [
+    {
+      "name": "disconnectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [],
   "slots": [],
   "behaviors": [],

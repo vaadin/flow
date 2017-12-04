@@ -19,6 +19,16 @@
       ],
       "objectType": [],
       "description": "Set tabs disposition. Possible values are `horizontal|vertical`\n             "
+    },
+    {
+      "name": "items",
+      "type": [
+        "ARRAY"
+      ],
+      "objectType": [],
+      "description": " The array of list items ",
+      "readOnly": true,
+      "notify": true
     }
   ],
   "methods": [
