@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
+import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
@@ -224,7 +225,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -596,41 +597,56 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
+        ExistingElementMap existingElementMap = node.getTree().getRegistry()
+                .getExistingElementMap();
+
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
-            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
-                PolymerUtils.invokeWhenDefined(context.htmlNode,
-                        () -> appendVirtualChild(context, node, false));
-                node.getTree().getRegistry().getExistingElementMap().add(node);
+            String id = object.getString(NodeProperties.PAYLOAD);
+            String address = "id='" + id + "'";
+
+            if (!verifyAttachRequest(node, id, address)) {
                 return;
             }
 
-            String id = object.getString(NodeProperties.PAYLOAD);
+            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
+                PolymerUtils.invokeWhenDefined(context.htmlNode,
+                        () -> appendVirtualChild(context, node, false));
+                existingElementMap.add(node);
+                return;
+            }
 
             Element existingElement = PolymerUtils
                     .getDomElementById(context.htmlNode, id);
-            verifyAttachedElement(existingElement, node, id, "id='" + id + "'",
-                    context);
-
-            node.setDomNode(existingElement);
-            context.binderContext.createAndBind(node);
-            node.getTree().getRegistry().getExistingElementMap().remove(node);
+            if (verifyAttachedElement(existingElement, node, id, address,
+                    context)) {
+                node.setDomNode(existingElement);
+                context.binderContext.createAndBind(node);
+            }
+            existingElementMap.remove(node);
         } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
-            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
-                PolymerUtils.invokeWhenDefined(context.htmlNode,
-                        () -> appendVirtualChild(context, node, false));
-                node.getTree().getRegistry().getExistingElementMap().add(node);
+            JsonArray path = object.getArray(NodeProperties.PAYLOAD);
+            String address = "path='" + path.toString() + "'";
+
+            if (!verifyAttachRequest(node, null, address)) {
                 return;
             }
 
-            JsonArray path = object.getArray(NodeProperties.PAYLOAD);
-            // TODO : check whether the element is already "attached"
+            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
+                PolymerUtils.invokeWhenDefined(context.htmlNode,
+                        () -> appendVirtualChild(context, node, false));
+                existingElementMap.add(node);
+                return;
+            }
+
             Element customElement = PolymerUtils.getCustomElement(
                     PolymerUtils.getDomRoot(context.htmlNode), path);
-            verifyAttachedElement(customElement, node, null,
-                    "path='" + path.toString() + "'", context);
-            node.setDomNode(customElement);
-            context.binderContext.createAndBind(node);
-            node.getTree().getRegistry().getExistingElementMap().remove(node);
+
+            if (verifyAttachedElement(customElement, node, null, address,
+                    context)) {
+                node.setDomNode(customElement);
+                context.binderContext.createAndBind(node);
+            }
+            existingElementMap.remove(node);
         } else {
             assert false : "Unexpected payload type " + type;
         }
@@ -642,10 +658,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void verifyAttachedElement(Element element, StateNode attachNode,
+    private boolean verifyAttachedElement(Element element, StateNode attachNode,
             String id, String address, BindingContext context) {
         StateNode node = context.node;
-
         String tag = getTag(attachNode);
 
         boolean failure = false;
@@ -682,6 +697,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
 
             if (existingId != null) {
+                failure = true;
                 Console.warn("Element addressed by the " + address
                         + " has been already attached previously via the node id='"
                         + existingId + "'");
@@ -689,6 +705,32 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                         attachNode.getId(), existingId, id);
             }
         }
+
+        return !failure;
+    }
+
+    private boolean verifyAttachRequest(StateNode node, String id,
+            String address) {
+        /*
+         * This should not happen at all because server side may not send
+         * several attach requests for the same client-side element. But that's
+         * the situation when the code is written. So this is a kind of
+         * assertion for the future code which verifies the correctness of
+         * assumptions made on the client side about server-side code impl.
+         */
+        ExistingElementMap existingElementMap = node.getTree().getRegistry()
+                .getExistingElementMap();
+        Integer existingId = existingElementMap.getExistingNodeId(node);
+        if (existingId != null && existingId.intValue() != node.getId()) {
+            Console.warn("There is already a request to attach "
+                    + "element addressed by the " + address
+                    + ". The exusting request's node id='" + existingId
+                    + "'. Cannot attach the same element twice.");
+            node.getTree().sendExistingElementWithIdAttachToServer(node,
+                    node.getId(), existingId, id);
+            return false;
+        }
+        return true;
     }
 
     private static Optional<String> extractNodeId(StateNode node) {
