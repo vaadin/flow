@@ -137,7 +137,7 @@ public class ClientEngineLinker extends SingleScriptLinker {
             throw new UnableToCompleteException();
         }
 
-        Collection<Artifact<?>> toReturn = new ArrayList<>();
+        ArrayList<Artifact<?>> toReturn = new ArrayList<>();
         toReturn.add(new Script(result.getStrongName(), js[0]));
         toReturn.addAll(
                 emitSelectionInformation(result.getStrongName(), result));
