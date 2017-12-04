@@ -159,7 +159,7 @@ public final class RouterUtil {
         routePrefix.ifPresent(prefix -> list.add(prefix.value()));
 
         // break chain on an absolute RoutePrefix or Route
-        if ((routePrefix.isPresent() && routePrefix.get().absolute())) {
+        if (routePrefix.isPresent() && routePrefix.get().absolute()) {
             return list;
         }
 
