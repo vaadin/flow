@@ -36,9 +36,9 @@ public class RouteTreeNode implements Serializable {
      */
     public static final String PLACEHOLDER_SEGMENT = "{}";
 
-    private final HashMap<String, RouteTreeNode> children;
+    private final Map<String, RouteTreeNode> children;
 
-    private final HashMap<String, NavigationHandler> routes;
+    private final Map<String, NavigationHandler> routes;
 
     private NavigationHandler wildcardHandler;
 

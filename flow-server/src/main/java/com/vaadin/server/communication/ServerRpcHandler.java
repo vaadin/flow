@@ -388,7 +388,7 @@ public class ServerRpcHandler implements Serializable {
     }
 
     private static class LazyInvocationHandlers {
-        private static final HashMap<String, RpcInvocationHandler> HANDLERS = loadHandlers()
+        private static final Map<String, RpcInvocationHandler> HANDLERS = loadHandlers()
                 .stream()
                 .collect(Collectors.toMap(RpcInvocationHandler::getRpcType,
                         Function.identity(),

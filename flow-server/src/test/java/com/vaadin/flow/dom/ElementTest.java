@@ -95,7 +95,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void publicElementMethodsShouldReturnElement() {
-        HashSet<String> ignore = new HashSet<>();
+        Set<String> ignore = new HashSet<>();
         ignore.add("toString");
         ignore.add("hashCode");
         ignore.add("equals");
@@ -122,7 +122,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void publicElementStyleMethodsShouldReturnElement() {
-        HashSet<String> ignore = new HashSet<>();
+        Set<String> ignore = new HashSet<>();
         ignore.add("toString");
         ignore.add("hashCode");
         ignore.add("equals");
@@ -1101,7 +1101,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test
     public void listenersFiredInRegisteredOrder() {
         Element element = ElementFactory.createDiv();
-        ArrayList<Integer> eventOrder = new ArrayList<>();
+        List<Integer> eventOrder = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             final int j = i;

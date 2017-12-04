@@ -54,9 +54,9 @@ public class StateNode implements Serializable {
 
     private Map<Class<? extends NodeFeature>, Serializable> changes;
 
-    private ArrayList<Command> attachListeners;
+    private List<Command> attachListeners;
 
-    private ArrayList<Command> detachListeners;
+    private List<Command> detachListeners;
 
     private NodeOwner owner = NullOwner.get();
 
@@ -491,7 +491,7 @@ public class StateNode implements Serializable {
 
     private void fireAttachListeners(boolean initialAttach) {
         if (attachListeners != null) {
-            ArrayList<Command> copy = new ArrayList<>(attachListeners);
+            List<Command> copy = new ArrayList<>(attachListeners);
 
             copy.forEach(Command::execute);
         }
@@ -501,7 +501,7 @@ public class StateNode implements Serializable {
 
     private void fireDetachListeners() {
         if (detachListeners != null) {
-            ArrayList<Command> copy = new ArrayList<>(detachListeners);
+            List<Command> copy = new ArrayList<>(detachListeners);
 
             copy.forEach(Command::execute);
         }

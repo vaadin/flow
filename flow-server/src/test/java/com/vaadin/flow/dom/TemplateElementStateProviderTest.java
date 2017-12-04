@@ -851,7 +851,7 @@ public class TemplateElementStateProviderTest {
     }
 
     private void assertClassList(ClassList classList, String... expectedNames) {
-        HashSet<String> expectedSet = new HashSet<>(
+        Set<String> expectedSet = new HashSet<>(
                 Arrays.asList(expectedNames));
 
         Assert.assertEquals(expectedNames.length, classList.size());
@@ -921,7 +921,7 @@ public class TemplateElementStateProviderTest {
 
         // Test that removing any feature makes it non-accepted
         for (int i = 0; i < requiredFeatures.length; i++) {
-            ArrayList<Class<? extends NodeFeature>> list = new ArrayList<>(
+            List<Class<? extends NodeFeature>> list = new ArrayList<>(
                     Arrays.asList(requiredFeatures));
             list.remove(i);
             Assert.assertFalse(provider

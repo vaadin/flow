@@ -241,7 +241,7 @@ public class JsonSerializerTest {
         private List<String> listOfStrings;
         private Set<Integer> setOfIntegers;
         private LinkedList<Boolean> linkedListOfBooleans;
-        private ArrayList<Double> arrayListOfDoubles;
+        private List<Double> arrayListOfDoubles;
 
         public List<String> getListOfStrings() {
             return listOfStrings;
@@ -268,12 +268,12 @@ public class JsonSerializerTest {
             this.linkedListOfBooleans = linkedListOfBooleans;
         }
 
-        public ArrayList<Double> getArrayListOfDoubles() {
+        public List<Double> getArrayListOfDoubles() {
             return arrayListOfDoubles;
         }
 
         public void setArrayListOfDoubles(
-                ArrayList<Double> arrayListOfDoubles) {
+                List<Double> arrayListOfDoubles) {
             this.arrayListOfDoubles = arrayListOfDoubles;
         }
     }

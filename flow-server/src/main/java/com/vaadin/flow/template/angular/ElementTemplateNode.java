@@ -50,10 +50,10 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
 
     private final ArrayList<TemplateNode> children;
 
-    private final HashMap<String, BindingValueProvider> properties;
-    private final HashMap<String, BindingValueProvider> attributes;
-    private final HashMap<String, BindingValueProvider> classNames;
-    private final HashMap<String, String> eventHandlers;
+    private final Map<String, BindingValueProvider> properties;
+    private final Map<String, BindingValueProvider> attributes;
+    private final Map<String, BindingValueProvider> classNames;
+    private final Map<String, String> eventHandlers;
 
     /**
      * Creates a new template node.
