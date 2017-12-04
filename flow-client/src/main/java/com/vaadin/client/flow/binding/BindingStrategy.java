@@ -15,9 +15,9 @@
  */
 package com.vaadin.client.flow.binding;
 
+import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.flow.nodefeature.NodeFeatures;
-import com.vaadin.flow.nodefeature.NodeProperties;
 
 import elemental.dom.Node;
 
@@ -79,7 +79,7 @@ public interface BindingStrategy<T extends Node> {
      * @return tag of the {@code node}
      */
     default String getTag(StateNode node) {
-        return (String) node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.TAG).getValue();
+        return PolymerUtils.getTag(node);
     }
+
 }

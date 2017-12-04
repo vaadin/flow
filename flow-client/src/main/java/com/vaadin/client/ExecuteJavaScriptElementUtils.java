@@ -25,7 +25,6 @@ import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.nodefeature.NodeFeatures;
-import com.vaadin.flow.nodefeature.NodeProperties;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -129,10 +128,7 @@ public final class ExecuteJavaScriptElementUtils {
             JsArray<String> properties) {
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
         if (node.getDomNode() == null) {
-            PolymerUtils.invokeWhenDefined(
-                    node.getMap(NodeFeatures.ELEMENT_DATA)
-                            .getProperty(NodeProperties.TAG).getValue()
-                            .toString(),
+            PolymerUtils.invokeWhenDefined(PolymerUtils.getTag(node),
                     () -> Reactive.addPostFlushListener(
                             () -> populateModelProperties(node, properties)));
             return;

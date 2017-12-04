@@ -284,4 +284,9 @@ public final class PolymerUtils {
     public static void invokeWhenDefined(Node node, Runnable runnable) {
         invokeWhenDefined(node.getLocalName(), runnable);
     }
+
+    public static String getTag(StateNode node) {
+        return (String) node.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.TAG).getValue();
+    }
 }

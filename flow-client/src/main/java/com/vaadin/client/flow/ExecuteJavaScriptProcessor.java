@@ -18,6 +18,7 @@ package com.vaadin.client.flow;
 import java.util.Arrays;
 
 import com.vaadin.client.Console;
+import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -84,6 +85,20 @@ public class ExecuteJavaScriptProcessor {
             StateNode stateNode = ClientJsonCodec.decodeStateNode(tree,
                     parameterJson);
             if (stateNode != null) {
+                ExistingElementMap existingMap = registry
+                        .getExistingElementMap();
+                if (stateNode.getDomNode() == null
+                        && existingMap.hasNode(stateNode)) {
+                    existingMap.addNodeRemoveListener(id -> {
+                        if (id == stateNode.getId()) {
+                            Reactive.addPostFlushListener(
+                                    () -> handleInvocation(invocation));
+                            return true;
+                        }
+                        return false;
+                    });
+                    return;
+                }
                 map.set(parameter, stateNode);
             }
         }

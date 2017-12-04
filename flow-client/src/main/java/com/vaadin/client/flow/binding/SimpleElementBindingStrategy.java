@@ -600,6 +600,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
                 PolymerUtils.invokeWhenDefined(context.htmlNode,
                         () -> appendVirtualChild(context, node, false));
+                node.getTree().getRegistry().getExistingElementMap().add(node);
                 return;
             }
 
@@ -612,10 +613,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             node.setDomNode(existingElement);
             context.binderContext.createAndBind(node);
+            node.getTree().getRegistry().getExistingElementMap().remove(node);
         } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
                 PolymerUtils.invokeWhenDefined(context.htmlNode,
                         () -> appendVirtualChild(context, node, false));
+                node.getTree().getRegistry().getExistingElementMap().add(node);
                 return;
             }
 
@@ -627,6 +630,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     "path='" + path.toString() + "'", context);
             node.setDomNode(customElement);
             context.binderContext.createAndBind(node);
+            node.getTree().getRegistry().getExistingElementMap().remove(node);
         } else {
             assert false : "Unexpected payload type " + type;
         }
