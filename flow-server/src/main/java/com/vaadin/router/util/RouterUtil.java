@@ -17,10 +17,13 @@ package com.vaadin.router.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.LocationChangeEvent;
@@ -28,6 +31,7 @@ import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouteAlias;
+import com.vaadin.router.RoutePrefix;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
@@ -76,12 +80,12 @@ public final class RouterUtil {
                 Route.class);
         List<RouteAlias> routeAliases = AnnotationReader
                 .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent() && path.equals(route.get().value())
+        if (route.isPresent() && path.equals(getRoutePath(component, route.get()))
                 && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
         } else {
 
-            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(path,
+            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(component, path,
                     routeAliases);
             if (matchingRoute.isPresent()) {
                 list.addAll(collectRouteParentLayouts(
@@ -92,9 +96,87 @@ public final class RouterUtil {
         return list;
     }
 
-    private static Optional<RouteAlias> getMatchingRouteAlias(String path,
+    /**
+     * Get the actual route path including all parent layout
+     * {@link RoutePrefix}.
+     * 
+     * @param component
+     *            navigation target component to get route path for
+     * @param route
+     *            route annotation to check
+     * @return actual path for given route target
+     */
+    public static String getRoutePath(Class<?> component, Route route) {
+        if (route.absolute()) {
+            return route.value();
+        }
+        List<String> parentRoutePrefixes = getRoutePrefixes(component,
+                route.layout(), route.value());
+        return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
+    }
+
+    /**
+     * Get the actual route path including all parent layout
+     * {@link RoutePrefix}.
+     * 
+     * @param component
+     *            navigation target component to get route path for
+     * @param alias
+     *            route alias annotation to check
+     * @return actual path for given route alias target
+     */
+    public static String getRouteAliasPath(Class<?> component,
+            RouteAlias alias) {
+        if (alias.absolute()) {
+            return alias.value();
+        }
+        List<String> parentRoutePrefixes = getRoutePrefixes(component,
+                alias.layout(), alias.value());
+        return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
+    }
+
+    private static List<String> getRoutePrefixes(Class<?> component,
+            final Class<? extends RouterLayout> layout, final String value) {
+        List<String> parentRoutePrefixes = getParentRoutePrefixes(component,
+                () -> layout);
+        Collections.reverse(parentRoutePrefixes);
+        if (value != null && !value.isEmpty()) {
+            parentRoutePrefixes.add(value);
+        }
+
+        return parentRoutePrefixes;
+    }
+
+    private static List<String> getParentRoutePrefixes(Class<?> component,
+            Supplier<Class<? extends RouterLayout>> routerLayoutSupplier) {
+        List<String> list = new ArrayList<>();
+
+        Optional<ParentLayout> parentLayout = AnnotationReader
+                .getAnnotationFor(component, ParentLayout.class);
+        Optional<RoutePrefix> routePrefix = AnnotationReader
+                .getAnnotationFor(component, RoutePrefix.class);
+
+        routePrefix.ifPresent(prefix -> list.add(prefix.value()));
+
+        // break chain on an absolute RoutePrefix or Route
+        if (routePrefix.isPresent() && routePrefix.get().absolute()) {
+            return list;
+        }
+
+        Class<? extends RouterLayout> routerLayout = routerLayoutSupplier.get();
+        if (routerLayout != null && !routerLayout.equals(UI.class)) {
+            list.addAll(getParentRoutePrefixes(routerLayout, () -> null));
+        } else if (parentLayout.isPresent()) {
+            list.addAll(getParentRoutePrefixes(parentLayout.get().value(),
+                    () -> null));
+        }
+
+        return list;
+    }
+
+    private static Optional<RouteAlias> getMatchingRouteAlias(Class<?> component, String path,
             List<RouteAlias> routeAliases) {
-        return routeAliases.stream().filter(alias -> path.equals(alias.value())
+        return routeAliases.stream().filter(alias -> path.equals(getRouteAliasPath(component, alias))
                 && !alias.layout().equals(UI.class)).findFirst();
     }
 
@@ -147,11 +229,11 @@ public final class RouterUtil {
                 Route.class);
         List<RouteAlias> routeAliases = AnnotationReader
                 .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent() && path.equals(route.get().value())
+        if (route.isPresent() && path.equals(getRoutePath(component, route.get()))
                 && !route.get().layout().equals(UI.class)) {
             return recuseToTopLayout(route.get().layout());
         } else {
-            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(path,
+            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(component, path,
                     routeAliases);
             if (matchingRoute.isPresent()) {
                 return recuseToTopLayout(matchingRoute.get().layout());

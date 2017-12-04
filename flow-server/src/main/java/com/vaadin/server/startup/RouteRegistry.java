@@ -28,27 +28,21 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.InternalServerError;
 import com.vaadin.router.Location;
 import com.vaadin.router.NotFoundException;
-import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouteAlias;
 import com.vaadin.router.RouteNotFoundError;
-import com.vaadin.router.RoutePrefix;
-import com.vaadin.router.RouterLayout;
+import com.vaadin.router.util.RouterUtil;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
-import com.vaadin.util.AnnotationReader;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -372,67 +366,18 @@ public class RouteRegistry implements Serializable {
             Collection<String> aliases) {
         Route annotation = navigationTarget.getAnnotation(Route.class);
 
-        List<String> parentRoutePrefixes = getParentRoutePrefixes(
-                navigationTarget, () -> annotation.layout());
-        Collections.reverse(parentRoutePrefixes);
-
         aliases.addAll(getRouteAliases(navigationTarget));
 
-        if (annotation.absolute()) {
-            return annotation.value();
-        }
-
-        if (!annotation.value().isEmpty()) {
-            parentRoutePrefixes.add(annotation.value());
-        }
-
-        return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
+        return RouterUtil.getRoutePath(navigationTarget, annotation);
     }
 
     private Collection<String> getRouteAliases(Class<?> navigationTarget) {
         List<String> aliases = new ArrayList<>();
         for (RouteAlias alias : navigationTarget
                 .getAnnotationsByType(RouteAlias.class)) {
-            if (alias.absolute()) {
-                aliases.add(alias.value());
-            } else {
-                List<String> prefixes = getParentRoutePrefixes(navigationTarget,
-                        () -> alias.layout());
-                Collections.reverse(prefixes);
-                if (!alias.value().isEmpty()) {
-                    prefixes.add(alias.value());
-                }
-                aliases.add(prefixes.stream().collect(Collectors.joining("/")));
-            }
+            aliases.add(RouterUtil.getRouteAliasPath(navigationTarget, alias));
         }
         return aliases;
-    }
-
-    private List<String> getParentRoutePrefixes(Class<?> component,
-            Supplier<Class<? extends RouterLayout>> routerLayoutSupplier) {
-        List<String> list = new ArrayList<>();
-
-        Optional<ParentLayout> parentLayout = AnnotationReader
-                .getAnnotationFor(component, ParentLayout.class);
-        Optional<RoutePrefix> routePrefix = AnnotationReader
-                .getAnnotationFor(component, RoutePrefix.class);
-
-        routePrefix.ifPresent(prefix -> list.add(prefix.value()));
-
-        // break chain on an absolute RoutePrefix or Route
-        if ((routePrefix.isPresent() && routePrefix.get().absolute())) {
-            return list;
-        }
-
-        Class<? extends RouterLayout> routerLayout = routerLayoutSupplier.get();
-        if (routerLayout != null && !routerLayout.equals(UI.class)) {
-            list.addAll(getParentRoutePrefixes(routerLayout, () -> null));
-        } else if (parentLayout.isPresent()) {
-            list.addAll(getParentRoutePrefixes(parentLayout.get().value(),
-                    () -> null));
-        }
-
-        return list;
     }
 
     private void registerNavigationTargets(
