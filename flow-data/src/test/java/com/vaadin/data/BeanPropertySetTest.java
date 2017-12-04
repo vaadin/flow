@@ -220,4 +220,22 @@ public class BeanPropertySetTest {
         Assert.assertEquals(new HashSet<>(Arrays.asList("name", "born")),
                 propertyNames);
     }
+
+    @Test
+    public void isSubProperty() {
+        PropertySet<FatherAndSon> propertySet = BeanPropertySet
+                .get(FatherAndSon.class);
+
+        Assert.assertTrue(
+                "Dot-separated property chain \"father.firstName\" should refer to a sub-property",
+                propertySet.getProperty("father.firstName").get()
+                        .isSubProperty());
+        Assert.assertFalse(
+                "Property name without dot-separated parent properties should not refer to a sub-property",
+                propertySet.getProperty("father").get().isSubProperty());
+        Assert.assertTrue(
+                "Dot-separated property chain \"father.son.father.son\" should refer to a sub-property",
+                propertySet.getProperty("father.son.father.son").get()
+                        .isSubProperty());
+    }
 }
