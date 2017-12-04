@@ -198,6 +198,11 @@ public class BeanPropertySet<T> implements PropertySet<T> {
             return new SerializedPropertyDefinition(getPropertySet().beanType,
                     getName());
         }
+
+        @Override
+        public boolean isSubProperty() {
+            return false;
+        }
     }
 
     /**
@@ -277,6 +282,11 @@ public class BeanPropertySet<T> implements PropertySet<T> {
          */
         public PropertyDefinition<T, ?> getParent() {
             return parent;
+        }
+
+        @Override
+        public boolean isSubProperty() {
+            return true;
         }
     }
 

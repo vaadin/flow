@@ -57,8 +57,6 @@ public interface PropertyDefinition<T, V> extends Serializable {
     /**
      * Gets the type of the class containing this property.
      *
-     * @since 8.1
-     *
      * @return the property type. not <code>null</code>
      */
     Class<?> getPropertyHolderType();
@@ -83,4 +81,13 @@ public interface PropertyDefinition<T, V> extends Serializable {
      * @return the property set, not <code>null</code>
      */
     PropertySet<T> getPropertySet();
+
+    /**
+     * Gets whether this property belongs to some other property in the property
+     * set, or directly to the property set.
+     * 
+     * @return {@code true} if this property is a sub-property of the property
+     *         set it belongs to, {@code false} otherwise
+     */
+    boolean isSubProperty();
 }
