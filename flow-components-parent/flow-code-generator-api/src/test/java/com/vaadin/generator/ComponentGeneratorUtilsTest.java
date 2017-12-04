@@ -201,7 +201,7 @@ public class ComponentGeneratorUtilsTest {
     @Test
     public void generateGetterForValue_nullIsChecked() {
         Assert.assertEquals(
-                "return getElement().getProperty(\"value\") == null ? getEmptyValue() : getElement().getProperty(\"value\");",
+                "String value = getElement().getProperty(\"value\");return value == null ? getEmptyValue() : value;",
                 ComponentGeneratorUtils.generateElementApiValueGetterForType(
                         ComponentBasicType.STRING, "value"));
 
@@ -215,7 +215,7 @@ public class ComponentGeneratorUtilsTest {
                         ComponentBasicType.BOOLEAN, "boolean"));
 
         Assert.assertEquals(
-                "return (JsonArray) (getElement().getPropertyRaw(\"array\") == null ? getEmptyValue() : getElement().getPropertyRaw(\"array\"));",
+                "Object array = getElement().getPropertyRaw(\"array\");return (JsonArray) (array == null ? getEmptyValue() : array);",
                 ComponentGeneratorUtils.generateElementApiValueGetterForType(
                         ComponentBasicType.ARRAY, "array"));
     }
