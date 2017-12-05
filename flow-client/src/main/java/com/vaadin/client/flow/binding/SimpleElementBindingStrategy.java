@@ -22,7 +22,6 @@ import java.util.function.Supplier;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
-import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
@@ -587,9 +586,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void appendVirtualChild(BindingContext context, StateNode node,
             boolean reactivePhase) {
-        NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
-        JsonObject object = (JsonObject) map.getProperty(NodeProperties.PAYLOAD)
-                .getValue();
+        JsonObject object = getPayload(node);
         String type = object.getString(NodeProperties.TYPE);
 
         if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
@@ -597,21 +594,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
-        ExistingElementMap existingElementMap = node.getTree().getRegistry()
-                .getExistingElementMap();
-
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
             String id = object.getString(NodeProperties.PAYLOAD);
             String address = "id='" + id + "'";
 
-            if (!verifyAttachRequest(node, id, address)) {
+            if (!verifyAttachRequest(context.node, node, id, address)) {
                 return;
             }
 
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
                 PolymerUtils.invokeWhenDefined(context.htmlNode,
                         () -> appendVirtualChild(context, node, false));
-                existingElementMap.add(node);
                 return;
             }
 
@@ -622,19 +615,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 node.setDomNode(existingElement);
                 context.binderContext.createAndBind(node);
             }
-            existingElementMap.remove(node);
         } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
             JsonArray path = object.getArray(NodeProperties.PAYLOAD);
             String address = "path='" + path.toString() + "'";
 
-            if (!verifyAttachRequest(node, null, address)) {
+            if (!verifyAttachRequest(context.node, node, null, address)) {
                 return;
             }
 
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
                 PolymerUtils.invokeWhenDefined(context.htmlNode,
                         () -> appendVirtualChild(context, node, false));
-                existingElementMap.add(node);
                 return;
             }
 
@@ -646,7 +637,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 node.setDomNode(customElement);
                 context.binderContext.createAndBind(node);
             }
-            existingElementMap.remove(node);
         } else {
             assert false : "Unexpected payload type " + type;
         }
@@ -709,8 +699,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return !failure;
     }
 
-    private boolean verifyAttachRequest(StateNode node, String id,
-            String address) {
+    private boolean verifyAttachRequest(StateNode parent, StateNode node,
+            String id, String address) {
         /*
          * This should not happen at all because server side may not send
          * several attach requests for the same client-side element. But that's
@@ -718,19 +708,28 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
          * assertion for the future code which verifies the correctness of
          * assumptions made on the client side about server-side code impl.
          */
-        ExistingElementMap existingElementMap = node.getTree().getRegistry()
-                .getExistingElementMap();
-        Integer existingId = existingElementMap.getExistingNodeId(node);
-        if (existingId != null && existingId.intValue() != node.getId()) {
-            Console.warn("There is already a request to attach "
-                    + "element addressed by the " + address
-                    + ". The exusting request's node id='" + existingId
-                    + "'. Cannot attach the same element twice.");
-            node.getTree().sendExistingElementWithIdAttachToServer(node,
-                    node.getId(), existingId, id);
-            return false;
+        NodeList virtualChildren = node.getList(NodeFeatures.VIRTUAL_CHILDREN);
+        for (int i = 0; i < virtualChildren.length(); i++) {
+            StateNode child = (StateNode) virtualChildren.get(i);
+            if (child == node) {
+                continue;
+            }
+            if (getPayload(node).jsEquals(getPayload(child))) {
+                Console.warn("There is already a request to attach "
+                        + "element addressed by the " + address
+                        + ". The existing request's node id='" + child.getId()
+                        + "'. Cannot attach the same element twice.");
+                node.getTree().sendExistingElementWithIdAttachToServer(node,
+                        node.getId(), child.getId(), id);
+                return false;
+            }
         }
         return true;
+    }
+
+    private JsonObject getPayload(StateNode node) {
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
+        return (JsonObject) map.getProperty(NodeProperties.PAYLOAD).getValue();
     }
 
     private static Optional<String> extractNodeId(StateNode node) {

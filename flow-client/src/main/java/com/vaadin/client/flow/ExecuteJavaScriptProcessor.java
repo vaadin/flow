@@ -18,7 +18,6 @@ package com.vaadin.client.flow;
 import java.util.Arrays;
 
 import com.vaadin.client.Console;
-import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -26,6 +25,8 @@ import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.ClientJsonCodec;
 import com.vaadin.client.flow.util.NativeFunction;
+import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.ui.Page;
 
 import elemental.json.JsonArray;
@@ -85,17 +86,11 @@ public class ExecuteJavaScriptProcessor {
             StateNode stateNode = ClientJsonCodec.decodeStateNode(tree,
                     parameterJson);
             if (stateNode != null) {
-                ExistingElementMap existingMap = registry
-                        .getExistingElementMap();
-                if (stateNode.getDomNode() == null
-                        && existingMap.hasNode(stateNode)) {
-                    existingMap.addNodeRemoveListener(id -> {
-                        if (id == stateNode.getId()) {
-                            Reactive.addPostFlushListener(
-                                    () -> handleInvocation(invocation));
-                            return true;
-                        }
-                        return false;
+                if (isVirtualChildAwaitingInitialization(stateNode)) {
+                    stateNode.addDomNodeSetListener(node -> {
+                        Reactive.addPostFlushListener(
+                                () -> handleInvocation(invocation));
+                        return true;
                     });
                     return;
                 }
@@ -108,6 +103,15 @@ public class ExecuteJavaScriptProcessor {
         parameterNamesAndCode[parameterNamesAndCode.length - 1] = expression;
 
         invoke(parameterNamesAndCode, parameters, map);
+    }
+
+    private boolean isVirtualChildAwaitingInitialization(StateNode node) {
+        if (node.getDomNode() != null
+                || node.getTree().getNode(node.getId()) == null) {
+            return false;
+        }
+        return node.getMap(NodeFeatures.ELEMENT_DATA)
+                .hasPropertyValue(NodeProperties.PAYLOAD);
     }
 
     /**
