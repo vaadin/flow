@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,11 +57,11 @@ public class RouterConfiguration
      */
     private final RouteTreeNode routeTreeRoot;
 
-    private final HashMap<Class<? extends View>, Class<? extends HasChildView>> parentViewTypes;
+    private final Map<Class<? extends View>, Class<? extends HasChildView>> parentViewTypes;
 
     private Resolver resolver;
 
-    private HashMap<Class<? extends View>, List<String>> viewToRoute;
+    private Map<Class<? extends View>, List<String>> viewToRoute;
 
     private PageTitleGenerator pageTitleGenerator;
 

@@ -80,7 +80,7 @@ public class SplitPackagesTest {
                 continue;
             }
 
-            HashSet<String> packages = new HashSet<>();
+            Set<String> packages = new HashSet<>();
 
             collectPackages("", srcDir, packages);
 
@@ -93,7 +93,7 @@ public class SplitPackagesTest {
     }
 
     private void collectPackages(String packageName, File dir,
-            HashSet<String> packages) {
+            Set<String> packages) {
         boolean containsJavaFile = false;
 
         for (File child : dir.listFiles()) {

@@ -17,7 +17,6 @@ package com.vaadin.client.communication;
 
 import java.util.Date;
 import java.util.EnumMap;
-import java.util.Map;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
@@ -228,7 +227,7 @@ public class MessageHandler {
             removeOldPendingMessages();
         }
 
-        boolean locked = !JsCollections.isEmpty(responseHandlingLocks);
+        boolean locked = !responseHandlingLocks.isEmpty();
 
         if (locked || !isNextExpectedMessage(serverId)) {
             // Cannot or should not handle this message right now, either
@@ -339,7 +338,8 @@ public class MessageHandler {
 
     private void handleDependencies(JsonObject inputJson) {
         Console.log("Handling dependencies");
-        Map<LoadMode, JsonArray> dependencies = new EnumMap<>(LoadMode.class);
+        EnumMap<LoadMode, JsonArray> dependencies = new EnumMap<>(
+                LoadMode.class);
         for (LoadMode loadMode : LoadMode.values()) {
             if (inputJson.hasKey(loadMode.name())) {
                 dependencies.put(loadMode, inputJson.getArray(loadMode.name()));
@@ -547,7 +547,7 @@ public class MessageHandler {
     }
 
     private void forceMessageHandling() {
-        if (!JsCollections.isEmpty(responseHandlingLocks)) {
+        if (!responseHandlingLocks.isEmpty()) {
             // Lock which was never release -> bug in locker or things just
             // too slow
             Console.warn(
@@ -590,7 +590,7 @@ public class MessageHandler {
      */
     public void resumeResponseHandling(Object lock) {
         responseHandlingLocks.delete(lock);
-        if (JsCollections.isEmpty(responseHandlingLocks)) {
+        if (responseHandlingLocks.isEmpty()) {
             // Cancel timer that breaks the lock
             forceHandleMessage.cancel();
 

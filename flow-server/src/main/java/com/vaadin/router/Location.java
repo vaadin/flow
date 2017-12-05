@@ -281,7 +281,7 @@ public class Location implements Serializable {
         if (basePath.endsWith(PATH_SEPARATOR)) {
             // Explicitly add "" to the end even though it's ignored by
             // String.split
-            ArrayList<String> result = new ArrayList<>(splitList.size() + 1);
+            List<String> result = new ArrayList<>(splitList.size() + 1);
             result.addAll(splitList);
             result.add("");
             return result;

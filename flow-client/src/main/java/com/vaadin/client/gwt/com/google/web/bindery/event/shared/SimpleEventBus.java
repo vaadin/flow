@@ -118,6 +118,7 @@ public class SimpleEventBus extends EventBus {
      *            the index
      * @param <H>
      *            the handler type
+     * @return the handler
      *
      * @deprecated required by legacy features in GWT's old HandlerManager
      */
@@ -322,7 +323,7 @@ public class SimpleEventBus extends EventBus {
         assert pruned != null : "Can't prune what wasn't there";
         assert pruned.isEmpty() : "Pruned unempty list!";
 
-        if (JsCollections.isEmpty(sourceMap)) {
+        if (sourceMap.isEmpty()) {
             map.delete(type);
         }
     }

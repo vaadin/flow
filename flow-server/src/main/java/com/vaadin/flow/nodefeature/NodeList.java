@@ -207,7 +207,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             return;
         }
 
-        ArrayList<? extends T> itemsList = new ArrayList<>(items);
+        List<? extends T> itemsList = new ArrayList<>(items);
 
         ensureValues();
 

@@ -15,7 +15,7 @@
  */
 package com.vaadin.generator;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import javax.annotation.Generated;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +35,9 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Generated;
-
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -46,9 +47,6 @@ import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
@@ -80,6 +78,8 @@ import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.event.Synchronize;
 
 import elemental.json.JsonObject;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Base class of the component generation process. It takes a

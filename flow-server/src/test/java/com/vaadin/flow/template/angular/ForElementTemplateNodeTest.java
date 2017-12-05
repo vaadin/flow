@@ -101,7 +101,7 @@ public class ForElementTemplateNodeTest {
         TemplateNode forTemplateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
 
-        HashMap<String, String> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("text", "textValue");
         StateNode model = createModel(div, "items", data);
 
@@ -117,9 +117,9 @@ public class ForElementTemplateNodeTest {
         TemplateNode templateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
 
-        HashMap<String, String> data1 = new HashMap<>();
+        Map<String, String> data1 = new HashMap<>();
         data1.put("text", "textValue1");
-        HashMap<String, String> data2 = new HashMap<>();
+        Map<String, String> data2 = new HashMap<>();
         data2.put("text", "textValue2");
         StateNode model = createModel(div, "items", data1, data2);
 
@@ -137,7 +137,7 @@ public class ForElementTemplateNodeTest {
         TemplateNode templateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
 
-        HashMap<String, String> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("value", "propertyValue");
         StateNode model = createModel(div, "items", data);
 
@@ -153,9 +153,9 @@ public class ForElementTemplateNodeTest {
         TemplateNode templateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
 
-        HashMap<String, String> data1 = new HashMap<>();
+        Map<String, String> data1 = new HashMap<>();
         data1.put("value", "PropertyValue1");
-        HashMap<String, String> data2 = new HashMap<>();
+        Map<String, String> data2 = new HashMap<>();
         data2.put("value", "PropertyValue2");
         StateNode model = createModel(div, "items", data1, data2);
 

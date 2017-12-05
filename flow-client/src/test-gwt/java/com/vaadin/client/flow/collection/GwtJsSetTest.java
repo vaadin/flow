@@ -64,16 +64,16 @@ public class GwtJsSetTest extends ClientEngineTestBase {
 
     public void testSetIsEmpty() {
         JsSet<String> set = JsCollections.set();
-        assertTrue(JsCollections.isEmpty(set));
+        assertTrue(set.isEmpty());
         // 1, 2, 3
         set.add("1");
-        assertFalse(JsCollections.isEmpty(set));
+        assertFalse(set.isEmpty());
         set.add("2");
-        assertFalse(JsCollections.isEmpty(set));
+        assertFalse(set.isEmpty());
         set.delete("1");
-        assertFalse(JsCollections.isEmpty(set));
+        assertFalse(set.isEmpty());
         set.delete("2");
-        assertTrue(JsCollections.isEmpty(set));
+        assertTrue(set.isEmpty());
     }
 
     public void testCopyConstructor() {

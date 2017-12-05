@@ -159,7 +159,7 @@ public class DependencyLoader {
     public void loadDependencies(Map<LoadMode, JsonArray> clientDependencies) {
         assert clientDependencies != null;
 
-        Map<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = new LinkedHashMap<>();
+        LinkedHashMap<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = new LinkedHashMap<>();
 
         for (Map.Entry<LoadMode, JsonArray> entry : clientDependencies
                 .entrySet()) {
@@ -183,7 +183,7 @@ public class DependencyLoader {
 
     private Map<String, BiConsumer<String, ResourceLoadListener>> extractLazyDependenciesAndLoadOthers(
             LoadMode loadMode, JsonArray dependencies) {
-        Map<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = new LinkedHashMap<>();
+        LinkedHashMap<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = new LinkedHashMap<>();
         for (int i = 0; i < dependencies.length(); i++) {
             JsonObject dependencyJson = dependencies.getObject(i);
             BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(

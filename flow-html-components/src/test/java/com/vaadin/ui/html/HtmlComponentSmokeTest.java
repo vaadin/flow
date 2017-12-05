@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -218,7 +219,7 @@ public class HtmlComponentSmokeTest {
     }
 
     private static boolean hasPendingChanges(StateNode elementNode) {
-        ArrayList<NodeChange> changes = new ArrayList<>();
+        List<NodeChange> changes = new ArrayList<>();
 
         elementNode.collectChanges(changes::add);
 

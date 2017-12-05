@@ -75,6 +75,8 @@ public class Registry {
      *
      * @param type
      *            the type to get
+     * @param <T>
+     *            the class type
      * @return the stored instance or null if no instance has been stored
      */
     @SuppressWarnings("unchecked")

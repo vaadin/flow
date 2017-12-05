@@ -944,7 +944,7 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue(generatedClass
                 .contains(
-                        "@Override public String getValue() { return getElement().getProperty(\"value\") == null ? getEmptyValue() : getElement().getProperty(\"value\"); }"));
+                        "@Override public String getValue() { String value = getElement().getProperty(\"value\"); return value == null ? getEmptyValue() : value; }"));
     }
 
 

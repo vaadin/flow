@@ -301,23 +301,25 @@ public final class ComponentGeneratorUtils {
             throw new IllegalArgumentException("propertyName can not be empty");
         }
 
+        String variableName = StringUtils
+                .uncapitalize(formatStringToValidJavaIdentifier(propertyName));
+
         switch (basicType) {
         case STRING:
         case DATE:
-            return String.format("return getElement().getProperty(\"%s\") == null ? getEmptyValue() : getElement().getProperty(\"%s\");",
-                    propertyName, propertyName);
+            return String.format(
+                    "String %s = getElement().getProperty(\"%s\");"
+                            + "return %s == null ? getEmptyValue() : %s;",
+                    variableName, propertyName, variableName, variableName);
         case ARRAY:
-            return String.format(
-                    "return (JsonArray) (getElement().getPropertyRaw(\"%s\") == null ? getEmptyValue() : getElement().getPropertyRaw(\"%s\"));",
-                    propertyName, propertyName);
+            return generateElementApiValueGetterForTypeRaw("JsonArray",
+                    propertyName, variableName);
         case OBJECT:
-            return String.format(
-                    "return (JsonObject) (getElement().getPropertyRaw(\"%s\") == null ? getEmptyValue() : getElement().getPropertyRaw(\"%s\"));",
-                    propertyName, propertyName);
+            return generateElementApiValueGetterForTypeRaw("JsonObject",
+                    propertyName, variableName);
         case UNDEFINED:
-            return String.format(
-                    "return (JsonValue) (getElement().getPropertyRaw(\"%s\") == null ? getEmptyValue() : getElement().getPropertyRaw(\"%s\"));",
-                    propertyName, propertyName);
+            return generateElementApiValueGetterForTypeRaw("JsonValue",
+                    propertyName, variableName);
         case BOOLEAN:
         case NUMBER:
             return generateElementApiGetterForType(basicType, propertyName);
@@ -326,6 +328,14 @@ public final class ComponentGeneratorUtils {
             throw new ComponentGenerationException(
                     "Not a supported type for getters: " + basicType);
         }
+    }
+
+    private static String generateElementApiValueGetterForTypeRaw(
+            String returnType, String propertyName, String variableName) {
+        return String.format("Object %s = getElement().getPropertyRaw(\"%s\");"
+                + "return (%s) (%s == null ? getEmptyValue() : %s);",
+                variableName, propertyName, returnType, variableName,
+                variableName);
     }
 
     /**

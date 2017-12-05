@@ -16,6 +16,8 @@
 package com.vaadin.client.flow.collection;
 
 import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -29,8 +31,9 @@ import jsinterop.annotations.JsType;
  * @param <V>
  *            the value type
  */
-@JsType(isNative = true)
-public interface JsMap<K, V> {
+@JsType(isNative = true, name = "Map", namespace = JsPackage.GLOBAL)
+public class JsMap<K, V> {
+
     /**
      * Functional interface for iterating all the entries in a {@link JsMap}.
      *
@@ -41,7 +44,7 @@ public interface JsMap<K, V> {
      */
     @FunctionalInterface
     @JsFunction
-    interface ForEachCallback<K, V> {
+    public interface ForEachCallback<K, V> {
         /**
          * Receives one key-value pair.
          *
@@ -54,6 +57,13 @@ public interface JsMap<K, V> {
     }
 
     /**
+     * Creates a new instance.
+     */
+    public JsMap() {
+        // handled by GWT
+    }
+
+    /**
      * Sets a value in this map, overwriting any previous mapping if present.
      *
      * @param key
@@ -62,7 +72,7 @@ public interface JsMap<K, V> {
      *            the value to set
      * @return this map, for chaining.
      */
-    JsMap<K, V> set(K key, V value);
+    public native JsMap<K, V> set(K key, V value);
 
     /**
      * Gets the value mapped for the given key. Returns <code>null</code> if
@@ -74,33 +84,33 @@ public interface JsMap<K, V> {
      * @return the value corresponding to the given key; or <code>null</code>
      *         there is no mapping.
      */
-    V get(K key);
+    public native V get(K key);
 
     /**
      * Checks whether this map contains a mapping for the given key.
      *
      * @param key
      *            the key to check
-     * @return <code>true</code> if there is a mapping for the key;
-     *         <code>false</code> if there is no mapping
+     * @return {@code true} if there is a mapping for the key; {@code false} if
+     *         there is no mapping
      */
-    boolean has(K key);
+    public native boolean has(K key);
 
     /**
      * Removes the mapping for a given key.
      *
      * @param key
      *            the key for which to remove the mapping
-     * @return <code>true</code> if the map contained a mapping for the given
-     *         key prior to calling this method; <code>false</code> if no
-     *         mapping was present
+     * @return {@code true} if the map contained a mapping for the given key
+     *         prior to calling this method; {@code false} if no mapping was
+     *         present
      */
-    boolean delete(K key);
+    public native boolean delete(K key);
 
     /**
      * Removes all mappings from this map.
      */
-    void clear();
+    public native void clear();
 
     /**
      * Invokes the provided callback for each mapping in this map.
@@ -110,7 +120,7 @@ public interface JsMap<K, V> {
      * @param callback
      *            the callback to invoke for each mapping
      */
-    void forEach(ForEachCallback<K, V> callback);
+    public native void forEach(ForEachCallback<K, V> callback);
 
     /**
      * Gets the number of entries in this map.
@@ -118,6 +128,30 @@ public interface JsMap<K, V> {
      * @return the entry count
      */
     @JsProperty(name = "size")
-    int size();
+    public native int size();
+
+    /**
+     * Checks if the map is empty (size == 0).
+     *
+     * @return {@code true} if the map is empty, {@code false} otherwise
+     */
+    @JsOverlay
+    public final boolean isEmpty() {
+        return size() == 0;
+    }
+
+    /**
+     * Returns an array of the values in this {@link JsMap}.
+     *
+     * @return an array of the values in the map
+     */
+    @JsOverlay
+    @SuppressWarnings("unchecked")
+    public final JsArray<V> mapValues() {
+        JsArray<V> result = JsCollections.array();
+        forEach((value, key) -> result.push(value));
+
+        return result;
+    }
 
 }

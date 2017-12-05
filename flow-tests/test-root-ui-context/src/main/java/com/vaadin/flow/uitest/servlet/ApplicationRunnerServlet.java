@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.uitest.servlet;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -39,8 +33,16 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
 import com.vaadin.function.DeploymentConfiguration;
@@ -65,7 +67,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
      * The name of the application class currently used. Only valid within one
      * request.
      */
-    private LinkedHashSet<String> defaultPackages = new LinkedHashSet<>();
+    private Set<String> defaultPackages = new LinkedHashSet<>();
 
     private transient final ThreadLocal<HttpServletRequest> request = new ThreadLocal<>();
 
@@ -94,7 +96,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         }
     }
 
-    private void addDirectories(File parent, LinkedHashSet<String> packages)
+    private void addDirectories(File parent, Set<String> packages)
             throws IOException {
         Path root = parent.toPath();
         Files.walkFileTree(parent.toPath(), new SimpleFileVisitor<Path>() {
