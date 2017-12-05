@@ -227,7 +227,7 @@ public class MessageHandler {
             removeOldPendingMessages();
         }
 
-        boolean locked = !JsCollections.isEmpty(responseHandlingLocks);
+        boolean locked = !responseHandlingLocks.isEmpty();
 
         if (locked || !isNextExpectedMessage(serverId)) {
             // Cannot or should not handle this message right now, either
@@ -547,7 +547,7 @@ public class MessageHandler {
     }
 
     private void forceMessageHandling() {
-        if (!JsCollections.isEmpty(responseHandlingLocks)) {
+        if (!responseHandlingLocks.isEmpty()) {
             // Lock which was never release -> bug in locker or things just
             // too slow
             Console.warn(
@@ -590,7 +590,7 @@ public class MessageHandler {
      */
     public void resumeResponseHandling(Object lock) {
         responseHandlingLocks.delete(lock);
-        if (JsCollections.isEmpty(responseHandlingLocks)) {
+        if (responseHandlingLocks.isEmpty()) {
             // Cancel timer that breaks the lock
             forceHandleMessage.cancel();
 

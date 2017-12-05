@@ -16,10 +16,10 @@
 package com.vaadin.client;
 
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.nodefeature.NodeList;
@@ -67,7 +67,7 @@ public final class ExecuteJavaScriptElementUtils {
         Element existingElement = null;
         JsArray<Node> childNodes = DomApi.wrap(parent.getDomNode())
                 .getChildNodes();
-        JsMap<Node, Integer> indices = JsCollections.map();
+        JsMap<Node, Integer> indices = new JsMap<>();
         boolean afterSibling = previousSibling == null;
         int elementIndex = -1;
         for (int i = 0; i < childNodes.length(); i++) {

@@ -34,7 +34,7 @@ import com.vaadin.client.flow.collection.JsMap;
  *            the value type
  */
 @Deprecated
-public class JreJsMap<K, V> implements JsMap<K, V> {
+public class JreJsMap<K, V> extends JsMap<K, V> {
     private Map<K, V> values = new HashMap<>();
 
     @Override

@@ -151,6 +151,7 @@ public class Xhr {
      * @param contentType
      *            a value for the Content-Type HTTP header
      * @param callback
+     *            the callback to notify
      * @return a reference to the sent XmlHttpRequest
      */
     public static XMLHttpRequest post(String url, String requestData,
@@ -173,6 +174,7 @@ public class Xhr {
      * @param contentType
      *            a value for the Content-Type HTTP header
      * @param callback
+     *            the callback to notify
      * @return a reference to the sent XmlHttpRequest
      */
     public static XMLHttpRequest post(Window window, String url,

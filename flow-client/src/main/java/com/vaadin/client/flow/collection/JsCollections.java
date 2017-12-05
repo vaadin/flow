@@ -67,9 +67,8 @@ public class JsCollections {
     public static <T> JsArray<T> array() {
         if (GWT.isScript()) {
             return asArray(JavaScriptObject.createArray());
-        } else {
-            return new JreJsArray<>();
         }
+        return new JreJsArray<>();
     }
 
     /**
@@ -86,9 +85,8 @@ public class JsCollections {
     public static <T> JsArray<T> array(T... values) {
         if (GWT.isScript()) {
             return asArray(values);
-        } else {
-            return new JreJsArray<>(values);
         }
+        return new JreJsArray<>(values);
     }
 
     /**
@@ -103,10 +101,9 @@ public class JsCollections {
     public static <K, V> JsMap<K, V> map() {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
-            return createNativeMap();
-        } else {
-            return new JreJsMap<>();
+            return new JsMap<>();
         }
+        return new JreJsMap<>();
     }
 
     /**
@@ -122,9 +119,8 @@ public class JsCollections {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
             return createNativeWeakMap();
-        } else {
-            return new JreJsWeakMap<>();
         }
+        return new JreJsWeakMap<>();
     }
 
     /**
@@ -137,10 +133,9 @@ public class JsCollections {
     public static <V> JsSet<V> set() {
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
-            return createNativeSet();
-        } else {
-            return new JreJsSet<>();
+            return new JsSet<>();
         }
+        return new JreJsSet<>();
     }
 
     /**
@@ -153,32 +148,15 @@ public class JsCollections {
      * @return a new JS Set with the provided contents
      */
     public static <T> JsSet<T> set(JsSet<T> values) {
+        final JsSet<T> newSet;
         if (GWT.isScript()) {
             checkJunitPolyfillStatus();
-            return createNativeSet(values);
+            newSet = new JsSet<>();
         } else {
-            return new JreJsSet<>((JreJsSet<T>) values);
+            newSet = new JreJsSet<>();
         }
-    }
-
-    // TODO Make non static and move to JsMap so it is easier to use
-    /**
-     * Returns an array of the values in a {@link JsMap}.
-     *
-     * @param map
-     *            the source map
-     * @param <K>
-     *            the key type
-     * @param <V>
-     *            the value type
-     * @return an array of the values in the map
-     */
-    @SuppressWarnings("unchecked")
-    public static <K, V> JsArray<V> mapValues(JsMap<K, V> map) {
-        JsArray<V> result = JsCollections.array();
-        map.forEach((value, key) -> result.push(value));
-
-        return result;
+        values.forEach(newSet::add);
+        return newSet;
     }
 
     private static native <T> JsArray<T> asArray(Object values)
@@ -186,52 +164,10 @@ public class JsCollections {
         return values;
     }-*/;
 
-    private static native <K, V> JsMap<K, V> createNativeMap()
-    /*-{
-        return new $wnd.Map();
-    }-*/;
-
     private static native <K, V> JsWeakMap<K, V> createNativeWeakMap()
     /*-{
         return new $wnd.WeakMap();
     }-*/;
-
-    private static native <V> JsSet<V> createNativeSet()
-    /*-{
-        return new $wnd.Set();
-    }-*/;
-
-    private static native <V> JsSet<V> createNativeSet(JsSet<V> values)
-    /*-{
-        var set = new $wnd.Set(values);
-        if (set.size == 0 && values.size != 0) {
-            // IE11 doesn't support the Set(Iterable) constructor
-            values.forEach(function(v) { set.add(v); });
-        }
-        return set;
-    }-*/;
-
-    /**
-     * Checks if the given map is empty, i.e. has no mappings.
-     *
-     * @param map
-     *            the map to check
-     * @return <code>true</code> if the map is empty, false otherwise
-     */
-    public static <K, V> boolean isEmpty(JsMap<K, V> map) {
-        return map.size() == 0;
-    }
-
-    /**
-     * Checks if the given set is empty.
-     *
-     * @param set
-     *            the set to check
-     * @return <code>true</code> if the set is empty, false otherwise
-     */
-    public static <V> boolean isEmpty(JsSet<V> set) {
-        return set.size() == 0;
-    }
 
     private static void checkJunitPolyfillStatus() {
         // "emulated" for JUnit compiles, "native" for normal compiles
