@@ -15,6 +15,13 @@
  */
 package com.vaadin.server;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -26,13 +33,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.function.DeploymentConfiguration;
@@ -475,7 +475,7 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Creates a Vaadin request for a http servlet request. This method can be
+     * Creates a Vaadin request for an http servlet request. This method can be
      * overridden if the Vaadin request should have special properties.
      *
      * @param request

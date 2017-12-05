@@ -171,7 +171,7 @@ You can define your own servlet if you need one, but the default one is usually
 sufficient.
 
 The servlet instantiates this class when a user enters your web app. When this
-happens, the constructor initialises the UI structure. In this case, the main view
+happens, the constructor initializes the UI structure. In this case, the main view
 inherits from [classname]#VerticalLayout# which is one of the most used layout
 components. Layouts are used to position and display other components.
 
@@ -183,7 +183,7 @@ main view.
 
 [TIP]
 Vaadin Flow is allows you to use and mix HTML templates and Java-generated
-UI components as you wish. It would be equally easy to build our UI completely
+UI components as you wish. It would be equally easy to build your UI completely
 with templates or just with Java components.
 
 Let's take a look at [classname]#ExampleTemplate.java# next.
@@ -220,7 +220,7 @@ corresponding HTML file can be found from. Again, the file can be found in the
 [filename]#src/main/webapp/frontend# folder.
 
 The Java template inherits from [classname]#PolymerTemplate#. It needs to be
-parametrised with a [classname]#Model# that describes all properties that are
+parameterized with a [classname]#Model# that describes all properties that are
 passed to the HTML template to be used in the client side. Our model,
 [classname]#ExampleModel# is specified in the template class, and it just contains
 one [classname]#String# value.
@@ -495,7 +495,7 @@ clearFilterTextBtn.addClickListener(e -> filterText.clear());
 ----
 
 Vaadin Flow includes a set of built in icons, from which we use the "X" icon,
-`VaadinIcons.CLOSE_CIRCLE` here, which most users will recognise as a functionality
+`VaadinIcons.CLOSE_CIRCLE` here, which most users will recognize as a functionality
 to clear a value. In the click listener, we simply clear the text from the field.
 
 Vaadin Flow contains lots of different kinds of layouts. The simplest way to align
@@ -641,7 +641,7 @@ In the form constructor add the following line to configure the binder:
 binder.bindInstanceFields(this);
 ----
 
-This configures the binder to use all the similary named editor fields in
+This configures the binder to use all the similarly named editor fields in
 this form to bind their values with their counterpart in the [classname]#Customer#
 class. For example, the `CustomerForm.firstName` [classname]#TextField# will be
 bound to the `Customer.firstName` property.
@@ -659,7 +659,7 @@ public void setCustomer(Customer customer) {
 ----
 
 In addition to saving the reference of the currently edited Customer instance, we
-are calling the `Binder.setBean` method. This will initialise all fields in the
+are calling the `Binder.setBean` method. This will initialize all fields in the
 form and automatically update the values in the domain objects as the corresponding
 field value changes in the user interface.
 

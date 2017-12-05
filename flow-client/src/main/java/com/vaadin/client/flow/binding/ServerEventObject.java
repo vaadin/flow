@@ -187,7 +187,7 @@ public final class ServerEventObject extends JavaScriptObject {
         if (typeof(node.get) === 'function') {
             var polymerProperty = node.get(propertyName);
             if (typeof(polymerProperty) === 'object'
-                && typeof(polymerProperty["nodeId"]) !==  'undefined') {
+                && typeof(polymerProperty["nodeId"]) !== 'undefined') {
                 return { nodeId: polymerProperty["nodeId"] };
             }
         }

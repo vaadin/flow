@@ -11,7 +11,7 @@ To make a fully functional application, you need to be able to accept input from
 
 [source,java]
 ----
-Element textInput =  ElementFactory.createInput();
+Element textInput = ElementFactory.createInput();
 textInput.setAttribute("placeholder", "Please enter your name");
 ----
 

@@ -54,7 +54,7 @@ import com.vaadin.util.CurrentInstance;
 /**
  * The topmost component in any component hierarchy. There is one UI for every
  * Vaadin instance in a browser window. A UI may either represent an entire
- * browser window (or tab) or some part of a html page where a Vaadin
+ * browser window (or tab) or some part of an html page where a Vaadin
  * application is embedded.
  * <p>
  * The UI is the server side entry point for various client side features that

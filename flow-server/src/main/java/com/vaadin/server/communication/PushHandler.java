@@ -123,7 +123,7 @@ public class PushHandler {
 
         assert connection != null : "Got push from the client "
                 + "even though the connection does not seem to be "
-                + "valid. This might happen if a HttpSession is "
+                + "valid. This might happen if an HttpSession is "
                 + "serialized and deserialized while the push "
                 + "connection is kept open or if the UI has a "
                 + "connection of unexpected type.";
@@ -189,7 +189,7 @@ public class PushHandler {
      * @param callback
      *            the push callback to call when a UI is found and locked
      * @param websocket
-     *            true if this is a websocket message (as opposed to a HTTP
+     *            true if this is a websocket message (as opposed to an HTTP
      *            request)
      */
     private void callWithUi(final AtmosphereResource resource,

@@ -16,6 +16,10 @@
 
 package com.vaadin.server;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,10 +28,6 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.util.CurrentInstance;
 
@@ -39,7 +39,7 @@ import com.vaadin.util.CurrentInstance;
  */
 public interface VaadinRequest {
     /**
-     * Gets the named request parameter This is typically a HTTP GET or POST
+     * Gets the named request parameter. This is typically an HTTP GET or POST
      * parameter, though other request types might have other ways of
      * representing parameters.
      *
@@ -204,7 +204,7 @@ public interface VaadinRequest {
     boolean isSecure();
 
     /**
-     * Gets the value of a request header, e.g. a http header for a
+     * Gets the value of a request header, e.g. an http header for a
      * {@link HttpServletRequest}.
      *
      * @param headerName

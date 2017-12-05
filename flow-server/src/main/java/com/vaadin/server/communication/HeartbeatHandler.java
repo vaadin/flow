@@ -16,9 +16,9 @@
 
 package com.vaadin.server.communication;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 import com.vaadin.server.ServletHelper;
 import com.vaadin.server.ServletHelper.RequestType;
@@ -28,8 +28,8 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.UIInternals;
 
 /**
  * Handles heartbeat requests. Heartbeat requests are periodically sent by the
@@ -55,8 +55,8 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
      * parameter named {@link ApplicationConstants#UI_ID_PARAMETER} to identify
      * the UI. If the UI is found in the session, sets it
      * {@link UIInternals#getLastHeartbeatTimestamp() heartbeat timestamp} to
-     * the current time. Otherwise, writes a HTTP Not Found error to the
-     * response.
+     * the current time. Otherwise, writes an {@code HTTP Not Found} error to
+     * the response.
      */
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,

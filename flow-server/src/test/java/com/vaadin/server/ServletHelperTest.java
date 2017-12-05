@@ -1,18 +1,18 @@
 package com.vaadin.server;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
 
 public class ServletHelperTest {
     VaadinServlet servlet;
@@ -86,7 +86,7 @@ public class ServletHelperTest {
     }
 
     /**
-     * Creates a HttpServletRequest mock using the supplied parameters.
+     * Creates an HttpServletRequest mock using the supplied parameters.
      *
      * @param base
      *            The base url, e.g. http://localhost:8080

@@ -68,7 +68,7 @@ public @interface HtmlImport {
      * {@code context://} to make it relative to the context path or use an
      * absolute URL to refer to files outside the frontend directory.
      *
-     * @return a html file URL
+     * @return an html file URL
      * @see WebComponents
      */
     String value();
