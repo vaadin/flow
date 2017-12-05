@@ -71,7 +71,7 @@ public class GwtJsMapTest extends ClientEngineTestBase {
 
         map.set("One", 1).set("Two", 2);
 
-        JsArray<Integer> values = JsCollections.mapValues(map);
+        JsArray<Integer> values = map.mapValues();
 
         assertEquals(2, values.length());
 
@@ -80,12 +80,12 @@ public class GwtJsMapTest extends ClientEngineTestBase {
 
         map.delete("One");
 
-        values = JsCollections.mapValues(map);
+        values = map.mapValues();
         assertEquals(1, values.length());
         assertEquals(2, values.get(0).intValue());
 
         map.clear();
-        values = JsCollections.mapValues(map);
+        values = map.mapValues();
         assertEquals(0, values.length());
     }
 

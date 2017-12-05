@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ import org.jboss.forge.roaster.model.source.ParameterSource;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
+import com.vaadin.ui.common.HasValue;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -276,6 +278,64 @@ public final class ComponentGeneratorUtils {
             throw new ComponentGenerationException(
                     "Not a supported type for getters: " + basicType);
         }
+    }
+    
+    /**
+     * Generates a code snippet that uses the {@link Element} API to retrieve
+     * properties from the client model when it implements the {@link HasValue}
+     * contract.
+     * <p>
+     * The getter checks whether the return value is <code>null</code>, and
+     * returns {@link HasValue#getEmptyValue()}.
+     * 
+     * @param basicType
+     *            The javascript basic type of the property.
+     * @param propertyName
+     *            The name of the property in the javascript model.
+     * @return the code snippet ready to be added in a Java source code.
+     */
+    public static String generateElementApiValueGetterForType(
+            ComponentBasicType basicType, String propertyName) {
+        Objects.requireNonNull(propertyName);
+        if (propertyName.isEmpty()) {
+            throw new IllegalArgumentException("propertyName can not be empty");
+        }
+
+        String variableName = StringUtils
+                .uncapitalize(formatStringToValidJavaIdentifier(propertyName));
+
+        switch (basicType) {
+        case STRING:
+        case DATE:
+            return String.format(
+                    "String %s = getElement().getProperty(\"%s\");"
+                            + "return %s == null ? getEmptyValue() : %s;",
+                    variableName, propertyName, variableName, variableName);
+        case ARRAY:
+            return generateElementApiValueGetterForTypeRaw("JsonArray",
+                    propertyName, variableName);
+        case OBJECT:
+            return generateElementApiValueGetterForTypeRaw("JsonObject",
+                    propertyName, variableName);
+        case UNDEFINED:
+            return generateElementApiValueGetterForTypeRaw("JsonValue",
+                    propertyName, variableName);
+        case BOOLEAN:
+        case NUMBER:
+            return generateElementApiGetterForType(basicType, propertyName);
+            
+        default:
+            throw new ComponentGenerationException(
+                    "Not a supported type for getters: " + basicType);
+        }
+    }
+
+    private static String generateElementApiValueGetterForTypeRaw(
+            String returnType, String propertyName, String variableName) {
+        return String.format("Object %s = getElement().getPropertyRaw(\"%s\");"
+                + "return (%s) (%s == null ? getEmptyValue() : %s);",
+                variableName, propertyName, returnType, variableName,
+                variableName);
     }
 
     /**

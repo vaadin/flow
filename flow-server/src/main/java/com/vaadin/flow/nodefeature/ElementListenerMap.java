@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.vaadin.flow.ConstantPoolKey;
@@ -49,8 +51,8 @@ public class ElementListenerMap extends NodeMap {
     private static final HashSet<String> emptyHashSet = new HashSet<>();
 
     // Server-side only data
-    private HashMap<String, ArrayList<DomEventListener>> listeners;
-    private HashMap<String, Set<String>> typeToExpressions;
+    private Map<String, ArrayList<DomEventListener>> listeners;
+    private Map<String, Set<String>> typeToExpressions;
 
     /**
      * Creates a new element listener map for the given node.
@@ -102,7 +104,7 @@ public class ElementListenerMap extends NodeMap {
         listeners.get(eventType).add(listener);
 
         if (eventDataExpressions.length != 0) {
-            HashSet<String> eventData = new HashSet<>(
+            Set<String> eventData = new HashSet<>(
                     typeToExpressions.get(eventType));
 
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
@@ -118,7 +120,7 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private static ConstantPoolKey createConstantPoolKey(
-            HashSet<String> eventData) {
+            Set<String> eventData) {
         return new ConstantPoolKey(eventData.stream().map(Json::create)
                 .collect(JsonUtils.asArray()));
     }
@@ -127,7 +129,7 @@ public class ElementListenerMap extends NodeMap {
         if (listeners == null) {
             return;
         }
-        ArrayList<DomEventListener> listenerList = listeners.get(eventType);
+        List<DomEventListener> listenerList = listeners.get(eventType);
         if (listenerList != null) {
             listenerList.remove(listener);
 
@@ -157,14 +159,14 @@ public class ElementListenerMap extends NodeMap {
         if (listeners == null) {
             return;
         }
-        ArrayList<DomEventListener> typeListeners = listeners
+        List<DomEventListener> typeListeners = listeners
                 .get(event.getType());
         if (typeListeners == null) {
             return;
         }
 
         // Copy to allow concurrent modification
-        ArrayList<DomEventListener> copy = new ArrayList<>(typeListeners);
+        List<DomEventListener> copy = new ArrayList<>(typeListeners);
 
         copy.forEach(l -> l.handleEvent(event));
     }

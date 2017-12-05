@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
@@ -43,7 +44,7 @@ public class PolymerEventListenerMap extends NodeMap {
      */
     private static final ArrayList<String> emptyArrayList = new ArrayList<>(0);
 
-    private HashMap<String, List<String>> typeToExpressions;
+    private Map<String, List<String>> typeToExpressions;
 
     /**
      * Creates a new map feature for the given node.
@@ -84,7 +85,7 @@ public class PolymerEventListenerMap extends NodeMap {
         }
 
         if (eventDataExpressions.length != 0) {
-            ArrayList<String> eventData = new ArrayList<>(
+            List<String> eventData = new ArrayList<>(
                     typeToExpressions.get(methodName));
 
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
@@ -100,7 +101,7 @@ public class PolymerEventListenerMap extends NodeMap {
     }
 
     private static ConstantPoolKey createConstantPoolKey(
-            ArrayList<String> eventData) {
+            List<String> eventData) {
         return new ConstantPoolKey(eventData.stream().map(Json::create)
                 .collect(JsonUtils.asArray()));
     }

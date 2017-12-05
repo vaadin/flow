@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 public final class PropertyNameRemapRegistry {
 
-    private static final HashMap<String, Map<String, String>> REGISTRY = new HashMap<>();
+    private static final Map<String, Map<String, String>> REGISTRY = new HashMap<>();
     static {
         put("vaadin-checkbox", "value", "postValue");
         put("vaadin-checkbox", "checked", "value");

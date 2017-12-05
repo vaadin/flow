@@ -240,7 +240,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
     @Synchronize(property = "value", value = "value-changed")
     @Override
     public String getValue() {
-        return getElement().getProperty("value");
+        String value = getElement().getProperty("value");
+        return value == null ? getEmptyValue() : value;
     }
 
     /**

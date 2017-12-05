@@ -33,12 +33,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.data.event.EventRouter;
 import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.function.SerializableFunction;
 import com.vaadin.function.SerializablePredicate;
@@ -922,7 +923,7 @@ public class Binder<BEAN> implements Serializable {
                 ValueChangeEvent<?, FIELDVALUE> event) {
             // Inform binder of changes; if setBean: writeIfValid
             getBinder().handleFieldValueChange(this);
-            getBinder().fireValueChangeEvent(event);
+            getBinder().fireEvent(event);
         }
 
         /**
@@ -1057,7 +1058,7 @@ public class Binder<BEAN> implements Serializable {
 
     private final Map<HasValue<?, ?>, ConverterDelegate<?>> initialConverters = new IdentityHashMap<>();
 
-    private EventRouter eventRouter;
+    private HashMap<Class<?>, List<Consumer<?>>> listeners = new HashMap<>();
 
     private HasText statusLabel;
 
@@ -1872,8 +1873,26 @@ public class Binder<BEAN> implements Serializable {
      * @return a registration for the listener
      */
     public Registration addStatusChangeListener(StatusChangeListener listener) {
-        return getEventRouter().addListener(StatusChangeEvent.class, listener,
-                ReflectTools.getFunctionalMethod(StatusChangeListener.class));
+        return addListener(StatusChangeEvent.class, listener::statusChange);
+    }
+
+    /**
+     * Adds a listener to the binder.
+     * 
+     * @param eventType
+     *            the type of the event
+     * @param method
+     *            the consumer method of the listener
+     * @param <T>
+     *            the event type
+     * @return a registration for the listener
+     */
+    protected <T> Registration addListener(Class<T> eventType,
+            Consumer<T> method) {
+        List<Consumer<?>> list = listeners.computeIfAbsent(eventType,
+                key -> new ArrayList<>());
+        list.add(method);
+        return () -> list.remove(method);
     }
 
     /**
@@ -1895,8 +1914,7 @@ public class Binder<BEAN> implements Serializable {
      */
     public Registration addValueChangeListener(
             ValueChangeListener<?, ?> listener) {
-        return getEventRouter().addListener(ValueChangeEvent.class, listener,
-                ReflectTools.getFunctionalMethod(ValueChangeListener.class));
+        return addListener(ValueChangeEvent.class, listener::onComponentEvent);
     }
 
     /**
@@ -2082,18 +2100,6 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Returns the event router for this binder.
-     *
-     * @return the event router, not null
-     */
-    protected EventRouter getEventRouter() {
-        if (eventRouter == null) {
-            eventRouter = new EventRouter();
-        }
-        return eventRouter;
-    }
-
-    /**
      * Configures the {@code binding} with the property definition
      * {@code definition} before it's being bound.
      *
@@ -2122,8 +2128,20 @@ public class Binder<BEAN> implements Serializable {
     }
 
     private void fireStatusChangeEvent(boolean hasValidationErrors) {
-        getEventRouter()
-                .fireEvent(new StatusChangeEvent(this, hasValidationErrors));
+        StatusChangeEvent event = new StatusChangeEvent(this,
+                hasValidationErrors);
+        fireEvent(event);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void fireEvent(Object event) {
+        listeners.entrySet().stream().filter(
+                entry -> entry.getKey().isAssignableFrom(event.getClass()))
+                .forEach(entry -> {
+                    for (Consumer consumer : entry.getValue()) {
+                        consumer.accept(event);
+                    }
+                });
     }
 
     private <FIELDVALUE> Converter<FIELDVALUE, FIELDVALUE> createNullRepresentationAdapter(
@@ -2358,7 +2376,7 @@ public class Binder<BEAN> implements Serializable {
      * @return list of all fields in the class considering hierarchy
      */
     private List<Field> getFieldsInDeclareOrder(Class<?> searchClass) {
-        ArrayList<Field> memberFieldInOrder = new ArrayList<>();
+        List<Field> memberFieldInOrder = new ArrayList<>();
 
         while (searchClass != null) {
             memberFieldInOrder
@@ -2444,10 +2462,6 @@ public class Binder<BEAN> implements Serializable {
 
     private String minifyFieldName(String fieldName) {
         return fieldName.toLowerCase(Locale.ENGLISH).replace("_", "");
-    }
-
-    private <V> void fireValueChangeEvent(ValueChangeEvent<?, V> event) {
-        getEventRouter().fireEvent(event);
     }
 
     /**

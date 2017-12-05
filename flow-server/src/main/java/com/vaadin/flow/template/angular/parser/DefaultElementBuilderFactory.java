@@ -75,7 +75,7 @@ public class DefaultElementBuilderFactory
             if (!name.endsWith(")")) {
                 throw new TemplateParseException(
                         "Event listener registration should be in the form (click)='...' but template contains '"
-                                + attribute.toString() + "'.");
+                                + attribute + "'.");
             }
             String key = extractKey(name, 1);
             builder.addEventHandler(key, attribute.getValue());
@@ -83,7 +83,7 @@ public class DefaultElementBuilderFactory
             if (!name.endsWith("]")) {
                 throw new TemplateParseException(
                         "Property binding should be in the form [property]='value' but template contains '"
-                                + attribute.toString() + "'.");
+                                + attribute + "'.");
             }
             handlePropertyParsing(attribute, builder, element, name);
         } else {

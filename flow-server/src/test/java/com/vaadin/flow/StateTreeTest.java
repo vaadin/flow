@@ -178,7 +178,7 @@ public class StateTreeTest {
         }
 
         nodes.forEach(StateNode::markAsDirty);
-        ArrayList<StateNode> expected = new ArrayList<>();
+        List<StateNode> expected = new ArrayList<>();
         expected.add(rootNode);
         expected.addAll(nodes);
 
@@ -237,7 +237,7 @@ public class StateTreeTest {
     }
 
     private List<NodeChange> collectChangesExceptChildrenAddRemove() {
-        ArrayList<NodeChange> changes = new ArrayList<>();
+        List<NodeChange> changes = new ArrayList<>();
         tree.collectChanges(change -> {
             if ((change instanceof ListAddChange
                     || change instanceof ListRemoveChange)

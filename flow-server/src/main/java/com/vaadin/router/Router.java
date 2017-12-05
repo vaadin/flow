@@ -18,8 +18,11 @@ package com.vaadin.router;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
@@ -70,9 +73,22 @@ public class Router implements RouterInterface {
 
     @Override
     public void initializeUI(UI ui, VaadinRequest initRequest) {
+        Location location = getLocationForRequest(initRequest.getPathInfo(),
+                initRequest.getParameterMap());
 
-        String pathInfo = initRequest.getPathInfo();
+        ui.getPage().getHistory().setHistoryStateChangeHandler(
+                e -> navigate(ui, e.getLocation(), e.getTrigger()));
 
+        int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
+
+        VaadinResponse response = VaadinService.getCurrentResponse();
+        if (response != null) {
+            response.setStatus(statusCode);
+        }
+    }
+
+    private Location getLocationForRequest(String pathInfo,
+            Map<String, String[]> parameterMap) {
         final String path;
         if (pathInfo == null) {
             path = "";
@@ -82,18 +98,34 @@ public class Router implements RouterInterface {
         }
 
         final QueryParameters queryParameters = QueryParameters
-                .full(initRequest.getParameterMap());
+                .full(parameterMap);
 
-        ui.getPage().getHistory().setHistoryStateChangeHandler(
-                e -> navigate(ui, e.getLocation(), e.getTrigger()));
+        return new Location(path, queryParameters);
+    }
 
-        Location location = new Location(path, queryParameters);
-        int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
-
-        VaadinResponse response = VaadinService.getCurrentResponse();
-        if (response != null) {
-            response.setStatus(statusCode);
+    /**
+     * Resolve the navigation target for given path and parameter map using the
+     * router routeResolver.
+     * 
+     * @param pathInfo
+     *            the path relative to the application
+     * @param parameterMap
+     *            A mapping of parameter names to arrays of parameter values
+     * @return NavigationTarget for the given path and parameter map if found
+     */
+    public Optional<NavigationState> resolveNavigationTarget(String pathInfo,
+            Map<String, String[]> parameterMap) {
+        Location location = getLocationForRequest(pathInfo, parameterMap);
+        NavigationState resolve = null;
+        try {
+            resolve = getRouteResolver()
+                    .resolve(new ResolveRequest(this, location));
+        } catch (NotFoundException nfe) {
+            Logger.getLogger(Router.class.getName()).log(Level.WARNING, nfe,
+                    () -> "Failed to resolve navigation target for path: "
+                            + pathInfo);
         }
+        return Optional.ofNullable(resolve);
     }
 
     @Override

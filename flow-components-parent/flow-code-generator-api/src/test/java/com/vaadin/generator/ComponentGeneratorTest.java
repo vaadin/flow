@@ -195,8 +195,8 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
-        Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setName(String name)"));
+        Assert.assertTrue("No setter found",
+                generatedClass.contains("public void setName(String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
@@ -661,6 +661,36 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void classContainsObjectProperty_componentContainsValueProperty_generatedClassImplementsHasValue() {
+
+        ComponentObjectType objectType = new ComponentObjectType();
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setObjectType(Collections.singletonList(objectType));
+        componentMetadata.setProperties(Collections.singletonList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("value-changed");
+        componentMetadata.setEvents(Collections.singletonList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent", HasValue.class);
+
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "@Override public ValueProperty getValue() { JsonObject _obj = (JsonObject) getElement().getPropertyRaw("));
+
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "@Override public void setValue(ValueProperty property) { if (!Objects.equals(property, getValue()))"));
+    
+    }
+
+    @Test
     public void classContainsMethodWithObjectParameter_generatedClassContainsInnerClass() {
         // note: the tests for the nested class are covered by the
         // NestedClassGeneratorTest
@@ -868,7 +898,8 @@ public class ComponentGeneratorTest {
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
                 generatedClass, "MyComponent", HasValue.class);
         Assert.assertThat(generatedClass, CoreMatchers
-                .containsString("@Override public String getValue()"));
+                .containsString(
+                        "@Override public String getValue()"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "@Override public void setValue(String value)"));
     }
@@ -893,6 +924,29 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(generatedClass.contains(
                 "@Override public void setValue(String value) { if (!Objects.equals(value, getValue())) {"));
     }
+
+    @Test
+    public void ComponentContainsStringValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTyeps() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setType(Collections.singleton(ComponentBasicType.STRING));
+        property.setNotify(true);
+        componentMetadata.setProperties(Collections.singletonList(property));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent", HasValue.class);
+
+        Assert.assertTrue(generatedClass
+                .contains(
+                        "@Override public String getValue() { String value = getElement().getProperty(\"value\"); return value == null ? getEmptyValue() : value; }"));
+    }
+
 
     @Test
     public void componentContainsNumberValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTypes() {

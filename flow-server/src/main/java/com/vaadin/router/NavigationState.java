@@ -31,6 +31,7 @@ public class NavigationState implements Serializable {
 
     private Class<? extends Component> navigationTarget;
     private List<String> urlParameters;
+    private String resolvedPath;
 
     /**
      * Gets the navigation target of this state.
@@ -52,6 +53,28 @@ public class NavigationState implements Serializable {
         Objects.requireNonNull(navigationTarget,
                 "navigationTarget cannot be null");
         this.navigationTarget = navigationTarget;
+    }
+
+    /**
+     * Set the path for the resolved navigation target.
+     * 
+     * @param resolvedPath
+     *            path for which the target was selected
+     */
+    public void setResolvedPath(String resolvedPath) {
+        this.resolvedPath = resolvedPath;
+    }
+
+    /**
+     * Get the resolved path details for this navigation state.
+     * 
+     * @return the resolved path details
+     */
+    public String getResolvedPath() {
+        if (resolvedPath == null) {
+            resolvedPath = navigationTarget.getAnnotation(Route.class).value();
+        }
+        return resolvedPath;
     }
 
     /**

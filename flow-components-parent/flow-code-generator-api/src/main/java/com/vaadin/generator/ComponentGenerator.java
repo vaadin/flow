@@ -15,7 +15,7 @@
  */
 package com.vaadin.generator;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import javax.annotation.Generated;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +35,9 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Generated;
-
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -46,9 +47,6 @@ import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
@@ -80,6 +78,8 @@ import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.event.Synchronize;
 
 import elemental.json.JsonObject;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Base class of the component generation process. It takes a
@@ -736,6 +736,15 @@ public class ComponentGenerator {
                 javaClass.addInterface(HasValue.class.getName() + "<"
                         + GENERIC_TYPE + ", " + nestedClass.getName() + ">");
                 method.addAnnotation(Override.class);
+
+                method.setBody(String.format(
+                        "JsonObject _obj = (JsonObject) getElement().getPropertyRaw(\"%s\");"
+                                + "return _obj == null ? getEmptyValue() : new %s().readJson(_obj);",
+                        property.getName(), nestedClass.getName()));
+            } else {
+                method.setBody(String.format(
+                        "return new %s().readJson((JsonObject) getElement().getPropertyRaw(\"%s\"));",
+                        nestedClass.getName(), property.getName()));
             }
 
         } else {
@@ -779,9 +788,6 @@ public class ComponentGenerator {
                             + StringUtils.capitalize(method.getName()));
                 }
 
-                method.setBody(
-                        ComponentGeneratorUtils.generateElementApiGetterForType(
-                                basicType, property.getName()));
 
                 addSynchronizeAnnotationAndJavadocToGetter(method, property,
                         events);
@@ -798,6 +804,14 @@ public class ComponentGenerator {
                     javaClass.removeImport(ComponentSupplier.class);
                     javaClass.removeInterface(ComponentSupplier.class);
                     method.addAnnotation(Override.class);
+
+                    method.setBody(ComponentGeneratorUtils
+                            .generateElementApiValueGetterForType(
+                            basicType, property.getName()));
+                } else {
+                    method.setBody(ComponentGeneratorUtils
+                            .generateElementApiGetterForType(basicType,
+                                    property.getName()));
                 }
             }
         }

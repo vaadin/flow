@@ -17,6 +17,7 @@
 package com.vaadin.flow.nodefeature;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -37,9 +38,9 @@ import com.vaadin.shared.Registration;
  */
 public class ElementAttributeMap extends NodeMap {
 
-    private HashMap<String, StreamRegistration> resourceRegistrations;
+    private Map<String, StreamRegistration> resourceRegistrations;
 
-    private HashMap<String, Registration> pendingRegistrations;
+    private Map<String, Registration> pendingRegistrations;
 
     /**
      * Creates a new element attribute map for the given node.

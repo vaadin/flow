@@ -68,6 +68,18 @@ public class NavigationStateBuilder {
     }
 
     /**
+     * Assign the path that was used for determining the navigation target.
+     * 
+     * @param path
+     *            navigation path
+     * @return this builder, for chaining
+     */
+    public NavigationStateBuilder withPath(String path) {
+        currentState.setResolvedPath(path);
+        return this;
+    }
+
+    /**
      * Returns the NavigationState instance that has been built so far and
      * resets the internal state of this builder.
      *

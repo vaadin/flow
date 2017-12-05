@@ -57,8 +57,6 @@ public interface PropertyDefinition<T, V> extends Serializable {
     /**
      * Gets the type of the class containing this property.
      *
-     * @since 8.1
-     *
      * @return the property type. not <code>null</code>
      */
     Class<?> getPropertyHolderType();
@@ -83,4 +81,39 @@ public interface PropertyDefinition<T, V> extends Serializable {
      * @return the property set, not <code>null</code>
      */
     PropertySet<T> getPropertySet();
+
+    /**
+     * Gets the parent property of this property if this is a sub-property of
+     * the property set. If this property belongs directly to the property set,
+     * it doesn't have a parent and this method returns {@code null}.
+     * 
+     * @return the parent property, may be {@code null}
+     */
+    PropertyDefinition<T, ?> getParent();
+
+    /**
+     * Gets whether this property belongs to some other property in the property
+     * set, or directly to the property set.
+     * 
+     * @return {@code true} if this property is a sub-property of the property
+     *         set it belongs to, {@code false} otherwise
+     */
+    default boolean isSubProperty() {
+        return getParent() != null;
+    }
+
+    /**
+     * Gets the full name of this property. For sub-properties this means the
+     * full path from the property set to this property, with dot-separated
+     * parent properties, eg. "property.subProperty".
+     * 
+     * @return the full property name, not {@code null}
+     */
+    default String getFullName() {
+        if (getParent() != null) {
+            return getParent().getFullName() + '.' + getName();
+        } else {
+            return getName();
+        }
+    }
 }

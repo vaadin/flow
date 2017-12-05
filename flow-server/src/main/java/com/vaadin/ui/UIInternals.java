@@ -264,7 +264,7 @@ public class UIInternals implements Serializable {
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] getRootNodeFeatures() {
         // Start with all element features
-        ArrayList<Class<? extends NodeFeature>> features = new ArrayList<>(
+        List<Class<? extends NodeFeature>> features = new ArrayList<>(
                 BasicElementStateProvider.getFeatures());
 
         // Then add our own custom features
@@ -284,8 +284,7 @@ public class UIInternals implements Serializable {
         if (session == null) {
             return null;
         } else {
-            return session.toString() + " for "
-                    + session.getService().getServiceName();
+            return session + " for " + session.getService().getServiceName();
         }
     }
 

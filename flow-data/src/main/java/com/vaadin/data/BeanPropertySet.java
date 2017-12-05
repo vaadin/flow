@@ -104,7 +104,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
     }
 
     private abstract static class AbstractBeanPropertyDefinition<T, V>
-    implements PropertyDefinition<T, V> {
+            implements PropertyDefinition<T, V> {
         private final PropertyDescriptor descriptor;
         private final BeanPropertySet<T> propertySet;
         private final Class<?> propertyHolderType;
@@ -156,7 +156,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
     }
 
     private static class BeanPropertyDefinition<T, V>
-    extends AbstractBeanPropertyDefinition<T, V> {
+            extends AbstractBeanPropertyDefinition<T, V> {
 
         public BeanPropertyDefinition(BeanPropertySet<T> propertySet,
                 Class<T> propertyHolderType, PropertyDescriptor descriptor) {
@@ -198,6 +198,11 @@ public class BeanPropertySet<T> implements PropertySet<T> {
             return new SerializedPropertyDefinition(getPropertySet().beanType,
                     getName());
         }
+
+        @Override
+        public PropertyDefinition<T, ?> getParent() {
+            return null;
+        }
     }
 
     /**
@@ -211,7 +216,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
      *            the value type returned by the getter and set by the setter
      */
     public static class NestedBeanPropertyDefinition<T, V>
-    extends AbstractBeanPropertyDefinition<T, V> {
+            extends AbstractBeanPropertyDefinition<T, V> {
 
         private final PropertyDefinition<T, ?> parent;
 
@@ -270,11 +275,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                     parent.getName() + "." + getName());
         }
 
-        /**
-         * Gets the parent property definition.
-         *
-         * @return the property definition for the parent
-         */
+        @Override
         public PropertyDefinition<T, ?> getParent() {
             return parent;
         }

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -209,7 +210,7 @@ public class ClientDelegteHandlersTest {
                 .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(10, feature.size());
 
-        HashSet<String> methods = getDeclaredMethods(
+        Set<String> methods = getDeclaredMethods(
                 TemplateWithGoodParametersMethods.class)
                         .collect(Collectors.toCollection(HashSet::new));
         methods.add(getDeclaredMethods(Template1.class).findFirst().get());
@@ -265,7 +266,7 @@ public class ClientDelegteHandlersTest {
                 .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(3, feature.size());
 
-        HashSet<String> methods = getDeclaredMethods(
+        Set<String> methods = getDeclaredMethods(
                 ChildTemplateWithMultipleMethods.class)
                         .collect(Collectors.toCollection(HashSet::new));
         methods.add(getDeclaredMethods(Template1.class).findFirst().get());

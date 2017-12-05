@@ -220,4 +220,56 @@ public class BeanPropertySetTest {
         Assert.assertEquals(new HashSet<>(Arrays.asList("name", "born")),
                 propertyNames);
     }
+
+    @Test
+    public void isSubProperty() {
+        PropertySet<FatherAndSon> propertySet = BeanPropertySet
+                .get(FatherAndSon.class);
+
+        Assert.assertTrue(
+                "Dot-separated property chain \"father.firstName\" should refer to a sub-property",
+                propertySet.getProperty("father.firstName").get()
+                        .isSubProperty());
+        Assert.assertFalse(
+                "Property name without dot-separated parent properties should not refer to a sub-property",
+                propertySet.getProperty("father").get().isSubProperty());
+        Assert.assertTrue(
+                "Dot-separated property chain \"father.son.father.son\" should refer to a sub-property",
+                propertySet.getProperty("father.son.father.son").get()
+                        .isSubProperty());
+    }
+
+    @Test
+    public void getFullName_returnsFullPropertyChain() {
+        PropertySet<FatherAndSon> propertySet = BeanPropertySet
+                .get(FatherAndSon.class);
+        String subPropertyFullName = "father.son.father.son.firstName";
+        PropertyDefinition<FatherAndSon, ?> subProperty = propertySet
+                .getProperty(subPropertyFullName).get();
+        Assert.assertEquals(
+                "Name of a sub-property should be the simple name of the property",
+                "firstName", subProperty.getName());
+        Assert.assertEquals(
+                "Full name of a sub-property should be the full property chain with parent properties",
+                subPropertyFullName, subProperty.getFullName());
+    }
+
+    @Test
+    public void getParentForDirectProperty_returnsNull() {
+        PropertySet<FatherAndSon> propertySet = BeanPropertySet
+                .get(FatherAndSon.class);
+        Assert.assertNull(
+                "Direct property of a property set should not have a parent",
+                propertySet.getProperty("father").get().getParent());
+    }
+
+    @Test
+    public void getParentForSubProperty_returnsParent() {
+        PropertySet<FatherAndSon> propertySet = BeanPropertySet
+                .get(FatherAndSon.class);
+        Assert.assertEquals(
+                "Parent property of \"father.son.father\" should be \"father.son\"",
+                "father.son", propertySet.getProperty("father.son.father").get()
+                        .getParent().getFullName());
+    }
 }

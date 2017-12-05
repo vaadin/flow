@@ -21,13 +21,11 @@ public class ErrorPageIT extends ChromeBrowserTest {
         WebElement element = findElement(By.id("error-path"));
         Assert.assertNotNull(element);
         Assert.assertEquals("abcd", element.getText());
-        Assert.assertNotNull(findElement(By.id("main-layout")));
 
         getDriver().get(getTestURL() + "/foobar");
 
         element = findElement(By.id("error-path"));
         Assert.assertNotNull(element);
         Assert.assertEquals("abcd/foobar", element.getText());
-        Assert.assertNotNull(findElement(By.id("main-layout")));
     }
 }

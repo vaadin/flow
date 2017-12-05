@@ -57,7 +57,7 @@ public class JreMapTest {
 
         map.set("One", 1).set("Two", 2);
 
-        JsArray<Integer> values = JsCollections.mapValues(map);
+        JsArray<Integer> values = map.mapValues();
 
         Assert.assertEquals(2, values.length());
 
@@ -66,12 +66,12 @@ public class JreMapTest {
 
         map.delete("One");
 
-        values = JsCollections.mapValues(map);
+        values = map.mapValues();
         Assert.assertEquals(1, values.length());
         Assert.assertEquals(2, values.get(0).intValue());
 
         map.clear();
-        values = JsCollections.mapValues(map);
+        values = map.mapValues();
         Assert.assertEquals(0, values.length());
     }
 

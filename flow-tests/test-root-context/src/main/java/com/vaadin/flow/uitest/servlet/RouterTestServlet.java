@@ -9,6 +9,7 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
+import com.vaadin.router.RouteAlias;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationObserver;
@@ -100,6 +101,12 @@ public class RouterTestServlet extends VaadinServlet {
 
     @Route(value = "target", layout = MiddleLayout.class)
     public static class TargetLayout extends ClassNameDiv {
+
+    }
+
+    @Route("noParent")
+    @RouteAlias(value = "twoParents", layout = MiddleLayout.class)
+    public static class AliasLayout extends ClassNameDiv {
 
     }
 

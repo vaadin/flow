@@ -49,7 +49,7 @@ public class ComponentEventBus implements Serializable {
 
     private static class ComponentEventData implements Serializable {
         private Registration domEventRemover = null;
-        private ArrayList<ComponentEventListener<? extends ComponentEvent<?>>> listeners = new ArrayList<>(
+        private List<ComponentEventListener<? extends ComponentEvent<?>>> listeners = new ArrayList<>(
                 1);
     }
 

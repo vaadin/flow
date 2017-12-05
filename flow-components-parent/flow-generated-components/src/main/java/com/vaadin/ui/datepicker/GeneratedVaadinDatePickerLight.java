@@ -96,7 +96,8 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
     @Synchronize(property = "value", value = "value-changed")
     @Override
     public String getValue() {
-        return getElement().getProperty("value");
+        String value = getElement().getProperty("value");
+        return value == null ? getEmptyValue() : value;
     }
 
     /**

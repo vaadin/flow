@@ -16,14 +16,14 @@
 
 package com.vaadin.client.flow.collection;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class JreSetTest {
 
@@ -70,16 +70,16 @@ public class JreSetTest {
     @Test
     public void testSetIsEmpty() {
         JsSet<String> set = JsCollections.set();
-        assertTrue(JsCollections.isEmpty(set));
+        assertTrue(set.isEmpty());
         // 1, 2, 3
         set.add("1");
-        assertFalse(JsCollections.isEmpty(set));
+        assertFalse(set.isEmpty());
         set.add("2");
-        assertFalse(JsCollections.isEmpty(set));
+        assertFalse(set.isEmpty());
         set.delete("1");
-        assertFalse(JsCollections.isEmpty(set));
+        assertFalse(set.isEmpty());
         set.delete("2");
-        assertTrue(JsCollections.isEmpty(set));
+        assertTrue(set.isEmpty());
     }
 
     @Test

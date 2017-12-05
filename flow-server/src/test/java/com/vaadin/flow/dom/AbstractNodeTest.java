@@ -19,8 +19,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -550,7 +550,7 @@ public abstract class AbstractNodeTest {
     }
 
     protected void assertMethodsReturnType(Class<? extends Node<?>> clazz,
-            HashSet<String> ignore) {
+            Set<String> ignore) {
         for (Method method : clazz.getMethods()) {
             if (method.getDeclaringClass().equals(Object.class)) {
                 continue;

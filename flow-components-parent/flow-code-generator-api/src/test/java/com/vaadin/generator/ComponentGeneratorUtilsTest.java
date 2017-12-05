@@ -18,6 +18,8 @@ package com.vaadin.generator;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.generator.metadata.ComponentBasicType;
+
 /**
  * Test component generator utility methods
  */
@@ -194,5 +196,39 @@ public class ComponentGeneratorUtilsTest {
     @Test(expected = AssertionError.class)
     public void convertFilePathToPackageForNullDirectory() {
         ComponentGeneratorUtils.convertFilePathToPackage(null);
+    }
+
+    @Test
+    public void generateGetterForValue_nullIsChecked() {
+        Assert.assertEquals(
+                "String value = getElement().getProperty(\"value\");return value == null ? getEmptyValue() : value;",
+                ComponentGeneratorUtils.generateElementApiValueGetterForType(
+                        ComponentBasicType.STRING, "value"));
+
+        Assert.assertEquals("return getElement().getProperty(\"value\", 0.0);",
+                ComponentGeneratorUtils.generateElementApiValueGetterForType(
+                        ComponentBasicType.NUMBER, "value"));
+
+        Assert.assertEquals(
+                "return getElement().getProperty(\"boolean\", false);",
+                ComponentGeneratorUtils.generateElementApiValueGetterForType(
+                        ComponentBasicType.BOOLEAN, "boolean"));
+
+        Assert.assertEquals(
+                "Object array = getElement().getPropertyRaw(\"array\");return (JsonArray) (array == null ? getEmptyValue() : array);",
+                ComponentGeneratorUtils.generateElementApiValueGetterForType(
+                        ComponentBasicType.ARRAY, "array"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void generateGetterForEmptyValueProperty_exceptionIsRaised() {
+        ComponentGeneratorUtils.generateElementApiValueGetterForType(
+                ComponentBasicType.STRING, "");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void generateGetterForNullValueProperty_exceptionIsRaised() {
+        ComponentGeneratorUtils.generateElementApiValueGetterForType(
+                ComponentBasicType.STRING, null);
     }
 }

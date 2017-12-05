@@ -31,7 +31,6 @@ import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.vaadin.testbench.parallel.ParallelTest;
 
@@ -39,34 +38,6 @@ import com.vaadin.testbench.parallel.ParallelTest;
  * Helpers for running testbench tests.
  */
 public class TestBenchHelpers extends ParallelTest {
-    /**
-     * Waits up to 10s for the given condition to become true. Use e.g. as
-     * {@link #waitUntil(ExpectedCondition)}.
-     *
-     * @param condition
-     *            the condition to wait for to become true
-     * @param <T>
-     *            the return type of the expected condition
-     */
-    protected <T> void waitUntil(ExpectedCondition<T> condition) {
-        waitUntil(condition, 10);
-    }
-
-    /**
-     * Waits the given number of seconds for the given condition to become true.
-     * Use e.g. as {@link #waitUntil(ExpectedCondition)}.
-     *
-     * @param condition
-     *            the condition to wait for to become true
-     * @param timeoutInSeconds
-     *            the number of seconds to wait
-     * @param <T>
-     *            the return type of the expected condition
-     */
-    protected <T> void waitUntil(ExpectedCondition<T> condition,
-            long timeoutInSeconds) {
-        new WebDriverWait(driver, timeoutInSeconds).until(condition);
-    }
 
     /**
      * Waits up to 10s for the given condition to become false. Use e.g. as

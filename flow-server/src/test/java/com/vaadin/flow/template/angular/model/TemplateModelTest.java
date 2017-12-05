@@ -13,16 +13,16 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.model.Exclude;
-import com.vaadin.flow.model.Include;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
+import com.vaadin.flow.model.Bean;
+import com.vaadin.flow.model.BeanContainingBeans;
+import com.vaadin.flow.model.Exclude;
+import com.vaadin.flow.model.Include;
+import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.InlineTemplate;
-import com.vaadin.flow.model.Bean;
-import com.vaadin.flow.model.BeanContainingBeans;
-import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.util.ReflectTools;
 
@@ -494,7 +494,7 @@ public class TemplateModelTest {
 
         Assert.assertEquals("foobar", model.getString());
 
-        ArrayList<NodeChange> changes = new ArrayList<>();
+        List<NodeChange> changes = new ArrayList<>();
         ModelMap modelMap = template.getElement().getNode()
                 .getFeature(ModelMap.class);
         modelMap.collectChanges(changes::add);
@@ -922,7 +922,7 @@ public class TemplateModelTest {
     @Test
     public void getListFromModel() {
         ListBeanModelTemplate template = new ListBeanModelTemplate();
-        ArrayList<Bean> beans = new ArrayList<>();
+        List<Bean> beans = new ArrayList<>();
         beans.add(new Bean(100));
         beans.add(new Bean(200));
         beans.add(new Bean(300));
@@ -964,7 +964,7 @@ public class TemplateModelTest {
 
         ModelMap modelMap = getModelMap(template, "bean");
         Set<String> mapKeys = getKeys(modelMap);
-        HashSet<String> excluded = new HashSet<>();
+        Set<String> excluded = new HashSet<>();
         excluded.add("doubleValue");
         excluded.add("booleanObject");
 
@@ -1130,7 +1130,7 @@ public class TemplateModelTest {
 
         ModelMap container1Map = ModelMap.get(modelList.get(0));
         ModelMap container2Map = ModelMap.get(modelList.get(1));
-        HashSet<String> bean1bean2 = new HashSet<>();
+        Set<String> bean1bean2 = new HashSet<>();
         bean1bean2.add("bean1");
         bean1bean2.add("bean2");
         Assert.assertEquals(bean1bean2,

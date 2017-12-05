@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.IOUtils;
@@ -22,15 +24,23 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.router.PageTitle;
+import com.vaadin.router.ParentLayout;
+import com.vaadin.router.Route;
+import com.vaadin.router.RouteAlias;
+import com.vaadin.router.RouterLayout;
+import com.vaadin.router.TestRouteRegistry;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Html;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.Text;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.Viewport;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
@@ -65,6 +75,38 @@ public class BootstrapHandlerTest {
 
     }
 
+    @Route("")
+    @Tag(Tag.DIV)
+    @Viewport("width=device-width")
+    public static class RootNavigationTarget extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Viewport("width=device-width")
+    public static class Parent extends Component implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(Parent.class)
+    public static class MiddleParent extends Component implements RouterLayout {
+    }
+
+    @Route(value = "", layout = Parent.class)
+    @Tag(Tag.DIV)
+    public static class RootWithParent extends Component {
+    }
+
+    @Route(value = "", layout = MiddleParent.class)
+    @Tag(Tag.DIV)
+    public static class RootWithParents extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = Parent.class)
+    @Tag(Tag.DIV)
+    public static class AliasLayout extends Component {
+    }
+
     private TestUI testUI;
     private BootstrapContext context;
     private VaadinRequest request;
@@ -82,6 +124,8 @@ public class BootstrapHandlerTest {
 
         service = Mockito
                 .spy(new MockVaadinServletService(deploymentConfiguration));
+        Mockito.when(service.getRouteRegistry())
+                .thenReturn(new TestRouteRegistry());
 
         session = Mockito.spy(new MockVaadinSession(service));
         session.lock();
@@ -106,6 +150,20 @@ public class BootstrapHandlerTest {
     private void initUI(UI ui, VaadinRequest request) {
         this.request = request;
         service.init();
+
+        ui.doInit(request, 0);
+        context = new BootstrapContext(request, null, session, ui);
+    }
+
+    private void initUI(UI ui, VaadinRequest request,
+            Set<Class<? extends Component>> navigationTargets)
+            throws InvalidRouteConfigurationException {
+
+        service.getRouteRegistry().setNavigationTargets(navigationTargets);
+
+        this.request = request;
+        service.init();
+
         ui.doInit(request, 0);
         context = new BootstrapContext(request, null, session, ui);
     }
@@ -178,6 +236,80 @@ public class BootstrapHandlerTest {
                 body.parent().hasAttr("lang"));
         assertEquals("Lang did not have UI defined language",
                 testUI.getLocale().getLanguage(), body.parent().attr("lang"));
+    }
+
+    @Test // #3008
+    public void bootstrap_page_has_viewport_for_route()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(RootNavigationTarget.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Assert.assertTrue("Viewport meta tag was missing",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
+    }
+
+    @Test // #3008
+    public void bootstrap_page_has_viewport_for_route_parent()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(RootWithParent.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Assert.assertTrue("Viewport meta tag was missing",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
+    }
+
+    @Test // #3008
+    public void bootstrap_page_has_viewport_for_route_top_parent()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(RootWithParents.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Assert.assertTrue("Viewport meta tag was missing",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
+    }
+
+    @Test // #3008
+    public void bootstrap_page_has_viewport_for_route_alias_parent()
+            throws InvalidRouteConfigurationException {
+        HttpServletRequest httpRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.doAnswer(invocation -> "").when(httpRequest).getServletPath();
+        VaadinServletRequest vaadinRequest = new VaadinServletRequest(
+                httpRequest, service);
+
+        initUI(testUI, vaadinRequest, Collections.singleton(AliasLayout.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(vaadinRequest, null, session, testUI));
+
+        Assert.assertFalse("Viewport found even though not part of Route",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
+
+        Mockito.doAnswer(invocation -> "/alias").when(httpRequest)
+                .getPathInfo();
+
+        page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(vaadinRequest, null, session, testUI));
+
+        Assert.assertTrue(
+                "Viewport meta tag was missing even tough alias route parent has annotation",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
     }
 
     @Test
@@ -382,14 +514,16 @@ public class BootstrapHandlerTest {
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format("In development mode, es6 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_ES6),
-                urlES6, is(es6Prefix + urlPart));
+        assertThat(String.format(
+                "In development mode, es6 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES6), urlES6, is(es6Prefix + urlPart));
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format("In development mode, es5 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_ES5),
-                urlES5, is(es5Prefix + urlPart));
+        assertThat(String.format(
+                "In development mode, es5 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
 
         Mockito.verify(session, Mockito.times(3)).getBrowser();
         Mockito.verify(mockedWebBrowser, Mockito.times(2)).isEs6Supported();
@@ -410,14 +544,16 @@ public class BootstrapHandlerTest {
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format("In development mode, es6 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_DEV),
-                urlES6, is(devPrefix + urlPart));
+        assertThat(String.format(
+                "In development mode, es6 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_DEV), urlES6, is(devPrefix + urlPart));
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format("In development mode, es5 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_DEV),
-                urlES5, is(devPrefix + urlPart));
+        assertThat(String.format(
+                "In development mode, es5 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_DEV), urlES5, is(devPrefix + urlPart));
 
         Mockito.verify(session, Mockito.times(3)).getBrowser();
         Mockito.verify(mockedWebBrowser, Mockito.times(2)).isEs6Supported();
