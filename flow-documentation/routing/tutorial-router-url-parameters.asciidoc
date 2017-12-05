@@ -56,7 +56,7 @@ public class OptionalGreeting extends Div implements HasUrlParameter<String> {
 }
 ----
 
-[NOTE] Also with an optional parameter a specific route will have precedence over the parametrised one.
+[NOTE] Also with an optional parameter a specific route will have precedence over the parameterised one.
 
 == Wildcard URL parameters for Navigation Targets
 

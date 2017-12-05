@@ -16,7 +16,10 @@
 package com.vaadin.client.flow.binding;
 
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.StateNode;
@@ -32,7 +35,6 @@ import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import jsinterop.annotations.JsFunction;
 
 /**
  * A representation of a server object able to send notifications to the server.
@@ -187,7 +189,7 @@ public final class ServerEventObject extends JavaScriptObject {
         if (typeof(node.get) === 'function') {
             var polymerProperty = node.get(propertyName);
             if (typeof(polymerProperty) === 'object'
-                && typeof(polymerProperty["nodeId"]) !==  'undefined') {
+                && typeof(polymerProperty["nodeId"]) !== 'undefined') {
                 return { nodeId: polymerProperty["nodeId"] };
             }
         }
