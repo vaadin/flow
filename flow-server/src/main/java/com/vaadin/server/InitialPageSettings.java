@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,9 @@ import elemental.json.JsonObject;
  */
 public class InitialPageSettings {
 
+    /**
+     * Append position enum.
+     */
     public enum Position {
         PREPEND, APPEND
     }
@@ -56,8 +60,8 @@ public class InitialPageSettings {
     /* Initial page values */
     private String viewport;
 
-    private Map<Position, List<JsonObject>> inline = new HashMap<>();
-    private Map<Position, List<Element>> elements = new HashMap<>();
+    private Map<Position, List<JsonObject>> inline = new EnumMap<>(Position.class);
+    private Map<Position, List<Element>> elements = new EnumMap<>(Position.class);
 
     /**
      * Create new initial page settings object.
@@ -145,8 +149,7 @@ public class InitialPageSettings {
      * @param type
      *            dependency type
      */
-    public void addInlineFromFile(String file,
-            Dependency.Type type) {
+    public void addInlineFromFile(String file, Dependency.Type type) {
         addInlineFromFile(Position.APPEND, file, type);
     }
 
@@ -248,8 +251,7 @@ public class InitialPageSettings {
      * @param attributes
      *            map of attributes for link element
      */
-    public void addLink(String href,
-            Map<String, String> attributes) {
+    public void addLink(String href, Map<String, String> attributes) {
         addLink(Position.APPEND, href, attributes);
     }
 

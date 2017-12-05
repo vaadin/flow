@@ -112,11 +112,11 @@ public class CustomBootstrapListener implements BootstrapListener {
         Element head = document.head();
 
         head.appendChild(createMeta(document, "og:title", "The Rock"));
-            head.appendChild(createMeta(document, "og:type", "video.movie"));
-            head.appendChild(createMeta(document, "og:url",
-                    "http://www.imdb.com/title/tt0117500/"));
-            head.appendChild(createMeta(document, "og:image",
-                    "http://ia.media-imdb.com/images/rock.jpg"));
+        head.appendChild(createMeta(document, "og:type", "video.movie"));
+        head.appendChild(createMeta(document, "og:url",
+                "http://www.imdb.com/title/tt0117500/"));
+        head.appendChild(createMeta(document, "og:image",
+                "http://ia.media-imdb.com/images/rock.jpg"));
     }
 
     private Element createMeta(Document document, String property,
