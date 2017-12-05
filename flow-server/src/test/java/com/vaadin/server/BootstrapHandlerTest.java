@@ -536,24 +536,23 @@ public class BootstrapHandlerTest {
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
 
-        String devPrefix = "bar/dev/";
-        deploymentConfiguration.setApplicationOrSystemProperty(
-                Constants.FRONTEND_URL_DEV, devPrefix);
+        String devPrefix = Constants.FRONTEND_URL_DEV_DEFAULT
+                .replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "./");
         String urlPart = "foo";
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
         assertThat(String.format(
-                "In development mode, es6 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_DEV), urlES6, is(devPrefix + urlPart));
+                "In development mode, es6 prefix should be equal to '%s'",
+                devPrefix), urlES6, is(devPrefix + urlPart));
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
         assertThat(String.format(
-                "In development mode, es5 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_DEV), urlES5, is(devPrefix + urlPart));
+                "In development mode, es5 prefix should be equal to '%s'",
+                devPrefix), urlES5, is(devPrefix + urlPart));
 
         Mockito.verify(session, Mockito.times(3)).getBrowser();
         Mockito.verify(mockedWebBrowser, Mockito.times(2)).isEs6Supported();

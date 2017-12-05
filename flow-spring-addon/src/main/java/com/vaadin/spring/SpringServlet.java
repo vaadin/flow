@@ -83,7 +83,6 @@ public class SpringServlet extends VaadinServlet {
         setProperty(Constants.DISABLE_WEBJARS, properties);
         setProperty(Constants.FRONTEND_URL_ES5, properties);
         setProperty(Constants.FRONTEND_URL_ES6, properties);
-        setProperty(Constants.FRONTEND_URL_DEV, properties);
         setProperty(Constants.FORCE_SHADY_DOM, properties);
 
         setProperty(Constants.I18N_PROVIDER, properties);

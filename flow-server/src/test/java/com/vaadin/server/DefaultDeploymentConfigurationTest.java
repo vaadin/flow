@@ -213,18 +213,16 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void frontendPrefixes_developmentMode() {
-        String developmentPrefix = "context://";
-
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.FRONTEND_URL_DEV, developmentPrefix);
         initParameters.setProperty(Constants.FRONTEND_URL_ES5, "context://build/frontend-es5/");
         initParameters.setProperty(Constants.FRONTEND_URL_ES6, "context://build/frontend-es6/");
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.FALSE.toString());
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
-        assertThat(String.format("In development mode, both es5 and es6 prefixes should be equal to '%s' parameter value", Constants.FRONTEND_URL_DEV),
+        String developmentPrefix = Constants.FRONTEND_URL_DEV_DEFAULT;
+        assertThat(String.format("In development mode, both es5 and es6 prefixes should be equal to '%s'", developmentPrefix),
                 config.getEs5FrontendPrefix(), is(developmentPrefix));
-        assertThat(String.format("In development mode, both es5 and es6 prefixes should be equal to '%s' parameter value", Constants.FRONTEND_URL_DEV),
+        assertThat(String.format("In development mode, both es5 and es6 prefixes should be equal to '%s'", developmentPrefix),
                 config.getEs6FrontendPrefix(), is(developmentPrefix));
     }
 
@@ -234,7 +232,6 @@ public class DefaultDeploymentConfigurationTest {
         String es6Prefix = "context://build/frontend-es6/";
 
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.FRONTEND_URL_DEV, "context://");
         initParameters.setProperty(Constants.FRONTEND_URL_ES5, es5Prefix);
         initParameters.setProperty(Constants.FRONTEND_URL_ES6, es6Prefix);
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.TRUE.toString());
