@@ -238,4 +238,38 @@ public class BeanPropertySetTest {
                 propertySet.getProperty("father.son.father.son").get()
                         .isSubProperty());
     }
+
+    @Test
+    public void getFullName_returnsFullPropertyChain() {
+        PropertySet<FatherAndSon> propertySet = BeanPropertySet
+                .get(FatherAndSon.class);
+        String subPropertyFullName = "father.son.father.son.firstName";
+        PropertyDefinition<FatherAndSon, ?> subProperty = propertySet
+                .getProperty(subPropertyFullName).get();
+        Assert.assertEquals(
+                "Name of a sub-property should be the simple name of the property",
+                "firstName", subProperty.getName());
+        Assert.assertEquals(
+                "Full name of a sub-property should be the full property chain with parent properties",
+                subPropertyFullName, subProperty.getFullName());
+    }
+
+    @Test
+    public void getParentForDirectProperty_returnsNull() {
+        PropertySet<FatherAndSon> propertySet = BeanPropertySet
+                .get(FatherAndSon.class);
+        Assert.assertNull(
+                "Direct property of a property set should not have a parent",
+                propertySet.getProperty("father").get().getParent());
+    }
+
+    @Test
+    public void getParentForSubProperty_returnsParent() {
+        PropertySet<FatherAndSon> propertySet = BeanPropertySet
+                .get(FatherAndSon.class);
+        Assert.assertEquals(
+                "Parent property of \"father.son.father\" should be \"father.son\"",
+                "father.son", propertySet.getProperty("father.son.father").get()
+                        .getParent().getFullName());
+    }
 }
