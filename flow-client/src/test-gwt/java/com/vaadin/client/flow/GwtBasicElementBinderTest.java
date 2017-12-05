@@ -272,8 +272,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         object.put(NodeProperties.TYPE, NodeProperties.IN_MEMORY_CHILD);
         elementData.getProperty(NodeProperties.PAYLOAD).setValue(object);
 
-        NodeList virtialChildren = node
-                .getList(NodeFeatures.VIRTUAL_CHILDREN);
+        NodeList virtialChildren = node.getList(NodeFeatures.VIRTUAL_CHILDREN);
         virtialChildren.add(0, childNode);
 
         Reactive.flush();
@@ -986,7 +985,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     private void addVirtualChild(StateNode shadowRootNode,
             StateNode childNode) {
         NodeList virtualChildren = shadowRootNode
-                .getList(NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
+                .getList(NodeFeatures.VIRTUAL_CHILDREN);
         virtualChildren.add(virtualChildren.length(), childNode);
     }
 
