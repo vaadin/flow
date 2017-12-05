@@ -134,6 +134,14 @@ public class GridBasic {
         grid.setColumnReorderingAllowed(true);
 
         nameColumn.setFrozen(true);
+
+        nameColumn.setKey("name");
+        grid.getColumnByKey("name").setWidth("100px");
+    }
+
+    public void beanGrid() {
+        Grid<Person> grid = new Grid<>(Person.class);
+        grid.getColumnByKey("yearOfBirth").setFrozen(true);
     }
 
     public void gridColumnMerging() {
