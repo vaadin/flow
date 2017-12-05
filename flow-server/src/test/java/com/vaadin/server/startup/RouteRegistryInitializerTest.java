@@ -40,8 +40,10 @@ import com.vaadin.router.RoutePrefix;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.TestRouteRegistry;
 import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.server.InitialPageSettings;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.server.PageConfigurator;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.Viewport;
@@ -612,4 +614,148 @@ public class RouteRegistryInitializerTest {
                 Stream.of(AliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
+
+    /* PageConfigurator tests */
+
+    @Route("single")
+    @Tag(Tag.DIV)
+    public static class SingleConfigurator extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class ParentConfigurator extends Component
+            implements RouterLayout, PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(Parent.class)
+    public static class MiddleParentConfigurator extends Component
+            implements RouterLayout, PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Route(value = "", layout = MiddleParentConfigurator.class)
+    @Tag(Tag.DIV)
+    public static class RootWithMultipleParentConfigurator extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(MiddleParentConfigurator.class)
+    public static class MultiMiddleParentConfigurator extends Component
+            implements RouterLayout, PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Route(value = "", layout = MultiMiddleParentConfigurator.class)
+    @Tag(Tag.DIV)
+    public static class MultiConfigurator extends Component {
+    }
+
+    @Route(value = "", layout = ParentConfigurator.class)
+    @Tag(Tag.DIV)
+    public static class RootWithParentConfigurator extends Component {
+    }
+
+    @Route(value = "", layout = Parent.class)
+    @Tag(Tag.DIV)
+    public static class RootConfiguratorWithParent extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = Parent.class)
+    @Tag(Tag.DIV)
+    public static class FailingAliasConfigurator extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Test
+    public void onStartUp_valid_page_configurator_does_not_throw()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(SingleConfigurator.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_wrong_position_page_configurator_throws()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "PageConfigurator implementation should be the top most route layout '%s'. Offending class: '%s'",
+                Parent.class.getName(),
+                MiddleParentConfigurator.class.getName()));
+
+        routeRegistryInitializer
+                .onStartup(Stream.of(RootWithMultipleParentConfigurator.class)
+                        .collect(Collectors.toSet()), servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_only_one_page_configurator_in_route_chain()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                "Only one PageConfigurator implementation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                        + MultiMiddleParentConfigurator.class.getName() + ", "
+                        + MiddleParentConfigurator.class.getName());
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(MultiConfigurator.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_route_can_not_contain_page_configurator_if_has_parent()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "PageConfigurator needs to be the top parent layout '%s' not '%s'",
+                Parent.class.getName(),
+                RootConfiguratorWithParent.class.getName()));
+
+        routeRegistryInitializer
+                .onStartup(Stream.of(RootConfiguratorWithParent.class)
+                        .collect(Collectors.toSet()), servletContext);
+    }
+
+    @Test
+    public void onStartUp_one_page_configurator_in_chain_and_one_for_route_passes()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream
+                .of(SingleConfigurator.class, RootWithParentConfigurator.class)
+                .collect(Collectors.toSet()), servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_page_configurator_for_faulty_alias_route()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "PageConfigurator needs to be the top parent layout '%s' not '%s'",
+                Parent.class.getName(),
+                FailingAliasConfigurator.class.getName()));
+
+        routeRegistryInitializer.onStartup(Stream
+                .of(FailingAliasConfigurator.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
 }

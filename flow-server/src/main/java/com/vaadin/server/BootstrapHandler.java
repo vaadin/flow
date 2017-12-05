@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.DataNode;
@@ -40,11 +41,17 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
+import org.jsoup.select.Elements;
 
 import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.router.Location;
 import com.vaadin.router.NavigationState;
+import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.QueryParameters;
 import com.vaadin.router.Router;
 import com.vaadin.router.RouterLayout;
+import com.vaadin.router.event.AfterNavigationEvent;
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.router.util.RouterUtil;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
@@ -56,6 +63,7 @@ import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Viewport;
 import com.vaadin.ui.WebComponents;
+import com.vaadin.ui.common.HasElement;
 import com.vaadin.util.AnnotationReader;
 import com.vaadin.util.ReflectTools;
 
@@ -350,6 +358,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         document.outputSettings().prettyPrint(false);
 
+        getInitialPageSettings(context).ifPresent(
+                initialPageSettings -> handleInitialPageSettings(context, head,
+                        initialPageSettings));
+
         BootstrapPageResponse response = new BootstrapPageResponse(
                 context.getRequest(), context.getSession(),
                 context.getResponse(), document, context.getUI(),
@@ -357,6 +369,35 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         context.getSession().getService().modifyBootstrapPage(response);
 
         return document;
+    }
+
+    private static void handleInitialPageSettings(BootstrapContext context,
+            Element head, InitialPageSettings initialPageSettings) {
+        if (initialPageSettings.getViewport() != null) {
+            Elements viewport = head.getElementsByAttributeValue("name",
+                    "viewport");
+            if (!viewport.isEmpty() && viewport.size() == 1) {
+                viewport.get(0).attr(CONTENT_ATTRIBUTE,
+                        initialPageSettings.getViewport());
+            } else {
+                head.appendElement(META_TAG).attr("name", "viewport").attr(
+                        CONTENT_ATTRIBUTE, initialPageSettings.getViewport());
+            }
+        }
+
+        initialPageSettings.getInline(InitialPageSettings.Position.PREPEND)
+                .stream()
+                .map(dependency -> createDependencyElement(context, dependency))
+                .forEach(element -> head.prependChild(element));
+        initialPageSettings.getInline(InitialPageSettings.Position.APPEND)
+                .stream()
+                .map(dependency -> createDependencyElement(context, dependency))
+                .forEach(element -> head.appendChild(element));
+
+        initialPageSettings.getElement(InitialPageSettings.Position.PREPEND)
+                .forEach(element -> head.prependChild(element));
+        initialPageSettings.getElement(InitialPageSettings.Position.APPEND)
+                .forEach(element -> head.appendChild(element));
     }
 
     private static void writeBootstrapPage(VaadinResponse response, String html)
@@ -1021,6 +1062,64 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
         }
+    }
+
+    private static Optional<InitialPageSettings> getInitialPageSettings(
+            BootstrapContext context) {
+        UI ui = context.getUI();
+
+        Optional<PageConfigurator> pageConfigurator = ui.getChildren()
+                .filter(component -> component instanceof PageConfigurator)
+                .map(component -> (PageConfigurator) component).findFirst();
+        if (pageConfigurator.isPresent()) {
+            InitialPageSettings settings = createInitialPageSettingsObject(
+                    context);
+
+            pageConfigurator.get().configurePage(settings);
+
+            return Optional.of(settings);
+        }
+
+        return Optional.empty();
+    }
+
+    private static InitialPageSettings createInitialPageSettingsObject(
+            BootstrapContext context) {
+        UI ui = context.getUI();
+        VaadinRequest request = context.getRequest();
+        WebBrowser browser = context.getSession().getBrowser();
+
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null) {
+            pathInfo = "";
+        } else {
+            assert pathInfo.startsWith("/");
+            pathInfo = pathInfo.substring(1);
+        }
+        NavigationEvent navigationEvent = new NavigationEvent(
+                ui.getRouter().get(),
+                new Location(pathInfo,
+                        QueryParameters.full(request.getParameterMap())),
+                ui, NavigationTrigger.PAGE_LOAD);
+
+        List<HasElement> components = ui.getChildren()
+                .filter(component -> component instanceof HasElement)
+                .map(component -> (HasElement) component)
+                .collect(Collectors.toList());
+
+        AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
+                RouterUtil.createEvent(navigationEvent, components));
+
+        return new InitialPageSettings(request, ui, afterNavigationEvent,
+                browser);
+    }
+
+    private static Element createDependencyElement(BootstrapContext context,
+            JsonObject dependencyJson) {
+        Dependency.Type dependencyType = Dependency.Type
+                .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
+        return createDependencyElement(context.getUriResolver(),
+                LoadMode.INLINE, dependencyJson, dependencyType);
     }
 
     private static String readClientEngine() {
