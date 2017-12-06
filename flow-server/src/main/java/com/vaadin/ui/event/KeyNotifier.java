@@ -15,12 +15,107 @@
  */
 package com.vaadin.ui.event;
 
+import com.vaadin.shared.Registration;
+
 /**
  * Mixin interface for components that support adding key event listeners to the
  * their root elements.
  *
  * @author Vaadin Ltd
  */
-public interface KeyNotifier
-        extends KeyDownNotifier, KeyPressNotifier, KeyUpNotifier {
+public interface KeyNotifier extends ComponentEventNotifier {
+
+    /**
+     * Adds a {@code keydown} listener to this component.
+     *
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    default Registration addKeyDownListener(
+            ComponentEventListener<KeyDownEvent> listener) {
+        return addListener(KeyDownEvent.class, listener);
+    }
+
+    /**
+     * Adds a {@code keypress} listener to this component.
+     *
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    default Registration addKeyPressListener(
+            ComponentEventListener<KeyPressEvent> listener) {
+        return addListener(KeyPressEvent.class, listener);
+    }
+
+    /**
+     * Adds a {@code keyup} listener to this component.
+     *
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    default Registration addKeyUpListener(
+            ComponentEventListener<KeyUpEvent> listener) {
+        return addListener(KeyUpEvent.class, listener);
+    }
+
+    /**
+     * Adds a {@code keydown} listener to this component, conditional on key and
+     * modifiers.
+     *
+     * @param key
+     *            the key to match
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @param modifiers
+     *            the modifiers to match
+     * @return a handle that can be used for removing the listener
+     */
+    default Registration addKeyDownListener(Key key,
+            ComponentEventListener<KeyDownEvent> listener,
+            KeyModifier... modifiers) {
+        return addKeyDownListener(
+                new KeyEventListener<>(listener, key, modifiers));
+    }
+
+    /**
+     * Adds a {@code keypress} listener to this component, conditional on key
+     * and modifiers.
+     *
+     * @param key
+     *            the key to match
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @param modifiers
+     *            the modifiers to match
+     * @return a handle that can be used for removing the listener
+     */
+    default Registration addKeyPressListener(Key key,
+            ComponentEventListener<KeyPressEvent> listener,
+            KeyModifier... modifiers) {
+        return addKeyPressListener(
+                new KeyEventListener<>(listener, key, modifiers));
+    }
+
+    /**
+     * Adds a {@code keyup} listener to this component, conditional on key and
+     * modifiers.
+     *
+     * @param key
+     *            the key to match
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @param modifiers
+     *            the modifiers to match
+     * @return a handle that can be used for removing the listener
+     */
+    default Registration addKeyUpListener(Key key,
+            ComponentEventListener<KeyUpEvent> listener,
+            KeyModifier... modifiers) {
+        return addKeyUpListener(
+                new KeyEventListener<>(listener, key, modifiers));
+    }
+
 }
