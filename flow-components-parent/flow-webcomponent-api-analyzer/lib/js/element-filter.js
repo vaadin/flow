@@ -17,7 +17,7 @@
 
 const globalVar = require('./global-variables');
 const jsonFile = require('fs-extra');
-const path = require('path')
+const path = require('path');
 
 /**
  * Filter for files to be used for the analysis. It reads and parses the
@@ -66,4 +66,4 @@ module.exports = class ElementFilter {
     const folderName = path.dirname(filePath).split(path.sep).pop();
     return this._dependencies.indexOf(folderName) >= 0;
   }
-}
+};
