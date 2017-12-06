@@ -52,8 +52,8 @@ public class CompositionUpdateEvent extends CompositionEvent {
      * @param source
      *            the component that fired the event
      */
-    public CompositionUpdateEvent(HtmlComponent source, Key key) {
-        super(source, key);
+    public CompositionUpdateEvent(HtmlComponent source) {
+        super(source);
     }
 
 }

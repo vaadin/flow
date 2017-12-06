@@ -52,8 +52,8 @@ public class CompositionStartEvent extends CompositionEvent {
      * @param source
      *            the component that fired the event
      */
-    public CompositionStartEvent(HtmlComponent source, Key key) {
-        super(source, key);
+    public CompositionStartEvent(HtmlComponent source) {
+        super(source);
     }
 
 }

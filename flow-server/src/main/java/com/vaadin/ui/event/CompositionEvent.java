@@ -58,7 +58,7 @@ public abstract class CompositionEvent extends ComponentEvent<HtmlComponent> {
      * @param source
      *            the component that fired the event
      */
-    public CompositionEvent(HtmlComponent source, Key key) {
+    public CompositionEvent(HtmlComponent source) {
         this(source, false, "", "");
     }
 
