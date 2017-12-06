@@ -110,8 +110,18 @@ public class ExecuteJavaScriptProcessor {
                 || node.getTree().getNode(node.getId()) == null) {
             return false;
         }
-        return node.getMap(NodeFeatures.ELEMENT_DATA)
-                .hasPropertyValue(NodeProperties.PAYLOAD);
+        if (node.getMap(NodeFeatures.ELEMENT_DATA)
+                .hasPropertyValue(NodeProperties.PAYLOAD)) {
+            Object value = node.getMap(NodeFeatures.ELEMENT_DATA)
+                    .getProperty(NodeProperties.PAYLOAD).getValue();
+            if (value instanceof JsonObject) {
+                JsonObject object = (JsonObject) value;
+                String type = object.getString(NodeProperties.TYPE);
+                return NodeProperties.INJECT_BY_ID.equals(type)
+                        || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type);
+            }
+        }
+        return false;
     }
 
     /**

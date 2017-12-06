@@ -20,6 +20,7 @@ import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
+import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.nodefeature.NodeFeatures;
 import com.vaadin.flow.nodefeature.NodeProperties;
 
@@ -185,6 +186,24 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         assertTrue(map.hasPropertyValue("foo"));
     }
 
+    public void testPopulateModelProperties_elementIsNotReadyAndPropertyIsNotDefined_addIntoPropertiesMapAfterElementBecomesReady() {
+        node.setDomNode(null);
+
+        mockWhenDefined(element);
+
+        ExecuteJavaScriptElementUtils.populateModelProperties(node,
+                JsCollections.array("foo"));
+
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertFalse(map.hasPropertyValue("foo"));
+
+        node.setDomNode(element);
+        runWhenDefined(element);
+        Reactive.flush();
+
+        assertTrue(map.hasPropertyValue("foo"));
+    }
+
     public void testPopulateModelProperties_propertyIsDefined_syncToServer() {
         defineProperty(element, "foo");
 
@@ -194,6 +213,31 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                 JsCollections.array("foo"));
 
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertTrue(map.hasPropertyValue("foo"));
+
+        assertEquals("bar", tree.syncedProperty.getValue());
+        assertEquals("foo", tree.syncedProperty.getName());
+    }
+
+    public void testPopulateModelProperties_elementIsNotReadyAndPropertyIsDefined_syncToServerWhenElementBecomesReady() {
+        node.setDomNode(null);
+
+        mockWhenDefined(element);
+
+        defineProperty(element, "foo");
+
+        WidgetUtil.setJsProperty(element, "foo", "bar");
+
+        ExecuteJavaScriptElementUtils.populateModelProperties(node,
+                JsCollections.array("foo"));
+
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertFalse(map.hasPropertyValue("foo"));
+
+        node.setDomNode(element);
+        runWhenDefined(element);
+        Reactive.flush();
+
         assertTrue(map.hasPropertyValue("foo"));
 
         assertEquals("bar", tree.syncedProperty.getValue());
