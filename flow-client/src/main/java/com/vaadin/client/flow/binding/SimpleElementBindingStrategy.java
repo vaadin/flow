@@ -66,6 +66,8 @@ import jsinterop.annotations.JsFunction;
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
+    private static final String ELEMENT_ATTACH_ERROR_PREFIX = "Element addressed by the ";
+
     @FunctionalInterface
     private interface PropertyUser {
         void use(MapProperty property);
@@ -225,7 +227,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -666,11 +668,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         boolean failure = false;
         if (element == null) {
             failure = true;
-            Console.warn("Element addressed by the " + address
+            Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
                     + " is not found. The requested tag name is '" + tag + "'");
         } else if (!PolymerUtils.hasTag(element, tag)) {
             failure = true;
-            Console.warn("Element addressed by the " + address
+            Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
                     + " has the wrong tag name '" + element.getTagName()
                     + "', the requested tag name is '" + tag + "'");
         }
@@ -698,7 +700,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             if (existingId != null) {
                 failure = true;
-                Console.warn("Element addressed by the " + address
+                Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
                         + " has been already attached previously via the node id='"
                         + existingId + "'");
                 node.getTree().sendExistingElementWithIdAttachToServer(node,
