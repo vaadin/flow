@@ -73,7 +73,7 @@ public interface KeyNotifier extends ComponentEventNotifier {
      *            the modifiers to match
      * @return a handle that can be used for removing the listener
      */
-    default Registration addKeyDownListener(Key key,
+    default Registration addKeyDownListener(String key,
             ComponentEventListener<KeyDownEvent> listener,
             KeyModifier... modifiers) {
         return addKeyDownListener(
@@ -92,7 +92,7 @@ public interface KeyNotifier extends ComponentEventNotifier {
      *            the modifiers to match
      * @return a handle that can be used for removing the listener
      */
-    default Registration addKeyPressListener(Key key,
+    default Registration addKeyPressListener(String key,
             ComponentEventListener<KeyPressEvent> listener,
             KeyModifier... modifiers) {
         return addKeyPressListener(
@@ -111,7 +111,7 @@ public interface KeyNotifier extends ComponentEventNotifier {
      *            the modifiers to match
      * @return a handle that can be used for removing the listener
      */
-    default Registration addKeyUpListener(Key key,
+    default Registration addKeyUpListener(String key,
             ComponentEventListener<KeyUpEvent> listener,
             KeyModifier... modifiers) {
         return addKeyUpListener(

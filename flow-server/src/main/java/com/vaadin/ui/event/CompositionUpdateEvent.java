@@ -41,7 +41,8 @@ public class CompositionUpdateEvent extends CompositionEvent {
      *            otherwise, the empty string
      */
     public CompositionUpdateEvent(HtmlComponent source, boolean fromClient,
-            String data, String locale) {
+            @EventData("event.data") String data,
+            @EventData("event.locale") String locale) {
         super(source, fromClient, data, locale);
     }
 

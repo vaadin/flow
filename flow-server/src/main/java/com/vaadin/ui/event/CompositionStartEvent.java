@@ -41,7 +41,8 @@ public class CompositionStartEvent extends CompositionEvent {
      *            otherwise, the empty string
      */
     public CompositionStartEvent(HtmlComponent source, boolean fromClient,
-            String data, String locale) {
+            @EventData("event.data") String data,
+            @EventData("event.locale") String locale) {
         super(source, fromClient, data, locale);
     }
 

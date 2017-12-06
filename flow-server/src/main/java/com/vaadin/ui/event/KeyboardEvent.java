@@ -87,20 +87,19 @@ public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
      * @param source
      *            the component that fired the event
      * @param key
-     *            the {@link Key} for this event
+     *            the key for this event
      */
-    public KeyboardEvent(HtmlComponent source, Key key) {
-        this(source, false, key.getKey(), 0, false, false, false, false, false,
-                false);
+    public KeyboardEvent(HtmlComponent source, String key) {
+        this(source, false, key, 0, false, false, false, false, false, false);
     }
 
     /**
-     * Gets the {@link Key} of the event.
+     * Gets the key of the event.
      *
-     * @return the {@link Key} of the event
+     * @return the key of the event
      */
-    public Key getKey() {
-        return Key.of(key);
+    public String getKey() {
+        return key;
     }
 
     /**

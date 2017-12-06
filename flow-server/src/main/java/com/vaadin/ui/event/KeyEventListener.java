@@ -23,11 +23,11 @@ public class KeyEventListener<E extends KeyboardEvent>
 
     private final ComponentEventListener<E> listener;
 
-    private final Key key;
+    private final String key;
 
     private final EnumSet<KeyModifier> modifiers;
 
-    public KeyEventListener(ComponentEventListener<E> listener, Key key,
+    public KeyEventListener(ComponentEventListener<E> listener, String key,
             KeyModifier... modifiers) {
         this.listener = listener;
         this.key = key;

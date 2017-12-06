@@ -25,35 +25,35 @@ public enum KeyModifier {
     /**
      * KeyModifier for "{@code Shift}" key.
      */
-    SHIFT(com.vaadin.ui.event.Key.SHIFT),
+    SHIFT(Key.SHIFT),
 
     /**
      * KeyModifier for "{@code Control}" key.
      */
-    CONTROL(com.vaadin.ui.event.Key.CONTROL),
+    CONTROL(Key.CONTROL),
 
     /**
      * KeyModifier for "{@code Alt}" key.
      */
-    ALT(com.vaadin.ui.event.Key.ALT),
+    ALT(Key.ALT),
 
     /**
      * KeyModifier for "{@code Meta}" key.
      */
-    META(com.vaadin.ui.event.Key.META);;
+    META(Key.META);
 
-    private final Key key;
+    private final String key;
 
-    KeyModifier(Key key) {
+    KeyModifier(String key) {
         this.key = key;
     }
 
     /**
-     * Gets the {@code Key} key value.
+     * Gets the key value.
      *
      * @return the key value
      */
-    public Key getKey() {
+    public String getKey() {
         return key;
     }
 
@@ -64,7 +64,7 @@ public enum KeyModifier {
      *            the key value
      * @return the {@code Key}
      */
-    public static KeyModifier of(Key key) {
+    public static KeyModifier of(String key) {
         return Stream.of(values()).filter(k -> k.key == key).findFirst()
                 .orElseThrow(IllegalArgumentException::new);
     }

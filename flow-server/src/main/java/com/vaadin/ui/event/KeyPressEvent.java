@@ -76,9 +76,9 @@ public class KeyPressEvent extends KeyboardEvent {
      * @param source
      *            the component that fired the event
      * @param key
-     *            the {@link Key} for this event
+     *            the key for this event
      */
-    public KeyPressEvent(HtmlComponent source, Key key) {
+    public KeyPressEvent(HtmlComponent source, String key) {
         super(source, key);
     }
 

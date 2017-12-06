@@ -1,442 +1,416 @@
 package com.vaadin.ui.event;
 
-import java.util.stream.Stream;
-
 /**
- * Enumeration of keyboard keys.
+ * Keyboard keys.
  */
-public enum Key {
+public class Key {
 
     /**
-     * Key for "{@code Cancel}" key.
+     * String for "<code>Cancel</code>" key.
      */
-    CANCEL("Cancel"),
+    public static final String CANCEL = "Cancel";
 
     /**
-     * Key for "{@code Help}" key.
+     * String for "<code>Help</code>" key.
      */
-    HELP("Help"),
+    public static final String HELP = "Help";
 
     /**
-     * Key for "{@code Backspace}" key.
+     * String for "<code>Backspace</code>" key.
      */
-    BACKSPACE("Backspace"),
+    public static final String BACKSPACE = "Backspace";
 
     /**
-     * Key for "{@code Tab}" key.
+     * String for "<code>Tab</code>" key.
      */
-    TAB("Tab"),
+    public static final String TAB = "Tab";
 
     /**
-     * Key for "{@code Clear}" key.
+     * String for "<code>Clear</code>" key.
      */
-    CLEAR("Clear"),
+    public static final String CLEAR = "Clear";
 
     /**
-     * Key for "{@code Enter}" key.
+     * String for "<code>Enter</code>" key.
      */
-    ENTER("Enter"),
+    public static final String ENTER = "Enter";
 
     /**
-     * Key for "{@code Shift}" key.
+     * String for "<code>Shift</code>" key.
      */
-    SHIFT("Shift"),
+    public static final String SHIFT = "Shift";
 
     /**
-     * Key for "{@code Control}" key.
+     * String for "<code>Control</code>" key.
      */
-    CONTROL("Control"),
+    public static final String CONTROL = "Control";
 
     /**
-     * Key for "{@code Alt}" key.
+     * String for "<code>Alt</code>" key.
      */
-    ALT("Alt"),
+    public static final String ALT = "Alt";
 
     /**
-     * Key for "{@code Pause}" key.
+     * String for "<code>Pause</code>" key.
      */
-    PAUSE("Pause"),
+    public static final String PAUSE = "Pause";
 
     /**
-     * Key for "{@code CapsLock}" key.
+     * String for "<code>CapsLock</code>" key.
      */
-    CAPS_LOCK("CapsLock"),
+    public static final String CAPS_LOCK = "CapsLock";
 
     /**
-     * Key for "{@code Escape}" key.
+     * String for "<code>Escape</code>" key.
      */
-    ESCAPE("Escape"),
+    public static final String ESCAPE = "Escape";
 
     /**
-     * Key for "{@code Convert}" key.
+     * String for "<code>Convert</code>" key.
      */
-    CONVERT("Convert"),
+    public static final String CONVERT = "Convert";
 
     /**
-     * Key for "{@code NonConvert}" key.
+     * String for "<code>NonConvert</code>" key.
      */
-    NON_CONVERT("NonConvert"),
+    public static final String NON_CONVERT = "NonConvert";
 
     /**
-     * Key for "{@code Accept}" key.
+     * String for "<code>Accept</code>" key.
      */
-    ACCEPT("Accept"),
+    public static final String ACCEPT = "Accept";
 
     /**
-     * Key for "{@code ModeChange}" key.
+     * String for "<code>ModeChange</code>" key.
      */
-    MODE_CHANGE("ModeChange"),
+    public static final String MODE_CHANGE = "ModeChange";
 
     /**
-     * Key for " " (space) key.
+     * String for " " (space) key.
      */
-    SPACE(" "),
+    public static final String SPACE = " ";
 
     /**
-     * Key for "{@code PageUp}" key.
+     * String for "<code>PageUp</code>" key.
      */
-    PAGE_UP("PageUp"),
+    public static final String PAGE_UP = "PageUp";
 
     /**
-     * Key for "{@code PageDown}" key.
+     * String for "<code>PageDown</code>" key.
      */
-    PAGE_DOWN("PageDown"),
+    public static final String PAGE_DOWN = "PageDown";
 
     /**
-     * Key for "{@code End}" key.
+     * String for "<code>End</code>" key.
      */
-    END("End"),
+    public static final String END = "End";
 
     /**
-     * Key for "{@code Home}" key.
+     * String for "<code>Home</code>" key.
      */
-    HOME("Home"),
+    public static final String HOME = "Home";
 
     /**
-     * Key for "{@code ArrowLeft}" key.
+     * String for "<code>ArrowLeft</code>" key.
      */
-    ARROW_LEFT("ArrowLeft"),
+    public static final String ARROW_LEFT = "ArrowLeft";
 
     /**
-     * Key for "{@code ArrowUp}" key.
+     * String for "<code>ArrowUp</code>" key.
      */
-    ARROW_UP("ArrowUp"),
+    public static final String ARROW_UP = "ArrowUp";
 
     /**
-     * Key for "{@code ArrowRight}" key.
+     * String for "<code>ArrowRight</code>" key.
      */
-    ARROW_RIGHT("ArrowRight"),
+    public static final String ARROW_RIGHT = "ArrowRight";
 
     /**
-     * Key for "{@code ArrowDown}" key.
+     * String for "<code>ArrowDown</code>" key.
      */
-    ARROW_DOWN("ArrowDown"),
+    public static final String ARROW_DOWN = "ArrowDown";
 
     /**
-     * Key for "{@code Select}" key.
+     * String for "<code>Select</code>" key.
      */
-    SELECT("Select"),
+    public static final String SELECT = "Select";
 
     /**
-     * Key for "{@code Print}" key.
+     * String for "<code>Print</code>" key.
      */
-    PRINT("Print"),
+    public static final String PRINT = "Print";
 
     /**
-     * Key for "{@code Execute}" key.
+     * String for "<code>Execute</code>" key.
      */
-    EXECUTE("Execute"),
+    public static final String EXECUTE = "Execute";
 
     /**
-     * Key for "{@code PrintScreen}" key.
+     * String for "<code>PrintScreen</code>" key.
      */
-    PRINT_SCREEN("PrintScreen"),
+    public static final String PRINT_SCREEN = "PrintScreen";
 
     /**
-     * Key for "{@code Insert}" key.
+     * String for "<code>Insert</code>" key.
      */
-    INSERT("Insert"),
+    public static final String INSERT = "Insert";
 
     /**
-     * Key for "{@code Delete}" key.
+     * String for "<code>Delete</code>" key.
      */
-    DELETE("Delete"),
+    public static final String DELETE = "Delete";
 
     /**
-     * Key for "{@code 0}" key.
+     * String for "<code>0</code>" key.
      */
-    ZERO("0"),
+    public static final String ZERO = "0";
 
     /**
-     * Key for "{@code 1}" key.
+     * String for "<code>1</code>" key.
      */
-    ONE("1"),
+    public static final String ONE = "1";
 
     /**
-     * Key for "{@code 2}" key.
+     * String for "<code>2</code>" key.
      */
-    TWO("2"),
+    public static final String TWO = "2";
 
     /**
-     * Key for "{@code 3}" key.
+     * String for "<code>3</code>" key.
      */
-    THREE("3"),
+    public static final String THREE = "3";
 
     /**
-     * Key for "{@code 4}" key.
+     * String for "<code>4</code>" key.
      */
-    FOUR("4"),
+    public static final String FOUR = "4";
 
     /**
-     * Key for "{@code 5}" key.
+     * String for "<code>5</code>" key.
      */
-    FIVE("5"),
+    public static final String FIVE = "5";
 
     /**
-     * Key for "{@code 6}" key.
+     * String for "<code>6</code>" key.
      */
-    SIX("6"),
+    public static final String SIX = "6";
 
     /**
-     * Key for "{@code 7}" key.
+     * String for "<code>7</code>" key.
      */
-    SEVEN("7"),
+    public static final String SEVEN = "7";
 
     /**
-     * Key for "{@code 8}" key.
+     * String for "<code>8</code>" key.
      */
-    EIGHT("8"),
+    public static final String EIGHT = "8";
 
     /**
-     * Key for "{@code 9}" key.
+     * String for "<code>9</code>" key.
      */
-    NINE("9"),
+    public static final String NINE = "9";
 
     /**
-     * Key for "{@code )}" key.
+     * String for "<code>)</code>" key.
      */
-    PARENTHESIS_RIGHT(")"),
+    public static final String PARENTHESIS_RIGHT = ")";
 
     /**
-     * Key for "{@code !}" key.
+     * String for "<code>!</code>" key.
      */
-    EXCLAMATION_MARK("!"),
+    public static final String EXCLAMATION_MARK = "!";
 
     /**
-     * Key for "{@code @}" key.
+     * String for "<code>@</code>" key.
      */
-    AT("@"),
+    public static final String AT = "@";
 
     /**
-     * Key for "{@code #}" key.
+     * String for "<code>#</code>" key.
      */
-    HASH("#"),
+    public static final String HASH = "#";
 
     /**
-     * Key for "{@code $}" key.
+     * String for "<code>$</code>" key.
      */
-    DOLLAR("$"),
+    public static final String DOLLAR = "$";
 
     /**
-     * Key for "{@code %}" key.
+     * String for "<code>%</code>" key.
      */
-    PERCENTAGE("%"),
+    public static final String PERCENTAGE = "%";
 
     /**
-     * Key for "{@code ^}" key.
+     * String for "<code>^</code>" key.
      */
-    CARET("^"),
+    public static final String CARET = "^";
 
     /**
-     * Key for "{@code &}" key.
+     * String for "<code>&</code>" key.
      */
-    AMPERSAND("&"),
+    public static final String AMPERSAND = "&";
 
     /**
-     * Key for "{@code (}" key.
+     * String for "<code>(</code>" key.
      */
-    PARENTHESIS_LEFT("("),
+    public static final String PARENTHESIS_LEFT = "(";
 
     /**
-     * Key for "{@code OS}" key.
+     * String for "<code>OS</code>" key.
      */
-    OS("OS"),
+    public static final String OS = "OS";
 
     /**
-     * Key for "{@code ContextMenu}" key.
+     * String for "<code>ContextMenu</code>" key.
      */
-    CONTEXT_MENU("ContextMenu"),
+    public static final String CONTEXT_MENU = "ContextMenu";
 
     /**
-     * Key for "{@code *}" key.
+     * String for "<code>*</code>" key.
      */
-    ASTERISK("*"),
+    public static final String ASTERISK = "*";
 
     /**
-     * Key for "{@code +}" key.
+     * String for "<code>+</code>" key.
      */
-    PLUS("+"),
+    public static final String PLUS = "+";
 
     /**
-     * Key for "{@code -}" key.
+     * String for "<code>-</code>" key.
      */
-    MINUS("-"),
+    public static final String MINUS = "-";
 
     /**
-     * Key for "{@code .}" key.
+     * String for "<code>.</code>" key.
      */
-    DOT("."),
+    public static final String DOT = ".";
 
     /**
-     * Key for "{@code /}" key.
+     * String for "<code>/</code>" key.
      */
-    SLASH("/"),
+    public static final String SLASH = "/";
 
     /**
-     * Key for "{@code NumLock}" key.
+     * String for "<code>NumLock</code>" key.
      */
-    NUM_LOCK("NumLock"),
+    public static final String NUM_LOCK = "NumLock";
 
     /**
-     * Key for "{@code ScrollLock}" key.
+     * String for "<code>ScrollLock</code>" key.
      */
-    SCROLL_LOCK("ScrollLock"),
+    public static final String SCROLL_LOCK = "ScrollLock";
 
     /**
-     * Key for "{@code VolumeMute}" key.
+     * String for "<code>VolumeMute</code>" key.
      */
-    VOLUME_MUTE("VolumeMute"),
+    public static final String VOLUME_MUTE = "VolumeMute";
 
     /**
-     * Key for "{@code VolumeDown}" key.
+     * String for "<code>VolumeDown</code>" key.
      */
-    VOLUME_DOWN("VolumeDown"),
+    public static final String VOLUME_DOWN = "VolumeDown";
 
     /**
-     * Key for "{@code VolumeUp}" key.
+     * String for "<code>VolumeUp</code>" key.
      */
-    VOLUME_UP("VolumeUp"),
+    public static final String VOLUME_UP = "VolumeUp";
 
     /**
-     * Key for "{@code ;}" key.
+     * String for "<code>;</code>" key.
      */
-    SEMICOLON(";"),
+    public static final String SEMICOLON = ";";
 
     /**
-     * Key for "{@code =}" key.
+     * String for "<code>=</code>" key.
      */
-    EQUAL("="),
+    public static final String EQUAL = "=";
 
     /**
-     * Key for "{@code ,}" key.
+     * String for "<code>,</code>" key.
      */
-    COMMA(","),
+    public static final String COMMA = ",";
 
     /**
-     * Key for "{@code `}" key.
+     * String for "<code>`</code>" key.
      */
-    BACK_TICK("`"),
+    public static final String BACK_TICK = "`";
 
     /**
-     * Key for "{@code [}" key.
+     * String for "<code>[</code>" key.
      */
-    SQUARE_BRACKET_LEFT("["),
+    public static final String SQUARE_BRACKET_LEFT = "[";
 
     /**
-     * Key for "{@code \}" key.
+     * String for "<code>\</code>" key.
      */
-    BACKSLASH("\\"),
+    public static final String BACKSLASH = "\\";
 
     /**
-     * Key for "{@code ]}" key.
+     * String for "<code>]</code>" key.
      */
-    SQUARE_BRACKET_RIGHT("]"),
+    public static final String SQUARE_BRACKET_RIGHT = "]";
 
     /**
-     * Key for "{@code "}" key.
+     * String for "<code>"</code>" key.
      */
-    QUOTE("\""),
+    public static final String QUOTE = "\"";
 
     /**
-     * Key for "{@code :}" key.
+     * String for "<code>:</code>" key.
      */
-    COLON(":"),
+    public static final String COLON = ":";
 
     /**
-     * Key for "{@code <}" key.
+     * String for "<code><</code>" key.
      */
-    ANGLE_BRACKET_LEFT("<"),
+    public static final String ANGLE_BRACKET_LEFT = "<";
 
     /**
-     * Key for "{@code _}" key.
+     * String for "<code>_</code>" key.
      */
-    UNDERSCORE("_"),
+    public static final String UNDERSCORE = "_";
 
     /**
-     * Key for "{@code >}" key.
+     * String for "<code>></code>" key.
      */
-    ANGLE_BRACKET_RIGHT(">"),
+    public static final String ANGLE_BRACKET_RIGHT = ">";
 
     /**
-     * Key for "{@code ?}" key.
+     * String for "<code>?</code>" key.
      */
-    QUESTION_MARK("?"),
+    public static final String QUESTION_MARK = "?";
 
     /**
-     * Key for "{@code ~}" key.
+     * String for "<code>~</code>" key.
      */
-    TILDE("~"),
+    public static final String TILDE = "~";
 
     /**
-     * Key for "{@code {}" key.
+     * String for "<code>{</code>" key.
      */
-    CURLY_BRACKET_LEFT("{"),
+    public static final String CURLY_BRACKET_LEFT = "{";
 
     /**
-     * Key for "{@code |}" key.
+     * String for "<code>|</code>" key.
      */
-    PIPE("|"),
+    public static final String PIPE = "|";
 
     /**
-     * Key for "{@code }}" key.
+     * String for "<code>}</code>" key.
      */
-    CURLY_BRACKET_RIGHT("}"),
+    public static final String CURLY_BRACKET_RIGHT = "}";
 
     /**
-     * Key for "{@code Meta}" key.
+     * String for "<code>Meta</code>" key.
      */
-    META("Meta"),
+    public static final String META = "Meta";
 
     /**
-     * Key for "{@code AltGraph}" key.
+     * String for "<code>AltGraph</code>" key.
      */
-    ALT_GRAPH("AltGraph");
+    public static final String ALT_GRAPH = "AltGraph";
 
-    private final String key;
-
-    Key(String key) {
-        this.key = key;
-    }
-
-    /**
-     * Gets the {@code Key} key value.
-     *
-     * @return the key value
-     */
-    public String getKey() {
-        return key;
-    }
-
-    /**
-     * Returns the {@code Key} for {@code key}.
-     *
-     * @param key
-     *            the key value
-     * @return the {@code Key}
-     */
-    public static Key of(String key) {
-        return Stream.of(values()).filter(k -> k.key == key).findFirst()
-                .orElseThrow(IllegalArgumentException::new);
+    private Key() {
     }
 
 }
