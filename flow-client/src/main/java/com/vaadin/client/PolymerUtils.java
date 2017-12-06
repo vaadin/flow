@@ -219,17 +219,47 @@ public final class PolymerUtils {
         return shadowRoot.getElementById(id);
     }-*/;
 
+    /**
+     * Find the DOM element inside shadow root of the {@code shadowRootParent}.
+     *
+     * @param shadowRootParent
+     *            the parent whose shadow root contains the element with the
+     *            {@code id}
+     * @param id
+     *            the identifier of the element to search for
+     * @return the element with the given {@code id} inside the shadow root of
+     *         the parent
+     */
     public static native Element getDomElementById(Node shadowRootParent,
             String id)
     /*-{
         return shadowRootParent.$[id];
     }-*/;
 
+    /**
+     * Checks whether the {@code node} has required {@code tag}.
+     *
+     * @param node
+     *            the node to check
+     * @param tag
+     *            the required tag name
+     * @return {@code true} if the node has required tag name
+     */
     public static boolean hasTag(Node node, String tag) {
         return node instanceof Element
                 && tag.equalsIgnoreCase(((Element) node).getTagName());
     }
 
+    /**
+     * Gets the custom element using {@code path} of indices starting from the
+     * {@code root}.
+     *
+     * @param root
+     *            the root element to start from
+     * @param path
+     *            the indices path identifying the custom element.
+     * @return the element inside the {@code root} by the path of indices
+     */
     public static Element getCustomElement(Node root, JsonArray path) {
         Node current = root;
         for (int i = 0; i < path.length(); i++) {
@@ -248,7 +278,62 @@ public final class PolymerUtils {
         return null;
     }
 
-    public static Node getChildIgnoringStyles(Node parent, int index) {
+    /**
+     * Returns the shadow root of the {@code templateElement}.
+     *
+     * @param templateElement
+     *            the owner of the shadow root
+     * @return the shadow root of the element
+     */
+    public static native Element getDomRoot(Node templateElement)
+    /*-{
+        return templateElement.root;
+    }-*/;
+
+    /**
+     * Invokes the {@code runnable} when the custom element with the given
+     * {@code tagName} is initialized (its DOM structure becomes available).
+     *
+     * @param tagName
+     *            the name of the custom element
+     * @param runnable
+     *            the command to run when the element if initialized
+     */
+    public static native void invokeWhenDefined(String tagName,
+            Runnable runnable)
+    /*-{
+        $wnd.customElements.whenDefined(tagName).then(
+            function () {
+                runnable.@java.lang.Runnable::run(*)();
+            });
+    }-*/;
+
+    /**
+     * Invokes the {@code runnable} when the custom element with the tag name of
+     * the {@code node} is initialized (its DOM structure becomes available).
+     *
+     * @param node
+     *            the node whose tag name is awaiting for
+     * @param runnable
+     *            the command to run when the element if initialized
+     */
+    public static void invokeWhenDefined(Node node, Runnable runnable) {
+        invokeWhenDefined(node.getLocalName(), runnable);
+    }
+
+    /**
+     * Gets the tag name of the {@code node}.
+     *
+     * @param node
+     *            the node to get the tag name from
+     * @return the tag name of the node
+     */
+    public static String getTag(StateNode node) {
+        return (String) node.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.TAG).getValue();
+    }
+
+    private static Node getChildIgnoringStyles(Node parent, int index) {
         HTMLCollection children = DomApi.wrap(parent).getChildren();
         int filteredIndex = -1;
         for (int i = 0; i < children.getLength(); i++) {
@@ -267,26 +352,4 @@ public final class PolymerUtils {
         return null;
     }
 
-    public static native Element getDomRoot(Node templateElement)
-    /*-{
-        return templateElement.root;
-    }-*/;
-
-    public static native void invokeWhenDefined(String tagName,
-            Runnable runnable)
-    /*-{
-        $wnd.customElements.whenDefined(tagName).then(
-            function () {
-                runnable.@java.lang.Runnable::run(*)();
-            });
-    }-*/;
-
-    public static void invokeWhenDefined(Node node, Runnable runnable) {
-        invokeWhenDefined(node.getLocalName(), runnable);
-    }
-
-    public static String getTag(StateNode node) {
-        return (String) node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.TAG).getValue();
-    }
 }

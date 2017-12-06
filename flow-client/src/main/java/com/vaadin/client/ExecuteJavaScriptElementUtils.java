@@ -15,10 +15,6 @@
  */
 package com.vaadin.client;
 
-
-import com.google.gwt.core.client.Scheduler;
-
-
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;

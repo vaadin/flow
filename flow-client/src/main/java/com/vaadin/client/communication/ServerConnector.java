@@ -196,8 +196,6 @@ public class ServerConnector {
      * @param assignedId
      *            identifier which should be used on the server side for the
      *            element (instead of requestedId)
-     * @param tagName
-     *            the requested tagName
      * @param id
      *            id of requested element
      */

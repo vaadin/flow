@@ -246,6 +246,17 @@ public class StateNode {
         });
     }
 
+    /**
+     * Adds a listener to get a notification when the DOM Node is set for this
+     * {@link StateNode}.
+     * <p>
+     * The listener return value is used to decide whether the listener should
+     * be removed immediately if it returns {@code true}.
+     *
+     * @param listener
+     *            listener to add
+     * @return an event remover that can be used for removing the added listener
+     */
     public EventRemover addDomNodeSetListener(
             Function<StateNode, Boolean> listener) {
         domNodeSetListeners.add(listener);
