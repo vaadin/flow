@@ -66,11 +66,6 @@ public final class Constants implements Serializable {
     public static final String FRONTEND_URL_ES5 = "frontend.url.es5";
 
     /**
-     * Configuration name for the frontend URL prefix during development.
-     */
-    public static final String FRONTEND_URL_DEV = "frontend.url.dev";
-
-    /**
      * Default frontend URL prefix for ES6.
      */
     public static final String FRONTEND_URL_ES6_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
