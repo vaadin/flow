@@ -227,7 +227,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -720,18 +720,19 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
          * assertion for the future code which verifies the correctness of
          * assumptions made on the client side about server-side code impl.
          */
-        NodeList virtualChildren = node.getList(NodeFeatures.VIRTUAL_CHILDREN);
+        NodeList virtualChildren = parent
+                .getList(NodeFeatures.VIRTUAL_CHILDREN);
         for (int i = 0; i < virtualChildren.length(); i++) {
             StateNode child = (StateNode) virtualChildren.get(i);
             if (child == node) {
                 continue;
             }
-            if (getPayload(node).jsEquals(getPayload(child))) {
+            if (getPayload(node).toJson().equals(getPayload(child).toJson())) {
                 Console.warn("There is already a request to attach "
                         + "element addressed by the " + address
                         + ". The existing request's node id='" + child.getId()
                         + "'. Cannot attach the same element twice.");
-                node.getTree().sendExistingElementWithIdAttachToServer(node,
+                node.getTree().sendExistingElementWithIdAttachToServer(parent,
                         node.getId(), child.getId(), id);
                 return false;
             }

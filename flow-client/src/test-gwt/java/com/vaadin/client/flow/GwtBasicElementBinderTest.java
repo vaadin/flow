@@ -777,7 +777,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("[object Object]", toString);
     }
 
-    public void testBindChild_wrongTag_searchById() {
+    public void testVirtualBindChild_wrongTag_searchById() {
         Element shadowRootElement = addShadowRootElement(element);
 
         String childId = "childElement";
@@ -804,7 +804,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals(childId, tree.existingElementRpcArgs.get(3));
     }
 
-    public void testBindChild_noCorrespondingElementInShadowRoot_searchById() {
+    public void testVirtualBindChild_noCorrespondingElementInShadowRoot_searchById() {
         Element shadowRootElement = addShadowRootElement(element);
 
         String childId = "childElement";
@@ -833,7 +833,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals(childId, tree.existingElementRpcArgs.get(3));
     }
 
-    public void testBindChild_wrongTag_searchByIndicesPath() {
+    public void testVirtualBindChild_wrongTag_searchByIndicesPath() {
         Element shadowRootElement = addShadowRootElement(element);
 
         String childTagName = "span";
@@ -863,7 +863,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals(null, tree.existingElementRpcArgs.get(3));
     }
 
-    public void testBindChild_noCorrespondingElementInShadowRoot_searchByIndicesPath() {
+    public void testBindVirtualChild_noCorrespondingElementInShadowRoot_searchByIndicesPath() {
         Element shadowRootElement = addShadowRootElement(element);
 
         String childTagName = "span";
@@ -893,7 +893,76 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals(null, tree.existingElementRpcArgs.get(3));
     }
 
-    public void testBindChild_withCorrespondingElementInShadowRoot_byTagNameAndIndicesPath() {
+    public void testBindVirtualChild_doubleAttachRequest_searchByIndicesPath() {
+        Element shadowRootElement = addShadowRootElement(element);
+
+        StateNode childNode = createChildNode(null, element.getTagName());
+        StateNode sameAttachDataChild = createChildNode(null,
+                element.getTagName());
+
+        JsonArray path = Json.createArray();
+        path.set(0, 0);
+
+        createAndAttachShadowRootNode();
+
+        Binder.bind(node, element);
+
+        addVirtualChild(node, childNode, NodeProperties.TEMPLATE_IN_TEMPLATE,
+                path);
+
+        createAndAppendElementToShadowRoot(shadowRootElement, null,
+                element.getTagName());
+
+        Reactive.flush();
+
+        addVirtualChild(node, sameAttachDataChild,
+                NodeProperties.TEMPLATE_IN_TEMPLATE, path);
+
+        Reactive.flush();
+
+        assertEquals(4, tree.existingElementRpcArgs.size());
+        assertEquals(node, tree.existingElementRpcArgs.get(0));
+        assertEquals(sameAttachDataChild.getId(),
+                tree.existingElementRpcArgs.get(1));
+        assertEquals(childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(null, tree.existingElementRpcArgs.get(3));
+    }
+
+    public void testBindVirtualChild_doubleAttachRequest_searchById() {
+        Element shadowRootElement = addShadowRootElement(element);
+
+        String id = "@id";
+
+        StateNode childNode = createChildNode(id, element.getTagName());
+        StateNode sameAttachDataChild = createChildNode(id,
+                element.getTagName());
+
+        createAndAttachShadowRootNode();
+
+        Binder.bind(node, element);
+
+        addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
+                Json.create(id));
+
+        createAndAppendElementToShadowRoot(shadowRootElement, id,
+                element.getTagName());
+
+        Reactive.flush();
+
+        addVirtualChild(node, sameAttachDataChild, NodeProperties.INJECT_BY_ID,
+                Json.create(id));
+
+        Reactive.flush();
+
+        assertEquals(4, tree.existingElementRpcArgs.size());
+        assertEquals(node, tree.existingElementRpcArgs.get(0));
+        assertEquals(sameAttachDataChild.getId(),
+                tree.existingElementRpcArgs.get(1));
+        assertEquals(childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(id, tree.existingElementRpcArgs.get(3));
+    }
+
+    public void testBindVirtualChild_withCorrespondingElementInShadowRoot_byTagNameAndIndicesPath() {
         Element shadowRootElement = addShadowRootElement(element);
         StateNode childNode = createChildNode(null, element.getTagName());
         JsonArray path = Json.createArray();
@@ -939,7 +1008,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertSame(addressedElement, childElement);
     }
 
-    public void testBindChild_withCorrespondingElementInShadowRoot_byId() {
+    public void testBindVirtualChild_withCorrespondingElementInShadowRoot_byId() {
         Element shadowRootElement = addShadowRootElement(element);
         String childId = "childElement";
         StateNode childNode = createChildNode(childId, element.getTagName());
