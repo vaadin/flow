@@ -19,9 +19,9 @@ const {Transform} = require('readable-stream');
 const path = require('path');
 const globalVar = require('./global-variables');
 const {Analyzer, FSUrlLoader} = require('polymer-analyzer');
-console.info("Analyzer setup to load files from Bower dir: " + globalVar.bowerTargetDir);
+console.info("Analyzer setup to load files from Bower dir: " + globalVar.bowerSrcDir);
 let analyzer = new Analyzer({
-  urlLoader: new FSUrlLoader(globalVar.bowerTargetDir), // relative to where import paths are
+  urlLoader: new FSUrlLoader(globalVar.bowerSrcDir), // relative to where import paths are
 });
 
 /**
@@ -30,7 +30,7 @@ let analyzer = new Analyzer({
  * @param filePath String absolute path to the file
  * @return String relative path to the file
  */
-const getBowerPath = (filePath) => path.relative(globalVar.bowerTargetDir, filePath);
+const getBowerPath = (filePath) => path.relative(globalVar.bowerSrcDir, filePath);
 
 /**
  * Analyzer gulp transform.
