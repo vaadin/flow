@@ -1149,6 +1149,59 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertSame(addressedElement, childElement);
     }
 
+    public void testBindVirtualChild_withPostponedElementInShadowRoot_byIndicesPath() {
+        String childId = "childElement";
+        StateNode childNode = createChildNode(childId, element.getTagName());
+
+        Binder.bind(node, element);
+
+        JsonArray path = Json.createArray();
+        path.set(0, 0);
+
+        addVirtualChild(node, childNode, NodeProperties.TEMPLATE_IN_TEMPLATE,
+                path);
+
+        Element shadowRoot = Browser.getDocument().createElement("div");
+        mockWhenDefined(shadowRoot);
+
+        List<Integer> expectedAfterBindingFeatures = Arrays.asList(
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                NodeFeatures.ELEMENT_CHILDREN,
+                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+
+        Reactive.flush();
+
+        expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
+                "Child node should not have any features from list "
+                        + expectedAfterBindingFeatures
+                        + " before binding, but got feature "
+                        + notExpectedFeature,
+                childNode.hasFeature(notExpectedFeature)));
+
+        WidgetUtil.setJsProperty(element, "root", shadowRoot);
+        Element addressedElement = createAndAppendElementToShadowRoot(
+                shadowRoot, childId, element.getTagName());
+
+        runWhenDefined(shadowRoot);
+
+        Reactive.flush();
+
+        expectedAfterBindingFeatures.forEach(expectedFeature -> assertTrue(
+                "Child node should have all features from list "
+                        + expectedAfterBindingFeatures
+                        + " before binding, but missing feature "
+                        + expectedFeature,
+                childNode.hasFeature(expectedFeature)));
+
+        // nothing has changed: no new child
+        assertEquals(0, element.getChildElementCount());
+        assertEquals(1, shadowRoot.getChildElementCount());
+
+        Element childElement = shadowRoot.getFirstElementChild();
+
+        assertSame(addressedElement, childElement);
+    }
+
     private Element createAndAppendElementToShadowRoot(Element shadowRoot,
             String id, String tagName) {
         Element childShadowRootElement = Browser.getDocument()
