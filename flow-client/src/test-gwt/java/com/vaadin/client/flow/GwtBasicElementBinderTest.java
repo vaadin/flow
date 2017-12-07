@@ -962,6 +962,67 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals(id, tree.existingElementRpcArgs.get(3));
     }
 
+    public void testBindVirtualChild_existingShadowRootChildren_searchById() {
+        addShadowRootElement(element);
+
+        String id = "@id";
+
+        StateNode childNode = createChildNode(id, element.getTagName());
+        StateNode virtualChild = createChildNode(id, element.getTagName());
+
+        StateNode shadowRoot = createAndAttachShadowRootNode();
+
+        shadowRoot.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        JsonObject obj = Json.createObject();
+        WidgetUtil.setJsProperty(obj, id.toString(), childNode.getDomNode());
+        WidgetUtil.setJsProperty(element, "$", obj);
+
+        addVirtualChild(node, virtualChild, NodeProperties.INJECT_BY_ID,
+                Json.create(id));
+
+        Reactive.flush();
+
+        assertEquals(4, tree.existingElementRpcArgs.size());
+        assertEquals(node, tree.existingElementRpcArgs.get(0));
+        assertEquals(virtualChild.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(id, tree.existingElementRpcArgs.get(3));
+    }
+
+    public void testBindVirtualChild_existingShadowRootChildren_searchByIndicesPath() {
+        addShadowRootElement(element);
+
+        StateNode childNode = createChildNode(null, element.getTagName());
+        StateNode virtualChild = createChildNode(null, element.getTagName());
+
+        StateNode shadowRoot = createAndAttachShadowRootNode();
+
+        shadowRoot.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        JsonArray path = Json.createArray();
+        path.set(0, 0);
+
+        addVirtualChild(node, virtualChild, NodeProperties.TEMPLATE_IN_TEMPLATE,
+                path);
+
+        Reactive.flush();
+
+        assertEquals(4, tree.existingElementRpcArgs.size());
+        assertEquals(node, tree.existingElementRpcArgs.get(0));
+        assertEquals(virtualChild.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(null, tree.existingElementRpcArgs.get(3));
+    }
+
     public void testBindVirtualChild_withCorrespondingElementInShadowRoot_byTagNameAndIndicesPath() {
         Element shadowRootElement = addShadowRootElement(element);
         StateNode childNode = createChildNode(null, element.getTagName());
