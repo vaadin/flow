@@ -808,6 +808,10 @@ public class ComponentGenerator {
                     method.setBody(ComponentGeneratorUtils
                             .generateElementApiValueGetterForType(
                             basicType, property.getName()));
+
+                    if (String.class.getName().equals(javaType.getTypeName())) {
+                        addGetEmptyStringValue(javaClass);
+                    }
                 } else {
                     method.setBody(ComponentGeneratorUtils
                             .generateElementApiGetterForType(basicType,
@@ -815,6 +819,14 @@ public class ComponentGenerator {
                 }
             }
         }
+    }
+
+    private void addGetEmptyStringValue(JavaClassSource javaClass) {
+        MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
+                .setReturnType(String.class.getSimpleName());
+        method.setName("getEmptyValue");
+        method.setBody("return \"\";");
+        method.addAnnotation(Override.class);
     }
 
     /**
@@ -1009,9 +1021,12 @@ public class ComponentGenerator {
                 ComponentGeneratorUtils.addMethodParameter(javaClass, method,
                         setterType, parameterName);
 
+                boolean nullable = !"value".equals(propertyJavaName)
+                        || !shouldImplementHasValue(metadata) || !String.class.getName().equals(setterType.getTypeName());
+
                 method.setBody(
                         ComponentGeneratorUtils.generateElementApiSetterForType(
-                                basicType, property.getName(), parameterName));
+                                basicType, property.getName(), parameterName, nullable));
 
                 if (StringUtils.isNotEmpty(property.getDescription())) {
                     addMarkdownJavaDoc(property.getDescription(),
@@ -1034,6 +1049,12 @@ public class ComponentGenerator {
                     if (setterType.isPrimitive()) {
                         implementHasValueSetterWithPimitiveType(javaClass,
                                 property, method, setterType, parameterName);
+                    }
+                    else if (!nullable) {
+                        method.setBody(String.format(
+                                "Objects.requireNonNull(%s, \"%s cannot be null\");",
+                                parameterName, parameterName)
+                                + method.getBody());
                     }
                 }
             }
