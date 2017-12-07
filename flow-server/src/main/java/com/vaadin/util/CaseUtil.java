@@ -17,8 +17,6 @@ package com.vaadin.util;
 
 import java.util.Locale;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Utilities related to various case operations.
  *
@@ -50,10 +48,30 @@ public final class CaseUtil {
         String[] parts = upperCaseUnderscoreString.replaceFirst("^_*", "")
                 .split("_");
         for (int i = 0; i < parts.length; i++) {
-            parts[i] = StringUtils
-                    .capitalize(parts[i].toLowerCase(Locale.ROOT));
+            parts[i] = capitalize(parts[i].toLowerCase(Locale.ROOT));
         }
         return String.join(" ", parts);
+    }
+
+    /**
+     * Capitalizes the first character in the given string in a way suitable for
+     * use in code (methods, properties etc).
+     *
+     * @param string
+     *            The string to capitalize
+     * @return The capitalized string
+     */
+    public static String capitalize(String string) {
+        if (string == null) {
+            return null;
+        }
+
+        if (string.length() <= 1) {
+            return string.toUpperCase(Locale.ROOT);
+        }
+
+        return string.substring(0, 1).toUpperCase(Locale.ROOT)
+                + string.substring(1);
     }
 
 }
