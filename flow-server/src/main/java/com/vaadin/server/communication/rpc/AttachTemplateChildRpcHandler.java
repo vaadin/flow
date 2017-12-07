@@ -96,7 +96,8 @@ public class AttachTemplateChildRpcHandler
                         tag, id.asString(), parent.getId()));
             }
         } else {
-            logger.severe("Attach existing element request succeded");
+            logger.severe("Attach existing element request succeded. "
+                    + "But the response about this is unexpected");
 
             // This should not happen. In case of successful request the client
             // side should not respond

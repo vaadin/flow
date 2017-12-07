@@ -208,7 +208,6 @@ public class TemplateInitializer {
         getShadowRoot();
 
         Element element = new Element(tag);
-        // TODO: should this be exposed as Element API ?
         VirtualChildrenList list = getElement().getNode()
                 .getFeature(VirtualChildrenList.class);
         list.append(element.getNode(), NodeProperties.TEMPLATE_IN_TEMPLATE,
@@ -395,7 +394,6 @@ public class TemplateInitializer {
         Element element = registeredCustomElements.get(id);
         if (element == null) {
             element = new Element(tagName);
-            // TODO: should this be exposed as Element API ?
             VirtualChildrenList list = getElement().getNode()
                     .getFeature(VirtualChildrenList.class);
             list.append(element.getNode(), NodeProperties.INJECT_BY_ID, id);

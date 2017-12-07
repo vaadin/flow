@@ -80,7 +80,7 @@ public class ElementData extends NodeValue<Serializable[]> {
      * @param payload
      *            the payload data
      */
-    public void setPyload(JsonValue payload) {
+    public void setPayload(JsonValue payload) {
         Serializable[] value = new Serializable[2];
         value[0] = getTag();
         value[1] = payload;

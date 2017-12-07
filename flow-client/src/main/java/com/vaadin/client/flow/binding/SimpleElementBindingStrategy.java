@@ -227,7 +227,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -706,7 +706,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         if (existingId != null) {
-            failure = true;
             Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
                     + " has been already attached previously via the node id='"
                     + existingId + "'");

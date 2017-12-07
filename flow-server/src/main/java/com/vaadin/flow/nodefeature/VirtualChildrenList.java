@@ -77,13 +77,13 @@ public class VirtualChildrenList extends StateNodeNodeList {
     public void add(int index, StateNode node, String type, JsonValue payload) {
         assert node != null;
 
-        JsonObject object = Json.createObject();
-        object.put(NodeProperties.TYPE, type);
+        JsonObject payloadObject = Json.createObject();
+        payloadObject.put(NodeProperties.TYPE, type);
         if (payload != null) {
-            object.put(NodeProperties.PAYLOAD, payload);
+            payloadObject.put(NodeProperties.PAYLOAD, payload);
         }
 
-        node.getFeature(ElementData.class).setPyload(object);
+        node.getFeature(ElementData.class).setPayload(payloadObject);
         super.add(index, node);
     }
 

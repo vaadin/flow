@@ -756,7 +756,8 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         // nothing has changed: no new child
-        assertEquals(1, element.getChildElementCount());
+        assertEquals("No new child should appear in the element", 1,
+                element.getChildElementCount());
 
         Element childElement = element.getFirstElementChild();
 
@@ -796,11 +797,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals(4, tree.existingElementRpcArgs.size());
-        assertEquals(node, tree.existingElementRpcArgs.get(0));
-        assertEquals(child.getId(), tree.existingElementRpcArgs.get(1));
-        assertEquals(-1, tree.existingElementRpcArgs.get(2));
-        assertEquals(childId, tree.existingElementRpcArgs.get(3));
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected node argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                child.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                -1, tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childId, tree.existingElementRpcArgs.get(3));
     }
 
     public void testVirtualBindChild_noCorrespondingElementInShadowRoot_searchById() {
@@ -823,11 +834,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals(4, tree.existingElementRpcArgs.size());
-        assertEquals(node, tree.existingElementRpcArgs.get(0));
-        assertEquals(child.getId(), tree.existingElementRpcArgs.get(1));
-        assertEquals(-1, tree.existingElementRpcArgs.get(2));
-        assertEquals(childId, tree.existingElementRpcArgs.get(3));
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                child.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                -1, tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childId, tree.existingElementRpcArgs.get(3));
     }
 
     public void testVirtualBindChild_wrongTag_searchByIndicesPath() {
@@ -851,11 +872,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals(4, tree.existingElementRpcArgs.size());
-        assertEquals(node, tree.existingElementRpcArgs.get(0));
-        assertEquals(child.getId(), tree.existingElementRpcArgs.get(1));
-        assertEquals(-1, tree.existingElementRpcArgs.get(2));
-        assertEquals(null, tree.existingElementRpcArgs.get(3));
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                child.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                -1, tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                null, tree.existingElementRpcArgs.get(3));
     }
 
     public void testBindVirtualChild_noCorrespondingElementInShadowRoot_searchByIndicesPath() {
@@ -879,11 +910,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals(4, tree.existingElementRpcArgs.size());
-        assertEquals(node, tree.existingElementRpcArgs.get(0));
-        assertEquals(child.getId(), tree.existingElementRpcArgs.get(1));
-        assertEquals(-1, tree.existingElementRpcArgs.get(2));
-        assertEquals(null, tree.existingElementRpcArgs.get(3));
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                child.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                -1, tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                null, tree.existingElementRpcArgs.get(3));
     }
 
     public void testBindVirtualChild_doubleAttachRequest_searchByIndicesPath() {
@@ -911,12 +952,22 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals(4, tree.existingElementRpcArgs.size());
-        assertEquals(node, tree.existingElementRpcArgs.get(0));
-        assertEquals(sameAttachDataChild.getId(),
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                sameAttachDataChild.getId(),
                 tree.existingElementRpcArgs.get(1));
-        assertEquals(childNode.getId(), tree.existingElementRpcArgs.get(2));
-        assertEquals(null, tree.existingElementRpcArgs.get(3));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                null, tree.existingElementRpcArgs.get(3));
     }
 
     public void testBindVirtualChild_doubleAttachRequest_searchById() {
@@ -943,12 +994,22 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals(4, tree.existingElementRpcArgs.size());
-        assertEquals(node, tree.existingElementRpcArgs.get(0));
-        assertEquals(sameAttachDataChild.getId(),
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                sameAttachDataChild.getId(),
                 tree.existingElementRpcArgs.get(1));
-        assertEquals(childNode.getId(), tree.existingElementRpcArgs.get(2));
-        assertEquals(id, tree.existingElementRpcArgs.get(3));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                id, tree.existingElementRpcArgs.get(3));
     }
 
     public void testBindVirtualChild_existingShadowRootChildren_searchById() {
@@ -976,11 +1037,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals(4, tree.existingElementRpcArgs.size());
-        assertEquals(node, tree.existingElementRpcArgs.get(0));
-        assertEquals(virtualChild.getId(), tree.existingElementRpcArgs.get(1));
-        assertEquals(childNode.getId(), tree.existingElementRpcArgs.get(2));
-        assertEquals(id, tree.existingElementRpcArgs.get(3));
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                virtualChild.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                id, tree.existingElementRpcArgs.get(3));
     }
 
     public void testBindVirtualChild_existingShadowRootChildren_searchByIndicesPath() {
@@ -1005,11 +1076,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals(4, tree.existingElementRpcArgs.size());
-        assertEquals(node, tree.existingElementRpcArgs.get(0));
-        assertEquals(virtualChild.getId(), tree.existingElementRpcArgs.get(1));
-        assertEquals(childNode.getId(), tree.existingElementRpcArgs.get(2));
-        assertEquals(null, tree.existingElementRpcArgs.get(3));
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                virtualChild.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                null, tree.existingElementRpcArgs.get(3));
     }
 
     public void testBindVirtualChild_withCorrespondingElementInShadowRoot_byTagNameAndIndicesPath() {
@@ -1048,12 +1129,17 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 childNode.hasFeature(expectedFeature)));
 
         // nothing has changed: no new child
-        assertEquals(0, element.getChildElementCount());
-        assertEquals(1, shadowRootElement.getChildElementCount());
+        assertEquals("No new child should be added to the element after attach",
+                0, element.getChildElementCount());
+        assertEquals(
+                "No new child should be added to the shadow root after attach",
+                1, shadowRootElement.getChildElementCount());
 
         Element childElement = shadowRootElement.getFirstElementChild();
 
-        assertSame(addressedElement, childElement);
+        assertSame(
+                "Existing element should be the same as element in the StateNode object",
+                addressedElement, childElement);
     }
 
     public void testBindVirtualChild_withCorrespondingElementInShadowRoot_byId() {
@@ -1091,12 +1177,17 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 childNode.hasFeature(expectedFeature)));
 
         // nothing has changed: no new child
-        assertEquals(0, element.getChildElementCount());
-        assertEquals(1, shadowRootElement.getChildElementCount());
+        assertEquals("No new child should be added to the element after attach",
+                0, element.getChildElementCount());
+        assertEquals(
+                "No new child should be added to the shadow root after attach",
+                1, shadowRootElement.getChildElementCount());
 
         Element childElement = shadowRootElement.getFirstElementChild();
 
-        assertSame(addressedElement, childElement);
+        assertSame(
+                "Existing element should be the same as element in the StateNode object",
+                addressedElement, childElement);
     }
 
     public void testBindVirtualChild_withPostponedElementInShadowRoot_byId() {
@@ -1141,12 +1232,17 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 childNode.hasFeature(expectedFeature)));
 
         // nothing has changed: no new child
-        assertEquals(0, element.getChildElementCount());
-        assertEquals(1, shadowRoot.getChildElementCount());
+        assertEquals("No new child should be added to the element after attach",
+                0, element.getChildElementCount());
+        assertEquals(
+                "No new child should be added to the shadow root after attach",
+                1, shadowRoot.getChildElementCount());
 
         Element childElement = shadowRoot.getFirstElementChild();
 
-        assertSame(addressedElement, childElement);
+        assertSame(
+                "Existing element should be the same as element in the StateNode object",
+                addressedElement, childElement);
     }
 
     public void testBindVirtualChild_withPostponedElementInShadowRoot_byIndicesPath() {
@@ -1194,12 +1290,17 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 childNode.hasFeature(expectedFeature)));
 
         // nothing has changed: no new child
-        assertEquals(0, element.getChildElementCount());
-        assertEquals(1, shadowRoot.getChildElementCount());
+        assertEquals("No new child should be added to the element after attach",
+                0, element.getChildElementCount());
+        assertEquals(
+                "No new child should be added to the shadow root after attach",
+                1, shadowRoot.getChildElementCount());
 
         Element childElement = shadowRoot.getFirstElementChild();
 
-        assertSame(addressedElement, childElement);
+        assertSame(
+                "Existing element should be the same as element in the StateNode object",
+                addressedElement, childElement);
     }
 
     private Element createAndAppendElementToShadowRoot(Element shadowRoot,
