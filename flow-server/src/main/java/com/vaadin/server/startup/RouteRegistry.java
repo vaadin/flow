@@ -57,7 +57,7 @@ public class RouteRegistry implements Serializable {
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
 
-    final static Set<Class<? extends Component>> defaultErrorHandlers = Stream
+    static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
             .of(RouteNotFoundError.class, InternalServerError.class)
             .collect(Collectors.toSet());
 
