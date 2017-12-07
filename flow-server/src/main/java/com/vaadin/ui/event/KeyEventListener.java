@@ -18,6 +18,12 @@ package com.vaadin.ui.event;
 import java.util.Arrays;
 import java.util.EnumSet;
 
+/**
+ * A conditional event listener for {@link KeyboardEvent}s.
+ *
+ * @param <E>
+ *            the type of the {@link KeyboardEvent}
+ */
 public class KeyEventListener<E extends KeyboardEvent>
         implements ComponentEventListener<E> {
 
@@ -27,6 +33,18 @@ public class KeyEventListener<E extends KeyboardEvent>
 
     private final EnumSet<KeyModifier> modifiers;
 
+    /**
+     * Create a listener which will delegate to {@code listener} only if
+     * {@code key} is the target key. If any {@code modifiers} is required, the
+     * delegation occurs only if all the modifiers keys where pressed.
+     *
+     * @param listener
+     *            the listener to delegate
+     * @param key
+     *            the key to check
+     * @param modifiers
+     *            the optional modifier keys
+     */
     public KeyEventListener(ComponentEventListener<E> listener, String key,
             KeyModifier... modifiers) {
         this.listener = listener;
@@ -41,10 +59,11 @@ public class KeyEventListener<E extends KeyboardEvent>
 
     @Override
     public void onComponentEvent(E event) {
-        if (modifiers.isEmpty()) {
-            listener.onComponentEvent(event);
-        } else {
-            if (event.isCtrlKey() == modifiers.contains(KeyModifier.CONTROL)
+        if (event.getKey().equals(key)) {
+            if (modifiers.isEmpty()) {
+                listener.onComponentEvent(event);
+            } else if (event.isCtrlKey() == modifiers
+                    .contains(KeyModifier.CONTROL)
                     && event.isShiftKey() == modifiers
                             .contains(KeyModifier.SHIFT)
                     && event.isAltKey() == modifiers.contains(KeyModifier.ALT)
