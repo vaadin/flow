@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import com.vaadin.router.HasErrorParameter;
@@ -38,9 +39,7 @@ public class ErrorNavigationTargetInitializer
     public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
         if (classSet == null) {
-            RouteRegistry.getInstance(servletContext).setErrorNavigationTargets(
-                    RouteRegistry.defaultErrorHandlers);
-            return;
+            classSet = new HashSet<>();
         }
         Set<Class<? extends Component>> routes = classSet.stream()
                 .map(clazz -> (Class<? extends Component>) clazz)

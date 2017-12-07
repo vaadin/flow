@@ -57,7 +57,7 @@ public class RouteRegistry implements Serializable {
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
 
-    static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
+    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
             .of(RouteNotFoundError.class, InternalServerError.class)
             .collect(Collectors.toSet());
 
@@ -133,6 +133,7 @@ public class RouteRegistry implements Serializable {
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
         Map<Class<?>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
+        errorNavigationTargets.removeAll(defaultErrorHandlers);
         for (Class<? extends Component> target : errorNavigationTargets) {
             Class<?> exceptionType = getExceptionType(target);
 
@@ -191,15 +192,11 @@ public class RouteRegistry implements Serializable {
         if (registered.isAssignableFrom(target)) {
             exceptionTargetsMap.put(exceptionType, target);
         } else if (!target.isAssignableFrom(registered)) {
-            if (defaultErrorHandlers.contains(registered)) {
-                exceptionTargetsMap.put(exceptionType, target);
-            } else if (!defaultErrorHandlers.contains(registered)) {
-                String msg = String.format(
-                        "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                        target.getName(), registered.getName(),
-                        exceptionType.getName());
-                throw new InvalidRouteLayoutConfigurationException(msg);
-            }
+            String msg = String.format(
+                    "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                    target.getName(), registered.getName(),
+                    exceptionType.getName());
+            throw new InvalidRouteLayoutConfigurationException(msg);
         }
     }
 
