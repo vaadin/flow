@@ -362,16 +362,11 @@ public final class ComponentGeneratorUtils {
             return String.format("getElement().setPropertyJson(\"%s\", %s);",
                     propertyName, parameterName);
         case STRING:
-            if (nullable) {
-                // Don't insert null as property value. Insert empty String
-                // instead.
-                return String.format(
-                        "getElement().setProperty(\"%s\", %s == null ? \"\" : %s);",
-                        propertyName, parameterName, parameterName);
-            }
-            return String.format(
-                    "getElement().setProperty(\"%s\", %s);", propertyName,
-                    parameterName);
+            // Don't insert null as property value. Insert empty String instead.
+            return String.format(nullable
+                    ? "getElement().setProperty(\"%s\", %s == null ? \"\" : %s);"
+                    : "getElement().setProperty(\"%s\", %s);", propertyName,
+                    parameterName, parameterName);
         default:
             return String.format("getElement().setProperty(\"%s\", %s);",
                     propertyName, parameterName);
