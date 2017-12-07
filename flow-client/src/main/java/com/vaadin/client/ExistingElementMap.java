@@ -15,15 +15,11 @@
  */
 package com.vaadin.client;
 
-import java.util.function.Function;
-
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
-import com.vaadin.client.flow.collection.JsSet;
 
 import elemental.dom.Element;
-import elemental.events.EventRemover;
 
 /**
  * Mapping between a server side node identifier which has been requested to
@@ -33,9 +29,6 @@ import elemental.events.EventRemover;
  *
  */
 public class ExistingElementMap {
-
-    private final JsSet<Function<Integer, Boolean>> listeners = JsCollections
-            .set();
 
     private final JsMap<Element, Integer> elementToId = JsCollections.map();
     // JsArray is used as a Map<Integer,Element> here. So this is a map between
@@ -79,15 +72,6 @@ public class ExistingElementMap {
         if (element != null) {
             idToElement.set(id, null);
             elementToId.delete(element);
-
-            JsSet<Function<Integer, Boolean>> copy = JsCollections
-                    .set(listeners);
-
-            copy.forEach(listener -> {
-                if (listener.apply(id)) {
-                    listeners.delete(listener);
-                }
-            });
         }
     }
 
@@ -102,24 +86,6 @@ public class ExistingElementMap {
     public void add(int id, Element element) {
         idToElement.set(id, element);
         elementToId.set(element, id);
-    }
-
-    /**
-     * Add remove listener for the identifier of the node.
-     * <p>
-     * Listener interface is a function that accepts the identifier of removed
-     * node and returns {@code true} if the listener should be removed once the
-     * node is removed. If it returns {@code false} then it's preserved in the
-     * listeners list.
-     *
-     * @param listener
-     *            the node remove listener to add
-     * @return an event remover that can be used to remove the listener
-     */
-    public EventRemover addNodeRemoveListener(
-            Function<Integer, Boolean> listener) {
-        listeners.add(listener);
-        return () -> listeners.delete(listener);
     }
 
 }

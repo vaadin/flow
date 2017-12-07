@@ -272,8 +272,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         object.put(NodeProperties.TYPE, NodeProperties.IN_MEMORY_CHILD);
         elementData.getProperty(NodeProperties.PAYLOAD).setValue(object);
 
-        NodeList virtialChildren = node
-                .getList(NodeFeatures.NEW_VIRTUAL_CHILDREN);
+        NodeList virtialChildren = node.getList(NodeFeatures.VIRTUAL_CHILDREN);
         virtialChildren.add(0, childNode);
 
         Reactive.flush();
@@ -757,7 +756,8 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         // nothing has changed: no new child
-        assertEquals(element.getChildElementCount(), 1);
+        assertEquals("No new child should appear in the element", 1,
+                element.getChildElementCount());
 
         Element childElement = element.getFirstElementChild();
 
@@ -778,92 +778,91 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("[object Object]", toString);
     }
 
-    public void testBindVirtualElement() {
-        addShadowRootElement(element);
-        StateNode shadowRootNode = createAndAttachShadowRootNode();
-
-        // start binder test
-        Binder.bind(node, element);
-
-        StateNode childNode = createChildNode("childElement");
-
-        String tag = (String) childNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.TAG).getValue();
-
-        ExistingElementMap existingElementMap = node.getTree().getRegistry()
-                .getExistingElementMap();
-
-        // create and add an existing element
-        Element span = Browser.getDocument().createElement(tag);
-        element.appendChild(span);
-
-        existingElementMap.add(childNode.getId(), span);
-
-        addVirtualChild(shadowRootNode, childNode);
-
-        Reactive.flush();
-
-        // nothing has changed: no new child
-        assertEquals(element.getChildElementCount(), 1);
-
-        assertNull(existingElementMap.getElement(childNode.getId()));
-
-        Element childElement = element.getFirstElementChild();
-
-        assertEquals(tag,
-                childElement.getTagName().toLowerCase(Locale.ENGLISH));
-        assertSame(span, childElement);
-        assertEquals("childElement", childElement.getId());
-        assertNull(existingElementMap.getElement(childNode.getId()));
-    }
-
-    public void testBindChild_noTagAndId() {
-        addShadowRootElement(element);
-        addVirtualChild(createAndAttachShadowRootNode(),
-                createChildNode(null, null));
-
-        try {
-            Binder.bind(node, element);
-            fail("Appending child state node with no tag and id should cause an exception");
-        } catch (IllegalStateException ignored) {
-            // expected
-        }
-    }
-
-    public void testBindChild_noCorrespondingElementInShadowRoot_searchById() {
+    public void testVirtualBindChild_wrongTag_searchById() {
         Element shadowRootElement = addShadowRootElement(element);
 
         String childId = "childElement";
-        addVirtualChild(createAndAttachShadowRootNode(),
-                createChildNode(childId, null));
 
-        Binder.bind(node, element);
+        StateNode child = createChildNode(childId, "a");
+        addVirtualChild(node, child, NodeProperties.INJECT_BY_ID,
+                Json.create(childId));
 
         Element elementWithDifferentId = createAndAppendElementToShadowRoot(
-                shadowRootElement, "otherId", null);
+                shadowRootElement, "otherId", "div");
         assertNotSame(
                 "Element added to shadow root should not have same id as virtual child node",
                 childId, elementWithDifferentId.getId());
 
-        try {
-            Reactive.flush();
-            fail("Appending state node for element with no corresponding element in shadow root should cause an exception");
-        } catch (IllegalStateException e) {
-            assertTrue(
-                    "Exception message '" + e.getMessage()
-                            + "' should contain id '" + childId + '\'',
-                    e.getMessage().contains(childId));
-        }
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected node argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                child.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                -1, tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childId, tree.existingElementRpcArgs.get(3));
     }
 
-    public void testBindChild_noCorrespondingElementInShadowRoot_searchByTag() {
+    public void testVirtualBindChild_noCorrespondingElementInShadowRoot_searchById() {
+        Element shadowRootElement = addShadowRootElement(element);
+
+        String childId = "childElement";
+        String tag = "a";
+
+        StateNode child = createChildNode(childId, tag);
+        addVirtualChild(node, child, NodeProperties.INJECT_BY_ID,
+                Json.create(childId));
+
+        Element elementWithDifferentId = createAndAppendElementToShadowRoot(
+                shadowRootElement, "otherId", tag);
+        assertNotSame(
+                "Element added to shadow root should not have same id as virtual child node",
+                childId, elementWithDifferentId.getId());
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                child.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                -1, tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childId, tree.existingElementRpcArgs.get(3));
+    }
+
+    public void testVirtualBindChild_wrongTag_searchByIndicesPath() {
         Element shadowRootElement = addShadowRootElement(element);
 
         String childTagName = "span";
-        addVirtualChild(createAndAttachShadowRootNode(),
-                createChildNode(null, childTagName));
+
+        StateNode child = createChildNode(null, childTagName);
 
         Binder.bind(node, element);
+
+        JsonArray path = Json.createArray();
+        path.set(0, 0);
+        addVirtualChild(node, child, NodeProperties.TEMPLATE_IN_TEMPLATE, path);
 
         Element elementWithDifferentTag = createAndAppendElementToShadowRoot(
                 shadowRootElement, null, "div");
@@ -871,57 +870,243 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 "Element added to shadow root should not have same tag name as virtual child node",
                 childTagName, elementWithDifferentTag.getTagName());
 
-        try {
-            Reactive.flush();
-            fail("Appending state node for element with no corresponding element in shadow root should cause an exception");
-        } catch (IllegalStateException e) {
-            assertTrue("Exception message '" + e.getMessage()
-                    + "' should contain tag name '" + childTagName + '\'',
-                    e.getMessage().contains(childTagName));
-        }
+        Reactive.flush();
+
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                child.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                -1, tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                null, tree.existingElementRpcArgs.get(3));
     }
 
-    public void testBindChild_withCorrespondingElementInShadowRoot_byTagName() {
+    public void testBindVirtualChild_noCorrespondingElementInShadowRoot_searchByIndicesPath() {
         Element shadowRootElement = addShadowRootElement(element);
-        StateNode childNode = createChildNode(null, element.getTagName());
-        addVirtualChild(createAndAttachShadowRootNode(), childNode);
+
+        String childTagName = "span";
+
+        StateNode child = createChildNode(null, childTagName);
 
         Binder.bind(node, element);
+
+        JsonArray path = Json.createArray();
+        path.set(0, 1);
+        addVirtualChild(node, child, NodeProperties.TEMPLATE_IN_TEMPLATE, path);
+
+        Element elementWithDifferentTag = createAndAppendElementToShadowRoot(
+                shadowRootElement, null, childTagName);
+        assertNotSame(
+                "Element added to shadow root should not have same tag name as virtual child node",
+                childTagName, elementWithDifferentTag.getTagName());
+
+        Reactive.flush();
+
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                child.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                -1, tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                null, tree.existingElementRpcArgs.get(3));
+    }
+
+    public void testBindVirtualChild_doubleAttachRequest_searchByIndicesPath() {
+        Element shadowRootElement = addShadowRootElement(element);
+
+        StateNode childNode = createChildNode(null, element.getTagName());
+        StateNode sameAttachDataChild = createChildNode(null,
+                element.getTagName());
+
+        JsonArray path = Json.createArray();
+        path.set(0, 0);
+
+        Binder.bind(node, element);
+
+        addVirtualChild(node, childNode, NodeProperties.TEMPLATE_IN_TEMPLATE,
+                path);
+
         createAndAppendElementToShadowRoot(shadowRootElement, null,
                 element.getTagName());
 
-        List<Integer> expectedAfterBindingFeatures = Arrays.asList(
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+        Reactive.flush();
 
-        expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
-                "Child node should not have any features from list "
-                        + expectedAfterBindingFeatures
-                        + " before binding, but got feature "
-                        + notExpectedFeature,
-                childNode.hasFeature(notExpectedFeature)));
+        addVirtualChild(node, sameAttachDataChild,
+                NodeProperties.TEMPLATE_IN_TEMPLATE, path);
 
         Reactive.flush();
 
-        expectedAfterBindingFeatures.forEach(expectedFeature -> assertTrue(
-                "Child node should have all features from list "
-                        + expectedAfterBindingFeatures
-                        + " before binding, but missing feature "
-                        + expectedFeature,
-                childNode.hasFeature(expectedFeature)));
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                sameAttachDataChild.getId(),
+                tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                null, tree.existingElementRpcArgs.get(3));
     }
 
-    public void testBindChild_withCorrespondingElementInShadowRoot_byId() {
+    public void testBindVirtualChild_doubleAttachRequest_searchById() {
         Element shadowRootElement = addShadowRootElement(element);
-        String childId = "childElement";
-        StateNode childNode = createChildNode(childId, element.getTagName());
-        addVirtualChild(createAndAttachShadowRootNode(), childNode);
 
-        Binder.bind(node, element);
-        createAndAppendElementToShadowRoot(shadowRootElement, childId,
+        String id = "@id";
+
+        StateNode childNode = createChildNode(id, element.getTagName());
+        StateNode sameAttachDataChild = createChildNode(id,
                 element.getTagName());
 
+        Binder.bind(node, element);
+
+        addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
+                Json.create(id));
+
+        createAndAppendElementToShadowRoot(shadowRootElement, id,
+                element.getTagName());
+
+        Reactive.flush();
+
+        addVirtualChild(node, sameAttachDataChild, NodeProperties.INJECT_BY_ID,
+                Json.create(id));
+
+        Reactive.flush();
+
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                sameAttachDataChild.getId(),
+                tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                id, tree.existingElementRpcArgs.get(3));
+    }
+
+    public void testBindVirtualChild_existingShadowRootChildren_searchById() {
+        addShadowRootElement(element);
+
+        String id = "@id";
+
+        StateNode childNode = createChildNode(id, element.getTagName());
+        StateNode virtualChild = createChildNode(id, element.getTagName());
+
+        StateNode shadowRoot = createAndAttachShadowRootNode();
+
+        shadowRoot.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        JsonObject obj = Json.createObject();
+        WidgetUtil.setJsProperty(obj, id.toString(), childNode.getDomNode());
+        WidgetUtil.setJsProperty(element, "$", obj);
+
+        addVirtualChild(node, virtualChild, NodeProperties.INJECT_BY_ID,
+                Json.create(id));
+
+        Reactive.flush();
+
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                virtualChild.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                id, tree.existingElementRpcArgs.get(3));
+    }
+
+    public void testBindVirtualChild_existingShadowRootChildren_searchByIndicesPath() {
+        addShadowRootElement(element);
+
+        StateNode childNode = createChildNode(null, element.getTagName());
+        StateNode virtualChild = createChildNode(null, element.getTagName());
+
+        StateNode shadowRoot = createAndAttachShadowRootNode();
+
+        shadowRoot.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        JsonArray path = Json.createArray();
+        path.set(0, 0);
+
+        addVirtualChild(node, virtualChild, NodeProperties.TEMPLATE_IN_TEMPLATE,
+                path);
+
+        Reactive.flush();
+
+        assertEquals(
+                "Unexpected 'sendExistingElementWithIdAttachToServer' method call number",
+                4, tree.existingElementRpcArgs.size());
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                node, tree.existingElementRpcArgs.get(0));
+        assertEquals(
+                "Unexpected requested node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                virtualChild.getId(), tree.existingElementRpcArgs.get(1));
+        assertEquals(
+                "Unexpected attached node id value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                childNode.getId(), tree.existingElementRpcArgs.get(2));
+        assertEquals(
+                "Unexpected identifier value argument in the 'sendExistingElementWithIdAttachToServer' method call",
+                null, tree.existingElementRpcArgs.get(3));
+    }
+
+    public void testBindVirtualChild_withCorrespondingElementInShadowRoot_byTagNameAndIndicesPath() {
+        Element shadowRootElement = addShadowRootElement(element);
+        StateNode childNode = createChildNode(null, element.getTagName());
+        JsonArray path = Json.createArray();
+        path.set(0, 0);
+
+        Binder.bind(node, element);
+
+        addVirtualChild(node, childNode, NodeProperties.TEMPLATE_IN_TEMPLATE,
+                path);
+
+        Element addressedElement = createAndAppendElementToShadowRoot(
+                shadowRootElement, null, element.getTagName());
+
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
                 NodeFeatures.ELEMENT_CHILDREN,
@@ -942,15 +1127,33 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                         + " before binding, but missing feature "
                         + expectedFeature,
                 childNode.hasFeature(expectedFeature)));
+
+        // nothing has changed: no new child
+        assertEquals("No new child should be added to the element after attach",
+                0, element.getChildElementCount());
+        assertEquals(
+                "No new child should be added to the shadow root after attach",
+                1, shadowRootElement.getChildElementCount());
+
+        Element childElement = shadowRootElement.getFirstElementChild();
+
+        assertSame(
+                "Existing element should be the same as element in the StateNode object",
+                addressedElement, childElement);
     }
 
-    public void testBindChild_withAlreadyInitializedElement() {
+    public void testBindVirtualChild_withCorrespondingElementInShadowRoot_byId() {
         Element shadowRootElement = addShadowRootElement(element);
         String childId = "childElement";
         StateNode childNode = createChildNode(childId, element.getTagName());
-        addVirtualChild(createAndAttachShadowRootNode(), childNode);
-        childNode.setDomNode(createAndAppendElementToShadowRoot(
-                shadowRootElement, childId, element.getTagName()));
+
+        Binder.bind(node, element);
+
+        addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
+                Json.create(childId));
+
+        Element addressedElement = createAndAppendElementToShadowRoot(
+                shadowRootElement, childId, element.getTagName());
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
@@ -964,7 +1167,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                         + notExpectedFeature,
                 childNode.hasFeature(notExpectedFeature)));
 
-        Binder.bind(node, element);
+        Reactive.flush();
 
         expectedAfterBindingFeatures.forEach(expectedFeature -> assertTrue(
                 "Child node should have all features from list "
@@ -972,6 +1175,132 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                         + " before binding, but missing feature "
                         + expectedFeature,
                 childNode.hasFeature(expectedFeature)));
+
+        // nothing has changed: no new child
+        assertEquals("No new child should be added to the element after attach",
+                0, element.getChildElementCount());
+        assertEquals(
+                "No new child should be added to the shadow root after attach",
+                1, shadowRootElement.getChildElementCount());
+
+        Element childElement = shadowRootElement.getFirstElementChild();
+
+        assertSame(
+                "Existing element should be the same as element in the StateNode object",
+                addressedElement, childElement);
+    }
+
+    public void testBindVirtualChild_withPostponedElementInShadowRoot_byId() {
+        String childId = "childElement";
+        StateNode childNode = createChildNode(childId, element.getTagName());
+
+        Binder.bind(node, element);
+
+        addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
+                Json.create(childId));
+
+        Element shadowRoot = Browser.getDocument().createElement("div");
+        mockWhenDefined(shadowRoot);
+
+        List<Integer> expectedAfterBindingFeatures = Arrays.asList(
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                NodeFeatures.ELEMENT_CHILDREN,
+                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+
+        Reactive.flush();
+
+        expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
+                "Child node should not have any features from list "
+                        + expectedAfterBindingFeatures
+                        + " before binding, but got feature "
+                        + notExpectedFeature,
+                childNode.hasFeature(notExpectedFeature)));
+
+        WidgetUtil.setJsProperty(element, "root", shadowRoot);
+        Element addressedElement = createAndAppendElementToShadowRoot(
+                shadowRoot, childId, element.getTagName());
+
+        runWhenDefined(shadowRoot);
+
+        Reactive.flush();
+
+        expectedAfterBindingFeatures.forEach(expectedFeature -> assertTrue(
+                "Child node should have all features from list "
+                        + expectedAfterBindingFeatures
+                        + " before binding, but missing feature "
+                        + expectedFeature,
+                childNode.hasFeature(expectedFeature)));
+
+        // nothing has changed: no new child
+        assertEquals("No new child should be added to the element after attach",
+                0, element.getChildElementCount());
+        assertEquals(
+                "No new child should be added to the shadow root after attach",
+                1, shadowRoot.getChildElementCount());
+
+        Element childElement = shadowRoot.getFirstElementChild();
+
+        assertSame(
+                "Existing element should be the same as element in the StateNode object",
+                addressedElement, childElement);
+    }
+
+    public void testBindVirtualChild_withPostponedElementInShadowRoot_byIndicesPath() {
+        String childId = "childElement";
+        StateNode childNode = createChildNode(childId, element.getTagName());
+
+        Binder.bind(node, element);
+
+        JsonArray path = Json.createArray();
+        path.set(0, 0);
+
+        addVirtualChild(node, childNode, NodeProperties.TEMPLATE_IN_TEMPLATE,
+                path);
+
+        Element shadowRoot = Browser.getDocument().createElement("div");
+        mockWhenDefined(shadowRoot);
+
+        List<Integer> expectedAfterBindingFeatures = Arrays.asList(
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                NodeFeatures.ELEMENT_CHILDREN,
+                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+
+        Reactive.flush();
+
+        expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
+                "Child node should not have any features from list "
+                        + expectedAfterBindingFeatures
+                        + " before binding, but got feature "
+                        + notExpectedFeature,
+                childNode.hasFeature(notExpectedFeature)));
+
+        WidgetUtil.setJsProperty(element, "root", shadowRoot);
+        Element addressedElement = createAndAppendElementToShadowRoot(
+                shadowRoot, childId, element.getTagName());
+
+        runWhenDefined(shadowRoot);
+
+        Reactive.flush();
+
+        expectedAfterBindingFeatures.forEach(expectedFeature -> assertTrue(
+                "Child node should have all features from list "
+                        + expectedAfterBindingFeatures
+                        + " before binding, but missing feature "
+                        + expectedFeature,
+                childNode.hasFeature(expectedFeature)));
+
+        // nothing has changed: no new child
+        assertEquals("No new child should be added to the element after attach",
+                0, element.getChildElementCount());
+        assertEquals(
+                "No new child should be added to the shadow root after attach",
+                1, shadowRoot.getChildElementCount());
+
+        Element childElement = shadowRoot.getFirstElementChild();
+
+        assertSame(
+                "Existing element should be the same as element in the StateNode object",
+                addressedElement, childElement);
     }
 
     private Element createAndAppendElementToShadowRoot(Element shadowRoot,
@@ -980,13 +1309,25 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 .createElement(tagName);
         childShadowRootElement.setId(id);
         shadowRoot.appendChild(childShadowRootElement);
+
+        if (id != null) {
+            JsonObject obj = Json.createObject();
+            WidgetUtil.setJsProperty(obj, id.toString(),
+                    childShadowRootElement);
+            WidgetUtil.setJsProperty(element, "$", obj);
+        }
         return childShadowRootElement;
     }
 
-    private void addVirtualChild(StateNode shadowRootNode,
-            StateNode childNode) {
+    private void addVirtualChild(StateNode shadowRootNode, StateNode childNode,
+            String type, JsonValue payload) {
         NodeList virtualChildren = shadowRootNode
-                .getList(NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
+                .getList(NodeFeatures.VIRTUAL_CHILDREN);
+        JsonObject object = Json.createObject();
+        childNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.PAYLOAD).setValue(object);
+        object.put(NodeProperties.TYPE, type);
+        object.put(NodeProperties.PAYLOAD, payload);
         virtualChildren.add(virtualChildren.length(), childNode);
     }
 
@@ -1001,11 +1342,8 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     private native Element addShadowRootElement(Element element)
     /*-{
         var shadowRoot = $doc.createElement("div");
-        // GWT does not provide this method by default, so we use a stub
-        shadowRoot.getElementById = function (id) {
-            return this.querySelector('#' + id);
-        };
         element.shadowRoot = shadowRoot;
+        element.root = shadowRoot;
         return shadowRoot;
     }-*/;
 
@@ -1013,4 +1351,23 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     /*-{
         return value.toString();
     }-*/;
+
+    private native void mockWhenDefined(Element element)
+    /*-{
+        $wnd.customElements = {
+            whenDefined: function() {
+                return {
+                    then: function (callback) {
+                        element.callback = callback;
+                    }
+                }
+            }
+        };
+    }-*/;
+
+    private native void runWhenDefined(Element element)
+    /*-{
+        element.callback();
+    }-*/;
+
 }

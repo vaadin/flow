@@ -49,7 +49,7 @@ public class DomApiAbstractionUsageTest {
 
     private static final Set<String> ignoredElementMethods = Stream
             .of("getTagName", "addEventListener", "getOwnerDocument",
-                    "hasAttribute", "getStyle")
+                    "hasAttribute", "getStyle", "getLocalName")
             .collect(Collectors.toSet());
 
     private final ClassVisitor classVisitor = new ClassVisitor(Opcodes.ASM5) {

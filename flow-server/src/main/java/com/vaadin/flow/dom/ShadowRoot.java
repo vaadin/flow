@@ -23,9 +23,9 @@ import com.vaadin.flow.nodefeature.ShadowRootHost;
  * A class representing a shadow dom root of an element.
  * <p>
  * The root can be created by {@link Element#attachShadow()}.
- * 
+ *
  * @see Element#attachShadow()
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -73,25 +73,4 @@ public class ShadowRoot extends Node<ShadowRoot> {
         return (ShadowRootStateProvider) super.getStateProvider();
     }
 
-    /**
-     * Insert a 'virtual' child to this shadow root.
-     * <p>
-     * Virtual children are elements in the shadow root, but they may not
-     * actually be connected to the shadow root itself on the client.
-     * 
-     * @param childElement
-     *            element to register for shadow root
-     * @return this element
-     */
-    public ShadowRoot insertVirtualChild(Element childElement) {
-        if (childElement.getParent() != null) {
-            throw new IllegalArgumentException(
-                    "Element to be attached as virtual element should not have a parent");
-        }
-
-        getStateProvider().insertVirtualChild(getNode(), childElement);
-        ensureChildHasParent(childElement, true);
-
-        return this;
-    }
 }
