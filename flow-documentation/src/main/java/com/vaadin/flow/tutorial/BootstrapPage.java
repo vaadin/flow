@@ -23,6 +23,9 @@ import com.vaadin.router.Route;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.server.BootstrapListener;
 import com.vaadin.server.BootstrapPageResponse;
+import com.vaadin.server.InitialPageSettings;
+import com.vaadin.server.PageConfigurator;
+import com.vaadin.shared.ui.Dependency;
 import com.vaadin.ui.Viewport;
 import com.vaadin.ui.html.Div;
 
@@ -73,5 +76,26 @@ public class BootstrapPage {
 
     @Viewport("width=device-width")
     public class MyLayout extends Div implements RouterLayout {
+    }
+
+    @Route(value = "", layout = MainLayout.class)
+    public class Root extends Div {
+    }
+
+    public class MainLayout extends Div
+            implements RouterLayout, PageConfigurator {
+
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineFromFile(InitialPageSettings.Position.PREPEND,
+                    "inline.js", Dependency.Type.JAVASCRIPT);
+
+            settings.addMetaTag("og:title", "The Rock");
+            settings.addMetaTag("og:type", "video.movie");
+            settings.addMetaTag("og:url",
+                    "http://www.imdb.com/title/tt0117500/");
+            settings.addMetaTag("og:image",
+                    "http://ia.media-imdb.com/images/rock.jpg");
+        }
     }
 }

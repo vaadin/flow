@@ -48,6 +48,52 @@ public class MyLayout extends Div implements RouterLayout {
 [NOTE]
 If the Viewport annotation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
 
+== PageConfigurator
+
+To be able to modify default bootstrap page and add your custom meta tags on the page you
+can implement the `PageConfigurator` on the navigation target with `@Route` or
+the top most `RouterLayout` that builds the navigation target chain.
+
+With the `PageConfigurator` you can prepend or append `javascript`, `html` and `css` to the head
+by giving a file on the classpath or as content string. Also supported is adding links and meta tags which
+can also be either prepended or appended.
+
+Setting the viewport meta tag using `InitialPageSettings::setViewport` will override any viewport
+set through a `@Viewport` annotation.
+
+By default everything is appended, but if needed you can give the position `InitialPageSettings.Position.PREPEND`
+to have the item prepended to head instead.
+
+Here is the code for the `PageConfigurator` implementation on the top
+`RouterLayout` which modifies the header of the page:
+
+[source,java]
+----
+@Route(value = "", layout = MainLayout.class)
+public class Root extends Div {
+}
+
+public class MainLayout extends Div
+        implements RouterLayout, PageConfigurator {
+
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        settings.addInlineFromFile(InitialPageSettings.Position.PREPEND,
+                "inline.js", Dependency.Type.JAVASCRIPT);
+
+        settings.addMetaTag("og:title", "The Rock");
+        settings.addMetaTag("og:type", "video.movie");
+        settings.addMetaTag("og:url",
+                "http://www.imdb.com/title/tt0117500/");
+        settings.addMetaTag("og:image",
+                "http://ia.media-imdb.com/images/rock.jpg");
+    }
+}
+----
+
+[NOTE]
+If the PageConfigurator implementation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
+
 == BootstrapListener
 
 To be able to modify default bootstrap page and add your custom meta tags on the page you should use
@@ -66,11 +112,11 @@ public class CustomBootstrapListener implements BootstrapListener {
         Element head = document.head();
 
         head.appendChild(createMeta(document, "og:title", "The Rock"));
-            head.appendChild(createMeta(document, "og:type", "video.movie"));
-            head.appendChild(createMeta(document, "og:url",
-                    "http://www.imdb.com/title/tt0117500/"));
-            head.appendChild(createMeta(document, "og:image",
-                    "http://ia.media-imdb.com/images/rock.jpg"));
+        head.appendChild(createMeta(document, "og:type", "video.movie"));
+        head.appendChild(createMeta(document, "og:url",
+                "http://www.imdb.com/title/tt0117500/"));
+        head.appendChild(createMeta(document, "og:image",
+                "http://ia.media-imdb.com/images/rock.jpg"));
     }
 
     private Element createMeta(Document document, String property,

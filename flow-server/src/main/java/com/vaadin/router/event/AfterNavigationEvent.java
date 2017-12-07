@@ -31,7 +31,6 @@ import com.vaadin.ui.common.HasElement;
  */
 public class AfterNavigationEvent extends EventObject {
 
-    private final Location location;
     private final LocationChangeEvent event;
 
     /**
@@ -42,7 +41,6 @@ public class AfterNavigationEvent extends EventObject {
      */
     public AfterNavigationEvent(LocationChangeEvent event) {
         super(event.getSource());
-        location = event.getLocation();
         this.event = event;
     }
 
@@ -52,7 +50,7 @@ public class AfterNavigationEvent extends EventObject {
      * @return the new location, not {@code null}
      */
     public Location getLocation() {
-        return location;
+        return event.getLocation();
     }
 
     /**
