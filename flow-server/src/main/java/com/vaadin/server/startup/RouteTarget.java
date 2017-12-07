@@ -88,7 +88,7 @@ public class RouteTarget implements Serializable {
         if (parameter != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                    parameter.getName(), target.getName()));
+                    getClassName(parameter), getClassName(target)));
         }
     }
 
@@ -97,7 +97,7 @@ public class RouteTarget implements Serializable {
         if (wildParameter != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
-                    parameter.getName(), target.getName()));
+                    getClassName(parameter), getClassName(target)));
         }
     }
 
@@ -106,11 +106,12 @@ public class RouteTarget implements Serializable {
         if (normal != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-                    normal.getName(), target.getName(), target.getName()));
+                    getClassName(normal), getClassName(target),
+                    getClassName(target)));
         } else if (optionalParameter != null) {
             String message = String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                    parameter.getName(), target.getName());
+                    getClassName(parameter), getClassName(target));
             throw new InvalidRouteConfigurationException(message);
         }
     }
@@ -120,13 +121,17 @@ public class RouteTarget implements Serializable {
         if (normal != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
-                    normal.getName(), target.getName()));
+                    getClassName(normal), getClassName(target)));
         } else if (optionalParameter != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-                    target.getName(), optionalParameter.getName(),
-                    optionalParameter.getName()));
+                    getClassName(target), getClassName(optionalParameter),
+                    getClassName(optionalParameter)));
         }
+    }
+
+    private String getClassName(Class<?> clazz) {
+        return clazz == null ? null : clazz.getName();
     }
 
     /**
