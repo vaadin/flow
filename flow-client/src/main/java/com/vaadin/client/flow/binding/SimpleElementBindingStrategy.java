@@ -613,7 +613,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (!verifyAttachRequest(context.node, node, id, address)) {
                 return;
             }
-
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
                 PolymerUtils.invokeWhenDefined(context.htmlNode,
                         () -> appendVirtualChild(context, node, false));
@@ -680,35 +679,42 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (failure) {
             node.getTree().sendExistingElementWithIdAttachToServer(node,
                     attachNode.getId(), -1, id);
-        } else {
-            NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-            StateNode shadowRootNode = (StateNode) map
-                    .getProperty(NodeProperties.SHADOW_ROOT).getValue();
-            NodeList list = shadowRootNode
-                    .getList(NodeFeatures.ELEMENT_CHILDREN);
-            Integer existingId = null;
+            return false;
+        }
 
-            for (int i = 0; i < list.length(); i++) {
-                StateNode stateNode = (StateNode) list.get(i);
-                Node domNode = stateNode.getDomNode();
+        if (!node.hasFeature(NodeFeatures.SHADOW_ROOT_DATA)) {
+            return true;
+        }
+        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+        StateNode shadowRootNode = (StateNode) map
+                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
+        if (shadowRootNode == null) {
+            return true;
+        }
 
-                if (domNode.equals(element)) {
-                    existingId = stateNode.getId();
-                    break;
-                }
-            }
+        NodeList list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
+        Integer existingId = null;
 
-            if (existingId != null) {
-                failure = true;
-                Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
-                        + " has been already attached previously via the node id='"
-                        + existingId + "'");
-                node.getTree().sendExistingElementWithIdAttachToServer(node,
-                        attachNode.getId(), existingId, id);
+        for (int i = 0; i < list.length(); i++) {
+            StateNode stateNode = (StateNode) list.get(i);
+            Node domNode = stateNode.getDomNode();
+
+            if (domNode.equals(element)) {
+                existingId = stateNode.getId();
+                break;
             }
         }
 
-        return !failure;
+        if (existingId != null) {
+            failure = true;
+            Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
+                    + " has been already attached previously via the node id='"
+                    + existingId + "'");
+            node.getTree().sendExistingElementWithIdAttachToServer(node,
+                    attachNode.getId(), existingId, id);
+            return false;
+        }
+        return true;
     }
 
     private boolean verifyAttachRequest(StateNode parent, StateNode node,

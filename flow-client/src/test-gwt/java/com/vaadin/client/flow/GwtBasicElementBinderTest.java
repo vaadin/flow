@@ -781,7 +781,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Element shadowRootElement = addShadowRootElement(element);
 
         String childId = "childElement";
-        createAndAttachShadowRootNode();
 
         StateNode child = createChildNode(childId, "a");
         addVirtualChild(node, child, NodeProperties.INJECT_BY_ID,
@@ -808,8 +807,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Element shadowRootElement = addShadowRootElement(element);
 
         String childId = "childElement";
-        createAndAttachShadowRootNode();
-
         String tag = "a";
 
         StateNode child = createChildNode(childId, tag);
@@ -838,8 +835,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         String childTagName = "span";
 
-        createAndAttachShadowRootNode();
-
         StateNode child = createChildNode(null, childTagName);
 
         Binder.bind(node, element);
@@ -867,8 +862,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Element shadowRootElement = addShadowRootElement(element);
 
         String childTagName = "span";
-
-        createAndAttachShadowRootNode();
 
         StateNode child = createChildNode(null, childTagName);
 
@@ -903,8 +896,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         JsonArray path = Json.createArray();
         path.set(0, 0);
 
-        createAndAttachShadowRootNode();
-
         Binder.bind(node, element);
 
         addVirtualChild(node, childNode, NodeProperties.TEMPLATE_IN_TEMPLATE,
@@ -936,8 +927,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         StateNode childNode = createChildNode(id, element.getTagName());
         StateNode sameAttachDataChild = createChildNode(id,
                 element.getTagName());
-
-        createAndAttachShadowRootNode();
 
         Binder.bind(node, element);
 
@@ -1029,8 +1018,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         JsonArray path = Json.createArray();
         path.set(0, 0);
 
-        createAndAttachShadowRootNode();
-
         Binder.bind(node, element);
 
         addVirtualChild(node, childNode, NodeProperties.TEMPLATE_IN_TEMPLATE,
@@ -1074,8 +1061,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         String childId = "childElement";
         StateNode childNode = createChildNode(childId, element.getTagName());
 
-        createAndAttachShadowRootNode();
-
         Binder.bind(node, element);
 
         addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
@@ -1110,6 +1095,56 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals(1, shadowRootElement.getChildElementCount());
 
         Element childElement = shadowRootElement.getFirstElementChild();
+
+        assertSame(addressedElement, childElement);
+    }
+
+    public void testBindVirtualChild_withPostponedElementInShadowRoot_byId() {
+        String childId = "childElement";
+        StateNode childNode = createChildNode(childId, element.getTagName());
+
+        Binder.bind(node, element);
+
+        addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
+                Json.create(childId));
+
+        Element shadowRoot = Browser.getDocument().createElement("div");
+        mockWhenDefined(shadowRoot);
+
+        List<Integer> expectedAfterBindingFeatures = Arrays.asList(
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                NodeFeatures.ELEMENT_CHILDREN,
+                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+
+        Reactive.flush();
+
+        expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
+                "Child node should not have any features from list "
+                        + expectedAfterBindingFeatures
+                        + " before binding, but got feature "
+                        + notExpectedFeature,
+                childNode.hasFeature(notExpectedFeature)));
+
+        WidgetUtil.setJsProperty(element, "root", shadowRoot);
+        Element addressedElement = createAndAppendElementToShadowRoot(
+                shadowRoot, childId, element.getTagName());
+
+        runWhenDefined(shadowRoot);
+
+        Reactive.flush();
+
+        expectedAfterBindingFeatures.forEach(expectedFeature -> assertTrue(
+                "Child node should have all features from list "
+                        + expectedAfterBindingFeatures
+                        + " before binding, but missing feature "
+                        + expectedFeature,
+                childNode.hasFeature(expectedFeature)));
+
+        // nothing has changed: no new child
+        assertEquals(0, element.getChildElementCount());
+        assertEquals(1, shadowRoot.getChildElementCount());
+
+        Element childElement = shadowRoot.getFirstElementChild();
 
         assertSame(addressedElement, childElement);
     }
@@ -1153,10 +1188,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     private native Element addShadowRootElement(Element element)
     /*-{
         var shadowRoot = $doc.createElement("div");
-        // GWT does not provide this method by default, so we use a stub
-        shadowRoot.getElementById = function (id) {
-            return this.querySelector('#' + id);
-        };
         element.shadowRoot = shadowRoot;
         element.root = shadowRoot;
         return shadowRoot;
@@ -1166,4 +1197,23 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     /*-{
         return value.toString();
     }-*/;
+
+    private native void mockWhenDefined(Element element)
+    /*-{
+        $wnd.customElements = {
+            whenDefined: function() {
+                return {
+                    then: function (callback) {
+                        element.callback = callback;
+                    }
+                }
+            }
+        };
+    }-*/;
+
+    private native void runWhenDefined(Element element)
+    /*-{
+        element.callback();
+    }-*/;
+
 }
