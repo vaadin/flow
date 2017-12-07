@@ -60,8 +60,8 @@ public class InitialPageSettings {
     /* Initial page values */
     private String viewport;
 
-    private Map<Position, List<JsonObject>> inline = new EnumMap<>(Position.class);
-    private Map<Position, List<Element>> elements = new EnumMap<>(Position.class);
+    private final Map<Position, List<JsonObject>> inline = new EnumMap<>(Position.class);
+    private final Map<Position, List<Element>> elements = new EnumMap<>(Position.class);
 
     /**
      * Create new initial page settings object.

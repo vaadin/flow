@@ -36,7 +36,10 @@ import com.vaadin.util.AnnotationReader;
 /**
  * Utility methods used by the BootstrapHandler.
  */
-public class BootstrapUtils {
+class BootstrapUtils {
+
+    private BootstrapUtils() {
+    }
 
     /**
      * Returns the specified viewport content for the target route chain that
@@ -50,8 +53,7 @@ public class BootstrapUtils {
      *            the request for the ui
      * @return the content value string for viewport meta tag
      */
-    protected static Optional<String> getViewportContent(UI ui,
-            VaadinRequest request) {
+    static Optional<String> getViewportContent(UI ui, VaadinRequest request) {
         String viewportContent = null;
 
         Optional<Router> router = ui.getRouter();
@@ -90,7 +92,7 @@ public class BootstrapUtils {
      * @return initial page settings or empty optional if no
      *         {@link PageConfigurator} found
      */
-    protected static Optional<InitialPageSettings> getInitialPageSettings(
+    static Optional<InitialPageSettings> getInitialPageSettings(
             BootstrapHandler.BootstrapContext context) {
         UI ui = context.getUI();
 

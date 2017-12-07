@@ -107,7 +107,8 @@ public abstract class AbstractRouteRegistryInitializer {
             if (PageConfigurator.class.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("PageConfigurator needs to be the top parent layout '%s' not '%s'",
-                                RouterUtil.getTopParentLayout(route, alias.value()).getName(),
+                                RouterUtil.getTopParentLayout(route,
+                                        alias.value()).getName(),
                                 route.getName()));
             }
             if (route.isAnnotationPresent(Viewport.class)) {
@@ -150,8 +151,7 @@ public abstract class AbstractRouteRegistryInitializer {
             List<Class<? extends RouterLayout>> parentLayouts,
             Class<? extends RouterLayout> topParentLayout) {
         Supplier<Stream<Class<? extends RouterLayout>>> streamSupplier = () -> parentLayouts
-                .stream().filter(layout -> PageConfigurator.class
-                        .isAssignableFrom(layout));
+                .stream().filter(PageConfigurator.class::isAssignableFrom);
         if (streamSupplier.get().count() > 1) {
             throw new InvalidRouteLayoutConfigurationException(
                     "Only one PageConfigurator implementation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
