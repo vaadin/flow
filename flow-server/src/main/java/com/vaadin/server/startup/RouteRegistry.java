@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
@@ -54,6 +56,10 @@ public class RouteRegistry implements Serializable {
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
+
+    final static Set<Class<? extends Component>> defaultErrorHandlers = Stream
+            .of(RouteNotFoundError.class, InternalServerError.class)
+            .collect(Collectors.toSet());
 
     /**
      * Creates a new uninitialized route registry.
@@ -185,11 +191,9 @@ public class RouteRegistry implements Serializable {
         if (registered.isAssignableFrom(target)) {
             exceptionTargetsMap.put(exceptionType, target);
         } else if (!target.isAssignableFrom(registered)) {
-            if (registered.equals(RouteNotFoundError.class)
-                    || registered.equals(InternalServerError.class)) {
+            if (defaultErrorHandlers.contains(registered)) {
                 exceptionTargetsMap.put(exceptionType, target);
-            } else if (!(target.equals(RouteNotFoundError.class)
-                    || target.equals(InternalServerError.class))) {
+            } else if (!defaultErrorHandlers.contains(registered)) {
                 String msg = String.format(
                         "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
                         target.getName(), registered.getName(),

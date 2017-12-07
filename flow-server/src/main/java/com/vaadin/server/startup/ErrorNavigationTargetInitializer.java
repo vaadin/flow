@@ -19,13 +19,10 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.router.HasErrorParameter;
-import com.vaadin.router.InternalServerError;
-import com.vaadin.router.RouteNotFoundError;
 import com.vaadin.ui.Component;
 
 /**
@@ -41,12 +38,8 @@ public class ErrorNavigationTargetInitializer
     public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
         if (classSet == null) {
-            Set<Class<? extends Component>> defaultErrorViews = new HashSet<>();
-            defaultErrorViews.add(RouteNotFoundError.class);
-            defaultErrorViews.add(InternalServerError.class);
-
-            RouteRegistry.getInstance(servletContext)
-                    .setErrorNavigationTargets(defaultErrorViews);
+            RouteRegistry.getInstance(servletContext).setErrorNavigationTargets(
+                    RouteRegistry.defaultErrorHandlers);
             return;
         }
         Set<Class<? extends Component>> routes = classSet.stream()
