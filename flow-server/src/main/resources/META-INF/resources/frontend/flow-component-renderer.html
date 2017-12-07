@@ -35,31 +35,26 @@
     }
 
     _attachRenderedComponentIfAble() {
-      try {
-        const renderedComponent = window.vaadin.clients[this.appid].getByNodeId(this.nodeid);
-        if (this.firstElementChild) {
-          if (!renderedComponent) {
-            this._clear();
-            this._asyncAttachRenderedComponentIfAble();
-          } else if (this.firstElementChild !== renderedComponent){
-            this.replaceChild(renderedComponent, this.firstElementChild);
-            this.hidden = false;
-            this._notifyResize();
-          } else {
-            this.hidden = false;
-          }
+      const renderedComponent = window.vaadin.clients[this.appid].getByNodeId(this.nodeid);
+      if (this.firstElementChild) {
+        if (!renderedComponent) {
+          this._clear();
+          this._asyncAttachRenderedComponentIfAble();
+        } else if (this.firstElementChild !== renderedComponent){
+          this.replaceChild(renderedComponent, this.firstElementChild);
+          this.hidden = false;
+          this._notifyResize();
         } else {
-          if (renderedComponent) {
-            this.appendChild(renderedComponent);
-            this.hidden = false;
-            this._notifyResize();
-          } else {
-            this._asyncAttachRenderedComponentIfAble();
-          }
+          this.hidden = false;
         }
-      }
-      catch (ex) {
-        console.error("Error rendering node: appid ${this.appid}, nodeid ${this.appid}");
+      } else {
+        if (renderedComponent) {
+          this.appendChild(renderedComponent);
+          this.hidden = false;
+          this._notifyResize();
+        } else {
+          this._asyncAttachRenderedComponentIfAble();
+        }
       }
     }
     
