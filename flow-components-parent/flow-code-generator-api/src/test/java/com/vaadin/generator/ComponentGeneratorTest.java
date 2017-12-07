@@ -922,7 +922,11 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass.contains(
-                "@Override public void setValue(String value) { if (!Objects.equals(value, getValue())) {"));
+                "@Override public void setValue(String value) {"
+                        + " Objects.requireNonNull(value, \"value cannot be null\");"
+                        + " if (!Objects.equals(value, getValue())) {"));
+        Assert.assertTrue(generatedClass.contains(
+                "@Override public String getEmptyValue() { return \"\"; }"));
     }
 
     @Test
