@@ -185,11 +185,17 @@ public class RouteRegistry implements Serializable {
         if (registered.isAssignableFrom(target)) {
             exceptionTargetsMap.put(exceptionType, target);
         } else if (!target.isAssignableFrom(registered)) {
-            String msg = String.format(
-                    "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                    target.getName(), registered.getName(),
-                    exceptionType.getName());
-            throw new InvalidRouteLayoutConfigurationException(msg);
+            if (registered.equals(RouteNotFoundError.class)
+                    || registered.equals(InternalServerError.class)) {
+                exceptionTargetsMap.put(exceptionType, target);
+            } else if (!(target.equals(RouteNotFoundError.class)
+                    || target.equals(InternalServerError.class))) {
+                String msg = String.format(
+                        "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                        target.getName(), registered.getName(),
+                        exceptionType.getName());
+                throw new InvalidRouteLayoutConfigurationException(msg);
+            }
         }
     }
 
