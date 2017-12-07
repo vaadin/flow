@@ -91,6 +91,7 @@ public class DataCommunicator<T> {
 
     private Runnable flushRequest;
     private Runnable flushUpdatedDataRequest;
+    private List<PassivationListener> passivationListeners;
 
     /**
      * Creates a new instance.
@@ -106,8 +107,7 @@ public class DataCommunicator<T> {
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
-            SerializableConsumer<JsonArray> dataUpdater,
-            StateNode stateNode) {
+            SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
         this.dataUpdater = dataUpdater;
@@ -416,6 +416,7 @@ public class DataCommunicator<T> {
         Set<String> passivated = passivatedByUpdate.remove(updateId);
         if (passivated != null) {
             passivated.forEach(key -> keyMapper.remove(keyMapper.get(key)));
+            notifyPassivationListeners(passivated);
         }
     }
 
@@ -533,16 +534,15 @@ public class DataCommunicator<T> {
 
         // XXX Explicitly refresh anything that is updated
         List<String> activeKeys = new ArrayList<>(range.length());
-        fetchFromProvider(range.getStart(), range.length())
-                .forEach(bean -> {
-                    boolean mapperHasKey = keyMapper.has(bean);
-                    String key = keyMapper.key(bean);
-                    if (mapperHasKey) {
-                        passivatedByUpdate.values().stream()
-                                .forEach(set -> set.remove(key));
-                    }
-                    activeKeys.add(key);
-                });
+        fetchFromProvider(range.getStart(), range.length()).forEach(bean -> {
+            boolean mapperHasKey = keyMapper.has(bean);
+            String key = keyMapper.key(bean);
+            if (mapperHasKey) {
+                passivatedByUpdate.values().stream()
+                        .forEach(set -> set.remove(key));
+            }
+            activeKeys.add(key);
+        });
         return activeKeys;
     }
 
@@ -551,5 +551,50 @@ public class DataCommunicator<T> {
         json.put("key", getKeyMapper().key(item));
         dataGenerator.generateData(item, json);
         return json;
+    }
+
+    /**
+     * Adds a listener for when items are passivated. Passivation listeners are
+     * called for each individual update.
+     * <p>
+     * Note: as the name of the listener implies, the listeners are called
+     * <strong>after</strong> the items are passivated, which means that the
+     * keys sent to the listeners are not available in the {@link KeyMapper}
+     * anymore.
+     * 
+     * @param passivationListener
+     *            the listener
+     * @return a registration that can be used to remove the listener from this
+     *         DataCommunicator.
+     */
+    public Registration addPassivationListener(
+            PassivationListener passivationListener) {
+        assert passivationListener != null;
+
+        if (passivationListeners == null) {
+            passivationListeners = new ArrayList<>(1);
+        }
+        passivationListeners.add(passivationListener);
+
+        return () -> removePassivationListener(passivationListener);
+    }
+
+    private void removePassivationListener(
+            PassivationListener passivationListener) {
+        assert passivationListener != null;
+
+        passivationListeners.remove(passivationListener);
+
+        if (passivationListeners.isEmpty()) {
+            passivationListeners = null;
+        }
+    }
+
+    private void notifyPassivationListeners(Set<String> itemKeys) {
+        if (passivationListeners == null) {
+            return;
+        }
+        passivationListeners
+                .forEach(listener -> listener.itemsPassivated(itemKeys));
     }
 }
