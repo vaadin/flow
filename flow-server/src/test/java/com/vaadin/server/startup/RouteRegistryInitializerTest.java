@@ -44,6 +44,7 @@ import com.vaadin.server.InitialPageSettings;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.server.PageConfigurator;
+import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.Viewport;
@@ -612,6 +613,137 @@ public class RouteRegistryInitializerTest {
     public void onStartUp_valid_alias_does_not_throw() throws ServletException {
         routeRegistryInitializer.onStartup(
                 Stream.of(AliasView.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    /* BodySize tests */
+
+    @Route("single")
+    @Tag(Tag.DIV)
+    @BodySize(width = "100vw", height = "100vh")
+    public static class BodySingleNavigationTarget extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class BodyParent extends Component implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(BodyParent.class)
+    @BodySize(width = "100vw", height = "100vh")
+    public static class BodyMiddleParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(BodyMiddleParentLayout.class)
+    @BodySize(width = "100vw", height = "100vh")
+    public static class BodyMultiMiddleParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Route(value = "", layout = BodyParent.class)
+    @Tag(Tag.DIV)
+    public static class BodyRootWithParent extends Component {
+    }
+
+    @Route(value = "", layout = BodyParent.class)
+    @Tag(Tag.DIV)
+    @BodySize(width = "100vw", height = "100vh")
+    public static class BodyRootViewportWithParent extends Component {
+    }
+
+    @Route(value = "", layout = BodyMiddleParentLayout.class)
+    @Tag(Tag.DIV)
+    public static class BodyRootWithParents extends Component {
+    }
+
+    @Route(value = "", layout = BodyMultiMiddleParentLayout.class)
+    @Tag(Tag.DIV)
+    public static class BodyMultiViewport extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = BodyParent.class)
+    @Tag(Tag.DIV)
+    @BodySize(width = "100vw", height = "100vh")
+    public static class BodyFailingAliasView extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = BodyParent.class)
+    @Tag(Tag.DIV)
+    public static class BodyAliasView extends Component {
+    }
+
+    @Test
+    public void onStartUp_wrong_position_body_size_view_layout_throws()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "BodySize annotation should be on the top most route layout '%s'. Offending class: '%s'",
+                BodyParent.class.getName(), BodyMiddleParentLayout.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(BodyRootWithParents.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_only_one_body_size_in_route_chain()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                "Only one BodySize annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                        + BodyMultiMiddleParentLayout.class.getName() + ", "
+                        + BodyMiddleParentLayout.class.getName());
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(BodyMultiViewport.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_route_can_not_contain_body_size_if_has_parent()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "BodySize annotation needs to be on the top parent layout '%s' not on '%s'",
+                BodyParent.class.getName(),
+                BodyRootViewportWithParent.class.getName()));
+
+        routeRegistryInitializer.onStartup(Stream
+                .of(BodyRootViewportWithParent.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_one_body_size_in_chain_and_one_for_route_passes()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(BodySingleNavigationTarget.class, BodyRootWithParent.class)
+                        .collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_also_faulty_body_size_alias_route()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "BodySize annotation needs to be on the top parent layout '%s' not on '%s'",
+                BodyParent.class.getName(), BodyFailingAliasView.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(BodyFailingAliasView.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_valid_body_size_alias_does_not_throw()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(BodyAliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
 

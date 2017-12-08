@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -36,6 +37,7 @@ import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.Tag;
@@ -156,6 +158,24 @@ public class BootstrapHandlerTest {
             settings.addMetaTag(InitialPageSettings.Position.PREPEND,
                     "theme-color", "#227aef");
         }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorBodyStyle extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineWithContents(
+                    "body {width: 100vw; height:100vh; margin:0;}",
+                    Dependency.Type.STYLESHEET);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @BodySize(height = "100vh", width = "100vw")
+    public static class BodySizeAnnotated extends Component {
     }
 
     @Route("")
@@ -522,6 +542,73 @@ public class BootstrapHandlerTest {
 
         Assert.assertEquals("<meta name=\"theme-color\" content=\"#227aef\">",
                 allElements.get(1).toString());
+    }
+
+    @Test // 2344
+    public void page_configurator_adds_styles_for_body()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InitialPageConfiguratorBodyStyle.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Assert.assertEquals(
+                "<style type=\"text/css\">body {width: 100vw; height:100vh; margin:0;}</style>",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test // 2344
+    public void body_size_adds_styles_for_body()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(BodySizeAnnotated.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Optional<Element> styleTag = allElements.stream()
+                .filter(element -> element.tagName().equals("style"))
+                .findFirst();
+
+        Assert.assertTrue("Expected a style element in head.",
+                styleTag.isPresent());
+
+        Assert.assertTrue(
+                "The first style tag should start with body style from @BodySize",
+                styleTag.get().toString().startsWith(
+                        "<style type=\"text/css\">body {height:100vh;width:100vw;margin:0;}"));
+    }
+
+    @Test // 2344
+    public void no_body_size_or_page_configurator_still_adds_margin_for_body()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(RootNavigationTarget.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Optional<Element> styleTag = allElements.stream()
+                .filter(element -> element.tagName().equals("style"))
+                .findFirst();
+
+        Assert.assertTrue("Expected a style element in head.",
+                styleTag.isPresent());
+
+        Assert.assertTrue(
+                "The first style tag should start with body style containing margin",
+                styleTag.get().toString().startsWith(
+                        "<style type=\"text/css\">body {margin:0;}"));
     }
 
     @Test

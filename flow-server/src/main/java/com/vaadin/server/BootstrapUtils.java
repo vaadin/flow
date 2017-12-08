@@ -28,6 +28,7 @@ import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.router.util.RouterUtil;
+import com.vaadin.ui.BodySize;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Viewport;
 import com.vaadin.ui.common.HasElement;
@@ -141,4 +142,61 @@ class BootstrapUtils {
         return new InitialPageSettings(request, ui, afterNavigationEvent,
                 browser);
     }
+
+    /**
+     * Returns the specified body size content for the target route chain that
+     * was navigated to, specified with {@link BodySize} on the
+     * {@link com.vaadin.router.Route} annotated class or the
+     * {@link com.vaadin.router.ParentLayout} of the route.
+     *
+     * @param ui
+     *            the application ui
+     * @param request
+     *            the request for the ui
+     * @return the content value string for body size style element
+     */
+    static Optional<String> getBodySizeContent(UI ui, VaadinRequest request) {
+        String viewportContent = null;
+
+        Optional<Router> router = ui.getRouter();
+        if (router.isPresent()) {
+            Optional<NavigationState> navigationTarget = router.get()
+                    .resolveNavigationTarget(request.getPathInfo(),
+                            request.getParameterMap());
+
+            viewportContent = navigationTarget
+                    .flatMap(BootstrapUtils::getBodySizeAnnotation)
+                    .map(BootstrapUtils::composeBodySizeString).orElse(null);
+        }
+        return Optional.ofNullable(viewportContent);
+    }
+
+    private static Optional<BodySize> getBodySizeAnnotation(
+            NavigationState state) {
+
+        Class<? extends RouterLayout> parentLayout = RouterUtil
+                .getTopParentLayout(state.getNavigationTarget(),
+                        state.getResolvedPath());
+
+        if (parentLayout == null) {
+            return AnnotationReader.getAnnotationFor(
+                    state.getNavigationTarget(), BodySize.class);
+        }
+        return AnnotationReader.getAnnotationFor(parentLayout, BodySize.class);
+    }
+
+    private static String composeBodySizeString(BodySize bodySize) {
+        StringBuilder bodyString = new StringBuilder();
+        bodyString.append("body {");
+        if (!bodySize.height().isEmpty()) {
+            bodyString.append("height:").append(bodySize.height()).append(";");
+        }
+        if (!bodySize.width().isEmpty()) {
+            bodyString.append("width:").append(bodySize.width()).append(";");
+        }
+        bodyString.append("margin:0;");
+        bodyString.append("}");
+        return bodyString.toString();
+    }
+
 }

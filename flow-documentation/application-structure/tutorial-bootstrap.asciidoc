@@ -94,6 +94,45 @@ public class MainLayout extends Div
 [NOTE]
 If the PageConfigurator implementation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
 
+== Setting the body size styles
+
+To set the body size style you can either use the `@BodySize` annotation or the `PageConfigurator`.
+
+For `@BodySize` you just add it to the the navigation target with `@Route` or
+the top most `RouterLayout` that builds the navigation target chain.
+
+[source,java]
+----
+@Route("")
+@BodySize(height = "100vh", width = "100vw")
+public static class BodySizeAnnotatedRoute extends Div {
+}
+----
+
+You can define height and with or just one of them as wanted.
+
+With the `PageConfigurator` you can just addInlineContent like:
+
+[source,java]
+----
+@Route("")
+public static class InitialPageConfiguratorBodyStyle extends Div
+        implements PageConfigurator {
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        settings.addInlineWithContents("body {width: 100vw; height:100vh;}",
+                Dependency.Type.STYLESHEET);
+    }
+}
+----
+
+
+[NOTE]
+If the BodySize annotation or PageConfigurator implementation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
+
+[NOTE]
+It is recommended that the body sizes be set to `height = 100vh, width = 100vw`
+
 == BootstrapListener
 
 To be able to modify default bootstrap page and add your custom meta tags on the page you should use
