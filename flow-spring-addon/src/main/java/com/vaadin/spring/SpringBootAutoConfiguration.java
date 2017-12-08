@@ -68,7 +68,7 @@ public class SpringBootAutoConfiguration {
      * @return a custom ServletRegistrationBean instance
      */
     @Bean
-    public ServletRegistrationBean servletRegistrationBean() {
+    public ServletRegistrationBean<SpringServlet> servletRegistrationBean() {
         String[] mappings = new String[VAADIN_URL_MAPINGS.length + 1];
         String mapping = configurationProperties.getUrlMapping();
         if (RootMappedCondition.isRootMapping(mapping)) {
@@ -78,7 +78,7 @@ public class SpringBootAutoConfiguration {
         }
         System.arraycopy(VAADIN_URL_MAPINGS, 0, mappings, 1,
                 VAADIN_URL_MAPINGS.length);
-        ServletRegistrationBean registration = new ServletRegistrationBean(
+        ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context), mappings);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());
@@ -99,9 +99,10 @@ public class SpringBootAutoConfiguration {
      */
     @Bean
     @Conditional(RootMappedCondition.class)
-    public ServletRegistrationBean dispatcherServletRegistration() {
-        ServletRegistrationBean registration = new ServletRegistrationBean(
-                new DispatcherServlet(context), "/*");
+    public ServletRegistrationBean<DispatcherServlet> dispatcherServletRegistration() {
+        DispatcherServlet servlet = context.getBean(DispatcherServlet.class);
+        ServletRegistrationBean<DispatcherServlet> registration = new ServletRegistrationBean<>(
+                servlet, "/*");
         registration.setName("dispatcher");
         return registration;
     }

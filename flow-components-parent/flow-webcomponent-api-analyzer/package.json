@@ -7,30 +7,16 @@
   "dependencies": {
     "bower": "^1.8.2",
     "coa": "~1.0.1",
-    "ejs": "~2.5.5",
     "fs-extra": "latest",
     "gulp": "latest",
-    "gulp-bower": "latest",
     "gulp-filter": "latest",
     "gulp-ignore": "latest",
-    "gulp-rename": "latest",
-    "jsonfile": "~2.2.1",
-    "lodash": "latest",
-    "map-stream": "latest",
-    "marked": "latest",
     "minimist": "~1.1.1",
     "polymer-analyzer": "~2.2.2",
-    "require-dir": "latest",
-    "run-sequence": "latest",
-    "stream-from-array": "latest",
     "vinyl": "~1.1.1"
   },
   "scripts": {
-    "flow-webcomponent-api-analyzer": "bin/flow-webcomponent-api-analyzer.js",
     "flow-components": "node bin/flow-webcomponent-api-analyzer.js --flow_components"
-  },
-  "bin": {
-    "flow-webcomponent-api-analyzer": "./bin/flow-webcomponent-api-analyzer.js"
   },
   "keywords": [
     "vaadin",

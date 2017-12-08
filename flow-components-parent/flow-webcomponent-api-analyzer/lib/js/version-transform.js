@@ -17,7 +17,7 @@
 
 const {Transform} = require('readable-stream');
 const path = require('path');
-const jsonFile = require('fs-extra')
+const jsonFile = require('fs-extra');
 
 /**
  * Version reader gulp transform.

@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow;
 
+import java.util.function.Function;
+
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -43,6 +45,9 @@ public class StateNode {
     private final JsMap<Double, NodeFeature> features = JsCollections.map();
 
     private final JsSet<NodeUnregisterListener> unregisterListeners = JsCollections
+            .set();
+
+    private final JsSet<Function<StateNode, Boolean>> domNodeSetListeners = JsCollections
             .set();
 
     private Node domNode;
@@ -232,5 +237,29 @@ public class StateNode {
                 || node == null : "StateNode already has a DOM node";
 
         domNode = node;
+        JsSet<Function<StateNode, Boolean>> copy = JsCollections
+                .set(domNodeSetListeners);
+        copy.forEach(listener -> {
+            if (listener.apply(this) == Boolean.TRUE) {
+                domNodeSetListeners.delete(listener);
+            }
+        });
+    }
+
+    /**
+     * Adds a listener to get a notification when the DOM Node is set for this
+     * {@link StateNode}.
+     * <p>
+     * The listener return value is used to decide whether the listener should
+     * be removed immediately if it returns {@code true}.
+     *
+     * @param listener
+     *            listener to add
+     * @return an event remover that can be used for removing the added listener
+     */
+    public EventRemover addDomNodeSetListener(
+            Function<StateNode, Boolean> listener) {
+        domNodeSetListeners.add(listener);
+        return () -> domNodeSetListeners.delete(listener);
     }
 }

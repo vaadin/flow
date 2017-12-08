@@ -50,7 +50,7 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
                 elementData.getPayload());
 
         JsonObject object = Json.createObject();
-        elementData.setPyload(object);
+        elementData.setPayload(object);
 
         Assert.assertEquals(object, elementData.getPayload());
     }
@@ -72,7 +72,7 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     @Test
     public void collectChanges_setPayloadOnly_onlyOneChange() {
         JsonObject object = Json.createObject();
-        elementData.setPyload(object);
+        elementData.setPayload(object);
         List<NodeChange> changes = new ArrayList<>();
         elementData.collectChanges(changes::add);
 
@@ -87,7 +87,7 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     @Test
     public void collectChanges_setBothTagAndPayload_twoChanges() {
         JsonObject object = Json.createObject();
-        elementData.setPyload(object);
+        elementData.setPayload(object);
         elementData.setTag("foo");
 
         List<NodeChange> changes = new ArrayList<>();

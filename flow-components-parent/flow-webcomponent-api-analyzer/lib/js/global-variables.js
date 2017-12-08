@@ -30,9 +30,6 @@ console.log(`Using target dir: ${targetDir}`);
 
 /* This is either a custom bower resources directory or the default directory where to load WC files from. */
 const bowerSrcDir = currentDir + (args.resourcesDir || 'bower_components').replace(/,+$/, "");
-/* This is the directory where the bower resources are downloaded when the --package option has been given. */
-const bowerTargetDir = currentDir + ('dependencies/bower_components/').replace(/,+$/, "");
-
 const skipInheritedAPI = args.skipInheritedAPI || true;
 /* This is the file where the webcomponent dependencies are declared */
 const dependenciesFile = currentDir + (args.dependenciesFile || 'bower.json').replace(/,+$/, "");
@@ -41,7 +38,6 @@ module.exports = {
   currentDir: currentDir,
   targetDir: targetDir,
   bowerSrcDir: bowerSrcDir,
-  bowerTargetDir: bowerTargetDir,
   bowerPackages: args.package ? args.package.split(/[, ]+/) : null,
   skipInheritedAPI: skipInheritedAPI,
   dependenciesFile: dependenciesFile

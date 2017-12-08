@@ -28,8 +28,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
@@ -54,6 +57,10 @@ public class RouteRegistry implements Serializable {
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
+
+    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
+            .of(RouteNotFoundError.class, InternalServerError.class)
+            .collect(Collectors.toSet());
 
     /**
      * Creates a new uninitialized route registry.
@@ -127,6 +134,7 @@ public class RouteRegistry implements Serializable {
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
         Map<Class<?>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
+        errorNavigationTargets.removeAll(defaultErrorHandlers);
         for (Class<? extends Component> target : errorNavigationTargets) {
             Class<?> exceptionType = getExceptionType(target);
 

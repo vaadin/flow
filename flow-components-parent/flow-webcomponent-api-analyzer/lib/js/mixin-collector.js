@@ -100,4 +100,4 @@ module.exports = class MixinCollector {
       }, new Set(mixins));
     return [...allMixins];
   }
-}
+};

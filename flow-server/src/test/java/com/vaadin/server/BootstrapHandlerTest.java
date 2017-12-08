@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -73,6 +74,88 @@ public class BootstrapHandlerTest {
             add(new InlineTemplate("<div><script></script></div>"));
         }
 
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Viewport("width=device-width")
+    public static class InitialPageConfiguratorViewportOverride
+            extends Component implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.setViewport("width=100");
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorPrependContents extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineWithContents(InitialPageSettings.Position.PREPEND,
+                    "window.messages = window.messages || [];\n"
+                            + "window.messages.push(\"content script\");",
+                    Dependency.Type.JAVASCRIPT);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorPrependFile extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineFromFile(InitialPageSettings.Position.PREPEND,
+                    "inline.js", Dependency.Type.JAVASCRIPT);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorAppendFiles extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineFromFile("inline.js", Dependency.Type.JAVASCRIPT);
+            settings.addInlineFromFile("inline.html",
+                    Dependency.Type.HTML_IMPORT);
+            settings.addInlineFromFile("inline.css",
+                    Dependency.Type.STYLESHEET);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorLinks extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addLink("icons/favicon.ico",
+                    new LinkedHashMap<String, String>() {
+                        {
+                            put("rel", "shortcut icon");
+                        }
+                    });
+            settings.addLink("icons/icon-192.png",
+                    new LinkedHashMap<String, String>() {
+                        {
+                            put("rel", "icon");
+                            put("sizes", "192x192");
+                        }
+                    });
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorMetaTag extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addMetaTag(InitialPageSettings.Position.PREPEND,
+                    "theme-color", "#227aef");
+        }
     }
 
     @Route("")
@@ -310,6 +393,135 @@ public class BootstrapHandlerTest {
                 "Viewport meta tag was missing even tough alias route parent has annotation",
                 page.toString().contains(
                         "<meta name=\"viewport\" content=\"width=device-width\">"));
+    }
+
+    @Test // 3036
+    public void page_configurator_overrides_viewport()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(InitialPageConfiguratorViewportOverride.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Assert.assertFalse(
+                "Viewport annotation value found even if it should be overridden.",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
+
+        Assert.assertTrue("Viewport annotation value not the expected one.",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=100\">"));
+    }
+
+    @Test // 3036
+    public void page_configurator_inlines_javascript_from_content()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(InitialPageConfiguratorPrependContents.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "Content javascript should have been prepended to head element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"content script\");</script>",
+                allElements.get(1).toString());
+    }
+
+    @Test // 3036
+    public void page_configurator_inlines_prepend_javascript_from_file()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(InitialPageConfiguratorPrependFile.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "Content javascript should have been prepended to head element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(1).toString());
+    }
+
+    @Test // 3036
+    public void page_configurator_append_inline_form_files()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(InitialPageConfiguratorAppendFiles.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "File javascript should have been appended to head element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(allElements.size() - 3).toString());
+        Assert.assertEquals(
+                "File html should have been appended to head element",
+                "<span hidden><script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script></span>",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals(
+                "File css should have been appended to head element",
+                "<style type=\"text/css\">/* inline.css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test // 3036
+    public void page_configurator_adds_link()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InitialPageConfiguratorLinks.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Assert.assertEquals(
+                "<link href=\"icons/favicon.ico\" rel=\"shortcut icon\">",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals(
+                "<link href=\"icons/icon-192.png\" rel=\"icon\" sizes=\"192x192\">",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test // 3036
+    public void page_configurator_adds_meta_tags()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InitialPageConfiguratorMetaTag.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Assert.assertEquals("<meta name=\"theme-color\" content=\"#227aef\">",
+                allElements.get(1).toString());
     }
 
     @Test

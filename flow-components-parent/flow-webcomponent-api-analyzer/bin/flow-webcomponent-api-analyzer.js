@@ -15,7 +15,7 @@
  * the License.
  */
 'use strict';
-var gulp = require('gulp')
+const gulp = require('gulp');
 require('../gulpfile');
 
 require('coa').Cmd()

@@ -15,6 +15,9 @@
  */
 package com.vaadin.client.flow;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
@@ -45,6 +48,7 @@ public abstract class GwtPropertyElementBinderTest
         JsArray<JsonObject> collectedEventData = JsCollections.array();
         JsMap<StateNode, JsMap<String, Object>> synchronizedProperties = JsCollections
                 .map();
+        List<Object> existingElementRpcArgs = new ArrayList<>();
 
         public CollectingStateTree(ConstantPool constantPool,
                 ExistingElementMap existingElementMap) {
@@ -80,6 +84,15 @@ public abstract class GwtPropertyElementBinderTest
             JsMap<String, Object> nodeMap = synchronizedProperties.get(node);
             assertFalse(nodeMap.has(propertyName));
             nodeMap.set(propertyName, value);
+        }
+
+        @Override
+        public void sendExistingElementWithIdAttachToServer(StateNode parent,
+                int requestedId, int assignedId, String id) {
+            existingElementRpcArgs.add(parent);
+            existingElementRpcArgs.add(requestedId);
+            existingElementRpcArgs.add(assignedId);
+            existingElementRpcArgs.add(id);
         }
 
         public void clearSynchronizedProperties() {

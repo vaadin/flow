@@ -13,16 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.nodefeature;
 
+import java.util.Iterator;
+
 import com.vaadin.flow.StateNode;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * List of nodes describing the virtually connected child elements of an
  * element.
  *
  * @author Vaadin Ltd
+ *
  */
 public class VirtualChildrenList extends StateNodeNodeList {
 
@@ -36,24 +42,104 @@ public class VirtualChildrenList extends StateNodeNodeList {
         super(node);
     }
 
-    @Override
-    public void add(int index, StateNode node) {
-        assert node != null;
-        assert !node.hasFeature(ParentGeneratorHolder.class)
-                || !node.getFeature(ParentGeneratorHolder.class)
-                        .getParentGenerator().isPresent();
+    /**
+     * Inserts an item supplied with payload data at the given index of the
+     * list.
+     *
+     *
+     * @param index
+     *            index to insert at
+     * @param node
+     *            the item to append
+     * @param type
+     *            the payload type
+     * @param payload
+     *            the payload data
+     */
+    public void add(int index, StateNode node, String type, String payload) {
+        add(index, node, type, payload == null ? null : Json.create(payload));
+    }
 
+    /**
+     * Inserts an item supplied with payload data at the given index of the
+     * list.
+     *
+     *
+     * @param index
+     *            index to insert at
+     * @param node
+     *            the item to append
+     * @param type
+     *            the payload type
+     * @param payload
+     *            the payload data
+     */
+    public void add(int index, StateNode node, String type, JsonValue payload) {
+        assert node != null;
+
+        JsonObject payloadObject = Json.createObject();
+        payloadObject.put(NodeProperties.TYPE, type);
+        if (payload != null) {
+            payloadObject.put(NodeProperties.PAYLOAD, payload);
+        }
+
+        node.getFeature(ElementData.class).setPayload(payloadObject);
         super.add(index, node);
     }
 
     /**
-     * Appends an item as last in the list.
-     * 
+     * Inserts an item supplied with payload type at the given index of the
+     * list.
+     *
+     * @param index
+     *            index to insert at
      * @param node
      *            the item to append
+     * @param type
+     *            the payload type
      */
-    public void append(StateNode node) {
-        add(size(), node);
+    public void add(int index, StateNode node, String type) {
+        add(index, node, type, (String) null);
+    }
+
+    /**
+     * Appends an item supplied with payload data as last in the list.
+     *
+     * @param node
+     *            the item to append
+     * @param type
+     *            the payload type
+     * @param payload
+     *            the payload data
+     */
+    public void append(StateNode node, String type, String payload) {
+        add(size(), node, type, payload);
+    }
+
+    /**
+     * Appends an item supplied with payload data as last in the list.
+     *
+     * @param node
+     *            the item to append
+     * @param type
+     *            the payload type
+     * @param payload
+     *            the payload data
+     */
+    public void append(StateNode node, String type, JsonValue payload) {
+        add(size(), node, type, payload);
+    }
+
+    /**
+     * Appends an item supplied with payload type as last in the list.
+     *
+     * @param node
+     *            the item to append
+     * @param type
+     *            the payload type
+     */
+    public void append(StateNode node, String type) {
+        append(node, type, (String) null);
     }
 
     @Override
@@ -62,22 +148,23 @@ public class VirtualChildrenList extends StateNodeNodeList {
     }
 
     @Override
-    public StateNode remove(int index) {
+    public Iterator<StateNode> iterator() {
+        return super.iterator();
+    }
+
+    @Override
+    protected StateNode remove(int index) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void clear() {
+    protected void clear() {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int indexOf(StateNode node) {
-        return super.indexOf(node);
     }
 
     @Override
     public int size() {
         return super.size();
     }
+
 }

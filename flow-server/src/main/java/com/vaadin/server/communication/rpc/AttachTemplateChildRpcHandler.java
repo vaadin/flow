@@ -15,13 +15,11 @@
  */
 package com.vaadin.server.communication.rpc;
 
-import java.util.Optional;
+import java.util.logging.Logger;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
+import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonNull;
@@ -35,8 +33,7 @@ import elemental.json.JsonValue;
  * @see JsonConstants#RPC_ATTACH_EXISTING_ELEMENT_BY_ID
  * @see JsonConstants#RPC_ATTACH_ASSIGNED_ID
  * @see JsonConstants#RPC_ATTACH_REQUESTED_ID
- * @see JsonConstants#RPC_ATTACH_INDEX
- * @see JsonConstants#RPC_ATTACH_TAG_NAME
+ * @see JsonConstants#RPC_ATTACH_ID
  *
  * @author Vaadin Ltd
  */
@@ -52,7 +49,6 @@ public class AttachTemplateChildRpcHandler
     protected void handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
-        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_TAG_NAME);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ID);
 
         int requestedId = (int) invocationJson
@@ -60,46 +56,55 @@ public class AttachTemplateChildRpcHandler
         int assignedId = (int) invocationJson
                 .getNumber(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
 
-        AttachTemplateChildFeature feature = node
-                .getFeature(AttachTemplateChildFeature.class);
-
         StateTree tree = (StateTree) node.getOwner();
         StateNode requestedNode = tree.getNodeById(requestedId);
 
-        Element parent = feature.getParent(requestedNode);
+        StateNode parent = tree.getNodeById(requestedId).getParent();
+        JsonValue id = invocationJson.get(JsonConstants.RPC_ATTACH_ID);
+        String tag = requestedNode.getFeature(ElementData.class).getTag();
+
+        Logger logger = Logger
+                .getLogger(AttachTemplateChildRpcHandler.class.getName());
+
         if (assignedId == -1) {
-            String tag = invocationJson
-                    .getString(JsonConstants.RPC_ATTACH_TAG_NAME);
-            JsonValue id = invocationJson.get(JsonConstants.RPC_ATTACH_ID);
-
-            feature.unregister(requestedNode);
-
+            logger.severe("Attach existing element has failed because "
+                    + "the client-side element is not found");
             if (id instanceof JsonNull) {
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' was "
                                 + "not found in the parent with id='%d'",
-                        tag, parent.getNode().getId()));
+                        tag, parent.getId()));
             } else {
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' and id '%s' was "
                                 + "not found in the parent with id='%d'",
-                        tag, id.asString(), parent.getNode().getId()));
+                        tag, id.asString(), parent.getId()));
             }
 
-        } else {
-            StateNode elementNode = tree.getNodeById(assignedId);
-
-            if (requestedId == assignedId) {
-                feature.unregister(elementNode);
-                Element element = Element.get(elementNode);
-
-                Optional<ShadowRoot> shadowRoot = parent.getShadowRoot();
-                if (shadowRoot.isPresent()) {
-                    shadowRoot.get().insertVirtualChild(element);
-                }
+        } else if (requestedId != assignedId) {
+            logger.severe("Attach existing element has failed because "
+                    + "the element has been already attached from the server side");
+            if (id instanceof JsonNull) {
+                throw new IllegalStateException(String.format(
+                        "The element with the tag name '%s' is already "
+                                + "attached to the parent with id='%d'",
+                        tag, parent.getId()));
             } else {
-                feature.unregister(tree.getNodeById(requestedId));
+                throw new IllegalStateException(String.format(
+                        "The element with the tag name '%s' and id '%s' is "
+                                + "already attached to the parent with id='%d'",
+                        tag, id.asString(), parent.getId()));
             }
+        } else {
+            logger.severe("Attach existing element request succeded. "
+                    + "But the response about this is unexpected");
+
+            // This should not happen. In case of successful request the client
+            // side should not respond
+            throw new IllegalArgumentException(
+                    "Unexpected successful attachment "
+                            + "response is received from the client-side. "
+                            + "Client side should not respond if everything is fine");
         }
     }
 
