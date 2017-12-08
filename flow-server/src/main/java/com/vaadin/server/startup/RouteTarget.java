@@ -97,7 +97,7 @@ public class RouteTarget implements Serializable {
         if (wildParameter != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
-                    parameter.getName(), target.getName()));
+                    wildParameter.getName(), target.getName()));
         }
     }
 
@@ -110,7 +110,7 @@ public class RouteTarget implements Serializable {
         } else if (optionalParameter != null) {
             String message = String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                    parameter.getName(), target.getName());
+                    optionalParameter.getName(), target.getName());
             throw new InvalidRouteConfigurationException(message);
         }
     }
