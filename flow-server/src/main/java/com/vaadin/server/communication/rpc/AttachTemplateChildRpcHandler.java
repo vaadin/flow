@@ -15,7 +15,8 @@
  */
 package com.vaadin.server.communication.rpc;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
@@ -63,11 +64,11 @@ public class AttachTemplateChildRpcHandler
         JsonValue id = invocationJson.get(JsonConstants.RPC_ATTACH_ID);
         String tag = requestedNode.getFeature(ElementData.class).getTag();
 
-        Logger logger = Logger
+        Logger logger = LoggerFactory
                 .getLogger(AttachTemplateChildRpcHandler.class.getName());
 
         if (assignedId == -1) {
-            logger.severe("Attach existing element has failed because "
+            logger.error("Attach existing element has failed because "
                     + "the client-side element is not found");
             if (id instanceof JsonNull) {
                 throw new IllegalStateException(String.format(
@@ -82,7 +83,7 @@ public class AttachTemplateChildRpcHandler
             }
 
         } else if (requestedId != assignedId) {
-            logger.severe("Attach existing element has failed because "
+            logger.error("Attach existing element has failed because "
                     + "the element has been already attached from the server side");
             if (id instanceof JsonNull) {
                 throw new IllegalStateException(String.format(
@@ -96,7 +97,7 @@ public class AttachTemplateChildRpcHandler
                         tag, id.asString(), parent.getId()));
             }
         } else {
-            logger.severe("Attach existing element request succeded. "
+            logger.error("Attach existing element request succeded. "
                     + "But the response about this is unexpected");
 
             // This should not happen. In case of successful request the client

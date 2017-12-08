@@ -20,7 +20,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.logging.Logger;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
@@ -144,10 +143,6 @@ public class Html extends Component {
      */
     public String getInnerHtml() {
         return get(innerHtmlDescriptor);
-    }
-
-    private static final Logger getLogger() {
-        return Logger.getLogger(Html.class.getName());
     }
 
 }

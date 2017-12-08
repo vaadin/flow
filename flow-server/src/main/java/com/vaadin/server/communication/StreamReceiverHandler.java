@@ -24,8 +24,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -112,7 +112,7 @@ public class StreamReceiverHandler implements Serializable {
         try {
             String secKey = streamReceiver.getId();
             if (secKey == null || !secKey.equals(securityKey)) {
-                getLog().warning(
+                getLogger().warn(
                         "Received incoming stream with faulty security key.");
                 return;
             }
@@ -182,7 +182,7 @@ public class StreamReceiverHandler implements Serializable {
                         item);
             }
         } catch (FileUploadException e) {
-            getLog().log(Level.WARNING, "File upload failed.", e);
+            getLogger().warn("File upload failed.", e);
         }
         sendUploadResponse(response);
     }
@@ -297,7 +297,7 @@ public class StreamReceiverHandler implements Serializable {
                 out.close();
             }
         } catch (IOException ioe) {
-            getLog().log(Level.FINE, "Exception closing stream", ioe);
+            getLogger().debug("Exception closing stream", ioe);
         }
     }
 
@@ -464,7 +464,7 @@ public class StreamReceiverHandler implements Serializable {
         }
     }
 
-    private static Logger getLog() {
-        return Logger.getLogger(StreamReceiverHandler.class.getName());
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(StreamReceiverHandler.class.getName());
     }
 }
