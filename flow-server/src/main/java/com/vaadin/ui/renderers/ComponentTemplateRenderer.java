@@ -17,6 +17,7 @@ package com.vaadin.ui.renderers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.vaadin.function.SerializableBiConsumer;
 import com.vaadin.function.SerializableFunction;
@@ -29,7 +30,7 @@ import com.vaadin.ui.Component;
  * <p>
  * Internally it uses a {@code <flow-component-renderer>} webcomponent to manage
  * the component instances at the client-side. Some components may used
- * different renderers, by calling {@link #setComponentRendererTag(String)}.
+ * different renderers, by calling {@link #getTemplate(String)}.
  *
  * @author Vaadin Ltd.
  *
@@ -48,13 +49,6 @@ public class ComponentTemplateRenderer<COMPONENT extends Component, ITEM>
     private SerializableFunction<ITEM, COMPONENT> componentFunction;
     private SerializableBiConsumer<COMPONENT, ITEM> itemConsumer;
     private Map<String, String> rendererAttributes = new HashMap<>();
-
-    /*
-     * Components that support ComponentRenderer must import the {@code
-     * <flow-component-renderer>} element, since it is not imported
-     * automatically.
-     */
-    private String componentRendererTag = "flow-component-renderer";
 
     /**
      * Creates a new ComponentRenderer that uses the componentSupplier to
@@ -132,20 +126,31 @@ public class ComponentTemplateRenderer<COMPONENT extends Component, ITEM>
     }
 
     /**
-     * Sets the tag of the component renderer webcomponent. The default value is
-     * {@code flow-component-renderer}.
-     * <p>
-     * It is used internally by components that need special renderers.
+     * Gets the final template to be used to render the components, using the
+     * {@code <flow-component-renderer>} webcomponent as the client-side
+     * renderer.
      * 
-     * @param tag
-     *            the tag of the component renderer webcomponent
+     * @return the template ready to be used
+     * @see #getTemplate(String)
      */
-    public void setComponentRendererTag(String tag) {
-        this.componentRendererTag = tag;
-    }
-
     @Override
     public String getTemplate() {
+        return getTemplate("flow-component-renderer");
+    }
+
+    /**
+     * Gets the final template to be used to render the components. The {@code
+     * componentRendererTag} parameter defines the tag of the client-side
+     * webcomponent responsible for rendering the actual components.
+     * 
+     * @param componentRendererTag
+     *            the tag of the client-side renderer webcomponent, not
+     *            <code>null</code>
+     * @return the template ready to be used
+     */
+    public String getTemplate(String componentRendererTag) {
+        Objects.requireNonNull(componentRendererTag,
+                "The componentRendererTag can not be null");
         StringBuilder builder = new StringBuilder();
         builder.append("<").append(componentRendererTag);
         rendererAttributes.entrySet()
