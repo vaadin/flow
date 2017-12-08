@@ -18,7 +18,6 @@ package com.vaadin.flow.testutil;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,6 +30,7 @@ import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.testbench.parallel.ParallelTest;
 
@@ -312,10 +312,9 @@ public class TestBenchHelpers extends ParallelTest {
                         "Received error message in browser log console right after opening the page, message: %s",
                         logEntry));
             } else {
-                Logger.getLogger(TestBenchHelpers.class.getName())
-                        .warning(() -> String.format(
-                                "This message in browser log console may be a potential error: '%s'",
-                                logEntry));
+                LoggerFactory.getLogger(TestBenchHelpers.class.getName()).warn(
+                        "This message in browser log console may be a potential error: '{}'",
+                        logEntry);
             }
         });
     }
