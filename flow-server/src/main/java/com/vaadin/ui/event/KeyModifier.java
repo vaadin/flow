@@ -62,10 +62,10 @@ public enum KeyModifier {
      *
      * @param key
      *            the key value
-     * @return the {@code Key}
+     * @return the {@code KeyModifier}
      */
     public static KeyModifier of(String key) {
-        return Stream.of(values()).filter(k -> k.key == key).findFirst()
+        return Stream.of(values()).filter(k -> k.key.equals(key)).findFirst()
                 .orElseThrow(IllegalArgumentException::new);
     }
 
