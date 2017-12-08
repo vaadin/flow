@@ -246,7 +246,7 @@ public class Key {
     public static final String CARET = "^";
 
     /**
-     * String for "<code>&</code>" key.
+     * String for "<code>&amp;</code>" key.
      */
     public static final String AMPERSAND = "&";
 
@@ -361,7 +361,7 @@ public class Key {
     public static final String COLON = ":";
 
     /**
-     * String for "<code><</code>" key.
+     * String for "<code>&lt;</code>" key.
      */
     public static final String ANGLE_BRACKET_LEFT = "<";
 
@@ -371,7 +371,7 @@ public class Key {
     public static final String UNDERSCORE = "_";
 
     /**
-     * String for "<code>></code>" key.
+     * String for "<code>&gt;</code>" key.
      */
     public static final String ANGLE_BRACKET_RIGHT = ">";
 
