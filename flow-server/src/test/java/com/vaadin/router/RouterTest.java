@@ -551,15 +551,14 @@ public class RouterTest extends RoutingTestBase {
                     + getElement().getText());
         }
     }
+    public static final String EXCEPTION_TEXT = "My custom not found class!";
 
     public static class CustomNotFoundTarget extends RouteNotFoundError {
-
-        public static final String TEXT_CONTENT = "My custom not found class!";
 
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<NotFoundException> parameter) {
-            getElement().setText(TEXT_CONTENT);
+            getElement().setText(EXCEPTION_TEXT);
             return HttpServletResponse.SC_NOT_FOUND;
         }
     }
@@ -570,6 +569,17 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<NotFoundException> parameter) {
+            getElement().setText(EXCEPTION_TEXT);
+            return HttpServletResponse.SC_NOT_FOUND;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class DuplicateNotFoundTarget extends Component implements HasErrorParameter<NotFoundException> {
+        @Override
+        public int setErrorParameter(BeforeNavigationEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            getElement().setText(EXCEPTION_TEXT);
             return HttpServletResponse.SC_NOT_FOUND;
         }
     }
@@ -1702,8 +1712,30 @@ public class RouterTest extends RoutingTestBase {
         router.getRegistry()
                 .setErrorNavigationTargets(Stream
                         .of(NonExtendingNotFoundTarget.class,
+                                DuplicateNotFoundTarget.class)
+                        .collect(Collectors.toSet()));
+    }
+
+
+    @Test
+    public void custom_exception_target_should_override_default_ones() {
+        router.getRegistry()
+                .setErrorNavigationTargets(Stream
+                        .of(NonExtendingNotFoundTarget.class,
                                 RouteNotFoundError.class)
                         .collect(Collectors.toSet()));
+
+        int result = router.navigate(ui, new Location("exception"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Non existent route should have returned.",
+                HttpServletResponse.SC_NOT_FOUND, result);
+
+        Assert.assertEquals(
+                "Expected the extending class to be used instead of the super class",
+                NonExtendingNotFoundTarget.class, getUIComponent());
+
+        assertExceptionComponent(EXCEPTION_TEXT,
+                NonExtendingNotFoundTarget.class);
     }
 
     @Test
@@ -1721,7 +1753,7 @@ public class RouterTest extends RoutingTestBase {
                 "Expected the extending class to be used instead of the super class",
                 CustomNotFoundTarget.class, getUIComponent());
 
-        assertExceptionComponent(CustomNotFoundTarget.TEXT_CONTENT,
+        assertExceptionComponent(EXCEPTION_TEXT,
                 CustomNotFoundTarget.class);
     }
 

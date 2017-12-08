@@ -32,7 +32,7 @@ public class RouteTarget implements Serializable {
     private Class<? extends Component> normal;
     private Class<? extends Component> parameter;
     private Class<? extends Component> optionalParameter;
-    private Class<? extends Component> wildParameter;
+    private Class<? extends Component> wildCardParameter;
 
     /**
      * Create a new Route target holder.
@@ -75,7 +75,7 @@ public class RouteTarget implements Serializable {
             } else if (HasUrlParameter.isAnnotatedParameter(target,
                     WildcardParameter.class)) {
                 validateWildcard(target);
-                wildParameter = target;
+                wildCardParameter = target;
             } else {
                 validateParameter(target);
                 parameter = target;
@@ -88,16 +88,16 @@ public class RouteTarget implements Serializable {
         if (parameter != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                    getClassName(parameter), getClassName(target)));
+                    parameter.getName(), target.getName()));
         }
     }
 
     private void validateWildcard(Class<? extends Component> target)
             throws InvalidRouteConfigurationException {
-        if (wildParameter != null) {
+        if (wildCardParameter != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
-                    getClassName(parameter), getClassName(target)));
+                    wildCardParameter.getName(), target.getName()));
         }
     }
 
@@ -106,12 +106,11 @@ public class RouteTarget implements Serializable {
         if (normal != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-                    getClassName(normal), getClassName(target),
-                    getClassName(target)));
+                    normal.getName(), target.getName(), target.getName()));
         } else if (optionalParameter != null) {
             String message = String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                    getClassName(parameter), getClassName(target));
+                    optionalParameter.getName(), target.getName());
             throw new InvalidRouteConfigurationException(message);
         }
     }
@@ -121,17 +120,13 @@ public class RouteTarget implements Serializable {
         if (normal != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
-                    getClassName(normal), getClassName(target)));
+                    normal.getName(), target.getName()));
         } else if (optionalParameter != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-                    getClassName(target), getClassName(optionalParameter),
-                    getClassName(optionalParameter)));
+                    target.getName(), optionalParameter.getName(),
+                    optionalParameter.getName()));
         }
-    }
-
-    private String getClassName(Class<?> clazz) {
-        return clazz == null ? null : clazz.getName();
     }
 
     /**
@@ -148,8 +143,8 @@ public class RouteTarget implements Serializable {
             return parameter;
         } else if (segments.size() <= 1 && optionalParameter != null) {
             return optionalParameter;
-        } else if (wildParameter != null) {
-            return wildParameter;
+        } else if (wildCardParameter != null) {
+            return wildCardParameter;
         }
         return null;
     }
