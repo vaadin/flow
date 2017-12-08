@@ -81,9 +81,23 @@ public class IconRenderer<ITEM> implements ComponentRenderer<Component, ITEM> {
 
     @Override
     public Component createComponent(ITEM item) {
+        Component icon = iconGenerator.apply(item);
+        if (icon == null) {
+            throw new IllegalStateException(String.format(
+                    "Got 'null' as an icon for the item '%s'. "
+                            + "Icon generator instance may not return 'null' values",
+                    item, ItemLabelGenerator.class.getSimpleName()));
+        }
+        String text = itemLabelGenerator.apply(item);
+        if (text == null) {
+            throw new IllegalStateException(String.format(
+                    "Got 'null' as a label value for the item '%s'. "
+                            + "'%s' instance may not return 'null' values",
+                    item, ItemLabelGenerator.class.getSimpleName()));
+        }
         IconComponent component = new IconComponent();
-        component.add(iconGenerator.apply(item));
-        component.add(new IconComponent(itemLabelGenerator.apply(item)));
+        component.add(icon);
+        component.add(new IconComponent(text));
         return component;
     }
 
