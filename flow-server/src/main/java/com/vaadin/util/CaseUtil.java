@@ -39,12 +39,14 @@ public final class CaseUtil {
      * {@literal SOMETHING} becomes {@literal Something}
      *
      * @param upperCaseUnderscoreString
-     *            The input string in UPPER_CASE_UNDERSCORE format, not
-     *            {@code null}
+     *            The input string in UPPER_CASE_UNDERSCORE format
      * @return A human friendly version of the input
      */
     public static String upperCaseUnderscoreToHumanFriendly(
             String upperCaseUnderscoreString) {
+        if (upperCaseUnderscoreString == null) {
+            return null;
+        }
         String[] parts = upperCaseUnderscoreString.replaceFirst("^_*", "")
                 .split("_");
         for (int i = 0; i < parts.length; i++) {

@@ -18,6 +18,7 @@ package com.vaadin.util;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Tests for the {@link CaseUtil}.
@@ -26,18 +27,23 @@ public class CaseUtilTest {
 
     @Test
     public void upperCaseUnderscoreToHumanFriendly() {
-        upperCaseUnderscoreToHumanFriendly("", "");
-        upperCaseUnderscoreToHumanFriendly("My Bean Container",
-                "MY_BEAN_CONTAINER");
-        upperCaseUnderscoreToHumanFriendly("Awesome Url Factory",
-                "AWESOME_URL_FACTORY");
-        upperCaseUnderscoreToHumanFriendly("Something", "SOMETHING");
+        assertNull(CaseUtil.upperCaseUnderscoreToHumanFriendly(null));
+        assertEquals("", CaseUtil.upperCaseUnderscoreToHumanFriendly(""));
+        assertEquals("My Bean Container", CaseUtil
+                .upperCaseUnderscoreToHumanFriendly("MY_BEAN_CONTAINER"));
+        assertEquals("Awesome Url Factory", CaseUtil
+                .upperCaseUnderscoreToHumanFriendly("AWESOME_URL_FACTORY"));
+        assertEquals("Something",
+                CaseUtil.upperCaseUnderscoreToHumanFriendly("SOMETHING"));
     }
 
-    private void upperCaseUnderscoreToHumanFriendly(String expected,
-            String input) {
-        assertEquals(expected,
-                CaseUtil.upperCaseUnderscoreToHumanFriendly(input));
+    @Test
+    public void capitalize() {
+        assertNull(CaseUtil.capitalize(null));
+        assertEquals("", CaseUtil.capitalize(""));
+        assertEquals("Great",
+                CaseUtil.capitalize("great"));
+        assertEquals("WONDERFUL",
+                CaseUtil.capitalize("WONDERFUL"));
     }
-
 }
