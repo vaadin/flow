@@ -34,14 +34,14 @@ import java.lang.annotation.Target;
 public @interface BodySize {
 
     /**
-     * Definition for body height
+     * Definition for body height.
      *
      * @return the body height to set
      */
     String height() default "";
 
     /**
-     * Definition for body width
+     * Definition for body width.
      *
      * @return the body width to set
      */

@@ -55,7 +55,6 @@ class BootstrapUtils {
      * @return the content value string for viewport meta tag
      */
     static Optional<String> getViewportContent(UI ui, VaadinRequest request) {
-        String viewportContent = null;
 
         Optional<Router> router = ui.getRouter();
         if (router.isPresent()) {
@@ -63,11 +62,11 @@ class BootstrapUtils {
                     .resolveNavigationTarget(request.getPathInfo(),
                             request.getParameterMap());
 
-            viewportContent = navigationTarget
+            return navigationTarget
                     .flatMap(BootstrapUtils::getViewportAnnotation)
-                    .map(Viewport::value).orElse(null);
+                    .map(Viewport::value);
         }
-        return Optional.ofNullable(viewportContent);
+        return Optional.empty();
     }
 
     private static Optional<Viewport> getViewportAnnotation(
@@ -156,19 +155,17 @@ class BootstrapUtils {
      * @return the content value string for body size style element
      */
     static Optional<String> getBodySizeContent(UI ui, VaadinRequest request) {
-        String viewportContent = null;
-
         Optional<Router> router = ui.getRouter();
         if (router.isPresent()) {
             Optional<NavigationState> navigationTarget = router.get()
                     .resolveNavigationTarget(request.getPathInfo(),
                             request.getParameterMap());
 
-            viewportContent = navigationTarget
+            return navigationTarget
                     .flatMap(BootstrapUtils::getBodySizeAnnotation)
-                    .map(BootstrapUtils::composeBodySizeString).orElse(null);
+                    .map(BootstrapUtils::composeBodySizeString);
         }
-        return Optional.ofNullable(viewportContent);
+        return Optional.empty();
     }
 
     private static Optional<BodySize> getBodySizeAnnotation(
