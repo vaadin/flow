@@ -13,28 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.common;
+package com.vaadin.ui.renderers;
 
-import com.vaadin.function.SerializableFunction;
+import org.junit.Test;
 
-/**
- * {@link ItemLabelGenerator} can be used to customize the string shown to the
- * user for an item.
- *
- * @param <T>
- *            item type
- * @author Vaadin Ltd
- */
-@FunctionalInterface
-public interface ItemLabelGenerator<T> extends SerializableFunction<T, String> {
+public class TextRendererTest {
 
-    /**
-     * Gets a caption for the {@code item}.
-     *
-     * @param item
-     *            the item to get caption for
-     * @return the caption of the item, not {@code null}
-     */
-    @Override
-    String apply(T item);
+    @Test(expected = IllegalStateException.class)
+    public void dontAllowNullInLabelGenerator() {
+        TextRenderer<Object> renderer = new TextRenderer<>(obj -> null);
+        renderer.createComponent(new Object());
+    }
+
 }
