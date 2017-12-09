@@ -86,7 +86,7 @@ public class IconRenderer<ITEM> implements ComponentRenderer<Component, ITEM> {
             throw new IllegalStateException(String.format(
                     "Got 'null' as an icon for the item '%s'. "
                             + "Icon generator instance may not return 'null' values",
-                    item, ItemLabelGenerator.class.getSimpleName()));
+                    item));
         }
         String text = itemLabelGenerator.apply(item);
         if (text == null) {
