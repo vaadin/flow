@@ -30,6 +30,7 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
@@ -577,6 +578,12 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public void appendVirtualChild(StateNode node, Element child, String type,
             String payload) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void visit(StateNode node, NodeVisitor visitor,
+            boolean visitDescendants) {
         throw new UnsupportedOperationException();
     }
 }

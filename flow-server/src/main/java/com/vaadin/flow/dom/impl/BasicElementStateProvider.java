@@ -41,7 +41,6 @@ import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementListenerMap;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
 import com.vaadin.flow.nodefeature.PolymerEventListenerMap;
@@ -49,6 +48,7 @@ import com.vaadin.flow.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
+import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.template.angular.AbstractControlTemplateNode;
 import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
@@ -349,4 +349,5 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     protected Class<? extends NodeFeature>[] getProviderFeatures() {
         return features;
     }
+
 }

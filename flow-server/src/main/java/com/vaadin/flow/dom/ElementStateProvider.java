@@ -434,4 +434,18 @@ public interface ElementStateProvider extends Serializable {
     void appendVirtualChild(StateNode node, Element child, String type,
             String payload);
 
+    /**
+     * Visit the {@code node} applying {@code visitor} to it and its descendants
+     * if {@code visitDescendants} is {@code true}.
+     *
+     * @param node
+     *            the node to visit
+     * @param visitor
+     *            the visitor to apply to the node
+     * @param visitDescendants
+     *            whether the {@code visitor} should be applied to the
+     *            {@code node} descendants
+     */
+    void visit(StateNode node, NodeVisitor visitor, boolean visitDescendants);
+
 }
