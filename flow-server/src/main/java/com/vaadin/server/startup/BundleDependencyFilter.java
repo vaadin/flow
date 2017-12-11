@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.server.DependencyFilter;
 import com.vaadin.shared.ApplicationConstants;
@@ -49,7 +51,7 @@ public class BundleDependencyFilter implements DependencyFilter {
                     .get(clearFlowProtocols(dependency.getUrl()));
             if (bundleUrls != null) {
                 if (bundleUrls.size() > 1) {
-                    getLogger().warning(() -> String.format(
+                    getLogger().warn(String.format(
                             "Dependency '%s' is contained in multiple bundles: '%s', this may lead to performance degradation",
                             dependency, bundleUrls));
                 }
@@ -80,6 +82,6 @@ public class BundleDependencyFilter implements DependencyFilter {
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(BundleDependencyFilter.class.getName());
+        return LoggerFactory.getLogger(BundleDependencyFilter.class.getName());
     }
 }

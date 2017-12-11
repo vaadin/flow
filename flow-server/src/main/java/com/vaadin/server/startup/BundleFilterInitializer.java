@@ -1,6 +1,5 @@
 package com.vaadin.server.startup;
 
-import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -10,9 +9,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
+
+import javax.servlet.ServletContext;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.ServiceInitEvent;
@@ -70,7 +72,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         try (InputStream bundleManifestStream = servletContext
                 .getResourceAsStream(bundleManifestContextPath)) {
             if (bundleManifestStream == null) {
-                getLogger().config(() -> String.format(
+                getLogger().info(String.format(
                         "Bundling disabled: Flow bundle manifest '%s' was not found in servlet context",
                         bundleManifestContextPath));
                 return Collections.emptyMap();
@@ -103,6 +105,6 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(BundleFilterInitializer.class.getName());
+        return LoggerFactory.getLogger(BundleFilterInitializer.class.getName());
     }
 }
