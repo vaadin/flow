@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui.event;
 
+import java.util.EnumSet;
+
 import com.vaadin.ui.common.HtmlComponent;
 
 /**
@@ -25,15 +27,15 @@ import com.vaadin.ui.common.HtmlComponent;
 public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
 
     private final String key;
-    private final int location;
-
-    private final boolean ctrlKey;
-    private final boolean shiftKey;
-    private final boolean altKey;
-    private final boolean metaKey;
+    private final KeyLocation location;
 
     private final boolean repeat;
     private final boolean composing;
+
+    /**
+     * The set of {@link KeyModifier} of the event.
+     */
+    protected final EnumSet<KeyModifier> modifiers;
 
     /**
      * Creates a new keyboard event.
@@ -72,13 +74,22 @@ public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
             boolean metaKey, boolean repeat, boolean composing) {
         super(source, fromClient);
         this.key = key;
-        this.location = location;
-        this.ctrlKey = ctrlKey;
-        this.shiftKey = shiftKey;
-        this.altKey = altKey;
-        this.metaKey = metaKey;
+        this.location = KeyLocation.of(location);
         this.repeat = repeat;
         this.composing = composing;
+        this.modifiers = EnumSet.noneOf(KeyModifier.class);
+        if (ctrlKey) {
+            this.modifiers.add(KeyModifier.CONTROL);
+        }
+        if (shiftKey) {
+            this.modifiers.add(KeyModifier.SHIFT);
+        }
+        if (altKey) {
+            this.modifiers.add(KeyModifier.ALT);
+        }
+        if (metaKey) {
+            this.modifiers.add(KeyModifier.META);
+        }
     }
 
     /**
@@ -108,47 +119,7 @@ public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
      * @return the {@link KeyLocation} of the event
      */
     public KeyLocation getLocation() {
-        return KeyLocation.of(location);
-    }
-
-    /**
-     * Checks whether the ctrl key was was down when the event was fired.
-     *
-     * @return <code>true</code> if the ctrl key was down when the event was
-     *         fired, <code>false</code> otherwise
-     */
-    public boolean isCtrlKey() {
-        return ctrlKey;
-    }
-
-    /**
-     * Checks whether the alt key was was down when the event was fired.
-     *
-     * @return <code>true</code> if the alt key was down when the event was
-     *         fired, <code>false</code> otherwise
-     */
-    public boolean isAltKey() {
-        return altKey;
-    }
-
-    /**
-     * Checks whether the meta key was was down when the event was fired.
-     *
-     * @return <code>true</code> if the meta key was down when the event was
-     *         fired, <code>false</code> otherwise
-     */
-    public boolean isMetaKey() {
-        return metaKey;
-    }
-
-    /**
-     * Checks whether the shift key was was down when the event was fired.
-     *
-     * @return <code>true</code> if the shift key was down when the event was
-     *         fired, <code>false</code> otherwise
-     */
-    public boolean isShiftKey() {
-        return shiftKey;
+        return location;
     }
 
     /**
@@ -169,6 +140,15 @@ public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
      */
     public boolean isComposing() {
         return composing;
+    }
+
+    /**
+     * Gets the set of {@link KeyModifier} of the event.
+     *
+     * @return the set of {@link KeyModifier}
+     */
+    public EnumSet<KeyModifier> getModifiers() {
+        return modifiers;
     }
 
 }

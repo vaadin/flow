@@ -21,6 +21,9 @@ import com.vaadin.shared.Registration;
  * Mixin interface for components that support adding composition listeners to
  * the their root elements.
  *
+ * See <a href=
+ * "https://developer.mozilla.org/docs/Web/API/CompositionEvent">CompositionEvent</a>
+ *
  * @author Vaadin Ltd
  */
 public interface CompositionNotifier extends ComponentEventNotifier {

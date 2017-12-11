@@ -59,18 +59,9 @@ public class KeyEventListener<E extends KeyboardEvent>
 
     @Override
     public void onComponentEvent(E event) {
-        if (event.getKey().equals(key)) {
-            if (modifiers.isEmpty()) {
-                listener.onComponentEvent(event);
-            } else if (event.isCtrlKey() == modifiers
-                    .contains(KeyModifier.CONTROL)
-                    && event.isShiftKey() == modifiers
-                            .contains(KeyModifier.SHIFT)
-                    && event.isAltKey() == modifiers.contains(KeyModifier.ALT)
-                    && event.isMetaKey() == modifiers
-                            .contains(KeyModifier.META)) {
-                listener.onComponentEvent(event);
-            }
+        if (event.getKey().equals(key)
+                && event.getModifiers().containsAll(modifiers)) {
+            listener.onComponentEvent(event);
         }
     }
 

@@ -76,7 +76,7 @@ public abstract class CompositionEvent extends ComponentEvent<HtmlComponent> {
      *
      * @return the {@link Locale} of the event
      */
-    public Locale getLocation() {
+    public Locale getLocale() {
         return Locale.forLanguageTag(locale);
     }
 
