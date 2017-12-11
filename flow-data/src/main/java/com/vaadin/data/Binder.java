@@ -126,9 +126,9 @@ public class Binder<BEAN> implements Serializable {
          *
          * @return the validation result.
          */
-        public default BindingValidationStatus<TARGET> validate() {
+        default BindingValidationStatus<TARGET> validate() {
             return validate(true);
-        };
+        }
 
         /**
          * Validates the field value and returns a {@code ValidationStatus}
@@ -142,7 +142,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @since 8.2
          */
-        public BindingValidationStatus<TARGET> validate(boolean fireEvent);
+        BindingValidationStatus<TARGET> validate(boolean fireEvent);
 
         /**
          * Gets the validation status handler for this Binding.
