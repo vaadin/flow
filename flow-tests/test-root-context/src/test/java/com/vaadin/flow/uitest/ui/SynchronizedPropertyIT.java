@@ -17,7 +17,6 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -40,7 +39,7 @@ public class SynchronizedPropertyIT extends ChromeBrowserTest {
     }
 
     private void blur() {
-        ((JavascriptExecutor) driver).executeScript(
+        executeScript(
                 "!!document.activeElement ? document.activeElement.blur() : 0");
     }
 
