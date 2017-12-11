@@ -520,7 +520,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         textField.setValue(textField.getEmptyValue());
         Assert.assertEquals("foobar", componentErrors.get(textField));
-        // validation is done for the whole bean at once.
+        // validation is done for all changed bindings once.
         Assert.assertEquals(1, invokes.get());
 
         textField.setValue("value");
@@ -975,5 +975,34 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.withValidator(p -> !p.getFirstName().equals(p.getLastName()),
                 "First name and last name can't be the same");
+    }
+    
+    @Test
+    public void two_asRequired_fields_without_initial_values() {
+        binder.forField(nameField).asRequired("Empty name").bind(p -> "",
+                (p, s) -> {
+                });
+        binder.forField(ageField).asRequired("Empty age").bind(p -> "",
+                (p, s) -> {
+                });
+
+        binder.setBean(item);
+        assertNull("Initially there should be no errors",
+                nameField.getComponentError());
+        assertNull("Initially there should be no errors",
+                ageField.getComponentError());
+
+        nameField.setValue("Foo");
+        assertNull("Name with a value should not be an error",
+                nameField.getComponentError());
+        assertNull(
+                "Age field should not be in error, since it has not been modified.",
+                ageField.getComponentError());
+
+        nameField.setValue("");
+        assertNotNull("Empty name should now be in error.",
+                nameField.getComponentError());
+        assertNull("Age field should still be ok.",
+                ageField.getComponentError());
     }
 }
