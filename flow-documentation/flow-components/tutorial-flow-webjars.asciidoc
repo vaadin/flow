@@ -84,6 +84,7 @@ Although there are downsides. Main ones are:
 * transitive webjar dependencies are not fixed: they have a range version in their poms (from the pom url above: `<version>[1.9,3)</version>`)
 
 Additional challenges provided by the https://www.webjars.org/ website:
+
 * Rich ui with multiple ways of adding the same bower dependency that lead to confusion and different names of the artifacts
 * https://github.com/webjars/webjars/issues/1648 sometimes deploy breaks, some artifacts are present in BinTray, not Maven Central
 
