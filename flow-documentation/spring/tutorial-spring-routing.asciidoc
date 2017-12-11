@@ -25,12 +25,12 @@ In the same way you may define any other router path. See
 <<../routing/tutorial-routing-annotation#,Defining Routes with @Route>> 
 tutorial and other router tutorials for more details about using router.
 
-The only thing that is new here for Spring is the possibility to use DI in the
+The only thing that is new here for Spring is the possibility to use dependency injection in the
 components annotated with `@Route`. Such a component is instantiated by Spring
 and becomes a Spring initialized bean. In particular it means that you may autowire
 other Spring managed beans. Here is an example:
 
- [source,java]
+[source,java]
 ----
 @Route("")
 public class RootComponent extends Div {
