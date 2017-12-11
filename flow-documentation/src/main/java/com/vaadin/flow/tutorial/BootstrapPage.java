@@ -26,6 +26,7 @@ import com.vaadin.server.BootstrapPageResponse;
 import com.vaadin.server.InitialPageSettings;
 import com.vaadin.server.PageConfigurator;
 import com.vaadin.shared.ui.Dependency;
+import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Viewport;
 import com.vaadin.ui.html.Div;
 
@@ -96,6 +97,21 @@ public class BootstrapPage {
                     "http://www.imdb.com/title/tt0117500/");
             settings.addMetaTag("og:image",
                     "http://ia.media-imdb.com/images/rock.jpg");
+        }
+    }
+
+    @Route("")
+    @BodySize(height = "100vh", width = "100vw")
+    public static class BodySizeAnnotatedRoute extends Div {
+    }
+
+    @Route("")
+    public static class InitialPageConfiguratorBodyStyle extends Div
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineWithContents("body {width: 100vw; height:100vh;}",
+                    Dependency.Type.STYLESHEET);
         }
     }
 }

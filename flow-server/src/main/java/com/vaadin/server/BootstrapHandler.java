@@ -403,7 +403,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static List<Element> setupDocumentHead(Element head,
             BootstrapContext context) {
         setupMetaAndTitle(head, context);
-        setupCss(head);
+        setupCss(head, context);
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
         Map<LoadMode, JsonArray> dependenciesToProcessOnServer = popDependenciesToProcessOnServer(
@@ -480,10 +480,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static void setupCss(Element head) {
+    private static void setupCss(Element head, BootstrapContext context) {
         Element styles = head.appendElement("style").attr("type",
                 CSS_TYPE_ATTRIBUTE_VALUE);
-        styles.appendText("html, body {height:100%;margin:0;}");
+        // Add any body style that is defined for the application using
+        // @BodySize
+        String bodySizeContent = BootstrapUtils
+                .getBodySizeContent(context.getUI(), context.getRequest())
+                .orElse("body {margin:0;}");
+        styles.appendText(bodySizeContent);
         // Basic reconnect dialog style just to make it visible and outside of
         // normal flow
         styles.appendText(".v-reconnect-dialog {" //

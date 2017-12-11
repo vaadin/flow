@@ -15,6 +15,7 @@
  */
 package com.vaadin.server.startup;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -30,6 +31,7 @@ import com.vaadin.router.RouterLayout;
 import com.vaadin.router.util.RouterUtil;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.server.PageConfigurator;
+import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Viewport;
@@ -88,32 +90,58 @@ public abstract class AbstractRouteRegistryInitializer {
                     route.getName()));
         }
 
-        validateRouteViewport(route);
+        /* Validate @Viewport usage */
+        validateRouteAnnotation(route, Viewport.class);
 
         for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
-            validateRouteAliasViewport(route, alias);
+            validateRouteAliasAnnotation(route, alias, Viewport.class);
         }
 
-        validateRoutePageConfigurator(route);
+        /* Validate @BodySize usage */
+        validateRouteAnnotation(route, BodySize.class);
 
         for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
-            validateRouteAliasPageConfigurator(route, alias);
+            validateRouteAliasAnnotation(route, alias, BodySize.class);
+        }
+
+        /* Validate PageConfigurator usage */
+        validateRouteImplementation(route, PageConfigurator.class);
+
+        for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
+            validateRouteAliasImplementation(route, alias,
+                    PageConfigurator.class);
         }
     }
 
-    private void validateRouteAliasPageConfigurator(Class<?> route,
-            RouteAlias alias) {
+    /* Route validator methods for bootstrap implementations */
+    private void validateRouteImplementation(Class<?> route,
+            Class<?> implementation) {
+        if (!UI.class.equals(route.getAnnotation(Route.class).layout())) {
+            if (implementation.isAssignableFrom(route)) {
+                throw new InvalidRouteLayoutConfigurationException(String
+                        .format("%s needs to be the top parent layout '%s' not '%s'",
+                                implementation.getSimpleName(),
+                                RouterUtil.getTopParentLayout(route).getName(),
+                                route.getName()));
+            }
+
+            List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+                    .getParentLayouts(route);
+            Class<? extends RouterLayout> topParentLayout = RouterUtil
+                    .getTopParentLayout(route);
+
+            validateParentImplementation(parentLayouts, topParentLayout,
+                    implementation);
+        }
+    }
+
+    private void validateRouteAliasImplementation(Class<?> route,
+            RouteAlias alias, Class<?> implementation) {
         if (!UI.class.equals(alias.layout())) {
             if (PageConfigurator.class.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
-                        .format("PageConfigurator needs to be the top parent layout '%s' not '%s'",
-                                RouterUtil.getTopParentLayout(route,
-                                        alias.value()).getName(),
-                                route.getName()));
-            }
-            if (route.isAnnotationPresent(Viewport.class)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("PageConfigurator annotation needs to be on the top parent layout '%s' not on '%s'",
+                        .format("%s needs to be the top parent layout '%s' not '%s'",
+                                implementation.getSimpleName(),
                                 RouterUtil.getTopParentLayout(route,
                                         alias.value()).getName(),
                                 route.getName()));
@@ -124,55 +152,43 @@ public abstract class AbstractRouteRegistryInitializer {
             Class<? extends RouterLayout> topParentLayout = RouterUtil
                     .getTopParentLayout(route, alias.value());
 
-            validateParentPageConfigurator(parentLayouts, topParentLayout);
+            validateParentImplementation(parentLayouts, topParentLayout,
+                    implementation);
         }
     }
 
-    private void validateRoutePageConfigurator(Class<?> route) {
-        if (!UI.class.equals(route.getAnnotation(Route.class).layout())) {
-            if (PageConfigurator.class.isAssignableFrom(route)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("PageConfigurator needs to be the top parent layout '%s' not '%s'",
-                                RouterUtil.getTopParentLayout(route).getName(),
-                                route.getName()));
-            }
-
-            List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
-                    .getParentLayouts(route);
-            Class<? extends RouterLayout> topParentLayout = RouterUtil
-                    .getTopParentLayout(route);
-
-            validateParentPageConfigurator(parentLayouts, topParentLayout);
-
-        }
-    }
-
-    private void validateParentPageConfigurator(
+    private void validateParentImplementation(
             List<Class<? extends RouterLayout>> parentLayouts,
-            Class<? extends RouterLayout> topParentLayout) {
+            Class<? extends RouterLayout> topParentLayout,
+            Class<?> implementation) {
         Supplier<Stream<Class<? extends RouterLayout>>> streamSupplier = () -> parentLayouts
-                .stream().filter(PageConfigurator.class::isAssignableFrom);
+                .stream().filter(implementation::isAssignableFrom);
         if (streamSupplier.get().count() > 1) {
-            throw new InvalidRouteLayoutConfigurationException(
-                    "Only one PageConfigurator implementation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
-                            + streamSupplier.get().map(Class::getName)
-                                    .collect(Collectors.joining(", ")));
+            throw new InvalidRouteLayoutConfigurationException("Only one "
+                    + implementation.getSimpleName()
+                    + " implementation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                    + streamSupplier.get().map(Class::getName)
+                            .collect(Collectors.joining(", ")));
         }
 
         streamSupplier.get().findFirst().ifPresent(layout -> {
             if (!layout.equals(topParentLayout)) {
                 throw new InvalidRouteLayoutConfigurationException(String
-                        .format("PageConfigurator implementation should be the top most route layout '%s'. Offending class: '%s'",
+                        .format("%s implementation should be the top most route layout '%s'. Offending class: '%s'",
+                                implementation.getSimpleName(),
                                 topParentLayout.getName(), layout.getName()));
             }
         });
     }
 
-    private void validateRouteViewport(Class<?> route) {
+    /* Route validator methods for bootstrap annotations */
+    private void validateRouteAnnotation(Class<?> route,
+            Class<? extends Annotation> annotation) {
         if (!UI.class.equals(route.getAnnotation(Route.class).layout())) {
-            if (route.isAnnotationPresent(Viewport.class)) {
+            if (route.isAnnotationPresent(annotation)) {
                 throw new InvalidRouteLayoutConfigurationException(String
-                        .format("Viewport annotation needs to be on the top parent layout '%s' not on '%s'",
+                        .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
+                                annotation.getSimpleName(),
                                 RouterUtil.getTopParentLayout(route).getName(),
                                 route.getName()));
             }
@@ -182,15 +198,18 @@ public abstract class AbstractRouteRegistryInitializer {
             Class<? extends RouterLayout> topParentLayout = RouterUtil
                     .getTopParentLayout(route);
 
-            validateParentViewport(parentLayouts, topParentLayout);
+            validateParentAnnotation(parentLayouts, topParentLayout,
+                    annotation);
         }
     }
 
-    private void validateRouteAliasViewport(Class<?> route, RouteAlias alias) {
+    private void validateRouteAliasAnnotation(Class<?> route, RouteAlias alias,
+            Class<? extends Annotation> annotation) {
         if (!UI.class.equals(alias.layout())) {
-            if (route.isAnnotationPresent(Viewport.class)) {
+            if (route.isAnnotationPresent(annotation)) {
                 throw new InvalidRouteLayoutConfigurationException(String
-                        .format("Viewport annotation needs to be on the top parent layout '%s' not on '%s'",
+                        .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
+                                annotation.getSimpleName(),
                                 RouterUtil.getTopParentLayout(route,
                                         alias.value()).getName(),
                                 route.getName()));
@@ -201,29 +220,34 @@ public abstract class AbstractRouteRegistryInitializer {
             Class<? extends RouterLayout> topParentLayout = RouterUtil
                     .getTopParentLayout(route, alias.value());
 
-            validateParentViewport(parentLayouts, topParentLayout);
+            validateParentAnnotation(parentLayouts, topParentLayout,
+                    annotation);
         }
     }
 
-    private void validateParentViewport(
+    private void validateParentAnnotation(
             List<Class<? extends RouterLayout>> parentLayouts,
-            Class<? extends RouterLayout> topParentLayout) {
+            Class<? extends RouterLayout> topParentLayout,
+            Class<? extends Annotation> annotation) {
         Supplier<Stream<Class<? extends RouterLayout>>> streamSupplier = () -> parentLayouts
                 .stream()
-                .filter(layout -> layout.isAnnotationPresent(Viewport.class));
+                .filter(layout -> layout.isAnnotationPresent(annotation));
         if (streamSupplier.get().count() > 1) {
-            throw new InvalidRouteLayoutConfigurationException(
-                    "Only one Viewport annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
-                            + streamSupplier.get().map(Class::getName)
-                                    .collect(Collectors.joining(", ")));
+            throw new InvalidRouteLayoutConfigurationException("Only one "
+                    + annotation.getSimpleName()
+                    + " annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                    + streamSupplier.get().map(Class::getName)
+                            .collect(Collectors.joining(", ")));
         }
 
         streamSupplier.get().findFirst().ifPresent(layout -> {
             if (!layout.equals(topParentLayout)) {
                 throw new InvalidRouteLayoutConfigurationException(String
-                        .format("Viewport annotation should be on the top most route layout '%s'. Offending class: '%s'",
+                        .format("%s annotation should be on the top most route layout '%s'. Offending class: '%s'",
+                                annotation.getSimpleName(),
                                 topParentLayout.getName(), layout.getName()));
             }
         });
     }
+
 }
