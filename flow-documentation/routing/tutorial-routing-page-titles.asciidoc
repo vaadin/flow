@@ -9,18 +9,18 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 There are two ways to update the page title during navigation:
 
-* using the `@Title` annotation
+* using the `@PageTitle` annotation
 * implementing `HasDynamicTitle`
 
 [NOTE]
 These two approaches are mutually exclusive: using both on the same class
 will result in a runtime exception at startup.
 
-== Using the `@Title` Annotation
+== Using the `@PageTitle` Annotation
 
 The simplest way to update the
 https://developer.mozilla.org/en-US/docs/Web/API/Document/title[Page Title] is
-to use the `@Title` annotation on your `Component` class.
+to use the `@PageTitle` annotation on your `Component` class.
 [source,java]
 ----
 @PageTitle("home")
@@ -32,7 +32,7 @@ class HomeView extends Div {
 }
 ----
 [NOTE]
-The `@Title` annotation is read from the actual navigation target only;
+The `@PageTitle` annotation is read from the actual navigation target only;
 neither its superclasses nor its parent views are considered.
 
 == Setting the Page Title Dynamically
