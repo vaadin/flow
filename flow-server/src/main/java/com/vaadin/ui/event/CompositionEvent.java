@@ -28,7 +28,7 @@ import com.vaadin.ui.common.HtmlComponent;
 public abstract class CompositionEvent extends ComponentEvent<HtmlComponent> {
 
     private final String data;
-    private final Optional<Locale> locale;
+    private final Locale locale;
 
     /**
      * Creates a new composition event.
@@ -49,7 +49,7 @@ public abstract class CompositionEvent extends ComponentEvent<HtmlComponent> {
             String data, String locale) {
         super(source, fromClient);
         this.data = data;
-        this.locale = Optional.ofNullable(locale).map(Locale::forLanguageTag);
+        this.locale = locale == null ? null : Locale.forLanguageTag(locale);
     }
 
     /**
@@ -78,7 +78,7 @@ public abstract class CompositionEvent extends ComponentEvent<HtmlComponent> {
      * @return the optional {@link Locale} of the event
      */
     public Optional<Locale> getLocale() {
-        return locale;
+        return Optional.ofNullable(locale);
     }
 
 }
