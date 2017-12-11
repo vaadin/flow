@@ -33,10 +33,7 @@ public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
     private final boolean repeat;
     private final boolean composing;
 
-    /**
-     * The set of {@link KeyModifier} of the event.
-     */
-    protected final Set<KeyModifier> modifiers;
+    private final Set<KeyModifier> modifiers;
 
     /**
      * Creates a new keyboard event.
