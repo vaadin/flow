@@ -20,6 +20,8 @@ import com.vaadin.shared.ui.LoadMode;
  * @author Vaadin Ltd.
  */
 public class BundleDependencyFilter implements DependencyFilter {
+    private static final String MAIN_BUNDLE_URL = "vaadin-flow-bundle.html";
+
     private final Map<String, Set<String>> importContainedInBundles;
 
     /**
@@ -57,10 +59,17 @@ public class BundleDependencyFilter implements DependencyFilter {
             }
         }
 
-        bundleUrlsToInclude.stream()
-                .map(bundleUrl -> new Dependency(Dependency.Type.HTML_IMPORT,
-                        bundleUrl, LoadMode.EAGER))
-                .forEach(dependenciesWithBundles::add);
+        bundleUrlsToInclude.stream().forEach(bundleUrl -> {
+            if (MAIN_BUNDLE_URL.equals(bundleUrl)) {
+                dependenciesWithBundles.add(0,
+                        new Dependency(Dependency.Type.HTML_IMPORT, bundleUrl,
+                                LoadMode.EAGER));
+                return;
+            }
+            dependenciesWithBundles.add(new Dependency(
+                    Dependency.Type.HTML_IMPORT, bundleUrl, LoadMode.EAGER));
+        });
+
         return dependenciesWithBundles;
     }
 
