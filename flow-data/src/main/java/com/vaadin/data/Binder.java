@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.function.SerializableFunction;
@@ -550,7 +549,7 @@ public class Binder<BEAN> implements Serializable {
          * Contains all converters and validators chained together in the
          * correct order.
          */
-        private Converter<FIELDVALUE, TARGET> converterValidatorChain;
+        private Converter<FIELDVALUE, ?> converterValidatorChain;
 
         /**
          * Creates a new binding builder associated with the given field.
@@ -646,7 +645,7 @@ public class Binder<BEAN> implements Serializable {
             checkUnbound();
             Objects.requireNonNull(validator, "validator cannot be null");
 
-            converterValidatorChain = converterValidatorChain
+            converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) converterValidatorChain)
                     .chain(new ValidatorAsConverter<>(validator));
             return this;
         }
@@ -708,15 +707,14 @@ public class Binder<BEAN> implements Serializable {
             checkUnbound();
             Objects.requireNonNull(converter, "converter cannot be null");
 
-            // Mark this step to be bound to prevent modifying multiple times.
-            bound = true;
-
             if (resetNullRepresentation) {
                 getBinder().initialConverters.get(field).setIdentity();
             }
 
-            return getBinder().createBinding(field,
-                    converterValidatorChain.chain(converter), statusHandler);
+            converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) converterValidatorChain)
+                    .chain(converter);
+
+            return (BindingBuilder<BEAN, NEWTARGET>) this;
         }
 
         /**
@@ -786,7 +784,7 @@ public class Binder<BEAN> implements Serializable {
             binder = builder.getBinder();
             field = builder.field;
             statusHandler = builder.statusHandler;
-            converterValidatorChain = builder.converterValidatorChain;
+            converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
 
             onValueChange = getField()
                     .addValueChangeListener(this::handleFieldValueChange);
