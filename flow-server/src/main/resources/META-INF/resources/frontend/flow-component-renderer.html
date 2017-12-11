@@ -7,84 +7,54 @@
     static get is() { return 'flow-component-renderer'; }
     static get properties() {
       return {
-        containerid: {
-          type: String,
-          observer: '_attributesChanged',
-          reflectToAttribute: true
-        },
-        keyname: {
-          type: String,
-          value: 'key',
-          observer: '_attributesChanged',
-          reflectToAttribute: true
-        },
-        key: {
-          type: String,
-          observer: '_attributesChanged',
-          reflectToAttribute: true
-        }
+        nodeid: Number,
+        appid: String
       };
     }
-    
-    
-    connectedCallback() {
-      super.connectedCallback();
-      this._attachRenderedComponentIfAble();
+    static get observers() {
+      return [
+        '_asyncAttachRenderedComponentIfAble(appid, nodeid)'
+      ]
     }
     
-    _attributesChanged() {
-      this._attachRenderedComponentIfAble();
+    constructor() {
+      super();
+      this.hidden = true;
     }
     
-    _attachRenderedComponentIfAble() {
-      if (!this.key || !this.containerid || !this.keyname) {
+    _asyncAttachRenderedComponentIfAble() {
+      if (!this.nodeid || !this.appid) {
         return;
       }
-      if (!this.container) {
-        this.container = document.getElementById(this.containerid);
-        if (!this.container) {
-          console.error("The container for renderered components with id " + this.containerid + " could not be found in the document.");
-          return;
-        }
-      }
-      
-      this._removeMutationObserver();
-      
-      if (this.renderedComponent) {
-        this.container.appendChild(this.renderedComponent);
-      }
-      
-      this.renderedComponent = this.container.querySelector("["+this.keyname+"='"+this.key+"']");
-      if (this.renderedComponent) {
-        this.appendChild(this.renderedComponent);
-      }
-      this._createMutationObserver();
+      this.hidden = true;
+      this._debouncer = Polymer.Debouncer.debounce(
+        this._debouncer,
+        Polymer.Async.idlePeriod,
+        () => this._attachRenderedComponentIfAble()
+      );
     }
-    
-    _createMutationObserver() {
-      const thisElement = this;
-      this.changesObserver = new MutationObserver(function(mutations, observer) {
-        let thisElementKey = thisElement.key;
-        for (let m = 0; m < mutations.length; ++m) {
-          let mutation = mutations[m];
-          for (let i = 0; i < mutation.addedNodes.length; ++i) {
-            let node = mutation.addedNodes[i];
-            let nodeKey = node.getAttribute(thisElement.keyname);
-            if (nodeKey === thisElementKey) {
-              thisElement._clear();
-              thisElement.renderedComponent = node;
-              thisElement.appendChild(thisElement.renderedComponent);
-              return;
-            }
-          }
+
+    _attachRenderedComponentIfAble() {
+      const renderedComponent = window.vaadin.clients[this.appid].getByNodeId(this.nodeid);
+      if (this.firstElementChild) {
+        if (!renderedComponent) {
+          this._clear();
+          this._asyncAttachRenderedComponentIfAble();
+        } else if (this.firstElementChild !== renderedComponent){
+          this.replaceChild(renderedComponent, this.firstElementChild);
+          this.hidden = false;
+          this._notifyResize();
+        } else {
+          this.hidden = false;
         }
-      }).observe(this.container, { childList: true });
-    }
-    
-    _removeMutationObserver() {
-      if (this.changesObserver) {
-        this.changesObserver.disconnect();
-        this.changesObserver = null;
+      } else {
+        if (renderedComponent) {
+          this.appendChild(renderedComponent);
+          this.hidden = false;
+          this._notifyResize();
+        } else {
+          this._asyncAttachRenderedComponentIfAble();
+        }
       }
     }
     
@@ -93,14 +63,9 @@
         this.removeChild(this.lastChild);
       }
     }
-    
-    disconnectedCallback() {
-      this._removeMutationObserver();
-      if (this.container && this.renderedComponent) {
-        this.container.appendChild(this.renderedComponent);
-        this.renderedComponent = null;
-      }
-      super.disconnectedCallback();
+
+    _notifyResize(){
+      // subclasses can override this method to execute custom logic on resize
     }
     
   }

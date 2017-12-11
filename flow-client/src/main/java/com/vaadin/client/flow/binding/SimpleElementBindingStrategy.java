@@ -19,7 +19,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -56,7 +59,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -857,8 +859,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (count == index) {
                 return node;
             }
-            node = (StateNode) nodeChildren.get(i);
-            if (node.getDomNode() != null) {
+            StateNode child = (StateNode) nodeChildren.get(i);
+            if (child.getDomNode() != null) {
+                node = child;
                 count++;
             }
         }
