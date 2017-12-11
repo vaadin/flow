@@ -166,7 +166,7 @@ public class InitialPageSettings {
     public void addInlineFromFile(Position position, String file,
             Dependency.Type type) {
         JsonObject prepend = createInlineObject(type);
-        prepend.put(Dependency.KEY_CONTENTS, getDependencyContents(file));
+        prepend.put(Dependency.KEY_CONTENTS, BootstrapUtils.getDependencyContents(request, file));
         getInline(position).add(prepend);
     }
 
@@ -306,36 +306,5 @@ public class InitialPageSettings {
         prepend.put(Dependency.KEY_TYPE, type.toString());
         prepend.put("LoadMode", LoadMode.INLINE.toString());
         return prepend;
-    }
-
-    private String getDependencyContents(String url) {
-        Charset requestCharset = Optional
-                .ofNullable(request.getCharacterEncoding())
-                .filter(string -> !string.isEmpty()).map(Charset::forName)
-                .orElse(StandardCharsets.UTF_8);
-
-        try (InputStream inlineResourceStream = getInlineResourceStream(url);
-                BufferedReader bufferedReader = new BufferedReader(
-                        new InputStreamReader(inlineResourceStream,
-                                requestCharset))) {
-            return bufferedReader.lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
-        } catch (IOException e) {
-            throw new IllegalStateException(
-                    String.format("Could not read file %s contents", url), e);
-        }
-    }
-
-    private InputStream getInlineResourceStream(String url) {
-        InputStream stream = request.getService().getClassLoader()
-                .getResourceAsStream(url);
-
-        if (stream == null) {
-            throw new IllegalStateException(String.format(
-                    "File '%s' for inline resource is not available through "
-                            + "the servlet context class loader.",
-                    url));
-        }
-        return stream;
     }
 }

@@ -46,6 +46,7 @@ import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.server.PageConfigurator;
 import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Inline;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.Viewport;
 
@@ -887,6 +888,138 @@ public class RouteRegistryInitializerTest {
 
         routeRegistryInitializer.onStartup(Stream
                 .of(FailingAliasConfigurator.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    /* Inline tests */
+
+    @Route("single")
+    @Tag(Tag.DIV)
+    @Inline(value = "inline.js", position = Inline.Position.PREPEND)
+    @Inline("inline.css")
+    public static class InlineSingleNavigationTarget extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class InlineParent extends Component implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(InlineParent.class)
+    @Inline("inline.js")
+    public static class InlineMiddleParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(InlineMiddleParentLayout.class)
+    @Inline("inline.js")
+    public static class InlineMultiMiddleParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Route(value = "", layout = InlineParent.class)
+    @Tag(Tag.DIV)
+    public static class InlineRootWithParent extends Component {
+    }
+
+    @Route(value = "", layout = InlineParent.class)
+    @Tag(Tag.DIV)
+    @Inline("inline.js")
+    public static class InlineRootViewportWithParent extends Component {
+    }
+
+    @Route(value = "", layout = InlineMiddleParentLayout.class)
+    @Tag(Tag.DIV)
+    public static class InlineRootWithParents extends Component {
+    }
+
+    @Route(value = "", layout = InlineMultiMiddleParentLayout.class)
+    @Tag(Tag.DIV)
+    public static class InlineMultiViewport extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = InlineParent.class)
+    @Tag(Tag.DIV)
+    @Inline("inline.js")
+    public static class InlineFailingAliasView extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = InlineParent.class)
+    @Tag(Tag.DIV)
+    public static class InlineAliasView extends Component {
+    }
+
+    @Test
+    public void onStartUp_wrong_position_inline_view_layout_throws()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "Inline annotation should be on the top most route layout '%s'. Offending class: '%s'",
+                InlineParent.class.getName(), InlineMiddleParentLayout.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(InlineRootWithParents.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_only_one_inline_in_route_chain()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                "Only one Inline annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                        + InlineMultiMiddleParentLayout.class.getName() + ", "
+                        + InlineMiddleParentLayout.class.getName());
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(InlineMultiViewport.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_route_can_not_contain_inline_if_has_parent()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "Inline annotation needs to be on the top parent layout '%s' not on '%s'",
+                InlineParent.class.getName(),
+                InlineRootViewportWithParent.class.getName()));
+
+        routeRegistryInitializer.onStartup(Stream
+                        .of(InlineRootViewportWithParent.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_one_inline_in_chain_and_one_for_route_passes()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(InlineSingleNavigationTarget.class, InlineRootWithParent.class)
+                        .collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_also_faulty_inline_alias_route()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "Inline annotation needs to be on the top parent layout '%s' not on '%s'",
+                InlineParent.class.getName(), InlineFailingAliasView.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(InlineFailingAliasView.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_valid_inline_alias_does_not_throw()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(InlineAliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
 

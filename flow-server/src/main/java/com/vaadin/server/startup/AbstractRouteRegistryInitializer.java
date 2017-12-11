@@ -33,6 +33,7 @@ import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.server.PageConfigurator;
 import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Inline;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Viewport;
 
@@ -90,19 +91,14 @@ public abstract class AbstractRouteRegistryInitializer {
                     route.getName()));
         }
 
-        /* Validate @Viewport usage */
-        validateRouteAnnotation(route, Viewport.class);
+        /* Validate annotation usage */
+        Stream.of(Viewport.class, BodySize.class, Inline.class).forEach(annotation -> {
+            validateRouteAnnotation(route, annotation);
 
-        for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
-            validateRouteAliasAnnotation(route, alias, Viewport.class);
-        }
-
-        /* Validate @BodySize usage */
-        validateRouteAnnotation(route, BodySize.class);
-
-        for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
-            validateRouteAliasAnnotation(route, alias, BodySize.class);
-        }
+            for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
+                validateRouteAliasAnnotation(route, alias, annotation);
+            }
+        });
 
         /* Validate PageConfigurator usage */
         validateRouteImplementation(route, PageConfigurator.class);

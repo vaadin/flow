@@ -40,6 +40,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Html;
+import com.vaadin.ui.Inline;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.Text;
 import com.vaadin.ui.UI;
@@ -208,6 +209,44 @@ public class BootstrapHandlerTest {
     @RouteAlias(value = "alias", layout = Parent.class)
     @Tag(Tag.DIV)
     public static class AliasLayout extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Inline("inline.js")
+    @Inline("inline.html")
+    @Inline("inline.css")
+    public static class InlineAnnotations extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Inline(value = "inline.css", position = Inline.Position.PREPEND)
+    @Inline(value = "inline.html", position = Inline.Position.PREPEND)
+    @Inline(value = "inline.js", position = Inline.Position.PREPEND)
+    public static class PrependInlineAnnotations extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Inline(value = "inline.css", target = Inline.TargetElement.BODY)
+    @Inline(value = "inline.html", target = Inline.TargetElement.BODY)
+    @Inline(value = "inline.js", target = Inline.TargetElement.BODY)
+    public static class InlineAnnotationsBodyTarget extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Inline(value = "inline.css", target = Inline.TargetElement.BODY, position = Inline.Position.PREPEND)
+    @Inline(value = "inline.html", target = Inline.TargetElement.BODY, position = Inline.Position.PREPEND)
+    @Inline(value = "inline.js", target = Inline.TargetElement.BODY, position = Inline.Position.PREPEND)
+    public static class PrependInlineAnnotationsBodyTarget extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Inline(value = "inline.js", wrapping = Inline.Wrapping.CSS)
+    public static class ForcedWrapping extends Component {
     }
 
     private TestUI testUI;
@@ -609,6 +648,157 @@ public class BootstrapHandlerTest {
                 "The first style tag should start with body style containing margin",
                 styleTag.get().toString().startsWith(
                         "<style type=\"text/css\">body {margin:0;}"));
+    }
+
+    @Test // 3010
+    public void use_inline_to_append_files_to_head()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InlineAnnotations.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertEquals(
+                "File javascript should have been appended to head element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(allElements.size() - 3).toString());
+        Assert.assertEquals(
+                "File html should have been appended to head element",
+                "<span hidden><script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script></span>",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals(
+                "File css should have been appended to head element",
+                "<style type=\"text/css\">/* inline.css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test // 3010
+    public void use_inline_to_prepend_files_to_head()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(PrependInlineAnnotations.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "File javascript should have been prepended to head element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(1).toString());
+        Assert.assertEquals(
+                "File html should have been prepended to head element",
+                "<span hidden><script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script></span>",
+                allElements.get(2).toString());
+        Assert.assertEquals(
+                "File css should have been prepended to head element",
+                "<style type=\"text/css\">/* inline.css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
+                allElements.get(3).toString());
+    }
+
+    @Test // 3010
+    public void use_inline_to_append_files_to_body()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InlineAnnotationsBodyTarget.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.body().getAllElements();
+        Assert.assertEquals(
+                "File css should have been appended to body element",
+                "<style type=\"text/css\">/* inline.css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
+                allElements.get(allElements.size() - 3).toString());
+        Assert.assertEquals(
+                "File html should have been appended to body element",
+                "<span hidden><script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script></span>",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals(
+                "File javascript should have been appended to body element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test // 3010
+    public void use_inline_to_prepend_files_to_body()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(PrependInlineAnnotationsBodyTarget.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.body().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "File javascript should have been prepended to body element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(1).toString());
+        Assert.assertEquals(
+                "File html should have been prepended to body element",
+                "<span hidden><script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script></span>",
+                allElements.get(2).toString());
+        Assert.assertEquals(
+                "File css should have been prepended to body element",
+                "<style type=\"text/css\">/* inline.css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
+                allElements.get(3).toString());
+    }
+
+    @Test // 3010
+    public void force_wrapping_of_file()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(ForcedWrapping.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertEquals(
+                "File css should have been prepended to body element",
+                "<style type=\"text/css\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</style>",
+                allElements.get(allElements.size() - 1).toString());
     }
 
     @Test
