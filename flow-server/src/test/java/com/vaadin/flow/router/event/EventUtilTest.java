@@ -17,6 +17,7 @@ package com.vaadin.flow.router.event;
 
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,7 +66,8 @@ public class EventUtilTest {
     }
 
     @Tag("nested-locale")
-    public static class Locale extends Component implements LocaleChangeObserver {
+    public static class Locale extends Component
+            implements LocaleChangeObserver {
         @Override
         public void localeChange(LocaleChangeEvent event) {
 
@@ -132,7 +134,7 @@ public class EventUtilTest {
     }
 
     @Test
-    public void flattenChildren() throws Exception {
+    public void inspectHierarchy() throws Exception {
         Element node = new Element("root");
         node.appendChild(new Element("main"), new Element("menu"));
         Element nested = new Element("nested");
@@ -141,8 +143,9 @@ public class EventUtilTest {
 
         node.appendChild(nested);
 
-        List<Element> elements = EventUtil.flattenChildren(node)
-                .collect(Collectors.toList());
+        List<Element> elements = new ArrayList<>();
+
+        EventUtil.inspectHierarchy(node, elements);
 
         Assert.assertEquals("Missing elements from list.", 6, elements.size());
     }
@@ -158,8 +161,12 @@ public class EventUtilTest {
         node.appendChild(nested);
         Component.from(nested, Observer.class);
 
+        List<Element> elements = new ArrayList<>();
+
+        EventUtil.inspectHierarchy(node, elements);
+
         List<BeforeNavigationObserver> listenerComponents = EventUtil
-                .getImplementingComponents(EventUtil.flattenChildren(node),
+                .getImplementingComponents(elements.stream(),
                         BeforeNavigationObserver.class)
                 .collect(Collectors.toList());
 
