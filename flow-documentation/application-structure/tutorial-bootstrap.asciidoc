@@ -126,6 +126,10 @@ public static class InitialPageConfiguratorBodyStyle extends Div
 }
 ----
 
+[NOTE]
+Only one way should be used as else the later statement will override the earlier one. In practise this would
+mean that by default the `PageConfigurator` will override the `@BodySize` except if the inlining is done as
+a `PREPEND` then the `@BodySize` will be the deciding one.
 
 [NOTE]
 If the BodySize annotation or PageConfigurator implementation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
