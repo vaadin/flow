@@ -106,8 +106,7 @@ public class DataCommunicator<T> {
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
-            SerializableConsumer<JsonArray> dataUpdater,
-            StateNode stateNode) {
+            SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
         this.dataUpdater = dataUpdater;
@@ -154,6 +153,7 @@ public class DataCommunicator<T> {
         Objects.requireNonNull(data,
                 "DataCommunicator can not refresh null object");
         getKeyMapper().refresh(data);
+        dataGenerator.refreshData(data);
         updatedData.add(data);
         requestFlushUpdatedData();
     }
@@ -415,7 +415,11 @@ public class DataCommunicator<T> {
     private void doUnregister(Integer updateId) {
         Set<String> passivated = passivatedByUpdate.remove(updateId);
         if (passivated != null) {
-            passivated.forEach(key -> keyMapper.remove(keyMapper.get(key)));
+            passivated.forEach(key -> {
+                T item = keyMapper.get(key);
+                dataGenerator.destroyData(item);
+                keyMapper.remove(item);
+            });
         }
     }
 
@@ -533,16 +537,15 @@ public class DataCommunicator<T> {
 
         // XXX Explicitly refresh anything that is updated
         List<String> activeKeys = new ArrayList<>(range.length());
-        fetchFromProvider(range.getStart(), range.length())
-                .forEach(bean -> {
-                    boolean mapperHasKey = keyMapper.has(bean);
-                    String key = keyMapper.key(bean);
-                    if (mapperHasKey) {
-                        passivatedByUpdate.values().stream()
-                                .forEach(set -> set.remove(key));
-                    }
-                    activeKeys.add(key);
-                });
+        fetchFromProvider(range.getStart(), range.length()).forEach(bean -> {
+            boolean mapperHasKey = keyMapper.has(bean);
+            String key = keyMapper.key(bean);
+            if (mapperHasKey) {
+                passivatedByUpdate.values().stream()
+                        .forEach(set -> set.remove(key));
+            }
+            activeKeys.add(key);
+        });
         return activeKeys;
     }
 

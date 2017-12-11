@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.RouterConfiguration;
@@ -121,9 +121,9 @@ public class Router implements RouterInterface {
             resolve = getRouteResolver()
                     .resolve(new ResolveRequest(this, location));
         } catch (NotFoundException nfe) {
-            Logger.getLogger(Router.class.getName()).log(Level.WARNING, nfe,
-                    () -> "Failed to resolve navigation target for path: "
-                            + pathInfo);
+            LoggerFactory.getLogger(Router.class.getName()).warn(
+                    "Failed to resolve navigation target for path: {}"
+                            ,pathInfo, nfe);
         }
         return Optional.ofNullable(resolve);
     }

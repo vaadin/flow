@@ -98,13 +98,9 @@ public class NodeFeatureTest {
         expectedIds.put(ShadowRootHost.class, NodeFeatures.SHADOW_ROOT_HOST);
         expectedIds.put(AttachExistingElementFeature.class,
                 NodeFeatures.ATTACH_EXISTING_ELEMENT);
-        expectedIds.put(AttachTemplateChildFeature.class,
-                NodeFeatures.ATTACH_TEMPLATE_CHILD_ELEMENT);
-        expectedIds.put(VirtualChildrenList.class,
-                NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
         expectedIds.put(BasicTypeValue.class, NodeFeatures.BASIC_TYPE_VALUE);
-        expectedIds.put(NewVirtualChildrenList.class,
-                NodeFeatures.NEW_VIRTUAL_CHILDREN);
+        expectedIds.put(VirtualChildrenList.class,
+                NodeFeatures.VIRTUAL_CHILDREN);
 
         return expectedIds;
     }

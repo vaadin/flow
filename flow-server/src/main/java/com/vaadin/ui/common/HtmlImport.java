@@ -44,7 +44,7 @@ import com.vaadin.ui.WebComponents;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Repeatable(InternalContainerAnnotationForHtml.class)
+@Repeatable(HtmlImport.Container.class)
 public @interface HtmlImport {
 
     /**
@@ -80,4 +80,23 @@ public @interface HtmlImport {
      * @return load mode for the dependency
      */
     LoadMode loadMode() default LoadMode.EAGER;
+
+    /**
+     * Internal annotation to enable use of multiple {@link HtmlImport}
+     * annotations.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Documented
+    public @interface Container {
+
+        /**
+         * Internally used to enable use of multiple {@link HtmlImport}
+         * annotations.
+         *
+         *
+         * @return an array of the HtmlImport annotations
+         */
+        HtmlImport[] value();
+    }
 }

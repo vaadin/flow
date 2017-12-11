@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
@@ -97,8 +97,9 @@ public class DefaultTemplateParser implements TemplateParser {
             String url = dependency.getUrl();
             String path = resolvePath(request, url);
 
-            log(logEnabled, Level.CONFIG, String.format(
-                    "Html import path '%s' is resolved to '%s'", url, path));
+            if (logEnabled) {
+                getLogger().info("Html import path '{}' is resolved to '{}'", url, path);
+            }
             try (InputStream content = context.getResourceAsStream(path)) {
                 if (content == null) {
                     throw new IllegalStateException(
@@ -106,18 +107,20 @@ public class DefaultTemplateParser implements TemplateParser {
                                     + "via the servlet context", url));
                 }
                 Element templateElement = parseHtmlImport(content, url, tag);
+                if (logEnabled && templateElement != null) {
+                    getLogger().info("Found a template file containing template "
+                        + "definition for the tag '{}' by the path '{}'", tag, url);
+                }
+
                 if (templateElement != null) {
-                    log(logEnabled, Level.CONFIG, String.format(
-                            "Found a template file containing template "
-                                    + "definition for the tag '%s' by the path '%s'",
-                            tag, url));
                     return templateElement;
 
                 }
             } catch (IOException exception) {
                 // ignore exception on close()
-                log(logEnabled, Level.WARNING,
-                        "Couldn't close template input stream", exception);
+                if (logEnabled) {
+                    getLogger().warn("Couldn't close template input stream", exception);
+                }
             }
         }
         throw new IllegalStateException(String.format("Couldn't find the "
@@ -177,21 +180,8 @@ public class DefaultTemplateParser implements TemplateParser {
         }
     }
 
-    private void log(boolean enabled, Level level, String msg) {
-        if (enabled) {
-            getLogger().log(level, msg);
-        }
-    }
-
-    private void log(boolean enabled, Level level, String msg,
-            Exception exception) {
-        if (enabled) {
-            getLogger().log(level, msg, exception);
-        }
-    }
-
     private Logger getLogger() {
-        return Logger.getLogger(DefaultTemplateParser.class.getName());
+        return LoggerFactory.getLogger(DefaultTemplateParser.class.getName());
     }
 
 }

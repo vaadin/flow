@@ -24,10 +24,8 @@ import java.io.StringReader;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -309,7 +307,7 @@ public class AtmospherePushConnection implements PushConnection {
         if (resource == null) {
             // Already disconnected. Should not happen but if it does, we don't
             // want to cause NPEs
-            getLogger().fine(
+            getLogger().debug(
                     "AtmospherePushConnection.disconnect() called twice, this should not happen");
             return;
         }
@@ -327,11 +325,11 @@ public class AtmospherePushConnection implements PushConnection {
             try {
                 outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
             } catch (TimeoutException e) {
-                getLogger().log(Level.INFO,
+                getLogger().info(
                         "Timeout waiting for messages to be sent to client before disconnect",
                         e);
             } catch (Exception e) {
-                getLogger().log(Level.INFO,
+                getLogger().info(
                         "Error waiting for messages to be sent to client before disconnect",
                         e);
             }
@@ -341,7 +339,7 @@ public class AtmospherePushConnection implements PushConnection {
         try {
             resource.close();
         } catch (IOException e) {
-            getLogger().log(Level.INFO, "Error when closing push connection",
+            getLogger().info("Error when closing push connection",
                     e);
         }
         connectionLost();
@@ -391,7 +389,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(AtmospherePushConnection.class.getName());
+        return LoggerFactory.getLogger(AtmospherePushConnection.class.getName());
     }
 
     /**
@@ -401,24 +399,8 @@ public class AtmospherePushConnection implements PushConnection {
      * @since 7.6
      */
     public static void enableAtmosphereDebugLogging() {
-        Level level = Level.FINEST;
-
-        Logger atmosphereLogger = Logger.getLogger("org.atmosphere");
-        if (atmosphereLogger.getLevel() == level) {
-            // Already enabled
-            return;
-        }
-
-        atmosphereLogger.setLevel(level);
-
-        // Without this logging, we will have a ClassCircularityError
-        LogRecord record = new LogRecord(Level.INFO,
-                "Enabling Atmosphere debug logging");
-        atmosphereLogger.log(record);
-
-        ConsoleHandler ch = new ConsoleHandler();
-        ch.setLevel(Level.ALL);
-        atmosphereLogger.addHandler(ch);
+        getLogger().warn( "Enable logging of 'org.atmosphere' through your slf4j implementation"
+            + " instead (i.e.: logback, log4j, etc)" );
     }
 
 }

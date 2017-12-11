@@ -28,11 +28,14 @@ import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.JsonCodec;
+import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.util.JsonUtils;
 
 import elemental.js.dom.JsElement;
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 public class ExecuteJavaScriptProcessorTest {
     private static class CollectingExecuteJavaScriptProcessor
@@ -40,6 +43,8 @@ public class ExecuteJavaScriptProcessorTest {
         private final List<String[]> parameterNamesAndCodeList = new ArrayList<>();
         private final List<JsArray<Object>> parametersList = new ArrayList<>();
         private final List<JsMap<Object, StateNode>> nodeParametersList = new ArrayList<>();
+
+        private final Registry registry;
 
         private CollectingExecuteJavaScriptProcessor() {
             this(new Registry() {
@@ -51,6 +56,11 @@ public class ExecuteJavaScriptProcessorTest {
 
         private CollectingExecuteJavaScriptProcessor(Registry registry) {
             super(registry);
+            this.registry = registry;
+        }
+
+        Registry getRegistry() {
+            return registry;
         }
 
         @Override
@@ -134,26 +144,19 @@ public class ExecuteJavaScriptProcessorTest {
     }
 
     @Test
-    public void execute_nodeParameterIsInExistingElementMap() {
-        Registry registry = new Registry() {
-            {
-                StateTree tree = new StateTree(this);
-                set(StateTree.class, tree);
-                set(ExistingElementMap.class, new ExistingElementMap());
-            }
+    public void execute_nodeParameterIsVirtualChildAwaitingInit() {
+        CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor();
 
-        };
-        CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor(
-                registry);
+        Registry registry = processor.getRegistry();
 
         StateNode node = new StateNode(11, registry.getStateTree());
+
+        JsonObject object = Json.createObject();
+        object.put(NodeProperties.TYPE, NodeProperties.INJECT_BY_ID);
+        node.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.PAYLOAD).setValue(object);
+
         registry.getStateTree().registerNode(node);
-
-        JsElement element = new JsElement() {
-
-        };
-
-        registry.getExistingElementMap().add(node.getId(), element);
 
         JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
                 Json.create(node.getId()));
@@ -161,16 +164,15 @@ public class ExecuteJavaScriptProcessorTest {
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
 
-        // JRE impl of the array uses
-
         processor.execute(JsonUtils.createArray(invocation));
 
         // The invocation has not been executed
         Assert.assertEquals(0, processor.nodeParametersList.size());
 
-        // now remove the node from the map
-        registry.getExistingElementMap().remove(node.getId());
         // emulate binding
+        JsElement element = new JsElement() {
+
+        };
         node.setDomNode(element);
         Reactive.flush();
 
@@ -182,5 +184,27 @@ public class ExecuteJavaScriptProcessorTest {
 
         StateNode stateNode = map.get(element);
         Assert.assertEquals(node, stateNode);
+    }
+
+    @Test
+    public void execute_nodeParameterIsNotVirtualChild() {
+        CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(12, registry.getStateTree());
+
+        registry.getStateTree().registerNode(node);
+
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+                Json.create(node.getId()));
+
+        JsonArray invocation = Stream.of(json, Json.create("$0"))
+                .collect(JsonUtils.asArray());
+
+        processor.execute(JsonUtils.createArray(invocation));
+
+        // The invocation has been executed
+        Assert.assertEquals(1, processor.nodeParametersList.size());
     }
 }

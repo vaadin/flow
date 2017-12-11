@@ -19,8 +19,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
@@ -98,14 +99,14 @@ public class ViewOrUITest extends AbstractTestBenchTest {
             }
         } catch (Exception e) {
             // Here only to please Sonar...
-            getLogger().log(Level.FINE,
-                    " for " + getClass().getName() + " not found", e);
+            getLogger().error(
+                    " for {} not found", getClass().getName(), e);
         }
         return null;
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(ViewOrUITest.class.getName());
+        return LoggerFactory.getLogger(ViewOrUITest.class.getName());
     }
 
 }

@@ -39,7 +39,7 @@ public interface ComponentRenderer<COMPONENT extends Component, ITEM> {
      *
      * @param item
      *            the corresponding model item for the component
-     * @return a component instance
+     * @return a component instance, not {@code null}
      */
     COMPONENT createComponent(ITEM item);
 }

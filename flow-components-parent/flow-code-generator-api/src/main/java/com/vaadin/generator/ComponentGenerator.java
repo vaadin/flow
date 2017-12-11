@@ -32,8 +32,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -46,6 +44,7 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
@@ -808,12 +807,25 @@ public class ComponentGenerator {
                     method.setBody(ComponentGeneratorUtils
                             .generateElementApiValueGetterForType(
                             basicType, property.getName()));
+
+                    addGetEmptyValueIfString(javaClass, javaType);
                 } else {
                     method.setBody(ComponentGeneratorUtils
                             .generateElementApiGetterForType(basicType,
                                     property.getName()));
                 }
             }
+        }
+    }
+
+    private void addGetEmptyValueIfString(JavaClassSource javaClass,
+            Class<?> javaType) {
+        if (javaType == String.class) {
+            MethodSource<JavaClassSource> method = javaClass.addMethod()
+                    .setPublic().setReturnType(String.class.getSimpleName());
+            method.setName("getEmptyValue");
+            method.setBody("return \"\";");
+            method.addAnnotation(Override.class);
         }
     }
 
@@ -1009,9 +1021,13 @@ public class ComponentGenerator {
                 ComponentGeneratorUtils.addMethodParameter(javaClass, method,
                         setterType, parameterName);
 
+                boolean nullable = !"value".equals(propertyJavaName)
+                        || !shouldImplementHasValue(metadata)
+                        || String.class != setterType;
+
                 method.setBody(
                         ComponentGeneratorUtils.generateElementApiSetterForType(
-                                basicType, property.getName(), parameterName));
+                                basicType, property.getName(), parameterName, nullable));
 
                 if (StringUtils.isNotEmpty(property.getDescription())) {
                     addMarkdownJavaDoc(property.getDescription(),
@@ -1034,6 +1050,11 @@ public class ComponentGenerator {
                     if (setterType.isPrimitive()) {
                         implementHasValueSetterWithPimitiveType(javaClass,
                                 property, method, setterType, parameterName);
+                    } else if (!nullable) {
+                        method.setBody(String.format(
+                                "Objects.requireNonNull(%s, \"%s cannot be null\");",
+                                parameterName, parameterName)
+                                + method.getBody());
                     }
                 }
             }
@@ -1394,8 +1415,8 @@ public class ComponentGenerator {
             config.load(resourceAsStream);
             return config;
         } catch (IOException e) {
-            Logger.getLogger(getClass().getSimpleName()).log(Level.WARNING,
-                    "Failed to load properties file '" + fileName + "'", e);
+            LoggerFactory.getLogger(getClass().getSimpleName()).warn(
+                    "Failed to load properties file '{}'", fileName, e);
         }
 
         return config;

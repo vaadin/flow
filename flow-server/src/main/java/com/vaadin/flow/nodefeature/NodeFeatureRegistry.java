@@ -87,12 +87,9 @@ public class NodeFeatureRegistry {
         registerFeature(ShadowRootHost.class, ShadowRootHost::new);
         registerFeature(AttachExistingElementFeature.class,
                 AttachExistingElementFeature::new);
-        registerFeature(AttachTemplateChildFeature.class,
-                AttachTemplateChildFeature::new);
-        registerFeature(VirtualChildrenList.class, VirtualChildrenList::new);
         registerFeature(BasicTypeValue.class, BasicTypeValue::new);
-        registerFeature(NewVirtualChildrenList.class,
-                NewVirtualChildrenList::new);
+        registerFeature(VirtualChildrenList.class,
+                VirtualChildrenList::new);
     }
 
     private NodeFeatureRegistry() {

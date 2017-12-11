@@ -19,7 +19,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -56,7 +59,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -65,6 +67,8 @@ import jsinterop.annotations.JsFunction;
  *
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
+
+    private static final String ELEMENT_ATTACH_ERROR_PREFIX = "Element addressed by the ";
 
     @FunctionalInterface
     private interface PropertyUser {
@@ -183,9 +187,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(bindSynchronizedPropertyEvents(context));
 
-        listeners.push(bindChildren(context));
+        listeners.push(bindVirtualChildren(context));
 
-        listeners.push(bindNewVirtualChildren(context));
+        listeners.push(bindChildren(context));
 
         listeners.push(stateNode.addUnregisterListener(
                 e -> remove(listeners, context, computationsCollection)));
@@ -225,7 +229,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -311,7 +315,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BindingContext newContext = new BindingContext(shadowRootNode,
                     shadowRoot, context.binderContext);
             bindChildren(newContext);
-            bindVirtualChildren(newContext);
         }
     }
 
@@ -570,12 +573,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         });
     }
 
-    private EventRemover bindNewVirtualChildren(BindingContext context) {
-        NodeList children = context.node
-                .getList(NodeFeatures.NEW_VIRTUAL_CHILDREN);
+    private EventRemover bindVirtualChildren(BindingContext context) {
+        NodeList children = context.node.getList(NodeFeatures.VIRTUAL_CHILDREN);
 
         for (int i = 0; i < children.length(); i++) {
-            appendVirtualChild(context, (StateNode) children.get(i));
+            appendVirtualChild(context, (StateNode) children.get(i), true);
         }
 
         return children.addSpliceListener(e -> {
@@ -588,75 +590,166 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 JsArray<?> add = e.getAdd();
                 if (!add.isEmpty()) {
                     for (int i = 0; i < add.length(); i++) {
-                        appendVirtualChild(context, (StateNode) add.get(i));
+                        appendVirtualChild(context, (StateNode) add.get(i),
+                                true);
                     }
                 }
             });
         });
     }
 
-    private void appendVirtualChild(BindingContext context, StateNode node) {
-        NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
-        JsonObject object = (JsonObject) map.getProperty(NodeProperties.PAYLOAD)
-                .getValue();
+    private void appendVirtualChild(BindingContext context, StateNode node,
+            boolean reactivePhase) {
+        JsonObject object = getPayload(node);
         String type = object.getString(NodeProperties.TYPE);
 
         if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
             context.binderContext.createAndBind(node);
+            return;
         }
-    }
 
-    private EventRemover bindVirtualChildren(BindingContext context) {
-        NodeList children = context.node
-                .getList(NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
+        if (NodeProperties.INJECT_BY_ID.equals(type)) {
+            String id = object.getString(NodeProperties.PAYLOAD);
+            String address = "id='" + id + "'";
 
-        for (int i = 0; i < children.length(); i++) {
-            StateNode childNode = (StateNode) children.get(i);
-            if (childNode.getDomNode() == null) {
-                invokeWhenNodeIsConstructed(
-                        getBindingCommand(context, childNode), childNode);
-            } else {
-                context.binderContext.bind(childNode, childNode.getDomNode());
+            if (!verifyAttachRequest(context.node, node, id, address)) {
+                return;
             }
-        }
+            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
+                PolymerUtils.invokeWhenDefined(context.htmlNode,
+                        () -> appendVirtualChild(context, node, false));
+                return;
+            }
 
-        return children.addSpliceListener(e -> {
-            /*
-             * Handle lazily so we can create the children we need to insert.
-             * The change that gives a child node an element tag name might not
-             * yet have been applied at this point.
-             */
-            Reactive.addFlushListener(
-                    () -> handleVirtualChildrenSplice(e, context));
-        });
-    }
+            Element existingElement = PolymerUtils
+                    .getDomElementById(context.htmlNode, id);
+            if (verifyAttachedElement(existingElement, node, id, address,
+                    context)) {
+                node.setDomNode(existingElement);
+                context.binderContext.createAndBind(node);
+            }
+        } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
+            JsonArray path = object.getArray(NodeProperties.PAYLOAD);
+            String address = "path='" + path.toString() + "'";
 
-    private Command getBindingCommand(BindingContext context,
-            StateNode childNode) {
-        Node parentNode = context.node.getDomNode();
-        if (parentNode instanceof ShadowRoot) {
-            Optional<String> childId = extractNodeId(childNode);
-            if (childId.isPresent()) {
-                return () -> bindElementFromShadowRootById(
-                        context.binderContext, childNode, childId.get(),
-                        (ShadowRoot) parentNode);
-            } else {
-                String childTag = getTag(childNode);
-                if (childTag == null) {
-                    throw new IllegalStateException(
-                            "Received element with no id and tag information, element node id = '"
-                                    + childNode.getId() + "', parent node = "
-                                    + parentNode);
-                }
-                return () -> bindElementFromShadowRootByTagName(
-                        context.binderContext, childNode, childTag,
-                        (ShadowRoot) parentNode);
+            if (!verifyAttachRequest(context.node, node, null, address)) {
+                return;
+            }
+
+            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
+                PolymerUtils.invokeWhenDefined(context.htmlNode,
+                        () -> appendVirtualChild(context, node, false));
+                return;
+            }
+
+            Element customElement = PolymerUtils.getCustomElement(
+                    PolymerUtils.getDomRoot(context.htmlNode), path);
+
+            if (verifyAttachedElement(customElement, node, null, address,
+                    context)) {
+                node.setDomNode(customElement);
+                context.binderContext.createAndBind(node);
             }
         } else {
-            throw new IllegalStateException(
-                    "Expected parent element to be a shadow root to bind elements to, but got "
-                            + parentNode);
+            assert false : "Unexpected payload type " + type;
         }
+        if (!reactivePhase) {
+            // Correct binding requires reactive involvement which doesn't
+            // happen automatically when we are out of the phase. So we should
+            // call <code>flush()</code> explicitly.
+            Reactive.flush();
+        }
+    }
+
+    private boolean verifyAttachedElement(Element element, StateNode attachNode,
+            String id, String address, BindingContext context) {
+        StateNode node = context.node;
+        String tag = getTag(attachNode);
+
+        boolean failure = false;
+        if (element == null) {
+            failure = true;
+            Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
+                    + " is not found. The requested tag name is '" + tag + "'");
+        } else if (!PolymerUtils.hasTag(element, tag)) {
+            failure = true;
+            Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
+                    + " has the wrong tag name '" + element.getTagName()
+                    + "', the requested tag name is '" + tag + "'");
+        }
+
+        if (failure) {
+            node.getTree().sendExistingElementWithIdAttachToServer(node,
+                    attachNode.getId(), -1, id);
+            return false;
+        }
+
+        if (!node.hasFeature(NodeFeatures.SHADOW_ROOT_DATA)) {
+            return true;
+        }
+        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+        StateNode shadowRootNode = (StateNode) map
+                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
+        if (shadowRootNode == null) {
+            return true;
+        }
+
+        NodeList list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
+        Integer existingId = null;
+
+        for (int i = 0; i < list.length(); i++) {
+            StateNode stateNode = (StateNode) list.get(i);
+            Node domNode = stateNode.getDomNode();
+
+            if (domNode.equals(element)) {
+                existingId = stateNode.getId();
+                break;
+            }
+        }
+
+        if (existingId != null) {
+            Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
+                    + " has been already attached previously via the node id='"
+                    + existingId + "'");
+            node.getTree().sendExistingElementWithIdAttachToServer(node,
+                    attachNode.getId(), existingId, id);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean verifyAttachRequest(StateNode parent, StateNode node,
+            String id, String address) {
+        /*
+         * This should not happen at all because server side may not send
+         * several attach requests for the same client-side element. But that's
+         * the situation when the code is written. So this is a kind of
+         * assertion for the future code which verifies the correctness of
+         * assumptions made on the client side about server-side code impl.
+         */
+        NodeList virtualChildren = parent
+                .getList(NodeFeatures.VIRTUAL_CHILDREN);
+        for (int i = 0; i < virtualChildren.length(); i++) {
+            StateNode child = (StateNode) virtualChildren.get(i);
+            if (child == node) {
+                continue;
+            }
+            if (getPayload(node).toJson().equals(getPayload(child).toJson())) {
+                Console.warn("There is already a request to attach "
+                        + "element addressed by the " + address
+                        + ". The existing request's node id='" + child.getId()
+                        + "'. Cannot attach the same element twice.");
+                node.getTree().sendExistingElementWithIdAttachToServer(parent,
+                        node.getId(), child.getId(), id);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private JsonObject getPayload(StateNode node) {
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
+        return (JsonObject) map.getProperty(NodeProperties.PAYLOAD).getValue();
     }
 
     private static Optional<String> extractNodeId(StateNode node) {
@@ -682,20 +775,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             throw new IllegalStateException(
                     "Could not locate element imported with @Id annotation, tag = '"
                             + childTag
-                            + "', in shadow root of a parent element");
-        }
-        binderContext.bind(childNode, shadowRootElement);
-    }
-
-    private static void bindElementFromShadowRootById(
-            BinderContext binderContext, StateNode childNode, String childId,
-            ShadowRoot shadowRoot) {
-        Node shadowRootElement = PolymerUtils
-                .getElementInShadowRootById(shadowRoot, childId);
-        if (shadowRootElement == null) {
-            throw new IllegalStateException(
-                    "Could not locate element imported with @Id annotation, id = '"
-                            + childId
                             + "', in shadow root of a parent element");
         }
         binderContext.bind(childNode, shadowRootElement);
@@ -780,36 +859,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (count == index) {
                 return node;
             }
-            node = (StateNode) nodeChildren.get(i);
-            if (node.getDomNode() != null) {
+            StateNode child = (StateNode) nodeChildren.get(i);
+            if (child.getDomNode() != null) {
+                node = child;
                 count++;
             }
         }
         return node;
-    }
-
-    private void handleVirtualChildrenSplice(ListSpliceEvent event,
-            BindingContext context) {
-        // Actually removing of a virtual element from the dom is not supported.
-
-        JsArray<?> add = event.getAdd();
-        if (!add.isEmpty()) {
-            for (int i = 0; i < add.length(); i++) {
-                StateNode newChild = (StateNode) add.get(i);
-
-                ExistingElementMap existingElementMap = newChild.getTree()
-                        .getRegistry().getExistingElementMap();
-                Node childNode = existingElementMap
-                        .getElement(newChild.getId());
-                if (childNode != null) {
-                    existingElementMap.remove(newChild.getId());
-                    newChild.setDomNode(childNode);
-                    context.binderContext.createAndBind(newChild);
-                } else {
-                    context.binderContext.createAndBind(newChild);
-                }
-            }
-        }
     }
 
     /**

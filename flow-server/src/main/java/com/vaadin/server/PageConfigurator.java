@@ -13,30 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.common;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package com.vaadin.server;
 
 /**
- * Annotation enabling using multiple {@link Uses @Uses} annotations.
+ * Interface for configuring the initial page contents.
  * <p>
- * <b>NOT meant to be used directly</b>
  *
- * @author Vaadin Ltd
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Documented
-public @interface InternalContainerAnnotationForUses {
+@FunctionalInterface
+public interface PageConfigurator {
 
     /**
-     * Not to be used directly, use {@link Uses @Uses} instead.
-     *
-     * @return an array of the uses annotations
+     * Configure the initial page settings when called.
+     * @param settings initial page settings
      */
-    Uses[] value();
+    void configurePage(InitialPageSettings settings);
 }

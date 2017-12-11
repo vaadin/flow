@@ -35,8 +35,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -110,7 +110,7 @@ public class UidlWriter implements Serializable {
         service.runPendingAccessTasks(session);
 
         // Paints components
-        getLogger().log(Level.FINE, "* Creating response to client");
+        getLogger().debug("* Creating response to client");
 
         int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
                 ? uiInternals.getServerSyncId()
@@ -239,12 +239,10 @@ public class UidlWriter implements Serializable {
                 .getResourceAsStream(resolvedPath);
 
         if (stream == null) {
-            getLogger().warning(
-                    () -> String.format("The path '%s' for inline resource "
-                            + "has been resolved to '%s'. "
+            getLogger().warn("The path '{}' for inline resource "
+                            + "has been resolved to '{}'. "
                             + "But resource is not available via the servlet context. "
-                            + "Trying to load '%s' as a URL", url, resolvedPath,
-                            url));
+                            + "Trying to load '{}' as a URL", url, resolvedPath, url);
             try {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (MalformedURLException exception) {
@@ -257,10 +255,8 @@ public class UidlWriter implements Serializable {
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else {
-            getLogger().config(
-                    () -> String.format("The path '%s' for inline resource "
-                            + "has been sucessfully resolved to resource URL '%s'",
-                            url, resolvedPath));
+            getLogger().info("The path '{}' for inline resource has been successfully "
+                            + "resolved to resource URL '{}'", url, resolvedPath);
         }
         return stream;
     }
@@ -397,6 +393,6 @@ public class UidlWriter implements Serializable {
     }
 
     private static final Logger getLogger() {
-        return Logger.getLogger(UidlWriter.class.getName());
+        return LoggerFactory.getLogger(UidlWriter.class.getName());
     }
 }

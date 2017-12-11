@@ -54,14 +54,25 @@ public final class NodeProperties {
     public static final String VALUE = "value";
 
     /**
-     * JsonObject type key for {@link NewVirtualChildrenList}.
+     * JsonObject type key for {@link VirtualChildrenList}.
      */
     public static final String TYPE = "type";
 
     /**
-     * JsonObject type value for {@link NewVirtualChildrenList}.
+     * JsonObject in-memory type value for {@link VirtualChildrenList}.
      */
     public static final String IN_MEMORY_CHILD = "inMemory";
+
+    /**
+     * JsonObject {@code @id} type value for {@link VirtualChildrenList}.
+     */
+    public static final String INJECT_BY_ID = "@id";
+
+    /**
+     * JsonObject template-in-template type value for
+     * {@link VirtualChildrenList}.
+     */
+    public static final String TEMPLATE_IN_TEMPLATE = "subTemplate";
 
     /** Key for id property. */
     public static final String ID = "id";

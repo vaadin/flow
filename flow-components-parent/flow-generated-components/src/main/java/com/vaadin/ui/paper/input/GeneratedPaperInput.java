@@ -244,6 +244,11 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
         return value == null ? getEmptyValue() : value;
     }
 
+    @Override
+    public String getEmptyValue() {
+        return "";
+    }
+
     /**
      * <p>
      * Description copied from corresponding location in WebComponent:
@@ -257,8 +262,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      */
     @Override
     public void setValue(String value) {
+        Objects.requireNonNull(value, "value cannot be null");
         if (!Objects.equals(value, getValue())) {
-            getElement().setProperty("value", value == null ? "" : value);
+            getElement().setProperty("value", value);
         }
     }
 

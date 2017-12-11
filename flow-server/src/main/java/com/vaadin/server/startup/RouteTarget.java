@@ -32,7 +32,7 @@ public class RouteTarget implements Serializable {
     private Class<? extends Component> normal;
     private Class<? extends Component> parameter;
     private Class<? extends Component> optionalParameter;
-    private Class<? extends Component> wildParameter;
+    private Class<? extends Component> wildCardParameter;
 
     /**
      * Create a new Route target holder.
@@ -75,7 +75,7 @@ public class RouteTarget implements Serializable {
             } else if (HasUrlParameter.isAnnotatedParameter(target,
                     WildcardParameter.class)) {
                 validateWildcard(target);
-                wildParameter = target;
+                wildCardParameter = target;
             } else {
                 validateParameter(target);
                 parameter = target;
@@ -94,10 +94,10 @@ public class RouteTarget implements Serializable {
 
     private void validateWildcard(Class<? extends Component> target)
             throws InvalidRouteConfigurationException {
-        if (wildParameter != null) {
+        if (wildCardParameter != null) {
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
-                    parameter.getName(), target.getName()));
+                    wildCardParameter.getName(), target.getName()));
         }
     }
 
@@ -110,7 +110,7 @@ public class RouteTarget implements Serializable {
         } else if (optionalParameter != null) {
             String message = String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                    parameter.getName(), target.getName());
+                    optionalParameter.getName(), target.getName());
             throw new InvalidRouteConfigurationException(message);
         }
     }
@@ -143,8 +143,8 @@ public class RouteTarget implements Serializable {
             return parameter;
         } else if (segments.size() <= 1 && optionalParameter != null) {
             return optionalParameter;
-        } else if (wildParameter != null) {
-            return wildParameter;
+        } else if (wildCardParameter != null) {
+            return wildCardParameter;
         }
         return null;
     }

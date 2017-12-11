@@ -92,6 +92,7 @@ public class FunctionParameterVariantCombinator {
         if (paramData.getType() != null) {
             paramData.getType().forEach(typeVariants::add);
         }
+        typeVariants.sort(Comparator.comparing(ComponentType::toString));
         return typeVariants;
     }
 }

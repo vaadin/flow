@@ -220,7 +220,7 @@ corresponding HTML file can be found from. Again, the file can be found in the
 [filename]#src/main/webapp/frontend# folder.
 
 The Java template inherits from [classname]#PolymerTemplate#. It needs to be
-parametrised with a [classname]#Model# that describes all properties that are
+parameterised with a [classname]#Model# that describes all properties that are
 passed to the HTML template to be used in the client side. Our model,
 [classname]#ExampleModel# is specified in the template class, and it just contains
 one [classname]#String# value.
@@ -641,7 +641,7 @@ In the form constructor add the following line to configure the binder:
 binder.bindInstanceFields(this);
 ----
 
-This configures the binder to use all the similary named editor fields in
+This configures the binder to use all the similarly named editor fields in
 this form to bind their values with their counterpart in the [classname]#Customer#
 class. For example, the `CustomerForm.firstName` [classname]#TextField# will be
 bound to the `Customer.firstName` property.

@@ -30,8 +30,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -40,12 +40,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
+import org.jsoup.select.Elements;
 
 import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.router.NavigationState;
-import com.vaadin.router.Router;
-import com.vaadin.router.RouterLayout;
-import com.vaadin.router.util.RouterUtil;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
@@ -54,7 +51,6 @@ import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.Viewport;
 import com.vaadin.ui.WebComponents;
 import com.vaadin.util.AnnotationReader;
 import com.vaadin.util.ReflectTools;
@@ -80,7 +76,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "flow.gwtStatsEvents.push(event); " + "return true;};};";
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String DEFER_ATTRIBUTE = "defer";
+    private static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
+
     /**
      * Location of client nocache file, relative to the context root.
      */
@@ -99,7 +97,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     static String clientEngineFile = readClientEngine();
 
     private static Logger getLogger() {
-        return Logger.getLogger(BootstrapHandler.class.getName());
+        return LoggerFactory.getLogger(BootstrapHandler.class.getName());
     }
 
     /**
@@ -350,6 +348,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         document.outputSettings().prettyPrint(false);
 
+        BootstrapUtils.getInitialPageSettings(context).ifPresent(
+                initialPageSettings -> handleInitialPageSettings(context, head,
+                        initialPageSettings));
+
         BootstrapPageResponse response = new BootstrapPageResponse(
                 context.getRequest(), context.getSession(),
                 context.getResponse(), document, context.getUI(),
@@ -357,6 +359,35 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         context.getSession().getService().modifyBootstrapPage(response);
 
         return document;
+    }
+
+    private static void handleInitialPageSettings(BootstrapContext context,
+            Element head, InitialPageSettings initialPageSettings) {
+        if (initialPageSettings.getViewport() != null) {
+            Elements viewport = head.getElementsByAttributeValue("name",
+                    VIEWPORT);
+            if (!viewport.isEmpty() && viewport.size() == 1) {
+                viewport.get(0).attr(CONTENT_ATTRIBUTE,
+                        initialPageSettings.getViewport());
+            } else {
+                head.appendElement(META_TAG).attr("name", VIEWPORT).attr(
+                        CONTENT_ATTRIBUTE, initialPageSettings.getViewport());
+            }
+        }
+
+        initialPageSettings.getInline(InitialPageSettings.Position.PREPEND)
+                .stream()
+                .map(dependency -> createDependencyElement(context, dependency))
+                .forEach(head::prependChild);
+        initialPageSettings.getInline(InitialPageSettings.Position.APPEND)
+                .stream()
+                .map(dependency -> createDependencyElement(context, dependency))
+                .forEach(head::appendChild);
+
+        initialPageSettings.getElement(InitialPageSettings.Position.PREPEND)
+                .forEach(head::prependChild);
+        initialPageSettings.getElement(InitialPageSettings.Position.APPEND)
+                .forEach(head::appendChild);
     }
 
     private static void writeBootstrapPage(VaadinResponse response, String html)
@@ -372,7 +403,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static List<Element> setupDocumentHead(Element head,
             BootstrapContext context) {
         setupMetaAndTitle(head, context);
-        setupCss(head);
+        setupCss(head, context);
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
         Map<LoadMode, JsonArray> dependenciesToProcessOnServer = popDependenciesToProcessOnServer(
@@ -449,10 +480,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static void setupCss(Element head) {
+    private static void setupCss(Element head, BootstrapContext context) {
         Element styles = head.appendElement("style").attr("type",
                 CSS_TYPE_ATTRIBUTE_VALUE);
-        styles.appendText("html, body {height:100%;margin:0;}");
+        // Add any body style that is defined for the application using
+        // @BodySize
+        String bodySizeContent = BootstrapUtils
+                .getBodySizeContent(context.getUI(), context.getRequest())
+                .orElse("body {margin:0;}");
+        styles.appendText(bodySizeContent);
         // Basic reconnect dialog style just to make it visible and outside of
         // normal flow
         styles.appendText(".v-reconnect-dialog {" //
@@ -488,8 +524,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendElement("base").attr("href", getServiceUrl(context));
 
-        getViewportContent(context.getUI(), context.getRequest()).ifPresent(
-                content -> head.appendElement(META_TAG).attr("name", "viewport")
+        BootstrapUtils.getViewportContent(context.getUI(), context.getRequest())
+                .ifPresent(content -> head.appendElement(META_TAG)
+                        .attr("name", VIEWPORT)
                         .attr(CONTENT_ATTRIBUTE, content));
 
         resolvePageTitle(context).ifPresent(title -> {
@@ -857,8 +894,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             writeSecurityKeyUIDL(json, session);
         }
         writePushIdUIDL(json, session);
-        if (getLogger().isLoggable(Level.FINE)) {
-            getLogger().fine("Initial UIDL:" + json.asString());
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Initial UIDL: {}", json.asString());
         }
         return json;
     }
@@ -967,50 +1004,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    /**
-     * Returns the specified viewport content for the target route chain that
-     * was navigated to, specified with {@link Viewport} on the
-     * {@link com.vaadin.router.Route} annotated class or the
-     * {@link com.vaadin.router.ParentLayout} of the route.
-     *
-     * @param ui
-     *            the application ui
-     * @param request
-     *            the request for the ui
-     * @return the content value string for viewport meta tag
-     */
-    private static Optional<String> getViewportContent(UI ui,
-            VaadinRequest request) {
-        String viewportContent = null;
-
-        Optional<Router> router = ui.getRouter();
-        if (router.isPresent()) {
-            Optional<NavigationState> navigationTarget = router.get()
-                    .resolveNavigationTarget(request.getPathInfo(),
-                            request.getParameterMap());
-
-            viewportContent = navigationTarget
-                    .flatMap(BootstrapHandler::getViewportAnnotation)
-                    .map(Viewport::value).orElse(null);
-        }
-        return Optional.ofNullable(viewportContent);
-    }
-
-    private static Optional<Viewport> getViewportAnnotation(
-            NavigationState state) {
-
-        Class<? extends RouterLayout> parentLayout = RouterUtil
-                .getTopParentLayout(state.getNavigationTarget(),
-                        state.getResolvedPath());
-
-        if (parentLayout == null) {
-            return AnnotationReader.getAnnotationFor(
-                    state.getNavigationTarget(), Viewport.class);
-        }
-        return AnnotationReader.getAnnotationFor(parentLayout, Viewport.class);
-    }
-
-    private static String readResource(String fileName) {
+    protected static String readResource(String fileName) {
         try (InputStream stream = BootstrapHandler.class
                 .getResourceAsStream(fileName);
                 BufferedReader bf = new BufferedReader(new InputStreamReader(
@@ -1021,6 +1015,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
         }
+    }
+
+    private static Element createDependencyElement(BootstrapContext context,
+            JsonObject dependencyJson) {
+        Dependency.Type dependencyType = Dependency.Type
+                .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
+        return createDependencyElement(context.getUriResolver(),
+                LoadMode.INLINE, dependencyJson, dependencyType);
     }
 
     private static String readClientEngine() {
@@ -1035,7 +1037,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
                         + properties.getProperty("jsFile");
             } else {
-                getLogger().warning(
+                getLogger().warn(
                         "No compile.properties available on initialization, "
                                 + "could not read client engine file name.");
             }

@@ -238,8 +238,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the development resource URL
      */
     default String getDevelopmentFrontendPrefix() {
-        return getStringProperty(Constants.FRONTEND_URL_DEV,
-                Constants.FRONTEND_URL_DEV_DEFAULT);
+        return Constants.FRONTEND_URL_DEV_DEFAULT;
     }
 
     /**

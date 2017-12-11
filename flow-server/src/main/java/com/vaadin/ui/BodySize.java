@@ -13,33 +13,37 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.common;
+package com.vaadin.ui;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation enabling using multiple {@link JavaScript @JavaScript}
- * annotations.
- * <p>
- * <b>NOT meant to be used</b>, for multiple style sheet dependencies,
- * {@link JavaScript @JavaScript} should be used instead.
+ * Defines the body size that will be added to the HTML of the host pages.
  *
  * @author Vaadin Ltd
  */
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
 @Documented
-public @interface InternalContainerAnnotationForJS {
+public @interface BodySize {
 
     /**
-     * Not to be used, instead multiple {@link JavaScript @JavaScript}
-     * annotations should be used.
+     * Definition for body height.
      *
-     * @return an array of the JavaScript annotations
+     * @return the body height to set
      */
-    JavaScript[] value();
+    String height() default "";
+
+    /**
+     * Definition for body width.
+     *
+     * @return the body width to set
+     */
+    String width() default "";
 }

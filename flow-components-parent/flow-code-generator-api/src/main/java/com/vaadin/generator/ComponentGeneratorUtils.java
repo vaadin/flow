@@ -348,11 +348,13 @@ public final class ComponentGeneratorUtils {
      *            The name of the property in the javascript model.
      * @param parameterName
      *            The name of the parameter in the Java source code.
+     * @param nullable
+     *            whether the value can be null or not
      * @return the code snippet ready to be added in a Java source code.
      */
     public static String generateElementApiSetterForType(
             ComponentBasicType basicType, String propertyName,
-            String parameterName) {
+            String parameterName, boolean nullable) {
         switch (basicType) {
         case ARRAY:
         case UNDEFINED:
@@ -361,9 +363,10 @@ public final class ComponentGeneratorUtils {
                     propertyName, parameterName);
         case STRING:
             // Don't insert null as property value. Insert empty String instead.
-            return String.format(
-                    "getElement().setProperty(\"%s\", %s == null ? \"\" : %s);",
-                    propertyName, parameterName, parameterName);
+            return String.format(nullable
+                    ? "getElement().setProperty(\"%s\", %s == null ? \"\" : %s);"
+                    : "getElement().setProperty(\"%s\", %s);", propertyName,
+                    parameterName, parameterName);
         default:
             return String.format("getElement().setProperty(\"%s\", %s);",
                     propertyName, parameterName);
