@@ -17,7 +17,9 @@ package com.vaadin.spring.server;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
@@ -30,12 +32,14 @@ import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.vaadin.navigator.PushStateNavigation;
 import com.vaadin.navigator.ViewDisplay;
 import com.vaadin.server.UIClassSelectionEvent;
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.SpringViewDisplay;
 import com.vaadin.spring.internal.SpringViewDisplayPostProcessor;
@@ -138,18 +142,34 @@ public class SpringUIProvider extends UIProvider {
             UIClassSelectionEvent uiClassSelectionEvent) {
         final String path = extractUIPathFromRequest(
                 uiClassSelectionEvent.getRequest());
-        if (pathToUIMap.containsKey(path)) {
-            return pathToUIMap.get(path);
-        }
+        Class<? extends UI> ui = null;
+        String pathInfo = path;
 
-        for (Map.Entry<String, Class<? extends UI>> entry : wildcardPathToUIMap
-                .entrySet()) {
-            if (path.startsWith(entry.getKey())) {
-                return entry.getValue();
+        if (pathToUIMap.containsKey(path)) {
+            ui = pathToUIMap.get(path);
+        } else {
+            // Find the longest matching UI path
+            Entry<String, Class<? extends UI>> entry = wildcardPathToUIMap
+                    .entrySet().stream()
+                    .filter(e -> path.startsWith(e.getKey()))
+                    .sorted(Comparator.comparing(e -> {
+                        String key = ((Entry<String, ?>) e).getKey();
+                        return key.length();
+                    }).reversed()).findFirst().orElse(null);
+
+            if (entry != null) {
+                ui = entry.getValue();
+                pathInfo = entry.getKey();
             }
         }
 
-        return null;
+        // Pass the path info to the UI through request
+        uiClassSelectionEvent.getRequest().setAttribute(
+                ApplicationConstants.UI_ROOT_PATH,
+                (pathInfo.startsWith("/") ? "" : "/") + pathInfo);
+
+        return ui;
+
     }
 
     private String extractUIPathFromRequest(VaadinRequest request) {
@@ -179,9 +199,22 @@ public class SpringUIProvider extends UIProvider {
     }
 
     protected void mapPathToUI(String path, Class<? extends UI> uiClass) {
+        boolean pathEndsWithWildcard = false;
+
         if (path.endsWith("/*")) {
-            wildcardPathToUIMap.put(path.substring(0, path.length() - 2),
-                    uiClass);
+            path = path.substring(0, path.length() - 2);
+            pathEndsWithWildcard = true;
+        } else if (path.endsWith("/**")) {
+            path = path.substring(0, path.length() - 3);
+            pathEndsWithWildcard = true;
+        }
+
+        boolean isWildcardPath = pathEndsWithWildcard
+                // UIs that use PushStateNavigation need to be wildcarded.
+                || uiClass.isAnnotationPresent(PushStateNavigation.class);
+
+        if (isWildcardPath) {
+            wildcardPathToUIMap.put(path, uiClass);
         } else {
             pathToUIMap.put(path, uiClass);
         }
