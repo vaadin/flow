@@ -36,9 +36,6 @@ import com.vaadin.ui.i18n.LocaleChangeObserver;
  */
 public final class EventUtil {
 
-    private EventUtil() {
-    }
-
     private static class DescendantsVisitor implements NodeVisitor {
 
         private final Collection<Element> collector;
@@ -57,6 +54,9 @@ public final class EventUtil {
             // Skip shadow root nodes
         }
 
+    }
+
+    private EventUtil() {
     }
 
     /**
@@ -201,19 +201,6 @@ public final class EventUtil {
     }
 
     /**
-     * Collect all children for given node as a Element stream.
-     *
-     * @param node
-     *            start node to collect child elements from
-     * @param descendants
-     *            a collector of descendants to fill
-     */
-    public static void inspectHierarchy(Element node,
-            Collection<Element> descendants) {
-        node.accept(new DescendantsVisitor(descendants), true);
-    }
-
-    /**
      * Collect elements with Component implementing listener of type T.
      *
      * @param elementStream
@@ -229,6 +216,19 @@ public final class EventUtil {
                 .filter(component -> type
                         .isAssignableFrom(component.getClass()))
                 .map(component -> (T) component);
+    }
+
+    /**
+     * Collect all children for given node as a Element stream.
+     *
+     * @param node
+     *            start node to collect child elements from
+     * @param descendants
+     *            a collector of descendants to fill
+     */
+    public static void inspectHierarchy(Element node,
+            Collection<Element> descendants) {
+        node.accept(new DescendantsVisitor(descendants), true);
     }
 
     private static Stream<Element> flattenDescendants(Element element) {

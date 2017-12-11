@@ -24,14 +24,9 @@ import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.NodeFeature;
-import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
 import com.vaadin.flow.nodefeature.VirtualChildrenList;
-
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Abstract implementation of the {@link ElementStateProvider} related to the
@@ -161,43 +156,20 @@ public abstract class AbstractNodeStateProvider
         }
     }
 
-    @Override
-    public void visit(StateNode node, NodeVisitor visitor,
-            boolean visitDescendants) {
-        ElementData data = node.getFeature(ElementData.class);
-        JsonValue payload = data.getPayload();
-        Element element = Element.get(node);
+    /**
+     * Apply the {@code visitor} for the descendants of the {@code node}.
+     *
+     * @param node
+     *            the node whose descendants are targets to apply the visitor
+     * @param visitor
+     *            the visitor to apply
+     */
+    protected void visitDescendants(Node<?> node, NodeVisitor visitor) {
+        node.getChildren().forEach(child -> child.accept(visitor, true));
 
-        if (payload instanceof JsonObject) {
-            JsonObject object = (JsonObject) payload;
-            String type = object.getString(NodeProperties.TYPE);
-            if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
-                visitor.visit(NodeVisitor.ElementType.VIRTUAL, element);
-            } else if (NodeProperties.INJECT_BY_ID.equals(type)
-                    || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
-                visitor.visit(NodeVisitor.ElementType.VIRTUAL_ATTACHED,
-                        element);
-            } else {
-                assert false : "Unexpected payload type : " + type;
-            }
-        } else if (payload == null) {
-            visitor.visit(NodeVisitor.ElementType.REGULAR, element);
-        } else {
-            assert false : "Unexpected payload in element data : "
-                    + payload.toJson();
-        }
-
-        if (visitDescendants) {
-            element.getChildren()
-                    .forEach(child -> child.accept(visitor, visitDescendants));
-
-            element.getShadowRoot()
-                    .ifPresent(root -> root.accept(visitor, visitDescendants));
-
-            node.getFeature(VirtualChildrenList.class).iterator()
-                    .forEachRemaining(child -> acceptVirtualChild(child,
-                            visitor, visitDescendants));
-        }
+        node.getNode().getFeature(VirtualChildrenList.class).iterator()
+                .forEachRemaining(
+                        child -> acceptVirtualChild(child, visitor, true));
     }
 
     private void acceptVirtualChild(StateNode node, NodeVisitor visitor,

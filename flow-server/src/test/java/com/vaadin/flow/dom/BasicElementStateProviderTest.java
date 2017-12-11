@@ -1,11 +1,16 @@
 package com.vaadin.flow.dom;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.nodefeature.ElementData;
+import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -68,5 +73,79 @@ public class BasicElementStateProviderTest {
     public void createStateNode_stateNodeHasRequiredElementDataFeature() {
         StateNode stateNode = BasicElementStateProvider.createStateNode("div");
         Assert.assertTrue(stateNode.isReportedFeature(ElementData.class));
+    }
+
+    @Test
+    public void visitOnlyNode_hasDescendants_nodeVisitedAndNoDescendantsVisited() {
+        TestNodeVisitor visitor = new TestNodeVisitor();
+
+        Map<Node<?>, ElementType> map = new HashMap<>();
+
+        Element subject = createHierarchy(map);
+
+        BasicElementStateProvider.get().visit(subject.getNode(), visitor,
+                false);
+
+        Assert.assertEquals(1, visitor.visited.size());
+        Assert.assertEquals(subject,
+                visitor.visited.keySet().iterator().next());
+        Assert.assertEquals(ElementType.REGULAR,
+                visitor.visited.values().iterator().next());
+    }
+
+    @Test
+    public void visitOnlyNode_hasDescendants_nodeAndDescendatnsAreVisited() {
+        TestNodeVisitor visitor = new TestNodeVisitor();
+
+        Map<Node<?>, ElementType> map = new HashMap<>();
+
+        Element subject = createHierarchy(map);
+
+        BasicElementStateProvider.get().visit(subject.getNode(), visitor, true);
+
+        Assert.assertTrue(map.size() > 1);
+
+        Assert.assertEquals(
+                "The collected descendants doesn't match expected descendatns",
+                map, visitor.visited);
+    }
+
+    private Element createHierarchy(Map<Node<?>, ElementType> map) {
+        Element root = ElementFactory.createDiv();
+
+        map.put(root, ElementType.REGULAR);
+
+        ShadowRoot shadowRoot = root.attachShadow();
+
+        map.put(shadowRoot, null);
+
+        Element shadowChild = ElementFactory.createAnchor();
+        Element shadowVirtualChild = ElementFactory.createBr();
+        shadowRoot.appendChild(shadowChild);
+        shadowRoot.appendVirtualChild(shadowVirtualChild);
+
+        map.put(shadowChild, ElementType.REGULAR);
+        map.put(shadowVirtualChild, ElementType.VIRTUAL);
+
+        Element child = ElementFactory.createDiv();
+
+        root.appendChild(child);
+
+        map.put(child, ElementType.REGULAR);
+
+        Element virtualChild = ElementFactory.createDiv();
+
+        root.appendVirtualChild(virtualChild);
+
+        map.put(virtualChild, ElementType.VIRTUAL);
+
+        Element virtualGrandChild = ElementFactory.createDiv();
+
+        child.getStateProvider().appendVirtualChild(child.getNode(),
+                virtualGrandChild, NodeProperties.INJECT_BY_ID, "id");
+
+        map.put(virtualGrandChild, ElementType.VIRTUAL_ATTACHED);
+
+        return root;
     }
 }

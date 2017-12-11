@@ -30,6 +30,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.router.event.EventUtil;
@@ -114,6 +115,30 @@ public class EventUtilTest {
     }
 
     @Test
+    public void collectBeforeNavigationObserversFromElement_elementHasVirtualChildren()
+            throws Exception {
+        Element node = new Element("root");
+        node.appendChild(new Element("main"), new Element("menu"));
+        Element nested = new Element("nested");
+        nested.appendVirtualChild(new Element("nested-child"),
+                new Element("nested-child-2"));
+
+        node.appendChild(nested);
+
+        node.getStateProvider().appendVirtualChild(node.getNode(),
+                new Element("attached-by-id"), NodeProperties.INJECT_BY_ID,
+                "id");
+
+        Component.from(nested, Observer.class);
+
+        List<BeforeNavigationObserver> beforeNavigationObservers = EventUtil
+                .collectBeforeNavigationObservers(node);
+
+        Assert.assertEquals("Wrong amount of listener instances found", 1,
+                beforeNavigationObservers.size());
+    }
+
+    @Test
     public void collectBeforeNavigationObserversFromComponentList()
             throws Exception {
         Foo foo = new Foo();
@@ -134,7 +159,29 @@ public class EventUtilTest {
     }
 
     @Test
-    public void inspectHierarchy() throws Exception {
+    public void collectBeforeNavigationObserversFromComponentList_elementHasVirtualChildren()
+            throws Exception {
+        Foo foo = new Foo();
+        foo.getElement().getStateProvider().appendVirtualChild(
+                foo.getElement().getNode(), new Observer().getElement(),
+                NodeProperties.INJECT_BY_ID, "id");
+        Bar bar = new Bar();
+
+        Element nested = new Element("nested");
+        nested.appendVirtualChild(new Element("nested-child"),
+                new Observer().getElement());
+
+        bar.getElement().appendChild(new Foo().getElement(), nested);
+
+        List<BeforeNavigationObserver> beforeNavigationObservers = EventUtil
+                .collectBeforeNavigationObservers(Arrays.asList(foo, bar));
+
+        Assert.assertEquals("Wrong amount of listener instances found", 2,
+                beforeNavigationObservers.size());
+    }
+
+    @Test
+    public void inspectChildrenHierarchy() throws Exception {
         Element node = new Element("root");
         node.appendChild(new Element("main"), new Element("menu"));
         Element nested = new Element("nested");
@@ -151,6 +198,32 @@ public class EventUtilTest {
     }
 
     @Test
+    public void inspectMixedChildrenHierarchy() throws Exception {
+        Element node = new Element("root");
+        node.appendVirtualChild(new Element("main"), new Element("menu"));
+        Element nested = new Element("nested");
+        nested.appendVirtualChild(new Element("nested-virtual-child"),
+                new Element("nested-virtual-child-2"));
+        nested.appendChild(new Element("nested-child"),
+                new Element("nested-child-2"));
+
+        nested.getStateProvider().appendVirtualChild(nested.getNode(),
+                new Element("attached-by-id"), NodeProperties.INJECT_BY_ID,
+                "id");
+        nested.getStateProvider().appendVirtualChild(nested.getNode(),
+                new Element("attached-by-id"),
+                NodeProperties.TEMPLATE_IN_TEMPLATE, "");
+
+        node.appendChild(nested);
+
+        List<Element> elements = new ArrayList<>();
+
+        EventUtil.inspectHierarchy(node, elements);
+
+        Assert.assertEquals("Missing elements from list.", 10, elements.size());
+    }
+
+    @Test
     public void getImplementingComponents() throws Exception {
         Element node = new Element("root");
         node.appendChild(new Element("main"), new Element("menu"));
@@ -159,6 +232,32 @@ public class EventUtilTest {
                 new Element("nested-child-2"));
 
         node.appendChild(nested);
+        Component.from(nested, Observer.class);
+
+        List<Element> elements = new ArrayList<>();
+
+        EventUtil.inspectHierarchy(node, elements);
+
+        List<BeforeNavigationObserver> listenerComponents = EventUtil
+                .getImplementingComponents(elements.stream(),
+                        BeforeNavigationObserver.class)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals("Wrong amount of listener instances found", 1,
+                listenerComponents.size());
+    }
+
+    @Test
+    public void getImplementingComponents_elementHasVirtualChildren()
+            throws Exception {
+        Element node = new Element("root");
+        node.appendChild(new Element("main"), new Element("menu"));
+        Element nested = new Element("nested");
+        nested.appendChild(new Element("nested-child"),
+                new Element("nested-child-2"));
+
+        node.getStateProvider().appendVirtualChild(node.getNode(), nested,
+                NodeProperties.TEMPLATE_IN_TEMPLATE, "");
         Component.from(nested, Observer.class);
 
         List<Element> elements = new ArrayList<>();
@@ -193,7 +292,48 @@ public class EventUtilTest {
     }
 
     @Test
+    public void collectLocaleChangeObserverFromElement_elementHasVirtualChildren()
+            throws Exception {
+        Element node = new Element("root");
+        node.appendChild(new Element("main"), new Element("menu"));
+        node.appendVirtualChild(new Element("main-virtual"),
+                new Element("menu-virtual"));
+        Element nested = new Element("nested-locale");
+        nested.appendVirtualChild(new Element("nested-child"),
+                new Element("nested-child-2"));
+
+        node.appendVirtualChild(nested);
+        Component.from(nested, Locale.class);
+
+        List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
+                .collectLocaleChangeObservers(node);
+
+        Assert.assertEquals("Wrong amount of listener instances found", 1,
+                beforeNavigationObservers.size());
+    }
+
+    @Test
     public void collectLocaleChangeObserverFromComponentList()
+            throws Exception {
+        Foo foo = new Foo();
+        foo.getElement().appendChild(new Locale().getElement());
+        Bar bar = new Bar();
+
+        Element nested = new Element("nested-locale");
+        nested.appendChild(new Element("nested-child"),
+                new Locale().getElement());
+
+        bar.getElement().appendChild(new Foo().getElement(), nested);
+
+        List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
+                .collectLocaleChangeObservers(Arrays.asList(foo, bar));
+
+        Assert.assertEquals("Wrong amount of listener instances found", 2,
+                beforeNavigationObservers.size());
+    }
+
+    @Test
+    public void collectLocaleChangeObserverFromComponentList_elementHasVirtualChildren()
             throws Exception {
         Foo foo = new Foo();
         foo.getElement().appendChild(new Locale().getElement());

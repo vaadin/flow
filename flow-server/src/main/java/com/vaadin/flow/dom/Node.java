@@ -367,8 +367,9 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param visitor
      *            the visitor to apply to the node
      */
-    public void accept(NodeVisitor visitor, boolean visitDescendants) {
+    public N accept(NodeVisitor visitor, boolean visitDescendants) {
         getStateProvider().visit(getNode(), visitor, visitDescendants);
+        return getSelf();
     }
 
     @Override
