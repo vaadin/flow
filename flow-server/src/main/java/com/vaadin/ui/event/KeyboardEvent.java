@@ -16,6 +16,7 @@
 package com.vaadin.ui.event;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import com.vaadin.ui.common.HtmlComponent;
 
@@ -35,7 +36,7 @@ public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
     /**
      * The set of {@link KeyModifier} of the event.
      */
-    protected final EnumSet<KeyModifier> modifiers;
+    protected final Set<KeyModifier> modifiers;
 
     /**
      * Creates a new keyboard event.
@@ -147,7 +148,7 @@ public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
      *
      * @return the set of {@link KeyModifier}
      */
-    public EnumSet<KeyModifier> getModifiers() {
+    public Set<KeyModifier> getModifiers() {
         return modifiers;
     }
 
