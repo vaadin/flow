@@ -16,11 +16,21 @@
 package com.vaadin.flow.dom;
 
 /**
+ * Element API node visitor interface.
+ *
+ * @see Node #accept(NodeVisitor, boolean)
+ *
  * @author Vaadin Ltd
  *
  */
 public interface NodeVisitor {
 
+    /**
+     * The type of the element.
+     * 
+     * @author Vaadin Ltd
+     *
+     */
     public enum ElementType {
         /**
          * The type of the regular element: the element which has been created

@@ -360,12 +360,16 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * Applies the {@code visitor} for the node.
      * <p>
      * If {@code visitDescendants} is {@code true} then the {@code visitor} will
-     * be applied to the direct descendants as well. The descendatns includes no
+     * be applied to the direct descendants as well. The descendants includes no
      * only the children returned by the {@link #getChildren()} but also virtual
      * children which are not in the regular children list.
      *
      * @param visitor
      *            the visitor to apply to the node
+     * @param visitDescendants
+     *            whether descendants should be visited along with the node
+     * 
+     * @return this element
      */
     public N accept(NodeVisitor visitor, boolean visitDescendants) {
         getStateProvider().visit(getNode(), visitor, visitDescendants);
