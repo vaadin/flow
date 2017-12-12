@@ -28,9 +28,10 @@ import org.junit.Test;
 
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
-import com.vaadin.data.converter.StringToDoubleConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
+import com.vaadin.data.validator.IntegerRangeValidator;
 import com.vaadin.data.validator.NotEmptyValidator;
+import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.ui.common.HasValue;
@@ -40,6 +41,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -1004,5 +1006,26 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 nameField.getComponentError());
         assertNull("Age field should still be ok.",
                 ageField.getComponentError());
+    }
+
+    @Test
+    public void refreshValueFromBean() {
+        Binding<Person, String> binding = binder.bind(nameField,
+                Person::getFirstName, Person::setFirstName);
+
+        binder.readBean(item);
+
+        assertEquals("Name should be read from the item", item.getFirstName(),
+                nameField.getValue());
+
+        nameField.setValue("foo");
+
+        assertNotEquals("Name should be different from the item",
+                item.getFirstName(), nameField.getValue());
+
+        binding.read(item);
+
+        assertEquals("Name should be read again from the item",
+                item.getFirstName(), nameField.getValue());
     }
 }
