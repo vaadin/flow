@@ -66,7 +66,7 @@ class BootstrapUtils {
         Optional<Router> router = ui.getRouter();
         if (router.isPresent()) {
             Optional<NavigationState> navigationTarget = getRouteTargetInformation(
-                    request, router);
+                    request, router.get());
 
             return navigationTarget
                     .flatMap(BootstrapUtils::getViewportAnnotation)
@@ -164,7 +164,7 @@ class BootstrapUtils {
         Optional<Router> router = ui.getRouter();
         if (router.isPresent()) {
             Optional<NavigationState> navigationTarget = getRouteTargetInformation(
-                    request, router);
+                    request, router.get());
 
             return navigationTarget
                     .flatMap(BootstrapUtils::getBodySizeAnnotation)
@@ -220,16 +220,15 @@ class BootstrapUtils {
         Optional<Router> router = ui.getRouter();
         if (router.isPresent()) {
             Optional<NavigationState> navigationTarget = getRouteTargetInformation(
-                    request, router);
+                    request, router.get());
 
             if (navigationTarget.isPresent()) {
                 List<Inline> inlineAnnotations = getInlineAnnotations(
                         navigationTarget.get());
                 if (!inlineAnnotations.isEmpty()) {
                     InlineTargets inlines = new InlineTargets();
-                    inlineAnnotations.forEach(inline -> {
-                        inlines.addInlineDependency(inline, request);
-                    });
+                    inlineAnnotations.forEach(inline -> inlines
+                            .addInlineDependency(inline, request));
                     return Optional.of(inlines);
                 }
             }
@@ -250,14 +249,24 @@ class BootstrapUtils {
         return AnnotationReader.getAnnotationsFor(parentLayout, Inline.class);
     }
 
-    static String getDependencyContents(VaadinRequest request, String url) {
+    /**
+     *
+     * Read the contents of the given file from the classpath.
+     * 
+     * @param request
+     *            the request for the ui
+     * @param file
+     *            target file to read contents for
+     * @return file contents as a {@link String}
+     */
+    static String getDependencyContents(VaadinRequest request, String file) {
         Charset requestCharset = Optional
                 .ofNullable(request.getCharacterEncoding())
                 .filter(string -> !string.isEmpty()).map(Charset::forName)
                 .orElse(StandardCharsets.UTF_8);
 
         try (InputStream inlineResourceStream = getInlineResourceStream(request,
-                url);
+                file);
                 BufferedReader bufferedReader = new BufferedReader(
                         new InputStreamReader(inlineResourceStream,
                                 requestCharset))) {
@@ -265,27 +274,27 @@ class BootstrapUtils {
                     .collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
             throw new IllegalStateException(
-                    String.format("Could not read file %s contents", url), e);
+                    String.format("Could not read file %s contents", file), e);
         }
     }
 
     private static InputStream getInlineResourceStream(VaadinRequest request,
-            String url) {
+            String file) {
         InputStream stream = request.getService().getClassLoader()
-                .getResourceAsStream(url);
+                .getResourceAsStream(file);
 
         if (stream == null) {
             throw new IllegalStateException(String.format(
                     "File '%s' for inline resource is not available through "
                             + "the servlet context class loader.",
-                    url));
+                    file));
         }
         return stream;
     }
 
     private static Optional<NavigationState> getRouteTargetInformation(
-            VaadinRequest request, Optional<Router> router) {
-        return router.get().resolveNavigationTarget(request.getPathInfo(),
+            VaadinRequest request, Router router) {
+        return router.resolveNavigationTarget(request.getPathInfo(),
                 request.getParameterMap());
     }
 

@@ -27,18 +27,24 @@ import com.vaadin.ui.Inline;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+/**
+ * Data holder class for collected {@link Inline} annotations to be added to the
+ * initial page.
+ */
 public class InlineTargets {
 
-    private final Map<Inline.Position, List<JsonObject>> inlineHead = new EnumMap<>(Inline.Position.class);
-    private final Map<Inline.Position, List<JsonObject>> inlineBody = new EnumMap<>(Inline.Position.class);
-
-    public InlineTargets() {
-    }
+    private final Map<Inline.Position, List<JsonObject>> inlineHead = new EnumMap<>(
+            Inline.Position.class);
+    private final Map<Inline.Position, List<JsonObject>> inlineBody = new EnumMap<>(
+            Inline.Position.class);
 
     /**
      * Inline contents from classpath file to head of initial page.
      *
-     * @param inline inline dependency to add to bootstrap page
+     * @param inline
+     *            inline dependency to add to bootstrap page
+     * @param request
+     *            the request that is handled
      */
     public void addInlineDependency(Inline inline, VaadinRequest request) {
         Dependency.Type type;
@@ -54,29 +60,31 @@ public class InlineTargets {
             type = Dependency.Type.JAVASCRIPT;
             break;
         default:
-            type = inline.value().endsWith(".js")
-                    ? Dependency.Type.JAVASCRIPT
-                    : inline.value().endsWith(".css")
-                    ? Dependency.Type.STYLESHEET
-                    : Dependency.Type.HTML_IMPORT;
+            if (inline.value().endsWith(".js")) {
+                type = Dependency.Type.JAVASCRIPT;
+            } else if (inline.value().endsWith(".css")) {
+                type = Dependency.Type.STYLESHEET;
+            } else {
+                type = Dependency.Type.HTML_IMPORT;
+            }
         }
 
         JsonObject dependency = Json.createObject();
         dependency.put(Dependency.KEY_TYPE, type.toString());
         dependency.put("LoadMode", LoadMode.INLINE.toString());
 
-        dependency.put(Dependency.KEY_CONTENTS, BootstrapUtils.getDependencyContents(request, inline.value()));
+        dependency.put(Dependency.KEY_CONTENTS,
+                BootstrapUtils.getDependencyContents(request, inline.value()));
 
         // Add to correct element target
-        switch(inline.target()) {
-        case BODY:
+        if (inline.target() == Inline.TargetElement.BODY) {
             getInlineBody(inline.position()).add(dependency);
-            break;
-        default:
+        } else {
             getInlineHead(inline.position()).add(dependency);
 
         }
     }
+
     /**
      * Get the list of inline objects to add to head.
      *
@@ -87,6 +95,7 @@ public class InlineTargets {
     protected List<JsonObject> getInlineHead(Inline.Position position) {
         return inlineHead.computeIfAbsent(position, key -> new ArrayList<>());
     }
+
     /**
      * Get the list of inline objects to add to body.
      *
