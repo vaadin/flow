@@ -27,11 +27,11 @@ public interface NodeVisitor {
 
     /**
      * The type of the element.
-     * 
+     *
      * @author Vaadin Ltd
      *
      */
-    public enum ElementType {
+    enum ElementType {
         /**
          * The type of the regular element: the element which has been created
          * via Element API and attached in a regular way.

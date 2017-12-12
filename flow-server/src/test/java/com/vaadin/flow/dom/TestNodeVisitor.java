@@ -18,8 +18,6 @@ package com.vaadin.flow.dom;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.flow.dom.NodeVisitor.ElementType;
-
 class TestNodeVisitor implements NodeVisitor {
 
     Map<Node<?>, ElementType> visited = new HashMap<>();
