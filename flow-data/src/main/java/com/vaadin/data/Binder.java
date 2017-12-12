@@ -156,7 +156,18 @@ public class Binder<BEAN> implements Serializable {
          * Removes any {@code ValueChangeListener} {@code Registration} from
          * associated {@code HasValue}.
          */
-        void unbind();    }
+        void unbind();
+
+        /**
+         * Reads the value from given item and stores it to the bound field.
+         *
+         * @param bean
+         *            the bean to read from
+         *
+         * @since 8.2
+         */
+        void read(BEAN bean);
+    }
 
     /**
      * Creates a binding between a field and a data property.
@@ -975,6 +986,12 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public BindingValidationStatusHandler getValidationStatusHandler() {
             return statusHandler;
+        }
+
+        @Override
+        public void read(BEAN bean) {
+            field.setValue(converterValidatorChain.convertToPresentation(
+                    getter.apply(bean), createValueContext()));
         }
     }
 
