@@ -48,6 +48,39 @@ public class MyLayout extends Div implements RouterLayout {
 [NOTE]
 If the Viewport annotation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
 
+== Inline annotation
+
+The initial page can be modified by using the `@Inline` annotations to add file contents
+to either the `<head>` or the `<body>`. Inline is repeatable, so multiple `@Inline` annotations
+can be added at once.
+
+Inline will add the contents of a classloader resource by default as appended to the
+head of the initial page with type decided by the file suffix.
+
+The configurations available for inlining contents are:
+
+ - TargetElement [*HEAD*, BODY]
+ - Position [*APPEND*, PREPEND]
+ - Wrapping [*AUTOMATIC*, HTML, CSS, SCRIPT]
+
+[source,java]
+----
+@Route(value = "", layout = MyInline.class)
+public class MyRoot extends Div {
+  public MyRoot() {
+  }
+}
+
+@Inline("initialization.js")
+@Inline("initial_style.css")
+@Inline(value = "important_styles", wrapping = Inline.Wrapping.CSS)
+public class MyInline extends Div implements RouterLayout {
+}
+----
+
+[NOTE]
+If the Inline annotations is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
+
 == PageConfigurator
 
 To be able to modify default bootstrap page and add your custom meta tags on the page you
