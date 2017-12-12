@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.TextTemplateNode;
 import com.vaadin.ui.Component;
@@ -84,4 +85,9 @@ public class TemplateTextElementStateProvider
         return Optional.empty();
     }
 
+    @Override
+    public void visit(StateNode node, NodeVisitor visitor,
+            boolean visitDescendants) {
+        throw new UnsupportedOperationException();
+    }
 }

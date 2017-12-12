@@ -23,14 +23,15 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
+import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeListener;
@@ -195,6 +196,17 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     @Override
     public StateNode attachShadow(StateNode node) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void visit(StateNode node, NodeVisitor visitor,
+            boolean visitDescendants) {
+        ShadowRoot shadowRoot = ShadowRoot.get(node);
+        visitor.visit(shadowRoot);
+
+        if (visitDescendants) {
+            visitDescendants(shadowRoot, visitor);
+        }
     }
 
     @Override

@@ -15,11 +15,15 @@
  */
 package com.vaadin.router.event;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.NodeVisitor;
+import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.i18n.LocaleChangeEvent;
@@ -32,20 +36,40 @@ import com.vaadin.ui.i18n.LocaleChangeObserver;
  */
 public final class EventUtil {
 
+    private static class DescendantsVisitor implements NodeVisitor {
+
+        private final Collection<Element> collector;
+
+        DescendantsVisitor(Collection<Element> collector) {
+            this.collector = collector;
+        }
+
+        @Override
+        public void visit(ElementType type, Element element) {
+            collector.add(element);
+        }
+
+        @Override
+        public void visit(ShadowRoot root) {
+            // Skip shadow root nodes
+        }
+
+    }
+
     private EventUtil() {
     }
 
     /**
      * Collect all Components implementing {@link BeforeNavigationObserver}
      * connected to the given element tree.
-     * 
+     *
      * @param element
      *            element to search from
      * @return navigation listeners
      */
     public static List<BeforeNavigationObserver> collectBeforeNavigationObservers(
             Element element) {
-        return getImplementingComponents(flattenChildren(element),
+        return getImplementingComponents(flattenDescendants(element),
                 BeforeNavigationObserver.class).collect(Collectors.toList());
     }
 
@@ -59,7 +83,7 @@ public final class EventUtil {
      */
     public static List<BeforeLeaveObserver> collectBeforeLeaveObservers(
             Element element) {
-        return getImplementingComponents(flattenChildren(element),
+        return getImplementingComponents(flattenDescendants(element),
                 BeforeLeaveObserver.class).collect(Collectors.toList());
     }
 
@@ -73,8 +97,8 @@ public final class EventUtil {
      */
     public static List<BeforeNavigationObserver> collectBeforeNavigationObservers(
             List<HasElement> components) {
-        Stream<Element> elements = components.stream()
-                .flatMap(component -> flattenChildren(component.getElement()));
+        Stream<Element> elements = components.stream().flatMap(
+                component -> flattenDescendants(component.getElement()));
 
         return getImplementingComponents(elements,
                 BeforeNavigationObserver.class).collect(Collectors.toList());
@@ -90,8 +114,8 @@ public final class EventUtil {
      */
     public static List<BeforeEnterObserver> collectBeforeEnterObservers(
             List<HasElement> components) {
-        Stream<Element> elements = components.stream()
-                .flatMap(component -> flattenChildren(component.getElement()));
+        Stream<Element> elements = components.stream().flatMap(
+                component -> flattenDescendants(component.getElement()));
 
         return getImplementingComponents(elements, BeforeEnterObserver.class)
                 .collect(Collectors.toList());
@@ -107,8 +131,8 @@ public final class EventUtil {
      */
     public static List<AfterNavigationObserver> collectAfterNavigationObservers(
             List<HasElement> components) {
-        Stream<Element> elements = components.stream()
-                .flatMap(component -> flattenChildren(component.getElement()));
+        Stream<Element> elements = components.stream().flatMap(
+                component -> flattenDescendants(component.getElement()));
 
         return getImplementingComponents(elements,
                 AfterNavigationObserver.class).collect(Collectors.toList());
@@ -124,7 +148,7 @@ public final class EventUtil {
      */
     public static List<LocaleChangeObserver> collectLocaleChangeObservers(
             Element element) {
-        return getImplementingComponents(flattenChildren(element),
+        return getImplementingComponents(flattenDescendants(element),
                 LocaleChangeObserver.class).collect(Collectors.toList());
     }
 
@@ -138,8 +162,8 @@ public final class EventUtil {
      */
     public static List<LocaleChangeObserver> collectLocaleChangeObservers(
             List<HasElement> components) {
-        Stream<Element> elements = components.stream()
-                .flatMap(component -> flattenChildren(component.getElement()));
+        Stream<Element> elements = components.stream().flatMap(
+                component -> flattenDescendants(component.getElement()));
 
         return getImplementingComponents(elements, LocaleChangeObserver.class)
                 .collect(Collectors.toList());
@@ -177,18 +201,6 @@ public final class EventUtil {
     }
 
     /**
-     * Collect all children for given node as a Element stream.
-     *
-     * @param node
-     *            start node to collect child elements from
-     * @return stream of Elements
-     */
-    public static Stream<Element> flattenChildren(Element node) {
-        return Stream.concat(Stream.of(node),
-                node.getChildren().flatMap(EventUtil::flattenChildren));
-    }
-
-    /**
      * Collect elements with Component implementing listener of type T.
      *
      * @param elementStream
@@ -204,5 +216,24 @@ public final class EventUtil {
                 .filter(component -> type
                         .isAssignableFrom(component.getClass()))
                 .map(component -> (T) component);
+    }
+
+    /**
+     * Collect all children for given node as a Element stream.
+     *
+     * @param node
+     *            start node to collect child elements from
+     * @param descendants
+     *            a collector of descendants to fill
+     */
+    public static void inspectHierarchy(Element node,
+            Collection<Element> descendants) {
+        node.accept(new DescendantsVisitor(descendants), true);
+    }
+
+    private static Stream<Element> flattenDescendants(Element element) {
+        Collection<Element> descendants = new ArrayList<>();
+        inspectHierarchy(element, descendants);
+        return descendants.stream();
     }
 }

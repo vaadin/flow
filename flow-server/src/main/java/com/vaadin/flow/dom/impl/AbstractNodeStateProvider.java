@@ -20,12 +20,13 @@ import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
+import com.vaadin.flow.nodefeature.VirtualChildrenList;
 
 /**
  * Abstract implementation of the {@link ElementStateProvider} related to the
@@ -148,10 +149,35 @@ public abstract class AbstractNodeStateProvider
     public void appendVirtualChild(StateNode node, Element child, String type,
             String payload) {
         if (node.hasFeature(VirtualChildrenList.class)) {
-            node.getFeature(VirtualChildrenList.class)
-                    .append(child.getNode(), type, payload);
+            node.getFeature(VirtualChildrenList.class).append(child.getNode(),
+                    type, payload);
         } else {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * Apply the {@code visitor} for the descendants of the {@code node}.
+     *
+     * @param node
+     *            the node whose descendants are targets to apply the visitor
+     * @param visitor
+     *            the visitor to apply
+     */
+    protected void visitDescendants(Node<?> node, NodeVisitor visitor) {
+        node.getChildren().forEach(child -> child.accept(visitor, true));
+
+        node.getNode().getFeature(VirtualChildrenList.class).iterator()
+                .forEachRemaining(
+                        child -> acceptVirtualChild(child, visitor, true));
+    }
+
+    private void acceptVirtualChild(StateNode node, NodeVisitor visitor,
+            boolean visitDescendants) {
+        if (ShadowRoot.isShadowRoot(node)) {
+            ShadowRoot.get(node).accept(visitor, visitDescendants);
+        } else {
+            Element.get(node).accept(visitor, visitDescendants);
         }
     }
 

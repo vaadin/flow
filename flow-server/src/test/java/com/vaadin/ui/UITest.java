@@ -21,6 +21,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationTrigger;
@@ -66,6 +67,11 @@ public class UITest {
         @Override
         public void setTextContent(StateNode node, String textContent) {
         }
+
+        @Override
+        public void visit(StateNode node, NodeVisitor visitor,
+                boolean visitDescendants) {
+        }
     }
 
     @After
@@ -104,8 +110,8 @@ public class UITest {
             Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
             Properties initParams = new Properties();
-            initParams.setProperty(Constants.SERVLET_PARAMETER_USING_NEW_ROUTING,
-                    "false");
+            initParams.setProperty(
+                    Constants.SERVLET_PARAMETER_USING_NEW_ROUTING, "false");
             ServletConfig servletConfig = new MockServletConfig(initParams);
             VaadinServlet servlet = new VaadinServlet();
             servlet.init(servletConfig);
@@ -157,12 +163,13 @@ public class UITest {
         QueryParameters params = QueryParameters
                 .simple(Collections.singletonMap("test", "indeed"));
 
-        ui.getRouterInterface().get().reconfigure(c -> c.setRoute(route, event -> {
-            assertEquals(params.getParameters(),
-                    event.getLocation().getQueryParameters().getParameters());
-            requestHandled = true;
-            return HttpServletResponse.SC_OK;
-        }));
+        ui.getRouterInterface().get()
+                .reconfigure(c -> c.setRoute(route, event -> {
+                    assertEquals(params.getParameters(), event.getLocation()
+                            .getQueryParameters().getParameters());
+                    requestHandled = true;
+                    return HttpServletResponse.SC_OK;
+                }));
 
         ui.navigateTo(route, params);
 
