@@ -203,7 +203,7 @@ public class SpringNavigator extends Navigator {
      *            navigator
      */
     public void init(UI ui, ViewDisplay display) {
-        init(ui, new UriFragmentManager(ui.getPage()), display);
+        init(ui, null, display);
     }
 
     /**
@@ -238,22 +238,28 @@ public class SpringNavigator extends Navigator {
      */
     @Override
     public void setErrorView(final Class<? extends View> viewClass) {
-        if(viewClass == null) {
+        if (viewClass == null) {
             setErrorProvider(null);
             return;
         }
-        String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(getWebApplicationContext(), viewClass);
+        String[] beanNames = BeanFactoryUtils
+                .beanNamesForTypeIncludingAncestors(getWebApplicationContext(),
+                        viewClass);
         /*
-            Beans count==0 here means fallback into direct class instantiation
-            No need to check for the scope then
-        */
+         * Beans count==0 here means fallback into direct class instantiation No
+         * need to check for the scope then
+         */
         if (beanNames.length > 1) {
             throw new NoUniqueBeanDefinitionException(viewClass);
         } else if (beanNames.length == 1) {
-            BeanDefinition beanDefinition = viewProvider.getBeanDefinitionRegistry().getBeanDefinition(beanNames[0]);
+            BeanDefinition beanDefinition = viewProvider
+                    .getBeanDefinitionRegistry()
+                    .getBeanDefinition(beanNames[0]);
             String scope = beanDefinition.getScope();
-            if (!UIScopeImpl.VAADIN_UI_SCOPE_NAME.equals(scope) && ! "prototype".equals(scope)) {
-                throw new BeanDefinitionValidationException("Error view must have UI or prototype scope");
+            if (!UIScopeImpl.VAADIN_UI_SCOPE_NAME.equals(scope)
+                    && !"prototype".equals(scope)) {
+                throw new BeanDefinitionValidationException(
+                        "Error view must have UI or prototype scope");
             }
         }
 
@@ -283,7 +289,7 @@ public class SpringNavigator extends Navigator {
             }
         });
     }
-    
+
     protected ApplicationContext getWebApplicationContext() {
         if (applicationContext == null) {
             // Assume we have serialized and deserialized and Navigator is
@@ -299,6 +305,5 @@ public class SpringNavigator extends Navigator {
 
         return applicationContext;
     }
-
 
 }
