@@ -60,13 +60,7 @@ public class InlineTargets {
             type = Dependency.Type.JAVASCRIPT;
             break;
         default:
-            if (inline.value().endsWith(".js")) {
-                type = Dependency.Type.JAVASCRIPT;
-            } else if (inline.value().endsWith(".css")) {
-                type = Dependency.Type.STYLESHEET;
-            } else {
-                type = Dependency.Type.HTML_IMPORT;
-            }
+            type = determineDependencyType(inline);
         }
 
         JsonObject dependency = Json.createObject();
@@ -83,6 +77,18 @@ public class InlineTargets {
             getInlineHead(inline.position()).add(dependency);
 
         }
+    }
+
+    private Dependency.Type determineDependencyType(Inline inline) {
+        Dependency.Type type;
+        if (inline.value().endsWith(".js")) {
+            type = Dependency.Type.JAVASCRIPT;
+        } else if (inline.value().endsWith(".css")) {
+            type = Dependency.Type.STYLESHEET;
+        } else {
+            type = Dependency.Type.HTML_IMPORT;
+        }
+        return type;
     }
 
     /**
