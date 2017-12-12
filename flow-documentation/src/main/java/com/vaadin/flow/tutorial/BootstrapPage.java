@@ -27,6 +27,7 @@ import com.vaadin.server.InitialPageSettings;
 import com.vaadin.server.PageConfigurator;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.ui.BodySize;
+import com.vaadin.ui.Inline;
 import com.vaadin.ui.Viewport;
 import com.vaadin.ui.html.Div;
 
@@ -113,5 +114,17 @@ public class BootstrapPage {
             settings.addInlineWithContents("body {width: 100vw; height:100vh;}",
                     Dependency.Type.STYLESHEET);
         }
+    }
+
+    @Route(value = "", layout = MyInline.class)
+    public class MyRoot extends Div {
+        public MyRoot() {
+        }
+    }
+
+    @Inline("initialization.js")
+    @Inline("initial_style.css")
+    @Inline(value = "important_styles", wrapping = Inline.Wrapping.CSS)
+    public class MyInline extends Div implements RouterLayout {
     }
 }

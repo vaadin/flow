@@ -30,8 +30,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -41,6 +39,8 @@ import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.communication.AtmospherePushConnection;
@@ -50,6 +50,7 @@ import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.ui.Inline;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.WebComponents;
 import com.vaadin.util.AnnotationReader;
@@ -348,6 +349,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         document.outputSettings().prettyPrint(false);
 
+        BootstrapUtils.getInlineTargets(context)
+                .ifPresent(targets -> handleInlineTargets(context, head,
+                        document.body(), targets));
+
         BootstrapUtils.getInitialPageSettings(context).ifPresent(
                 initialPageSettings -> handleInitialPageSettings(context, head,
                         initialPageSettings));
@@ -359,6 +364,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         context.getSession().getService().modifyBootstrapPage(response);
 
         return document;
+    }
+
+    private static void handleInlineTargets(BootstrapContext context,
+            Element head, Element body, InlineTargets targets) {
+        targets.getInlineHead(Inline.Position.PREPEND).stream()
+                .map(dependency -> createDependencyElement(context, dependency))
+                .forEach(head::prependChild);
+        targets.getInlineHead(Inline.Position.APPEND).stream()
+                .map(dependency -> createDependencyElement(context, dependency))
+                .forEach(head::appendChild);
+
+        targets.getInlineBody(Inline.Position.PREPEND).stream()
+                .map(dependency -> createDependencyElement(context, dependency))
+                .forEach(body::prependChild);
+        targets.getInlineBody(Inline.Position.APPEND).stream()
+                .map(dependency -> createDependencyElement(context, dependency))
+                .forEach(body::appendChild);
     }
 
     private static void handleInitialPageSettings(BootstrapContext context,

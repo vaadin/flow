@@ -15,6 +15,12 @@
  */
 package com.vaadin.server;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,6 +35,7 @@ import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.BodySize;
+import com.vaadin.ui.Inline;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Viewport;
 import com.vaadin.ui.common.HasElement;
@@ -58,9 +65,8 @@ class BootstrapUtils {
 
         Optional<Router> router = ui.getRouter();
         if (router.isPresent()) {
-            Optional<NavigationState> navigationTarget = router.get()
-                    .resolveNavigationTarget(request.getPathInfo(),
-                            request.getParameterMap());
+            Optional<NavigationState> navigationTarget = getRouteTargetInformation(
+                    request, router.get());
 
             return navigationTarget
                     .flatMap(BootstrapUtils::getViewportAnnotation)
@@ -157,9 +163,8 @@ class BootstrapUtils {
     static Optional<String> getBodySizeContent(UI ui, VaadinRequest request) {
         Optional<Router> router = ui.getRouter();
         if (router.isPresent()) {
-            Optional<NavigationState> navigationTarget = router.get()
-                    .resolveNavigationTarget(request.getPathInfo(),
-                            request.getParameterMap());
+            Optional<NavigationState> navigationTarget = getRouteTargetInformation(
+                    request, router.get());
 
             return navigationTarget
                     .flatMap(BootstrapUtils::getBodySizeAnnotation)
@@ -194,6 +199,103 @@ class BootstrapUtils {
         bodyString.append("margin:0;");
         bodyString.append("}");
         return bodyString.toString();
+    }
+
+    /**
+     * Returns the specified viewport content for the target route chain that
+     * was navigated to, specified with {@link Inline} on the
+     * {@link com.vaadin.router.Route} annotated class or the
+     * {@link com.vaadin.router.ParentLayout} of the route.
+     *
+     * @param context
+     *            the bootstrap context
+     * @return the content value string for viewport meta tag
+     */
+    static Optional<InlineTargets> getInlineTargets(
+            BootstrapHandler.BootstrapContext context) {
+
+        UI ui = context.getUI();
+        VaadinRequest request = context.getRequest();
+
+        Optional<Router> router = ui.getRouter();
+        if (router.isPresent()) {
+            Optional<NavigationState> navigationTarget = getRouteTargetInformation(
+                    request, router.get());
+
+            if (navigationTarget.isPresent()) {
+                List<Inline> inlineAnnotations = getInlineAnnotations(
+                        navigationTarget.get());
+                if (!inlineAnnotations.isEmpty()) {
+                    InlineTargets inlines = new InlineTargets();
+                    inlineAnnotations.forEach(inline -> inlines
+                            .addInlineDependency(inline, request));
+                    return Optional.of(inlines);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static List<Inline> getInlineAnnotations(NavigationState state) {
+
+        Class<? extends RouterLayout> parentLayout = RouterUtil
+                .getTopParentLayout(state.getNavigationTarget(),
+                        state.getResolvedPath());
+
+        if (parentLayout == null) {
+            return AnnotationReader.getAnnotationsFor(
+                    state.getNavigationTarget(), Inline.class);
+        }
+        return AnnotationReader.getAnnotationsFor(parentLayout, Inline.class);
+    }
+
+    /**
+     *
+     * Read the contents of the given file from the classpath.
+     * 
+     * @param request
+     *            the request for the ui
+     * @param file
+     *            target file to read contents for
+     * @return file contents as a {@link String}
+     */
+    static String getDependencyContents(VaadinRequest request, String file) {
+        Charset requestCharset = Optional
+                .ofNullable(request.getCharacterEncoding())
+                .filter(string -> !string.isEmpty()).map(Charset::forName)
+                .orElse(StandardCharsets.UTF_8);
+
+        try (InputStream inlineResourceStream = getInlineResourceStream(request,
+                file);
+                BufferedReader bufferedReader = new BufferedReader(
+                        new InputStreamReader(inlineResourceStream,
+                                requestCharset))) {
+            return bufferedReader.lines()
+                    .collect(Collectors.joining(System.lineSeparator()));
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    String.format("Could not read file %s contents", file), e);
+        }
+    }
+
+    private static InputStream getInlineResourceStream(VaadinRequest request,
+            String file) {
+        InputStream stream = request.getService().getClassLoader()
+                .getResourceAsStream(file);
+
+        if (stream == null) {
+            throw new IllegalStateException(String.format(
+                    "File '%s' for inline resource is not available through "
+                            + "the servlet context class loader.",
+                    file));
+        }
+        return stream;
+    }
+
+    private static Optional<NavigationState> getRouteTargetInformation(
+            VaadinRequest request, Router router) {
+        return router.resolveNavigationTarget(request.getPathInfo(),
+                request.getParameterMap());
     }
 
 }
