@@ -840,7 +840,7 @@ public class Binder<BEAN> implements Serializable {
             if (fireEvent) {
                 getBinder().getValidationStatusHandler()
                         .statusChange(new BinderValidationStatus<>(getBinder(),
-                                Arrays.asList(status),
+                                Collections.singletonList(status),
                                 Collections.emptyList()));
                 getBinder().fireStatusChangeEvent(status.isError());
             }
