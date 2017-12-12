@@ -90,7 +90,6 @@ import com.vaadin.util.ReflectTools;
  * @see Binding
  * @see HasValue
  *
- * @since 8.0
  */
 public class Binder<BEAN> implements Serializable {
 
@@ -140,7 +139,6 @@ public class Binder<BEAN> implements Serializable {
          *            {@code true} to fire status event; {@code false} to not
          * @return the validation result.
          *
-         * @since 8.2
          */
         BindingValidationStatus<TARGET> validate(boolean fireEvent);
 
@@ -164,7 +162,6 @@ public class Binder<BEAN> implements Serializable {
          * @param bean
          *            the bean to read from
          *
-         * @since 8.2
          */
         void read(BEAN bean);
     }
@@ -1711,7 +1708,6 @@ public class Binder<BEAN> implements Serializable {
      *            to not
      * @return validation status for the binder
      *
-     * @since 8.2
      */
     protected BinderValidationStatus<BEAN> validate(boolean fireEvent) {
         if (getBean() == null && !validators.isEmpty()) {
@@ -2511,7 +2507,6 @@ public class Binder<BEAN> implements Serializable {
      * Returns the fields this binder has been bound to.
      *
      * @return the fields with bindings
-     * @since 8.1
      */
     public Stream<HasValue<?, ?>> getFields() {
         return bindings.stream().map(Binding::getField);
