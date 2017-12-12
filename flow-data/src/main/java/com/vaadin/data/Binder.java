@@ -543,7 +543,7 @@ public class Binder<BEAN> implements Serializable {
          * @return this binding, for chaining
          * 
          */
-        public default BindingBuilder<BEAN, TARGET> asRequired() {
+        default BindingBuilder<BEAN, TARGET> asRequired() {
             return asRequired(context -> "");
         }
 
