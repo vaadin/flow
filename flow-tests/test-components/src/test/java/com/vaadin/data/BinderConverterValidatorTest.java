@@ -70,6 +70,7 @@ public class BinderConverterValidatorTest
             @Override
             protected void handleError(HasValue<?, ?> field,
                     ValidationResult result) {
+                super.handleError(field, result);
                 componentErrors.put(field, result.getErrorMessage());
             }
 
