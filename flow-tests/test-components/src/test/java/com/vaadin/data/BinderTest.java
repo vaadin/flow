@@ -26,7 +26,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.helger.commons.error.ErrorLevel;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToIntegerConverter;
@@ -41,7 +40,7 @@ import com.vaadin.ui.textfield.TextField;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.isEmptyString;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -59,9 +58,10 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     public void setUp() {
         binder = new Binder<Person>() {
             @Override
-            protected void handleError(HasValue<?, ?> field, String error) {
-                super.handleError(field, error);
-                componentErrors.put(field, error);
+            protected void handleError(HasValue<?, ?> field,
+                    ValidationResult result) {
+                super.handleError(field, result);
+                componentErrors.put(field, result.getErrorMessage());
             }
 
             @Override
@@ -471,13 +471,13 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binding.bind(Person::getFirstName, Person::setFirstName);
         binder.setBean(item);
-        assertThat(textField.getErrorMessage(), isEmptyOrNullString());
+        assertThat(textField.getErrorMessage(), isEmptyString());
 
         textField.setValue(textField.getEmptyValue());
         Assert.assertEquals("foobar", componentErrors.get(textField));
 
         textField.setValue("value");
-        assertThat(textField.getErrorMessage(), isEmptyOrNullString());
+        assertThat(textField.getErrorMessage(), isEmptyString());
         assertTrue(textField.isRequiredIndicatorVisible());
     }
 
@@ -518,7 +518,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binding.bind(Person::getFirstName, Person::setFirstName);
         binder.setBean(item);
-        assertThat(textField.getErrorMessage(), isEmptyOrNullString());
+        assertThat(textField.getErrorMessage(), isEmptyString());
         Assert.assertEquals(0, invokes.get());
 
         textField.setValue(textField.getEmptyValue());
@@ -527,7 +527,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertEquals(1, invokes.get());
 
         textField.setValue("value");
-        assertThat(textField.getErrorMessage(), isEmptyOrNullString());
+        assertThat(textField.getErrorMessage(), isEmptyString());
         assertTrue(textField.isRequiredIndicatorVisible());
     }
 
@@ -991,9 +991,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setBean(item);
         ageField.setValue("3");
         Assert.assertEquals(infoMessage,
-                ageField.getComponentError().getFormattedHtmlMessage());
-        Assert.assertEquals(ErrorLevel.INFO,
-                ageField.getComponentError().getErrorLevel());
+                ageField.getErrorMessage());
 
         Assert.assertEquals(3, item.getAge());
     }
@@ -1008,22 +1006,22 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 });
 
         binder.setBean(item);
-        assertNull("Initially there should be no errors",
-                nameField.getComponentError());
-        assertNull("Initially there should be no errors",
-                ageField.getComponentError());
+        assertThat("Initially there should be no errors",
+                nameField.getErrorMessage(), isEmptyString());
+        assertThat("Initially there should be no errors",
+                ageField.getErrorMessage(), isEmptyString());
 
         nameField.setValue("Foo");
-        assertNull("Name with a value should not be an error",
-                nameField.getComponentError());
-        assertNull(
+        assertThat("Name with a value should not be an error",
+                nameField.getErrorMessage(), isEmptyString());
+        assertThat(
                 "Age field should not be in error, since it has not been modified.",
-                ageField.getComponentError());
+                ageField.getErrorMessage(), isEmptyString());
 
         nameField.setValue("");
         assertNotNull("Empty name should now be in error.",
-                nameField.getComponentError());
-        assertNull("Age field should still be ok.",
-                ageField.getComponentError());
+                nameField.getErrorMessage());
+        assertThat("Age field should still be ok.", ageField.getErrorMessage(),
+                isEmptyString());
     }
 }
