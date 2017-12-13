@@ -152,11 +152,12 @@ public class Binder<BEAN> implements Serializable {
         BindingValidationStatusHandler getValidationStatusHandler();
 
         /**
-         * Unbinds the binding from its respective {@code Binder}.
-         * Removes any {@code ValueChangeListener} {@code Registration} from
-         * associated {@code HasValue}.
+         * Unbinds the binding from its respective {@code Binder}. Removes any
+         * {@code ValueChangeListener} {@code Registration} from associated
+         * {@code HasValue}.
          */
-        void unbind();    }
+        void unbind();
+    }
 
     /**
      * Creates a binding between a field and a data property.
@@ -279,6 +280,7 @@ public class Binder<BEAN> implements Serializable {
          * failure, the property value is not updated.
          *
          * @see #withValidator(Validator)
+         * @see #withValidator(SerializablePredicate, String, ErrorLevel)
          * @see #withValidator(SerializablePredicate, ErrorMessageProvider)
          * @see Validator#from(SerializablePredicate, String)
          *
@@ -298,6 +300,38 @@ public class Binder<BEAN> implements Serializable {
 
         /**
          * A convenience method to add a validator to this binding using the
+         * {@link Validator#from(SerializablePredicate, String, ErrorLevel)}
+         * factory method.
+         * <p>
+         * Validators are applied, in registration order, when the field value
+         * is written to the backing property. If any validator returns a
+         * failure, the property value is not updated.
+         *
+         * @see #withValidator(Validator)
+         * @see #withValidator(SerializablePredicate, String)
+         * @see #withValidator(SerializablePredicate, ErrorMessageProvider,
+         *      ErrorLevel)
+         * @see Validator#from(SerializablePredicate, String)
+         *
+         * @param predicate
+         *            the predicate performing validation, not null
+         * @param message
+         *            the error message to report in case validation failure
+         * @param errorLevel
+         *            the error level for failures from this validator, not null
+         * @return this binding, for chaining
+         * @throws IllegalStateException
+         *             if {@code bind} has already been called
+         */
+        public default BindingBuilder<BEAN, TARGET> withValidator(
+                SerializablePredicate<? super TARGET> predicate, String message,
+                ErrorLevel errorLevel) {
+            return withValidator(
+                    Validator.from(predicate, message, errorLevel));
+        }
+
+        /**
+         * A convenience method to add a validator to this binding using the
          * {@link Validator#from(SerializablePredicate, ErrorMessageProvider)}
          * factory method.
          * <p>
@@ -307,6 +341,8 @@ public class Binder<BEAN> implements Serializable {
          *
          * @see #withValidator(Validator)
          * @see #withValidator(SerializablePredicate, String)
+         * @see #withValidator(SerializablePredicate, ErrorMessageProvider,
+         *      ErrorLevel)
          * @see Validator#from(SerializablePredicate, ErrorMessageProvider)
          *
          * @param predicate
@@ -322,6 +358,39 @@ public class Binder<BEAN> implements Serializable {
                 ErrorMessageProvider errorMessageProvider) {
             return withValidator(
                     Validator.from(predicate, errorMessageProvider));
+        }
+
+        /**
+         * A convenience method to add a validator to this binding using the
+         * {@link Validator#from(SerializablePredicate, ErrorMessageProvider, ErrorLevel)}
+         * factory method.
+         * <p>
+         * Validators are applied, in registration order, when the field value
+         * is written to the backing property. If any validator returns a
+         * failure, the property value is not updated.
+         *
+         * @see #withValidator(Validator)
+         * @see #withValidator(SerializablePredicate, String, ErrorLevel)
+         * @see #withValidator(SerializablePredicate, ErrorMessageProvider)
+         * @see Validator#from(SerializablePredicate, ErrorMessageProvider,
+         *      ErrorLevel)
+         *
+         * @param predicate
+         *            the predicate performing validation, not null
+         * @param errorMessageProvider
+         *            the provider to generate error messages, not null
+         * @param errorLevel
+         *            the error level for failures from this validator, not null
+         * @return this binding, for chaining
+         * @throws IllegalStateException
+         *             if {@code bind} has already been called
+         */
+        default BindingBuilder<BEAN, TARGET> withValidator(
+                SerializablePredicate<? super TARGET> predicate,
+                ErrorMessageProvider errorMessageProvider,
+                ErrorLevel errorLevel) {
+            return withValidator(Validator.from(predicate, errorMessageProvider,
+                    errorLevel));
         }
 
         /**
@@ -835,7 +904,8 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public BindingValidationStatus<TARGET> validate(boolean fireEvent) {
-            Objects.requireNonNull(binder, "This Binding is no longer attached to a Binder");
+            Objects.requireNonNull(binder,
+                    "This Binding is no longer attached to a Binder");
             BindingValidationStatus<TARGET> status = doValidation();
             if (fireEvent) {
                 getBinder().getValidationStatusHandler()
@@ -877,10 +947,7 @@ public class Binder<BEAN> implements Serializable {
 
         private BindingValidationStatus<TARGET> toValidationStatus(
                 Result<TARGET> result) {
-            return new BindingValidationStatus<>(this,
-                    result.isError()
-                            ? ValidationResult.error(result.getMessage().get())
-                            : ValidationResult.ok());
+            return new BindingValidationStatus<>(result, this);
         }
 
         /**
@@ -1004,11 +1071,7 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public Result<T> convertToModel(T value, ValueContext context) {
             ValidationResult validationResult = validator.apply(value, context);
-            if (validationResult.isError()) {
-                return Result.error(validationResult.getErrorMessage());
-            } else {
-                return Result.ok(value);
-            }
+            return new ValidationResultWrap<>(value, validationResult);
         }
 
         @Override
@@ -1221,7 +1284,9 @@ public class Binder<BEAN> implements Serializable {
 
         return createBinding(field, createNullRepresentationAdapter(field),
                 this::handleValidationStatus)
-                        .withValidator(field instanceof HasValidator ? ((HasValidator)field).getDefaultValidator() : Validator.alwaysPass());
+                        .withValidator(field instanceof HasValidator
+                                ? ((HasValidator) field).getDefaultValidator()
+                                : Validator.alwaysPass());
     }
 
     /**
@@ -1832,8 +1897,8 @@ public class Binder<BEAN> implements Serializable {
      * {@link #setStatusLabel(HasText)}.
      * <p>
      * This handler cannot be set after the status label has been set with
-     * {@link #setStatusLabel(HasText)}, or {@link #setStatusLabel(HasText)} cannot
-     * be used after this handler has been set.
+     * {@link #setStatusLabel(HasText)}, or {@link #setStatusLabel(HasText)}
+     * cannot be used after this handler has been set.
      *
      * @param statusHandler
      *            the status handler to set, not <code>null</code>
@@ -1985,15 +2050,16 @@ public class Binder<BEAN> implements Serializable {
      *
      * @param field
      *            the field with the invalid value
-     * @param error
-     *            the error message to set
+     * @param result
+     *            the validation error result
      */
-    protected void handleError(HasValue<?, ?> field, String error) {
-        if (field instanceof HasValidation) {
-            HasValidation fieldWithValidation = (HasValidation) field;
-            fieldWithValidation.setInvalid(true);
-            fieldWithValidation.setErrorMessage(error);
-        }
+    protected void handleError(HasValue<?, ?> field, ValidationResult result) {
+        result.getErrorLevel().ifPresent(level -> {
+            if (field instanceof HasValidation) {
+                HasValidation fieldWithValidation = (HasValidation) field;
+                fieldWithValidation.setErrorMessage(result.getErrorMessage());
+            }
+        });
     }
 
     /**
@@ -2018,10 +2084,26 @@ public class Binder<BEAN> implements Serializable {
      *            the validation status
      */
     protected void handleValidationStatus(BindingValidationStatus<?> status) {
+        HasValue<?, ?> source = status.getField();
+        clearError(source);
         if (status.isError()) {
-            handleError(status.getField(), status.getMessage().orElse(null));
+            Optional<ValidationResult> firstError = status
+                    .getValidationResults().stream()
+                    .filter(ValidationResult::isError).findFirst();
+            if (firstError.isPresent()) {
+                // Failed with a Validation error
+                handleError(source, firstError.get());
+            } else {
+                // Conversion error
+                status.getResult()
+                        .ifPresent(result -> handleError(source, result));
+            }
         } else {
-            clearError(status.getField());
+            // Show first non-error ValidationResult message.
+            status.getValidationResults().stream()
+                    .filter(result -> result.getErrorLevel().isPresent())
+                    .findFirst()
+                    .ifPresent(result -> handleError(source, result));
         }
     }
 
@@ -2544,7 +2626,8 @@ public class Binder<BEAN> implements Serializable {
      *
      * This method should just be used for internal cleanup.
      *
-     * @param binding The {@code Binding} to remove from the binding map
+     * @param binding
+     *            The {@code Binding} to remove from the binding map
      */
     protected void removeBindingInternal(Binding<BEAN, ?> binding) {
         if (bindings.remove(binding)) {

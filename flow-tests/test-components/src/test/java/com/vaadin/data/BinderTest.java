@@ -26,11 +26,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.helger.commons.error.ErrorLevel;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
-import com.vaadin.data.converter.StringToDoubleConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
+import com.vaadin.data.validator.IntegerRangeValidator;
 import com.vaadin.data.validator.NotEmptyValidator;
+import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.ui.common.HasValue;
@@ -40,6 +42,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -977,6 +980,24 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 "First name and last name can't be the same");
     }
     
+    @Test
+    public void info_validator_not_considered_error() {
+        String infoMessage = "Young";
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .withValidator(i -> i > 5, infoMessage, ErrorLevel.INFO)
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setBean(item);
+        ageField.setValue("3");
+        Assert.assertEquals(infoMessage,
+                ageField.getComponentError().getFormattedHtmlMessage());
+        Assert.assertEquals(ErrorLevel.INFO,
+                ageField.getComponentError().getErrorLevel());
+
+        Assert.assertEquals(3, item.getAge());
+    }
+
     @Test
     public void two_asRequired_fields_without_initial_values() {
         binder.forField(nameField).asRequired("Empty name").bind(p -> "",
