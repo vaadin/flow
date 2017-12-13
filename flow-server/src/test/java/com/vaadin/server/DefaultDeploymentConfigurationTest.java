@@ -136,6 +136,27 @@ public class DefaultDeploymentConfigurationTest {
         assertFalse(config.getWebComponentsPolyfillBase().isPresent());
     }
 
+    /**
+     * @see <a href="https://github.com/vaadin/flow/issues/3142">https://github.com/vaadin/flow/issues/3142</a>
+     */
+    @Test
+    public void testWebComponentsBase_defaultSetting_samePathRepeatedMultipleTimes() {
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, new Properties(),
+                (base, consumer) -> {
+                    int numberOfVisits = 0;
+                    while (consumer.test("foo//")) {
+                        numberOfVisits++;
+                        if (numberOfVisits > 2) {
+                            throw new AssertionError(
+                                    "Should not visit the same path twice");
+                        }
+                    }
+                });
+
+        assertFalse(config.getWebComponentsPolyfillBase().isPresent());
+    }
+
     @Test
     public void testWebComponentsBase_explicitSetting() {
         Properties initParameters = new Properties();
