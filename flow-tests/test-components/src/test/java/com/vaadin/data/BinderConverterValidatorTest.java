@@ -38,6 +38,7 @@ import com.vaadin.ui.textfield.TextField;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isEmptyString;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -67,9 +68,9 @@ public class BinderConverterValidatorTest
     public void setUp() {
         binder = new Binder<Person>() {
             @Override
-            protected void handleError(HasValue<?, ?> field, String error) {
-                super.handleError(field, error);
-                componentErrors.put(field, error);
+            protected void handleError(HasValue<?, ?> field,
+                    ValidationResult result) {
+                componentErrors.put(field, result.getErrorMessage());
             }
 
             @Override
@@ -315,7 +316,7 @@ public class BinderConverterValidatorTest
 
         assertEquals(msg1, error.getMessage().get());
         assertEquals(nameField, error.getField());
-        assertInvalidField(msg1, nameField);
+        assertEquals(msg1, nameField.getErrorMessage());
     }
 
     @Test
