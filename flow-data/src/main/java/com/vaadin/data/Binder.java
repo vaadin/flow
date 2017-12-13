@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.BeanValidator;
+import com.vaadin.function.SerializableConsumer;
 import com.vaadin.function.SerializableFunction;
 import com.vaadin.function.SerializablePredicate;
 import com.vaadin.function.ValueProvider;
@@ -1952,7 +1953,7 @@ public class Binder<BEAN> implements Serializable {
      * @return a registration for the listener
      */
     protected <T> Registration addListener(Class<T> eventType,
-            Consumer<T> method) {
+            SerializableConsumer<T> method) {
         List<Consumer<?>> list = listeners.computeIfAbsent(eventType,
                 key -> new ArrayList<>());
         list.add(method);

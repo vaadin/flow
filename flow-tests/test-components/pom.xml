@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>test-components</artifactId>
-    <name>FText components agains flow</name>
+    <name>Test components against flow</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
