@@ -118,7 +118,7 @@ public interface Validator<T>
      * 10, inclusive:
      *
      * <pre>
-     * Validator&lt;Integer&gt; v = Validator.from(num -&gt; num &gt;= 0 && num &lt;= 10,
+     * Validator&lt;Integer&gt; v = Validator.from(num -&gt; num &gt;= 0 &amp;&amp; num &lt;= 10,
      *         "number must be between 0 and 10", ErrorLevel.ERROR);
      * </pre>
      *
