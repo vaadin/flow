@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.BeanValidator;
+import com.vaadin.function.SerializableConsumer;
 import com.vaadin.function.SerializableFunction;
 import com.vaadin.function.SerializablePredicate;
 import com.vaadin.function.ValueProvider;
@@ -90,7 +91,6 @@ import com.vaadin.util.ReflectTools;
  * @see Binding
  * @see HasValue
  *
- * @since 8.0
  */
 public class Binder<BEAN> implements Serializable {
 
@@ -140,7 +140,6 @@ public class Binder<BEAN> implements Serializable {
          *            {@code true} to fire status event; {@code false} to not
          * @return the validation result.
          *
-         * @since 8.2
          */
         BindingValidationStatus<TARGET> validate(boolean fireEvent);
 
@@ -157,6 +156,16 @@ public class Binder<BEAN> implements Serializable {
          * {@code HasValue}.
          */
         void unbind();
+
+        /**
+         * Reads the value from given item and stores it to the bound field.
+         *
+         * @param bean
+         *            the bean to read from
+         *
+         */
+        void read(BEAN bean);
+
     }
 
     /**
@@ -589,6 +598,31 @@ public class Binder<BEAN> implements Serializable {
          */
         default BindingBuilder<BEAN, TARGET> asRequired(String errorMessage) {
             return asRequired(context -> errorMessage);
+        }
+
+        /**
+         * Sets the field to be required. This means two things:
+         * <ol>
+         * <li>the required indicator will be displayed for this field</li>
+         * <li>the field value is validated for not being empty, i.e. that the
+         * field's value is not equal to what {@link HasValue#getEmptyValue()}
+         * returns</li>
+         * </ol>
+         * <p>
+         * For setting an error message, use {@link #asRequired(String)}.
+         * <p>
+         * For localizing the error message, use
+         * {@link #asRequired(ErrorMessageProvider)}.
+         *
+         * @see #asRequired(String)
+         * @see #asRequired(ErrorMessageProvider)
+         * @see HasValue#setRequiredIndicatorVisible(boolean)
+         * @see HasValue#isEmpty()
+         * @return this binding, for chaining
+         * 
+         */
+        default BindingBuilder<BEAN, TARGET> asRequired() {
+            return asRequired(context -> "");
         }
 
         /**
@@ -1042,6 +1076,12 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public BindingValidationStatusHandler getValidationStatusHandler() {
             return statusHandler;
+        }
+
+        @Override
+        public void read(BEAN bean) {
+            field.setValue(converterValidatorChain.convertToPresentation(
+                    getter.apply(bean), createValueContext()));
         }
     }
 
@@ -1759,7 +1799,6 @@ public class Binder<BEAN> implements Serializable {
      *            to not
      * @return validation status for the binder
      *
-     * @since 8.2
      */
     protected BinderValidationStatus<BEAN> validate(boolean fireEvent) {
         if (getBean() == null && !validators.isEmpty()) {
@@ -1979,7 +2018,7 @@ public class Binder<BEAN> implements Serializable {
      * @return a registration for the listener
      */
     protected <T> Registration addListener(Class<T> eventType,
-            Consumer<T> method) {
+            SerializableConsumer<T> method) {
         List<Consumer<?>> list = listeners.computeIfAbsent(eventType,
                 key -> new ArrayList<>());
         list.add(method);
@@ -2576,7 +2615,6 @@ public class Binder<BEAN> implements Serializable {
      * Returns the fields this binder has been bound to.
      *
      * @return the fields with bindings
-     * @since 8.1
      */
     public Stream<HasValue<?, ?>> getFields() {
         return bindings.stream().map(Binding::getField);

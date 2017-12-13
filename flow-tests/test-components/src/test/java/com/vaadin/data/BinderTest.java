@@ -1014,14 +1014,36 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         nameField.setValue("Foo");
         assertThat("Name with a value should not be an error",
                 nameField.getErrorMessage(), isEmptyString());
-        assertThat(
-                "Age field should not be in error, since it has not been modified.",
+
+        assertThat("Age field should not be in error, since it has not been modified.",
                 ageField.getErrorMessage(), isEmptyString());
 
         nameField.setValue("");
         assertNotNull("Empty name should now be in error.",
                 nameField.getErrorMessage());
-        assertThat("Age field should still be ok.", ageField.getErrorMessage(),
-                isEmptyString());
+
+        assertThat("Age field should still be ok.",
+                ageField.getErrorMessage(), isEmptyString());
+    }
+
+    @Test
+    public void refreshValueFromBean() {
+        Binding<Person, String> binding = binder.bind(nameField,
+                Person::getFirstName, Person::setFirstName);
+
+        binder.readBean(item);
+
+        assertEquals("Name should be read from the item", item.getFirstName(),
+                nameField.getValue());
+
+        nameField.setValue("foo");
+
+        assertNotEquals("Name should be different from the item",
+                item.getFirstName(), nameField.getValue());
+
+        binding.read(item);
+
+        assertEquals("Name should be read again from the item",
+                item.getFirstName(), nameField.getValue());
     }
 }
