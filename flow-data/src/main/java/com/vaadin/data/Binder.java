@@ -332,7 +332,7 @@ public class Binder<BEAN> implements Serializable {
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
-        public default BindingBuilder<BEAN, TARGET> withValidator(
+        default BindingBuilder<BEAN, TARGET> withValidator(
                 SerializablePredicate<? super TARGET> predicate, String message,
                 ErrorLevel errorLevel) {
             return withValidator(

@@ -153,9 +153,8 @@ public interface ValidationResult extends Serializable {
          * @throws NullPointerException
          *             if {@code errorMessage} or {@code errorLevel} is {@code null}
          *
-         * @since 8.2
          */
-        public static ValidationResult create(String errorMessage,
+    static ValidationResult create(String errorMessage,
                 ErrorLevel errorLevel) {
             Objects.requireNonNull(errorMessage);
             Objects.requireNonNull(errorLevel);

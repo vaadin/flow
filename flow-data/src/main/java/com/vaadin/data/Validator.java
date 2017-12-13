@@ -132,9 +132,8 @@ public interface Validator<T>
      *            the error level for failures from this validator, not null
      * @return the new validator using the function
      *
-     * @since 8.2
      */
-    public static <T> Validator<T> from(SerializablePredicate<T> guard,
+    static <T> Validator<T> from(SerializablePredicate<T> guard,
             String errorMessage, ErrorLevel errorLevel) {
         Objects.requireNonNull(errorMessage, "errorMessage cannot be null");
         return from(guard, ctx -> errorMessage, errorLevel);
@@ -175,9 +174,8 @@ public interface Validator<T>
      *            the error level for failures from this validator, not null
      * @return the new validator using the function
      *
-     * @since 8.2
      */
-    public static <T> Validator<T> from(SerializablePredicate<T> guard,
+    static <T> Validator<T> from(SerializablePredicate<T> guard,
             ErrorMessageProvider errorMessageProvider, ErrorLevel errorLevel) {
         Objects.requireNonNull(guard, "guard cannot be null");
         Objects.requireNonNull(errorMessageProvider,

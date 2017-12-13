@@ -78,41 +78,6 @@ public class BindingValidationStatus<TARGET> implements Serializable {
     private Result<TARGET> result;
 
     /**
-     * Creates a new validation status for the given binding and validation
-     * result.
-     *
-     * @param source
-     *            the source binding
-     * @param result
-     *            the result of the validation
-     */
-    @Deprecated
-    public BindingValidationStatus(Binding<?, TARGET> source,
-            ValidationResult result) {
-        this(source, result.isError() ? Status.ERROR : Status.OK, result);
-    }
-
-    /**
-     * Creates a new status change event.
-     * <p>
-     * The {@code message} must be {@code null} if the {@code status} is
-     * {@link Status#OK}.
-     *
-     * @param source
-     *            field whose status has changed, not {@code null}
-     * @param status
-     *            updated status value, not {@code null}
-     * @param result
-     *            the related result, may be {@code null}
-     */
-    @Deprecated
-    public BindingValidationStatus(Binding<?, TARGET> source, Status status,
-            ValidationResult result) {
-        this(result.isError() ? Result.error(result.getErrorMessage())
-                : Result.ok(null), source);
-    }
-
-    /**
      * Creates a new status change event.
      * <p>
      * If {@code result} is {@code null}, the {@code status} is
