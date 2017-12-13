@@ -15,12 +15,6 @@
  */
 package com.vaadin.data;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -31,16 +25,25 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.NotEmptyValidator;
-import com.vaadin.ui.html.Label;
 import com.vaadin.function.SerializablePredicate;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.ui.common.HasValidation;
+import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.html.Label;
 import com.vaadin.ui.textfield.TextField;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class BinderConverterValidatorTest
         extends BinderTestBase<Binder<Person>, Person> {
@@ -475,7 +478,7 @@ public class BinderConverterValidatorTest
             binder.writeBean(person);
         } finally {
             // Bean should have been updated for item validation but reverted
-            Assert.assertNull(person.getFirstName());
+            assertNull(person.getFirstName());
         }
     }
 
@@ -561,7 +564,7 @@ public class BinderConverterValidatorTest
 
         binder.writeBean(person);
 
-        Assert.assertNull(person.getFirstName());
+        assertNull(person.getFirstName());
     }
 
     @Test
@@ -644,11 +647,11 @@ public class BinderConverterValidatorTest
         binding2.bind(Person::getLastName, Person::setLastName);
 
         // should not have error shown when initialized
-        assertNull(lastNameField.getComponentError());
-        
+        assertThat(lastNameField.getErrorMessage(), isEmptyString());
+
         // Set a value that breaks the validation
         lastNameField.setValue("");
-        assertNotNull(lastNameField.getComponentError());
+        assertNotNull(lastNameField.getErrorMessage());
 
         // add status label to show bean level error
         Label statusLabel = new Label();
