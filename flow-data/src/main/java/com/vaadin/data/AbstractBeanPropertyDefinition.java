@@ -43,8 +43,8 @@ public abstract class AbstractBeanPropertyDefinition<T, V>
      *
      * @param propertySet
      *            property set this property belongs to
-     * @param parent
-     *            parent property for this nested property
+     * @param propertyHolderType
+     *            property holder type
      * @param descriptor
      *            property descriptor
      */
