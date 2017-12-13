@@ -963,8 +963,10 @@ public class Binder<BEAN> implements Serializable {
         }
 
         private FIELDVALUE convertDataToFieldType(BEAN bean) {
-            return converterValidatorChain.convertToPresentation(
-                    getter.apply(bean), createValueContext());
+            TARGET target = getter.apply(bean);
+            ValueContext valueContext = createValueContext();
+            return converterValidatorChain.convertToPresentation(target,
+                    valueContext);
         }
 
         /**
@@ -1219,6 +1221,21 @@ public class Binder<BEAN> implements Serializable {
         } else {
             binding.validate();
         }
+    }
+
+    /**
+     * Creates a new binder that uses reflection based on the provided bean type
+     * to resolve bean properties.
+     *
+     * @param beanType
+     *            the bean type to use, not {@code null}
+     * @param scanNestedDefinitions
+     *            if {@code true}, scan for nested property definitions as well
+     * @since
+     */
+    public Binder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
+        this(BeanPropertySet.get(beanType, scanNestedDefinitions,
+                PropertyFilterDefinition.getDefaultFilter()));
     }
 
     /**
