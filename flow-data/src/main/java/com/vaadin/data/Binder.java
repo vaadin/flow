@@ -2096,6 +2096,7 @@ public class Binder<BEAN> implements Serializable {
         result.getErrorLevel().ifPresent(level -> {
             if (field instanceof HasValidation) {
                 HasValidation fieldWithValidation = (HasValidation) field;
+                fieldWithValidation.setInvalid(true);
                 fieldWithValidation.setErrorMessage(result.getErrorMessage());
             }
         });
