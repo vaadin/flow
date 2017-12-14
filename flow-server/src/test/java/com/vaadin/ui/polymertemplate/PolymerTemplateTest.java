@@ -653,6 +653,8 @@ public class PolymerTemplateTest extends HasCurrentService {
         StateNode stateNode = templateNodes.get(0);
 
         assertEquals(stateNode, template.child.getStateNode());
+
+        assertElementData(stateNode, NodeProperties.INJECT_BY_ID, "child");
     }
 
     @Test
