@@ -41,6 +41,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.isEmptyString;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -57,9 +58,10 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     public void setUp() {
         binder = new Binder<Person>() {
             @Override
-            protected void handleError(HasValue<?, ?> field, String error) {
-                super.handleError(field, error);
-                componentErrors.put(field, error);
+            protected void handleError(HasValue<?, ?> field,
+                    ValidationResult result) {
+                super.handleError(field, result);
+                componentErrors.put(field, result.getErrorMessage());
             }
 
             @Override
@@ -979,6 +981,22 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
     
     @Test
+    public void info_validator_not_considered_error() {
+        String infoMessage = "Young";
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .withValidator(i -> i > 5, infoMessage, ErrorLevel.INFO)
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setBean(item);
+        ageField.setValue("3");
+        Assert.assertEquals(infoMessage,
+                ageField.getErrorMessage());
+
+        Assert.assertEquals(3, item.getAge());
+    }
+
+    @Test
     public void two_asRequired_fields_without_initial_values() {
         binder.forField(nameField).asRequired("Empty name").bind(p -> "",
                 (p, s) -> {
@@ -996,12 +1014,14 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         nameField.setValue("Foo");
         assertThat("Name with a value should not be an error",
                 nameField.getErrorMessage(), isEmptyString());
+
         assertThat("Age field should not be in error, since it has not been modified.",
                 ageField.getErrorMessage(), isEmptyString());
 
         nameField.setValue("");
         assertNotNull("Empty name should now be in error.",
                 nameField.getErrorMessage());
+
         assertThat("Age field should still be ok.",
                 ageField.getErrorMessage(), isEmptyString());
     }

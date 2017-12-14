@@ -42,9 +42,9 @@ public class BinderValidationStatusTest
     public void setUp() {
         binder = new Binder<Person>() {
             @Override
-            protected void handleError(HasValue<?, ?> field, String error) {
-                super.handleError(field, error);
-                componentErrors.put(field, error);
+            protected void handleError(HasValue<?, ?> field,
+                    ValidationResult result) {
+                componentErrors.put(field, result.getErrorMessage());
             }
 
             @Override
