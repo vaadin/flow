@@ -58,10 +58,8 @@ public class TestTutorialCodeCoverage {
     public void verifyTutorialCode() throws IOException {
         List<TutorialLineChecker> lineCheckers = Arrays.asList(
                 new CodeFileChecker(JAVA_BLOCK_IDENTIFIER, gatherJavaCode()),
-                new CodeFileChecker(CSS_BLOCK_IDENTIFIER,
-                        gatherWebFilesCode(CSS_LOCATION, "css")),
-                new CodeFileChecker(HTML_BLOCK_IDENTIFIER,
-                        gatherWebFilesCode(HTML_LOCATION, "html")),
+                new CodeFileChecker(CSS_BLOCK_IDENTIFIER, gatherWebFilesCode(CSS_LOCATION, "css")),
+                new CodeFileChecker(HTML_BLOCK_IDENTIFIER, gatherWebFilesCode(HTML_LOCATION, "html")),
                 new AsciiDocLinkWithDescriptionChecker("image:",
                         Pattern.compile("image:(.*?)\\[(.*?)]")),
                 new AsciiDocLinkWithDescriptionChecker("#,",
@@ -130,8 +128,7 @@ public class TestTutorialCodeCoverage {
                 .replace(File.separatorChar, '.').replaceAll("\\.java$", "");
 
         try {
-            Class<?> clazz = Class.forName(className, false,
-                    getClass().getClassLoader());
+            Class<?> clazz = Class.forName(className);
             if (clazz == CodeFor.class) {
                 // Ignore the annotation itself
                 return;
@@ -164,8 +161,8 @@ public class TestTutorialCodeCoverage {
                 lines.forEach(line -> addLineToAllowed(allowedLines,
                         tutorialName, line));
             } else {
-                addDocumentationError(
-                        "Html file with faulty tutorial header: " + htmlFile);
+                addDocumentationError("Html file with faulty tutorial header: "
+                        + htmlFile);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
