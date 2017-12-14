@@ -38,7 +38,7 @@ import com.vaadin.function.ValueProvider;
 public abstract class SimpleValueTemplateRenderer<SOURCE, TARGET>
         extends TemplateRenderer<SOURCE> {
 
-    private static AtomicInteger RENDERER_ID_GENERATOR = new AtomicInteger();
+    private static final AtomicInteger RENDERER_ID_GENERATOR = new AtomicInteger();
     private String template;
 
     /**

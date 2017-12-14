@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui.renderers;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.shared.Registration;
@@ -27,7 +28,7 @@ import com.vaadin.shared.Registration;
  * @param <SOURCE>
  *            the type of the item received in the click listeners
  */
-public interface ClickableRenderer<SOURCE> {
+public interface ClickableRenderer<SOURCE> extends Serializable {
 
     /**
      * Listener that receives the clicked item (or tapped item, in touch
@@ -37,7 +38,7 @@ public interface ClickableRenderer<SOURCE> {
      *            the type of the clicked item
      */
     @FunctionalInterface
-    public interface ItemClickListener<SOURCE> {
+    public interface ItemClickListener<SOURCE> extends Serializable {
 
         /**
          * Method called when an item is clicked or tapped in the target

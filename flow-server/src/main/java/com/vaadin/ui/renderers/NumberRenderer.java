@@ -25,9 +25,13 @@ import com.vaadin.function.ValueProvider;
  * A template renderer for presenting number values.
  *
  * @author Vaadin Ltd.
+ * 
+ * @param <SOURCE>
+ *            the type of the input item, from which the number is extracted
  *
  */
-public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
+public class NumberRenderer<SOURCE>
+        extends SimpleValueTemplateRenderer<SOURCE, Number> {
 
     private Locale locale;
     private NumberFormat numberFormat;
@@ -44,7 +48,7 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
      *            the callback to provide a {@link Number} to the renderer, not
      *            <code>null</code>
      */
-    protected NumberRenderer(ValueProvider<T, Number> valueProvider) {
+    protected NumberRenderer(ValueProvider<SOURCE, Number> valueProvider) {
         this(valueProvider, Locale.getDefault());
     }
 
@@ -61,7 +65,7 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
      *            the number format with which to display numbers, not
      *            <code>null</code>
      */
-    public NumberRenderer(ValueProvider<T, Number> valueProvider,
+    public NumberRenderer(ValueProvider<SOURCE, Number> valueProvider,
             NumberFormat numberFormat) {
         this(valueProvider, numberFormat, "");
     }
@@ -81,9 +85,8 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
      * @param nullRepresentation
      *            the textual representation of <code>null</code> value
      */
-    public NumberRenderer(ValueProvider<T, Number> valueProvider,
-            NumberFormat numberFormat, String nullRepresentation)
-            throws IllegalArgumentException {
+    public NumberRenderer(ValueProvider<SOURCE, Number> valueProvider,
+            NumberFormat numberFormat, String nullRepresentation) {
         super(valueProvider);
 
         if (numberFormat == null) {
@@ -109,8 +112,8 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
      *            the locale in which to display numbers
      * 
      */
-    public NumberRenderer(ValueProvider<T, Number> valueProvider, Locale locale)
-            throws IllegalArgumentException {
+    public NumberRenderer(ValueProvider<SOURCE, Number> valueProvider,
+            Locale locale) {
         this(valueProvider, "%s", locale);
     }
 
@@ -129,9 +132,8 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
      * @param locale
      *            the locale in which to display numbers, not <code>null</code>
      */
-    public NumberRenderer(ValueProvider<T, Number> valueProvider,
-            String formatString, Locale locale)
-            throws IllegalArgumentException {
+    public NumberRenderer(ValueProvider<SOURCE, Number> valueProvider,
+            String formatString, Locale locale) {
         // This will call #toString() during formatting
         this(valueProvider, formatString, locale, "");
     }
@@ -152,8 +154,8 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
      *      "http://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax">
      *      Format String Syntax</a>
      */
-    public NumberRenderer(ValueProvider<T, Number> valueProvider,
-            String formatString) throws IllegalArgumentException {
+    public NumberRenderer(ValueProvider<SOURCE, Number> valueProvider,
+            String formatString) {
         this(valueProvider, formatString, Locale.getDefault(), "");
     }
 
@@ -171,11 +173,13 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
      *            <code>null</code>
      * @param locale
      *            the locale in which to present numbers, not <code>null</code>
+     * @param nullRepresentation
+     *            the textual representation of <code>null</code> value
      * @see <a href=
      *      "http://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax">
      *      Format String Syntax</a>
      */
-    public NumberRenderer(ValueProvider<T, Number> valueProvider,
+    public NumberRenderer(ValueProvider<SOURCE, Number> valueProvider,
             String formatString, Locale locale, String nullRepresentation) {
         super(valueProvider);
 

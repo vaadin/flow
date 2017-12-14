@@ -27,9 +27,13 @@ import com.vaadin.function.ValueProvider;
  * A template renderer for presenting {@code LocalDateTime} objects.
  *
  * @author Vaadin Ltd.
+ * 
+ * @param <SOURCE>
+ *            the type of the input item, from which the {@link LocalDateTime}
+ *            is extracted
  */
-public class LocalDateTimeRenderer<T>
-        extends SimpleValueTemplateRenderer<T, LocalDateTime> {
+public class LocalDateTimeRenderer<SOURCE>
+        extends SimpleValueTemplateRenderer<SOURCE, LocalDateTime> {
 
     private DateTimeFormatter formatter;
     private String nullRepresentation;
@@ -53,7 +57,7 @@ public class LocalDateTimeRenderer<T>
      *      FormatStyle.SHORT</a>
      */
     public LocalDateTimeRenderer(
-            ValueProvider<T, LocalDateTime> valueProvider) {
+            ValueProvider<SOURCE, LocalDateTime> valueProvider) {
         this(valueProvider, DateTimeFormatter
                 .ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT), "");
     }
@@ -70,7 +74,8 @@ public class LocalDateTimeRenderer<T>
      * @param formatter
      *            the formatter to use, not <code>null</code>
      */
-    public LocalDateTimeRenderer(ValueProvider<T, LocalDateTime> valueProvider,
+    public LocalDateTimeRenderer(
+            ValueProvider<SOURCE, LocalDateTime> valueProvider,
             DateTimeFormatter formatter) {
         this(valueProvider, formatter, "");
     }
@@ -88,7 +93,8 @@ public class LocalDateTimeRenderer<T>
      * @param nullRepresentation
      *            the textual representation of the <code>null</code> value
      */
-    public LocalDateTimeRenderer(ValueProvider<T, LocalDateTime> valueProvider,
+    public LocalDateTimeRenderer(
+            ValueProvider<SOURCE, LocalDateTime> valueProvider,
             DateTimeFormatter formatter, String nullRepresentation) {
         super(valueProvider);
 
@@ -117,7 +123,8 @@ public class LocalDateTimeRenderer<T>
      *      "https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns">
      *      Format Pattern Syntax</a>
      */
-    public LocalDateTimeRenderer(ValueProvider<T, LocalDateTime> valueProvider,
+    public LocalDateTimeRenderer(
+            ValueProvider<SOURCE, LocalDateTime> valueProvider,
             String formatPattern) {
         this(valueProvider, formatPattern, Locale.getDefault());
     }
@@ -142,7 +149,8 @@ public class LocalDateTimeRenderer<T>
      *      "https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns">
      *      Format Pattern Syntax</a>
      */
-    public LocalDateTimeRenderer(ValueProvider<T, LocalDateTime> valueProvider,
+    public LocalDateTimeRenderer(
+            ValueProvider<SOURCE, LocalDateTime> valueProvider,
             String formatPattern, Locale locale) {
         this(valueProvider, formatPattern, locale, "");
     }
@@ -168,7 +176,8 @@ public class LocalDateTimeRenderer<T>
      *      "https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns">
      *      Format Pattern Syntax</a>
      */
-    public LocalDateTimeRenderer(ValueProvider<T, LocalDateTime> valueProvider,
+    public LocalDateTimeRenderer(
+            ValueProvider<SOURCE, LocalDateTime> valueProvider,
             String formatPattern, Locale locale, String nullRepresentation) {
         super(valueProvider);
 
