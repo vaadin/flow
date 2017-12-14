@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.push;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Div;
 import com.vaadin.server.VaadinRequest;
 
 public class BasicPollUI extends ClientServerCounterUI {

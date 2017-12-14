@@ -3,9 +3,9 @@ package com.vaadin.flow.uitest.ui.push;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.ui.html.NativeButton;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.event.DetachEvent;

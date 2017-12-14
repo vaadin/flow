@@ -21,15 +21,15 @@ import java.util.Map;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.flow.StateNode;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Label;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.uitest.ui.RPCLoggerUI;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.communication.ServerRpcHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
