@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.paper.button.GeneratedPaperButton;
 import com.vaadin.flow.component.paper.dialog.GeneratedPaperDialog;
 import com.vaadin.flow.demo.ComponentDemo;
@@ -24,8 +26,6 @@ import com.vaadin.flow.demo.MainLayout;
 import com.vaadin.router.Route;
 import com.vaadin.ui.common.HtmlComponent;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.H2;
 
 /**
  * View for {@link GeneratedPaperDialog} demo.

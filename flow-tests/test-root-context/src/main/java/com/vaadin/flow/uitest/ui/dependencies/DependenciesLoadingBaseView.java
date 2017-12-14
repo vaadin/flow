@@ -1,8 +1,8 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.ui.event.AttachEvent;
-import com.vaadin.ui.html.Div;
 
 /**
  * This class provides test base for IT test that check dependencies being

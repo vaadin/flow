@@ -4,6 +4,8 @@ import java.util.stream.Stream;
 
 import javax.servlet.annotation.WebServlet;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.router.HasUrlParameter;
@@ -17,8 +19,6 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WrappedSession;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.NativeButton;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/new-router-session/*" })
 public class RouterTestServlet extends VaadinServlet {

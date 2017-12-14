@@ -18,7 +18,7 @@ package com.vaadin.flow.memoryleaks.ui;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.server.VaadinServletConfiguration;
-import com.vaadin.ui.html.NativeButton;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Text;

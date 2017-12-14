@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Html;
-import com.vaadin.ui.html.Div;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.SvgView", layout = ViewTestLayout.class)
 public class SvgView extends Div {

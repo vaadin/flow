@@ -29,8 +29,8 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.BinderValidationStatusHandler;
 import com.vaadin.data.ValidationResult;
 import com.vaadin.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.html.Label;
 import com.vaadin.ui.textfield.TextField;
 
 @CodeFor("binding-data/tutorial-flow-components-binder-beans.asciidoc")

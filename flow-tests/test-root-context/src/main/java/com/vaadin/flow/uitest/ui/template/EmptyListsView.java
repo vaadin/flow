@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.router.Route;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Route("com.vaadin.flow.uitest.ui.template.EmptyListsView")

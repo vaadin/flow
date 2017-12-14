@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouterLink;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.NativeButton;
 
 @CodeFor("routing/tutorial-routing-navigation.asciidoc")
 public class RouterNavigation {

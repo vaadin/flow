@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.router.Route;
-import com.vaadin.ui.html.NativeButton;
 
 @Route("com.vaadin.flow.uitest.ui.UIElementView")
 public class UIElementView extends AbstractDivView {

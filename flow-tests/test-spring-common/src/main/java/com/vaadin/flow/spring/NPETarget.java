@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.spring;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationObserver;
-import com.vaadin.ui.html.Div;
 
 @Route("npe")
 public class NPETarget extends Div implements BeforeNavigationObserver {

@@ -18,9 +18,9 @@ package com.vaadin.flow.tutorial.routing;
 import com.vaadin.router.OptionalParameter;
 import com.vaadin.router.Route;
 import com.vaadin.router.WildcardParameter;
-import com.vaadin.ui.html.Div;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("routing/tutorial-router-url-parameters.asciidoc")
