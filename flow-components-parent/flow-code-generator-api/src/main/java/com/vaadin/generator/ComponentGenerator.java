@@ -15,7 +15,7 @@
  */
 package com.vaadin.generator;
 
-import javax.annotation.Generated;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,9 +33,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.annotation.Generated;
+
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -46,6 +45,9 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
@@ -77,8 +79,6 @@ import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.event.Synchronize;
 
 import elemental.json.JsonObject;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Base class of the component generation process. It takes a
@@ -266,7 +266,6 @@ public class ComponentGenerator {
      */
     public void generateClass(File jsonFile, File targetPath,
             String basePackage, String licenseNote) {
-
         generateClass(toMetadata(jsonFile), targetPath, basePackage,
                 licenseNote);
     }
@@ -787,7 +786,6 @@ public class ComponentGenerator {
                             + StringUtils.capitalize(method.getName()));
                 }
 
-
                 addSynchronizeAnnotationAndJavadocToGetter(method, property,
                         events);
 
@@ -805,8 +803,8 @@ public class ComponentGenerator {
                     method.addAnnotation(Override.class);
 
                     method.setBody(ComponentGeneratorUtils
-                            .generateElementApiValueGetterForType(
-                            basicType, property.getName()));
+                            .generateElementApiValueGetterForType(basicType,
+                                    property.getName()));
 
                     addGetEmptyValueIfString(javaClass, javaType);
                 } else {
@@ -1025,9 +1023,9 @@ public class ComponentGenerator {
                         || !shouldImplementHasValue(metadata)
                         || String.class != setterType;
 
-                method.setBody(
-                        ComponentGeneratorUtils.generateElementApiSetterForType(
-                                basicType, property.getName(), parameterName, nullable));
+                method.setBody(ComponentGeneratorUtils
+                        .generateElementApiSetterForType(basicType,
+                                property.getName(), parameterName, nullable));
 
                 if (StringUtils.isNotEmpty(property.getDescription())) {
                     addMarkdownJavaDoc(property.getDescription(),
@@ -1358,8 +1356,7 @@ public class ComponentGenerator {
 
             ParameterSource<JavaClassSource> parameter = ComponentGeneratorUtils
                     .addMethodParameter(javaClass, eventConstructor,
-                            propertyJavaType,
-                            normalizedProperty);
+                            propertyJavaType, normalizedProperty);
             parameter.addAnnotation(EventData.class)
                     .setStringValue(String.format("event.%s", propertyName));
 
@@ -1415,8 +1412,8 @@ public class ComponentGenerator {
             config.load(resourceAsStream);
             return config;
         } catch (IOException e) {
-            LoggerFactory.getLogger(getClass().getSimpleName()).warn(
-                    "Failed to load properties file '{}'", fileName, e);
+            LoggerFactory.getLogger(getClass().getSimpleName())
+                    .warn("Failed to load properties file '{}'", fileName, e);
         }
 
         return config;

@@ -26,6 +26,7 @@ import com.vaadin.data.BinderValidationStatus;
 import com.vaadin.data.BindingValidationStatus;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
@@ -43,7 +44,6 @@ import com.vaadin.ui.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.layout.HorizontalLayout;
-import com.vaadin.ui.textfield.TextField;
 
 /**
  * Demo view for {@link FormLayout}.

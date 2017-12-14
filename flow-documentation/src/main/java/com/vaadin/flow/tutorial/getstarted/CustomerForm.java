@@ -4,7 +4,7 @@ import com.vaadin.ui.button.Button;
 import com.vaadin.ui.combobox.ComboBox;
 import com.vaadin.ui.formlayout.FormLayout;
 import com.vaadin.ui.layout.HorizontalLayout;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @SuppressWarnings("serial")
