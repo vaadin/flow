@@ -24,7 +24,6 @@ import java.util.stream.IntStream;
 
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
@@ -45,6 +44,7 @@ import com.vaadin.ui.layout.HorizontalLayout;
 import com.vaadin.ui.layout.VerticalLayout;
 import com.vaadin.ui.renderers.ComponentTemplateRenderer;
 import com.vaadin.ui.renderers.TemplateRenderer;
+import com.vaadin.ui.textfield.TextField;
 
 /**
  * View for {@link Grid} demo.

@@ -24,12 +24,12 @@ import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationObserver;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationObserver;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Anchor;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
-import com.vaadin.ui.paper.dialog.GeneratedPaperDialog;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @CodeFor("routing/tutorial-routing-lifecycle.asciidoc")
@@ -104,6 +104,16 @@ public class NavigationEvents {
                     .equals(blog.getHref());
             blog.getElement().getClassList().set("active", active);
         }
+    }
+}
+
+class GeneratedPaperDialog<T> {
+
+    public void add(Component label) {
+    }
+
+    public void open() {
+
     }
 }
 

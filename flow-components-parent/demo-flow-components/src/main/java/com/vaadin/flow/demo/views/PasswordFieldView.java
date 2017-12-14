@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.flow.component.textfield.GeneratedVaadinPasswordField;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
@@ -24,6 +22,8 @@ import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Div;
+import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
+import com.vaadin.ui.textfield.PasswordField;
 
 /**
  * View for {@link GeneratedVaadinPasswordField} demo.
