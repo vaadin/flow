@@ -19,7 +19,7 @@ import java.time.Year;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.data.provider.ListDataProvider;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person.Gender;
 import com.vaadin.ui.button.Button;
