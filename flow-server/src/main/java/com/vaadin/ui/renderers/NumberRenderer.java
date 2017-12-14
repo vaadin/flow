@@ -36,7 +36,7 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
 
     /**
      * Creates a new number renderer.
-     * <p/>
+     * <p>
      * The renderer is configured to render with the number's natural string
      * representation in the default locale.
      * 
@@ -50,7 +50,7 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
 
     /**
      * Creates a new number renderer.
-     * <p/>
+     * <p>
      * The renderer is configured to render the number as defined with the given
      * number format.
      *
@@ -68,7 +68,7 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
 
     /**
      * Creates a new number renderer.
-     * <p/>
+     * <p>
      * The renderer is configured to render the number as defined with the given
      * number format.
      * 
@@ -98,7 +98,7 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
 
     /**
      * Creates a new number renderer.
-     * <p/>
+     * <p>
      * The renderer is configured to render with the number's natural string
      * representation in the given locale.
      *
@@ -116,7 +116,7 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
 
     /**
      * Creates a new number renderer.
-     * <p/>
+     * <p>
      * The renderer is configured to render with the number's natural string
      * representation in the given locale.
      *
@@ -138,7 +138,7 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
 
     /**
      * Creates a new number renderer.
-     * <p/>
+     * <p>
      * The renderer is configured to render with the given format string in the
      * default locale.
      *
@@ -159,7 +159,7 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
 
     /**
      * Creates a new number renderer.
-     * <p/>
+     * <p>
      * The renderer is configured to render with the given format string in the
      * given locale.
      *
@@ -203,11 +203,10 @@ public class NumberRenderer<T> extends SimpleValueTemplateRenderer<T, Number> {
         } else if (numberFormat != null) {
             stringValue = numberFormat.format(value);
         } else {
-            throw new IllegalStateException(String.format("Internal bug: "
-                    + "%s is in an illegal state: "
-                    + "[locale: %s, numberFormat: %s, formatString: %s]",
-                    getClass().getSimpleName(), locale, numberFormat,
-                    formatString));
+            throw new IllegalStateException(String.format(
+                    "Unable to format the given value: "
+                            + "[locale: %s, numberFormat: %s, formatString: %s]",
+                    locale, numberFormat, formatString));
         }
         return stringValue;
     }

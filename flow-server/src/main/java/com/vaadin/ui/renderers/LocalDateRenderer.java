@@ -183,6 +183,11 @@ public class LocalDateRenderer<T>
 
     @Override
     protected String getFormattedValue(LocalDate date) {
-        return date == null ? nullRepresentation : formatter.format(date);
+        try {
+            return date == null ? nullRepresentation : formatter.format(date);
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not format input date '"
+                    + date + "' using formatter '" + formatter + "'", e);
+        }
     }
 }
