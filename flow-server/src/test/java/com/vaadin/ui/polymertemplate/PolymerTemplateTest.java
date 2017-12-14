@@ -25,13 +25,9 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -46,10 +42,10 @@ import org.mockito.Mockito;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.NodeProperties;
+import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
@@ -61,11 +57,9 @@ import com.vaadin.ui.UI;
 import com.vaadin.util.HasCurrentService;
 
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
 
-/**
- * @author Vaadin Ltd.
- */
 @NotThreadSafe
 public class PolymerTemplateTest extends HasCurrentService {
     private static final String TAG = "FFS";
@@ -97,22 +91,6 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         SimpleTemplateParser() {
             super(tag -> "<dom-module id='" + tag + "'></dom-module>");
-        }
-
-    }
-
-    private static class TestPage extends Page {
-        private final List<Serializable[]> params = new ArrayList<>();
-
-        private TestPage() {
-            super(Mockito.mock(UI.class));
-        }
-
-        @Override
-        public ExecutionCanceler executeJavaScript(String expression,
-                Serializable... parameters) {
-            params.add(parameters);
-            return null;
         }
 
     }
@@ -530,31 +508,31 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void parseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent() {
-        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+    public void parseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
+        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
                 new TemplateInTemplate());
     }
 
     @Test
-    public void parseBundledTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent() {
-        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+    public void parseBundledTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
+        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
                 new BundledTemplateInTemplate());
     }
 
     @Test
-    public void parseTemplate_hasChildTemplateAndTemplateHtmlStyle_elementsAreCreatedAndRequestIsSent() {
+    public void parseTemplate_hasChildTemplateAndTemplateHtmlStyle_elementIsCreatedAndSetAsVirtualChild() {
         // Make a new HTML template which contains style on the top
         TemplateInTemplate template = new TemplateInTemplate(
                 new TestTemplateParser(tag -> "<dom-module id='" + tag
                         + "'><template><style> a { width:100%; } </style><div><ffs></div><span></span>"
                         + "<child-template></template></dom-module>"));
         // Nothing should be changed in the logic
-        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
                 template);
     }
 
     @Test
-    public void parseCachedTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent() {
+    public void parseCachedTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
         // run in the production mode (with caching enabled) for the first time
@@ -563,7 +541,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         assertEquals(1, parser.callCount);
         // check the result for the first run
-        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
                 template);
 
         // run in the production mode (with caching enabled) for the second time
@@ -571,13 +549,13 @@ public class PolymerTemplateTest extends HasCurrentService {
         // parser shouldn't be called
         assertEquals(1, parser.callCount);
         // the result should be the same
-        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
                 template);
     }
 
     @Test
     public void parseTemplate_hasTextNodesInTemplate_correctRequestIsSent() {
-        doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(
+        doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(
                 new TextNodesInHtmlTemplate());
     }
 
@@ -588,14 +566,16 @@ public class PolymerTemplateTest extends HasCurrentService {
         // run in the production mode (with caching enabled) for the first time
         TextNodesInHtmlTemplate template = new TextNodesInHtmlTemplate();
         TestTemplateParser parser = template.parser;
-        doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(template);
+        doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(
+                template);
 
         // run in the production mode (with caching enabled) for the second time
         template = new TextNodesInHtmlTemplate(parser);
         // parser shouldn't be called
         assertEquals(1, parser.callCount);
         // the result should be the same
-        doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(template);
+        doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(
+                template);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -639,13 +619,11 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void attachExistingElement_elementIsCreatedAndRequestIsSent() {
+    public void attachExistingElement_elementIsCreatedAndSetAsVirtualChild() {
         IdElementTemplate template = new IdElementTemplate();
 
-        TestPage page = setupUI(template);
-
-        AttachTemplateChildFeature feature = template.getStateNode()
-                .getFeature(AttachTemplateChildFeature.class);
+        VirtualChildrenList feature = template.getStateNode()
+                .getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
@@ -655,24 +633,19 @@ public class PolymerTemplateTest extends HasCurrentService {
         String tag = child.getFeature(ElementData.class).getTag();
         assertEquals("label", tag);
 
-        // check id in the JS call request
-        assertEquals("labelId", page.params.get(0)[3]);
-
         assertNotNull(template.label);
         assertEquals(child, template.label.getNode());
 
-        Assert.assertEquals("labelId",
-                template.label.getAttribute(NodeProperties.ID));
+        assertElementData(child, NodeProperties.INJECT_BY_ID, "labelId");
     }
 
     @Test
-    public void attachExistingElement_injectedByIDdChild_onlyOneElementIsCreate() {
+    public void attachExistingElement_injectedByIDdChild_onlyOneElementIsCreated() {
         TemplateInjectTemplate template = new TemplateInjectTemplate();
 
-        setupUI(template);
+        VirtualChildrenList feature = template.getStateNode()
+                .getFeature(VirtualChildrenList.class);
 
-        AttachTemplateChildFeature feature = template.getStateNode()
-                .getFeature(AttachTemplateChildFeature.class);
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
@@ -680,16 +653,16 @@ public class PolymerTemplateTest extends HasCurrentService {
         StateNode stateNode = templateNodes.get(0);
 
         assertEquals(stateNode, template.child.getStateNode());
+
+        assertElementData(stateNode, NodeProperties.INJECT_BY_ID, "child");
     }
 
     @Test
-    public void attachExistingComponent_elementIsCreatedAndRequestIsSent() {
+    public void attachExistingComponent_elementIsCreatedAndSetAsVirtualChild() {
         IdChildTemplate template = new IdChildTemplate();
 
-        TestPage page = setupUI(template);
-
-        AttachTemplateChildFeature feature = template.getStateNode()
-                .getFeature(AttachTemplateChildFeature.class);
+        VirtualChildrenList feature = template.getStateNode()
+                .getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
@@ -698,9 +671,6 @@ public class PolymerTemplateTest extends HasCurrentService {
         StateNode child = templateNodes.get(0);
         String tag = child.getFeature(ElementData.class).getTag();
         assertEquals("div", tag);
-
-        // check id in the JS call request
-        assertEquals("child", page.params.get(0)[3]);
 
         assertNotNull(template.child);
         assertEquals(child, template.child.getElement().getNode());
@@ -712,28 +682,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         assertEquals(template.child,
                 template.child.getElement().getComponent().get());
-    }
-
-    @Test
-    public void executionOrder_attachByIdInvokedBeforeComponentIsCreated() {
-        ExecutionOrder template = new ExecutionOrder();
-
-        UI.getCurrent().add(template);
-
-        Assert.assertEquals(4, executionOrder.size());
-
-        // The order is important: "attachXXX" methods must be called before any
-        // other JS execution for the same component.
-
-        int index = executionOrder
-                .indexOf("this.attachCustomElement($0, $1, $2, $3);");
-        Assert.assertNotEquals(-1, index);
-
-        Assert.assertEquals("bar", executionOrder.get(index + 1));
-
-        index = executionOrder
-                .indexOf("this.attachExistingElementById($0, $1, $2, $3);");
-        Assert.assertEquals("foo", executionOrder.get(index + 1));
+        assertElementData(child, NodeProperties.INJECT_BY_ID, "child");
     }
 
     @Test
@@ -786,57 +735,20 @@ public class PolymerTemplateTest extends HasCurrentService {
         return list;
     }
 
-    private TestPage setupUI(PolymerTemplate<?> template) {
-        TestPage page = new TestPage();
-
-        VaadinSession session = UI.getCurrent() == null ? null
-                : UI.getCurrent().getSession();
-
-        UI ui = new UI() {
-            @Override
-            public Page getPage() {
-                return page;
-            }
-
-            @Override
-            public VaadinSession getSession() {
-                if (session != null) {
-                    return session;
-                }
-                return super.getSession();
-            }
-        };
-        ui.add(template);
-
-        UI.setCurrent(ui);
-        return page;
-    }
-
     private void doParseTemplate_hasIdChild_childIsRegisteredInFeature(
             IdChildTemplate template) {
         UI ui = new UI();
         ui.add(template);
 
-        AttachTemplateChildFeature feature = template.getElement().getNode()
-                .getFeature(AttachTemplateChildFeature.class);
-        AtomicInteger counter = new AtomicInteger(0);
-        AtomicReference<StateNode> injected = new AtomicReference<>();
-        feature.forEachChild(child -> {
-            counter.incrementAndGet();
-            injected.set(child);
-        });
-        assertEquals(1, counter.get());
-
-        Assert.assertEquals("child", com.vaadin.flow.dom.Element
-                .get(injected.get()).getAttribute(NodeProperties.ID));
+        VirtualChildrenList feature = template.getStateNode()
+                .getFeature(VirtualChildrenList.class);
+        assertEquals(1, feature.size());
     }
 
-    private void doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+    private void doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
             PolymerTemplate<?> template) {
-        TestPage page = setupUI(template);
-
-        AttachTemplateChildFeature feature = template.getStateNode()
-                .getFeature(AttachTemplateChildFeature.class);
+        VirtualChildrenList feature = template.getStateNode()
+                .getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
@@ -851,21 +763,18 @@ public class PolymerTemplateTest extends HasCurrentService {
             assertEquals("child-template",
                     child2.getFeature(ElementData.class).getTag());
         }
-
-        Set<Object> paths = new HashSet<>();
-        paths.add(convertIntArray((JsonArray) page.params.get(0)[3]));
-        paths.add(convertIntArray((JsonArray) page.params.get(1)[3]));
-
-        // check arrays of indices
-        assertTrue(paths.contains(Arrays.asList(0, 0)));
-        assertTrue(paths.contains(Arrays.asList(2)));
+        assertTemplateInTempalte(child1);
+        assertTemplateInTempalte(child2);
     }
 
-    private void doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(
+    private void doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(
             TextNodesInHtmlTemplate template) {
-        TestPage page = setupUI(template);
 
-        JsonArray path = (JsonArray) page.params.get(0)[3];
+        VirtualChildrenList feature = template.getStateNode()
+                .getFeature(VirtualChildrenList.class);
+        JsonObject object = (JsonObject) feature.get(0)
+                .getFeature(ElementData.class).getPayload();
+        JsonArray path = object.getArray(NodeProperties.PAYLOAD);
 
         // check arrays of indices
         assertEquals(1, path.length());
@@ -877,11 +786,29 @@ public class PolymerTemplateTest extends HasCurrentService {
         UI ui = new UI();
         ui.add(template);
 
-        AttachTemplateChildFeature feature = template.getStateNode()
-                .getFeature(AttachTemplateChildFeature.class);
+        VirtualChildrenList feature = template.getStateNode()
+                .getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
         assertEquals(1, templateNodes.size());
+    }
+
+    private void assertElementData(StateNode node, String type,
+            String payload) {
+        JsonObject object = (JsonObject) node.getFeature(ElementData.class)
+                .getPayload();
+        Assert.assertEquals(type, object.getString(NodeProperties.TYPE));
+        Assert.assertEquals(payload, object.getString(NodeProperties.PAYLOAD));
+    }
+
+    private void assertTemplateInTempalte(StateNode node) {
+        JsonObject object = (JsonObject) node.getFeature(ElementData.class)
+                .getPayload();
+        Assert.assertEquals(NodeProperties.TEMPLATE_IN_TEMPLATE,
+                object.getString(NodeProperties.TYPE));
+
+        Assert.assertTrue(
+                object.get(NodeProperties.PAYLOAD) instanceof JsonArray);
     }
 }

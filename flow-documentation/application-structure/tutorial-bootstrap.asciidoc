@@ -8,7 +8,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 = Modifying the bootstrap page
 
 The application bootstrap page is created for you by the framework and normally there is no need to modify it.
-For instance FW includes its internal JavaScripts to be able to provide its core functionality.
+For instance Flow includes its internal JavaScripts to be able to provide its core functionality.
 Also it is possible to include additional JavaScripts, HTML imports and Style Sheets using annotations `@JavaScript`,
 `HtmlImport` and `@StyleSheet` (see <<tutorial-include-css#,Including Style Sheets>> and <<tutorial-importing#,Importing html/javascript>>).
 
@@ -48,6 +48,128 @@ public class MyLayout extends Div implements RouterLayout {
 [NOTE]
 If the Viewport annotation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
 
+== Inline annotation
+
+The initial page can be modified by using the `@Inline` annotations to add file contents
+to either the `<head>` or the `<body>`. Inline is repeatable, so multiple `@Inline` annotations
+can be added at once.
+
+Inline will add the contents of a classloader resource by default as appended to the
+head of the initial page with type decided by the file suffix.
+
+The configurations available for inlining contents are:
+
+ - TargetElement [*HEAD*, BODY]
+ - Position [*APPEND*, PREPEND]
+ - Wrapping [*AUTOMATIC*, HTML, CSS, SCRIPT]
+
+[source,java]
+----
+@Route(value = "", layout = MyInline.class)
+public class MyRoot extends Div {
+  public MyRoot() {
+  }
+}
+
+@Inline("initialization.js")
+@Inline("initial_style.css")
+@Inline(value = "important_styles", wrapping = Inline.Wrapping.CSS)
+public class MyInline extends Div implements RouterLayout {
+}
+----
+
+[NOTE]
+If the Inline annotations is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
+
+== PageConfigurator
+
+To be able to modify default bootstrap page and add your custom meta tags on the page you
+can implement the `PageConfigurator` on the navigation target with `@Route` or
+the top most `RouterLayout` that builds the navigation target chain.
+
+With the `PageConfigurator` you can prepend or append `javascript`, `html` and `css` to the head
+by giving a file on the classpath or as content string. Also supported is adding links and meta tags which
+can also be either prepended or appended.
+
+Setting the viewport meta tag using `InitialPageSettings::setViewport` will override any viewport
+set through a `@Viewport` annotation.
+
+By default everything is appended, but if needed you can give the position `InitialPageSettings.Position.PREPEND`
+to have the item prepended to head instead.
+
+Here is the code for the `PageConfigurator` implementation on the top
+`RouterLayout` which modifies the header of the page:
+
+[source,java]
+----
+@Route(value = "", layout = MainLayout.class)
+public class Root extends Div {
+}
+
+public class MainLayout extends Div
+        implements RouterLayout, PageConfigurator {
+
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        settings.addInlineFromFile(InitialPageSettings.Position.PREPEND,
+                "inline.js", Dependency.Type.JAVASCRIPT);
+
+        settings.addMetaTag("og:title", "The Rock");
+        settings.addMetaTag("og:type", "video.movie");
+        settings.addMetaTag("og:url",
+                "http://www.imdb.com/title/tt0117500/");
+        settings.addMetaTag("og:image",
+                "http://ia.media-imdb.com/images/rock.jpg");
+    }
+}
+----
+
+[NOTE]
+If the PageConfigurator implementation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
+
+== Setting the body size styles
+
+To set the body size style you can either use the `@BodySize` annotation or the `PageConfigurator`.
+
+For `@BodySize` you just add it to the the navigation target with `@Route` or
+the top most `RouterLayout` that builds the navigation target chain.
+
+[source,java]
+----
+@Route("")
+@BodySize(height = "100vh", width = "100vw")
+public static class BodySizeAnnotatedRoute extends Div {
+}
+----
+
+You can define height and with or just one of them as wanted.
+
+With the `PageConfigurator` you can just addInlineContent like:
+
+[source,java]
+----
+@Route("")
+public static class InitialPageConfiguratorBodyStyle extends Div
+        implements PageConfigurator {
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        settings.addInlineWithContents("body {width: 100vw; height:100vh;}",
+                Dependency.Type.STYLESHEET);
+    }
+}
+----
+
+[NOTE]
+Only one way should be used as else the later statement will override the earlier one. In practise this would
+mean that by default the `PageConfigurator` will override the `@BodySize` except if the inlining is done as
+a `PREPEND` then the `@BodySize` will be the deciding one.
+
+[NOTE]
+If the BodySize annotation or PageConfigurator implementation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
+
+[NOTE]
+It is recommended that the body sizes be set to `height = 100vh, width = 100vw`
+
 == BootstrapListener
 
 To be able to modify default bootstrap page and add your custom meta tags on the page you should use
@@ -66,11 +188,11 @@ public class CustomBootstrapListener implements BootstrapListener {
         Element head = document.head();
 
         head.appendChild(createMeta(document, "og:title", "The Rock"));
-            head.appendChild(createMeta(document, "og:type", "video.movie"));
-            head.appendChild(createMeta(document, "og:url",
-                    "http://www.imdb.com/title/tt0117500/"));
-            head.appendChild(createMeta(document, "og:image",
-                    "http://ia.media-imdb.com/images/rock.jpg"));
+        head.appendChild(createMeta(document, "og:type", "video.movie"));
+        head.appendChild(createMeta(document, "og:url",
+                "http://www.imdb.com/title/tt0117500/"));
+        head.appendChild(createMeta(document, "og:image",
+                "http://ia.media-imdb.com/images/rock.jpg"));
     }
 
     private Element createMeta(Document document, String property,

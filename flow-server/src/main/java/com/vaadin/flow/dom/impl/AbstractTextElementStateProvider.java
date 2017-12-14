@@ -26,6 +26,8 @@ import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
+import com.vaadin.flow.dom.NodeVisitor;
+import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
@@ -190,4 +192,11 @@ public abstract class AbstractTextElementStateProvider
             String payload) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public void visit(StateNode node, NodeVisitor visitor,
+            boolean visitDescendants) {
+        visitor.visit(ElementType.REGULAR, Element.get(node));
+    }
+
 }

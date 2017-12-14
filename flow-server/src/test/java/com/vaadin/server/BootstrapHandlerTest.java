@@ -6,8 +6,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -35,8 +37,10 @@ import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Html;
+import com.vaadin.ui.Inline;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.Text;
 import com.vaadin.ui.UI;
@@ -78,6 +82,106 @@ public class BootstrapHandlerTest {
     @Route("")
     @Tag(Tag.DIV)
     @Viewport("width=device-width")
+    public static class InitialPageConfiguratorViewportOverride
+            extends Component implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.setViewport("width=100");
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorPrependContents extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineWithContents(InitialPageSettings.Position.PREPEND,
+                    "window.messages = window.messages || [];\n"
+                            + "window.messages.push(\"content script\");",
+                    Dependency.Type.JAVASCRIPT);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorPrependFile extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineFromFile(InitialPageSettings.Position.PREPEND,
+                    "inline.js", Dependency.Type.JAVASCRIPT);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorAppendFiles extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineFromFile("inline.js", Dependency.Type.JAVASCRIPT);
+            settings.addInlineFromFile("inline.html",
+                    Dependency.Type.HTML_IMPORT);
+            settings.addInlineFromFile("inline.css",
+                    Dependency.Type.STYLESHEET);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorLinks extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addLink("icons/favicon.ico",
+                    new LinkedHashMap<String, String>() {
+                        {
+                            put("rel", "shortcut icon");
+                        }
+                    });
+            settings.addLink("icons/icon-192.png",
+                    new LinkedHashMap<String, String>() {
+                        {
+                            put("rel", "icon");
+                            put("sizes", "192x192");
+                        }
+                    });
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorMetaTag extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addMetaTag(InitialPageSettings.Position.PREPEND,
+                    "theme-color", "#227aef");
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorBodyStyle extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineWithContents(
+                    "body {width: 100vw; height:100vh; margin:0;}",
+                    Dependency.Type.STYLESHEET);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @BodySize(height = "100vh", width = "100vw")
+    public static class BodySizeAnnotated extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Viewport("width=device-width")
     public static class RootNavigationTarget extends Component {
     }
 
@@ -105,6 +209,44 @@ public class BootstrapHandlerTest {
     @RouteAlias(value = "alias", layout = Parent.class)
     @Tag(Tag.DIV)
     public static class AliasLayout extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Inline("inline.js")
+    @Inline("inline.html")
+    @Inline("inline.css")
+    public static class InlineAnnotations extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Inline(value = "inline.css", position = Inline.Position.PREPEND)
+    @Inline(value = "inline.html", position = Inline.Position.PREPEND)
+    @Inline(value = "inline.js", position = Inline.Position.PREPEND)
+    public static class PrependInlineAnnotations extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Inline(value = "inline.css", target = Inline.TargetElement.BODY)
+    @Inline(value = "inline.html", target = Inline.TargetElement.BODY)
+    @Inline(value = "inline.js", target = Inline.TargetElement.BODY)
+    public static class InlineAnnotationsBodyTarget extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Inline(value = "inline.css", target = Inline.TargetElement.BODY, position = Inline.Position.PREPEND)
+    @Inline(value = "inline.html", target = Inline.TargetElement.BODY, position = Inline.Position.PREPEND)
+    @Inline(value = "inline.js", target = Inline.TargetElement.BODY, position = Inline.Position.PREPEND)
+    public static class PrependInlineAnnotationsBodyTarget extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Inline(value = "inline.js", wrapping = Inline.Wrapping.CSS)
+    public static class ForcedWrapping extends Component {
     }
 
     private TestUI testUI;
@@ -310,6 +452,353 @@ public class BootstrapHandlerTest {
                 "Viewport meta tag was missing even tough alias route parent has annotation",
                 page.toString().contains(
                         "<meta name=\"viewport\" content=\"width=device-width\">"));
+    }
+
+    @Test // 3036
+    public void page_configurator_overrides_viewport()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(InitialPageConfiguratorViewportOverride.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Assert.assertFalse(
+                "Viewport annotation value found even if it should be overridden.",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=device-width\">"));
+
+        Assert.assertTrue("Viewport annotation value not the expected one.",
+                page.toString().contains(
+                        "<meta name=\"viewport\" content=\"width=100\">"));
+    }
+
+    @Test // 3036
+    public void page_configurator_inlines_javascript_from_content()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(InitialPageConfiguratorPrependContents.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "Content javascript should have been prepended to head element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"content script\");</script>",
+                allElements.get(1).toString());
+    }
+
+    @Test // 3036
+    public void page_configurator_inlines_prepend_javascript_from_file()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(InitialPageConfiguratorPrependFile.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "Content javascript should have been prepended to head element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(1).toString());
+    }
+
+    @Test // 3036
+    public void page_configurator_append_inline_form_files()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(InitialPageConfiguratorAppendFiles.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "File javascript should have been appended to head element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(allElements.size() - 3).toString());
+        Assert.assertEquals(
+                "File html should have been appended to head element",
+                "<span hidden><script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script></span>",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals(
+                "File css should have been appended to head element",
+                "<style type=\"text/css\">/* inline.css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test // 3036
+    public void page_configurator_adds_link()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InitialPageConfiguratorLinks.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Assert.assertEquals(
+                "<link href=\"icons/favicon.ico\" rel=\"shortcut icon\">",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals(
+                "<link href=\"icons/icon-192.png\" rel=\"icon\" sizes=\"192x192\">",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test // 3036
+    public void page_configurator_adds_meta_tags()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InitialPageConfiguratorMetaTag.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Assert.assertEquals("<meta name=\"theme-color\" content=\"#227aef\">",
+                allElements.get(1).toString());
+    }
+
+    @Test // 2344
+    public void page_configurator_adds_styles_for_body()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InitialPageConfiguratorBodyStyle.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Assert.assertEquals(
+                "<style type=\"text/css\">body {width: 100vw; height:100vh; margin:0;}</style>",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test // 2344
+    public void body_size_adds_styles_for_body()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(BodySizeAnnotated.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Optional<Element> styleTag = allElements.stream()
+                .filter(element -> element.tagName().equals("style"))
+                .findFirst();
+
+        Assert.assertTrue("Expected a style element in head.",
+                styleTag.isPresent());
+
+        Assert.assertTrue(
+                "The first style tag should start with body style from @BodySize",
+                styleTag.get().toString().startsWith(
+                        "<style type=\"text/css\">body {height:100vh;width:100vw;margin:0;}"));
+    }
+
+    @Test // 2344
+    public void no_body_size_or_page_configurator_still_adds_margin_for_body()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(RootNavigationTarget.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Optional<Element> styleTag = allElements.stream()
+                .filter(element -> element.tagName().equals("style"))
+                .findFirst();
+
+        Assert.assertTrue("Expected a style element in head.",
+                styleTag.isPresent());
+
+        Assert.assertTrue(
+                "The first style tag should start with body style containing margin",
+                styleTag.get().toString().startsWith(
+                        "<style type=\"text/css\">body {margin:0;}"));
+    }
+
+    @Test // 3010
+    public void use_inline_to_append_files_to_head()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InlineAnnotations.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertEquals(
+                "File javascript should have been appended to head element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(allElements.size() - 3).toString());
+        Assert.assertEquals(
+                "File html should have been appended to head element",
+                "<span hidden><script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script></span>",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals(
+                "File css should have been appended to head element",
+                "<style type=\"text/css\">/* inline.css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test // 3010
+    public void use_inline_to_prepend_files_to_head()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(PrependInlineAnnotations.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "File javascript should have been prepended to head element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(1).toString());
+        Assert.assertEquals(
+                "File html should have been prepended to head element",
+                "<span hidden><script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script></span>",
+                allElements.get(2).toString());
+        Assert.assertEquals(
+                "File css should have been prepended to head element",
+                "<style type=\"text/css\">/* inline.css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
+                allElements.get(3).toString());
+    }
+
+    @Test // 3010
+    public void use_inline_to_append_files_to_body()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InlineAnnotationsBodyTarget.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.body().getAllElements();
+        Assert.assertEquals(
+                "File css should have been appended to body element",
+                "<style type=\"text/css\">/* inline.css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
+                allElements.get(allElements.size() - 3).toString());
+        Assert.assertEquals(
+                "File html should have been appended to body element",
+                "<span hidden><script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script></span>",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals(
+                "File javascript should have been appended to body element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test // 3010
+    public void use_inline_to_prepend_files_to_body()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(PrependInlineAnnotationsBodyTarget.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.body().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "File javascript should have been prepended to body element",
+                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</script>",
+                allElements.get(1).toString());
+        Assert.assertEquals(
+                "File html should have been prepended to body element",
+                "<span hidden><script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script></span>",
+                allElements.get(2).toString());
+        Assert.assertEquals(
+                "File css should have been prepended to body element",
+                "<style type=\"text/css\">/* inline.css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
+                allElements.get(3).toString());
+    }
+
+    @Test // 3010
+    public void force_wrapping_of_file()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(ForcedWrapping.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertEquals(
+                "File css should have been prepended to body element",
+                "<style type=\"text/css\">window.messages = window.messages || [];\n"
+                        + "window.messages.push(\"inline.js\");</style>",
+                allElements.get(allElements.size() - 1).toString());
     }
 
     @Test
@@ -536,24 +1025,23 @@ public class BootstrapHandlerTest {
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
 
-        String devPrefix = "bar/dev/";
-        deploymentConfiguration.setApplicationOrSystemProperty(
-                Constants.FRONTEND_URL_DEV, devPrefix);
+        String devPrefix = Constants.FRONTEND_URL_DEV_DEFAULT
+                .replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "./");
         String urlPart = "foo";
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
         assertThat(String.format(
-                "In development mode, es6 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_DEV), urlES6, is(devPrefix + urlPart));
+                "In development mode, es6 prefix should be equal to '%s'",
+                devPrefix), urlES6, is(devPrefix + urlPart));
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
         assertThat(String.format(
-                "In development mode, es5 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_DEV), urlES5, is(devPrefix + urlPart));
+                "In development mode, es5 prefix should be equal to '%s'",
+                devPrefix), urlES5, is(devPrefix + urlPart));
 
         Mockito.verify(session, Mockito.times(3)).getBrowser();
         Mockito.verify(mockedWebBrowser, Mockito.times(2)).isEs6Supported();

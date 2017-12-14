@@ -22,13 +22,12 @@ import java.util.stream.Stream;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.NewVirtualChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
@@ -56,8 +55,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     @SuppressWarnings("unchecked")
     private static final Class<? extends NodeFeature>[] FEATURES = new Class[] {
             ElementChildrenList.class, ShadowRootHost.class,
-            AttachExistingElementFeature.class, VirtualChildrenList.class,
-            NewVirtualChildrenList.class };
+            AttachExistingElementFeature.class, VirtualChildrenList.class };
 
     /**
      * Gets the one and only instance.
@@ -201,6 +199,17 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
+    public void visit(StateNode node, NodeVisitor visitor,
+            boolean visitDescendants) {
+        ShadowRoot shadowRoot = ShadowRoot.get(node);
+        visitor.visit(shadowRoot);
+
+        if (visitDescendants) {
+            visitDescendants(shadowRoot, visitor);
+        }
+    }
+
+    @Override
     protected Class<? extends NodeFeature>[] getProviderFeatures() {
         return FEATURES;
     }
@@ -209,18 +218,6 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     protected Node<?> getNode(StateNode node) {
         assert supports(node);
         return ShadowRoot.get(node);
-    }
-
-    /**
-     * Insert the given virtual child at the given position.
-     *
-     * @param node
-     *            node containing data
-     * @param child
-     *            element to insert
-     */
-    public void insertVirtualChild(StateNode node, Element child) {
-        node.getFeature(VirtualChildrenList.class).append(child.getNode());
     }
 
 }

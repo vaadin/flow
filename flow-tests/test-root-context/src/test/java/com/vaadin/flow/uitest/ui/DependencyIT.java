@@ -23,10 +23,10 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.By;
 
 public class DependencyIT extends ChromeBrowserTest {
 
@@ -49,7 +49,7 @@ public class DependencyIT extends ChromeBrowserTest {
     public void scriptInjection() {
         open();
         // Initial JS registers a body click handler
-        findElement(By.cssSelector("body")).click();
+        clickElementWithJs(findElement(By.tagName("body")));
         String addedBodyText = findElement(By.cssSelector(".body-click-added"))
                 .getText();
         Assert.assertEquals(
@@ -58,6 +58,7 @@ public class DependencyIT extends ChromeBrowserTest {
 
         // Inject scripts
         findElementById("loadJs").click();
+        waitForElementPresent(By.id("read-global-var-text"));
         String addedJsText = findElementById("read-global-var-text").getText();
         Assert.assertEquals(
                 "Second script loaded. Global variable (window.globalVar) is: 'Set by set-global-var.js'",
@@ -69,7 +70,6 @@ public class DependencyIT extends ChromeBrowserTest {
         open();
 
         // Initial HTML import logs a message on the page
-        findElement(By.cssSelector("body")).click();
         List<String> messages = getMessages();
 
         Assert.assertEquals(3, messages.size());

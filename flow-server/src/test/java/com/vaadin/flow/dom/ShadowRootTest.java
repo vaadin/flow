@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,6 +26,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.NullOwner;
+import com.vaadin.flow.dom.NodeVisitor.ElementType;
+import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
+import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.UI;
 
@@ -78,10 +83,9 @@ public class ShadowRootTest extends AbstractNodeTest {
         AtomicInteger childTriggered = new AtomicInteger();
         AtomicInteger grandChildTriggered = new AtomicInteger();
 
-        Registration registrationHandle = child
-                .addAttachListener(event -> {
-                    childTriggered.addAndGet(1);
-                });
+        Registration registrationHandle = child.addAttachListener(event -> {
+            childTriggered.addAndGet(1);
+        });
         child.addAttachListener(event -> {
             Assert.assertEquals(child, event.getSource());
         });
@@ -130,11 +134,10 @@ public class ShadowRootTest extends AbstractNodeTest {
 
         AtomicInteger triggered = new AtomicInteger();
 
-        Registration registrationHandle = child
-                .addDetachListener(event -> {
-                    triggered.addAndGet(1);
-                    Assert.assertEquals(child, event.getSource());
-                });
+        Registration registrationHandle = child.addDetachListener(event -> {
+            triggered.addAndGet(1);
+            Assert.assertEquals(child, event.getSource());
+        });
 
         grandChild.addDetachListener(event -> {
             triggered.addAndGet(1);
@@ -283,6 +286,64 @@ public class ShadowRootTest extends AbstractNodeTest {
     public void getParentNode_parentNodeIsNull() {
         ShadowRoot root = createParentNode();
         Assert.assertNull(root.getParentNode());
+    }
+
+    @Test
+    public void visitOnlyNode_hasDescendants_nodeVisitedAndNoDescendantsVisited() {
+        TestNodeVisitor visitor = new TestNodeVisitor();
+
+        Map<Node<?>, ElementType> map = new HashMap<>();
+
+        ShadowRoot subject = createHierarchy(map);
+
+        ShadowRootStateProvider.get().visit(subject.getNode(), visitor, false);
+
+        Assert.assertEquals(1, visitor.visited.size());
+        Assert.assertEquals(subject,
+                visitor.visited.keySet().iterator().next());
+        Assert.assertEquals(null, visitor.visited.values().iterator().next());
+    }
+
+    @Test
+    public void visitOnlyNode_hasDescendants_nodeAndDescendatnsAreVisited() {
+        TestNodeVisitor visitor = new TestNodeVisitor();
+
+        Map<Node<?>, ElementType> map = new HashMap<>();
+
+        ShadowRoot subject = createHierarchy(map);
+
+        ShadowRootStateProvider.get().visit(subject.getNode(), visitor, true);
+
+        Assert.assertTrue(map.size() > 1);
+
+        Assert.assertEquals(
+                "The collected descendants doesn't match expected descendatns",
+                map, visitor.visited);
+    }
+
+    private ShadowRoot createHierarchy(Map<Node<?>, ElementType> map) {
+        Element root = ElementFactory.createDiv();
+
+        ShadowRoot shadowRoot = root.attachShadow();
+
+        map.put(shadowRoot, null);
+
+        Element shadowChild = ElementFactory.createAnchor();
+        Element shadowVirtualChild = ElementFactory.createBr();
+        shadowRoot.appendChild(shadowChild);
+        shadowRoot.appendVirtualChild(shadowVirtualChild);
+
+        map.put(shadowChild, ElementType.REGULAR);
+        map.put(shadowVirtualChild, ElementType.VIRTUAL);
+
+        Element virtualGrandChild = ElementFactory.createDiv();
+
+        shadowChild.getStateProvider().appendVirtualChild(shadowChild.getNode(),
+                virtualGrandChild, NodeProperties.INJECT_BY_ID, "id");
+
+        map.put(virtualGrandChild, ElementType.VIRTUAL_ATTACHED);
+
+        return shadowRoot;
     }
 
     @Override

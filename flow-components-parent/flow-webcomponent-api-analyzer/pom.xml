@@ -45,26 +45,10 @@
                         </configuration>
                         <executions>
                             <execution>
-                                <id>install node, npm and api reader</id>
+                                <id>install node, npm packages and bower packages</id>
                                 <goals>
                                     <goal>install-node-and-npm</goal>
                                     <goal>npm</goal>
-                                </goals>
-                                <phase>initialize</phase>
-                            </execution>
-                            <execution>
-                                <id>install bower</id>
-                                <goals>
-                                    <goal>npm</goal>
-                                </goals>
-                                <configuration>
-                                    <arguments>install --save bower</arguments>
-                                </configuration>
-                                <phase>initialize</phase>
-                            </execution>
-                            <execution>
-                                <id>bower install</id>
-                                <goals>
                                     <goal>bower</goal>
                                 </goals>
                                 <phase>initialize</phase>
@@ -98,9 +82,6 @@
                             <filesets>
                                 <fileset>
                                     <directory>generated-json</directory>
-                                </fileset>
-                                <fileset>
-                                    <directory>dependencies</directory>
                                 </fileset>
                                 <fileset>
                                     <directory>node</directory>

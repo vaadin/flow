@@ -20,12 +20,9 @@ import java.io.File;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.Configuration.ClassList;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.webapp.WebInfConfiguration;
-
-import com.vaadin.server.VaadinServlet;
 
 /**
  * Server class for running component demos and executing integration tests.
@@ -61,10 +58,6 @@ public class ComponentDemoServer {
 
         WebAppContext context = new WebAppContext();
 
-        VaadinServlet vaadinServlet = createServlet();
-        ServletHolder servletHolder = new ServletHolder(vaadinServlet);
-        context.addServlet(servletHolder, "/");
-
         File file = new File(WEB_APP_PATH);
         if (!file.exists()) {
             try {
@@ -97,16 +90,6 @@ public class ComponentDemoServer {
         server.setHandler(context);
         server.start();
         return server;
-    }
-
-    /**
-     * Creates and returns the {@link VaadinServlet} to be served by this
-     * server.
-     * 
-     * @return the servlet to be served by this server
-     */
-    protected VaadinServlet createServlet() {
-        return new DemoServlet();
     }
 
     /**

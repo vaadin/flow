@@ -40,9 +40,13 @@ import com.vaadin.router.RoutePrefix;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.TestRouteRegistry;
 import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.server.InitialPageSettings;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.server.PageConfigurator;
+import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Inline;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.Viewport;
 
@@ -612,4 +616,411 @@ public class RouteRegistryInitializerTest {
                 Stream.of(AliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
+
+    /* BodySize tests */
+
+    @Route("single")
+    @Tag(Tag.DIV)
+    @BodySize(width = "100vw", height = "100vh")
+    public static class BodySingleNavigationTarget extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class BodyParent extends Component implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(BodyParent.class)
+    @BodySize(width = "100vw", height = "100vh")
+    public static class BodyMiddleParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(BodyMiddleParentLayout.class)
+    @BodySize(width = "100vw", height = "100vh")
+    public static class BodyMultiMiddleParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Route(value = "", layout = BodyParent.class)
+    @Tag(Tag.DIV)
+    public static class BodyRootWithParent extends Component {
+    }
+
+    @Route(value = "", layout = BodyParent.class)
+    @Tag(Tag.DIV)
+    @BodySize(width = "100vw", height = "100vh")
+    public static class BodyRootViewportWithParent extends Component {
+    }
+
+    @Route(value = "", layout = BodyMiddleParentLayout.class)
+    @Tag(Tag.DIV)
+    public static class BodyRootWithParents extends Component {
+    }
+
+    @Route(value = "", layout = BodyMultiMiddleParentLayout.class)
+    @Tag(Tag.DIV)
+    public static class BodyMultiViewport extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = BodyParent.class)
+    @Tag(Tag.DIV)
+    @BodySize(width = "100vw", height = "100vh")
+    public static class BodyFailingAliasView extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = BodyParent.class)
+    @Tag(Tag.DIV)
+    public static class BodyAliasView extends Component {
+    }
+
+    @Test
+    public void onStartUp_wrong_position_body_size_view_layout_throws()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "BodySize annotation should be on the top most route layout '%s'. Offending class: '%s'",
+                BodyParent.class.getName(), BodyMiddleParentLayout.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(BodyRootWithParents.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_only_one_body_size_in_route_chain()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                "Only one BodySize annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                        + BodyMultiMiddleParentLayout.class.getName() + ", "
+                        + BodyMiddleParentLayout.class.getName());
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(BodyMultiViewport.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_route_can_not_contain_body_size_if_has_parent()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "BodySize annotation needs to be on the top parent layout '%s' not on '%s'",
+                BodyParent.class.getName(),
+                BodyRootViewportWithParent.class.getName()));
+
+        routeRegistryInitializer.onStartup(Stream
+                .of(BodyRootViewportWithParent.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_one_body_size_in_chain_and_one_for_route_passes()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(BodySingleNavigationTarget.class, BodyRootWithParent.class)
+                        .collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_also_faulty_body_size_alias_route()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "BodySize annotation needs to be on the top parent layout '%s' not on '%s'",
+                BodyParent.class.getName(), BodyFailingAliasView.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(BodyFailingAliasView.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_valid_body_size_alias_does_not_throw()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(BodyAliasView.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    /* PageConfigurator tests */
+
+    @Route("single")
+    @Tag(Tag.DIV)
+    public static class SingleConfigurator extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class ParentConfigurator extends Component
+            implements RouterLayout, PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(Parent.class)
+    public static class MiddleParentConfigurator extends Component
+            implements RouterLayout, PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Route(value = "", layout = MiddleParentConfigurator.class)
+    @Tag(Tag.DIV)
+    public static class RootWithMultipleParentConfigurator extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(MiddleParentConfigurator.class)
+    public static class MultiMiddleParentConfigurator extends Component
+            implements RouterLayout, PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Route(value = "", layout = MultiMiddleParentConfigurator.class)
+    @Tag(Tag.DIV)
+    public static class MultiConfigurator extends Component {
+    }
+
+    @Route(value = "", layout = ParentConfigurator.class)
+    @Tag(Tag.DIV)
+    public static class RootWithParentConfigurator extends Component {
+    }
+
+    @Route(value = "", layout = Parent.class)
+    @Tag(Tag.DIV)
+    public static class RootConfiguratorWithParent extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = Parent.class)
+    @Tag(Tag.DIV)
+    public static class FailingAliasConfigurator extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    @Test
+    public void onStartUp_valid_page_configurator_does_not_throw()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(SingleConfigurator.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_wrong_position_page_configurator_throws()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "PageConfigurator implementation should be the top most route layout '%s'. Offending class: '%s'",
+                Parent.class.getName(),
+                MiddleParentConfigurator.class.getName()));
+
+        routeRegistryInitializer
+                .onStartup(Stream.of(RootWithMultipleParentConfigurator.class)
+                        .collect(Collectors.toSet()), servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_only_one_page_configurator_in_route_chain()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                "Only one PageConfigurator implementation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                        + MultiMiddleParentConfigurator.class.getName() + ", "
+                        + MiddleParentConfigurator.class.getName());
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(MultiConfigurator.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_route_can_not_contain_page_configurator_if_has_parent()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "PageConfigurator needs to be the top parent layout '%s' not '%s'",
+                Parent.class.getName(),
+                RootConfiguratorWithParent.class.getName()));
+
+        routeRegistryInitializer
+                .onStartup(Stream.of(RootConfiguratorWithParent.class)
+                        .collect(Collectors.toSet()), servletContext);
+    }
+
+    @Test
+    public void onStartUp_one_page_configurator_in_chain_and_one_for_route_passes()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream
+                .of(SingleConfigurator.class, RootWithParentConfigurator.class)
+                .collect(Collectors.toSet()), servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_page_configurator_for_faulty_alias_route()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "PageConfigurator needs to be the top parent layout '%s' not '%s'",
+                Parent.class.getName(),
+                FailingAliasConfigurator.class.getName()));
+
+        routeRegistryInitializer.onStartup(Stream
+                .of(FailingAliasConfigurator.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    /* Inline tests */
+
+    @Route("single")
+    @Tag(Tag.DIV)
+    @Inline(value = "inline.js", position = Inline.Position.PREPEND)
+    @Inline("inline.css")
+    public static class InlineSingleNavigationTarget extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class InlineParent extends Component implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(InlineParent.class)
+    @Inline("inline.js")
+    public static class InlineMiddleParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(InlineMiddleParentLayout.class)
+    @Inline("inline.js")
+    public static class InlineMultiMiddleParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Route(value = "", layout = InlineParent.class)
+    @Tag(Tag.DIV)
+    public static class InlineRootWithParent extends Component {
+    }
+
+    @Route(value = "", layout = InlineParent.class)
+    @Tag(Tag.DIV)
+    @Inline("inline.js")
+    public static class InlineRootViewportWithParent extends Component {
+    }
+
+    @Route(value = "", layout = InlineMiddleParentLayout.class)
+    @Tag(Tag.DIV)
+    public static class InlineRootWithParents extends Component {
+    }
+
+    @Route(value = "", layout = InlineMultiMiddleParentLayout.class)
+    @Tag(Tag.DIV)
+    public static class InlineMultiViewport extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = InlineParent.class)
+    @Tag(Tag.DIV)
+    @Inline("inline.js")
+    public static class InlineFailingAliasView extends Component {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = InlineParent.class)
+    @Tag(Tag.DIV)
+    public static class InlineAliasView extends Component {
+    }
+
+    @Test
+    public void onStartUp_wrong_position_inline_view_layout_throws()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "Inline annotation should be on the top most route layout '%s'. Offending class: '%s'",
+                InlineParent.class.getName(), InlineMiddleParentLayout.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(InlineRootWithParents.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_only_one_inline_in_route_chain()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                "Only one Inline annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                        + InlineMultiMiddleParentLayout.class.getName() + ", "
+                        + InlineMiddleParentLayout.class.getName());
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(InlineMultiViewport.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_route_can_not_contain_inline_if_has_parent()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "Inline annotation needs to be on the top parent layout '%s' not on '%s'",
+                InlineParent.class.getName(),
+                InlineRootViewportWithParent.class.getName()));
+
+        routeRegistryInitializer.onStartup(Stream
+                        .of(InlineRootViewportWithParent.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_one_inline_in_chain_and_one_for_route_passes()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(InlineSingleNavigationTarget.class, InlineRootWithParent.class)
+                        .collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_check_also_faulty_inline_alias_route()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "Inline annotation needs to be on the top parent layout '%s' not on '%s'",
+                InlineParent.class.getName(), InlineFailingAliasView.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Stream.of(InlineFailingAliasView.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_valid_inline_alias_does_not_throw()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(InlineAliasView.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
 }

@@ -15,7 +15,10 @@
  */
 package com.vaadin.ui.renderers;
 
-import com.vaadin.flow.dom.Element;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import com.vaadin.function.SerializableBiConsumer;
 import com.vaadin.function.SerializableFunction;
 import com.vaadin.function.SerializableSupplier;
@@ -26,7 +29,8 @@ import com.vaadin.ui.Component;
  * inside templates.
  * <p>
  * Internally it uses a {@code <flow-component-renderer>} webcomponent to manage
- * the component instances at the client-side.
+ * the component instances at the client-side. Some components may used
+ * different renderers, by calling {@link #getTemplate(String)}.
  *
  * @author Vaadin Ltd.
  *
@@ -38,19 +42,13 @@ import com.vaadin.ui.Component;
  *
  */
 public class ComponentTemplateRenderer<COMPONENT extends Component, ITEM>
-        extends TemplateRenderer<ITEM> implements ComponentRenderer<COMPONENT, ITEM> {
+        extends TemplateRenderer<ITEM>
+        implements ComponentRenderer<COMPONENT, ITEM> {
 
     private SerializableSupplier<COMPONENT> componentSupplier;
     private SerializableFunction<ITEM, COMPONENT> componentFunction;
     private SerializableBiConsumer<COMPONENT, ITEM> itemConsumer;
-
-    /*
-     * Components that support ComponentRenderer must import the {@code
-     * <flow-component-renderer>} element, since it is not imported
-     * automatically.
-     */
-    private final Element componentRendererElement = new Element(
-            "flow-component-renderer", false);
+    private Map<String, String> rendererAttributes = new HashMap<>();
 
     /**
      * Creates a new ComponentRenderer that uses the componentSupplier to
@@ -113,8 +111,9 @@ public class ComponentTemplateRenderer<COMPONENT extends Component, ITEM>
 
     /**
      * Sets attributes to the internal component renderer, that can affect the
-     * actual rendering. It is used internally by components that support
-     * ComponentRenderers.
+     * actual rendering.
+     * <p>
+     * It is used internally by components that support ComponentRenderers.
      *
      * @param attribute
      *            the attribute to set on the internal component renderer
@@ -123,12 +122,43 @@ public class ComponentTemplateRenderer<COMPONENT extends Component, ITEM>
      *            the value of the attribute, not <code>null</code>
      */
     public void setTemplateAttribute(String attribute, String value) {
-        componentRendererElement.setAttribute(attribute, value);
+        rendererAttributes.put(attribute, value);
     }
 
+    /**
+     * Gets the final template to be used to render the components, using the
+     * {@code <flow-component-renderer>} webcomponent as the client-side
+     * renderer.
+     * 
+     * @return the template ready to be used
+     * @see #getTemplate(String)
+     */
     @Override
     public String getTemplate() {
-        return componentRendererElement.getOuterHTML();
+        return getTemplate("flow-component-renderer");
+    }
+
+    /**
+     * Gets the final template to be used to render the components. The {@code
+     * componentRendererTag} parameter defines the tag of the client-side
+     * webcomponent responsible for rendering the actual components.
+     * 
+     * @param componentRendererTag
+     *            the tag of the client-side renderer webcomponent, not
+     *            <code>null</code>
+     * @return the template ready to be used
+     */
+    public String getTemplate(String componentRendererTag) {
+        Objects.requireNonNull(componentRendererTag,
+                "The componentRendererTag can not be null");
+        StringBuilder builder = new StringBuilder();
+        builder.append("<").append(componentRendererTag);
+        rendererAttributes.entrySet()
+                .forEach(entry -> builder.append(" ").append(entry.getKey())
+                        .append("=\"").append(entry.getValue()).append("\""));
+        builder.append("></").append(componentRendererTag).append(">");
+
+        return builder.toString();
     }
 
     /**

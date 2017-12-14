@@ -15,145 +15,76 @@
  */
 package com.vaadin.server.communication.rpc;
 
-import java.util.Optional;
-
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
+import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 public class AttachTemplateChildRpcHandlerTest {
 
     @Test(expected = IllegalStateException.class)
-    public void handleNode_error() {
-        AttachTemplateChildRpcHandler handler = new AttachTemplateChildRpcHandler();
-
-        int requestedId = 1;
-        JsonObject object = Json.createObject();
-        object.put(JsonConstants.RPC_ATTACH_REQUESTED_ID, requestedId);
-        object.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, -1);
-        object.put(JsonConstants.RPC_ATTACH_TAG_NAME, "div");
-        object.put(JsonConstants.RPC_ATTACH_ID, "id");
-
-        StateNode node = Mockito.mock(StateNode.class);
-        StateNode requested = Mockito.mock(StateNode.class);
-        StateNode parentNode = Mockito.mock(StateNode.class);
-        StateTree tree = Mockito.mock(StateTree.class);
-        Mockito.when(node.getOwner()).thenReturn(tree);
-        Mockito.when(tree.getNodeById(requestedId)).thenReturn(requested);
-
-        Element parentElement = Mockito.mock(Element.class);
-        ShadowRoot shadowRoot = Mockito.mock(ShadowRoot.class);
-
-        AttachTemplateChildFeature feature = new AttachTemplateChildFeature(
-                node);
-        feature.register(parentElement, requested);
-
-        Mockito.when(parentElement.getShadowRoot())
-                .thenReturn(Optional.of(shadowRoot));
-        Mockito.when(node.getFeature(AttachTemplateChildFeature.class))
-                .thenReturn(feature);
-        Mockito.when(parentElement.getNode()).thenReturn(parentNode);
-        Mockito.when(parentNode.getId()).thenReturn(3);
-
-        handler.handleNode(node, object);
-
-        assertNodeIsUnregistered(node, requested, feature);
+    public void handleNode_attachById_elementNotFound() {
+        doHandleNode_attach_elementNotFound(Json.create("id"));
     }
 
-    @Test
-    public void handleNode_requestedIdEqualsAssignedId() {
-        AttachTemplateChildRpcHandler handler = new AttachTemplateChildRpcHandler();
-
-        int requestedId = 1;
-        JsonObject object = Json.createObject();
-        object.put(JsonConstants.RPC_ATTACH_REQUESTED_ID, requestedId);
-        object.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, requestedId);
-        object.put(JsonConstants.RPC_ATTACH_TAG_NAME, "div");
-        object.put(JsonConstants.RPC_ATTACH_ID, "id");
-
-        StateNode node = Mockito.mock(StateNode.class);
-        StateNode requested = Mockito.mock(StateNode.class);
-        StateTree tree = Mockito.mock(StateTree.class);
-
-        Mockito.when(node.getOwner()).thenReturn(tree);
-
-        Mockito.when(tree.getNodeById(requestedId)).thenReturn(requested);
-
-        Mockito.when(requested.hasFeature(Mockito.any())).thenReturn(true);
-
-        AttachTemplateChildFeature feature = new AttachTemplateChildFeature(
-                node);
-        Element parentNode = Mockito.mock(Element.class);
-        ShadowRoot shadowRoot = Mockito.mock(ShadowRoot.class);
-        Mockito.when(parentNode.getShadowRoot())
-                .thenReturn(Optional.of(shadowRoot));
-
-        feature.register(parentNode, requested);
-        Mockito.when(node.getFeature(AttachTemplateChildFeature.class))
-                .thenReturn(feature);
-
-        handler.handleNode(node, object);
-
-        assertNodeIsUnregistered(node, requested, feature);
-        Mockito.verify(shadowRoot).insertVirtualChild(Element.get(requested));
+    @Test(expected = IllegalStateException.class)
+    public void handleNode_attachCustomElement_elementNotFound() {
+        doHandleNode_attach_elementNotFound(Json.createNull());
     }
 
-    @Test
-    public void handleNode_requestedIdAndAssignedIdAreDifferent() {
+    @Test(expected = IllegalStateException.class)
+    public void handleNode_attachByIdExistingRequest_throwReservedId() {
+        doHandleNode_attach_throwReservedId(Json.create(2));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void handleNode_attachCustonElementCustomId_throwReservedId() {
+        doHandleNode_attach_throwReservedId(Json.createNull());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void handleNode_success_throwIllegalInvocation() {
+        assertHandleNode(1, Json.create("id"));
+    }
+
+    private void doHandleNode_attach_elementNotFound(JsonValue id) {
+        assertHandleNode(-1, id);
+    }
+
+    private void doHandleNode_attach_throwReservedId(JsonValue id) {
+        assertHandleNode(2, id);
+    }
+
+    private void assertHandleNode(int assignedId, JsonValue id) {
         AttachTemplateChildRpcHandler handler = new AttachTemplateChildRpcHandler();
 
         int requestedId = 1;
-        int assignedId = 2;
-        int index = 3;
         JsonObject object = Json.createObject();
         object.put(JsonConstants.RPC_ATTACH_REQUESTED_ID, requestedId);
         object.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, assignedId);
-        object.put(JsonConstants.RPC_ATTACH_TAG_NAME, "div");
-        object.put(JsonConstants.RPC_ATTACH_ID, "id");
+        object.put(JsonConstants.RPC_ATTACH_ID, id);
 
         StateNode node = Mockito.mock(StateNode.class);
-        StateNode requested = Mockito.mock(StateNode.class);
-        StateNode assigned = Mockito.mock(StateNode.class);
+        StateNode parentNode = Mockito.mock(StateNode.class);
         StateTree tree = Mockito.mock(StateTree.class);
-
         Mockito.when(node.getOwner()).thenReturn(tree);
-        Mockito.when(tree.getNodeById(requestedId)).thenReturn(requested);
-        Mockito.when(tree.getNodeById(assignedId)).thenReturn(assigned);
+        Mockito.when(node.getParent()).thenReturn(parentNode);
+        Mockito.when(tree.getNodeById(requestedId)).thenReturn(node);
 
-        Mockito.when(assigned.hasFeature(Mockito.any())).thenReturn(true);
+        ElementData data = new ElementData(node);
+        data.setTag("foo");
+        Mockito.when(node.getFeature(ElementData.class)).thenReturn(data);
 
-        AttachTemplateChildFeature feature = new AttachTemplateChildFeature(
-                node);
-        Element parentNode = Mockito.mock(Element.class);
-        ShadowRoot shadowRoot = Mockito.mock(ShadowRoot.class);
-        Mockito.when(parentNode.getShadowRoot())
-                .thenReturn(Optional.of(shadowRoot));
-
-        feature.register(parentNode, requested);
-        Mockito.when(node.getFeature(AttachTemplateChildFeature.class))
-                .thenReturn(feature);
+        Mockito.when(parentNode.getId()).thenReturn(3);
 
         handler.handleNode(node, object);
-
-        assertNodeIsUnregistered(node, requested, feature);
-        Mockito.verify(shadowRoot, Mockito.times(0))
-                .insertVirtualChild(Mockito.any());
-    }
-
-    private void assertNodeIsUnregistered(StateNode node, StateNode requested,
-            AttachTemplateChildFeature feature) {
-        Mockito.verify(requested).setParent(null);
-        Assert.assertNull(feature.getParent(requested));
     }
 
 }

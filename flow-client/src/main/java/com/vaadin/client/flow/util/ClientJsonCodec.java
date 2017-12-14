@@ -94,18 +94,6 @@ public class ClientJsonCodec {
             case JsonCodec.NODE_TYPE: {
                 int nodeId = (int) array.getNumber(1);
                 Node domNode = tree.getNode(nodeId).getDomNode();
-                if (domNode == null) {
-                    /*
-                     * If an existing element is addressed from the server side
-                     * then it might be not yet set for the StateNode identified
-                     * by <code>nodeId</code>. But it's available via the
-                     * ExistingElementMap instance. Since we don't need anything
-                     * else from the StateNode except the DOM Element it's OK to
-                     * return it here without waiting server round-trip.
-                     */
-                    domNode = tree.getRegistry().getExistingElementMap()
-                            .getElement(nodeId);
-                }
                 return domNode;
             }
             case JsonCodec.ARRAY_TYPE:

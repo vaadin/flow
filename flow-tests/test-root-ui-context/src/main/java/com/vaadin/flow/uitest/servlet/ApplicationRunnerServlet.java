@@ -34,8 +34,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -84,7 +84,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             try {
                 new URI(url.getPath()).getPath();
             } catch (URISyntaxException e) {
-                getLogger().log(Level.FINE, "Failed to decode url", e);
+                getLogger().debug("Failed to decode url", e);
             }
             try {
                 addDirectories(new File(url.getPath()), defaultPackages);
@@ -224,10 +224,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                     // Ignore as this is expected for many packages
                 } catch (Exception e2) {
                     // TODO: handle exception
-                    getLogger().log(Level.FINE,
-                            "Failed to find application class " + pkg + "."
-                                    + baseName,
-                            e2);
+                    getLogger().debug(
+                            "Failed to find application class {}. {}", pkg, baseName, e2);
                 }
                 if (appClass != null) {
                     return appClass;
@@ -240,7 +238,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     }
 
     private Logger getLogger() {
-        return Logger.getLogger(ApplicationRunnerServlet.class.getName());
+        return LoggerFactory.getLogger(ApplicationRunnerServlet.class.getName());
     }
 
     @Override

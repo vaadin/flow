@@ -26,7 +26,9 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.shared.ApplicationConstants;
@@ -304,7 +306,7 @@ public class DefaultDeploymentConfiguration
         productionMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (!productionMode) {
-            getLogger().warning(NOT_PRODUCTION_MODE_INFO);
+            getLogger().warn(NOT_PRODUCTION_MODE_INFO);
         }
     }
 
@@ -315,7 +317,7 @@ public class DefaultDeploymentConfiguration
         xsrfProtectionEnabled = !getBooleanProperty(
                 Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
         if (!xsrfProtectionEnabled) {
-            getLogger().warning(WARNING_XSRF_PROTECTION_DISABLED);
+            getLogger().warn(WARNING_XSRF_PROTECTION_DISABLED);
         }
     }
 
@@ -325,7 +327,7 @@ public class DefaultDeploymentConfiguration
                     Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                     DEFAULT_HEARTBEAT_INTERVAL, Integer::parseInt);
         } catch (NumberFormatException e) {
-            getLogger().warning(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
+            getLogger().warn(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
         }
     }
@@ -343,7 +345,7 @@ public class DefaultDeploymentConfiguration
                     stringMode -> Enum.valueOf(PushMode.class,
                             stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            getLogger().warning(WARNING_PUSH_MODE_NOT_RECOGNIZED);
+            getLogger().warn(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
         }
     }
@@ -366,7 +368,7 @@ public class DefaultDeploymentConfiguration
     }
 
     private Logger getLogger() {
-        return Logger.getLogger(getClass().getName());
+        return LoggerFactory.getLogger(getClass().getName());
     }
 
     private void checkWebComponentsPolyfillBase(
@@ -377,9 +379,9 @@ public class DefaultDeploymentConfiguration
             Optional<String> locatedPolyfill = getWebComponentsPolyfill(
                     resourceScanner);
             if (!locatedPolyfill.isPresent()) {
-                getLogger().warning(() -> String.format(
-                        "Unable to locate polyfill %s, proceeding without it",
-                        WEB_COMPONENTS_LOADER_JS_NAME));
+                getLogger().warn(
+                        "Unable to locate polyfill {}, proceeding without it",
+                        WEB_COMPONENTS_LOADER_JS_NAME);
             }
             propertyValue = locatedPolyfill.orElse(null);
         } else if (propertyValue.trim().isEmpty()) {
@@ -402,9 +404,9 @@ public class DefaultDeploymentConfiguration
                         excludedDirectories))
                 .orElse(Collections.emptySet());
         if (frontendDirectoryPolyfills.isEmpty()) {
-            getLogger().config(() -> String.format(
-                    "Unable to find %s polyfill in frontend directory, searching the whole context",
-                    WEB_COMPONENTS_LOADER_JS_NAME));
+            getLogger().info(
+                    "Unable to find {} polyfill in frontend directory, searching the whole context",
+                    WEB_COMPONENTS_LOADER_JS_NAME);
             frontendDirectoryPath.ifPresent(excludedDirectories::add);
             return getPolyfillBasePath(
                     ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
@@ -433,11 +435,11 @@ public class DefaultDeploymentConfiguration
         String scanBase = uriResolver.resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
         if (!scanBase.startsWith(CONTEXT_ROOT_PATH)) {
-            getLogger().warning(() -> formatDefaultPolyfillMessage(String
-                    .format("Cannot automatically find the %s polyfill because the property "
-                            + "'%s' value is not absolute (doesn't start with '/')",
-                            WEB_COMPONENTS_LOADER_JS_NAME,
-                            Constants.FRONTEND_URL_ES6)));
+            String message = formatDefaultPolyfillMessage( String
+                .format( "Cannot automatically find the %s polyfill because the property "
+                        + "'%s' value is not absolute (doesn't start with '/')",
+                    WEB_COMPONENTS_LOADER_JS_NAME, Constants.FRONTEND_URL_ES6 ) );
+            getLogger().warn(message);
             return Optional.empty();
         }
         return Optional.of(scanBase);
@@ -446,11 +448,16 @@ public class DefaultDeploymentConfiguration
     private Set<String> locatePolyfills(
             BiConsumer<String, Predicate<String>> resourceScanner,
             String scanBase, Set<String> exclusions) {
+        Set<String> visitedPaths = new HashSet<>();
         Set<String> foundPolyfills = new HashSet<>();
-        resourceScanner.accept(scanBase, name -> {
-            boolean notExcludedPath = exclusions.stream().noneMatch(name::contains);
-            if (notExcludedPath && name.endsWith(WEB_COMPONENTS_LOADER_JS_NAME)) {
-                foundPolyfills.add(name);
+        resourceScanner.accept(scanBase, path -> {
+            boolean notExcludedPath = !visitedPaths.contains(path)
+                    && exclusions.stream().noneMatch(path::contains);
+            if (notExcludedPath) {
+                visitedPaths.add(path);
+                if (path.endsWith(WEB_COMPONENTS_LOADER_JS_NAME)) {
+                    foundPolyfills.add(path);
+                }
             }
             return notExcludedPath;
         });
@@ -463,17 +470,15 @@ public class DefaultDeploymentConfiguration
             return Optional.empty();
         }
         if (polyfills.size() > 1) {
-            getLogger().warning(() -> String.format(
-                    "Have located multiple %s polyfills: '%s', using the first one",
-                    WEB_COMPONENTS_LOADER_JS_NAME, polyfills));
+            getLogger().warn(
+                    "Have located multiple {} polyfills: '{}', using the first one",
+                    WEB_COMPONENTS_LOADER_JS_NAME, polyfills);
         }
 
         String fileName = polyfills.iterator().next();
         String dirName = fileName.substring(0, fileName.lastIndexOf('/'));
 
-        getLogger().config(() -> formatDefaultPolyfillMessage(
-                String.format("Will use %s polyfill discovered in %s",
-                        WEB_COMPONENTS_LOADER_JS_NAME, dirName)));
+        getLogger().info("Will use {} polyfill discovered in {}", WEB_COMPONENTS_LOADER_JS_NAME, dirName);
         return Optional.of(prefix + dirName + '/');
     }
 

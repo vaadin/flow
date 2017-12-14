@@ -22,8 +22,8 @@ import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
@@ -95,9 +95,9 @@ public class ResponseWriter implements Serializable {
                     response.setHeader("Content-Encoding", "gzip");
                 }
             } catch (Exception e) {
-                getLogger().log(Level.FINE,
-                        "Unexpected exception looking for gzipped resource "
-                                + gzippedFilenameWithPath,
+                getLogger().debug(
+                        "Unexpected exception looking for gzipped resource {}",
+                                gzippedFilenameWithPath,
                         e);
             }
         }
@@ -113,18 +113,18 @@ public class ResponseWriter implements Serializable {
                 response.setContentLengthLong(length);
             }
         } catch (Exception e) {
-            getLogger().log(Level.FINE, "Error setting the content length", e);
+            getLogger().debug("Error setting the content length", e);
         }
 
         try {
             writeStream(response.getOutputStream(), dataStream);
         } catch (IOException e) {
-            getLogger().log(Level.FINE, "Error writing static file to user", e);
+            getLogger().debug("Error writing static file to user", e);
         } finally {
             try {
                 dataStream.close();
             } catch (IOException e) {
-                getLogger().log(Level.FINE,
+                getLogger().debug(
                         "Error closing input stream for resource", e);
             }
         }
@@ -204,6 +204,6 @@ public class ResponseWriter implements Serializable {
     }
 
     private Logger getLogger() {
-        return Logger.getLogger(getClass().getName());
+        return LoggerFactory.getLogger(getClass().getName());
     }
 }

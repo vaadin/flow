@@ -20,8 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.communication.PushRequestHandler;
@@ -76,7 +76,7 @@ public class VaadinServletService extends VaadinService {
                 // Atmosphere init failed. Push won't work but we don't throw a
                 // service exception as we don't want to prevent non-push
                 // applications from working
-                getLogger().log(Level.WARNING,
+                getLogger().warn(
                         "Error initializing Atmosphere. Push will not work.",
                         e);
             }
@@ -159,7 +159,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     private static final Logger getLogger() {
-        return Logger.getLogger(VaadinServletService.class.getName());
+        return LoggerFactory.getLogger(VaadinServletService.class.getName());
     }
 
     @Override

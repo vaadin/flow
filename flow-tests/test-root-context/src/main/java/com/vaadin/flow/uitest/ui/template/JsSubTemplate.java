@@ -13,18 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.demo;
+package com.vaadin.flow.uitest.ui.template;
 
-import javax.servlet.annotation.WebServlet;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.Id;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletConfiguration;
+@Tag("js-sub-template")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/JsSubTemplate.html")
+public class JsSubTemplate extends PolymerTemplate<TemplateModel> {
 
-/**
- * @author Vaadin Ltd
- *
- */
-@WebServlet(urlPatterns = "/*", name = "DemoServlet", asyncSupported = true)
-@VaadinServletConfiguration(usingNewRouting = true, productionMode = false)
-public class DemoServlet extends VaadinServlet {
+    @Id("js-grand-child")
+    private JsInjectedGrandChild component;
 }

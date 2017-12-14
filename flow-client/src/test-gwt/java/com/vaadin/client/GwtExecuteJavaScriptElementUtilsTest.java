@@ -19,15 +19,13 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
+import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.nodefeature.NodeFeatures;
 import com.vaadin.flow.nodefeature.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
-import elemental.json.Json;
-import elemental.json.JsonArray;
 
 public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
@@ -75,11 +73,10 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
         @Override
         public void sendExistingElementWithIdAttachToServer(StateNode parent,
-                int requestedId, int assignedId, String tagName, String id) {
+                int requestedId, int assignedId, String id) {
             sentExistingElementParent = parent;
             sentExistingElementRequestedId = requestedId;
             sentExistingElementAssignedId = assignedId;
-            sentExistingElementTagName = tagName;
             sentExistingElementId = id;
         }
 
@@ -181,293 +178,29 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         assertRpcToServerArguments(-1, "button", -1);
     }
 
-    public void testAttachExistingElementById_elementExistsInDom() {
-        setupShadowRoot();
-
-        String id = "identifier";
-
-        Element child = Browser.getDocument().createElement("div");
-        child.setAttribute("id", id);
-        addChildElement(element, child);
-
-        ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
-                requestedId, id);
-
-        assertRpcToServerArguments(requestedId, child.getTagName(), id);
-
-        Element storedElement = map.getElement(requestedId);
-        assertEquals(child, storedElement);
-    }
-
-    public void testAttachExistingElementById_notCustomElementInitially_elementExistsInDom() {
-        String id = "identifier";
-
-        Element child = Browser.getDocument().createElement("div");
-        child.setAttribute("id", id);
-
-        mockWhenDefined(element);
-
-        ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
-                requestedId, id);
-
-        setupShadowRoot();
-        addChildElement(element, child);
-        runWhenDefined(element);
-
-        assertRpcToServerArguments(requestedId, child.getTagName(), id);
-
-        Element storedElement = map.getElement(requestedId);
-        assertEquals(child, storedElement);
-    }
-
-    public void testAttachCustomElement_elementExistsInDom() {
-        setupShadowRoot();
-
-        Element child = Browser.getDocument().createElement("div");
-        element.appendChild(child);
-
-        Element grandChild = Browser.getDocument().createElement("a");
-        child.appendChild(grandChild);
-        Element anotherGrandChild = Browser.getDocument().createElement("span");
-        child.appendChild(anotherGrandChild);
-
-        JsonArray path = Json.createArray();
-        path.set(0, 0);
-        path.set(1, 1);
-
-        ExecuteJavaScriptElementUtils.attachCustomElement(node, "span",
-                requestedId, path);
-
-        assertRpcToServerArguments(requestedId, "span", null);
-
-        ExistingElementMap map = tree.getRegistry().getExistingElementMap();
-        Element storedElement = map.getElement(requestedId);
-        assertEquals(anotherGrandChild, storedElement);
-    }
-
-    public void testAttachCustomElement_notCustomElementInitially_elementExistsInDom() {
-        Element child = Browser.getDocument().createElement("div");
-        element.appendChild(child);
-
-        Element grandChild = Browser.getDocument().createElement("a");
-        child.appendChild(grandChild);
-        Element anotherGrandChild = Browser.getDocument().createElement("span");
-        child.appendChild(anotherGrandChild);
-
-        JsonArray path = Json.createArray();
-        path.set(0, 0);
-        path.set(1, 1);
-
-        mockWhenDefined(element);
-
-        ExecuteJavaScriptElementUtils.attachCustomElement(node, "span",
-                requestedId, path);
-
-        setupShadowRoot();
-        runWhenDefined(element);
-
-        assertRpcToServerArguments(requestedId, "span", null);
-
-        ExistingElementMap map = tree.getRegistry().getExistingElementMap();
-        Element storedElement = map.getElement(requestedId);
-        assertEquals(anotherGrandChild, storedElement);
-    }
-
-    public void testAttachCustomElement_templateHasStyle_styleIsIgnored() {
-        /*
-         * Append style element at the beginning of the {@code element}. The
-         * previous test should work in the same way.
-         */
-        element.appendChild(Browser.getDocument().createElement("style"));
-
-        testAttachCustomElement_elementExistsInDom();
-    }
-
-    public void testAttachExistingElementById_elementMissingInDom() {
-        setupShadowRoot();
-
-        ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
-                requestedId, "not_found");
-
-        assertRpcToServerArguments(-1, "div", "not_found");
-
-        ExistingElementMap map = tree.getRegistry().getExistingElementMap();
-        assertNull(map.getElement(requestedId));
-    }
-
-    public void testAttachExistingElementById_notCustomElementInitially_elementMissingInDom() {
-        mockWhenDefined(element);
-
-        ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
-                requestedId, "not_found");
-
-        setupShadowRoot();
-        runWhenDefined(element);
-
-        assertRpcToServerArguments(-1, "div", "not_found");
-
-        ExistingElementMap map = tree.getRegistry().getExistingElementMap();
-        assertNull(map.getElement(requestedId));
-    }
-
-    public void testAttachCustomElement_elementMissingInDom() {
-        setupShadowRoot();
-
-        Element child = Browser.getDocument().createElement("div");
-        element.appendChild(child);
-
-        JsonArray path = Json.createArray();
-        path.set(0, 1);
-        ExecuteJavaScriptElementUtils.attachCustomElement(node, "div",
-                requestedId, path);
-
-        assertRpcToServerArguments(-1, "div", null);
-
-        ExistingElementMap map = tree.getRegistry().getExistingElementMap();
-        assertNull(map.getElement(requestedId));
-    }
-
-    public void testAttachCustomElement_notCustomElementInitially_elementMissingInDom() {
-        mockWhenDefined(element);
-
-        Element child = Browser.getDocument().createElement("div");
-        element.appendChild(child);
-
-        JsonArray path = Json.createArray();
-        path.set(0, 1);
-        ExecuteJavaScriptElementUtils.attachCustomElement(node, "div",
-                requestedId, path);
-
-        setupShadowRoot();
-        runWhenDefined(element);
-
-        assertRpcToServerArguments(-1, "div", null);
-
-        ExistingElementMap map = tree.getRegistry().getExistingElementMap();
-        assertNull(map.getElement(requestedId));
-    }
-
-    public void testAttachExistingElementById_elementIsAlreadyAssociated() {
-        setupShadowRoot();
-        String id = "identifier";
-
-        Element child = Browser.getDocument().createElement("div");
-        child.setAttribute("id", id);
-        addChildElement(element, child);
-
-        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-        StateNode shadowRootNode = (StateNode) map
-                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
-        NodeList list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
-
-        StateNode elementNode = new StateNode(99, tree);
-        elementNode.setDomNode(child);
-
-        list.add(0, elementNode);
-
-        ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
-                requestedId, id);
-
-        assertRpcToServerArguments(99, child.getTagName(), id);
-
-        ExistingElementMap existingElements = tree.getRegistry()
-                .getExistingElementMap();
-        assertNull(existingElements.getElement(requestedId));
-    }
-
-    public void testAttachExistingElementById_notCustomElementInitially_elementIsAlreadyAssociated() {
-        mockWhenDefined(element);
-
-        String id = "identifier";
-
-        Element child = Browser.getDocument().createElement("div");
-        child.setAttribute("id", id);
-
-        StateNode elementNode = new StateNode(99, tree);
-        elementNode.setDomNode(child);
-
-        ExecuteJavaScriptElementUtils.attachExistingElementById(node, "div",
-                requestedId, id);
-
-        setupShadowRoot();
-
-        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-        StateNode shadowRootNode = (StateNode) map
-                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
-        NodeList list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
-        list.add(0, elementNode);
-
-        addChildElement(element, child);
-        runWhenDefined(element);
-
-        assertRpcToServerArguments(99, child.getTagName(), id);
-
-        ExistingElementMap existingElements = tree.getRegistry()
-                .getExistingElementMap();
-        assertNull(existingElements.getElement(requestedId));
-    }
-
-    public void testAttachCustomElement_elementIsAlreadyAssociated() {
-        setupShadowRoot();
-
-        Element child = Browser.getDocument().createElement("div");
-        element.appendChild(child);
-
-        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-        StateNode shadowRootNode = (StateNode) map
-                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
-        NodeList list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
-
-        StateNode elementNode = new StateNode(99, tree);
-        elementNode.setDomNode(child);
-
-        list.add(0, elementNode);
-
-        JsonArray path = Json.createArray();
-        path.set(0, 0);
-        ExecuteJavaScriptElementUtils.attachCustomElement(node, "div",
-                requestedId, path);
-
-        assertRpcToServerArguments(99, child.getTagName(), null);
-
-        ExistingElementMap existingElements = tree.getRegistry()
-                .getExistingElementMap();
-        assertNull(existingElements.getElement(requestedId));
-    }
-
-    public void testAttachCustomElement__notCustomElementInitially_elementIsAlreadyAssociated() {
-        mockWhenDefined(element);
-        Element child = Browser.getDocument().createElement("div");
-        element.appendChild(child);
-
-        StateNode elementNode = new StateNode(99, tree);
-        elementNode.setDomNode(child);
-
-        JsonArray path = Json.createArray();
-        path.set(0, 0);
-        ExecuteJavaScriptElementUtils.attachCustomElement(node, "div",
-                requestedId, path);
-
-        setupShadowRoot();
-        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-        StateNode shadowRootNode = (StateNode) map
-                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
-        NodeList list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
-        list.add(0, elementNode);
-        runWhenDefined(element);
-
-        assertRpcToServerArguments(99, child.getTagName(), null);
-
-        ExistingElementMap existingElements = tree.getRegistry()
-                .getExistingElementMap();
-        assertNull(existingElements.getElement(requestedId));
-    }
-
     public void testPopulateModelProperties_propertyIsNotDefined_addIntoPropertiesMap() {
         ExecuteJavaScriptElementUtils.populateModelProperties(node,
                 JsCollections.array("foo"));
 
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertTrue(map.hasPropertyValue("foo"));
+    }
+
+    public void testPopulateModelProperties_elementIsNotReadyAndPropertyIsNotDefined_addIntoPropertiesMapAfterElementBecomesReady() {
+        node.setDomNode(null);
+
+        mockWhenDefined(element);
+
+        ExecuteJavaScriptElementUtils.populateModelProperties(node,
+                JsCollections.array("foo"));
+
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertFalse(map.hasPropertyValue("foo"));
+
+        node.setDomNode(element);
+        runWhenDefined(element);
+        Reactive.flush();
+
         assertTrue(map.hasPropertyValue("foo"));
     }
 
@@ -480,6 +213,31 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                 JsCollections.array("foo"));
 
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertTrue(map.hasPropertyValue("foo"));
+
+        assertEquals("bar", tree.syncedProperty.getValue());
+        assertEquals("foo", tree.syncedProperty.getName());
+    }
+
+    public void testPopulateModelProperties_elementIsNotReadyAndPropertyIsDefined_syncToServerWhenElementBecomesReady() {
+        node.setDomNode(null);
+
+        mockWhenDefined(element);
+
+        defineProperty(element, "foo");
+
+        WidgetUtil.setJsProperty(element, "foo", "bar");
+
+        ExecuteJavaScriptElementUtils.populateModelProperties(node,
+                JsCollections.array("foo"));
+
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertFalse(map.hasPropertyValue("foo"));
+
+        node.setDomNode(element);
+        runWhenDefined(element);
+        Reactive.flush();
+
         assertTrue(map.hasPropertyValue("foo"));
 
         assertEquals("bar", tree.syncedProperty.getValue());

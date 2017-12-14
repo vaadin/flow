@@ -29,12 +29,10 @@ import java.util.stream.Stream;
 
 import org.jsoup.select.Elements;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.NodeProperties;
+import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.CustomElementRegistry;
@@ -60,7 +58,7 @@ public class TemplateInitializer {
     private final PolymerTemplate<?> template;
     private final Class<? extends PolymerTemplate<?>> templateClass;
 
-    private final Map<String, Element> registeredElementIdToCustomElement = new HashMap<>();
+    private final Map<String, Element> registeredElementIdToInjected = new HashMap<>();
     private final boolean useCache;
     private final ParserData parserData;
     private final Set<String> notInjectableElementIds = new HashSet<>();
@@ -90,21 +88,13 @@ public class TemplateInitializer {
         }
 
         private void addTag(String id, String tag) {
-            if (isProduction()) {
-                tagById.put(id, tag);
-            }
+            tagById.put(id, tag);
         }
 
         private void addSubTemplate(String id, String tag, JsonArray path) {
-            if (isProduction()) {
-                subTemplates.add(new SubTemplateData(id, tag, path));
-            }
+            subTemplates.add(new SubTemplateData(id, tag, path));
         }
 
-        private static boolean isProduction() {
-            return VaadinService.getCurrent().getDeploymentConfiguration()
-                    .isProductionMode();
-        }
     }
 
     /**
@@ -115,6 +105,7 @@ public class TemplateInitializer {
      * @param parser
      *            a template parser instance
      */
+    @SuppressWarnings("unchecked")
     public TemplateInitializer(PolymerTemplate<?> template,
             TemplateParser parser) {
         this.template = template;
@@ -127,9 +118,7 @@ public class TemplateInitializer {
         parserData = productionMode ? CACHE.get(templateClass)
                 : new ParserData();
 
-        if (useCache) {
-            createSubTemplates();
-        } else {
+        if (!useCache) {
             parsedTemplateRoot = parser.getTemplateContent(templateClass,
                     getElement().getTag());
             parseTemplate();
@@ -140,7 +129,9 @@ public class TemplateInitializer {
      * Initializes child elements.
      */
     public void initChildElements() {
+        registeredElementIdToInjected.clear();
         mapComponents(templateClass);
+        createSubTemplates();
     }
 
     private void inspectCustomElements(org.jsoup.nodes.Element childElement,
@@ -149,7 +140,7 @@ public class TemplateInitializer {
             storeNotInjectableElementId(childElement);
         }
 
-        requestAttachCustomElement(childElement, templateRoot);
+        collectCustomElement(childElement, templateRoot);
         childElement.children()
                 .forEach(child -> inspectCustomElements(child, templateRoot));
     }
@@ -183,7 +174,7 @@ public class TemplateInitializer {
         return isInsideTemplate(element.parent(), templateRoot);
     }
 
-    private void requestAttachCustomElement(org.jsoup.nodes.Element element,
+    private void collectCustomElement(org.jsoup.nodes.Element element,
             org.jsoup.nodes.Element templateRoot) {
         String tag = element.tagName();
 
@@ -199,34 +190,25 @@ public class TemplateInitializer {
             JsonArray path = getPath(element, templateRoot);
             assert !useCache;
             parserData.addSubTemplate(id, tag, path);
-            doRequestAttachCustomElement(id, tag, path);
         }
     }
 
     private void doRequestAttachCustomElement(String id, String tag,
             JsonArray path) {
+        if (registeredElementIdToInjected.containsKey(id)) {
+            return;
+        }
         // make sure that shadow root is available
         getShadowRoot();
 
-        StateNode stateNode = getElement().getNode();
+        Element element = new Element(tag);
+        VirtualChildrenList list = getElement().getNode()
+                .getFeature(VirtualChildrenList.class);
+        list.append(element.getNode(), NodeProperties.TEMPLATE_IN_TEMPLATE,
+                path);
 
-        StateNode customNode = BasicElementStateProvider.createStateNode(tag);
-        customNode.runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                "this.attachCustomElement($0, $1, $2, $3);", getElement(), tag,
-                customNode.getId(), path));
-
-        stateNode.getFeature(AttachTemplateChildFeature.class)
-                .register(getElement(), customNode);
-
-        // The Component should be created only after the code above which
-        // guarantees that "attachCustomElement" JS call is executed before
         // anything else
-        Element customElement = Element.get(customNode);
-        CustomElementRegistry.getInstance().wrapElementIfNeeded(customElement);
-
-        if (id != null) {
-            registeredElementIdToCustomElement.put(id, customElement);
-        }
+        CustomElementRegistry.getInstance().wrapElementIfNeeded(element);
     }
 
     private JsonArray getPath(org.jsoup.nodes.Element element,
@@ -289,12 +271,10 @@ public class TemplateInitializer {
         }
 
         Stream.of(cls.getDeclaredFields()).filter(field -> !field.isSynthetic())
-                .forEach(field -> tryMapComponentOrElement(field,
-                        registeredElementIdToCustomElement));
+                .forEach(field -> tryMapComponentOrElement(field));
     }
 
-    private void tryMapComponentOrElement(Field field,
-            Map<String, Element> registeredCustomElements) {
+    private void tryMapComponentOrElement(Field field) {
         Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
                 Id.class);
         if (!idAnnotation.isPresent()) {
@@ -319,8 +299,7 @@ public class TemplateInitializer {
         Element element = getElementById(id).orElse(null);
 
         if (element == null) {
-            injectClientSideElement(tagName.get(), id, field,
-                    registeredCustomElements);
+            injectClientSideElement(tagName.get(), id, field);
         } else {
             injectServerSideElement(element, field);
         }
@@ -351,8 +330,8 @@ public class TemplateInitializer {
         }
     }
 
-    private void injectClientSideElement(String tagName, String id, Field field,
-            Map<String, Element> registeredCustomElements) {
+    private void injectClientSideElement(String tagName, String id,
+            Field field) {
         Class<?> fieldType = field.getType();
 
         Tag tag = fieldType.getAnnotation(Tag.class);
@@ -365,7 +344,7 @@ public class TemplateInitializer {
                     fieldType.getName(), tag.value(), id, tagName);
             throw new IllegalStateException(msg);
         }
-        attachExistingElementById(tagName, id, field, registeredCustomElements);
+        attachExistingElementById(tagName, id, field);
     }
 
     private Optional<Element> getElementById(String id) {
@@ -393,31 +372,19 @@ public class TemplateInitializer {
      *            field to attach {@code Element} or {@code Component} to
      */
     private void attachExistingElementById(String tagName, String id,
-            Field field, Map<String, Element> registeredCustomElements) {
+            Field field) {
         if (tagName == null) {
             throw new IllegalArgumentException(
                     "Tag name parameter cannot be null");
         }
 
-        Element element = registeredCustomElements.get(id);
+        Element element = registeredElementIdToInjected.get(id);
         if (element == null) {
-            /*
-             * create a node that should represent the client-side element. This
-             * node won't be available anywhere and will be removed if there is
-             * no appropriate element on the client-side. This node will be used
-             * after client-side roundtrip for the appropriate element.
-             */
-            StateNode proposedNode = BasicElementStateProvider
-                    .createStateNode(tagName);
-            element = Element.get(proposedNode);
-            element.setAttribute(NodeProperties.ID, id);
-            StateNode templateNode = getElement().getNode();
-
-            proposedNode.runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                    "this.attachExistingElementById($0, $1, $2, $3);",
-                    getElement(), tagName, proposedNode.getId(), id));
-            templateNode.getFeature(AttachTemplateChildFeature.class)
-                    .register(getElement(), proposedNode);
+            element = new Element(tagName);
+            VirtualChildrenList list = getElement().getNode()
+                    .getFeature(VirtualChildrenList.class);
+            list.append(element.getNode(), NodeProperties.INJECT_BY_ID, id);
+            registeredElementIdToInjected.put(id, element);
         }
         injectTemplateElement(element, field);
     }
@@ -426,6 +393,7 @@ public class TemplateInitializer {
         return template.getElement();
     }
 
+    @SuppressWarnings("unchecked")
     private void injectTemplateElement(Element element, Field field) {
         Class<?> fieldType = field.getType();
         if (Component.class.isAssignableFrom(fieldType)) {

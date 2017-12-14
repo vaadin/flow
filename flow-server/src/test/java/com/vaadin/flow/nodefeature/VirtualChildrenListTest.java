@@ -28,17 +28,17 @@ import com.vaadin.flow.StateNode;
 
 import elemental.json.JsonObject;
 
-public class NewVirtualChildrenListTest {
+public class VirtualChildrenListTest {
 
-    private StateNode node = new StateNode(NewVirtualChildrenList.class);
-    private NewVirtualChildrenList list = node
-            .getFeature(NewVirtualChildrenList.class);
+    private StateNode node = new StateNode(VirtualChildrenList.class);
+    private VirtualChildrenList list = node
+            .getFeature(VirtualChildrenList.class);
 
     private StateNode child = new StateNode(ElementData.class);
 
     @Test
     public void insert_atIndexWithType_payloadIsSetAndElementIsInserted() {
-        list.add(0, child, "foo", null);
+        list.add(0, child, "foo", (String) null);
 
         Assert.assertEquals(child, list.get(0));
 
@@ -49,7 +49,7 @@ public class NewVirtualChildrenListTest {
         Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
 
         StateNode anotherChild = new StateNode(ElementData.class);
-        list.add(0, anotherChild, "bar", null);
+        list.add(0, anotherChild, "bar", (String) null);
 
         Assert.assertEquals(anotherChild, list.get(0));
 

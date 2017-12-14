@@ -16,17 +16,19 @@
 package com.vaadin.data;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
+import com.vaadin.ui.common.HasValue;
 
 /**
  * Represents the status of field validation. Status can be {@code Status.OK},
- * {@code Status.ERROR} or {@code Status.RESET}. Status OK and ERROR are always
- * associated with a ValidationResult {@link #getResult}.
+ * {@code Status.ERROR} or {@code Status.UNRESOLVED}. Status OK and ERROR are
+ * always associated with a ValidationResult {@link #getResult}.
  * <p>
  * Use
  * {@link BindingBuilder#withValidationStatusHandler(BindingValidationStatusHandler)}
@@ -71,53 +73,40 @@ public class BindingValidationStatus<TARGET> implements Serializable {
     }
 
     private final Status status;
-    private final ValidationResult result;
+    private final List<ValidationResult> results;
     private final Binding<?, TARGET> binding;
-
-    /**
-     * Creates a new validation status for the given binding and validation
-     * result.
-     *
-     * @param source
-     *            the source binding
-     * @param result
-     *            the result of the validation
-     */
-    public BindingValidationStatus(Binding<?, TARGET> source,
-            ValidationResult result) {
-        this(source, result.isError() ? Status.ERROR : Status.OK, result);
-    }
+    private Result<TARGET> result;
 
     /**
      * Creates a new status change event.
      * <p>
-     * The {@code message} must be {@code null} if the {@code status} is
-     * {@link Status#OK}.
+     * If {@code result} is {@code null}, the {@code status} is
+     * {@link Status#UNRESOLVED}.
      *
+     * @param result
+     *            the related result object, may be {@code null}
      * @param source
      *            field whose status has changed, not {@code null}
-     * @param status
-     *            updated status value, not {@code null}
-     * @param result
-     *            the related result, may be {@code null}
+     * 
+     * @since 8.2
      */
-    public BindingValidationStatus(Binding<?, TARGET> source, Status status,
-            ValidationResult result) {
+    public BindingValidationStatus(Result<TARGET> result,
+            Binding<?, TARGET> source) {
         Objects.requireNonNull(source, "Event source may not be null");
-        Objects.requireNonNull(status, "Status may not be null");
-        boolean resultErrorWithOkStatus = Objects.equals(status, Status.OK)
-                && result.isError();
-        boolean statusErrorWithOkResult = Objects.equals(status, Status.ERROR)
-                && !result.isError();
-        if (resultErrorWithOkStatus || statusErrorWithOkResult
-                || Objects.equals(status, Status.UNRESOLVED)
-                && result != null) {
-            throw new IllegalStateException(
-                    "Invalid validation status " + status + " for given result "
-                            + result.toString());
-        }
+
         binding = source;
-        this.status = status;
+        if (result != null) {
+            this.status = result.isError() ? Status.ERROR : Status.OK;
+            if (result instanceof ValidationResultWrap) {
+                results = ((ValidationResultWrap<TARGET>) result)
+                        .getValidationResults();
+            } else {
+                results = Collections.emptyList();
+            }
+        } else {
+            this.status = Status.UNRESOLVED;
+            results = Collections.emptyList();
+        }
         this.result = result;
     }
 
@@ -134,7 +123,7 @@ public class BindingValidationStatus<TARGET> implements Serializable {
      */
     public static <TARGET> BindingValidationStatus<TARGET> createUnresolvedStatus(
             Binding<?, TARGET> source) {
-        return new BindingValidationStatus<>(source, Status.UNRESOLVED, null);
+        return new BindingValidationStatus<TARGET>(null, source);
     }
 
     /**
@@ -163,8 +152,10 @@ public class BindingValidationStatus<TARGET> implements Serializable {
      *         status is not an error
      */
     public Optional<String> getMessage() {
-        return Optional.ofNullable(result).filter(ValidationResult::isError)
-                .map(ValidationResult::getErrorMessage);
+        if (getStatus() == Status.OK || result == null) {
+            return Optional.empty();
+        }
+        return result.getMessage();
     }
 
     /**
@@ -175,7 +166,24 @@ public class BindingValidationStatus<TARGET> implements Serializable {
      * @return the validation result
      */
     public Optional<ValidationResult> getResult() {
-        return Optional.ofNullable(result);
+        if (result == null) {
+            return Optional.empty();
+        }
+        return Optional.of(result.isError()
+                ? ValidationResult.error(result.getMessage().orElse(""))
+                : ValidationResult.ok());
+    }
+
+    /**
+     * Gets all the validation results related to this binding validation
+     * status.
+     *
+     * @return list of validation results
+     *
+     * @since 8.2
+     */
+    public List<ValidationResult> getValidationResults() {
+        return Collections.unmodifiableList(results);
     }
 
     /**
