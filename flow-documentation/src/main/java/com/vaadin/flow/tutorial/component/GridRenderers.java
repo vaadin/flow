@@ -20,12 +20,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.data.provider.ListDataProvider;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person.Gender;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.grid.Grid;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Label;
 import com.vaadin.ui.icon.Icon;
 import com.vaadin.ui.icon.VaadinIcons;
 import com.vaadin.ui.layout.HorizontalLayout;

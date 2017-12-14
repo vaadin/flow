@@ -38,13 +38,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.ServiceInitEvent;
 import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.spring.SpringServlet;
-import com.vaadin.ui.html.Div;
 
 @RunWith(SpringRunner.class)
 @Import(SpringInstantiatorTest.TestConfiguration.class)

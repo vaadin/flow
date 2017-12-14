@@ -17,10 +17,10 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Input;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.ui.UI;
 

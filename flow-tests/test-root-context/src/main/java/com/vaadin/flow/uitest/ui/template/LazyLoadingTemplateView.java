@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.jsoup.Jsoup;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.router.Route;
 import com.vaadin.server.StreamRegistration;
@@ -27,7 +28,6 @@ import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Tag;
-import com.vaadin.ui.html.Div;
 import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 

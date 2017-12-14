@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.temp;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.ui.html.Div;
 
 /**
  * @author Vaadin Ltd

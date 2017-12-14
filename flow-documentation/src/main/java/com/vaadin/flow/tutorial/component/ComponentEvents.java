@@ -18,7 +18,7 @@ package com.vaadin.flow.tutorial.component;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.html.NativeButton;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;

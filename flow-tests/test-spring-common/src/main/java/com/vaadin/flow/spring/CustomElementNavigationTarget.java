@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.spring;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.router.Route;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Label;
 
 @Route("custom-element")
 public class CustomElementNavigationTarget extends Div {

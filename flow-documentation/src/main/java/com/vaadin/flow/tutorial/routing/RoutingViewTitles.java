@@ -1,5 +1,6 @@
 package com.vaadin.flow.tutorial.routing;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.HasUrlParameter;
@@ -7,7 +8,6 @@ import com.vaadin.router.Route;
 import com.vaadin.router.PageTitle;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.html.Div;
 
 @CodeFor("routing/tutorial-routing-page-titles.asciidoc")
 public class RoutingViewTitles {

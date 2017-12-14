@@ -23,7 +23,7 @@ import com.vaadin.data.Result;
 import com.vaadin.data.ValueContext;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.EmailValidator;
-import com.vaadin.ui.html.Label;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person.Gender;
 import com.vaadin.ui.checkbox.Checkbox;

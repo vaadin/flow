@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.router.Route;
@@ -27,9 +30,6 @@ import com.vaadin.server.WebBrowser;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.event.AttachEvent;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Hr;
-import com.vaadin.ui.html.NativeButton;
 
 @Route(value = "com.vaadin.flow.uitest.ui.InfoView", layout = ViewTestLayout.class)
 public class InfoView extends Div {

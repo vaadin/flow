@@ -20,11 +20,11 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.Route;
 import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.spring.annotation.VaadinSessionScope;
-import com.vaadin.ui.html.Div;
 
 @CodeFor("spring/tutorial-spring-scopes.asciidoc")
 public class Scopes {

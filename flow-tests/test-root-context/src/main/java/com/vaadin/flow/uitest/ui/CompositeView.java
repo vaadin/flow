@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Hr;
-import com.vaadin.ui.html.Input;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.Composite;
 import com.vaadin.ui.Text;

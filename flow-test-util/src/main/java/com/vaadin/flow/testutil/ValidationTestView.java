@@ -16,10 +16,10 @@
 package com.vaadin.flow.testutil;
 
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HasValidation;
-import com.vaadin.ui.html.Div;
 
 /**
  * Abstract view class for testing validation with components that implement

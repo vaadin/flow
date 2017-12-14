@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.function.BiConsumer;
 
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.router.Route;
@@ -24,7 +25,6 @@ import com.vaadin.server.Command;
 import com.vaadin.ui.History;
 import com.vaadin.ui.event.ClickEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.html.NativeButton;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

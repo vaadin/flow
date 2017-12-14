@@ -17,9 +17,9 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.Id;
-import com.vaadin.ui.html.Input;
-import com.vaadin.ui.html.Label;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.model.TemplateModel;
 
 public abstract class AbstractAttachExistingElementByIdTemplate
