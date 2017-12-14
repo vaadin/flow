@@ -22,10 +22,15 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+<<<<<<< HEAD
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+=======
+import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.ListDataProvider;
+>>>>>>> Rename packages in "data" module
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;

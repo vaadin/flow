@@ -19,9 +19,9 @@ import java.time.Year;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person.Gender;
 import com.vaadin.ui.button.Button;
@@ -46,7 +46,8 @@ public class GridRenderers {
         grid.addColumn(TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
                 .withProperty("name", Person::getName)).setHeader("Name");
 
-        grid.addColumn(TemplateRenderer.<Person> of("[[item.age]] years old")
+        grid.addColumn(
+                TemplateRenderer.<Person> of("[[item.age]] years old")
                         .withProperty("age",
                                 person -> Year.now().getValue()
                                         - person.getYearOfBirth()))
