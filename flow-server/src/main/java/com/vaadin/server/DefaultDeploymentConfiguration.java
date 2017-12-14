@@ -448,11 +448,16 @@ public class DefaultDeploymentConfiguration
     private Set<String> locatePolyfills(
             BiConsumer<String, Predicate<String>> resourceScanner,
             String scanBase, Set<String> exclusions) {
+        Set<String> visitedPaths = new HashSet<>();
         Set<String> foundPolyfills = new HashSet<>();
-        resourceScanner.accept(scanBase, name -> {
-            boolean notExcludedPath = exclusions.stream().noneMatch(name::contains);
-            if (notExcludedPath && name.endsWith(WEB_COMPONENTS_LOADER_JS_NAME)) {
-                foundPolyfills.add(name);
+        resourceScanner.accept(scanBase, path -> {
+            boolean notExcludedPath = !visitedPaths.contains(path)
+                    && exclusions.stream().noneMatch(path::contains);
+            if (notExcludedPath) {
+                visitedPaths.add(path);
+                if (path.endsWith(WEB_COMPONENTS_LOADER_JS_NAME)) {
+                    foundPolyfills.add(path);
+                }
             }
             return notExcludedPath;
         });
