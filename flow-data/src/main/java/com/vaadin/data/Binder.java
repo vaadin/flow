@@ -2093,13 +2093,11 @@ public class Binder<BEAN> implements Serializable {
      *            the validation error result
      */
     protected void handleError(HasValue<?, ?> field, ValidationResult result) {
-        result.getErrorLevel().ifPresent(level -> {
             if (field instanceof HasValidation) {
                 HasValidation fieldWithValidation = (HasValidation) field;
                 fieldWithValidation.setInvalid(true);
                 fieldWithValidation.setErrorMessage(result.getErrorMessage());
             }
-        });
     }
 
     /**
