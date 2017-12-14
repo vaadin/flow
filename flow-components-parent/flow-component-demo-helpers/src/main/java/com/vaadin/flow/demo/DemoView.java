@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.OptionalParameter;
 import com.vaadin.router.Route;
@@ -31,12 +33,10 @@ import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.event.AttachEvent;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.H3;
 
 /**
  * Base class for all the Views that demo some component.
- * 
+ *
  * @author Vaadin Ltd
  */
 @Tag(Tag.DIV)
@@ -123,7 +123,7 @@ public abstract class DemoView extends Component
      * The href of the tab is defined based on the tab name. For example, a tab
      * named "Advanced usage" has the "advanced-tab" as href (all in lower case
      * and with "-" in place of spaces and special characters).
-     * 
+     *
      * @param tabName
      *            the name of the tab that will contain the demo, not
      *            <code>null</code>
