@@ -35,7 +35,7 @@ import com.vaadin.flow.model.ModelType;
 import com.vaadin.flow.model.PropertyFilter;
 import com.vaadin.flow.model.TemplateModelUtil;
 import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

@@ -33,8 +33,8 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.server.communication.StreamRequestHandler;
-import com.vaadin.util.CurrentInstance;
 
 import net.jcip.annotations.NotThreadSafe;
 

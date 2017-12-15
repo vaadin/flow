@@ -25,8 +25,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.flow.util.ReflectionCache;
-import com.vaadin.util.ReflectTools;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.method.MethodDescription;

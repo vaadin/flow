@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.util.AnnotationReader;
 import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.LocationChangeEvent;
 import com.vaadin.router.PageTitle;
@@ -37,7 +38,6 @@ import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
-import com.vaadin.util.AnnotationReader;
 
 /**
  * Utility class with methods for router layout handling.

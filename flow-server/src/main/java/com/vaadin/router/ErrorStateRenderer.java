@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -31,7 +32,6 @@ import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Handles error navigation rendering in the target UI.

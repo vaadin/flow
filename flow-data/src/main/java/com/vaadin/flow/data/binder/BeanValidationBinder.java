@@ -20,9 +20,9 @@ import javax.validation.metadata.ConstraintDescriptor;
 import javax.validation.metadata.PropertyDescriptor;
 
 import com.vaadin.ui.common.HasValue;
-import com.vaadin.util.BeanUtil;
 import com.vaadin.flow.data.binder.BeanPropertySet.NestedBeanPropertyDefinition;
 import com.vaadin.flow.data.validator.BeanValidator;
+import com.vaadin.flow.util.BeanUtil;
 
 /**
  * @author Vaadin Ltd

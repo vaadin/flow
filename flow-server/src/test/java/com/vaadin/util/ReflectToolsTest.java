@@ -18,6 +18,8 @@ package com.vaadin.util;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.util.ReflectTools;
+
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 

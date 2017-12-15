@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.router.ContinueNavigationAction;
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.ErrorStateRenderer;
@@ -34,7 +35,6 @@ import com.vaadin.router.NavigationStateRenderer;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.ui.Component;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Event created before navigation happens.

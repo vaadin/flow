@@ -28,7 +28,7 @@ import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.model.ComplexModelType;
 import com.vaadin.flow.model.PropertyFilter;
 import com.vaadin.flow.util.JsonUtils;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.util.ReflectTools;
 
 import elemental.json.JsonValue;
 

@@ -46,6 +46,7 @@ import javax.servlet.http.HttpSession;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
+import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.SystemMessages;
@@ -55,7 +56,6 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.util.CurrentInstance;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/*" })
 public class ApplicationRunnerServlet extends VaadinServlet {

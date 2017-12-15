@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.util.AnnotationReader;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationState;
 import com.vaadin.router.NavigationTrigger;
@@ -39,7 +40,6 @@ import com.vaadin.ui.Inline;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Viewport;
 import com.vaadin.ui.common.HasElement;
-import com.vaadin.util.AnnotationReader;
 
 /**
  * Utility methods used by the BootstrapHandler.

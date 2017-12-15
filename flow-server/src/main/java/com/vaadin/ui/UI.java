@@ -30,6 +30,7 @@ import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.QueryParameters;
@@ -49,7 +50,6 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.DetachEvent;
-import com.vaadin.util.CurrentInstance;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every

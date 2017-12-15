@@ -5,6 +5,8 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+import com.vaadin.flow.util.ReflectTools;
+
 public class ReflectToolsGetFieldValueByTypeTest {
     @Test
     public void getFieldValue() {

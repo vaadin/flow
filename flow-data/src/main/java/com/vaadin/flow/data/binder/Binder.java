@@ -45,6 +45,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
@@ -53,7 +54,6 @@ import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.common.HasValue.ValueChangeEvent;
 import com.vaadin.ui.common.HasValue.ValueChangeListener;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Connects one or more {@code Field} components to properties of a backing data

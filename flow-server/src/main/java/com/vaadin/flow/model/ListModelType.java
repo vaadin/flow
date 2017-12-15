@@ -27,7 +27,7 @@ import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.util.JsonUtils;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.util.ReflectTools;
 
 import elemental.json.JsonValue;
 

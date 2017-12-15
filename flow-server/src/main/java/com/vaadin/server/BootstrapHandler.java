@@ -43,6 +43,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.util.AnnotationReader;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
@@ -53,8 +55,6 @@ import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Inline;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.WebComponents;
-import com.vaadin.util.AnnotationReader;
-import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

@@ -20,6 +20,8 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.util.CustomElementNameValidator;
+
 /**
  * Test CustomElementNameValidator that it validates correctly.
  */

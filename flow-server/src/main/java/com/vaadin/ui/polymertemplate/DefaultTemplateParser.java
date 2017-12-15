@@ -34,6 +34,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 
+import com.vaadin.flow.util.AnnotationReader;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.DependencyFilter;
 import com.vaadin.server.DependencyFilter.FilterContext;
@@ -45,7 +46,6 @@ import com.vaadin.server.WrappedHttpSession;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.Dependency.Type;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.util.AnnotationReader;
 
 /**
  * Default template parser implementation.

@@ -30,12 +30,12 @@ import java.util.stream.Stream;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.model.ModelType;
 import com.vaadin.flow.nodefeature.ComponentMapping;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

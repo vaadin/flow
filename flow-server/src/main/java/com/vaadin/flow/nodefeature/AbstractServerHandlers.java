@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.StateNode;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Abstract class for collecting Methods which are published as

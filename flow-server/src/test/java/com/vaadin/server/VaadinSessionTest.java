@@ -40,10 +40,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.vaadin.flow.testcategory.SlowTests;
+import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
-import com.vaadin.util.CurrentInstance;
 
 import net.jcip.annotations.NotThreadSafe;
 

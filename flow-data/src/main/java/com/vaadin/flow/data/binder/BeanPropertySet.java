@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.util.BeanUtil;
+import com.vaadin.flow.util.BeanUtil;
 
 /**
  * A {@link PropertySet} that uses reflection to find bean properties.

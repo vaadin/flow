@@ -23,8 +23,8 @@ import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.InlineTemplate;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.ui.AngularTemplate;
-import com.vaadin.util.ReflectTools;
 
 public class TemplateModelTest {
 

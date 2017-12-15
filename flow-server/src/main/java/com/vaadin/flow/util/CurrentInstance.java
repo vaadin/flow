@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.util;
+package com.vaadin.flow.util;
 
 import java.io.Serializable;
 import java.lang.ref.WeakReference;

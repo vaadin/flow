@@ -28,10 +28,10 @@ import java.util.Set;
 import com.vaadin.router.NavigationHandler;
 import com.vaadin.router.RouteLocation;
 import com.vaadin.router.RouteLocation.RouteSegmentVisitor;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.router.Location;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.UI;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Handles navigation events by rendering a view of a specific type in the

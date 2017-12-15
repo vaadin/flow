@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.util;
+package com.vaadin.flow.util;
 
 import java.io.IOException;
 import java.io.InputStream;

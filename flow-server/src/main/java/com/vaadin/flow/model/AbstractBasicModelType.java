@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;

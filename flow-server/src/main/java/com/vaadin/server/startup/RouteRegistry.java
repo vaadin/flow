@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.InternalServerError;
@@ -46,7 +47,6 @@ import com.vaadin.router.util.RouterUtil;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Registry for holding navigation target components found on servlet

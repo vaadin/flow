@@ -22,7 +22,6 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.vaadin.util.AnnotationReader;
 import com.vaadin.flow.template.angular.HtmlTemplate;
 import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.flow.StateNode;
@@ -43,7 +42,8 @@ import com.vaadin.flow.template.angular.model.TemplateModelProxyHandler;
 import com.vaadin.flow.template.angular.model.TemplateModelTypeParser;
 import com.vaadin.flow.template.angular.parser.TemplateParser;
 import com.vaadin.flow.template.angular.parser.TemplateResolver;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.util.AnnotationReader;
+import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Component for declaratively defined element structures. The structure of a

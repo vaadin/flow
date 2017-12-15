@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.vaadin.flow.util.LocaleUtil;
 import com.vaadin.server.VaadinRequest;
 
 /**

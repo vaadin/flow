@@ -20,11 +20,11 @@ import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.util.HasCurrentService;
-import com.vaadin.util.ReflectTools;
 
 import net.jcip.annotations.NotThreadSafe;
 

@@ -17,6 +17,8 @@ package com.vaadin.util;
 
 import org.junit.Test;
 
+import com.vaadin.flow.util.CaseUtil;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 

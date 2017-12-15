@@ -18,11 +18,11 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.util.AnnotationReader;
 import com.vaadin.router.PageTitle;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
-import com.vaadin.util.AnnotationReader;
 
 /**
  * A view that can be shown in a {@link UI} or {@link HasChildView}.

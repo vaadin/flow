@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.Constants;
 import com.vaadin.server.InvalidI18NConfigurationException;
@@ -29,7 +30,6 @@ import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.i18n.I18NProvider;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Default instantiator that is used if no other instantiator has been

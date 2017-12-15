@@ -32,6 +32,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.router.ViewRendererTest.ErrorView;
 import com.vaadin.flow.router.ViewRendererTest.TestView;
+import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationHandler;
 import com.vaadin.router.NavigationTrigger;
@@ -44,7 +45,6 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.UI;
-import com.vaadin.util.CurrentInstance;
 
 import net.jcip.annotations.NotThreadSafe;
 

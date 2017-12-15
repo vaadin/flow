@@ -24,7 +24,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.util.CurrentInstance;
+import com.vaadin.flow.util.CurrentInstance;
 
 /**
  * A generic response from the server, wrapping a more specific response type,

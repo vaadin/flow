@@ -23,6 +23,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
+import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.QueryParameters;
@@ -36,7 +37,6 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.DetachEvent;
-import com.vaadin.util.CurrentInstance;
 
 public class UITest {
 

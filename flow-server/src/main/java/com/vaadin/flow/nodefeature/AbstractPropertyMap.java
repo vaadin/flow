@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Abstract class to be used as a parent for node maps which supports setting

@@ -39,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.server.DependencyFilter;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -53,7 +54,6 @@ import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.PolymerTemplateTest.ModelClass;
-import com.vaadin.util.CurrentInstance;
 
 import net.jcip.annotations.NotThreadSafe;
 

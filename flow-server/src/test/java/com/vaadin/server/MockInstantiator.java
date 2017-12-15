@@ -18,11 +18,11 @@ package com.vaadin.server;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.i18n.I18NProvider;
-import com.vaadin.util.ReflectTools;
 
 public class MockInstantiator implements Instantiator {
 

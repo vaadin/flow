@@ -27,8 +27,8 @@ import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.flow.model.ModelType;
 import com.vaadin.flow.model.PropertyFilter;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.flow.util.ReflectionCache;
-import com.vaadin.util.ReflectTools;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.method.MethodDescription;

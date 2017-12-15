@@ -26,13 +26,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.util.AnnotationReader;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.common.Uses;
 import com.vaadin.ui.event.Synchronize;
-import com.vaadin.util.AnnotationReader;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Immutable meta data related to a component class.

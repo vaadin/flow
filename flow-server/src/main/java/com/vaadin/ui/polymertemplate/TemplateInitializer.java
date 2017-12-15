@@ -33,13 +33,13 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.util.AnnotationReader;
+import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
-import com.vaadin.util.AnnotationReader;
-import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

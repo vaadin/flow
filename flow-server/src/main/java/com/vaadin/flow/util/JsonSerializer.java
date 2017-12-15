@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.util;
+package com.vaadin.flow.util;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
