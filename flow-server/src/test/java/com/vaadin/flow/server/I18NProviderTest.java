@@ -30,16 +30,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.SessionExpiredException;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WrappedHttpSession;
-import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -61,7 +51,7 @@ public class I18NProviderTest {
             throws ServletException, ServiceException {
         Properties initParams = new Properties();
         initParams.setProperty(Constants.I18N_PROVIDER,
-                "com.vaadin.server.TestProvider");
+                TestProvider.class.getName());
 
         initServletAndService(initParams);
 
@@ -75,7 +65,7 @@ public class I18NProviderTest {
             throws ServletException, ServiceException {
         Properties initParams = new Properties();
         initParams.setProperty(Constants.I18N_PROVIDER,
-                "com.vaadin.server.TestProvider");
+                TestProvider.class.getName());
 
         initServletAndService(initParams);
 
