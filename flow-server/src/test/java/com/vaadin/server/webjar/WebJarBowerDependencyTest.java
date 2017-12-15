@@ -25,6 +25,8 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import com.vaadin.flow.server.webjar.WebJarBowerDependency;
+
 /**
  * @author Vaadin Ltd.
  */

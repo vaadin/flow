@@ -26,6 +26,8 @@ import java.util.stream.Stream;
 
 import org.junit.Test;
 
+import com.vaadin.flow.server.webjar.SemanticVersion;
+
 /**
  * @author Vaadin Ltd.
  */
