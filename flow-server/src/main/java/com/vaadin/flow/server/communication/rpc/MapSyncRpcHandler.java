@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server.communication.rpc;
+package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
 import java.util.ArrayList;

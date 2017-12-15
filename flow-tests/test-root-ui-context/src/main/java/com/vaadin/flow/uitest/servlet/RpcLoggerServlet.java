@@ -32,8 +32,8 @@ import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.communication.ServerRpcHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
+import com.vaadin.flow.server.communication.rpc.RpcInvocationHandler;
 import com.vaadin.flow.uitest.ui.RPCLoggerUI;
-import com.vaadin.server.communication.rpc.RpcInvocationHandler;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 

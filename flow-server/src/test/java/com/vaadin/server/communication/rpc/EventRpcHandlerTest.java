@@ -23,6 +23,7 @@ import org.junit.Test;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.TemplateElementStateProviderTest;
+import com.vaadin.flow.server.communication.rpc.EventRpcHandler;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.AngularTemplate;

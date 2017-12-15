@@ -13,34 +13,37 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server.communication.rpc;
+package com.vaadin.flow.server.communication.rpc;
 
-import com.vaadin.flow.JsonCodec;
-
+import elemental.json.JsonString;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
- * Decodes the standard basic types from their JSON representation.
+ * Decodes a {@link JsonValue} with {@link JsonType#STRING} type to {@link Enum}
+ * subclass type.
  * <p>
- * Delegates to the standard JSON deserializer method
- * {@link JsonCodec#decodeAs(JsonValue, Class)}.
- *
- * @see JsonCodec#decodeAs(JsonValue, Class)
+ * This decoder is applicable to any {@link JsonValue} which is
+ * {@link JsonString} and any {@link Enum} sublcass
  *
  * @author Vaadin Ltd
  *
  */
-public class DefaultRpcDecoder implements RpcDecoder {
+public class StringToEnumDecoder implements RpcDecoder {
 
     @Override
     public boolean isApplicable(JsonValue value, Class<?> type) {
-        return JsonCodec.canEncodeWithoutTypeInfo(type);
+        return value.getType().equals(JsonType.STRING) && type.isEnum();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public <T> T decode(JsonValue value, Class<T> type)
             throws RpcDecodeException {
-        return JsonCodec.decodeAs(value, type);
+        String stringValue = value.asString();
+        Enum<?> result = Enum.valueOf((Class<? extends Enum>) type,
+                stringValue);
+        return type.cast(result);
     }
 
 }

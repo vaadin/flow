@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
+import com.vaadin.flow.server.communication.rpc.AttachExistingElementRpcHandler;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
