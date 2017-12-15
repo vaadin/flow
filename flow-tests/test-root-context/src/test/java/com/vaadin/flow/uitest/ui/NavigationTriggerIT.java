@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.router.NavigationTrigger;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class NavigationTriggerIT extends ChromeBrowserTest {

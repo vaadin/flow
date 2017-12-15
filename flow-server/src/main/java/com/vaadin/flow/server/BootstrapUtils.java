@@ -25,16 +25,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationState;
+import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.util.AnnotationReader;
-import com.vaadin.router.Location;
-import com.vaadin.router.NavigationState;
-import com.vaadin.router.NavigationTrigger;
-import com.vaadin.router.QueryParameters;
-import com.vaadin.router.Router;
-import com.vaadin.router.RouterLayout;
-import com.vaadin.router.event.AfterNavigationEvent;
-import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Inline;
 import com.vaadin.ui.UI;
@@ -51,9 +53,8 @@ class BootstrapUtils {
 
     /**
      * Returns the specified viewport content for the target route chain that
-     * was navigated to, specified with {@link Viewport} on the
-     * {@link com.vaadin.router.Route} annotated class or the
-     * {@link com.vaadin.router.ParentLayout} of the route.
+     * was navigated to, specified with {@link Viewport} on the {@link Route}
+     * annotated class or the {@link ParentLayout} of the route.
      *
      * @param ui
      *            the application ui
@@ -92,7 +93,7 @@ class BootstrapUtils {
     /**
      * Get initial page settings if a {@link PageConfigurator} is found for the
      * current component tree after navigation has resolved.
-     * 
+     *
      * @param context
      *            the bootstrap context
      * @return initial page settings or empty optional if no
@@ -150,9 +151,8 @@ class BootstrapUtils {
 
     /**
      * Returns the specified body size content for the target route chain that
-     * was navigated to, specified with {@link BodySize} on the
-     * {@link com.vaadin.router.Route} annotated class or the
-     * {@link com.vaadin.router.ParentLayout} of the route.
+     * was navigated to, specified with {@link BodySize} on the {@link Route}
+     * annotated class or the {@link ParentLayout} of the route.
      *
      * @param ui
      *            the application ui
@@ -203,9 +203,8 @@ class BootstrapUtils {
 
     /**
      * Returns the specified viewport content for the target route chain that
-     * was navigated to, specified with {@link Inline} on the
-     * {@link com.vaadin.router.Route} annotated class or the
-     * {@link com.vaadin.router.ParentLayout} of the route.
+     * was navigated to, specified with {@link Inline} on the {@link Route}
+     * annotated class or the {@link ParentLayout} of the route.
      *
      * @param context
      *            the bootstrap context
@@ -252,7 +251,7 @@ class BootstrapUtils {
     /**
      *
      * Read the contents of the given file from the classpath.
-     * 
+     *
      * @param request
      *            the request for the ui
      * @param file

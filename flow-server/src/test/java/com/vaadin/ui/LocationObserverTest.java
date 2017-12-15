@@ -27,15 +27,15 @@ import org.junit.Test;
 
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.router.Route;
-import com.vaadin.router.Router;
-import com.vaadin.router.RouterInterface;
-import com.vaadin.router.TestRouteRegistry;
 import com.vaadin.tests.util.MockUI;
 
 public class LocationObserverTest {
@@ -174,7 +174,8 @@ public class LocationObserverTest {
 
         ui.add(root);
 
-        Assert.assertEquals("No change observers so no events should be gotten.", 0,
+        Assert.assertEquals(
+                "No change observers so no events should be gotten.", 0,
                 eventCollector.size());
 
         Translations translations = new Translations();

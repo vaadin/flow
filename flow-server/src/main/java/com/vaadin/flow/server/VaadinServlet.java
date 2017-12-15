@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.VaadinServletConfiguration.InitParameterName;
 import com.vaadin.flow.server.webjar.WebJarServer;
@@ -87,7 +87,8 @@ public class VaadinServlet extends HttpServlet {
         staticFileServer = new StaticFileServer(servletService);
 
         if (servletService.getDeploymentConfiguration().areWebJarsEnabled()) {
-            webJarServer = new WebJarServer(servletService.getDeploymentConfiguration());
+            webJarServer = new WebJarServer(
+                    servletService.getDeploymentConfiguration());
         }
 
         // Sets current service even though there are no request and response
@@ -206,8 +207,8 @@ public class VaadinServlet extends HttpServlet {
      * @return the created deployment configuration
      *
      * @throws ServletException
-     *            if construction of the {@link Properties} for
-     *            {@link #createDeploymentConfiguration(Properties)} fails
+     *             if construction of the {@link Properties} for
+     *             {@link #createDeploymentConfiguration(Properties)} fails
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
@@ -282,9 +283,9 @@ public class VaadinServlet extends HttpServlet {
      * @return the created vaadin servlet service
      *
      * @throws ServletException
-     *            if creating a deployment configuration fails
+     *             if creating a deployment configuration fails
      * @throws ServiceException
-     *            if creating the vaadin servlet service fails
+     *             if creating the vaadin servlet service fails
      */
     protected VaadinServletService createServletService()
             throws ServletException, ServiceException {
@@ -300,7 +301,7 @@ public class VaadinServlet extends HttpServlet {
      * @return the created vaadin servlet service
      *
      * @throws ServiceException
-     *            if creating the vaadin servlet service fails
+     *             if creating the vaadin servlet service fails
      */
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)

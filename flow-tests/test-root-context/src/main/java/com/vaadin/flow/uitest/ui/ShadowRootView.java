@@ -21,8 +21,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.HasDynamicTitle;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ShadowRootView", layout = ViewTestLayout.class)
 public class ShadowRootView extends AbstractDivView implements HasDynamicTitle {

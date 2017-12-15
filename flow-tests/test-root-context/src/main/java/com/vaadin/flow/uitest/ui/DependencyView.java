@@ -22,12 +22,12 @@ import java.nio.charset.StandardCharsets;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.Text;
@@ -64,7 +64,8 @@ public class DependencyView extends AbstractDivView {
 
         NativeButton jsOrder = new NativeButton("Test JS order", e -> {
             getPage().addJavaScript("/test-files/js/set-global-var.js");
-            getPage().addJavaScript("/test-files/js/read-global-var.js", LoadMode.LAZY);
+            getPage().addJavaScript("/test-files/js/read-global-var.js",
+                    LoadMode.LAZY);
         });
         jsOrder.setId("loadJs");
 
@@ -83,15 +84,19 @@ public class DependencyView extends AbstractDivView {
         htmlOrder.setId("loadHtml");
 
         /* HTML & JS order */
-        NativeButton mixedOrder = new NativeButton("Test HTML & JS order", e -> {
-            getPage().addHtmlImport("/test-files/html/combinedMixed.html");
-        });
+        NativeButton mixedOrder = new NativeButton("Test HTML & JS order",
+                e -> {
+                    getPage().addHtmlImport(
+                            "/test-files/html/combinedMixed.html");
+                });
         mixedOrder.setId("loadMixed");
 
-        NativeButton allBlue = new NativeButton("Load 'everything blue' stylesheet", e -> {
-            getPage().addStyleSheet("/test-files/css/allblueimportant.css");
+        NativeButton allBlue = new NativeButton(
+                "Load 'everything blue' stylesheet", e -> {
+                    getPage().addStyleSheet(
+                            "/test-files/css/allblueimportant.css");
 
-        });
+                });
         allBlue.setId("loadBlue");
 
         NativeButton loadUnavailableResources = new NativeButton(
@@ -123,8 +128,8 @@ public class DependencyView extends AbstractDivView {
         getPage().addHtmlImport("/test-files/html/htmlimport1.html");
     }
 
-    public static StreamRegistration registerResource(UI ui,
-            String name, InputStreamFactory streamFactory) {
+    public static StreamRegistration registerResource(UI ui, String name,
+            InputStreamFactory streamFactory) {
         return ui.getSession().getResourceRegistry()
                 .registerResource(new StreamResource(name, streamFactory));
     }

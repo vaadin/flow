@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,24 +27,26 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.ServletContext;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.InternalServerError;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.router.HasErrorParameter;
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.InternalServerError;
-import com.vaadin.router.Location;
-import com.vaadin.router.NotFoundException;
-import com.vaadin.router.Route;
-import com.vaadin.router.RouteAlias;
-import com.vaadin.router.RouteNotFoundError;
-import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 
 /**
@@ -430,8 +431,9 @@ public class RouteRegistry implements Serializable {
             if (routesMap.containsKey(alias)) {
                 routesMap.get(alias).addRoute(navigationTarget);
             } else {
-                logger.debug("Registering route '{}' to navigation target '{}'.",
-                    alias, navigationTarget.getName());
+                logger.debug(
+                        "Registering route '{}' to navigation target '{}'.",
+                        alias, navigationTarget.getName());
 
                 routesMap.put(alias, new RouteTarget(navigationTarget));
             }
@@ -458,7 +460,7 @@ public class RouteRegistry implements Serializable {
 
     /**
      * Check if there are any registered routes.
-     * 
+     *
      * @return true if we have registered routes
      */
     public boolean hasRoutes() {

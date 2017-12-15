@@ -16,8 +16,8 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationObserver;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeNavigationObserver;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 

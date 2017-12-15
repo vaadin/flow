@@ -15,13 +15,14 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,23 +31,20 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RoutePrefix;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.startup.DuplicateNavigationTitleException;
-import com.vaadin.flow.server.startup.RouteRegistry;
-import com.vaadin.flow.server.startup.RouteRegistryInitializer;
-import com.vaadin.router.HasDynamicTitle;
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.PageTitle;
-import com.vaadin.router.ParentLayout;
-import com.vaadin.router.Route;
-import com.vaadin.router.RouteAlias;
-import com.vaadin.router.RoutePrefix;
-import com.vaadin.router.RouterLayout;
-import com.vaadin.router.TestRouteRegistry;
-import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Inline;
@@ -686,11 +684,11 @@ public class RouteRegistryInitializerTest {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "BodySize annotation should be on the top most route layout '%s'. Offending class: '%s'",
-                BodyParent.class.getName(), BodyMiddleParentLayout.class.getName()));
+                BodyParent.class.getName(),
+                BodyMiddleParentLayout.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(BodyRootWithParents.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer.onStartup(Stream.of(BodyRootWithParents.class)
+                .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
@@ -716,17 +714,17 @@ public class RouteRegistryInitializerTest {
                 BodyParent.class.getName(),
                 BodyRootViewportWithParent.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream
-                .of(BodyRootViewportWithParent.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer
+                .onStartup(Stream.of(BodyRootViewportWithParent.class)
+                        .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_one_body_size_in_chain_and_one_for_route_passes()
             throws ServletException {
         routeRegistryInitializer.onStartup(
-                Stream.of(BodySingleNavigationTarget.class, BodyRootWithParent.class)
-                        .collect(Collectors.toSet()),
+                Stream.of(BodySingleNavigationTarget.class,
+                        BodyRootWithParent.class).collect(Collectors.toSet()),
                 servletContext);
     }
 
@@ -736,11 +734,11 @@ public class RouteRegistryInitializerTest {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "BodySize annotation needs to be on the top parent layout '%s' not on '%s'",
-                BodyParent.class.getName(), BodyFailingAliasView.class.getName()));
+                BodyParent.class.getName(),
+                BodyFailingAliasView.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(BodyFailingAliasView.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer.onStartup(Stream.of(BodyFailingAliasView.class)
+                .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
@@ -961,10 +959,11 @@ public class RouteRegistryInitializerTest {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Inline annotation should be on the top most route layout '%s'. Offending class: '%s'",
-                InlineParent.class.getName(), InlineMiddleParentLayout.class.getName()));
+                InlineParent.class.getName(),
+                InlineMiddleParentLayout.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(InlineRootWithParents.class).collect(Collectors.toSet()),
+        routeRegistryInitializer.onStartup(Stream
+                .of(InlineRootWithParents.class).collect(Collectors.toSet()),
                 servletContext);
     }
 
@@ -977,9 +976,8 @@ public class RouteRegistryInitializerTest {
                         + InlineMultiMiddleParentLayout.class.getName() + ", "
                         + InlineMiddleParentLayout.class.getName());
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(InlineMultiViewport.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer.onStartup(Stream.of(InlineMultiViewport.class)
+                .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
@@ -991,17 +989,17 @@ public class RouteRegistryInitializerTest {
                 InlineParent.class.getName(),
                 InlineRootViewportWithParent.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream
-                        .of(InlineRootViewportWithParent.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer
+                .onStartup(Stream.of(InlineRootViewportWithParent.class)
+                        .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_one_inline_in_chain_and_one_for_route_passes()
             throws ServletException {
         routeRegistryInitializer.onStartup(
-                Stream.of(InlineSingleNavigationTarget.class, InlineRootWithParent.class)
-                        .collect(Collectors.toSet()),
+                Stream.of(InlineSingleNavigationTarget.class,
+                        InlineRootWithParent.class).collect(Collectors.toSet()),
                 servletContext);
     }
 
@@ -1011,10 +1009,11 @@ public class RouteRegistryInitializerTest {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Inline annotation needs to be on the top parent layout '%s' not on '%s'",
-                InlineParent.class.getName(), InlineFailingAliasView.class.getName()));
+                InlineParent.class.getName(),
+                InlineFailingAliasView.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(InlineFailingAliasView.class).collect(Collectors.toSet()),
+        routeRegistryInitializer.onStartup(Stream
+                .of(InlineFailingAliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
 

@@ -18,10 +18,10 @@ package com.vaadin.flow.server.startup;
 import java.io.Serializable;
 import java.util.List;
 
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.OptionalParameter;
-import com.vaadin.router.WildcardParameter;
 import com.vaadin.ui.Component;
 
 /**
@@ -36,7 +36,7 @@ public class RouteTarget implements Serializable {
 
     /**
      * Create a new Route target holder.
-     * 
+     *
      * @param target
      *            navigation target
      *
@@ -54,7 +54,7 @@ public class RouteTarget implements Serializable {
      * <p>
      * When adding a new target it will be validated that it is a valid path to
      * add with the already existing navigation targets.
-     * 
+     *
      * @param target
      *            navigation target to add
      * @throws InvalidRouteConfigurationException
@@ -131,7 +131,7 @@ public class RouteTarget implements Serializable {
 
     /**
      * Get route target for given segments.
-     * 
+     *
      * @param segments
      *            route segments
      * @return navigation target corresponding to given segments

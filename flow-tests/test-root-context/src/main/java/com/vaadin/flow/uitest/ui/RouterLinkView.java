@@ -4,7 +4,7 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.uitest.ui.RouterLinkView")
 public class RouterLinkView extends AbstractDivView {

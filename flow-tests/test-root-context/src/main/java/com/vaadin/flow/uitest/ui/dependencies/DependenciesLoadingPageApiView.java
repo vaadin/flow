@@ -1,14 +1,14 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.router.Route;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 
 /**
  * See {@link DependenciesLoadingAnnotationsView} for more details about the
  * test.
- * 
+ *
  * @author Vaadin Ltd.
  * @see DependenciesLoadingAnnotationsView
  */

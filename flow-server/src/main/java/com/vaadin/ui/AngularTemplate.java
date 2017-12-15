@@ -22,17 +22,16 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.template.angular.HtmlTemplate;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.polymertemplate.AbstractTemplate;
 import com.vaadin.flow.polymertemplate.Id;
-import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.RouterConfiguration;
-import com.vaadin.flow.router.View;
-import com.vaadin.ui.event.AttachEvent;
+import com.vaadin.flow.router.legacy.HasChildView;
+import com.vaadin.flow.router.legacy.RouterConfiguration;
+import com.vaadin.flow.router.legacy.View;
+import com.vaadin.flow.template.angular.HtmlTemplate;
 import com.vaadin.flow.template.angular.RelativeFileResolver;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.template.angular.TemplateParseException;
@@ -44,10 +43,12 @@ import com.vaadin.flow.template.angular.parser.TemplateParser;
 import com.vaadin.flow.template.angular.parser.TemplateResolver;
 import com.vaadin.flow.util.AnnotationReader;
 import com.vaadin.flow.util.ReflectTools;
+import com.vaadin.ui.event.AttachEvent;
 
 /**
- * Component for declaratively defined element structures. The structure of a
- * template is loaded from an .html file on the classpath.
+ * Component for dec .AttachEvent; import com.vaadin.flow.telaratively defined
+ * element structures. The structure of a template is loaded from an .html file
+ * on the classpath.
  * <p>
  * There are two options to specify the HTML file:
  * <ul>

@@ -25,7 +25,7 @@ import java.util.function.Function;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.ui.UI;
 
 /**

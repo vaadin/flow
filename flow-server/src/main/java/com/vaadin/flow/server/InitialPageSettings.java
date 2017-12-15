@@ -24,9 +24,9 @@ import java.util.Map;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 
+import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -59,7 +59,7 @@ public class InitialPageSettings {
 
     /**
      * Create new initial page settings object.
-     * 
+     *
      * @param request
      *            initial request
      * @param ui
@@ -79,7 +79,7 @@ public class InitialPageSettings {
 
     /**
      * Get the initial request for the settings.
-     * 
+     *
      * @return used request
      */
     public VaadinRequest getRequest() {
@@ -88,7 +88,7 @@ public class InitialPageSettings {
 
     /**
      * Get the target UI instance.
-     * 
+     *
      * @return ui instance
      */
     public UI getUi() {
@@ -97,7 +97,7 @@ public class InitialPageSettings {
 
     /**
      * Get the after navigation event.
-     * 
+     *
      * @return the after navigation event
      */
     public AfterNavigationEvent getAfterNavigationEvent() {
@@ -106,7 +106,7 @@ public class InitialPageSettings {
 
     /**
      * Get the web browser used for the request used for these settings.
-     * 
+     *
      * @return browser information
      */
     public WebBrowser getBrowser() {
@@ -115,7 +115,7 @@ public class InitialPageSettings {
 
     /**
      * Set the viewport value.
-     * 
+     *
      * @param viewport
      *            viewport value to set
      */

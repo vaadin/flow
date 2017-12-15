@@ -20,9 +20,9 @@ import java.util.stream.Stream;
 import org.springframework.context.ApplicationContext;
 
 import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
 

@@ -22,15 +22,15 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.router.HasDynamicTitle;
-import com.vaadin.router.PageTitle;
-import com.vaadin.router.ParentLayout;
-import com.vaadin.router.Route;
-import com.vaadin.router.RouteAlias;
-import com.vaadin.router.RouterLayout;
-import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Inline;
@@ -92,13 +92,15 @@ public abstract class AbstractRouteRegistryInitializer {
         }
 
         /* Validate annotation usage */
-        Stream.of(Viewport.class, BodySize.class, Inline.class).forEach(annotation -> {
-            validateRouteAnnotation(route, annotation);
+        Stream.of(Viewport.class, BodySize.class, Inline.class)
+                .forEach(annotation -> {
+                    validateRouteAnnotation(route, annotation);
 
-            for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
-                validateRouteAliasAnnotation(route, alias, annotation);
-            }
-        });
+                    for (RouteAlias alias : route
+                            .getAnnotationsByType(RouteAlias.class)) {
+                        validateRouteAliasAnnotation(route, alias, annotation);
+                    }
+                });
 
         /* Validate PageConfigurator usage */
         validateRouteImplementation(route, PageConfigurator.class);

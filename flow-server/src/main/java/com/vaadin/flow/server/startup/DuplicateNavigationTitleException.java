@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
-import com.vaadin.router.HasDynamicTitle;
-import com.vaadin.router.PageTitle;
+import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.PageTitle;
 
 /**
  * Exception indicating a conflict between a route target implementing

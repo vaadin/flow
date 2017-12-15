@@ -47,8 +47,9 @@ import org.junit.Test;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.View;
+import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.flow.router.legacy.HasChildView;
+import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinResponse;
@@ -58,12 +59,10 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
-import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.util.JsonUtils;
-import com.vaadin.router.RouterInterface;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
@@ -448,7 +447,7 @@ public class UidlWriterTest {
     private UI initializeUIForDependenciesTest(UI ui) {
         VaadinServletService service = new VaadinServletService(
                 new VaadinServlet(), new MockDeploymentConfiguration()) {
-            RouterInterface router = new com.vaadin.flow.router.Router();
+            RouterInterface router = new com.vaadin.flow.router.legacy.Router();
 
             @Override
             public RouterInterface getRouter() {

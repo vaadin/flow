@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.webcomponent;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.webcomponent.PaperInputView", layout = ViewTestLayout.class)
 public class PaperInputView extends Div {

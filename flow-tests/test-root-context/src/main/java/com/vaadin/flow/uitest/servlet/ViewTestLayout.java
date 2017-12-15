@@ -23,10 +23,10 @@ import java.util.List;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.router.Route;
-import com.vaadin.router.RouterLayout;
-import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationObserver;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeNavigationObserver;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 

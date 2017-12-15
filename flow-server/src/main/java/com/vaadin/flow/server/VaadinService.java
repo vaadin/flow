@@ -16,9 +16,7 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -44,16 +42,23 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.FaviconHandler;
@@ -69,16 +74,12 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.flow.util.LocaleUtil;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.router.Router;
-import com.vaadin.router.RouterInterface;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -268,7 +269,7 @@ public abstract class VaadinService implements Serializable {
         if (deploymentConf.isUsingNewRouting()) {
             router = new Router(getRouteRegistry());
         } else {
-            router = new com.vaadin.flow.router.Router();
+            router = new com.vaadin.flow.router.legacy.Router();
             String routerConfiguratorClassName = deploymentConf
                     .getRouterConfiguratorClassName();
             if (routerConfiguratorClassName != null && !RouterConfigurator.class
@@ -1281,8 +1282,7 @@ public abstract class VaadinService implements Serializable {
         for (final UI ui : uis) {
             if (ui.isClosing()) {
                 ui.accessSynchronously(() -> {
-                    getLogger().debug("Removing closed UI {}",
-                            ui.getUIId());
+                    getLogger().debug("Removing closed UI {}", ui.getUIId());
                     session.removeUI(ui);
                 });
             }
@@ -1300,9 +1300,8 @@ public abstract class VaadinService implements Serializable {
         for (final UI ui : session.getUIs()) {
             if (!isUIActive(ui) && !ui.isClosing()) {
                 ui.accessSynchronously(() -> {
-                    getLogger().debug(
-                            "Closing inactive UI #{} in session {}",
-                             ui.getUIId(), sessionId);
+                    getLogger().debug("Closing inactive UI #{} in session {}",
+                            ui.getUIId(), sessionId);
                     ui.close();
                 });
             }

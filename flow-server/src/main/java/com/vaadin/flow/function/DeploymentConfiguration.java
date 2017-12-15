@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
-import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -249,7 +249,8 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default String getEs6FrontendPrefix() {
         return isProductionMode()
-                ? getStringProperty(Constants.FRONTEND_URL_ES6, Constants.FRONTEND_URL_ES6_DEFAULT_VALUE)
+                ? getStringProperty(Constants.FRONTEND_URL_ES6,
+                        Constants.FRONTEND_URL_ES6_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
     }
 
@@ -261,7 +262,8 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default String getEs5FrontendPrefix() {
         return isProductionMode()
-                ? getStringProperty(Constants.FRONTEND_URL_ES5, Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
+                ? getStringProperty(Constants.FRONTEND_URL_ES5,
+                        Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
     }
 

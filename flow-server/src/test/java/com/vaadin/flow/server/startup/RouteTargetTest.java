@@ -23,13 +23,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.startup.RouteTarget;
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.OptionalParameter;
-import com.vaadin.router.Route;
-import com.vaadin.router.WildcardParameter;
-import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
@@ -425,8 +424,8 @@ public class RouteTargetTest {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
-                NormalRoute.class.getName(), SecondNormalRoute.class.getName()));
-
+                NormalRoute.class.getName(),
+                SecondNormalRoute.class.getName()));
 
         RouteTarget target = new RouteTarget(NormalRoute.class);
         target.addRoute(SecondNormalRoute.class);
@@ -438,8 +437,8 @@ public class RouteTargetTest {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-                NormalRoute.class.getName(), OptionalRoute.class.getName(), OptionalRoute.class.getName()));
-
+                NormalRoute.class.getName(), OptionalRoute.class.getName(),
+                OptionalRoute.class.getName()));
 
         RouteTarget target = new RouteTarget(NormalRoute.class);
         target.addRoute(OptionalRoute.class);
@@ -453,8 +452,8 @@ public class RouteTargetTest {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                OptionalRoute.class.getName(), SecondOptionalRoute.class.getName()));
-
+                OptionalRoute.class.getName(),
+                SecondOptionalRoute.class.getName()));
 
         RouteTarget target = new RouteTarget(OptionalRoute.class);
         target.addRoute(SecondOptionalRoute.class);
@@ -466,8 +465,8 @@ public class RouteTargetTest {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-                NormalRoute.class.getName(), OptionalRoute.class.getName(), OptionalRoute.class.getName()));
-
+                NormalRoute.class.getName(), OptionalRoute.class.getName(),
+                OptionalRoute.class.getName()));
 
         RouteTarget target = new RouteTarget(OptionalRoute.class);
         target.addRoute(NormalRoute.class);
@@ -480,8 +479,8 @@ public class RouteTargetTest {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                HasUrlRoute.class.getName(), SecondHasUrlRoute.class.getName()));
-
+                HasUrlRoute.class.getName(),
+                SecondHasUrlRoute.class.getName()));
 
         RouteTarget target = new RouteTarget(HasUrlRoute.class);
         target.addRoute(SecondHasUrlRoute.class);
@@ -494,8 +493,8 @@ public class RouteTargetTest {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
-                WildcardRoute.class.getName(), SecondWildcardRoute.class.getName()));
-
+                WildcardRoute.class.getName(),
+                SecondWildcardRoute.class.getName()));
 
         RouteTarget target = new RouteTarget(WildcardRoute.class);
         target.addRoute(SecondWildcardRoute.class);

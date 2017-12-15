@@ -38,6 +38,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
+<<<<<<< HEAD
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.startup.AbstractCustomElementRegistryInitializer;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
@@ -46,6 +47,16 @@ import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouteAlias;
+=======
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.server.InvalidRouteConfigurationException;
+import com.vaadin.server.startup.AbstractCustomElementRegistryInitializer;
+import com.vaadin.server.startup.AbstractRouteRegistryInitializer;
+import com.vaadin.server.startup.CustomElementRegistry;
+import com.vaadin.server.startup.RouteRegistry;
+>>>>>>> refs/heads/master
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 

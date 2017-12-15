@@ -25,11 +25,16 @@ import org.junit.Test;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.legacy.DefaultErrorView;
+import com.vaadin.flow.router.legacy.DefaultPageTitleGenerator;
+import com.vaadin.flow.router.legacy.HasChildView;
+import com.vaadin.flow.router.legacy.LocationChangeEvent;
+import com.vaadin.flow.router.legacy.PageTitleGenerator;
+import com.vaadin.flow.router.legacy.Router;
+import com.vaadin.flow.router.legacy.TestViewRenderer;
+import com.vaadin.flow.router.legacy.View;
+import com.vaadin.flow.router.legacy.ViewRenderer;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.router.Location;
-import com.vaadin.router.NavigationTrigger;
-import com.vaadin.router.PageTitle;
-import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 import com.vaadin.ui.common.HasText;
@@ -58,7 +63,8 @@ public class ViewRendererTest {
         }
 
         @Override
-        public void onLocationChange(LocationChangeEvent event) {
+        public void onLocationChange(
+                com.vaadin.flow.router.legacy.LocationChangeEvent event) {
             locations.add(event.getLocation());
             namePlaceholderValue = event.getPathParameter("name");
             wildcardValue = event.getPathWildcard();
@@ -74,7 +80,8 @@ public class ViewRendererTest {
     public static class DynamicTitleView extends TestView {
 
         @Override
-        public String getTitle(LocationChangeEvent event) {
+        public String getTitle(
+                com.vaadin.flow.router.legacy.LocationChangeEvent event) {
             return DYNAMIC_VIEW_TITLE;
         }
     }
@@ -82,7 +89,8 @@ public class ViewRendererTest {
     public static class NullTitleView extends TestView {
 
         @Override
-        public String getTitle(LocationChangeEvent event) {
+        public String getTitle(
+                com.vaadin.flow.router.legacy.LocationChangeEvent event) {
             return null;
         }
     }

@@ -32,10 +32,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.di.Instantiator;
+<<<<<<< HEAD
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.router.event.NavigationEvent;
+=======
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.spring.instantiator.SpringInstantiatorTest;
 import com.vaadin.ui.common.HasElement;
 

@@ -35,12 +35,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateTree;
@@ -48,28 +49,28 @@ import com.vaadin.flow.change.MapPutChange;
 import com.vaadin.flow.change.NodeAttachChange;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ComponentMapping;
+import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.View;
+import com.vaadin.flow.router.legacy.HasChildView;
+import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.DependencyFilter;
+import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
-import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
+import com.vaadin.ui.common.DependencyList;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -240,9 +241,9 @@ public class UidlWriter implements Serializable {
 
         if (stream == null) {
             getLogger().warn("The path '{}' for inline resource "
-                            + "has been resolved to '{}'. "
-                            + "But resource is not available via the servlet context. "
-                            + "Trying to load '{}' as a URL", url, resolvedPath, url);
+                    + "has been resolved to '{}'. "
+                    + "But resource is not available via the servlet context. "
+                    + "Trying to load '{}' as a URL", url, resolvedPath, url);
             try {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (MalformedURLException exception) {
@@ -255,8 +256,10 @@ public class UidlWriter implements Serializable {
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else {
-            getLogger().info("The path '{}' for inline resource has been successfully "
-                            + "resolved to resource URL '{}'", url, resolvedPath);
+            getLogger().info(
+                    "The path '{}' for inline resource has been successfully "
+                            + "resolved to resource URL '{}'",
+                    url, resolvedPath);
         }
         return stream;
     }
@@ -352,7 +355,8 @@ public class UidlWriter implements Serializable {
 
     private List<Class<? extends HasChildView>> getParentViews(UI ui,
             Component component) {
-        if (!ui.getRouterInterface().isPresent() || !(component instanceof View)) {
+        if (!ui.getRouterInterface().isPresent()
+                || !(component instanceof View)) {
             return Collections.emptyList();
         }
         List<Class<? extends HasChildView>> parentViewsAscending = ui

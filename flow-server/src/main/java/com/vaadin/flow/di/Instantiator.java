@@ -20,6 +20,7 @@ import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.BootstrapListener;
 import com.vaadin.flow.server.BootstrapPageResponse;
 import com.vaadin.flow.server.DependencyFilter;
@@ -27,7 +28,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.UidlWriter;
-import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
@@ -164,7 +164,7 @@ public interface Instantiator extends Serializable {
 
     /**
      * Get the I18NProvider if on has been defined.
-     * 
+     *
      * @return I18NProvier instance
      */
     I18NProvider getI18NProvider();

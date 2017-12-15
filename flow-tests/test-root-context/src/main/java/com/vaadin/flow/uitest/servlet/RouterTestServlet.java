@@ -8,16 +8,16 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.ParentLayout;
-import com.vaadin.router.Route;
-import com.vaadin.router.RouteAlias;
-import com.vaadin.router.RouterLayout;
-import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.ui.Component;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/new-router-session/*" })

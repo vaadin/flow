@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,16 +36,16 @@ import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.View;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.ContinueNavigationAction;
+import com.vaadin.flow.router.legacy.HasChildView;
+import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.template.angular.TemplateNode;
-import com.vaadin.router.ContinueNavigationAction;
-import com.vaadin.router.Location;
-import com.vaadin.router.RouterLayout;
 import com.vaadin.ui.ComponentMetaData.DependencyInfo;
 import com.vaadin.ui.Page.ExecutionCanceler;
 import com.vaadin.ui.common.DependencyList;
@@ -317,8 +318,8 @@ public class UIInternals implements Serializable {
                 try {
                     ComponentUtil.onComponentDetach(ui);
                 } catch (Exception e) {
-                    getLogger().warn(
-                            "Error while detaching UI from session", e);
+                    getLogger().warn("Error while detaching UI from session",
+                            e);
                 }
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
@@ -664,7 +665,7 @@ public class UIInternals implements Serializable {
      * The method will return {@code null} if the UI is not currently attached
      * to a VaadinSession.
      * </p>
-     * 
+     *
      * @return the VaadinSession to which the related UI is attached
      */
     public VaadinSession getSession() {
@@ -749,7 +750,7 @@ public class UIInternals implements Serializable {
     /**
      * Get the latest handled location or empty optional if no active
      * navigation.
-     * 
+     *
      * @return location if navigated during active navigation or {@code null}
      */
     public Location getLastHandledLocation() {
@@ -758,7 +759,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Set the latest navigation location for active navigation.
-     * 
+     *
      * @param location
      *            last location navigated to
      */
@@ -788,7 +789,8 @@ public class UIInternals implements Serializable {
      * @param continueNavigationAction
      *            continue navigatio action to store or null
      */
-    public void setContinueNavigationAction(ContinueNavigationAction continueNavigationAction) {
+    public void setContinueNavigationAction(
+            ContinueNavigationAction continueNavigationAction) {
         this.continueNavigationAction = continueNavigationAction;
     }
 }

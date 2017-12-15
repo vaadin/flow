@@ -15,15 +15,16 @@
  */
 package com.vaadin.flow.server.startup;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.stream.Collectors;
 
-import com.vaadin.router.HasErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.ui.Component;
 
 /**

@@ -3,10 +3,10 @@ package com.vaadin.flow.uitest.servlet;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.router.ErrorParameter;
-import com.vaadin.router.NotFoundException;
-import com.vaadin.router.RouteNotFoundError;
-import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.BeforeNavigationEvent;
 
 public class ErrorTarget extends RouteNotFoundError {
 

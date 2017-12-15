@@ -22,12 +22,12 @@ import java.util.stream.StreamSupport;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidI18NConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
 
@@ -122,7 +122,7 @@ public class DefaultInstantiator implements Instantiator {
     /**
      * Get the I18NProvider property from the session configurator or try to
      * load it from application.properties property file.
-     * 
+     *
      * @return I18NProvider parameter or null if not found
      */
     private String getI18NProviderProperty() {
