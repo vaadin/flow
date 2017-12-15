@@ -19,7 +19,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.ui.common.JavaScript;
 
 @Route(value = "com.vaadin.flow.uitest.ui.JsApiGetByIdView", layout = ViewTestLayout.class)

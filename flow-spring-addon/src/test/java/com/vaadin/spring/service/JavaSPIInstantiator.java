@@ -18,7 +18,7 @@ package com.vaadin.spring.service;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.ui.Component;

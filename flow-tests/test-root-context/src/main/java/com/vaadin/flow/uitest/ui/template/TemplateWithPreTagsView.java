@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.ui.AngularTemplate;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateWithPreTagsView", layout = ViewTestLayout.class)

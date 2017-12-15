@@ -22,7 +22,7 @@ import org.jsoup.Jsoup;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.server.StreamRegistration;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinSession;

@@ -30,8 +30,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
-import com.vaadin.flow.router.ImmutableRouterConfiguration;
-import com.vaadin.router.RouterInterface;
+import com.vaadin.flow.router.legacy.ImmutableRouterConfiguration;
+import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.SpringVaadinSession;

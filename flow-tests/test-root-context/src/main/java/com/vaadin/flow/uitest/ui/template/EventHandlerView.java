@@ -21,7 +21,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;

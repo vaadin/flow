@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.server.Constants;
 import com.vaadin.server.InvalidI18NConfigurationException;
 import com.vaadin.server.VaadinService;

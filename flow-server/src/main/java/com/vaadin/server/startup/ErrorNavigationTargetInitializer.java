@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
-import com.vaadin.router.HasErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.ui.Component;
 
 /**

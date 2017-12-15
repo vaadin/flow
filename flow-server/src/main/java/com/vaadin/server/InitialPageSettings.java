@@ -24,7 +24,7 @@ import java.util.Map;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 
-import com.vaadin.router.event.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.UI;

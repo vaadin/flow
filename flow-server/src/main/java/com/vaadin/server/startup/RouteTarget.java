@@ -18,9 +18,9 @@ package com.vaadin.server.startup;
 import java.io.Serializable;
 import java.util.List;
 
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.OptionalParameter;
-import com.vaadin.router.WildcardParameter;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
 

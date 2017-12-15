@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.EventHandler;

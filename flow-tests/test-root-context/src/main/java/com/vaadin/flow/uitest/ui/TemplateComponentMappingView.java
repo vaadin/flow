@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;

@@ -38,9 +38,9 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
-import com.vaadin.router.HasErrorParameter;
-import com.vaadin.router.Route;
-import com.vaadin.router.RouteAlias;
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.startup.AbstractCustomElementRegistryInitializer;
 import com.vaadin.server.startup.AbstractRouteRegistryInitializer;

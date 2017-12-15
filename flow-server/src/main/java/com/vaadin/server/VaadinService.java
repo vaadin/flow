@@ -51,10 +51,10 @@ import java.util.stream.StreamSupport;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.router.Router;
-import com.vaadin.router.RouterInterface;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.FaviconHandler;
@@ -268,7 +268,7 @@ public abstract class VaadinService implements Serializable {
         if (deploymentConf.isUsingNewRouting()) {
             router = new Router(getRouteRegistry());
         } else {
-            router = new com.vaadin.flow.router.Router();
+            router = new com.vaadin.flow.router.legacy.Router();
             String routerConfiguratorClassName = deploymentConf
                     .getRouterConfiguratorClassName();
             if (routerConfiguratorClassName != null && !RouterConfigurator.class

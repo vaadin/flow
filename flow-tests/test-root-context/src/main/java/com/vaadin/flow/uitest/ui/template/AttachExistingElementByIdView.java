@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 

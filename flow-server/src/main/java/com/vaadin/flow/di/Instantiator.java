@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
-import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.server.BootstrapListener;
 import com.vaadin.server.BootstrapPageResponse;
 import com.vaadin.server.DependencyFilter;

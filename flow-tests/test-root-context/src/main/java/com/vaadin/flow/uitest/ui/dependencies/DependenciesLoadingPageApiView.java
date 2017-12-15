@@ -1,6 +1,6 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;

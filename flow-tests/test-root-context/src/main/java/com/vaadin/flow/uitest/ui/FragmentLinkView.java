@@ -3,7 +3,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.ui.History.HistoryStateChangeHandler;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.event.AttachEvent;

@@ -24,7 +24,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebListener;
 
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinServlet;
 

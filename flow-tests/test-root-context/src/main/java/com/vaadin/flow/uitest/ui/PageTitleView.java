@@ -3,8 +3,8 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
-import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.BeforeNavigationEvent;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PageTitleView", layout = ViewTestLayout.class)
 public class PageTitleView extends AbstractDivView {
