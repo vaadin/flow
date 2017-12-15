@@ -9,6 +9,8 @@ import java.util.Locale;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.shared.util.SharedUtil;
+
 public class SharedUtilTests {
 
     @Test

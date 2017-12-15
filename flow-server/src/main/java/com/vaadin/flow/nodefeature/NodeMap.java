@@ -31,7 +31,7 @@ import com.vaadin.flow.change.EmptyChange;
 import com.vaadin.flow.change.MapPutChange;
 import com.vaadin.flow.change.MapRemoveChange;
 import com.vaadin.flow.change.NodeChange;
-import com.vaadin.shared.util.UniqueSerializable;
+import com.vaadin.flow.shared.util.UniqueSerializable;
 
 /**
  * A state node feature that structures data as a map.

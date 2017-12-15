@@ -17,8 +17,8 @@ package com.vaadin.flow.data.binder;
 
 import java.beans.PropertyDescriptor;
 
+import com.vaadin.flow.shared.util.SharedUtil;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.shared.util.SharedUtil;
 
 /**
  * Abstract base class for PropertyDefinition implementations for beans.

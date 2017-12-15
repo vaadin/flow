@@ -23,7 +23,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.EmptyChange;
 import com.vaadin.flow.change.MapPutChange;
 import com.vaadin.flow.change.NodeChange;
-import com.vaadin.shared.util.UniqueSerializable;
+import com.vaadin.flow.shared.util.UniqueSerializable;
 
 /**
  * A node feature that carries a single value. Represented as a map containing

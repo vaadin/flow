@@ -25,7 +25,7 @@ import com.vaadin.client.ValueMap;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.shared.util.SharedUtil;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.client.Browser;
 import elemental.json.JsonObject;

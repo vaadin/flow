@@ -30,11 +30,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.shared.util.SharedUtil;
+
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.vaadin.shared.util.SharedUtil;
 
 /**
  * An util class with helpers for reflection operations. Used internally by
