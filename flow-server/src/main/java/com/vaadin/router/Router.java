@@ -31,9 +31,9 @@ import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.router.event.ErrorNavigationEvent;
 import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 

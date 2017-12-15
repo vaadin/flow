@@ -49,7 +49,7 @@ import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.server.startup.CustomElementRegistry;
+import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.Tag;

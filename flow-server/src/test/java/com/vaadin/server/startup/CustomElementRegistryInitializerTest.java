@@ -39,6 +39,8 @@ import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.CustomElementRegistry;
+import com.vaadin.flow.server.startup.CustomElementRegistryInitializer;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;

@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 
 /**

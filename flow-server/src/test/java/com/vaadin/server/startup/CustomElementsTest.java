@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.server.startup.CustomElements;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;

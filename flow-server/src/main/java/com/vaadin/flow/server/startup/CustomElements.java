@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.server.startup;
+package com.vaadin.flow.server.startup;
 
 import java.util.Collections;
 import java.util.HashMap;

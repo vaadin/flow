@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.router.InternalRedirectHandler;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationHandler;
@@ -28,7 +29,6 @@ import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.QueryParameters;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.UI;
 
 /**
