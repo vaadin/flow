@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.server.communication.MetadataWriter;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;

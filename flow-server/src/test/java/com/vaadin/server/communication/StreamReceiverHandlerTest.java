@@ -24,6 +24,8 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.StreamReceiverHandler;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;

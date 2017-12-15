@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.vaadin.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 
 /**
  * Registry for {@link StreamResource} instances.

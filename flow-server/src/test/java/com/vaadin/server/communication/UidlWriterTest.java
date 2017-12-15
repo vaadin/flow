@@ -57,6 +57,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
+import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.server.MockVaadinSession;

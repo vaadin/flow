@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.server.communication;
+package com.vaadin.flow.server.communication;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -33,7 +33,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.ServletHelper.RequestType;
-import com.vaadin.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 

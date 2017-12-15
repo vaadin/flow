@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server.communication;
+package com.vaadin.flow.server.communication;
 
 import java.util.Collections;
 import java.util.Enumeration;

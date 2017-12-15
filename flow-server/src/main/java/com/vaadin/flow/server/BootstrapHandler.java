@@ -43,10 +43,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.util.AnnotationReader;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.server.communication.AtmospherePushConnection;
-import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.communication.PushMode;

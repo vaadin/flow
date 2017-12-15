@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.server.communication;
+package com.vaadin.flow.server.communication;
 
 import java.io.BufferedReader;
 import java.io.IOException;

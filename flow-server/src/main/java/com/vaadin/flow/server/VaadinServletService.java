@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.server.communication.PushRequestHandler;
+import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.shared.ApplicationConstants;
 
