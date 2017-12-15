@@ -23,6 +23,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.ui.Component.MapToExistingElement;
 import com.vaadin.ui.ComponentMetaData.DependencyInfo;
@@ -33,8 +35,6 @@ import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.common.Uses;
 import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.DetachEvent;
-import com.vaadin.ui.i18n.LocaleChangeEvent;
-import com.vaadin.ui.i18n.LocaleChangeObserver;
 
 /**
  * Utility methods for {@link Component}.

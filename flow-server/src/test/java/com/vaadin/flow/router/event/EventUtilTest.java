@@ -30,6 +30,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -39,8 +41,6 @@ import com.vaadin.router.event.EventUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.i18n.LocaleChangeEvent;
-import com.vaadin.ui.i18n.LocaleChangeObserver;
 
 import net.jcip.annotations.NotThreadSafe;
 

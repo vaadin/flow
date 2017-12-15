@@ -25,6 +25,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinSession;
@@ -35,8 +37,6 @@ import com.vaadin.router.TestRouteRegistry;
 import com.vaadin.server.MockVaadinServletService;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.tests.util.MockUI;
-import com.vaadin.ui.i18n.LocaleChangeEvent;
-import com.vaadin.ui.i18n.LocaleChangeObserver;
 
 public class LocationObserverTest {
 

@@ -29,10 +29,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.i18n.I18NProvider;
 
 @CodeFor("miscellaneous/tutorial-i18n-localization.asciidoc")
 public class TranslationProvider implements I18NProvider {

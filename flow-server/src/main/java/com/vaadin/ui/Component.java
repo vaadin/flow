@@ -22,6 +22,7 @@ import java.util.stream.Stream.Builder;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.util.AnnotationReader;
@@ -35,7 +36,6 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.DetachEvent;
-import com.vaadin.ui.i18n.I18NProvider;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a

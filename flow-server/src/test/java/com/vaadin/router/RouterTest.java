@@ -38,6 +38,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.VaadinSession;
@@ -55,8 +57,6 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.i18n.LocaleChangeEvent;
-import com.vaadin.ui.i18n.LocaleChangeObserver;
 
 import net.jcip.annotations.NotThreadSafe;
 

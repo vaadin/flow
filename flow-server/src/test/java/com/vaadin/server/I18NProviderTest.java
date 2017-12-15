@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionExpiredException;
@@ -40,7 +41,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedHttpSession;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.ui.i18n.I18NProvider;
 
 import net.jcip.annotations.NotThreadSafe;
 

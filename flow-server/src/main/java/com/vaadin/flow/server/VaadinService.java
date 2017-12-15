@@ -52,6 +52,7 @@ import java.util.stream.StreamSupport;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -71,7 +72,6 @@ import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.router.Router;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.i18n.I18NProvider;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
