@@ -8,8 +8,8 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.model.TemplateModelTest.EmptyModelTemplate;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.util.HasCurrentService;
 import com.vaadin.ui.UI;
-import com.vaadin.util.HasCurrentService;
 
 import net.jcip.annotations.NotThreadSafe;
 

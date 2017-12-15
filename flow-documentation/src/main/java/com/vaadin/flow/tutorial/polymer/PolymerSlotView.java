@@ -18,6 +18,7 @@ package com.vaadin.flow.tutorial.polymer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
@@ -26,7 +27,6 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @CodeFor("polymer-templates/tutorial-template-components-in-slot.asciidoc")
 public class PolymerSlotView {

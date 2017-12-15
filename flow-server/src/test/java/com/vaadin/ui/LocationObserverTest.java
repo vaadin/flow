@@ -29,13 +29,13 @@ import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.router.Route;
 import com.vaadin.router.Router;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.router.TestRouteRegistry;
-import com.vaadin.server.MockVaadinServletService;
-import com.vaadin.server.MockVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 public class LocationObserverTest {

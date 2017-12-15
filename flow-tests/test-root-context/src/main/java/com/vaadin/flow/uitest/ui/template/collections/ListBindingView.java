@@ -23,14 +23,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.polymertemplate.EventHandler;
+import com.vaadin.flow.polymertemplate.ModelItem;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.template.collections.ListBindingView.ListBindingModel;
 import com.vaadin.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.polymertemplate.EventHandler;
-import com.vaadin.ui.polymertemplate.ModelItem;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListBindingView", layout = ViewTestLayout.class)
 @Tag("list-binding")

@@ -23,11 +23,11 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.polymertemplate.EventHandler;
+import com.vaadin.flow.polymertemplate.ModelItem;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.polymertemplate.RepeatIndex;
 import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.polymertemplate.EventHandler;
-import com.vaadin.ui.polymertemplate.ModelItem;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.polymertemplate.RepeatIndex;
 
 /**
  * Methods which are published as event-handlers on the client side.

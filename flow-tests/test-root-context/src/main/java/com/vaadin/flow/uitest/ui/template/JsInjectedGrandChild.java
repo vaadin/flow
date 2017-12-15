@@ -16,10 +16,10 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Tag("js-injected-grand-child")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/JsInjectedGrandChild.html")

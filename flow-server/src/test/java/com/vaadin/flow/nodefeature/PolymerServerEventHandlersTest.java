@@ -39,13 +39,13 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.polymertemplate.EventHandler;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.polymertemplate.RepeatIndex;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.util.HasCurrentService;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.polymertemplate.EventHandler;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.polymertemplate.RepeatIndex;
-import com.vaadin.util.HasCurrentService;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

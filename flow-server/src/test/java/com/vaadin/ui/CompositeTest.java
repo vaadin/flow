@@ -17,6 +17,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.ComponentTest.TestComponent;
@@ -25,7 +26,6 @@ import com.vaadin.ui.CompositeNestedTest.TestLayout;
 import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.DetachEvent;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 import net.jcip.annotations.NotThreadSafe;
 

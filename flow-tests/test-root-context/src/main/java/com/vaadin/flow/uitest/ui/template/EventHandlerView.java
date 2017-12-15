@@ -20,14 +20,14 @@ import java.util.Locale;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.polymertemplate.EventHandler;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.polymertemplate.EventHandler;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.EventHandlerView", layout = ViewTestLayout.class)
 @Tag("event-handler")

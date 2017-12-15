@@ -23,6 +23,7 @@ import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.demo.MainLayout.MainLayoutModel;
 import com.vaadin.flow.demo.model.DemoObject;
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.ui.Component;
@@ -31,7 +32,6 @@ import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 /**
  * Main layout of the application. It contains the menu, header and the main

@@ -18,7 +18,7 @@ package com.vaadin.flow.nodefeature;
 import java.util.Optional;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Composite;

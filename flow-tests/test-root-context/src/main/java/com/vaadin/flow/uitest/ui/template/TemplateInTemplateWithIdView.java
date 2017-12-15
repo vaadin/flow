@@ -17,13 +17,13 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.polymertemplate.Id;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.polymertemplate.Id;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateInTemplateWithIdView", layout = ViewTestLayout.class)
 public class TemplateInTemplateWithIdView extends AbstractDivView {

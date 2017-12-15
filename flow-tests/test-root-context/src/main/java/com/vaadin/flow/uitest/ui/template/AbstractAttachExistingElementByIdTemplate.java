@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.polymertemplate.EventHandler;
-import com.vaadin.ui.polymertemplate.Id;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.polymertemplate.EventHandler;
+import com.vaadin.flow.polymertemplate.Id;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
 
 public abstract class AbstractAttachExistingElementByIdTemplate
         extends PolymerTemplate<TemplateModel> {

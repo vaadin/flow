@@ -20,11 +20,11 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.server.MockInstantiator;
-import com.vaadin.server.MockVaadinServletService;
-import com.vaadin.server.MockVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Text;

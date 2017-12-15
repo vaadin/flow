@@ -32,6 +32,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.router.ViewRendererTest.ErrorView;
 import com.vaadin.flow.router.ViewRendererTest.TestView;
+import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -42,7 +43,6 @@ import com.vaadin.router.NavigationHandler;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.server.MockServletConfig;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.UI;
 

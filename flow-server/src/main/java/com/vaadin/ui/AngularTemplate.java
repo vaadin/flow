@@ -23,16 +23,16 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.template.angular.HtmlTemplate;
-import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.TemplateMap;
+import com.vaadin.flow.polymertemplate.AbstractTemplate;
+import com.vaadin.flow.polymertemplate.Id;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.event.AttachEvent;
-import com.vaadin.ui.polymertemplate.AbstractTemplate;
 import com.vaadin.flow.template.angular.RelativeFileResolver;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.template.angular.TemplateParseException;

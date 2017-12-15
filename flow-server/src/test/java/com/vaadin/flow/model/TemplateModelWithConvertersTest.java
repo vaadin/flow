@@ -18,7 +18,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModelTest.EmptyDivTemplate;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.util.HasCurrentService;
+import com.vaadin.flow.util.HasCurrentService;
 
 import net.jcip.annotations.NotThreadSafe;
 

@@ -33,16 +33,16 @@ import com.vaadin.flow.router.View;
 import com.vaadin.flow.router.ViewRendererTest.TestView;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.util.CurrentInstance;
+import com.vaadin.flow.util.HasCurrentService;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.server.MockServletConfig;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
-import com.vaadin.util.HasCurrentService;
 
 import net.jcip.annotations.NotThreadSafe;
 
