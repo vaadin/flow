@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.function;
+package com.vaadin.flow.function;
 
 /**
  * A callback interface for providing values from a given source.

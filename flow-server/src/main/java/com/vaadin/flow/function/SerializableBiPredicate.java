@@ -13,25 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.function;
+package com.vaadin.flow.function;
 
 import java.io.Serializable;
-import java.util.function.BiFunction;
-
-import javax.servlet.ServletContext;
-
-import com.vaadin.server.StreamResource;
+import java.util.function.BiPredicate;
 
 /**
- * Content type resolver.
- * <p>
- * Allows to get content type for the given {@link StreamResource} instance
- * using the current {@link ServletContext}.
+ * A {@link BiPredicate} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
  *
+ * @param <T>
+ *            the type of the first input to the predicate
+ * @param <U>
+ *            the type of the second input to the predicate
  */
-public interface ContentTypeResolver extends
-        BiFunction<StreamResource, ServletContext, String>, Serializable {
-
+public interface SerializableBiPredicate<T, U>
+        extends BiPredicate<T, U>, Serializable {
+    // Only method inherited from BiPredicate
 }

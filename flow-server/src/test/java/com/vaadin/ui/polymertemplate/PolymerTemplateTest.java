@@ -41,12 +41,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.nodefeature.VirtualChildrenList;
-import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.startup.CustomElementRegistry;

@@ -16,12 +16,13 @@
 package com.vaadin.server;
 
 import javax.servlet.ServletContext;
+
+import com.vaadin.flow.function.ContentTypeResolver;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
-
-import com.vaadin.function.ContentTypeResolver;
 
 /**
  * Represents dynamically generated data.

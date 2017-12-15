@@ -40,7 +40,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.server.ServiceInitEvent;
 import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.server.VaadinServletService;

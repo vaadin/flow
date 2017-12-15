@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.vaadin.function.SerializableBiConsumer;
-import com.vaadin.function.SerializableFunction;
-import com.vaadin.function.SerializableSupplier;
+import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.ui.Component;
 
 /**

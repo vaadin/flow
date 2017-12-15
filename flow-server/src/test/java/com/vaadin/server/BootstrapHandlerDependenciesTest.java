@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;

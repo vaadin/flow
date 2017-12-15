@@ -14,9 +14,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModelTest.EmptyDivTemplate;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.util.HasCurrentService;
 

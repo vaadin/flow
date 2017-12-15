@@ -13,20 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.function;
+package com.vaadin.flow.function;
 
 import java.io.Serializable;
-import java.util.function.Predicate;
+import java.util.EventListener;
 
 /**
- * A {@link Predicate} that is also {@link Serializable}.
+ * Event listener interface that is serializable.
  *
+ * @since 8.0
  * @author Vaadin Ltd
- *
- * @param <T>
- *            the type of the input to the predicate
- *
  */
-public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
-    // Only method inherited from Predicate
+public interface SerializableEventListener extends EventListener, Serializable {
+
 }

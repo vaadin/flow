@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.vaadin.function.SerializableConsumer;
-import com.vaadin.function.ValueProvider;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.util.JsonSerializer;
 
 /**

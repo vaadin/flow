@@ -20,8 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.util.HtmlUtils;
-import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
 
 /**

@@ -13,23 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.function;
+package com.vaadin.flow.function;
 
 import java.io.Serializable;
-import java.util.function.Consumer;
 
 /**
- * A {@link Consumer} that is also {@link Serializable}.
+ * A {@link Runnable} that is also {@link Serializable}.
  *
- * @see Consumer
- * @param <T>
- *            the type of the first argument to the operation
- *
- * @since 8.0
  * @author Vaadin Ltd
- *
  */
 @FunctionalInterface
-public interface SerializableConsumer<T> extends Consumer<T>, Serializable {
-    // Only method inherited from Consumer
+public interface SerializableRunnable extends Runnable, Serializable {
+
 }

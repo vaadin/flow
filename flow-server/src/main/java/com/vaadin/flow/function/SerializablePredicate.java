@@ -13,27 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.function;
+package com.vaadin.flow.function;
 
 import java.io.Serializable;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
- * A {@link BiFunction} that is also {@link Serializable}.
+ * A {@link Predicate} that is also {@link Serializable}.
  *
- * @see Function
  * @author Vaadin Ltd
  *
  * @param <T>
- *            the type of the first function parameter
- * @param <U>
- *            the type of the second function parameter
- * @param <R>
- *            the type of the result of the function
+ *            the type of the input to the predicate
+ *
  */
-@FunctionalInterface
-public interface SerializableBiFunction<T, U, R>
-        extends BiFunction<T, U, R>, Serializable {
-    // Only method inherited from BiFunction
+public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
+    // Only method inherited from Predicate
 }

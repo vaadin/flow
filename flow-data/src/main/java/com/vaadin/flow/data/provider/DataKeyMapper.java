@@ -17,7 +17,7 @@ package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
 
-import com.vaadin.function.ValueProvider;
+import com.vaadin.flow.function.ValueProvider;
 
 /**
  * DataKeyMapper to map data objects to key strings.

@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.function.SerializableConsumer;
-import com.vaadin.function.ValueProvider;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.ui.UI;
 
 /**

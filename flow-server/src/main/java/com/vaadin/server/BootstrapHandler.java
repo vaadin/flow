@@ -42,7 +42,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;

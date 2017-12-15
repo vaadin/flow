@@ -32,8 +32,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.util.JsonUtils;
-import com.vaadin.function.SerializableConsumer;
 import com.vaadin.shared.Registration;
 import com.vaadin.util.Range;
 

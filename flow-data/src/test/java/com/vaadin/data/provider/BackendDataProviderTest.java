@@ -27,7 +27,7 @@ import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.provider.SortOrder;
-import com.vaadin.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializablePredicate;
 
 
 public class BackendDataProviderTest extends

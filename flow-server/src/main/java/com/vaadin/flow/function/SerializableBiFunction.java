@@ -13,32 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.function;
+package com.vaadin.flow.function;
 
 import java.io.Serializable;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * A {@link Function} that is also {@link Serializable}.
+ * A {@link BiFunction} that is also {@link Serializable}.
  *
+ * @see Function
  * @author Vaadin Ltd
+ *
  * @param <T>
- *            the type of the input to the function
+ *            the type of the first function parameter
+ * @param <U>
+ *            the type of the second function parameter
  * @param <R>
  *            the type of the result of the function
  */
 @FunctionalInterface
-public interface SerializableFunction<T, R>
-        extends Function<T, R>, Serializable {
-
-    /**
-     * Returns a function that always returns its input argument.
-     *
-     * @param <T>
-     *            the type of the input and output objects to the function
-     * @return a function that always returns its input argument
-     */
-    static <T> SerializableFunction<T, T> identity() {
-        return t -> t;
-    }
+public interface SerializableBiFunction<T, U, R>
+        extends BiFunction<T, U, R>, Serializable {
+    // Only method inherited from BiFunction
 }

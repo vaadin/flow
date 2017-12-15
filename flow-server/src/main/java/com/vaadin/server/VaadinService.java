@@ -51,8 +51,8 @@ import java.util.stream.StreamSupport;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.router.Router;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.server.ServletHelper.RequestType;

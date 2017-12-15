@@ -13,17 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.function;
+package com.vaadin.flow.function;
 
 import java.io.Serializable;
-import java.util.EventListener;
+import java.util.function.Consumer;
 
 /**
- * Event listener interface that is serializable.
+ * A {@link Consumer} that is also {@link Serializable}.
+ *
+ * @see Consumer
+ * @param <T>
+ *            the type of the first argument to the operation
  *
  * @since 8.0
  * @author Vaadin Ltd
+ *
  */
-public interface SerializableEventListener extends EventListener, Serializable {
-
+@FunctionalInterface
+public interface SerializableConsumer<T> extends Consumer<T>, Serializable {
+    // Only method inherited from Consumer
 }

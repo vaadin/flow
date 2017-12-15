@@ -28,7 +28,7 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.function.SerializableComparator;
+import com.vaadin.flow.function.SerializableComparator;
 
 public class ListDataProviderTest
         extends DataProviderTestBase<ListDataProvider<StrBean>> {

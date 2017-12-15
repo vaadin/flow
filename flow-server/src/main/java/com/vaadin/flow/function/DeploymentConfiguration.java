@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.function;
+package com.vaadin.flow.function;
 
 import java.io.Serializable;
 import java.util.Optional;

@@ -34,8 +34,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.InvalidCustomElementNameException;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;

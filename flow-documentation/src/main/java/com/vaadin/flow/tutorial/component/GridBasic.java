@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.data.provider.QuerySortOrder;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person;
-import com.vaadin.function.ValueProvider;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.grid.ColumnGroup;
 import com.vaadin.ui.grid.Grid;

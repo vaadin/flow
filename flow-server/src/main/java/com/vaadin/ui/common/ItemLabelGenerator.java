@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.common;
 
-import com.vaadin.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * {@link ItemLabelGenerator} can be used to customize the string shown to the

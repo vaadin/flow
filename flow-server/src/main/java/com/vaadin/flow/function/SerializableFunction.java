@@ -13,16 +13,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.function;
+package com.vaadin.flow.function;
 
 import java.io.Serializable;
+import java.util.function.Function;
 
 /**
- * A {@link Runnable} that is also {@link Serializable}.
+ * A {@link Function} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
+ * @param <T>
+ *            the type of the input to the function
+ * @param <R>
+ *            the type of the result of the function
  */
 @FunctionalInterface
-public interface SerializableRunnable extends Runnable, Serializable {
+public interface SerializableFunction<T, R>
+        extends Function<T, R>, Serializable {
 
+    /**
+     * Returns a function that always returns its input argument.
+     *
+     * @param <T>
+     *            the type of the input and output objects to the function
+     * @return a function that always returns its input argument
+     */
+    static <T> SerializableFunction<T, T> identity() {
+        return t -> t;
+    }
 }

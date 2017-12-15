@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.data.binder;
 
-import com.vaadin.function.SerializableEventListener;
+import com.vaadin.flow.function.SerializableEventListener;
 
 /**
  * Handler for {@link BinderValidationStatus} changes.

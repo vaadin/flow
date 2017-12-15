@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
-import com.vaadin.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * An abstract base class for typed validators.

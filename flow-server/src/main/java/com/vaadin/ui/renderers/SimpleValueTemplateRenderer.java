@@ -17,7 +17,7 @@ package com.vaadin.ui.renderers;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.function.ValueProvider;
+import com.vaadin.flow.function.ValueProvider;
 
 /**
  * 

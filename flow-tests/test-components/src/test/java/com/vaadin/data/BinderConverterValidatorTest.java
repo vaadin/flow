@@ -30,7 +30,7 @@ import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.NotEmptyValidator;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;

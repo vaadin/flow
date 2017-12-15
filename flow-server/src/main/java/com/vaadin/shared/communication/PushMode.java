@@ -16,7 +16,7 @@
 
 package com.vaadin.shared.communication;
 
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 
 /**
  * The mode of bidirectional ("push") communication that is in use.

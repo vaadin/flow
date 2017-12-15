@@ -23,9 +23,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.function.Function;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.ui.UI;
 
 /**

@@ -23,7 +23,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.server.communication.PushRequestHandler;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.shared.ApplicationConstants;

@@ -22,7 +22,7 @@ import java.util.function.Function;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
-import com.vaadin.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * Interface that implements conversion between a model and a presentation type.

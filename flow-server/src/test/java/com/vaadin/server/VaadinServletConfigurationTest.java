@@ -24,7 +24,7 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.server.MockUIContainingServlet.ServletInUI;
 import com.vaadin.ui.UI;
 

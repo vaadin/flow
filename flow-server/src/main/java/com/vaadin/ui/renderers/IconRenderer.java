@@ -17,7 +17,7 @@ package com.vaadin.ui.renderers;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.ItemLabelGenerator;

@@ -19,7 +19,7 @@ package com.vaadin.flow.data.provider;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.function.ValueProvider;
+import com.vaadin.flow.function.ValueProvider;
 
 /**
  * <code>KeyMapper</code> is the simple two-way map for generating textual keys

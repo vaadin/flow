@@ -26,8 +26,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Tag;
 import com.vaadin.util.HasCurrentService;

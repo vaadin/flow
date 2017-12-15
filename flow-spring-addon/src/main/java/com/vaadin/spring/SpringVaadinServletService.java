@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import org.springframework.context.ApplicationContext;
 
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.SessionDestroyListener;
 import com.vaadin.server.VaadinRequest;

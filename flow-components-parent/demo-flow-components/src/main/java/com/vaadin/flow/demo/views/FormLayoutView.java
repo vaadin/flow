@@ -31,7 +31,7 @@ import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
-import com.vaadin.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.router.Route;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;

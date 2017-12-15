@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.Constants;
 import com.vaadin.server.InvalidI18NConfigurationException;

@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import org.easymock.EasyMock;
 
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.ui.UI;
 

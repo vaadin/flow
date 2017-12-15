@@ -18,7 +18,7 @@ package com.vaadin.ui.renderers;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import com.vaadin.function.ValueProvider;
+import com.vaadin.flow.function.ValueProvider;
 
 /**
  * 

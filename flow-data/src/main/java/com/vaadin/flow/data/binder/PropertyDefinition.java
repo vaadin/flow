@@ -18,7 +18,7 @@ package com.vaadin.flow.data.binder;
 import java.io.Serializable;
 import java.util.Optional;
 
-import com.vaadin.function.ValueProvider;
+import com.vaadin.flow.function.ValueProvider;
 
 /**
  * A property from a {@link PropertySet}.

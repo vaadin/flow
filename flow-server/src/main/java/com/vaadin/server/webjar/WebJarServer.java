@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webjars.WebJarAssetLocator;
 
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.server.Constants;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.util.ResponseWriter;

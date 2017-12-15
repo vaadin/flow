@@ -18,8 +18,8 @@ package com.vaadin.flow.data.binder;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.function.SerializableConsumer;
-import com.vaadin.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * An internal implementation of {@code Result}.
