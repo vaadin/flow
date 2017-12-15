@@ -39,7 +39,7 @@ import com.vaadin.flow.nodefeature.ElementClassList;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.NodeFeature;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.UI;
 
 public class StateNodeTest {

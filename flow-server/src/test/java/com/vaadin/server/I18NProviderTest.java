@@ -39,7 +39,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedHttpSession;
 import com.vaadin.flow.server.WrappedSession;
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.ui.i18n.I18NProvider;
 
 import net.jcip.annotations.NotThreadSafe;

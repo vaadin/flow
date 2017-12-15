@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import javax.servlet.ServletContext;
 
-import com.vaadin.shared.VaadinUriResolver;
+import com.vaadin.flow.shared.VaadinUriResolver;
 
 /**
  * Factory for {@link VaadinUriResolver}.

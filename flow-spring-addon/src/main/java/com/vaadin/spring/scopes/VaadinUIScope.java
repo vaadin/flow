@@ -22,7 +22,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.spring.SpringVaadinSession;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.event.ComponentEventListener;

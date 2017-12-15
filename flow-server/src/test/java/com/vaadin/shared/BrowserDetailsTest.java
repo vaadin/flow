@@ -2,6 +2,8 @@ package com.vaadin.shared;
 
 import org.junit.Assert;
 
+import com.vaadin.flow.shared.BrowserDetails;
+
 import junit.framework.TestCase;
 
 public class BrowserDetailsTest extends TestCase {

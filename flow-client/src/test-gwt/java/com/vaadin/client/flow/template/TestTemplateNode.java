@@ -17,7 +17,7 @@ package com.vaadin.client.flow.template;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.JsonConstants;
 
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;

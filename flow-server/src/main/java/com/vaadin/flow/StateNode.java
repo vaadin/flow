@@ -36,7 +36,7 @@ import com.vaadin.flow.change.NodeDetachChange;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.server.Command;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.UI;
 
 /**

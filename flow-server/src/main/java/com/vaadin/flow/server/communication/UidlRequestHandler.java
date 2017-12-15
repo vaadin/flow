@@ -34,7 +34,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonException;

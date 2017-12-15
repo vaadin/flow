@@ -29,7 +29,7 @@ import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Map for element attribute values.

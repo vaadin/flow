@@ -25,8 +25,8 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.client.ValueMap;
-import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.PushConstants;
 import com.vaadin.shared.util.SharedUtil;
 

@@ -39,9 +39,9 @@ import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.VaadinServletConfiguration.InitParameterName;
 import com.vaadin.flow.server.webjar.WebJarServer;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.util.AnnotationReader;
 import com.vaadin.flow.util.CurrentInstance;
-import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 
 /**

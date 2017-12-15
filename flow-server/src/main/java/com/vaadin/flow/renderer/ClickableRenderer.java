@@ -18,7 +18,7 @@ package com.vaadin.flow.renderer;
 import java.io.Serializable;
 import java.util.List;
 
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Interface for clickable renderers.

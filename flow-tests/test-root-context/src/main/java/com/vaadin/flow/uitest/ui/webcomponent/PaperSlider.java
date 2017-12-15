@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;

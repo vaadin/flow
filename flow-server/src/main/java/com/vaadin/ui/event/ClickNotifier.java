@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.event;
 
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Mixin interface for components that support adding click listeners to the

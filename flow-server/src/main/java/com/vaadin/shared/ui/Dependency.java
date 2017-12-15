@@ -17,7 +17,7 @@ package com.vaadin.shared.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -54,7 +54,7 @@ public class Dependency implements Serializable {
      * <p>
      * The URL is passed through the translation mechanism before loading, so
      * custom protocols, specified at
-     * {@link com.vaadin.shared.VaadinUriResolver} can be used.
+     * {@link com.vaadin.flow.shared.VaadinUriResolver} can be used.
      *
      * @param type
      *            the type of the dependency, not {@code null}

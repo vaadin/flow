@@ -17,7 +17,7 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Constants used by the server side framework.

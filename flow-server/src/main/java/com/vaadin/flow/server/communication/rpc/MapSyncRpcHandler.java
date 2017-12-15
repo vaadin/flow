@@ -27,7 +27,7 @@ import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.nodefeature.NodeMap;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 

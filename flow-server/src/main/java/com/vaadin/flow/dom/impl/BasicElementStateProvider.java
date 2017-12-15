@@ -52,8 +52,8 @@ import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.template.angular.AbstractControlTemplateNode;
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeListener;
 
 import elemental.json.JsonObject;

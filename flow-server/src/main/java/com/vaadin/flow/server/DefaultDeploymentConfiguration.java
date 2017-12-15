@@ -31,8 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.VaadinUriResolver;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.shared.communication.PushMode;
 
 /**

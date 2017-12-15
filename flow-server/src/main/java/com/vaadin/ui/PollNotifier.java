@@ -15,8 +15,8 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.ComponentEventNotifier;
 
 /**

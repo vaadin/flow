@@ -19,9 +19,9 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Optional;
 
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationTrigger;
-import com.vaadin.shared.ApplicationConstants;
 
 import elemental.json.JsonValue;
 

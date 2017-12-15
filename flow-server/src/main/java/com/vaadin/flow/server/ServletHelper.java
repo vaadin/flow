@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
 /**

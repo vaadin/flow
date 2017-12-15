@@ -17,7 +17,7 @@ package com.vaadin.ui.event;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Something that you can add component event listeners to. This interface

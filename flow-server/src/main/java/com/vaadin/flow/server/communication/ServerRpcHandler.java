@@ -40,8 +40,8 @@ import com.vaadin.flow.server.communication.rpc.MapSyncRpcHandler;
 import com.vaadin.flow.server.communication.rpc.NavigationRpcHandler;
 import com.vaadin.flow.server.communication.rpc.PublishedServerEventHandlerRpcHandler;
 import com.vaadin.flow.server.communication.rpc.RpcInvocationHandler;
-import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonArray;

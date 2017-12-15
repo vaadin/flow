@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import com.vaadin.shared.BrowserDetails;
+import com.vaadin.flow.shared.BrowserDetails;
 
 /**
  * Class that provides information about the web browser the user is using.

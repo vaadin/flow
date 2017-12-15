@@ -27,8 +27,8 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.util.ResponseWriter;
-import com.vaadin.shared.ApplicationConstants;
 
 /**
  * Handles sending of resources from the WAR root (web content) or

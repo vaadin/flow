@@ -20,7 +20,7 @@ import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.shared.util.SharedUtil;
 
 /**

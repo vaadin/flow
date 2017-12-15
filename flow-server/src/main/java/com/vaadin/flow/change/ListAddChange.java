@@ -24,8 +24,8 @@ import com.vaadin.flow.ConstantPool;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.NodeList;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.util.JsonUtils;
-import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

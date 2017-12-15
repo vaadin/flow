@@ -18,7 +18,7 @@ package com.vaadin.ui.common;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;

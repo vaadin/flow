@@ -49,7 +49,7 @@ import com.vaadin.flow.server.communication.streaming.StreamingEndEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingErrorEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingStartEventImpl;
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
 /**

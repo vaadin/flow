@@ -15,7 +15,7 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.shared.VaadinUriResolver;
+import com.vaadin.flow.shared.VaadinUriResolver;
 
 import elemental.client.Browser;
 

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.ui.Tag;
 
 /**

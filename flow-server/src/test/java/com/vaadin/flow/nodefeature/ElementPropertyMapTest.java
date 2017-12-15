@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeEvent;
 import com.vaadin.ui.event.PropertyChangeListener;
 

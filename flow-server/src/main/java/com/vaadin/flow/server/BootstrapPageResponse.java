@@ -18,7 +18,7 @@ package com.vaadin.flow.server;
 
 import org.jsoup.nodes.Document;
 
-import com.vaadin.shared.VaadinUriResolver;
+import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.ui.UI;
 
 /**

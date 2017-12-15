@@ -18,7 +18,7 @@ package com.vaadin.ui.event;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * A listener for property change events.

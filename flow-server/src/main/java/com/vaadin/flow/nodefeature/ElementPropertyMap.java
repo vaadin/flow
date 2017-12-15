@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeEvent;
 import com.vaadin.ui.event.PropertyChangeListener;
 

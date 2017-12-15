@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.nodefeature.ElementListenerMap;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentTest.TestComponent;
 

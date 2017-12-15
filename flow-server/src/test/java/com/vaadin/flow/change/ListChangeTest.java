@@ -27,7 +27,7 @@ import com.vaadin.flow.nodefeature.AbstractNodeFeatureTest;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.nodefeature.NodeList;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;

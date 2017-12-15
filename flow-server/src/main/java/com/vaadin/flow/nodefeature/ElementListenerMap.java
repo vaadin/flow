@@ -28,8 +28,8 @@ import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.util.JsonUtils;
-import com.vaadin.shared.Registration;
 
 import elemental.json.Json;
 

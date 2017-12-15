@@ -18,7 +18,7 @@ package com.vaadin.flow.change;
 
 import com.vaadin.flow.ConstantPool;
 import com.vaadin.flow.nodefeature.NodeMap;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 

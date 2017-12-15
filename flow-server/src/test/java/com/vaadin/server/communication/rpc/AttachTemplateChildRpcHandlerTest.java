@@ -22,7 +22,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.server.communication.rpc.AttachTemplateChildRpcHandler;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.NodeFeature;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.UI;
 
 /**

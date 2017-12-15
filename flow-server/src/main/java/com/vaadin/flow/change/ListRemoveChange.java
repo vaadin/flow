@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.flow.ConstantPool;
 import com.vaadin.flow.nodefeature.NodeList;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.checkbox;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.Focusable;
@@ -28,7 +29,6 @@ import java.util.Objects;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasComponents;
 
 /**

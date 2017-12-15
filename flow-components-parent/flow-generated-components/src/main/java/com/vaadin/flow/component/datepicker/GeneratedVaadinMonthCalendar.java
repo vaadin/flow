@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.datepicker;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.ComponentSupplier;
@@ -25,7 +26,6 @@ import elemental.json.JsonObject;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: MonthCalendarElement#2.0.5", "Flow#1.0-SNAPSHOT" })

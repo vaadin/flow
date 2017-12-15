@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.paper.input;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
@@ -28,7 +29,6 @@ import com.vaadin.ui.common.NotSupported;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-textarea#2.0.2", "Flow#1.0-SNAPSHOT" })

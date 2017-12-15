@@ -27,7 +27,7 @@ import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.server.communication.rpc.MapSyncRpcHandler;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.UI;
 

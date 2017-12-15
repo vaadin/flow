@@ -34,7 +34,7 @@ import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.Tag;

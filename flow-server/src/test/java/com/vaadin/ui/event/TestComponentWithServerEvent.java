@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.event;
 
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.ComponentTest.TestComponent;
 
 public class TestComponentWithServerEvent extends TestComponent {

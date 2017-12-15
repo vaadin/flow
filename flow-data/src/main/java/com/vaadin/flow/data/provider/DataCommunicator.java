@@ -33,9 +33,9 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.flow.util.Range;
-import com.vaadin.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

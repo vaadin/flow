@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.paper.iconbutton;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.ComponentSupplier;
@@ -27,7 +28,6 @@ import com.vaadin.ui.common.NotSupported;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-icon-button#2.0.1", "Flow#1.0-SNAPSHOT" })

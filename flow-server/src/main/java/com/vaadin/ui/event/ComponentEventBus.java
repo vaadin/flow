@@ -26,7 +26,7 @@ import java.util.List;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.ui.Component;
 
 import elemental.json.Json;
