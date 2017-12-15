@@ -20,7 +20,7 @@ import java.util.function.BiFunction;
 
 import javax.servlet.ServletContext;
 
-import com.vaadin.server.StreamResource;
+import com.vaadin.flow.server.StreamResource;
 
 /**
  * Content type resolver.

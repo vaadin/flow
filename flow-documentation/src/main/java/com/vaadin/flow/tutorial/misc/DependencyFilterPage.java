@@ -2,8 +2,8 @@ package com.vaadin.flow.tutorial.misc;
 
 import java.util.List;
 
+import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.server.DependencyFilter;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 

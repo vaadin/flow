@@ -15,7 +15,7 @@
  */
 package com.vaadin.server.communication.streaming;
 
-import com.vaadin.server.StreamVariable.StreamingErrorEvent;
+import com.vaadin.flow.server.StreamVariable.StreamingErrorEvent;
 
 /**
  * Implementation for {@link StreamingErrorEvent}.

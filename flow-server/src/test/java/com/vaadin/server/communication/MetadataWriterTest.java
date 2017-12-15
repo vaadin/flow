@@ -25,9 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.server.SystemMessages;
-import com.vaadin.server.VaadinSession;
-import com.vaadin.server.WrappedSession;
+import com.vaadin.flow.server.SystemMessages;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;

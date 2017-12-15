@@ -19,8 +19,8 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.Scope;
 
-import com.vaadin.server.VaadinSession;
-import com.vaadin.server.VaadinSessionState;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSessionState;
 
 /**
  * Abstract Vaadin scope implementation.

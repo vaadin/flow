@@ -45,6 +45,8 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.StaticFileServer;
+import com.vaadin.flow.server.VaadinService;
 
 public class StaticFileServerTest implements Serializable {
 

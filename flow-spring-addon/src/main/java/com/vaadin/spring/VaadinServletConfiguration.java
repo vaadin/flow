@@ -27,7 +27,7 @@ import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.ServletForwardingController;
 
-import com.vaadin.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServlet;
 
 /**
  * Vaadin servlet configuration.

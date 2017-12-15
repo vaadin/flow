@@ -18,6 +18,9 @@ package com.vaadin.server;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
+
 /**
  *
  * @author Vaadin Ltd

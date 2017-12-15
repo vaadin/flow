@@ -3,9 +3,9 @@ package com.vaadin.flow.tutorial.webcomponent.compilation;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletConfiguration;
 
 @CodeFor("miscellaneous/tutorial-flow-runtime-configuration.asciidoc")
 @WebServlet(urlPatterns = "/*", name = "myservlet", asyncSupported = true, initParams = {

@@ -1,7 +1,7 @@
 package com.vaadin.flow.tutorial.misc;
 
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.LoadingIndicatorConfiguration;
 import com.vaadin.ui.UI;
 

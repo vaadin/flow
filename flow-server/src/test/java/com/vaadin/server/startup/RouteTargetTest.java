@@ -23,12 +23,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.OptionalParameter;
 import com.vaadin.router.Route;
 import com.vaadin.router.WildcardParameter;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 

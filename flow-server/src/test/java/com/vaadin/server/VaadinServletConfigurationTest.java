@@ -25,6 +25,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.server.MockUIContainingServlet.ServletInUI;
 import com.vaadin.ui.UI;
 

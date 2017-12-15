@@ -41,9 +41,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.server.ServiceInitEvent;
-import com.vaadin.server.VaadinServiceInitListener;
-import com.vaadin.server.VaadinServletService;
+import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.spring.SpringServlet;
 
 @RunWith(SpringRunner.class)

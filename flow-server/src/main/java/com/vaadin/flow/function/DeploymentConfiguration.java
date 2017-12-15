@@ -22,8 +22,8 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.server.Constants;
-import com.vaadin.server.WrappedSession;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.shared.communication.PushMode;
 
 /**

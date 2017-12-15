@@ -4,8 +4,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.server.Version;
 import com.vaadin.testbench.By;
 
 public class ExportedJSFunctionIT extends ChromeBrowserTest {

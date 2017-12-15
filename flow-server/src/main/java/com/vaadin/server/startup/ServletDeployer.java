@@ -24,9 +24,9 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebListener;
 
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.router.Route;
-import com.vaadin.server.Constants;
-import com.vaadin.server.VaadinServlet;
 
 /**
  * Context listener that automatically registers a Vaadin servlet. The servlet

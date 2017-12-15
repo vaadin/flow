@@ -18,11 +18,11 @@ package com.vaadin.spring;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.vaadin.server.SessionDestroyEvent;
-import com.vaadin.server.SessionDestroyListener;
-import com.vaadin.server.SessionInitListener;
-import com.vaadin.server.VaadinService;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.SessionDestroyEvent;
+import com.vaadin.flow.server.SessionDestroyListener;
+import com.vaadin.flow.server.SessionInitListener;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Vaadin session implementation for Spring.

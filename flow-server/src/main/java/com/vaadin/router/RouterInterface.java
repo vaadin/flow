@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.UI;
 

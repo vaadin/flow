@@ -31,9 +31,9 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.router.RouterInterface;
-import com.vaadin.server.VaadinService;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.SpringVaadinSession;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.UI;

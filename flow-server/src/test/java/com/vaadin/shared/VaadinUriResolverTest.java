@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.server.WebBrowser;
+import com.vaadin.flow.server.WebBrowser;
 
 public class VaadinUriResolverTest {
 

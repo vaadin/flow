@@ -15,16 +15,16 @@ import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
+import com.vaadin.flow.server.StreamReceiver;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.StreamVariable;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.server.MockServletConfig;
-import com.vaadin.server.StreamReceiver;
-import com.vaadin.server.StreamResourceRegistry;
-import com.vaadin.server.StreamVariable;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletRequest;
-import com.vaadin.server.VaadinServletService;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;
 

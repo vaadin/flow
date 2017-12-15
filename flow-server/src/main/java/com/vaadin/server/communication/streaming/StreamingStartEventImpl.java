@@ -15,7 +15,7 @@
  */
 package com.vaadin.server.communication.streaming;
 
-import com.vaadin.server.StreamVariable.StreamingStartEvent;
+import com.vaadin.flow.server.StreamVariable.StreamingStartEvent;
 
 /**
  * Implementation for {@link StreamingStartEvent}.

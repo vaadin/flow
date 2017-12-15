@@ -22,6 +22,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
@@ -29,8 +31,6 @@ import com.vaadin.router.Route;
 import com.vaadin.router.RouteAlias;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.util.RouterUtil;
-import com.vaadin.server.InvalidRouteLayoutConfigurationException;
-import com.vaadin.server.PageConfigurator;
 import com.vaadin.ui.BodySize;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Inline;

@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
@@ -44,8 +46,6 @@ import com.vaadin.router.Route;
 import com.vaadin.router.RouteAlias;
 import com.vaadin.router.RouteNotFoundError;
 import com.vaadin.router.util.RouterUtil;
-import com.vaadin.server.InvalidRouteConfigurationException;
-import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
 
 /**

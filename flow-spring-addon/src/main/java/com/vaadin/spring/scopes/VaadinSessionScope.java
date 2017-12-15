@@ -18,14 +18,14 @@ package com.vaadin.spring.scopes;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.shared.Registration;
 import com.vaadin.spring.SpringVaadinSession;
 
 /**
  * Implementation of Spring's
  * {@link org.springframework.beans.factory.config.Scope} that binds the beans
- * to the current {@link com.vaadin.server.VaadinSession} (as opposed to the
+ * to the current {@link com.vaadin.flow.server.VaadinSession} (as opposed to the
  * current Servlet session). Registered by default as the scope "
  * {@value #VAADIN_SESSION_SCOPE_NAME}".
  *

@@ -36,18 +36,18 @@ import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
 
-import com.vaadin.server.Constants;
-import com.vaadin.server.RequestHandler;
-import com.vaadin.server.ServiceException;
-import com.vaadin.server.ServletHelper;
-import com.vaadin.server.ServletHelper.RequestType;
-import com.vaadin.server.SessionExpiredHandler;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinServletRequest;
-import com.vaadin.server.VaadinServletResponse;
-import com.vaadin.server.VaadinServletService;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.SessionExpiredHandler;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.shared.communication.PushConstants;
 
 /**

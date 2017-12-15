@@ -31,8 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinService;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.server.communication.rpc.AttachExistingElementRpcHandler;
 import com.vaadin.server.communication.rpc.AttachTemplateChildRpcHandler;
 import com.vaadin.server.communication.rpc.EventRpcHandler;

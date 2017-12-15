@@ -45,17 +45,17 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.SystemMessages;
+import com.vaadin.flow.server.SystemMessagesProvider;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
 import com.vaadin.flow.util.CurrentInstance;
-import com.vaadin.server.DefaultDeploymentConfiguration;
-import com.vaadin.server.ServiceException;
-import com.vaadin.server.SystemMessages;
-import com.vaadin.server.SystemMessagesProvider;
-import com.vaadin.server.VaadinService;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletRequest;
-import com.vaadin.server.VaadinServletService;
-import com.vaadin.server.VaadinSession;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/*" })
 public class ApplicationRunnerServlet extends VaadinServlet {

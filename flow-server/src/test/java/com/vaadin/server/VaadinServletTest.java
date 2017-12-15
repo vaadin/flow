@@ -18,6 +18,8 @@ package com.vaadin.server;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.server.VaadinServlet;
+
 public class VaadinServletTest {
 
     @Test

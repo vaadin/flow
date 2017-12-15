@@ -18,8 +18,8 @@ package com.vaadin.router;
 import java.io.Serializable;
 
 import com.vaadin.flow.router.View;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
 
 /**

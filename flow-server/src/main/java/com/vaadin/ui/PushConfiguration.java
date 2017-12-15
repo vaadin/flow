@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import com.vaadin.flow.nodefeature.PushConfigurationMap;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.Transport;

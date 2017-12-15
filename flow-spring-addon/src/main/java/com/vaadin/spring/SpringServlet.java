@@ -21,10 +21,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.server.Constants;
-import com.vaadin.server.ServiceException;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletService;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 
 /**
  * Spring application context aware Vaadin servlet implementation.

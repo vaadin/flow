@@ -31,7 +31,7 @@ import com.vaadin.flow.StateTree;
 import com.vaadin.flow.change.MapPutChange;
 import com.vaadin.flow.change.MapRemoveChange;
 import com.vaadin.flow.change.NodeChange;
-import com.vaadin.server.Command;
+import com.vaadin.flow.server.Command;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;

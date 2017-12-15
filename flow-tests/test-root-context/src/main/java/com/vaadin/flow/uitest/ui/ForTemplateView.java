@@ -25,10 +25,10 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateOverridesMap;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
-import com.vaadin.server.Command;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlContainer;
 

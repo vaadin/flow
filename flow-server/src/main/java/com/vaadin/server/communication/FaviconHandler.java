@@ -19,11 +19,11 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.server.RequestHandler;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinServletRequest;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Handles the favicon request explicitly and return 404 for it.

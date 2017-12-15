@@ -11,7 +11,7 @@ import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.NodeProperties;
-import com.vaadin.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
 public class BasicElementStateProviderTest {

@@ -29,7 +29,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.spring.SpringVaadinSession;
 
 public class VaadinSessionScopeTest extends AbstractScopeTest {

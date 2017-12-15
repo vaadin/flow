@@ -15,7 +15,7 @@
  */
 package com.vaadin.server.communication.streaming;
 
-import com.vaadin.server.StreamVariable.StreamingProgressEvent;
+import com.vaadin.flow.server.StreamVariable.StreamingProgressEvent;
 
 /**
  * Implementation for {@link StreamingProgressEvent}.

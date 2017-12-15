@@ -32,7 +32,7 @@ import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
 import com.vaadin.flow.nodefeature.VirtualChildrenList;
-import com.vaadin.server.AbstractStreamResource;
+import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeListener;
 

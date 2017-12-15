@@ -20,6 +20,9 @@ import java.util.Properties;
 
 import org.junit.Test;
 
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

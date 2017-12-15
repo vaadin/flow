@@ -24,6 +24,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.AbstractDeploymentConfiguration;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.shared.communication.PushMode;
 
 /**

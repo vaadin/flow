@@ -22,6 +22,8 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.VaadinServlet;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -30,8 +32,6 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebListener;
 
 import org.atmosphere.cpr.AtmosphereFramework;
-
-import com.vaadin.server.VaadinServlet;
 
 /**
  * Initializer class for JSR 356 websockets.

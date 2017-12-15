@@ -20,7 +20,7 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import com.vaadin.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServlet;
 
 /**
  * Condition to check whether the Vaadin servlet is mapped to the root

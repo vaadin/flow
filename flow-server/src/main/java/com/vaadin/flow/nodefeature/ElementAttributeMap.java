@@ -24,11 +24,11 @@ import java.util.stream.Stream;
 import com.vaadin.flow.NodeOwner;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
-import com.vaadin.server.AbstractStreamResource;
-import com.vaadin.server.StreamRegistration;
-import com.vaadin.server.StreamResource;
-import com.vaadin.server.StreamResourceRegistry;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamRegistration;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.shared.Registration;
 
 /**

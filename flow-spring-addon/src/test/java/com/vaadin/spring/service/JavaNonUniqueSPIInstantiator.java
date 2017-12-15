@@ -15,7 +15,7 @@
  */
 package com.vaadin.spring.service;
 
-import com.vaadin.server.VaadinService;
+import com.vaadin.flow.server.VaadinService;
 
 public class JavaNonUniqueSPIInstantiator extends JavaSPIInstantiator {
 

@@ -15,8 +15,8 @@
  */
 package com.vaadin.spring.instantiator;
 
-import com.vaadin.server.ServiceInitEvent;
-import com.vaadin.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 
 public class JavaSPIVaadinServiceInitListener
         implements VaadinServiceInitListener {

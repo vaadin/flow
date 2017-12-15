@@ -34,7 +34,14 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinUriResolverFactory;
+import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.UI;

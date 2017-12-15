@@ -16,16 +16,17 @@
 package com.vaadin.server.communication;
 
 import javax.servlet.ServletContext;
+
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceWriter;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinSession;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-
-import com.vaadin.server.StreamResource;
-import com.vaadin.server.StreamResourceWriter;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinServletRequest;
-import com.vaadin.server.VaadinSession;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.

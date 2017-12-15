@@ -1,7 +1,7 @@
 package com.vaadin.tests.util;
 
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.server.MockVaadinSession;
-import com.vaadin.server.VaadinService;
 
 public class AlwaysLockedVaadinSession extends MockVaadinSession {
 

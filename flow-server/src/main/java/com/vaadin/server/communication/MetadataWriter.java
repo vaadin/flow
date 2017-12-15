@@ -18,7 +18,7 @@ package com.vaadin.server.communication;
 
 import java.io.Serializable;
 
-import com.vaadin.server.SystemMessages;
+import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;

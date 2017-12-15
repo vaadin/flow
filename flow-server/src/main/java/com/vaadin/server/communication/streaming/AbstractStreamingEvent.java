@@ -15,7 +15,7 @@
  */
 package com.vaadin.server.communication.streaming;
 
-import com.vaadin.server.StreamVariable.StreamingEvent;
+import com.vaadin.flow.server.StreamVariable.StreamingEvent;
 
 /**
  * Abstract base class for StreamingEvent implementations.

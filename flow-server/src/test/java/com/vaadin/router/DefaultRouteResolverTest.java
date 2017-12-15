@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
 
 public class DefaultRouteResolverTest extends RoutingTestBase {

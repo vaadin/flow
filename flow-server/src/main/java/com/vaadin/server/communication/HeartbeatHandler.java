@@ -20,13 +20,13 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.server.ServletHelper;
-import com.vaadin.server.ServletHelper.RequestType;
-import com.vaadin.server.SessionExpiredHandler;
-import com.vaadin.server.SynchronizedRequestHandler;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.SessionExpiredHandler;
+import com.vaadin.flow.server.SynchronizedRequestHandler;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.UI;

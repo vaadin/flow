@@ -28,8 +28,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
+import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeListener;
 

@@ -26,13 +26,13 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.server.AbstractStreamResource;
-import com.vaadin.server.RequestHandler;
-import com.vaadin.server.StreamReceiver;
-import com.vaadin.server.StreamResource;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.StreamReceiver;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.ui.UI;
 
 /**

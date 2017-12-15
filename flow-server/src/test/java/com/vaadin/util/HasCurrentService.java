@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.After;
 import org.junit.Before;
 
-import com.vaadin.server.VaadinService;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Helper for test classes that need to have {@code VaadinService.getCurrent()}

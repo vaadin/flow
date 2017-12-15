@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.ContentTypeResolver;
+import com.vaadin.flow.server.StreamResource;
 
 public class StreamResourceTest {
 

@@ -39,7 +39,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.server.VaadinService;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.polymertemplate.EventHandler;

@@ -23,12 +23,12 @@ import org.springframework.context.ApplicationContext;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.server.ServiceException;
-import com.vaadin.server.SessionDestroyListener;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletService;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.SessionDestroyListener;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.shared.Registration;
 
 /**

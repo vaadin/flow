@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import com.vaadin.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinRequest;
 
 /**
  * Utility class for locale handling.

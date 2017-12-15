@@ -22,8 +22,8 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.server.AbstractStreamResource;
-import com.vaadin.server.StreamResource;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.event.PropertyChangeListener;

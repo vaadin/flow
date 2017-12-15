@@ -17,7 +17,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.server.VaadinService;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.ComponentTest.TracksAttachDetach;

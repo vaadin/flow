@@ -22,8 +22,8 @@ import java.nio.charset.StandardCharsets;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.server.StreamResource;
 import com.vaadin.ui.UI;
 
 @CodeFor("miscellaneous/tutorial-dynamic-content.asciidoc")

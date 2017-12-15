@@ -7,7 +7,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.model.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.model.TemplateModelTest.EmptyModelTemplate;
-import com.vaadin.server.VaadinService;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.ui.UI;
 import com.vaadin.util.HasCurrentService;
 

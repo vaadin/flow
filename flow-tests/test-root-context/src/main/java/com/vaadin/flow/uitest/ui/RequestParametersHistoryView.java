@@ -17,8 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.router.Route;
-import com.vaadin.server.VaadinService;
 
 /**
  * @author Vaadin Ltd.
