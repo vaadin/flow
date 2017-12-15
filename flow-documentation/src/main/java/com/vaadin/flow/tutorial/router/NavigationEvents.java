@@ -107,17 +107,7 @@ public class NavigationEvents {
     }
 }
 
-class GeneratedPaperDialog<T> {
-
-    public void add(Component label) {
-    }
-
-    public void open() {
-
-    }
-}
-
-class ConfirmDialog extends GeneratedPaperDialog<ConfirmDialog> {
+class ConfirmDialog extends Component {
 
     public static ConfirmDialog build(String message) {
         ConfirmDialog dialog = new ConfirmDialog();
@@ -132,5 +122,12 @@ class ConfirmDialog extends GeneratedPaperDialog<ConfirmDialog> {
     public ConfirmDialog ifAccept(Runnable confirmationHandler) {
         confirmationHandler.run();
         return this;
+    }
+
+    public void add(Component label) {
+    }
+
+    public void open() {
+
     }
 }
