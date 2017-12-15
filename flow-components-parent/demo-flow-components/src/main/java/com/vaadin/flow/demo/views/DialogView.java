@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
@@ -22,7 +23,6 @@ import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.dialog.Dialog;
-import com.vaadin.ui.html.Label;
 import com.vaadin.ui.layout.HorizontalLayout;
 
 /**

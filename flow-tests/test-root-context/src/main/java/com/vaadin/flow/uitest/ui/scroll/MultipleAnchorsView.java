@@ -16,10 +16,10 @@
 
 package com.vaadin.flow.uitest.ui.scroll;
 
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
-import com.vaadin.ui.html.Anchor;
-import com.vaadin.ui.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route(value = "com.vaadin.flow.uitest.ui.scroll.MultipleAnchorsView", layout = ViewTestLayout.class)

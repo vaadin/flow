@@ -20,10 +20,10 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.router.Route;
 import com.vaadin.ui.event.AttachEvent;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Label;
 
 @Route("ui-scope")
 public class UIScopeTarget extends Div {

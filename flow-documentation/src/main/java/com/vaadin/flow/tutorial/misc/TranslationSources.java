@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.tutorial.misc;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.html.Div;
 import com.vaadin.ui.i18n.LocaleChangeEvent;
 import com.vaadin.ui.i18n.LocaleChangeObserver;
 

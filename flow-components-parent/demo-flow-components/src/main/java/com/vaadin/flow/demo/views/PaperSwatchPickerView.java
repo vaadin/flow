@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.paper.spinner.GeneratedPaperSpinner;
 import com.vaadin.flow.component.paper.swatchpicker.GeneratedPaperSwatchPicker;
 import com.vaadin.flow.demo.ComponentDemo;
@@ -22,7 +23,6 @@ import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
 import com.vaadin.router.Route;
-import com.vaadin.ui.html.Label;
 
 /**
  * View for {@link GeneratedPaperSpinner} demo.

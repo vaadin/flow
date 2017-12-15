@@ -17,10 +17,10 @@ package com.vaadin.flow.spring;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.ui.html.Div;
 
 public class NPEHandler extends Div
         implements HasErrorParameter<NullPointerException> {

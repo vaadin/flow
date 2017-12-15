@@ -18,6 +18,7 @@ package com.vaadin.flow.demo.views;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
@@ -25,7 +26,6 @@ import com.vaadin.router.Route;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.datepicker.DatePicker;
 import com.vaadin.ui.datepicker.DatePicker.DatePickerI18n;
-import com.vaadin.ui.html.Div;
 
 /**
  * View for {@link DatePicker} demo.

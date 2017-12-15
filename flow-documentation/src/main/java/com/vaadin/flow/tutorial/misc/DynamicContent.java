@@ -19,9 +19,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.html.Input;
-import com.vaadin.ui.html.NativeButton;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.UI;

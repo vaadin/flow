@@ -23,7 +23,7 @@ import org.junit.Before;
 import com.vaadin.data.ValidationResult;
 import com.vaadin.data.Validator;
 import com.vaadin.data.ValueContext;
-import com.vaadin.ui.html.Label;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.ui.UI;
 
 public class ValidatorTestBase {

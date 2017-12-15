@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.html.Div;
 
 @JavaScript("frontend://divConnector.js")
 public class JsInjectedDiv extends Div {

@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateOverridesMap;
@@ -28,9 +31,6 @@ import com.vaadin.router.Route;
 import com.vaadin.server.Command;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlContainer;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Label;
-import com.vaadin.ui.html.NativeButton;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ForTemplateView", layout = ViewTestLayout.class)
 public class ForTemplateView extends Div {

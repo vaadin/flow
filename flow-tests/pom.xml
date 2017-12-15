@@ -24,7 +24,8 @@
         <module>test-spring-war</module>
         <module>test-spring</module>
         <module>test-spring-common</module>
-        <module>test-components</module>
+        <!-- Disabled until component modules are updated with the latest Flow changes -->
+        <!--module>test-components</module-->
     </modules>
 
     <repositories>

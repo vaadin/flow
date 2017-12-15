@@ -34,12 +34,12 @@ import com.vaadin.data.BindingValidationStatus.Status;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.checkbox.Checkbox;
 import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.datepicker.DatePicker;
-import com.vaadin.ui.html.Label;
 import com.vaadin.ui.textfield.TextField;
 
 import static org.hamcrest.MatcherAssert.assertThat;

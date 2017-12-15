@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.tutorial.router;
 
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.ContinueNavigationAction;
@@ -27,9 +30,6 @@ import com.vaadin.router.event.BeforeNavigationObserver;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.html.Anchor;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Label;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @CodeFor("routing/tutorial-routing-lifecycle.asciidoc")
