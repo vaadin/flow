@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person;
 import com.vaadin.function.ValueProvider;
@@ -227,7 +227,7 @@ public class GridBasic {
     //@formatter:off
     /*
      * code of commented lines
-     * 
+     *
      grid.setColumnOrder(firstnameColumn, lastnameColumn,
                     bornColumn, birthplaceColumn,
                     diedColumn);
