@@ -77,10 +77,11 @@ public class GridRenderers {
             // remove the item
         }));
 
-        grid.addColumn(
-                new ButtonRenderer<>(item -> "Remove " + item, clickedItem -> {
-                    // remove the item
-                }));
+        //@formatter:off
+        grid.addColumn(new ButtonRenderer<>(item -> "Remove " + item, clickedItem -> {
+            // remove the item
+        }));
+        //@formatter:on
     }
 
     public void templateRenderer() {
@@ -90,12 +91,13 @@ public class GridRenderers {
         grid.addColumn(TemplateRenderer.<Person> of("<b>[[item.name]]</b>")
                 .withProperty("name", Person::getName)).setHeader("Name");
 
-        grid.addColumn(
-                TemplateRenderer.<Person> of("[[item.age]] years old")
+        //@formatter:off
+        grid.addColumn(TemplateRenderer.<Person> of("[[item.age]] years old")
                         .withProperty("age",
                                 person -> Year.now().getValue()
                                         - person.getYearOfBirth()))
                 .setHeader("Age");
+        //@formatter:on
 
         grid.addColumn(TemplateRenderer.<Person> of(
                 "<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")

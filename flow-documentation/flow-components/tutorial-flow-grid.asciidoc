@@ -306,7 +306,7 @@ grid.mergeColumns(informationColumnGroup, addressColumnGroup)
 
 == Using Renderers
 
-Columns can be configured to use Renderers to show the data in a more suitable way inside the cells. The renderers are separated in three categories:
+Columns can be configured to use Renderers to show the data in a more suitable way inside the cells. Conceptually renderers are split into the three categories listed below.
 
 1. Basic renderers - the renderers used to render basic values, such as dates and numbers
 2. Template renderer - allows the developer to define cells with HTML markup and Polymer data binding syntax
@@ -314,7 +314,7 @@ Columns can be configured to use Renderers to show the data in a more suitable w
 
 === Using Basic Renderers
 
-There are several basic renderers that can be used to configure Grid columns:
+There are several basic renderers that can be used to configure Grid columns. The currently supported basic renderers are gathered here under their own subsections.
 
 ==== LocalDateRenderer
 
@@ -375,7 +375,7 @@ grid.addColumn(new NumberRenderer<>(Item::getPrice, "$ %(,.2f",
 
 ==== ButtonRenderer
 
-An easy way to create a clickable button inside the grid cells. It creates a native `<button>` in the client side, and the click and tap events (for touch devices) are treated in the server side.
+An easy way to create a clickable button inside the grid cells. It creates a native `<button>` on the client side, and the click and tap events (for touch devices) are treated on the server side.
 
 [source, java]
 ----
@@ -388,10 +388,9 @@ It is also possible to configure a custom label for each item:
 
 [source, java]
 ----
-grid.addColumn(
-                new ButtonRenderer<>(item -> "Remove " + item, clickedItem -> {
-                    // remove the item
-                }));
+grid.addColumn(new ButtonRenderer<>(item -> "Remove " + item, clickedItem -> {
+          // remove the item
+        }));
 ----
 
 === Using Templates
@@ -428,12 +427,11 @@ add a new column to display that.
 
 [source, java]
 ----
-grid.addColumn(
-                TemplateRenderer.<Person> of("[[item.age]] years old")
-                        .withProperty("age",
-                                person -> Year.now().getValue()
-                                        - person.getYearOfBirth()))
-                .setHeader("Age");
+grid.addColumn(TemplateRenderer.<Person> of("[[item.age]] years old")
+        .withProperty("age",
+                person -> Year.now().getValue()
+                        - person.getYearOfBirth()))
+        .setHeader("Age");
 ----
 
 ==== Binding Beans
