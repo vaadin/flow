@@ -17,6 +17,9 @@ package com.vaadin.flow.data.binder;
 
 import java.util.EventObject;
 
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
+import com.vaadin.function.ValueProvider;
+
 /**
  * Binder status change event.
  * <p>
