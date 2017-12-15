@@ -24,12 +24,12 @@ import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationObserver;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationObserver;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Anchor;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
-import com.vaadin.ui.paper.dialog.GeneratedPaperDialog;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @CodeFor("routing/tutorial-routing-lifecycle.asciidoc")
@@ -107,7 +107,7 @@ public class NavigationEvents {
     }
 }
 
-class ConfirmDialog extends GeneratedPaperDialog<ConfirmDialog> {
+class ConfirmDialog extends Component {
 
     public static ConfirmDialog build(String message) {
         ConfirmDialog dialog = new ConfirmDialog();
@@ -122,5 +122,12 @@ class ConfirmDialog extends GeneratedPaperDialog<ConfirmDialog> {
     public ConfirmDialog ifAccept(Runnable confirmationHandler) {
         confirmationHandler.run();
         return this;
+    }
+
+    public void add(Component label) {
+    }
+
+    public void open() {
+
     }
 }

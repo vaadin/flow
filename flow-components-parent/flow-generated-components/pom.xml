@@ -69,7 +69,7 @@
                                     <goal>generate</goal>
                                 </goals>
                                 <configuration>
-                                    <basePackage>com.vaadin.ui</basePackage>
+                                    <basePackage>com.vaadin.flow.component</basePackage>
                                     <classNamePrefix>Generated</classNamePrefix>
                                     <licenseFile>license_header</licenseFile>
                                 </configuration>
