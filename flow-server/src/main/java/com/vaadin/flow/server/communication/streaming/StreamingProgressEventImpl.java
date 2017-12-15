@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server.communication.streaming;
+package com.vaadin.flow.server.communication.streaming;
 
 import com.vaadin.flow.server.StreamVariable.StreamingProgressEvent;
 

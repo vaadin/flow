@@ -45,10 +45,10 @@ import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.server.communication.streaming.StreamingEndEventImpl;
-import com.vaadin.server.communication.streaming.StreamingErrorEventImpl;
-import com.vaadin.server.communication.streaming.StreamingProgressEventImpl;
-import com.vaadin.server.communication.streaming.StreamingStartEventImpl;
+import com.vaadin.flow.server.communication.streaming.StreamingEndEventImpl;
+import com.vaadin.flow.server.communication.streaming.StreamingErrorEventImpl;
+import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl;
+import com.vaadin.flow.server.communication.streaming.StreamingStartEventImpl;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
