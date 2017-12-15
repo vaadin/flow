@@ -16,8 +16,8 @@
 package com.vaadin.flow.uitest.ui.temp;
 
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.router.Route;
-import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.BeforeNavigationEvent;
 
 @Route(value = "npe")
 public class NPETargetView extends AbstractDivView {

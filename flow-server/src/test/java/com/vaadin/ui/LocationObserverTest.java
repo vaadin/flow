@@ -25,10 +25,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.router.Route;
-import com.vaadin.router.Router;
-import com.vaadin.router.RouterInterface;
-import com.vaadin.router.TestRouteRegistry;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.server.Command;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.MockVaadinServletService;

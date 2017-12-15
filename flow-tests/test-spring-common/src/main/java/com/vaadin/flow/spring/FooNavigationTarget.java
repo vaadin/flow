@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 
 /**
  * @author Vaadin Ltd

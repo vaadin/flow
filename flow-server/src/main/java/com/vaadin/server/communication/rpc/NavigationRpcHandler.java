@@ -15,8 +15,8 @@
  */
 package com.vaadin.server.communication.rpc;
 
-import com.vaadin.router.Location;
-import com.vaadin.router.NavigationTrigger;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.History;
 import com.vaadin.ui.History.HistoryStateChangeEvent;

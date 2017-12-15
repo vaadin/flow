@@ -24,7 +24,7 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WebBrowser;
 import com.vaadin.ui.Html;

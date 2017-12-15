@@ -20,7 +20,7 @@ import java.util.function.BiConsumer;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 import com.vaadin.server.Command;
 import com.vaadin.ui.History;
 import com.vaadin.ui.event.ClickEvent;

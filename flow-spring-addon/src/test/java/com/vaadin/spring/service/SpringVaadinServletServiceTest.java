@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.spring.instantiator.SpringInstantiatorTest;
