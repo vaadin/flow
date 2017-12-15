@@ -17,13 +17,8 @@ package com.vaadin.flow.spring;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
-<<<<<<< HEAD
-import com.vaadin.flow.server.startup.CustomElementRegistry;
-import com.vaadin.router.Route;
-=======
 import com.vaadin.flow.router.Route;
-import com.vaadin.server.startup.CustomElementRegistry;
->>>>>>> refs/heads/master
+import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.ui.Component;
 
 @Route("custom-element")
