@@ -17,6 +17,8 @@ package com.vaadin.ui.renderers;
 
 import org.junit.Test;
 
+import com.vaadin.flow.renderer.TextRenderer;
+
 public class TextRendererTest {
 
     @Test(expected = IllegalStateException.class)

@@ -31,6 +31,8 @@ import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
 import com.vaadin.flow.demo.views.GridView.PersonCard;
 import com.vaadin.flow.demo.views.GridView.PersonComponent;
+import com.vaadin.flow.renderer.ComponentTemplateRenderer;
+import com.vaadin.flow.renderer.TemplateRenderer;
 import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.checkbox.Checkbox;
@@ -44,8 +46,6 @@ import com.vaadin.ui.grid.GridMultiSelectionModel;
 import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.layout.HorizontalLayout;
 import com.vaadin.ui.layout.VerticalLayout;
-import com.vaadin.ui.renderers.ComponentTemplateRenderer;
-import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.ui.textfield.TextField;
 
 /**

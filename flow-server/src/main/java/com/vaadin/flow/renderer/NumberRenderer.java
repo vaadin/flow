@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.renderers;
+package com.vaadin.flow.renderer;
 
 import java.text.NumberFormat;
 import java.util.Locale;

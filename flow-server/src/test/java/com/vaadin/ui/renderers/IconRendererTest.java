@@ -17,6 +17,7 @@ package com.vaadin.ui.renderers;
 
 import org.junit.Test;
 
+import com.vaadin.flow.renderer.IconRenderer;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
