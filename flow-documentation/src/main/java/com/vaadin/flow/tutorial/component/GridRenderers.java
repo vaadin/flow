@@ -15,9 +15,15 @@
  */
 package com.vaadin.flow.tutorial.component;
 
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -29,7 +35,11 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.renderer.ButtonRenderer;
 import com.vaadin.flow.renderer.ComponentTemplateRenderer;
+import com.vaadin.flow.renderer.LocalDateRenderer;
+import com.vaadin.flow.renderer.LocalDateTimeRenderer;
+import com.vaadin.flow.renderer.NumberRenderer;
 import com.vaadin.flow.renderer.TemplateRenderer;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person.Gender;
@@ -38,6 +48,40 @@ import com.vaadin.flow.tutorial.binder.Person.Gender;
 public class GridRenderers {
 
     private List<Person> people = Arrays.asList(new Person(), new Person());
+
+    public void basicRenderers() {
+        Grid<Item> grid = new Grid<>();
+
+        grid.addColumn(new LocalDateRenderer<>(Item::getEstimatedDeliveryDate,
+                DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)))
+                .setHeader("Estimated delivery date");
+
+        grid.addColumn(new LocalDateRenderer<>(Item::getEstimatedDeliveryDate,
+                "dd/MM/yyyy")).setHeader("Estimated delivery date");
+
+        grid.addColumn(new LocalDateTimeRenderer<>(Item::getPurchaseDate,
+                DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT,
+                        FormatStyle.MEDIUM)))
+                .setHeader("Purchase date and time");
+
+        grid.addColumn(new LocalDateTimeRenderer<>(Item::getPurchaseDate,
+                "dd/MM HH:mm:ss")).setHeader("Purchase date and time");
+
+        grid.addColumn(new NumberRenderer<>(Item::getPrice,
+                NumberFormat.getCurrencyInstance())).setHeader("Price");
+
+        grid.addColumn(new NumberRenderer<>(Item::getPrice, "$ %(,.2f",
+                Locale.US, "$ 0.00")).setHeader("Price");
+
+        grid.addColumn(new ButtonRenderer<>("Remove item", clickedItem -> {
+            // remove the item
+        }));
+
+        grid.addColumn(
+                new ButtonRenderer<>(item -> "Remove " + item, clickedItem -> {
+                    // remove the item
+                }));
+    }
 
     public void templateRenderer() {
         Grid<Person> grid = new Grid<>();
@@ -195,6 +239,45 @@ public class GridRenderers {
 
         public void setPostalCode(String postalCode) {
             this.postalCode = postalCode;
+        }
+    }
+
+    public static class Item {
+        private String name;
+        private double price;
+        private LocalDateTime purchaseDate;
+        private LocalDate estimatedDeliveryDate;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public double getPrice() {
+            return price;
+        }
+
+        public void setPrice(double price) {
+            this.price = price;
+        }
+
+        public LocalDateTime getPurchaseDate() {
+            return purchaseDate;
+        }
+
+        public void setPurchaseDate(LocalDateTime purchaseDate) {
+            this.purchaseDate = purchaseDate;
+        }
+
+        public LocalDate getEstimatedDeliveryDate() {
+            return estimatedDeliveryDate;
+        }
+
+        public void setEstimatedDeliveryDate(LocalDate estimatedDeliveryDate) {
+            this.estimatedDeliveryDate = estimatedDeliveryDate;
         }
     }
 }

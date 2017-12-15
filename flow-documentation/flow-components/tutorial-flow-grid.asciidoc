@@ -304,7 +304,97 @@ grid.mergeColumns(informationColumnGroup, addressColumnGroup)
         .setHeader("Person Information");
 ----
 
-== Using Templates
+== Using Renderers
+
+Columns can be configured to use Renderers to show the data in a more suitable way inside the cells. The renderers are separated in three categories:
+
+1. Basic renderers - the renderers used to render basic values, such as dates and numbers
+2. Template renderer - allows the developer to define cells with HTML markup and Polymer data binding syntax
+3. Component renderer - allows the developer to use an arbitrary component inside the cells
+
+=== Using Basic Renderers
+
+There are several basic renderers that can be used to configure Grid columns:
+
+==== LocalDateRenderer
+
+Suitable for rendering `LocalDate` objects inside the grid cells.
+
+[source, java]
+----
+grid.addColumn(new LocalDateRenderer<>(Item::getEstimatedDeliveryDate,
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)))
+        .setHeader("Estimated delivery date");
+----
+
+The `LocalDateRenderer` works with both a `DateTimeFormatter` or a String format to properly render `LocalDate` objects.
+
+[source, java]
+----
+grid.addColumn(new LocalDateRenderer<>(Item::getEstimatedDeliveryDate,
+        "dd/MM/yyyy")).setHeader("Estimated delivery date");
+----
+
+==== LocalDateTimeRenderer
+
+Suitable for rendering `LocalDateTime` objects inside the grid cells.
+
+[source, java]
+----
+grid.addColumn(new LocalDateTimeRenderer<>(Item::getPurchaseDate,
+        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT,
+                FormatStyle.MEDIUM)))
+        .setHeader("Purchase date and time");
+----
+
+Similar to the `LocalDateRenderer`, it is possible to configure a `DateTimeFormatter` (with separate style for date and time) or a String format to properly render `LocalDateTime` objects.
+
+[source, java]
+----
+grid.addColumn(new LocalDateTimeRenderer<>(Item::getPurchaseDate,
+        "dd/MM HH:mm:ss")).setHeader("Purchase date and time");
+----
+
+==== NumberRenderer
+
+Suitable for rendering any type of `Number` inside the grid cells. It is specially useful for rendering floating point values.
+
+[source, java]
+----
+grid.addColumn(new NumberRenderer<>(Item::getPrice,
+        NumberFormat.getCurrencyInstance())).setHeader("Price");
+----
+
+It is also possible to setup the `NumberRenderer` with a String format, and an optional null representation:
+
+[source, java]
+----
+grid.addColumn(new NumberRenderer<>(Item::getPrice, "$ %(,.2f",
+        Locale.US, "$ 0.00")).setHeader("Price");
+----
+
+==== ButtonRenderer
+
+An easy way to create a clickable button inside the grid cells. It creates a native `<button>` in the client side, and the click and tap events (for touch devices) are treated in the server side.
+
+[source, java]
+----
+grid.addColumn(new ButtonRenderer<>("Remove item", clickedItem -> {
+          // remove the item
+        }));
+----
+
+It is also possible to configure a custom label for each item:
+
+[source, java]
+----
+grid.addColumn(
+                new ButtonRenderer<>(item -> "Remove " + item, clickedItem -> {
+                    // remove the item
+                }));
+----
+
+=== Using Templates
 
 You can define the contents of the grid cells with HTML markup and use Polymer notation for data binding
 and event handling. This is done by providing a `TemplateRenderer` for the appropriate `Column`.
@@ -329,7 +419,7 @@ Using this notation in this context is pretty straightforward, but you can refer
 https://www.polymer-project.org/2.0/docs/api/elements/Polymer.DomRepeat[Polymer documentation]
 for more details.
 
-=== Using Custom Properties
+==== Using Custom Properties
 
 You can also create and display new properties that the item doesn't originally contain.
 
@@ -346,7 +436,7 @@ grid.addColumn(
             .setHeader("Age");
 ----
 
-=== Binding Beans
+==== Binding Beans
 
 If the object contains a bean property that has properties of it's own, you only need to make the bean
 accessible by calling `withProperty()`, and the sub-properties become accessible as well.
@@ -363,7 +453,7 @@ grid.addColumn(TemplateRenderer.<Person> of(
         .setHeader("Address");
 ----
 
-=== Handling Events
+==== Handling Events
 
 You can define event handlers for the elements inside your template, and hook them to server-side code by
 calling `withEventHandler()` method on your `TemplateRenderer`. This is useful for editing the items in the
@@ -399,7 +489,7 @@ You need to use Polymer notation for event handlers, so `on-click` (with a dash)
 `TemplateRenderer` has fluent API, so you can chain the commands, like
 `TemplateRenderer.of().withProperty().withProperty().withEventHandler()...`
 
-== Using Components
+=== Using Components
 
 You can use any component inside the grid cells by providing a `ComponentTemplateRenderer` for the appropriate `Column`.
 
@@ -505,9 +595,9 @@ selection, you need to call `grid.setSelectionMode(SelectionMode.NONE)`.
 
 == Sorting
 
-A user can sort the data in a grid on a column by clicking the column header. Clicking another time 
-on the current sort column reverses the sort direction. Clicking on a third time resets the column to its 
-unsorted state. If multisorting is enabled, clicking on other sortable column headers adds a secondary or 
+A user can sort the data in a grid on a column by clicking the column header. Clicking another time
+on the current sort column reverses the sort direction. Clicking on a third time resets the column to its
+unsorted state. If multisorting is enabled, clicking on other sortable column headers adds a secondary or
 more sort criteria.
 
 === Defining how a column is sorted
@@ -516,7 +606,7 @@ Before jumping to the code, it's important to understand 2 key features of the s
 
 In-memory sorting is the sorting that is applied to the items that have been fetched from the backend, before returning them to the client.
 
-Backend sorting is a list of `QuerySortOrder` objects that can be used when implementing your own fetching logic within a `DataProvider`. 
+Backend sorting is a list of `QuerySortOrder` objects that can be used when implementing your own fetching logic within a `DataProvider`.
 You can check more details about the backend sorting <<../data-provider/tutorial-flow-data-provider#Sorting,here>>.
 
 You can have both in-memory and backend sorting at the same time, or you can configure them separately. Here is a list of options
@@ -531,7 +621,7 @@ You can set the sort properties that will be used to do backend sorting at the m
 grid.addColumn(Person::getAge, "age").setHeader("Age");
 ----
 
-The `Age` column will use the values returned by `Person::getAge` method to do in-memory sorting, and use the `age` String to build 
+The `Age` column will use the values returned by `Person::getAge` method to do in-memory sorting, and use the `age` String to build
 a `QuerySortOrder` that will be sent to the `DataProvider` to do the backend sorting.
 
 You can use multiple properties as well:
@@ -557,16 +647,16 @@ grid.addColumn(TemplateRenderer.<Person> of(
 
 
 [NOTE]
-For the in-memory sorting to work properly, the values returned by the `ValueProviders` inside the `TemplateRenderer` 
+For the in-memory sorting to work properly, the values returned by the `ValueProviders` inside the `TemplateRenderer`
 (`Person::getAge` and `Person::getEmail` in the example) should implement `Comparable`.
 
 [NOTE]
-When using `TemplateRenderers`, the names of the sort properties must match the names of the properties in the template 
+When using `TemplateRenderers`, the names of the sort properties must match the names of the properties in the template
 (set via `withProperty`).
 
 ==== 2. Using a Comparator (in-memory sorting)
 
-When you need a custom logic to compare items to sort them properly, or if your underlying data is not `Comparable`, 
+When you need a custom logic to compare items to sort them properly, or if your underlying data is not `Comparable`,
 you can set a `Comparator` to your column:
 
 [source, java]
@@ -578,7 +668,7 @@ grid.addColumn(Person::getName)
 ----
 
 [NOTE]
-Keep in mind that when a Comparator is set for a column, it is executed for all the items that will be sent to the client. 
+Keep in mind that when a Comparator is set for a column, it is executed for all the items that will be sent to the client.
 A comparator with poor performance will impact the overall performance of the Grid.
 
 ==== 3. Setting sort properties (backend sorting)
@@ -592,7 +682,7 @@ grid.addColumn(Person::getName).setSortProperty("name", "email")
 ----
 
 [NOTE]
-Unlike using the sorting properties in the `addColumn` method directly, calling `setSortProperty` doesn't configure 
+Unlike using the sorting properties in the `addColumn` method directly, calling `setSortProperty` doesn't configure
 any in-memory sorting.
 
 When setting the sort properties, a `SortOrderProvider` is created automatically for you.
@@ -614,7 +704,7 @@ grid.addColumn(Person::getName)
 
 === Enabling and disabling the sorting in a column
 
-When using any of the 4 methods described above, the column is considered `sortable` - in other words, it displays the 
+When using any of the 4 methods described above, the column is considered `sortable` - in other words, it displays the
 sorter element in the header of the column. You can toggle the sorter display for a column by using:
 
 [source, java]
@@ -622,7 +712,7 @@ sorter element in the header of the column. You can toggle the sorter display fo
 column.setSortable(false);
 ----
 
-Setting a column as not `sortable` doesn't delete any `Comparator`, `sort property` or `SortOrderProvider` previously set - 
+Setting a column as not `sortable` doesn't delete any `Comparator`, `sort property` or `SortOrderProvider` previously set -
 so you can toggle the `sortable` flag on and off without having to reconfigure it every time.
 
 You can check if a given column is currently `sortable` by calling:
