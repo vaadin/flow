@@ -19,7 +19,7 @@ import java.util.Collection;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.shared.ui.Transport;
+import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.ui.PushConfiguration;
 
 /**

@@ -19,9 +19,9 @@ import java.io.Serializable;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.shared.ui.Dependency.Type;
-import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;

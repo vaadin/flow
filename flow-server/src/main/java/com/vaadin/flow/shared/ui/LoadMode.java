@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.shared.ui;
+package com.vaadin.flow.shared.ui;
 
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;

@@ -7,7 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.nodefeature.PushConfigurationMap;
-import com.vaadin.shared.ui.Transport;
+import com.vaadin.flow.shared.ui.Transport;
 
 public class PushConfigurationMapTest
         extends AbstractNodeFeatureTest<PushConfigurationMap> {

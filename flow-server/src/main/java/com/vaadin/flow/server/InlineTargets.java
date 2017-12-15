@@ -20,8 +20,8 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.ui.Inline;
 
 import elemental.json.Json;

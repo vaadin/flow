@@ -21,6 +21,9 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
+
 import elemental.json.JsonObject;
 
 /**

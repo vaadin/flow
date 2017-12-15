@@ -42,7 +42,7 @@ import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.template.TemplateRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 import elemental.dom.Node;
 import elemental.json.JsonArray;

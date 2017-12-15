@@ -23,7 +23,7 @@ import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.shared.ui.Transport;
+import com.vaadin.flow.shared.ui.Transport;
 
 /**
  * Provides method for configuring the push channel.

@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.shared.ui;
+package com.vaadin.flow.shared.ui;
 
 /**
  * Transport modes for Push

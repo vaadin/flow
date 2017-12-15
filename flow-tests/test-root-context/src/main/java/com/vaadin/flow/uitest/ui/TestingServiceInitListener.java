@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 public class TestingServiceInitListener implements VaadinServiceInitListener {
 

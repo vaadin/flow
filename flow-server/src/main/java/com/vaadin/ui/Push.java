@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.shared.ui.Transport;
+import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.ui.UI;
 
 /**

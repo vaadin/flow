@@ -18,9 +18,9 @@ package com.vaadin.flow.uitest.ui.frontend;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
-import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.JavaScript;
 

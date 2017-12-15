@@ -18,7 +18,7 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.List;
 
-import com.vaadin.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;

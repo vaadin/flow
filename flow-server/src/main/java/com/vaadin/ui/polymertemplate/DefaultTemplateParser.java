@@ -41,10 +41,10 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.server.WrappedHttpSession;
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.util.AnnotationReader;
 import com.vaadin.flow.util.ReflectionCache;
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.shared.ui.Dependency.Type;
 import com.vaadin.ui.common.HtmlImport;
 
 /**

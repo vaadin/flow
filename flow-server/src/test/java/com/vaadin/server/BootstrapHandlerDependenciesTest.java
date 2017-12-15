@@ -42,7 +42,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
-import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlImport;

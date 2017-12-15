@@ -42,7 +42,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.common.DependencyList;
 import com.vaadin.ui.common.HtmlImport;

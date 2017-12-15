@@ -25,8 +25,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * List for storing dependencies/files (JavaScript, Stylesheets) to be loaded
