@@ -28,7 +28,7 @@ import com.vaadin.ui.Push;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.router.PageTitle;
 import com.vaadin.flow.router.View;
-import com.vaadin.shared.communication.PushMode;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.shared.ui.Transport;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;

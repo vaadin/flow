@@ -43,8 +43,8 @@ import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.util.CurrentInstance;
-import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
 
 /**

@@ -31,7 +31,7 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.util.Version;
 
-import com.vaadin.shared.communication.PushConstants;
+import com.vaadin.flow.shared.communication.PushConstants;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;

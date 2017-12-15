@@ -22,7 +22,7 @@ import java.util.Collection;
 import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
-import com.vaadin.shared.communication.PushMode;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.shared.ui.Transport;
 
 /**

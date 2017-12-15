@@ -64,12 +64,12 @@ import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.flow.util.LocaleUtil;
 import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.router.Router;
 import com.vaadin.router.RouterInterface;
-import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.i18n.I18NProvider;
 

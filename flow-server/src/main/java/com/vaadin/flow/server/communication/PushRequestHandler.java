@@ -48,7 +48,7 @@ import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.ServletHelper.RequestType;
-import com.vaadin.shared.communication.PushConstants;
+import com.vaadin.flow.shared.communication.PushConstants;
 
 /**
  * Handles requests to open a push (bidirectional) communication channel between

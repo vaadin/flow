@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.shared.communication;
+package com.vaadin.flow.shared.communication;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 

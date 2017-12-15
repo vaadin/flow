@@ -7,7 +7,7 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import com.vaadin.flow.server.AbstractDeploymentConfiguration;
-import com.vaadin.shared.communication.PushMode;
+import com.vaadin.flow.shared.communication.PushMode;
 
 public class MockDeploymentConfiguration
         extends AbstractDeploymentConfiguration {

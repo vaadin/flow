@@ -24,7 +24,7 @@ import java.util.function.Function;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.WrappedSession;
-import com.vaadin.shared.communication.PushMode;
+import com.vaadin.flow.shared.communication.PushMode;
 
 /**
  * A collection of properties configured at deploy time as well as a way of

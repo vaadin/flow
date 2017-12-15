@@ -47,9 +47,9 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedHttpSession;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.util.CurrentInstance;
-import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
 
 import net.jcip.annotations.NotThreadSafe;
