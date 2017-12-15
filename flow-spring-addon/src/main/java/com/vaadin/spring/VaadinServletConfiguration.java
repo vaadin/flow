@@ -49,7 +49,7 @@ public class VaadinServletConfiguration {
     static final String VAADIN_SERVLET_MAPPING = "/vaadinServlet/*";
 
     static final String[] VAADIN_URL_MAPINGS = new String[] { "/VAADIN/*",
-            "/PUSH/*", "/webjars/*" };
+            "/PUSH/*", "/webjars/*", "/frontend/*" };
 
     /**
      * Makes an url handler mapping allowing to forward requests from a
