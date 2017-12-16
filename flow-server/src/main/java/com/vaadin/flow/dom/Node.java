@@ -20,8 +20,8 @@ import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 /**
  * A class representing a node in the DOM.

@@ -20,15 +20,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.polymertemplate.EventHandler;
-import com.vaadin.flow.polymertemplate.ModelItem;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.polymertemplate.RepeatIndex;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.EventHandler;
+import com.vaadin.flow.component.polymertemplate.ModelItem;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.RepeatIndex;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListInsideListBindingView", layout = ViewTestLayout.class)
 @Tag("list-inside-list-binding")

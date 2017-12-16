@@ -30,14 +30,14 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.flow.router.legacy.ImmutableRouterConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.spring.SpringVaadinSession;
 import com.vaadin.flow.spring.scopes.VaadinUIScope;
-import com.vaadin.ui.ComponentUtil;
-import com.vaadin.ui.UI;
 
 public class VaadinUIScopeTest extends AbstractScopeTest {
 

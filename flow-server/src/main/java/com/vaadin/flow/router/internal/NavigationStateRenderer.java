@@ -23,6 +23,9 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.ActivationState;
@@ -44,9 +47,6 @@ import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HasElement;
 
 /**
  * Handles navigation events by rendering a contained NavigationState in the

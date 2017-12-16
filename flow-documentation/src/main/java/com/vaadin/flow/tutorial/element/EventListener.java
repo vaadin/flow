@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.tutorial.element;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;
 

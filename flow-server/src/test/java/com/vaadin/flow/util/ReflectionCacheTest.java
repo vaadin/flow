@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.util.ReflectionCache;
+
 public class ReflectionCacheTest {
 
     @Test

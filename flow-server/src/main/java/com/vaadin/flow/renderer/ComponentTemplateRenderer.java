@@ -19,10 +19,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.ui.Component;
 
 /**
  * A template renderer that allows the usage of regular {@link Component}s

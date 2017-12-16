@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.tutorial.misc;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.History;
-import com.vaadin.ui.History.HistoryStateChangeEvent;
-import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;

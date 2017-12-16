@@ -21,21 +21,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import com.vaadin.flow.StateTree;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.PropertyDescriptor;
+import com.vaadin.flow.component.PropertyDescriptors;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.router.legacy.RouteLocation;
 import com.vaadin.flow.router.legacy.RouteLocation.RouteSegmentVisitor;
 import com.vaadin.flow.router.legacy.Router;
 import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HasComponents;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasText;
-import com.vaadin.ui.common.PropertyDescriptor;
-import com.vaadin.ui.common.PropertyDescriptors;
 
 /**
  * A link that handles navigation internally using {@link Router} instead of

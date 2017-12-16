@@ -1,9 +1,9 @@
 package com.vaadin.flow.tutorial.polymer;
 
-import com.vaadin.flow.model.Exclude;
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.polymertemplate.EventHandler;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.EventHandler;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.templatemodel.Exclude;
+import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("polymer-templates/tutorial-template-model-bean.asciidoc")

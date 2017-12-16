@@ -19,7 +19,7 @@ package com.vaadin.flow.server;
 import java.io.IOException;
 import java.io.Serializable;
 
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 /**
  * Handler for producing a response to HTTP requests. Handlers can be either

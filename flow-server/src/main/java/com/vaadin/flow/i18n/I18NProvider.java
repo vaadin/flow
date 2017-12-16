@@ -32,7 +32,7 @@ public interface I18NProvider {
     List<Locale> getProvidedLocales();
 
     /**
-     * Get the translation for current {@link com.vaadin.ui.UI} locale.
+     * Get the translation for current {@link com.vaadin.flow.component.UI} locale.
      * <p>
      * Note! For usability and catching missing translations implementation
      * should never return a null, but an exception string e.g. '!{key}!'

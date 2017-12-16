@@ -23,10 +23,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.function.Function;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.legacy.RouterConfigurator;
-import com.vaadin.ui.UI;
 
 /**
  * Annotation for configuring subclasses of {@link VaadinServlet}. For a

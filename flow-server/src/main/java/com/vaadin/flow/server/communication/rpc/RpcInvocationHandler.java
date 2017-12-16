@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 import elemental.json.JsonObject;
 

@@ -16,13 +16,13 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
+import com.vaadin.flow.component.JavaScript;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.JavaScript;
 
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.BrowserLoggingView", layout = ViewTestLayout.class)
 @Tag("div")

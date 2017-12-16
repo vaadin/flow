@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.shared.ui;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.JavaScript;
+import com.vaadin.flow.component.StyleSheet;
 
 /**
  * Class that determines a way that dependency is loaded. This mode can be
@@ -27,11 +27,11 @@ import com.vaadin.ui.common.StyleSheet;
  * <li>{@link StyleSheet},
  * <li>{@link HtmlImport}
  * </ul>
- * or via {@link com.vaadin.ui.Page} methods:
+ * or via {@link com.vaadin.flow.component.page.Page} methods:
  * <ul>
- * <li>{@link com.vaadin.ui.Page#addJavaScript(String, LoadMode)}
- * <li>{@link com.vaadin.ui.Page#addStyleSheet(String, LoadMode)}
- * <li>{@link com.vaadin.ui.Page#addHtmlImport(String, LoadMode)}
+ * <li>{@link com.vaadin.flow.component.page.Page#addJavaScript(String, LoadMode)}
+ * <li>{@link com.vaadin.flow.component.page.Page#addStyleSheet(String, LoadMode)}
+ * <li>{@link com.vaadin.flow.component.page.Page#addHtmlImport(String, LoadMode)}
  * </ul>
  *
  * @author Vaadin Ltd.

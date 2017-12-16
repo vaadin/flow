@@ -17,7 +17,7 @@ package com.vaadin.flow.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.ui.UIInternals;
+import com.vaadin.flow.component.internal.UIInternals;
 
 /**
  * A utility class providing static constants. Mostly for internal use.

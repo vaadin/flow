@@ -2,11 +2,11 @@ package com.vaadin.flow.tutorial.polymer;
 
 import java.util.List;
 
-import com.vaadin.flow.model.Include;
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.polymertemplate.EventHandler;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.polymertemplate.RepeatIndex;
+import com.vaadin.flow.component.polymertemplate.EventHandler;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.RepeatIndex;
+import com.vaadin.flow.templatemodel.Include;
+import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.polymer.EmployeesTable.EmployeesModel;
 

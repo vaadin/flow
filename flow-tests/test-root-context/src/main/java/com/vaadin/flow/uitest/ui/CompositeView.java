@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.Composite;
-import com.vaadin.ui.Text;
 
 @Route(value = "com.vaadin.flow.uitest.ui.CompositeView", layout = ViewTestLayout.class)
 public class CompositeView extends AbstractDivView {

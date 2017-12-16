@@ -21,10 +21,11 @@ import java.util.Map;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinServlet;
@@ -35,7 +36,6 @@ import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.rpc.RpcInvocationHandler;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.uitest.ui.RPCLoggerUI;
-import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;
 

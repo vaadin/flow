@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.component.paper.spinner;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentSupplier;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Tag;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-spinner-lite#2.0.0", "Flow#1.0-SNAPSHOT" })

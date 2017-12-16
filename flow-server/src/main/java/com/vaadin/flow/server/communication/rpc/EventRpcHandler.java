@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.nodefeature.ElementListenerMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;

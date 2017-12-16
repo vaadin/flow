@@ -30,7 +30,7 @@ import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Computation;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.dom.Node;

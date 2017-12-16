@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.router.Route;
-import com.vaadin.ui.common.HasElement;
 
 /**
  *

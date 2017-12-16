@@ -52,6 +52,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -74,7 +75,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.flow.util.LocaleUtil;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonException;

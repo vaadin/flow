@@ -19,22 +19,22 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
+import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
-import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.NodeFeature;
-import com.vaadin.flow.nodefeature.ShadowRootData;
-import com.vaadin.flow.nodefeature.ShadowRootHost;
-import com.vaadin.flow.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.ShadowRootData;
+import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.ui.event.PropertyChangeListener;
 
 /**
  * Implementation which handles shadow root nodes.

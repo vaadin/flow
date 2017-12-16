@@ -22,6 +22,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
@@ -31,11 +36,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.ui.BodySize;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Inline;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.Viewport;
 
 /**
  * Common validation methods for route registry initializer.

@@ -19,11 +19,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.polymertemplate.EventHandler;
+import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.server.communication.rpc.PublishedServerEventHandlerRpcHandler;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.ClientDelegate;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

@@ -27,15 +27,15 @@ import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.model.ModelType;
-import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.flow.polymertemplate.EventHandler;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.polymertemplate.EventHandler;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.templatemodel.ModelType;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ClientDelegate;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

@@ -31,13 +31,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
-import com.vaadin.ui.common.HasElement;
 
 @RunWith(SpringRunner.class)
 @Import(SpringVaadinServletServiceTest.TestServletConfiguration.class)
@@ -78,7 +78,7 @@ public class SpringVaadinServletServiceTest {
         }
 
         @Override
-        public <T extends com.vaadin.ui.Component> T createComponent(
+        public <T extends com.vaadin.flow.component.Component> T createComponent(
                 Class<T> componentClass) {
             return null;
         }

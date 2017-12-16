@@ -16,10 +16,10 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.component.ClientDelegate;
 import com.vaadin.flow.router.Route;
-import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.flow.template.angular.AngularTemplate;
 import com.vaadin.flow.template.angular.model.TemplateModel;
-import com.vaadin.ui.AngularTemplate;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.FormView", layout = ViewTestLayout.class)
 public class FormView extends AngularTemplate {

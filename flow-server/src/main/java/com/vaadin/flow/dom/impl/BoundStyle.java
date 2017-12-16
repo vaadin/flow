@@ -18,8 +18,8 @@ package com.vaadin.flow.dom.impl;
 import java.util.LinkedHashMap;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.template.angular.ElementTemplateNode;
 
 /**

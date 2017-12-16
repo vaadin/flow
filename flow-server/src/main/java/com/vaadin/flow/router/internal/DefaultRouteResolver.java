@@ -24,13 +24,13 @@ import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteResolver;
 import com.vaadin.flow.server.startup.RouteRegistry;
-import com.vaadin.ui.Component;
 
 /**
  * Default implementation of the {@link RouteResolver} interface.

@@ -17,7 +17,7 @@ package com.vaadin.flow.router;
 
 import java.util.EventObject;
 
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 /**
  * Event object with data related to navigation.

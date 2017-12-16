@@ -24,8 +24,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 
 /**
  * Servlet initializer for collecting all applicable custom element tag names on

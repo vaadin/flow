@@ -25,9 +25,9 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
-import com.vaadin.ui.UI;
 
 /**
  * @author Vaadin Ltd

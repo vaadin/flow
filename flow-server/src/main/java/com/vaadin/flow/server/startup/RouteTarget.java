@@ -18,11 +18,11 @@ package com.vaadin.flow.server.startup;
 import java.io.Serializable;
 import java.util.List;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.ui.Component;
 
 /**
  * Route target holder that handles getting the correct type of has parameter

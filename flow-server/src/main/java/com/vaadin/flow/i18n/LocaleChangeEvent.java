@@ -18,7 +18,7 @@ package com.vaadin.flow.i18n;
 import java.util.EventObject;
 import java.util.Locale;
 
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 /**
  * Event object with data related to locale change.

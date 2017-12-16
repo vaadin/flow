@@ -17,7 +17,7 @@ package com.vaadin.flow.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.ui.Page;
+import com.vaadin.flow.component.page.Page;
 
 /**
  * A utility class providing constants for JSON related features.

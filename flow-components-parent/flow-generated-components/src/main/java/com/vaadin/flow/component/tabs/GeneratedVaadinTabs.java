@@ -15,20 +15,22 @@
  */
 package com.vaadin.flow.component.tabs;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentSupplier;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.ComponentSupplier;
+
 import javax.annotation.Generated;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
+
 import elemental.json.JsonArray;
-import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>

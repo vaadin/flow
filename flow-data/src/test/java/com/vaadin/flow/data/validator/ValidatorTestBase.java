@@ -20,11 +20,11 @@ import java.util.Locale;
 import org.junit.Assert;
 import org.junit.Before;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
-import com.vaadin.ui.UI;
 
 public class ValidatorTestBase {
 

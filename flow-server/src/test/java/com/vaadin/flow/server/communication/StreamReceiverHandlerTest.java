@@ -13,8 +13,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.StateTree;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -27,8 +29,6 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.StreamReceiverHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.UIInternals;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

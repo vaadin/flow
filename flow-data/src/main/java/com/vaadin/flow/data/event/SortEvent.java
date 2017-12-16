@@ -18,12 +18,12 @@ package com.vaadin.flow.data.event;
 import java.io.Serializable;
 import java.util.List;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.SortOrder;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.event.ComponentEventListener;
 
 /**
  * Event describing a change in sorting of a {@link DataProvider}. Fired by

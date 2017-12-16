@@ -17,12 +17,12 @@ package com.vaadin.flow.router.legacy;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.util.AnnotationReader;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HasElement;
 
 /**
  * A view that can be shown in a {@link UI} or {@link HasChildView}.

@@ -6,13 +6,17 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.nodefeature.ElementData;
-import com.vaadin.flow.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.ui.UI;
 
 public class BasicElementStateProviderTest {
 

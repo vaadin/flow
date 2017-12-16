@@ -24,8 +24,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.ui.Component;
 
 /**
  * Servlet initializer for collecting all available error handler navigation

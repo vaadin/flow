@@ -17,8 +17,8 @@ package com.vaadin.flow.data.selection;
 
 import java.util.Set;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasValue;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValue;
 
 
 /**

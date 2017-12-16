@@ -34,7 +34,8 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.NoInputStreamException;
 import com.vaadin.flow.server.NoOutputStreamException;
@@ -50,7 +51,6 @@ import com.vaadin.flow.server.communication.streaming.StreamingErrorEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingStartEventImpl;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.ui.UI;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.

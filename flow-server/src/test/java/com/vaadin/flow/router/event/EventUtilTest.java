@@ -28,19 +28,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
-import com.vaadin.flow.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.BeforeNavigationEvent;
 import com.vaadin.flow.router.BeforeNavigationObserver;
 import com.vaadin.flow.router.EventUtil;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.UI;
 
 import net.jcip.annotations.NotThreadSafe;
 

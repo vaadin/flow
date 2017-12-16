@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.demo;
 
+import com.vaadin.flow.component.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.common.StyleSheet;
 
 /**
  * This builds up source samples and sets it up so that it can be annotated by

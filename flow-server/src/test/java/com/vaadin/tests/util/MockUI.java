@@ -15,9 +15,9 @@
  */
 package com.vaadin.tests.util;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.ui.UI;
 
 public class MockUI extends UI {
 

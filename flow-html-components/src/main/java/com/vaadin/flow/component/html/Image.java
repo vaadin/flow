@@ -17,10 +17,10 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlContainer;
-import com.vaadin.ui.common.PropertyDescriptor;
-import com.vaadin.ui.common.PropertyDescriptors;
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.PropertyDescriptor;
+import com.vaadin.flow.component.PropertyDescriptors;
+import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;img&gt;</code> element.

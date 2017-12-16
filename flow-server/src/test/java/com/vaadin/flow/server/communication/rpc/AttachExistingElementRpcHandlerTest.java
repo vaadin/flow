@@ -19,12 +19,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.StateTree;
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
-import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.server.communication.rpc.AttachExistingElementRpcHandler;
 import com.vaadin.flow.shared.JsonConstants;
 

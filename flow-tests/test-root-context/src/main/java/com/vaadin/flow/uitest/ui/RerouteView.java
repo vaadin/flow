@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.ChangeEvent;
+import com.vaadin.flow.component.ChangeNotifier;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
@@ -23,11 +28,6 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlContainer;
-import com.vaadin.ui.event.ChangeEvent;
-import com.vaadin.ui.event.ChangeNotifier;
-import com.vaadin.ui.event.ComponentEventListener;
 
 @Route(value = "com.vaadin.flow.uitest.ui.RerouteView", layout = ViewTestLayout.class)
 public class RerouteView extends AbstractDivView {

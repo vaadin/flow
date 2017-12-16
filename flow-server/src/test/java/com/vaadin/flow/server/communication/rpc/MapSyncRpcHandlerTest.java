@@ -20,16 +20,16 @@ import java.io.Serializable;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.JsonCodec;
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
+import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.server.communication.rpc.MapSyncRpcHandler;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.ui.ComponentTest.TestComponent;
-import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

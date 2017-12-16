@@ -19,6 +19,13 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeButton;
@@ -28,13 +35,6 @@ import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.Text;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HasText;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.AttachEvent;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DependencyView", layout = ViewTestLayout.class)
 public class DependencyView extends AbstractDivView {

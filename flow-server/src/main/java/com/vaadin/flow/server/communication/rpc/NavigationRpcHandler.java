@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
+import com.vaadin.flow.component.page.History.HistoryStateChangeHandler;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.ui.History;
-import com.vaadin.ui.History.HistoryStateChangeEvent;
-import com.vaadin.ui.History.HistoryStateChangeHandler;
-import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;

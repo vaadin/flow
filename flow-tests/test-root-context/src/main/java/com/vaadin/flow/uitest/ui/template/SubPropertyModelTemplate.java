@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.polymertemplate.EventHandler;
-import com.vaadin.flow.polymertemplate.ModelItem;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.EventHandler;
+import com.vaadin.flow.component.polymertemplate.ModelItem;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.ui.template.SubPropertyModelTemplate.SubPropertyModel;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HasComponents;
-import com.vaadin.ui.common.HtmlImport;
 
 @Tag("sub-property-model")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/SubPropertyModel.html")

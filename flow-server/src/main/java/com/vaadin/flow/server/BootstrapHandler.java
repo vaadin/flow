@@ -44,6 +44,9 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.WebComponents;
+import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.UidlWriter;
@@ -54,9 +57,6 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.util.AnnotationReader;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.ui.Inline;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.WebComponents;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

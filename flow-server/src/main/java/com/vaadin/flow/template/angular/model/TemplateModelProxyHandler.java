@@ -22,11 +22,11 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.model.InvalidTemplateModelException;
-import com.vaadin.flow.model.ModelType;
-import com.vaadin.flow.model.PropertyFilter;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
+import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
+import com.vaadin.flow.templatemodel.ModelType;
+import com.vaadin.flow.templatemodel.PropertyFilter;
 import com.vaadin.flow.util.ReflectTools;
 import com.vaadin.flow.util.ReflectionCache;
 

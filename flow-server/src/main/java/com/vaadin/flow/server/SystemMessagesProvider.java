@@ -18,7 +18,7 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 /**
  * Gives out system messages based on Locale. Registered using

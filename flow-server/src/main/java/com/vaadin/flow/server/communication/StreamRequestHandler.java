@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.StreamReceiver;
@@ -33,7 +34,6 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.ui.UI;
 
 /**
  * Handles {@link StreamResource} and {@link StreamReceiver} instances

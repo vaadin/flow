@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.ClientDelegate;
-import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("js-injected-template")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/JsInjectedElement.html")

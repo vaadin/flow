@@ -31,6 +31,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.BeforeNavigationEvent;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -45,11 +50,9 @@ import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.ui.BodySize;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Inline;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.Viewport;
+import com.vaadin.flow.server.startup.DuplicateNavigationTitleException;
+import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.RouteRegistryInitializer;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.

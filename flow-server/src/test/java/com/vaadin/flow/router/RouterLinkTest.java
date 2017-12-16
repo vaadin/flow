@@ -28,9 +28,16 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.router.legacy.Router;
-import com.vaadin.flow.router.legacy.RouterTest.RouterTestUI;
 import com.vaadin.flow.router.legacy.View;
+import com.vaadin.flow.router.legacy.RouterTest.RouterTestUI;
 import com.vaadin.flow.router.legacy.ViewRendererTest.TestView;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -41,8 +48,6 @@ import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.flow.util.HasCurrentService;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 
 import net.jcip.annotations.NotThreadSafe;
 

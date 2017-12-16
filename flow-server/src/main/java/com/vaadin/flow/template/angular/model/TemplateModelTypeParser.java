@@ -17,8 +17,8 @@ package com.vaadin.flow.template.angular.model;
 
 import java.lang.reflect.Method;
 
+import com.vaadin.flow.template.angular.AngularTemplate;
 import com.vaadin.flow.util.ReflectionCache;
-import com.vaadin.ui.AngularTemplate;
 
 /**
  * Parses and stores template model type information.

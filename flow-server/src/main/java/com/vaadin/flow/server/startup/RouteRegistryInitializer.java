@@ -23,10 +23,10 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.ui.Component;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.

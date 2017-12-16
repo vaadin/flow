@@ -33,6 +33,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.JavaScript;
+import com.vaadin.flow.component.StyleSheet;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -44,10 +48,6 @@ import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
 
 import net.jcip.annotations.NotThreadSafe;
 

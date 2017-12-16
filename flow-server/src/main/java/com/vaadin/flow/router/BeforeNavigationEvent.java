@@ -22,11 +22,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.ui.Component;
 
 /**
  * Event created before navigation happens.

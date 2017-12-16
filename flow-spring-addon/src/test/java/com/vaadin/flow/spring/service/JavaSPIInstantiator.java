@@ -17,13 +17,13 @@ package com.vaadin.flow.spring.service;
 
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasElement;
 
 public class JavaSPIInstantiator implements Instantiator {
 

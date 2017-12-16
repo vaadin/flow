@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.polymertemplate.EventHandler;
-import com.vaadin.flow.polymertemplate.Id;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.EventHandler;
+import com.vaadin.flow.component.polymertemplate.Id;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateHasInjectedSubTemplateView", layout = ViewTestLayout.class)
 @Tag("parent-inject-child")

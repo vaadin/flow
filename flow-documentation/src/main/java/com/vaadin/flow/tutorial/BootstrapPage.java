@@ -19,6 +19,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.server.BootstrapListener;
 import com.vaadin.flow.server.BootstrapPageResponse;
 import com.vaadin.flow.server.InitialPageSettings;
@@ -27,9 +30,6 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouterLayout;
-import com.vaadin.ui.BodySize;
-import com.vaadin.ui.Inline;
-import com.vaadin.ui.Viewport;
 
 @CodeFor("application-structure/tutorial-bootstrap.asciidoc")
 public class BootstrapPage {

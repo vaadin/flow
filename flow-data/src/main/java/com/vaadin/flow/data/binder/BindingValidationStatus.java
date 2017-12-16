@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
-import com.vaadin.ui.common.HasValue;
 
 /**
  * Represents the status of field validation. Status can be {@code Status.OK},

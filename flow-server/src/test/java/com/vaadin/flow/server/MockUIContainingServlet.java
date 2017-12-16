@@ -1,8 +1,8 @@
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.ui.UI;
 
 public class MockUIContainingServlet extends UI {
 

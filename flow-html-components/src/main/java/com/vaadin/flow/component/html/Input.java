@@ -18,13 +18,13 @@ package com.vaadin.flow.component.html;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlComponent;
-import com.vaadin.ui.common.PropertyDescriptor;
-import com.vaadin.ui.common.PropertyDescriptors;
-import com.vaadin.ui.event.ChangeEvent;
-import com.vaadin.ui.event.ChangeNotifier;
-import com.vaadin.ui.event.Synchronize;
+import com.vaadin.flow.component.ChangeEvent;
+import com.vaadin.flow.component.ChangeNotifier;
+import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.PropertyDescriptor;
+import com.vaadin.flow.component.PropertyDescriptors;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing an <code>&lt;input&gt;</code> element.

@@ -42,10 +42,10 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.util.CurrentInstance;
-import com.vaadin.ui.UI;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is

@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.easymock.EasyMock;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -13,7 +14,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
-import com.vaadin.ui.UI;
 
 import junit.framework.TestCase;
 

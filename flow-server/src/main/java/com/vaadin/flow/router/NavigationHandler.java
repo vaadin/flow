@@ -17,9 +17,9 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.ui.UI;
 
 /**
  * Handles navigation to a location e.g. by showing a {@link View} in a

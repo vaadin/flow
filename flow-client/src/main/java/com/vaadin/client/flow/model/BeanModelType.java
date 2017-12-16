@@ -20,7 +20,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.util.JsObject;
 import com.vaadin.client.flow.util.JsObject.PropertyDescriptor;
-import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;

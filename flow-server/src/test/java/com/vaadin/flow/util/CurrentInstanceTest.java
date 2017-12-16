@@ -31,12 +31,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.tests.util.TestUtil;
-import com.vaadin.ui.UI;
 
 import net.jcip.annotations.NotThreadSafe;
 

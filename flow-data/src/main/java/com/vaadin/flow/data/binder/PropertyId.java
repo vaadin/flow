@@ -20,7 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.ui.common.HasValue;
+import com.vaadin.flow.component.HasValue;
 
 /**
  * Defines the custom property name to be bound to a {@link HasValue field

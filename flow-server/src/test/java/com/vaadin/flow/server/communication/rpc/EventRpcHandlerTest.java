@@ -20,15 +20,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.TemplateElementStateProviderTest;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.communication.rpc.EventRpcHandler;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.template.angular.AngularTemplate;
 import com.vaadin.flow.template.angular.InlineTemplate;
-import com.vaadin.ui.AngularTemplate;
-import com.vaadin.ui.ComponentTest.TestComponent;
-import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

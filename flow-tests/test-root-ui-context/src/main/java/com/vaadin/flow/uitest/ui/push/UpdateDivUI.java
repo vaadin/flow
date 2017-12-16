@@ -19,11 +19,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.vaadin.flow.component.Push;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.ui.Push;
-import com.vaadin.ui.UI;
 
 @Push
 public class UpdateDivUI extends UI {

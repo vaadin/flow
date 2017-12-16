@@ -19,14 +19,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.flow.JsonCodec;
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.StateTree;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.nodefeature.NodeFeature;
-import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
-import com.vaadin.flow.nodefeature.NodeMap;
+import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
+import com.vaadin.flow.internal.nodefeature.NodeMap;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;

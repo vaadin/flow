@@ -18,10 +18,10 @@ package com.vaadin.flow.demo;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlContainer;
 
 /**
  * Component to render anchors for specific parts of a component demo. Those

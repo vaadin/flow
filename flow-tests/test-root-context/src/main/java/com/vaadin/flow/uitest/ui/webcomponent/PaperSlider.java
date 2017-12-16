@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
 
 @Tag("paper-slider")
 @HtmlImport("bower_components/paper-slider/paper-slider.html")

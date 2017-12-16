@@ -25,6 +25,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
@@ -37,11 +42,6 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.util.AnnotationReader;
-import com.vaadin.ui.BodySize;
-import com.vaadin.ui.Inline;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.Viewport;
-import com.vaadin.ui.common.HasElement;
 
 /**
  * Utility methods used by the BootstrapHandler.

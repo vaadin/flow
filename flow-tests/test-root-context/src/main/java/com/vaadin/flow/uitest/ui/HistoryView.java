@@ -17,14 +17,14 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.function.BiConsumer;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Command;
-import com.vaadin.ui.History;
-import com.vaadin.ui.event.ClickEvent;
-import com.vaadin.ui.event.ComponentEventListener;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

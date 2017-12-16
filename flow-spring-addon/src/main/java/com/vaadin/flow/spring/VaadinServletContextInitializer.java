@@ -38,6 +38,8 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -46,8 +48,6 @@ import com.vaadin.flow.server.startup.AbstractCustomElementRegistryInitializer;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.flow.server.startup.RouteRegistry;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 
 /**
  * Servlet context initializer for Spring Boot Application.

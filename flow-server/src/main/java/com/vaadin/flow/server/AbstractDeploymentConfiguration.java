@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.ui.UI;
 
 /**
  * An abstract base class for DeploymentConfiguration implementations. This

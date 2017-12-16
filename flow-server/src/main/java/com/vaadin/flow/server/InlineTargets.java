@@ -20,9 +20,9 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.ui.Inline;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

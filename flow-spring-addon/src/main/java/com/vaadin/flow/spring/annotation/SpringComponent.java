@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Convenience alias for {@link org.springframework.stereotype.Component} to
- * prevent conflicts with {@link com.vaadin.ui.Component}.
+ * prevent conflicts with {@link com.vaadin.flow.component.Component}.
  *
  * @author Vaadin Ltd
  */

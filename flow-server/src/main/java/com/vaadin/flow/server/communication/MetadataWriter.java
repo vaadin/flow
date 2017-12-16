@@ -18,8 +18,8 @@ package com.vaadin.flow.server.communication;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.SystemMessages;
-import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

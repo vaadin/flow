@@ -30,11 +30,18 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.flow.router.legacy.DefaultErrorView;
+import com.vaadin.flow.router.legacy.ImmutableRouterConfiguration;
+import com.vaadin.flow.router.legacy.Resolver;
+import com.vaadin.flow.router.legacy.Router;
+import com.vaadin.flow.router.legacy.RouterConfiguration;
 import com.vaadin.flow.router.legacy.ViewRendererTest.ErrorView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.TestView;
 import com.vaadin.flow.server.MockServletConfig;
@@ -43,8 +50,6 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.util.CurrentInstance;
-import com.vaadin.ui.History.HistoryStateChangeEvent;
-import com.vaadin.ui.UI;
 
 import net.jcip.annotations.NotThreadSafe;
 

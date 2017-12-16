@@ -8,10 +8,10 @@ import javax.validation.Validation;
 import org.junit.After;
 import org.junit.Test;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.validator.BeanValidator;
 import com.vaadin.flow.tests.data.bean.Address;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
-import com.vaadin.ui.UI;
 
 public class BeanValidatorTest extends ValidatorTestBase {
 

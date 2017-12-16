@@ -28,6 +28,7 @@ import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.ServletHelper;
@@ -41,7 +42,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.ui.UI;
 
 import elemental.json.JsonException;
 

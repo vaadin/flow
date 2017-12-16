@@ -24,10 +24,10 @@ import java.util.Map;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -127,7 +127,7 @@ public class InitialPageSettings {
      * Get the currently set viewport setting for this settings object.
      * <p>
      * Note! this will not reflect any setting made using
-     * {@link com.vaadin.ui.Viewport}
+     * {@link com.vaadin.flow.component.page.Viewport}
      *
      * @return current viewport setting or null if nothing setﬁ
      */

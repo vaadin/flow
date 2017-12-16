@@ -18,12 +18,12 @@ package com.vaadin.flow.spring.test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.AttachEvent;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("child-template")
 @HtmlImport("/components/ChildTemplate.html")

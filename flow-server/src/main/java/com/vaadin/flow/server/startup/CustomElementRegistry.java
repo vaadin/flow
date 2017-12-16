@@ -19,9 +19,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
-import com.vaadin.ui.Component;
 
 /**
  * Registry holder for custom elements found on servlet initalization.

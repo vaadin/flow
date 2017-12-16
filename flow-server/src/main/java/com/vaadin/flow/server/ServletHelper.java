@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.ui.UI;
 
 /**
  * Contains helper methods for {@link VaadinServlet} and generally for handling

@@ -17,11 +17,11 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.legacy.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.startup.RouteRegistry;
-import com.vaadin.ui.UI;
 
 /**
  * Interface that defines the contract that different Router implementations

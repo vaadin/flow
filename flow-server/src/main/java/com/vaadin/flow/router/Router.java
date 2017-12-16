@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.InternalRedirectHandler;
@@ -37,8 +39,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.RouteRegistry;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
 
 /**
  * The router takes care of serving content when the user navigates within a

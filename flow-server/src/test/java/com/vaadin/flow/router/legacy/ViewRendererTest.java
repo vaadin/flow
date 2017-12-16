@@ -23,16 +23,24 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.legacy.DefaultErrorView;
+import com.vaadin.flow.router.legacy.DefaultPageTitleGenerator;
+import com.vaadin.flow.router.legacy.HasChildView;
+import com.vaadin.flow.router.legacy.LocationChangeEvent;
+import com.vaadin.flow.router.legacy.PageTitleGenerator;
+import com.vaadin.flow.router.legacy.Router;
+import com.vaadin.flow.router.legacy.View;
+import com.vaadin.flow.router.legacy.ViewRenderer;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.UIInternals.JavaScriptInvocation;
-import com.vaadin.ui.common.HasText;
 
 public class ViewRendererTest {
 

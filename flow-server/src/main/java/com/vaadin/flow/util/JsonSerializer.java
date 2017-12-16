@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.vaadin.ui.common.JsonSerializable;
+import com.vaadin.flow.component.JsonSerializable;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

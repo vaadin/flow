@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server;
 
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 /**
  * The lifecycle state of a VaadinSession.

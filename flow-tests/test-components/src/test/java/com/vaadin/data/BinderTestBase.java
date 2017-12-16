@@ -27,8 +27,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HasValidation;
+import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.component.UI;
 import com.vaadin.ui.textfield.TextField;
 
 /**

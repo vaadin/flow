@@ -17,9 +17,9 @@ package com.vaadin.flow.router.legacy;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HasText;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.Tag;
 
 /**
  * The default error view shown to the user. Corresponds to the 404 page.

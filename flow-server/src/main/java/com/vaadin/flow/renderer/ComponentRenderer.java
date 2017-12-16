@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.renderer;
 
-import com.vaadin.ui.Component;
+import com.vaadin.flow.component.Component;
 
 /**
  * A renderer that allows the usage of regular {@link Component}s as an item

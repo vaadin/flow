@@ -22,6 +22,8 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HtmlImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -36,8 +38,6 @@ import com.vaadin.flow.renderer.TemplateRenderer;
 import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.checkbox.Checkbox;
-import com.vaadin.ui.common.HasComponents;
-import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.ColumnGroup;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.Grid.Column;

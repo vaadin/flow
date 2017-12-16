@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.tutorial.misc;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.UI;
 
 @CodeFor("miscellaneous/tutorial-dynamic-content.asciidoc")
 public class DynamicContentParameters {

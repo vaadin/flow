@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import com.vaadin.flow.JsonCodec;
+import com.vaadin.flow.internal.JsonCodec;
 
 import elemental.json.JsonValue;
 

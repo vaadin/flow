@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 
-import com.vaadin.ui.common.HasElement;
+import com.vaadin.flow.component.HasElement;
 
 /**
  * Event created before navigation happens.

@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.rpc.AttachExistingElementRpcHandler;
@@ -42,7 +43,6 @@ import com.vaadin.flow.server.communication.rpc.PublishedServerEventHandlerRpcHa
 import com.vaadin.flow.server.communication.rpc.RpcInvocationHandler;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.ui.UI;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;

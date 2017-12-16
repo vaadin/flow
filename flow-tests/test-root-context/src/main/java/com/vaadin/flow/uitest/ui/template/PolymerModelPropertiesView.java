@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.polymertemplate.EventHandler;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.EventHandler;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.AttachEvent;
-import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.event.DomEvent;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.PolymerModelPropertiesView", layout = ViewTestLayout.class)
 @Tag("model-properties")

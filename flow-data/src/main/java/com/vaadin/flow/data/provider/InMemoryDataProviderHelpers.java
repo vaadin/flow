@@ -19,12 +19,12 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.Objects;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.ui.UI;
 
 /**
  * A class containing a number of static helper methods for implementing

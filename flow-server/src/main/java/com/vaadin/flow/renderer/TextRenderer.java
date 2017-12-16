@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.renderer;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ItemLabelGenerator;
 
 /**
  * A renderer that renders each item as a text using provided

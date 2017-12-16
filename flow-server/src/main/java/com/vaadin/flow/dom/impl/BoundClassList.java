@@ -23,8 +23,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ClassList;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.template.angular.BindingValueProvider;
 import com.vaadin.flow.template.angular.ElementTemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;

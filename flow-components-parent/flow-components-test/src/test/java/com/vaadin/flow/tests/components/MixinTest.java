@@ -25,9 +25,9 @@ import org.apache.commons.lang3.ClassUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasSize;
-import com.vaadin.ui.common.HasStyle;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.ui.dialog.Dialog;
 import com.vaadin.ui.formlayout.FormLayout.FormItem;
 import com.vaadin.ui.grid.AbstractColumn;

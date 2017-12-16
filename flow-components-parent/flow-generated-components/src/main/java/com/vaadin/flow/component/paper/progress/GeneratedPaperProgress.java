@@ -15,18 +15,20 @@
  */
 package com.vaadin.flow.component.paper.progress;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasStyle;
+
 import javax.annotation.Generated;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.common.HasValue;
+
 import java.util.Objects;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.event.ComponentEventListener;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-progress#2.0.1", "Flow#1.0-SNAPSHOT" })

@@ -22,16 +22,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.JavaScript;
+import com.vaadin.flow.component.Push;
+import com.vaadin.flow.component.StyleSheet;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Push;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
 
 /**
  * Helper class for reading annotation data.

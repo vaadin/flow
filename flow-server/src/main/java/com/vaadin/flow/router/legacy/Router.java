@@ -18,6 +18,7 @@ package com.vaadin.flow.router.legacy;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
@@ -29,7 +30,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.RouteRegistry;
-import com.vaadin.ui.UI;
 
 /**
  * The router takes care of serving content when the user navigates within a

@@ -18,8 +18,8 @@ package com.vaadin.flow.server;
 
 import org.jsoup.nodes.Document;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.shared.VaadinUriResolver;
-import com.vaadin.ui.UI;
 
 /**
  * This represents the state of a bootstrap page being generated. The bootstrap

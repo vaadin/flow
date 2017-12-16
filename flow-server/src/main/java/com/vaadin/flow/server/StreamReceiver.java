@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.internal.StateNode;
 
 /**
  * Represents a receiver for data upload from the client.

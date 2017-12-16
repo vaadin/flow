@@ -16,9 +16,9 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.Route;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
 
 @Route("com.vaadin.flow.uitest.ui.template.AttachExistingElementByIdView")
 public class AttachExistingElementByIdView extends AbstractDivView {

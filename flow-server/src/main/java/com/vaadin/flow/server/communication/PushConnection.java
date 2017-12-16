@@ -18,7 +18,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.Serializable;
 
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 /**
  * Represents a bidirectional ("push") connection between a single UI and its

@@ -26,6 +26,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentSupplier;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.HasClickListeners;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
@@ -35,16 +45,6 @@ import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
-import com.vaadin.ui.common.ComponentSupplier;
-import com.vaadin.ui.common.HasClickListeners;
-import com.vaadin.ui.common.HasComponents;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasText;
-import com.vaadin.ui.common.HasValue;
-import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.EventData;
 
 /**
  * Unit tests for the component generator

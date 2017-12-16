@@ -18,9 +18,9 @@ package com.vaadin.flow.server.communication.rpc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;
 

@@ -18,11 +18,11 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.List;
 
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.JavaScript;
+import com.vaadin.flow.component.StyleSheet;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.shared.ui.Dependency;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
 
 /**
  * Filter for dependencies loaded using {@link StyleSheet @StyleSheet},

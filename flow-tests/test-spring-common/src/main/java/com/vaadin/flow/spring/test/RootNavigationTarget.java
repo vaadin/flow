@@ -17,10 +17,10 @@ package com.vaadin.flow.spring.test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.router.Route;
-import com.vaadin.ui.event.AttachEvent;
 
 @Route("")
 public class RootNavigationTarget extends Div {

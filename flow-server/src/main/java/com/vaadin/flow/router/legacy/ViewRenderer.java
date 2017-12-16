@@ -25,12 +25,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.legacy.RouteLocation.RouteSegmentVisitor;
 import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.ui.UI;
 
 /**
  * Handles navigation events by rendering a view of a specific type in the

@@ -20,9 +20,9 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.ui.common.HasValue;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.UI;
 
 /**
  * Value context for {@code Converter}s. Contains relevant information for

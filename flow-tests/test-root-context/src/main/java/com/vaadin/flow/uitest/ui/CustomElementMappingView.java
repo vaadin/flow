@@ -3,8 +3,9 @@ package com.vaadin.flow.uitest.ui;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.startup.CustomElementRegistry;
@@ -14,7 +15,6 @@ import com.vaadin.flow.uitest.ui.template.EventHandlerView;
 import com.vaadin.flow.uitest.ui.template.OneWayPolymerBindingView;
 import com.vaadin.flow.uitest.ui.template.SubPropertyModelTemplate;
 import com.vaadin.flow.uitest.ui.template.TwoWayPolymerBindingView;
-import com.vaadin.ui.Tag;
 
 @Route(value = "com.vaadin.flow.uitest.ui.CustomElementMappingView", layout = ViewTestLayout.class)
 @PageTitle("Registered custom elements view")

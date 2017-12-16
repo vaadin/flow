@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.tutorial.component;
 
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.event.ComponentEvent;
 
 @CodeFor("creating-components/tutorial-component-events.asciidoc")
 public class ComponentEvents {

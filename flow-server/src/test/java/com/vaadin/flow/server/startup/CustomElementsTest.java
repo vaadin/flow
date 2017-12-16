@@ -29,12 +29,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.polymertemplate.TemplateParser;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.server.startup.CustomElements;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
 /**
  * @author Vaadin Ltd.
