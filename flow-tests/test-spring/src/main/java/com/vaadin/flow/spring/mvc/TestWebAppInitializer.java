@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import com.vaadin.flow.spring.TestConfiguration;
-import com.vaadin.spring.VaadinMVCWebAppInitializer;
+import com.vaadin.flow.spring.VaadinMVCWebAppInitializer;
 
 /**
  * The entry point for Spring MVC.
