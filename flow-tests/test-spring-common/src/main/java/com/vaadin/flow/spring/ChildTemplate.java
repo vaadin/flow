@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.polymertemplate.PolymerTemplate;
-import com.vaadin.spring.annotation.VaadinSessionScope;
+import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.AttachEvent;

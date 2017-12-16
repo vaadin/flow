@@ -13,21 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.flow.spring.instantiator;
 
-import java.util.UUID;
+import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 
-import org.springframework.stereotype.Component;
+public class JavaSPIVaadinServiceInitListener
+        implements VaadinServiceInitListener {
 
-import com.vaadin.flow.spring.annotation.UIScope;
-
-@Component
-@UIScope
-public class UIScopedBean {
-
-    private final String uid = UUID.randomUUID().toString();
-
-    public String getUid() {
-        return uid;
+    @Override
+    public void serviceInit(ServiceInitEvent event) {
     }
+
 }

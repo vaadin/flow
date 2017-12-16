@@ -19,7 +19,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.vaadin.spring.annotation.VaadinSessionScope;
+import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 
 /**
  * @author Vaadin Ltd
