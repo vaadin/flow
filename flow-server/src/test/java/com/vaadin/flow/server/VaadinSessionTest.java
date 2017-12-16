@@ -39,13 +39,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WrappedHttpSession;
-import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.SlowTests;
@@ -107,7 +100,7 @@ public class VaadinSessionTest {
                             + ".lock";
                     if (lockAttribute.equals(name)) {
                         res = lock;
-                    } else if ("com.vaadin.server.VaadinSession.Mock Servlet"
+                    } else if ((VaadinSession.class.getName() + ".Mock Servlet")
                             .equals(name)) {
                         res = session;
                     } else {
