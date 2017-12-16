@@ -13,13 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.mvc;
+package com.vaadin.flow.spring.test.mvc;
 
 import java.util.Collection;
 import java.util.Collections;
 
-import com.vaadin.flow.spring.TestConfiguration;
 import com.vaadin.flow.spring.VaadinMVCWebAppInitializer;
+import com.vaadin.flow.spring.test.TestConfiguration;
 
 /**
  * The entry point for Spring MVC.

@@ -13,24 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.flow.spring.test;
 
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.Route;
 
-public class NPEHandler extends Div
-        implements HasErrorParameter<NullPointerException> {
-
-    @Override
-    public int setErrorParameter(BeforeNavigationEvent event,
-            ErrorParameter<NullPointerException> parameter) {
-        getElement().setText("NPE is thrown");
-        setId("npe-handle");
-        return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-    }
+/**
+ * @author Vaadin Ltd
+ *
+ */
+@Route("foo")
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+public class FooNavigationTarget extends Div {
 
 }

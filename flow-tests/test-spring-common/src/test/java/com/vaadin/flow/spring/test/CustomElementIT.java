@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2014 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,37 +13,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+
+package com.vaadin.flow.spring.test;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.spring.test.CustomElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class CoExistingSpringEndpointsIT extends ChromeBrowserTest {
+public class CustomElementIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return "/";
+        return "/custom-element";
     }
 
     @Test
-    public void assertRoutesAndSpringEndpoint() throws Exception {
+    public void customElementIsRegistered() throws Exception {
         open();
 
-        Assert.assertTrue(isElementPresent(By.id("main")));
-
-        getDriver().get(getRootURL() + "/non-existing-route");
-
-        WebElement div = findElement(By.tagName("div"));
-        Assert.assertEquals("Could not navigate to 'non-existing-route'",
-                div.getText());
-
-        getDriver().get(getRootURL() + "/oauth/authorize");
-
-        WebElement header = findElement(By.tagName("h1"));
-        Assert.assertEquals("OAuth Error", header.getText());
+        WebElement element = findElement(By.id("registered-custom-element"));
+        Assert.assertEquals(CustomElement.class.getName(), element.getText());
     }
 }

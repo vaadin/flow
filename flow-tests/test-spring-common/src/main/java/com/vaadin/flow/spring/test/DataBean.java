@@ -13,21 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.flow.spring.test;
 
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.vaadin.flow.spring.annotation.UIScope;
+import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 
+/**
+ * @author Vaadin Ltd
+ *
+ */
 @Component
-@UIScope
-public class UIScopedBean {
+@VaadinSessionScope
+public class DataBean {
 
     private final String uid = UUID.randomUUID().toString();
 
-    public String getUid() {
-        return uid;
+    public String getMessage() {
+        return "foo" + uid;
     }
 }

@@ -13,15 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.flow.spring.test;
 
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeNavigationObserver;
 
-@HtmlImport("/components/CustomElement.html")
-@Tag("custom-element")
-public class CustomElement extends PolymerTemplate<TemplateModel> {
+@Route("npe")
+public class NPETarget extends Div implements BeforeNavigationObserver {
+
+    @Override
+    public void beforeNavigation(BeforeNavigationEvent event) {
+        event.rerouteToError(NullPointerException.class);
+    }
 
 }

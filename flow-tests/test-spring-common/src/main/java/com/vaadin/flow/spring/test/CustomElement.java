@@ -13,25 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.flow.spring.test;
 
-import java.util.UUID;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
 
-import org.springframework.stereotype.Component;
+@HtmlImport("/components/CustomElement.html")
+@Tag("custom-element")
+public class CustomElement extends PolymerTemplate<TemplateModel> {
 
-import com.vaadin.flow.spring.annotation.VaadinSessionScope;
-
-/**
- * @author Vaadin Ltd
- *
- */
-@Component
-@VaadinSessionScope
-public class DataBean {
-
-    private final String uid = UUID.randomUUID().toString();
-
-    public String getMessage() {
-        return "foo" + uid;
-    }
 }

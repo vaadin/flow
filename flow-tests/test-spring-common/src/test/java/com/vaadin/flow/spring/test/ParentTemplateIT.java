@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.spring;
+package com.vaadin.flow.spring.test;
 
 import org.junit.Assert;
 import org.junit.Test;

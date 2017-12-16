@@ -1,4 +1,4 @@
-package com.vaadin.flow.spring;
+package com.vaadin.flow.spring.test;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.model.TemplateModel;

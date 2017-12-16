@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2014 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,19 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
+package com.vaadin.flow.spring.test;
 
-@Route("npe")
-public class NPETarget extends Div implements BeforeNavigationObserver {
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+public class RouteBasicIT extends ChromeBrowserTest {
 
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
-        event.rerouteToError(NullPointerException.class);
+    protected String getTestPath() {
+        return "/";
     }
 
+    @Test
+    public void testServletDeployed() throws Exception {
+        open();
+
+        Assert.assertTrue(isElementPresent(By.id("main")));
+
+        getDriver().get(getTestURL() + "foo");
+
+        waitUntil(driver -> isElementPresent(By.id("singleton")));
+    }
 }
