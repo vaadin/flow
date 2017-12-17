@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.flow.component.StyleSheet;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.paper.progress.GeneratedPaperProgress;
 import com.vaadin.flow.demo.ComponentDemo;

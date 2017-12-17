@@ -16,7 +16,7 @@
 package com.vaadin.flow.demo;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.StyleSheet;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;

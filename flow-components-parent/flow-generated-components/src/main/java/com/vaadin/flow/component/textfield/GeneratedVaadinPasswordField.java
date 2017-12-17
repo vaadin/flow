@@ -17,8 +17,8 @@ package com.vaadin.flow.component.textfield;
 
 import javax.annotation.Generated;
 
-import com.vaadin.flow.component.HtmlImport;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 
 /**
  * <p>

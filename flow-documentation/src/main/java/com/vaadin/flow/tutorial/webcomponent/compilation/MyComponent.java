@@ -1,7 +1,7 @@
 package com.vaadin.flow.tutorial.webcomponent.compilation;
 
-import com.vaadin.flow.component.HtmlImport;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;

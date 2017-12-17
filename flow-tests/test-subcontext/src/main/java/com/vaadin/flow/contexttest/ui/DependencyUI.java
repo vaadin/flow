@@ -18,9 +18,9 @@ package com.vaadin.flow.contexttest.ui;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.flow.component.JavaScript;
-import com.vaadin.flow.component.StyleSheet;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;

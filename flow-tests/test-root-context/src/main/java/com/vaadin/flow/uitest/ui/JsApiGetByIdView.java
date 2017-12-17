@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.JavaScript;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;

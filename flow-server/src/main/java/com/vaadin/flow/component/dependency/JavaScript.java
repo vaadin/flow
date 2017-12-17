@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
+package com.vaadin.flow.component.dependency;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,11 +23,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
- * Annotation for defining HTML dependencies on a {@link Component} class. For
- * adding multiple HTML files for a single component, you can use this
+ * Annotation for defining JavaScript dependencies on a {@link Component} class.
+ * For adding multiple JavaScript files for a single component, you can use this
  * annotation multiple times.
  * <p>
  * It is guaranteed that dependencies will be loaded only once.
@@ -42,32 +43,19 @@ import com.vaadin.flow.shared.ui.LoadMode;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Repeatable(HtmlImport.Container.class)
-public @interface HtmlImport {
+@Repeatable(JavaScript.Container.class)
+public @interface JavaScript {
 
     /**
-     * HTML file URL to load before using the annotated {@link Component} in the
-     * browser.
-     * <p>
-     * When using compiled web components, you can use a relative URL or prefix
-     * the URL with {@code frontend://} to serve different files to different
-     * browsers, based on their ES6 support. For example, when using
-     * {@code "MyComponent.html"}, the evaluated URL will be:
-     * <ul>
-     * <li>{@code context://frontend/MyComponent.html} during development;</li>
-     * <li>{@code context://frontend-es6/MyComponent.html} for ES6 capable
-     * browsers;</li>
-     * <li>{@code context://frontend-es5/MyComponent.html} for other
-     * browsers.</li>
-     * </ul>
+     * JavaScript file URL to load before using the annotated {@link Component}
+     * in the browser.
      * <p>
      * Relative URLs are interpreted as relative to the configured
      * {@code frontend} directory location. You can prefix the URL with
      * {@code context://} to make it relative to the context path or use an
      * absolute URL to refer to files outside the frontend directory.
      *
-     * @return a html file URL
-     * @see WebComponents
+     * @return a JavaScript file URL
      */
     String value();
 
@@ -80,7 +68,7 @@ public @interface HtmlImport {
     LoadMode loadMode() default LoadMode.EAGER;
 
     /**
-     * Internal annotation to enable use of multiple {@link HtmlImport}
+     * Internal annotation to enable use of multiple {@link JavaScript}
      * annotations.
      */
     @Retention(RetentionPolicy.RUNTIME)
@@ -89,12 +77,12 @@ public @interface HtmlImport {
     public @interface Container {
 
         /**
-         * Internally used to enable use of multiple {@link HtmlImport}
+         * Internally used to enable use of multiple {@link JavaScript}
          * annotations.
          *
-         *
-         * @return an array of the HtmlImport annotations
+         * @return an array of the JavaScript annotations
          */
-        HtmlImport[] value();
+        JavaScript[] value();
     }
+
 }

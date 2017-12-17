@@ -23,11 +23,11 @@ import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HtmlImport;
-import com.vaadin.flow.component.JavaScript;
 import com.vaadin.flow.component.Push;
-import com.vaadin.flow.component.StyleSheet;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.shared.communication.PushMode;

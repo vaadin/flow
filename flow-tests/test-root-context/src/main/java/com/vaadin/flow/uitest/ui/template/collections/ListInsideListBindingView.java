@@ -20,8 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.vaadin.flow.component.HtmlImport;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.ModelItem;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;

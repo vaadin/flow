@@ -20,8 +20,8 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentSupplier;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HtmlImport;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-spinner-lite#2.0.0", "Flow#1.0-SNAPSHOT" })

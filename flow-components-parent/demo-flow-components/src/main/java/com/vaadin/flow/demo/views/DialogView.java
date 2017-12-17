@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;

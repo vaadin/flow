@@ -34,7 +34,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 
-import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;

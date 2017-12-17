@@ -16,7 +16,7 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.component.HtmlComponent;
-import com.vaadin.flow.component.HtmlImport;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.paper.button.GeneratedPaperButton;

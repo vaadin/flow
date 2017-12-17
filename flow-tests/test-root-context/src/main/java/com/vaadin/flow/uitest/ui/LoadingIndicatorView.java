@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.StyleSheet;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;

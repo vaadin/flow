@@ -16,8 +16,8 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HtmlImport;
 import com.vaadin.flow.component.HasClickListeners.ClickEvent;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.demo.ComponentDemo;

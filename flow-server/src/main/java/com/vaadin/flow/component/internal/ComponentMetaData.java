@@ -27,11 +27,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HtmlImport;
-import com.vaadin.flow.component.JavaScript;
-import com.vaadin.flow.component.StyleSheet;
 import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.Uses;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.util.AnnotationReader;
 import com.vaadin.flow.util.ReflectTools;
 

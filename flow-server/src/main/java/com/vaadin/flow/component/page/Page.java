@@ -17,9 +17,9 @@ package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.component.JavaScript;
-import com.vaadin.flow.component.StyleSheet;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;

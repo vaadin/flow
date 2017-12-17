@@ -21,8 +21,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentSupplier;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HtmlImport;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 
 /**
  * <p>

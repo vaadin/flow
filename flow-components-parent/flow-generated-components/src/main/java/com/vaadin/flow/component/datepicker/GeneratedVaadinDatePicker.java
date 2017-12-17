@@ -27,10 +27,10 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.HasClickListeners;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HtmlImport;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 

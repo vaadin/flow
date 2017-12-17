@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.ClientDelegate;
-import com.vaadin.flow.component.JavaScript;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
 
 @JavaScript("frontend://divConnector.js")
