@@ -22,7 +22,12 @@ import com.vaadin.shared.ui.LoadMode;
  * @author Vaadin Ltd.
  */
 public class BundleDependencyFilter implements DependencyFilter {
-    private static final String MAIN_BUNDLE_URL = "vaadin-flow-bundle.html";
+
+    /**
+     * Reference to the main bundle file containing all dependencies not split
+     * into fragments.
+     */
+    static final String MAIN_BUNDLE_URL = "vaadin-flow-bundle.html";
 
     private final Map<String, Set<String>> importContainedInBundles;
 
@@ -35,8 +40,9 @@ public class BundleDependencyFilter implements DependencyFilter {
      */
     public BundleDependencyFilter(
             Map<String, Set<String>> importContainedInBundles) {
-        this.importContainedInBundles = Objects
-                .requireNonNull(importContainedInBundles);
+        this.importContainedInBundles = Objects.requireNonNull(
+                importContainedInBundles,
+                "Import to bundle mapping cannot be null");
     }
 
     @Override
@@ -52,7 +58,7 @@ public class BundleDependencyFilter implements DependencyFilter {
             if (bundleUrls != null) {
                 if (bundleUrls.size() > 1) {
                     getLogger().warn(String.format(
-                            "Dependency '%s' is contained in multiple bundles: '%s', this may lead to performance degradation",
+                            "Dependency '%s' is contained in multiple fragments: '%s', this may lead to performance degradation",
                             dependency, bundleUrls));
                 }
                 bundleUrlsToInclude.addAll(bundleUrls);
@@ -64,13 +70,17 @@ public class BundleDependencyFilter implements DependencyFilter {
         bundleUrlsToInclude.stream().forEach(bundleUrl -> {
             if (MAIN_BUNDLE_URL.equals(bundleUrl)) {
                 dependenciesWithBundles.add(0,
-                        new Dependency(Dependency.Type.HTML_IMPORT, bundleUrl,
-                                LoadMode.EAGER));
+                        createBundleDependency(bundleUrl));
                 return;
             }
-            dependenciesWithBundles.add(new Dependency(
-                    Dependency.Type.HTML_IMPORT, bundleUrl, LoadMode.EAGER));
+            dependenciesWithBundles.add(createBundleDependency(bundleUrl));
         });
+        if (!bundleUrlsToInclude.isEmpty()
+                && !bundleUrlsToInclude.contains(MAIN_BUNDLE_URL)) {
+            dependenciesWithBundles.add(0,
+                    new Dependency(Dependency.Type.HTML_IMPORT,
+                            MAIN_BUNDLE_URL, LoadMode.EAGER));
+        }
 
         return dependenciesWithBundles;
     }
@@ -79,6 +89,11 @@ public class BundleDependencyFilter implements DependencyFilter {
         return url.replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "")
                 .replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX, "")
                 .replace(ApplicationConstants.BASE_PROTOCOL_PREFIX, "");
+    }
+
+    private static Dependency createBundleDependency(String bundleUrl) {
+        return new Dependency(Dependency.Type.HTML_IMPORT, bundleUrl,
+                LoadMode.EAGER);
     }
 
     private static Logger getLogger() {

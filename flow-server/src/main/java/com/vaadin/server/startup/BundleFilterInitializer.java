@@ -55,6 +55,14 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
             Map<String, Set<String>> importsInBundles = readBundleDependencies(
                     event, es6ContextPathResolver);
             if (!importsInBundles.isEmpty()) {
+                if (importsInBundles.entrySet().stream()
+                        .noneMatch(entry -> entry.getValue().contains(
+                                BundleDependencyFilter.MAIN_BUNDLE_URL))) {
+                    throw new IllegalArgumentException(String.format(
+                            "Attempted to initialize BundleDependencyFilter with an "
+                                    + "import to bundle mapping which does not contain the main bundle %s",
+                            BundleDependencyFilter.MAIN_BUNDLE_URL));
+                }
                 event.addDependencyFilter(
                         new BundleDependencyFilter(importsInBundles));
             }
@@ -66,8 +74,8 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         ServletContext servletContext = ((VaadinServletService) event
                 .getSource()).getServlet().getServletContext();
 
-        String es6Base = es6ContextPathResolver
-                .resolveVaadinUri(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX) + '/';
+        String es6Base = es6ContextPathResolver.resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX) + '/';
         String bundleManifestContextPath = es6Base + FLOW_BUNDLE_MANIFEST;
         try (InputStream bundleManifestStream = servletContext
                 .getResourceAsStream(bundleManifestContextPath)) {
@@ -89,7 +97,8 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
                     if (servletContext.getResource(es6ContextPathResolver
                             .resolveVaadinUri(es6Base + bundlePath)) == null) {
                         throw new IllegalArgumentException(String.format(
-                                "Failed to find bundle at context path '%s', specified in manifest '%s'. Remove file reference from the manifest to disable bundle usage or add the bundle to the context path specified.",
+                                "Failed to find bundle at context path '%s', specified in manifest '%s'. "
+                                        + "Remove file reference from the manifest to disable bundle usage or add the bundle to the context path specified.",
                                 bundlePath, bundleManifestContextPath));
                     }
                     importToBundle.computeIfAbsent(bundledFile,
