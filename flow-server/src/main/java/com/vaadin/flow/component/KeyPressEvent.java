@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import com.vaadin.flow.component.internal.KeyboardEvent;
-
 /**
  * The event when a key is pressed.
  *
