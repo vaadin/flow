@@ -32,7 +32,6 @@ import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
-import com.vaadin.flow.util.JsonUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonBoolean;

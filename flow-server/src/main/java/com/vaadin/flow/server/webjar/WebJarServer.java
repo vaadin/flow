@@ -33,9 +33,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.webjars.WebJarAssetLocator;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.util.ResponseWriter;
 
 import elemental.json.Json;
 

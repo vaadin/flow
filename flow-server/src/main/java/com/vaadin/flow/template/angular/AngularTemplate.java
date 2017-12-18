@@ -28,6 +28,8 @@ import com.vaadin.flow.component.polymertemplate.AbstractTemplate;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.TemplateMap;
 import com.vaadin.flow.router.legacy.HasChildView;
@@ -39,8 +41,6 @@ import com.vaadin.flow.template.angular.model.TemplateModelProxyHandler;
 import com.vaadin.flow.template.angular.model.TemplateModelTypeParser;
 import com.vaadin.flow.template.angular.parser.TemplateParser;
 import com.vaadin.flow.template.angular.parser.TemplateResolver;
-import com.vaadin.flow.util.AnnotationReader;
-import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Component for dec .AttachEvent; import com.vaadin.flow.telaratively defined

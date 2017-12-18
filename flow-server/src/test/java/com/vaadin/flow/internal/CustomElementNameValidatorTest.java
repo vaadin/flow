@@ -13,14 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.util;
+package com.vaadin.flow.internal;
 
 import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.util.CustomElementNameValidator;
+import com.vaadin.flow.internal.CustomElementNameValidator;
 
 /**
  * Test CustomElementNameValidator that it validates correctly.

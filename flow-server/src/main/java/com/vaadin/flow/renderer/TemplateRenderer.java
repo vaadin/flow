@@ -23,7 +23,7 @@ import java.util.Objects;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.util.JsonSerializer;
+import com.vaadin.flow.internal.JsonSerializer;
 
 /**
  * A renderer that allows the usage of HTML and Polymer data binding syntax as

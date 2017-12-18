@@ -13,14 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.util;
+package com.vaadin.flow.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.vaadin.flow.util.Range;
+import com.vaadin.flow.internal.Range;
 
 @SuppressWarnings("static-method")
 public class RangeTest {

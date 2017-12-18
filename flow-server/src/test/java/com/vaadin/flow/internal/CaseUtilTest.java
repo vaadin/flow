@@ -13,11 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.util;
+package com.vaadin.flow.internal;
 
 import org.junit.Test;
 
-import com.vaadin.flow.util.CaseUtil;
+import com.vaadin.flow.internal.CaseUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

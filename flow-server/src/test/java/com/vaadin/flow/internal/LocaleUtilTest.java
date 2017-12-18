@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.util;
+package com.vaadin.flow.internal;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -27,8 +27,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.util.LocaleUtil;
 
 /**
  * Test class for the locale util methods.

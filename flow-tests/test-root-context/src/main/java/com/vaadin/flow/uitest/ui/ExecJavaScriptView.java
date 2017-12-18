@@ -20,9 +20,9 @@ import java.io.Serializable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.util.JsonUtils;
 
 import elemental.json.Json;
 

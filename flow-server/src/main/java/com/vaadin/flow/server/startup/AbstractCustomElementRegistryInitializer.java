@@ -21,8 +21,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.util.CustomElementNameValidator;
 
 /**
  * Common validation methods for custom element registry initializer.

@@ -1,11 +1,11 @@
-package com.vaadin.flow.util;
+package com.vaadin.flow.internal;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.vaadin.flow.util.ReflectTools;
+import com.vaadin.flow.internal.ReflectTools;
 
 public class ReflectToolsGetFieldValueByTypeTest {
     @Test

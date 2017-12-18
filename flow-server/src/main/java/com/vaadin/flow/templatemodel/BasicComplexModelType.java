@@ -21,9 +21,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
-import com.vaadin.flow.util.ReflectTools;
 
 /**
  * A model type representing an immutable leaf value (e.g. strings, numbers or

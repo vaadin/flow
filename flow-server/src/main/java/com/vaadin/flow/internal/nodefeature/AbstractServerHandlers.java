@@ -31,8 +31,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Abstract class for collecting Methods which are published as

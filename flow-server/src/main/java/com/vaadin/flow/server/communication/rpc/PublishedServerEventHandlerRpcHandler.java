@@ -31,11 +31,11 @@ import com.vaadin.flow.component.ClientDelegate;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.templatemodel.ModelType;
-import com.vaadin.flow.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

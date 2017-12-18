@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.util.JsonUtils;
 
 import elemental.json.Json;
 

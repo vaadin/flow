@@ -32,8 +32,8 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
-import com.vaadin.flow.util.AnnotationReader;
-import com.vaadin.flow.util.ReflectTools;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Immutable meta data related to a component class.
