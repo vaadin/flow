@@ -32,9 +32,9 @@ import com.vaadin.flow.component.polymertemplate.TemplateInitializer;
 import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.util.HasCurrentService;
 
 import net.jcip.annotations.NotThreadSafe;
 

@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.flow.util.ReflectTools;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * A composite encapsulates a {@link Component} tree to allow creation of new

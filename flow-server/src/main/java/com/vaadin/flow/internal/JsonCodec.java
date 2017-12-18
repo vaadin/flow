@@ -20,7 +20,6 @@ import java.io.Serializable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
-import com.vaadin.flow.util.JsonUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

@@ -33,7 +33,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
-import com.vaadin.flow.util.ReflectionCache;
+import com.vaadin.flow.internal.ReflectionCache;
 
 /**
  * Utility methods for {@link Component}.

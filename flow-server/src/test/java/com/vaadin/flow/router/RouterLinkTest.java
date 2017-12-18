@@ -30,6 +30,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.router.BeforeNavigationEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
@@ -46,8 +48,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.util.CurrentInstance;
-import com.vaadin.flow.util.HasCurrentService;
 
 import net.jcip.annotations.NotThreadSafe;
 

@@ -21,8 +21,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.util.AnnotationReader;
 
 /**
  * A view that can be shown in a {@link UI} or {@link HasChildView}.

@@ -27,10 +27,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.flow.util.ReflectionCache;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

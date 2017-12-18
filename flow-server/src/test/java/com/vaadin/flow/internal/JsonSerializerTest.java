@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.util;
+package com.vaadin.flow.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +26,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.util.JsonSerializer;
+import com.vaadin.flow.internal.JsonSerializer;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonBoolean;

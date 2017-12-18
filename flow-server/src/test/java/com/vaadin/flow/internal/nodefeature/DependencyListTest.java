@@ -29,10 +29,10 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.ui.Dependency.Type;
-import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;

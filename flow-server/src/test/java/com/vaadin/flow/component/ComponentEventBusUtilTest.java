@@ -21,7 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
-import com.vaadin.flow.util.ReflectionCache;
+import com.vaadin.flow.internal.ReflectionCache;
 
 public class ComponentEventBusUtilTest {
 

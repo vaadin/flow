@@ -26,7 +26,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.util.ReflectTools;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Creates a property map builder that extracts all the properties' data from

@@ -27,6 +27,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ModelMap;
 import com.vaadin.flow.templatemodel.BasicModelType;
@@ -35,7 +36,6 @@ import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
 import com.vaadin.flow.templatemodel.ModelType;
 import com.vaadin.flow.templatemodel.PropertyFilter;
 import com.vaadin.flow.templatemodel.TemplateModelUtil;
-import com.vaadin.flow.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

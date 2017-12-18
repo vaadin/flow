@@ -39,11 +39,11 @@ import org.jsoup.select.Elements;
 import org.jsoup.select.NodeTraversor;
 import org.jsoup.select.NodeVisitor;
 
+import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.template.angular.DelegateResolver;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.template.angular.TemplateNodeBuilder;
 import com.vaadin.flow.template.angular.TemplateParseException;
-import com.vaadin.flow.util.MessageDigestUtil;
 
 /**
  * Parser for an Angular 2-like template syntax.

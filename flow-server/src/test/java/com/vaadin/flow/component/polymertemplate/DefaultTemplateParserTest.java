@@ -44,6 +44,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.DefaultTemplateParser;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplateTest.ModelClass;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -55,7 +56,6 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.ui.Dependency.Type;
-import com.vaadin.flow.util.CurrentInstance;
 
 import net.jcip.annotations.NotThreadSafe;
 

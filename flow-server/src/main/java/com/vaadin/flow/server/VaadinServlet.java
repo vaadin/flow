@@ -36,13 +36,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.VaadinServletConfiguration.InitParameterName;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.util.AnnotationReader;
-import com.vaadin.flow.util.CurrentInstance;
 
 /**
  * The main servlet, which handles all incoming requests to the application.

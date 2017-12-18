@@ -25,6 +25,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.ActivationState;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeNavigationEvent;
@@ -35,7 +36,6 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Handles error navigation rendering in the target UI.

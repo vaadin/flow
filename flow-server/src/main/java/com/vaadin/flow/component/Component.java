@@ -23,9 +23,9 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.util.AnnotationReader;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a

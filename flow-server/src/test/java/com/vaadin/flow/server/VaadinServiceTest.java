@@ -33,6 +33,7 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.BootstrapListener;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionDestroyEvent;
@@ -41,7 +42,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.util.CurrentInstance;
 
 import net.jcip.annotations.NotThreadSafe;
 
