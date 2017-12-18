@@ -27,10 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.server.DependencyFilter.FilterContext;
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.shared.ui.Dependency.Type;
-import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.flow.server.DependencyFilter.FilterContext;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.Dependency.Type;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 public class BundleDependencyFilterTest {
 

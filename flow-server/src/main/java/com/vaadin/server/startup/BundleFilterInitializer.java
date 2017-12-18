@@ -16,12 +16,12 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.server.ServiceInitEvent;
-import com.vaadin.server.VaadinServiceInitListener;
-import com.vaadin.server.VaadinServletService;
-import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.VaadinUriResolver;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.VaadinUriResolver;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

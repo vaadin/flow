@@ -10,10 +10,10 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.server.DependencyFilter;
-import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.flow.server.DependencyFilter;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Filter for serving bundles instead of single dependencies basing on the
