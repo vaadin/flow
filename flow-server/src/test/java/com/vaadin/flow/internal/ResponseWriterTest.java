@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.util;
+package com.vaadin.flow.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,8 +41,8 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.util.ResponseWriter;
 
 /**
  * @author Vaadin Ltd.

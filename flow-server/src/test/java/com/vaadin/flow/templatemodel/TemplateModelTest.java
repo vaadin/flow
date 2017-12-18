@@ -18,6 +18,8 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.HasCurrentService;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
@@ -27,8 +29,6 @@ import com.vaadin.flow.templatemodel.Exclude;
 import com.vaadin.flow.templatemodel.Include;
 import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.util.HasCurrentService;
-import com.vaadin.flow.util.ReflectTools;
 
 import net.jcip.annotations.NotThreadSafe;
 

@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 
-import com.vaadin.flow.util.ReflectTools;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * A model type representing an immutable leaf value, e.g. strings, numbers or

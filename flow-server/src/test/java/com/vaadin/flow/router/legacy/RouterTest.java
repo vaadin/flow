@@ -32,6 +32,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
@@ -49,7 +50,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.util.CurrentInstance;
 
 import net.jcip.annotations.NotThreadSafe;
 

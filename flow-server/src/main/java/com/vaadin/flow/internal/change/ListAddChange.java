@@ -22,10 +22,10 @@ import java.util.function.Function;
 
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.util.JsonUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

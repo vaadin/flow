@@ -28,9 +28,9 @@ import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
-import com.vaadin.flow.util.JsonUtils;
 
 import elemental.js.dom.JsElement;
 import elemental.json.Json;

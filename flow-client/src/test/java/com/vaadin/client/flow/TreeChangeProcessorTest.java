@@ -26,8 +26,8 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.util.JsonUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

@@ -22,7 +22,7 @@ import javax.validation.metadata.PropertyDescriptor;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.BeanPropertySet.NestedBeanPropertyDefinition;
 import com.vaadin.flow.data.validator.BeanValidator;
-import com.vaadin.flow.util.BeanUtil;
+import com.vaadin.flow.internal.BeanUtil;
 
 /**
  * @author Vaadin Ltd

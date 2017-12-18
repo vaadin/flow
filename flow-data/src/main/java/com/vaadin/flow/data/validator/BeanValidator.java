@@ -31,7 +31,7 @@ import javax.validation.metadata.ConstraintDescriptor;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
-import com.vaadin.flow.util.BeanUtil;
+import com.vaadin.flow.internal.BeanUtil;
 
 /**
  * A {@code Validator} using the JSR-303 (javax.validation) annotation-based

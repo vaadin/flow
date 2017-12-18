@@ -23,10 +23,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
-import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Event created before navigation happens.

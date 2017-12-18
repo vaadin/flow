@@ -52,8 +52,8 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Connects one or more {@code Field} components to properties of a backing data

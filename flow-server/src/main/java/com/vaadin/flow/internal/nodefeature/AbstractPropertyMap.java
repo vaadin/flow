@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Abstract class to be used as a parent for node maps which supports setting

@@ -29,7 +29,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import com.vaadin.flow.util.CurrentInstance;
+import com.vaadin.flow.internal.CurrentInstance;
 
 /**
  * A generic request to the server, wrapping a more specific request type, e.g.

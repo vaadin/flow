@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.util;
+package com.vaadin.flow.internal;
 
 import java.util.AbstractList;
 import java.util.Collections;

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.util;
+package com.vaadin.flow.internal;
 
 import static org.junit.Assert.assertNull;
 
@@ -35,7 +35,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.util.CurrentInstance;
 import com.vaadin.tests.util.TestUtil;
 
 import net.jcip.annotations.NotThreadSafe;

@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.flow.util.ReflectTools;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Interface for defining url parameters for navigation targets for use in

@@ -35,6 +35,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
+import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -47,7 +48,6 @@ import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
 import com.vaadin.flow.template.angular.TemplateNode;
-import com.vaadin.flow.util.JavaScriptSemantics;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;

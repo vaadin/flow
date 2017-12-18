@@ -48,6 +48,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponents;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -55,8 +57,6 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.util.AnnotationReader;
-import com.vaadin.flow.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

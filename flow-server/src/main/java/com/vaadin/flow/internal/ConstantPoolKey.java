@@ -20,8 +20,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import com.vaadin.flow.util.MessageDigestUtil;
-
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 

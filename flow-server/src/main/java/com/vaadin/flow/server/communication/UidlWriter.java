@@ -49,6 +49,7 @@ import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeAttachChange;
@@ -70,7 +71,6 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.template.angular.TemplateNode;
-import com.vaadin.flow.util.JsonUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

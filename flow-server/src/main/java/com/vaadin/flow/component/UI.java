@@ -28,6 +28,7 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -50,7 +51,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.util.CurrentInstance;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every

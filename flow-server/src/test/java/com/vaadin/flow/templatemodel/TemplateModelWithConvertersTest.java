@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.server.VaadinService;
@@ -22,7 +23,6 @@ import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
 import com.vaadin.flow.templatemodel.ModelConverter;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyDivTemplate;
-import com.vaadin.flow.util.HasCurrentService;
 
 import net.jcip.annotations.NotThreadSafe;
 

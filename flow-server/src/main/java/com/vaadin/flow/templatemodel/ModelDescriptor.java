@@ -17,7 +17,7 @@ package com.vaadin.flow.templatemodel;
 
 import java.util.Map;
 
-import com.vaadin.flow.util.ReflectionCache;
+import com.vaadin.flow.internal.ReflectionCache;
 
 /**
  * Describes the model type of a template class.

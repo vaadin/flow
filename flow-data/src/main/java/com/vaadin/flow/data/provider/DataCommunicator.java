@@ -32,10 +32,10 @@ import java.util.stream.Stream;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.util.JsonUtils;
-import com.vaadin.flow.util.Range;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

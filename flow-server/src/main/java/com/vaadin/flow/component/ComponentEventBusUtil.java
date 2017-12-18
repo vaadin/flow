@@ -24,8 +24,8 @@ import java.util.Optional;
 
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.util.ReflectTools;
-import com.vaadin.flow.util.ReflectionCache;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ReflectionCache;
 
 /**
  * Static helpers and caching functionality for {@link ComponentEventBus}.

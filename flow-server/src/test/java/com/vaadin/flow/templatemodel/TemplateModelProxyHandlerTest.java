@@ -6,6 +6,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.BeanModelType;
 import com.vaadin.flow.templatemodel.ModelDescriptor;
@@ -14,7 +15,6 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.templatemodel.TemplateModelProxyHandler;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModelTemplate;
-import com.vaadin.flow.util.HasCurrentService;
 
 import net.jcip.annotations.NotThreadSafe;
 

@@ -24,7 +24,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.flow.internal.JsonUtils;
 
 import elemental.js.dom.JsElement;
 import elemental.json.Json;

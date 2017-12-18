@@ -27,9 +27,9 @@ import java.util.Set;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.util.JsonUtils;
 
 import elemental.json.Json;
 

@@ -13,6 +13,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ModelList;
@@ -26,7 +27,6 @@ import com.vaadin.flow.templatemodel.BeanContainingBeans;
 import com.vaadin.flow.templatemodel.Exclude;
 import com.vaadin.flow.templatemodel.Include;
 import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
-import com.vaadin.flow.util.ReflectTools;
 
 public class TemplateModelTest {
 
