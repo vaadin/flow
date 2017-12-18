@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
@@ -27,8 +29,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.BeforeNavigationEvent;
 import com.vaadin.flow.router.BeforeNavigationObserver;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
 
 public class ViewTestLayout extends Div
         implements RouterLayout, BeforeNavigationObserver {

@@ -17,7 +17,7 @@ package com.vaadin.client.flow.template;
 
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.dom.DomElement;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.JsonConstants;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;

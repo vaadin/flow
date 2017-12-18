@@ -22,10 +22,13 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationState;
+import com.vaadin.flow.router.RouteResolver;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ResolveRequest;
-import com.vaadin.server.InvalidRouteConfigurationException;
-import com.vaadin.ui.Component;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
 public class DefaultRouteResolverTest extends RoutingTestBase {
 

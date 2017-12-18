@@ -20,25 +20,26 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.server.MockInstantiator;
-import com.vaadin.server.MockVaadinServletService;
-import com.vaadin.server.MockVaadinSession;
-import com.vaadin.server.ServiceException;
+import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.tests.util.MockUI;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Text;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HasElement;
 
 import net.jcip.annotations.NotThreadSafe;
 

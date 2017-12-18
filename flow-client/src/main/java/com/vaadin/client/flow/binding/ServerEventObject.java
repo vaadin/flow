@@ -27,7 +27,7 @@ import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.util.NativeFunction;
-import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.dom.Node;

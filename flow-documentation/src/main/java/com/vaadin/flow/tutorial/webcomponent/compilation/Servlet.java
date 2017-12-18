@@ -17,9 +17,9 @@ package com.vaadin.flow.tutorial.webcomponent.compilation;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.server.VaadinServletConfiguration;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.server.VaadinServlet;
 
 @CodeFor("web-components/tutorial-webcomponents-es5.asciidoc")
 @WebServlet(urlPatterns = "/*", name = "UIServlet", asyncSupported = true)

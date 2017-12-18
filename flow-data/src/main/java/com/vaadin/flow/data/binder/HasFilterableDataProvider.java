@@ -16,7 +16,7 @@
 package com.vaadin.flow.data.binder;
 
 import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * A generic interface for listing components that use a filterable data

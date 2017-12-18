@@ -17,7 +17,7 @@ package com.vaadin.flow.router.legacy;
 
 import java.io.Serializable;
 
-import com.vaadin.ui.Page;
+import com.vaadin.flow.component.page.Page;
 
 /**
  * A {@link Page#setTitle(String) page title} generator based on a

@@ -30,6 +30,8 @@ import com.vaadin.flow.template.angular.ChildSlotNode;
 import com.vaadin.flow.template.angular.ElementTemplateNode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.template.angular.TextTemplateNode;
+import com.vaadin.flow.template.angular.parser.TemplateParser;
+import com.vaadin.flow.template.angular.parser.TemplateResolver;
 
 public class DefaultTextModelBuiderFactoryTest {
 

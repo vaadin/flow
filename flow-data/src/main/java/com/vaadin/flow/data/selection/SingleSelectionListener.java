@@ -18,7 +18,7 @@ package com.vaadin.flow.data.selection;
 import java.io.Serializable;
 import java.util.EventListener;
 
-import com.vaadin.ui.Component;
+import com.vaadin.flow.component.Component;
 
 /**
  * A listener for listening to selection changes on a single selection

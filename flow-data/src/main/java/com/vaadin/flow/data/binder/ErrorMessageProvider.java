@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.data.binder;
 
-import com.vaadin.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * Provider interface for generating localizable error messages using

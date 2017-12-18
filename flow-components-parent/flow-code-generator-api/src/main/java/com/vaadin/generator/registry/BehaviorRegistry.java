@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.vaadin.ui.common.Focusable;
-import com.vaadin.ui.common.HasClickListeners;
-import com.vaadin.ui.common.HasText;
+import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasClickListeners;
+import com.vaadin.flow.component.HasText;
 
 /**
  * Registry that maps behaviors and mixins from the client side to interfaces at

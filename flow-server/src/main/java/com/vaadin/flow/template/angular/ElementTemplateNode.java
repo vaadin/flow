@@ -24,10 +24,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
+import com.vaadin.flow.internal.StateNode;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

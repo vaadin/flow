@@ -27,10 +27,10 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.ui.Page;
 
 /**
  * A {@link Router} configuration object that may be in a modifiable state.

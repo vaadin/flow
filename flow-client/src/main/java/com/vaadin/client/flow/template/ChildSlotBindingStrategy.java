@@ -22,8 +22,8 @@ import com.vaadin.client.flow.binding.BinderContext;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.reactive.Computation;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.TemplateMap;
 import com.vaadin.flow.template.angular.ChildSlotNode;
 
 import elemental.client.Browser;

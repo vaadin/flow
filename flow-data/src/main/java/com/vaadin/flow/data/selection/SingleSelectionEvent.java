@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasValue;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValue;
 
 /**
  * Fired when the selection changes in a listing component.

@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.ui.common.HtmlContainer;
-import com.vaadin.ui.event.ClickNotifier;
-import com.vaadin.ui.Tag;
+import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;ul&gt;</code> element.

@@ -21,7 +21,7 @@ import org.junit.Test;
 import com.vaadin.data.provider.BackendDataProviderTest.StrBeanBackEndDataProvider;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.Query;
-import com.vaadin.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializablePredicate;
 
 public class ConfigurableFilterDataProviderWrapperTest {
     private static SerializablePredicate<StrBean> xyzFilter = item -> item

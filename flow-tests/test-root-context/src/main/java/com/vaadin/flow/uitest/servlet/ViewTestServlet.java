@@ -19,7 +19,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServlet;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
 public class ViewTestServlet extends VaadinServlet {

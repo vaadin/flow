@@ -21,13 +21,14 @@ import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
+import com.vaadin.flow.router.internal.RouterUtil;
 
 /**
  * Test that {@link RouterUtil} route resolving works as intended for both

@@ -21,15 +21,16 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteResolver;
-import com.vaadin.server.startup.RouteRegistry;
-import com.vaadin.ui.Component;
+import com.vaadin.flow.server.startup.RouteRegistry;
 
 /**
  * Default implementation of the {@link RouteResolver} interface.
@@ -71,8 +72,8 @@ public class DefaultRouteResolver implements RouteResolver {
             builder.withPath(path.path);
         } catch (NotFoundException nfe) {
             String message = "Exception while navigation to path " + path;
-            LoggerFactory.getLogger(this.getClass().getName()).warn(
-                    message, nfe);
+            LoggerFactory.getLogger(this.getClass().getName()).warn(message,
+                    nfe);
             throw nfe;
         }
 
@@ -85,7 +86,7 @@ public class DefaultRouteResolver implements RouteResolver {
 
         /**
          * Constructor for path with segment details.
-         * 
+         *
          * @param path
          *            path
          * @param segments

@@ -17,11 +17,11 @@ package com.vaadin.flow.data.validator;
 
 import java.util.Objects;
 
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
-import com.vaadin.ui.common.HasValue;
 
 /**
  * Simple validator to check against {@code null} value and empty {@link String}

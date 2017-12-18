@@ -20,8 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import com.vaadin.function.SerializableConsumer;
-import com.vaadin.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * Internal implementation of a {@code Result} that collects all possible

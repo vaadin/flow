@@ -18,7 +18,7 @@ package com.vaadin.flow.data.provider;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Wrapper class for modifying, chaining and replacing filters and sorting in a

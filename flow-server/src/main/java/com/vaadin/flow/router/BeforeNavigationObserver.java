@@ -16,7 +16,7 @@
 package com.vaadin.flow.router;
 
 /**
- * Any {@link com.vaadin.ui.Component} implementing this interface will be
+ * Any {@link com.vaadin.flow.component.Component} implementing this interface will be
  * informed when they are being detached from or attached to the UI.
  * <p>
  * If the {@link ActivationState} of the {@link BeforeNavigationEvent} is

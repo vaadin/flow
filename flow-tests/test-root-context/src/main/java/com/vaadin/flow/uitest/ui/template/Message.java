@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
 public interface Message extends TemplateModel {
     void setText(String text);

@@ -17,7 +17,7 @@ import java.util.jar.JarEntry;
 
 import org.junit.Test;
 
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSession;
 
 public class VaadinClasses {
 

@@ -20,8 +20,8 @@ import java.lang.annotation.Annotation;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import com.vaadin.ui.common.HasValue;
-import com.vaadin.function.SerializablePredicate;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.function.SerializablePredicate;
 
 /**
  * This interface represents a predicate which returns {@code true} if bound

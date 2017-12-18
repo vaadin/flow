@@ -25,20 +25,20 @@ import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.InternalRedirectHandler;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.router.internal.ResolveRequest;
 import com.vaadin.flow.router.legacy.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.legacy.RouterConfiguration;
 import com.vaadin.flow.router.legacy.RouterConfigurator;
-import com.vaadin.flow.router.internal.ResolveRequest;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinService;
-import com.vaadin.server.startup.RouteRegistry;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.RouteRegistry;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -109,7 +109,7 @@ public class Router implements RouterInterface {
     /**
      * Resolve the navigation target for given path and parameter map using the
      * router routeResolver.
-     * 
+     *
      * @param pathInfo
      *            the path relative to the application
      * @param parameterMap
@@ -125,8 +125,8 @@ public class Router implements RouterInterface {
                     .resolve(new ResolveRequest(this, location));
         } catch (NotFoundException nfe) {
             LoggerFactory.getLogger(Router.class.getName()).warn(
-                    "Failed to resolve navigation target for path: {}"
-                            ,pathInfo, nfe);
+                    "Failed to resolve navigation target for path: {}",
+                    pathInfo, nfe);
         }
         return Optional.ofNullable(resolve);
     }
@@ -242,7 +242,7 @@ public class Router implements RouterInterface {
     /**
      * Trim the given route string of extra characters that can be left in
      * special cases like root target containing optional parameter.
-     * 
+     *
      * @param routeString
      *            route string to trim
      * @return trimmed route

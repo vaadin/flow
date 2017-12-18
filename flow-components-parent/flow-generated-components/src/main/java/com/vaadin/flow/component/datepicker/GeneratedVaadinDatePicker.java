@@ -15,22 +15,24 @@
  */
 package com.vaadin.flow.component.datepicker;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasClickListeners;
-import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Synchronize;
+
 import elemental.json.JsonObject;
-import com.vaadin.ui.common.NotSupported;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.event.EventData;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentSupplier;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.HasClickListeners;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * <p>

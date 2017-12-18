@@ -21,26 +21,25 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import com.vaadin.flow.StateTree;
-import com.vaadin.flow.router.legacy.Router;
-import com.vaadin.flow.router.legacy.View;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.PropertyDescriptor;
+import com.vaadin.flow.component.PropertyDescriptors;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.router.legacy.RouteLocation;
 import com.vaadin.flow.router.legacy.RouteLocation.RouteSegmentVisitor;
-import com.vaadin.server.VaadinService;
-import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HasComponents;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasText;
-import com.vaadin.ui.common.PropertyDescriptor;
-import com.vaadin.ui.common.PropertyDescriptors;
+import com.vaadin.flow.router.legacy.Router;
+import com.vaadin.flow.router.legacy.View;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
- * A link that handles navigation internally using
- * {@link Router} instead of loading a new page in the
- * browser.
+ * A link that handles navigation internally using {@link Router} instead of
+ * loading a new page in the browser.
  * <p>
  * The <code>href</code> attribute of {@link #getElement()} will only be
  * up-to-date when the component is attached to a UI.
@@ -69,9 +68,8 @@ public class RouterLink extends Component
      * parameters must match the number of slots in the route.
      * <p>
      * This is a shorthand for
-     * {@link #RouterLink(Router, String, Class, String...)}
-     * which uses implicitly available {@link Router}
-     * instance from the current {@link UI}.
+     * {@link #RouterLink(Router, String, Class, String...)} which uses
+     * implicitly available {@link Router} instance from the current {@link UI}.
      *
      * @see #RouterLink(Router, String, Class, String...)
      *
@@ -135,7 +133,8 @@ public class RouterLink extends Component
                 throw new IllegalArgumentException(message, cce);
             }
         } else {
-            setRoute((com.vaadin.flow.router.Router) getRouter(), navigationTarget);
+            setRoute((com.vaadin.flow.router.Router) getRouter(),
+                    navigationTarget);
         }
     }
 
@@ -260,8 +259,8 @@ public class RouterLink extends Component
      * @param parameters
      *            the parameter values to set in the route
      */
-    public void setRoute(Router router,
-            Class<? extends View> viewType, String... parameters) {
+    public void setRoute(Router router, Class<? extends View> viewType,
+            String... parameters) {
         if (router == null) {
             throw new IllegalArgumentException("Router must not be null");
         }
@@ -275,10 +274,9 @@ public class RouterLink extends Component
      * must match the number of slots in the route. There must be exactly one
      * route configured for the view type.
      * <p>
-     * This is a shorthand for
-     * {@link #setRoute(Router, Class, String...)} method
-     * which uses implicitly available {@link Router}
-     * instance from the current {@link UI}.
+     * This is a shorthand for {@link #setRoute(Router, Class, String...)}
+     * method which uses implicitly available {@link Router} instance from the
+     * current {@link UI}.
      *
      * @see #setRoute(Router, Class, String...)
      *
@@ -289,12 +287,11 @@ public class RouterLink extends Component
      */
     public void setRoute(Class<? extends View> viewType, String... parameters) {
         RouterInterface router = getRouter();
-        updateHref((Router) router, viewType,
-                parameters);
+        updateHref((Router) router, viewType, parameters);
     }
 
-    private void updateHref(Router router,
-            Class<? extends View> viewType, String... parameters) {
+    private void updateHref(Router router, Class<? extends View> viewType,
+            String... parameters) {
         assert router != null;
         String url = buildUrl(router, viewType, parameters);
 

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import com.vaadin.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.RouteRegistry;
 
 /**
  * Route registry with a public constructor for testing purposes.

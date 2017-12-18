@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.flow.router.Route;
-import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.AngularTemplate;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.template.angular.AngularTemplate;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.TemplateComponentMappingView", layout = ViewTestLayout.class)
 public class TemplateComponentMappingView extends AngularTemplate {

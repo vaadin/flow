@@ -18,7 +18,6 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
@@ -26,9 +25,9 @@ import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.ValueMap;
-import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.communication.PushConstants;
-import com.vaadin.shared.util.SharedUtil;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.communication.PushConstants;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.JsonObject;
 
@@ -664,7 +663,7 @@ public class AtmospherePushConnection implements PushConnection {
             trackMessageLength: true,
             enableProtocol: true,
             handleOnlineOffline: false,
-            messageDelimiter: String.fromCharCode(@com.vaadin.shared.communication.PushConstants::MESSAGE_DELIMITER)
+            messageDelimiter: String.fromCharCode(@com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER)
         };
     }-*/;
 
@@ -672,7 +671,7 @@ public class AtmospherePushConnection implements PushConnection {
             JavaScriptObject config)
     /*-{
         var self = this;
-
+    
         config.url = uri;
         config.onOpen = $entry(function(response) {
             self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
@@ -698,7 +697,7 @@ public class AtmospherePushConnection implements PushConnection {
         config.onClientTimeout = $entry(function(request) {
             self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
         });
-
+    
         return $wnd.vaadinPush.atmosphere.subscribe(config);
     }-*/;
 

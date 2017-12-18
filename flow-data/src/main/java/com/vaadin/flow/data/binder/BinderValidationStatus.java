@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
-import com.vaadin.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializablePredicate;
 
 /**
  * Binder validation status change. Represents the outcome of binder level

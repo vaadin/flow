@@ -20,9 +20,9 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.function.SerializableConsumer;
-import com.vaadin.function.SerializableFunction;
-import com.vaadin.function.SerializableSupplier;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableSupplier;
 
 /**
  * Represents the result of an operation that might fail, such as type

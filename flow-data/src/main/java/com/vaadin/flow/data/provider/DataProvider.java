@@ -26,9 +26,9 @@ import com.vaadin.flow.data.binder.HasDataProvider;
 import com.vaadin.flow.data.binder.HasFilterableDataProvider;
 import com.vaadin.flow.data.provider.CallbackDataProvider.CountCallback;
 import com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback;
-import com.vaadin.function.SerializableBiFunction;
-import com.vaadin.function.SerializableFunction;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * A common interface for fetching data from a backend. The {@link DataProvider}

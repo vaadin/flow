@@ -22,7 +22,7 @@ import java.util.function.BiFunction;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializablePredicate;
 
 /**
  * A functional interface for validating user input or other potentially invalid

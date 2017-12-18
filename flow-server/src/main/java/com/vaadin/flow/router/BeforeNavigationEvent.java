@@ -22,11 +22,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
-import com.vaadin.ui.Component;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Event created before navigation happens.
@@ -219,20 +219,20 @@ public class BeforeNavigationEvent extends EventObject {
         if (!routeParams.isEmpty()) {
             checkUrlParameterType(routeParams.get(0), target);
         }
-        rerouteTo(new NavigationStateBuilder()
-                .withTarget(target, segments).build());
+        rerouteTo(new NavigationStateBuilder().withTarget(target, segments)
+                .build());
     }
 
     private Class<? extends Component> getTargetOrThrow(String route,
             List<String> segments) {
         if (!getSource().getRegistry().hasRouteTo(route)) {
-            throw new IllegalArgumentException(String.format
-                    ("No navigation target found for route '%s'", route));
+            throw new IllegalArgumentException(String.format(
+                    "No navigation target found for route '%s'", route));
         }
         return getSource().getRegistry().getNavigationTarget(route, segments)
-                .orElseThrow(() -> new IllegalArgumentException(String.format
-                        ("The navigation target for route '%s' doesn't accept the parameters %s.",
-                                route, segments)));
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "The navigation target for route '%s' doesn't accept the parameters %s.",
+                        route, segments)));
     }
 
     private <T> void checkUrlParameterType(T routeParam,
@@ -277,7 +277,7 @@ public class BeforeNavigationEvent extends EventObject {
      * Reroute to error target for given exception without custom message.
      * <p>
      * Exception class needs to have default no-arg constructor.
-     * 
+     *
      * @param exception
      *            exception to get error target for
      * @see BeforeNavigationEvent#rerouteToError(Exception, String)
@@ -290,7 +290,7 @@ public class BeforeNavigationEvent extends EventObject {
      * Reroute to error target for given exception with given custom message.
      * <p>
      * Exception class needs to have default no-arg constructor.
-     * 
+     *
      * @param exception
      *            exception to get error target for
      * @param customMessage
@@ -305,7 +305,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Reroute to error target for given exception with given custom message.
-     * 
+     *
      * @param exception
      *            exception to get error target for
      * @param customMessage
@@ -328,7 +328,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Check if we have an error parameter set for this navigation event.
-     * 
+     *
      * @return true if error parameter is set
      */
     public boolean hasErrorParameter() {
@@ -337,7 +337,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Get the set error parameter.
-     * 
+     *
      * @return error parameter
      */
     public ErrorParameter<?> getErrorParameter() {
@@ -345,9 +345,9 @@ public class BeforeNavigationEvent extends EventObject {
     }
 
     /**
-     * Initiates the postponement of the current navigation transition,
-     * allowing a listener to e.g. display a confirmation dialog before
-     * finishing the transition.
+     * Initiates the postponement of the current navigation transition, allowing
+     * a listener to e.g. display a confirmation dialog before finishing the
+     * transition.
      * <p>
      * This is only valid while leaving (deactivating) a page; if the method is
      * called while entering / activating the new page, it will throw an
@@ -355,8 +355,9 @@ public class BeforeNavigationEvent extends EventObject {
      *
      * @return the action to run when the transition is to be resumed, or null
      *
-     * @throws IllegalStateException if the method is called while
-     *                               entering / activating the new page
+     * @throws IllegalStateException
+     *             if the method is called while entering / activating the new
+     *             page
      */
     public ContinueNavigationAction postpone() throws IllegalStateException {
         if (activationState != ActivationState.DEACTIVATING) {
@@ -379,8 +380,8 @@ public class BeforeNavigationEvent extends EventObject {
     /**
      * Gets the action used to resume this event, if it was postponed.
      *
-     * @return the action used to resume this event if it was postponed,
-     *         or null if it is not being postponed
+     * @return the action used to resume this event if it was postponed, or null
+     *         if it is not being postponed
      */
     public ContinueNavigationAction getContinueNavigationAction() {
         return continueNavigationAction;

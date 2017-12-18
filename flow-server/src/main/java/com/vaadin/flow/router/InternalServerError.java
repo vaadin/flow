@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 
 /**
  * This is a basic default error view shown on exceptions during navigation.

@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
-import com.vaadin.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Abstract data provider implementation which takes care of refreshing data

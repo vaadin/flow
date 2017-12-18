@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.dom;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
-import com.vaadin.flow.nodefeature.ShadowRootHost;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
 
 /**
  * A class representing a shadow dom root of an element.

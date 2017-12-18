@@ -17,10 +17,10 @@ package com.vaadin.flow.template.angular;
 
 import java.util.List;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
 
 import elemental.json.JsonObject;
 

@@ -18,11 +18,11 @@ package com.vaadin.flow.data.provider;
 import java.util.Locale;
 import java.util.Objects;
 
-import com.vaadin.function.SerializableBiPredicate;
-import com.vaadin.function.SerializableComparator;
-import com.vaadin.function.SerializablePredicate;
-import com.vaadin.function.ValueProvider;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableBiPredicate;
+import com.vaadin.flow.function.SerializableComparator;
+import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.function.ValueProvider;
 
 /**
  * A mixin interface for in-memory data providers. Contains methods for

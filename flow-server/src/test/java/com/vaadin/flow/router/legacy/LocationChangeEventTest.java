@@ -25,14 +25,16 @@ import org.junit.Test;
 
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.legacy.LocationChangeEvent;
+import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.router.legacy.RouterTest.RouterTestUI;
 import com.vaadin.flow.router.legacy.ViewRendererTest.AnotherParentView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.AnotherTestView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.ParentView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.TestView;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.ui.UI;
 
 public class LocationChangeEventTest {
     private LocationChangeEvent event;

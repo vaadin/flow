@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.servlet;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.server.VaadinServletConfiguration;
+import com.vaadin.flow.server.VaadinServletConfiguration;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view-production/*" })
 @VaadinServletConfiguration(productionMode = true)

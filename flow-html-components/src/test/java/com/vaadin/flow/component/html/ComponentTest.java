@@ -31,9 +31,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HtmlComponent;
 
 public abstract class ComponentTest {
 

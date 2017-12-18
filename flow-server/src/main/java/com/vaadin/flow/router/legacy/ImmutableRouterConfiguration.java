@@ -18,9 +18,9 @@ package com.vaadin.flow.router.legacy;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationHandler;
-import com.vaadin.ui.Page;
 
 /**
  * Configuration for a {@link Router}. Use

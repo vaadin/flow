@@ -26,9 +26,9 @@ import java.util.Collection;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.uitest.servlet.ViewClassLocator;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
 
 public class SerializationTest {
 

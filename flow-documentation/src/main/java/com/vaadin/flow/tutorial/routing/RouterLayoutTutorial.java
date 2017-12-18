@@ -19,10 +19,10 @@ import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RoutePrefix;
 import com.vaadin.router.RouterLayout;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 
 @CodeFor("routing/tutorial-router-layout.asciidoc")
 public class RouterLayoutTutorial {

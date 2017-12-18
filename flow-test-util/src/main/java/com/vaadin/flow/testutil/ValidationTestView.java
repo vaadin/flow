@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.testutil;
 
-
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.common.HasValidation;
+import com.vaadin.flow.component.html.NativeButton;
 
 /**
  * Abstract view class for testing validation with components that implement
@@ -38,7 +37,7 @@ public abstract class ValidationTestView extends Div {
         ((Component) field).setId("field");
         add(((Component) field));
 
-        Button button = new Button("Make the input invalid");
+        NativeButton button = new NativeButton("Make the input invalid");
         button.setId("invalidate");
         button.addClickListener(event -> {
             field.setErrorMessage("Invalidated from server");
@@ -46,7 +45,7 @@ public abstract class ValidationTestView extends Div {
         });
         add(button);
 
-        button = new Button("Make the input valid");
+        button = new NativeButton("Make the input valid");
         button.setId("validate");
         button.addClickListener(event -> {
             field.setErrorMessage(null);
@@ -57,7 +56,7 @@ public abstract class ValidationTestView extends Div {
 
     /**
      * Gets the component to be tested.
-     * 
+     *
      * @return a component that implements {@link HasValidation}
      */
     protected abstract HasValidation getValidationComponent();

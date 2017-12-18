@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.ui.common.HtmlContainer;
-import com.vaadin.ui.event.ClickNotifier;
-
 import java.util.Map;
 import java.util.stream.Stream;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
+import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;dl&gt;</code> element.

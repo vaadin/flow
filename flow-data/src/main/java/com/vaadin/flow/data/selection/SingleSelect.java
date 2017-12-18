@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.data.selection;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasValue;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValue;
 
 /**
  * Single selection component whose selection is treated as a value.

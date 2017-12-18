@@ -23,11 +23,11 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.ui.UI;
 
 /**
  * Event passed to {@link View#onLocationChange(LocationChangeEvent)} when the

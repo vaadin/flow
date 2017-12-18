@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.SimpleResult;
-import com.vaadin.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * @author Vaadin Ltd

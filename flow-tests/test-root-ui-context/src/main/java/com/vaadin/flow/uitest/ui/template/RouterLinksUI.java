@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 public class RouterLinksUI extends UI {
 

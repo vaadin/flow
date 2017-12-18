@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 public class ClientEngineSizeIT {
 

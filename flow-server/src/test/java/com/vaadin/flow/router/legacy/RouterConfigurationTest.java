@@ -30,14 +30,22 @@ import org.junit.Test;
 
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.legacy.DefaultErrorView;
+import com.vaadin.flow.router.legacy.HasChildView;
+import com.vaadin.flow.router.legacy.PageTitleGenerator;
+import com.vaadin.flow.router.legacy.Resolver;
+import com.vaadin.flow.router.legacy.Router;
+import com.vaadin.flow.router.legacy.RouterConfiguration;
+import com.vaadin.flow.router.legacy.View;
+import com.vaadin.flow.router.legacy.ViewRenderer;
 import com.vaadin.flow.router.legacy.ViewRendererTest.AnotherParentView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.AnotherTestView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.ErrorView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.ParentView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.TestView;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.ui.UI;
 
 public class RouterConfigurationTest {
     @Test

@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.dom.impl;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
-import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.NodeFeature;
-import com.vaadin.flow.nodefeature.ShadowRootHost;
-import com.vaadin.flow.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
 /**
  * Abstract implementation of the {@link ElementStateProvider} related to the

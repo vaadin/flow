@@ -15,12 +15,12 @@
  */
 package com.vaadin.client.communication;
 
-import static com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT;
-import static com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap.FIRST_DELAY_KEY;
-import static com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT;
-import static com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap.SECOND_DELAY_KEY;
-import static com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT;
-import static com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap.THIRD_DELAY_KEY;
+import static com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT;
+import static com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap.FIRST_DELAY_KEY;
+import static com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT;
+import static com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap.SECOND_DELAY_KEY;
+import static com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT;
+import static com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap.THIRD_DELAY_KEY;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,7 +33,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
-import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 public class LoadingIndicatorConfiguratorTest
         extends AbstractConfigurationTest {

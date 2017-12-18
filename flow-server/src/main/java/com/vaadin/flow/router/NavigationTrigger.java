@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.router;
 
-import com.vaadin.ui.History.HistoryStateChangeEvent;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
 
 /**
  * The type of user action that triggered navigation.

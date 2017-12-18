@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.push;
 
-import com.vaadin.ui.Push;
+import com.vaadin.flow.component.Push;
 
 @Push
 public class BasicPushUI extends ClientServerCounterUI {

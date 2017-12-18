@@ -19,9 +19,9 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Optional;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.nodefeature.TemplateMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.TemplateMap;
 
 import elemental.json.JsonObject;
 

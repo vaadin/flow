@@ -38,22 +38,22 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.flow.component.HasValue.ValueChangeListener;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.BeanValidator;
-import com.vaadin.function.SerializableConsumer;
-import com.vaadin.function.SerializableFunction;
-import com.vaadin.function.SerializablePredicate;
-import com.vaadin.function.ValueProvider;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HasText;
-import com.vaadin.ui.common.HasValidation;
-import com.vaadin.ui.common.HasValue;
-import com.vaadin.ui.common.HasValue.ValueChangeEvent;
-import com.vaadin.ui.common.HasValue.ValueChangeListener;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Connects one or more {@code Field} components to properties of a backing data

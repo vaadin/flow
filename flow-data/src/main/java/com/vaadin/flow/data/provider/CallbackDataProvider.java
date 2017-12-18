@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import com.vaadin.function.ValueProvider;
+import com.vaadin.flow.function.ValueProvider;
 
 /**
  * Data provider that uses one callback for fetching items from a back end and

@@ -32,7 +32,7 @@ import java.util.LinkedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.ui.Component;
+import com.vaadin.flow.component.Component;
 
 public class ViewClassLocator {
     private final LinkedHashMap<String, Class<? extends Component>> views = new LinkedHashMap<>();

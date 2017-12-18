@@ -38,19 +38,43 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.router.ActivationState;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeLeaveObserver;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.InternalServerError;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationStateBuilder;
+import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.RoutePrefix;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
-import com.vaadin.server.InvalidRouteConfigurationException;
-import com.vaadin.server.InvalidRouteLayoutConfigurationException;
-import com.vaadin.server.MockVaadinServletService;
-import com.vaadin.server.MockVaadinSession;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockUI;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentUtil;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.i18n.LocaleChangeEvent;
-import com.vaadin.ui.i18n.LocaleChangeObserver;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -194,8 +218,7 @@ public class RouterTest extends RoutingTestBase {
 
         @Override
         public void setParameter(BeforeNavigationEvent event,
-                @WildcardParameter
-                        String parameter) {
+                @WildcardParameter String parameter) {
             eventCollector.add("Received param: " + parameter);
             param = parameter;
         }
@@ -223,8 +246,7 @@ public class RouterTest extends RoutingTestBase {
 
         @Override
         public void setParameter(BeforeNavigationEvent event,
-                @com.vaadin.flow.router.OptionalParameter
-                        String parameter) {
+                @com.vaadin.flow.router.OptionalParameter String parameter) {
             eventCollector.add(parameter == null ? "No parameter" : parameter);
         }
     }
@@ -417,8 +439,7 @@ public class RouterTest extends RoutingTestBase {
 
         @Override
         public void setParameter(BeforeNavigationEvent event,
-                @com.vaadin.flow.router.OptionalParameter
-                        String parameter) {
+                @com.vaadin.flow.router.OptionalParameter String parameter) {
             title = parameter;
         }
     }
@@ -522,8 +543,7 @@ public class RouterTest extends RoutingTestBase {
 
         @Override
         public void setParameter(BeforeNavigationEvent event,
-                @com.vaadin.flow.router.OptionalParameter
-                        String parameter) {
+                @com.vaadin.flow.router.OptionalParameter String parameter) {
             eventCollector.add(parameter == null ? "No parameter" : parameter);
         }
     }
@@ -549,6 +569,7 @@ public class RouterTest extends RoutingTestBase {
                     + getElement().getText());
         }
     }
+
     public static final String EXCEPTION_TEXT = "My custom not found class!";
 
     public static class CustomNotFoundTarget extends RouteNotFoundError {
@@ -573,7 +594,8 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Tag(Tag.DIV)
-    public static class DuplicateNotFoundTarget extends Component implements HasErrorParameter<NotFoundException> {
+    public static class DuplicateNotFoundTarget extends Component
+            implements HasErrorParameter<NotFoundException> {
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<NotFoundException> parameter) {
@@ -1714,7 +1736,6 @@ public class RouterTest extends RoutingTestBase {
                         .collect(Collectors.toSet()));
     }
 
-
     @Test
     public void custom_exception_target_should_override_default_ones() {
         router.getRegistry()
@@ -1751,8 +1772,7 @@ public class RouterTest extends RoutingTestBase {
                 "Expected the extending class to be used instead of the super class",
                 CustomNotFoundTarget.class, getUIComponent());
 
-        assertExceptionComponent(EXCEPTION_TEXT,
-                CustomNotFoundTarget.class);
+        assertExceptionComponent(EXCEPTION_TEXT, CustomNotFoundTarget.class);
     }
 
     @Test

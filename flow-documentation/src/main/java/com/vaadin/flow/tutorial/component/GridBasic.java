@@ -22,9 +22,10 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.data.provider.QuerySortOrder;
+import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.renderer.TemplateRenderer;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person;
-import com.vaadin.function.ValueProvider;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.grid.ColumnGroup;
 import com.vaadin.ui.grid.Grid;
@@ -33,7 +34,6 @@ import com.vaadin.ui.grid.Grid.SelectionMode;
 import com.vaadin.ui.grid.GridMultiSelectionModel;
 import com.vaadin.ui.grid.GridSingleSelectionModel;
 import com.vaadin.ui.layout.HorizontalLayout;
-import com.vaadin.ui.renderers.TemplateRenderer;
 
 @CodeFor("flow-components/tutorial-flow-grid.asciidoc")
 public class GridBasic {

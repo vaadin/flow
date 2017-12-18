@@ -18,7 +18,7 @@ package com.vaadin.flow.data.binder;
 import java.io.Serializable;
 import java.util.function.BiConsumer;
 
-import com.vaadin.ui.common.HasValue;
+import com.vaadin.flow.component.HasValue;
 
 /**
  * The function to write the field value to the bean property

@@ -23,7 +23,7 @@ import org.junit.Test;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.flow.JsonCodec;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.util.JsonUtils;
 
 import elemental.js.dom.JsElement;

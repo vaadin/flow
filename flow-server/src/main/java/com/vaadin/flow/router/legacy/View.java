@@ -17,12 +17,12 @@ package com.vaadin.flow.router.legacy;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HasElement;
-import com.vaadin.util.AnnotationReader;
+import com.vaadin.flow.util.AnnotationReader;
 
 /**
  * A view that can be shown in a {@link UI} or {@link HasChildView}.
@@ -81,10 +81,10 @@ public interface View extends HasElement, Serializable {
     /**
      * Get the page title to show for this view.
      * <p>
-     * By default returns the value specified with the {@link PageTitle @PageTitle}
-     * annotation, or an empty string if the annotation is not present. The
-     * empty string will clear any previously set title. In that case the
-     * browser will decide what to show as the title.
+     * By default returns the value specified with the
+     * {@link PageTitle @PageTitle} annotation, or an empty string if the
+     * annotation is not present. The empty string will clear any previously set
+     * title. In that case the browser will decide what to show as the title.
      * <p>
      * May <b>NOT</b> return <code>null</code>.
      * <p>

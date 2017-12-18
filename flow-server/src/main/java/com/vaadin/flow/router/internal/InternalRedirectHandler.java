@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.router.internal;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.ui.UI;
 
 /**
  * Handles navigation by redirecting the user to some location in the

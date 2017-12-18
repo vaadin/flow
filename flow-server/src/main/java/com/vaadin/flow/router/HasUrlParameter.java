@@ -23,13 +23,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.util.ReflectTools;
 
 /**
  * Interface for defining url parameters for navigation targets for use in
  * routing.
- * 
+ *
  * @author Vaadin Ltd.
  *
  * @param <T>
@@ -78,7 +77,7 @@ public interface HasUrlParameter<T> {
 
     /**
      * Validate that we can support the given wildcard parameter type.
-     * 
+     *
      * @param navigationTarget
      *            navigation target class
      * @param parameterType
@@ -132,7 +131,7 @@ public interface HasUrlParameter<T> {
 
     /**
      * Get the parameter type class.
-     * 
+     *
      * @param navigationTarget
      *            navigation target to get parameter type class for
      * @return parameter type class
@@ -150,7 +149,7 @@ public interface HasUrlParameter<T> {
 
     /**
      * Check if the parameter value is annotated as OptionalParameter.
-     * 
+     *
      * @param navigationTarget
      *            navigation target to check for optional
      * @param parameterAnnotation

@@ -19,17 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
-import com.vaadin.server.VaadinSession;
-import com.vaadin.server.WebBrowser;
-import com.vaadin.ui.Html;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.event.AttachEvent;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.InfoView", layout = ViewTestLayout.class)
 public class InfoView extends Div {
