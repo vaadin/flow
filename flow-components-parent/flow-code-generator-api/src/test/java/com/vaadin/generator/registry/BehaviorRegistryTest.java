@@ -22,8 +22,8 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.common.HasClickListeners;
-import com.vaadin.ui.common.HasText;
+import com.vaadin.flow.component.HasClickListeners;
+import com.vaadin.flow.component.HasText;
 
 /**
  * Unit tests for the {@link BehaviorRegistry}.

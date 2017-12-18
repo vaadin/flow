@@ -43,15 +43,16 @@
         } else if (this.firstElementChild !== renderedComponent){
           this.replaceChild(renderedComponent, this.firstElementChild);
           this.hidden = false;
-          this._notifyResize();
+          this.onComponentRendered();
         } else {
           this.hidden = false;
+          this.onComponentRendered();
         }
       } else {
         if (renderedComponent) {
           this.appendChild(renderedComponent);
           this.hidden = false;
-          this._notifyResize();
+          this.onComponentRendered();
         } else {
           this._asyncAttachRenderedComponentIfAble();
         }
@@ -64,7 +65,7 @@
       }
     }
 
-    _notifyResize(){
+    onComponentRendered(){
       // subclasses can override this method to execute custom logic on resize
     }
     

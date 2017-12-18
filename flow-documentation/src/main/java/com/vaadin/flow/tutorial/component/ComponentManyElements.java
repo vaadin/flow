@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.tutorial.component;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 
 @CodeFor("creating-components/tutorial-component-many-elements.asciidoc")
 public class ComponentManyElements {

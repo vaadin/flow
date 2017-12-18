@@ -24,12 +24,12 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.function.ValueProvider;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.ui.textfield.TextField;
 
 public class BinderCustomPropertySetTest {
     public static class MapPropertyDefinition
-    implements PropertyDefinition<Map<String, String>, String> {
+            implements PropertyDefinition<Map<String, String>, String> {
 
         private MapPropertySet propertySet;
         private String name;
@@ -78,6 +78,11 @@ public class BinderCustomPropertySetTest {
         @Override
         public String getCaption() {
             return name.toUpperCase(Locale.ENGLISH);
+        }
+
+        @Override
+        public PropertyDefinition<Map<String, String>, ?> getParent() {
+            return null;
         }
 
     }

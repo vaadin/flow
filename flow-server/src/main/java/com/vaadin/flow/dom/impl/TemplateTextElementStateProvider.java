@@ -17,11 +17,12 @@ package com.vaadin.flow.dom.impl;
 
 import java.util.Optional;
 
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Node;
-import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.dom.NodeVisitor;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.TextTemplateNode;
-import com.vaadin.ui.Component;
 
 /**
  * Handles storing and retrieval of the state information for a text node
@@ -84,4 +85,9 @@ public class TemplateTextElementStateProvider
         return Optional.empty();
     }
 
+    @Override
+    public void visit(StateNode node, NodeVisitor visitor,
+            boolean visitDescendants) {
+        throw new UnsupportedOperationException();
+    }
 }

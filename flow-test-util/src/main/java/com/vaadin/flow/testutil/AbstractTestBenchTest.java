@@ -31,7 +31,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-import com.vaadin.flow.router.View;
+import com.vaadin.flow.router.legacy.View;
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunOnHub;

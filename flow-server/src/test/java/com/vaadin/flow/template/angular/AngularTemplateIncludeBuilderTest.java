@@ -23,7 +23,9 @@ import org.junit.Test;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
-import com.vaadin.ui.AngularTemplate;
+import com.vaadin.flow.template.angular.AngularTemplate;
+import com.vaadin.flow.template.angular.ElementTemplateNode;
+import com.vaadin.flow.template.angular.HtmlTemplate;
 
 public class AngularTemplateIncludeBuilderTest {
 

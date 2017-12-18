@@ -21,12 +21,12 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
+import com.vaadin.flow.component.JsonSerializable;
+import com.vaadin.flow.component.NotSupported;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
-import com.vaadin.ui.common.JsonSerializable;
-import com.vaadin.ui.common.NotSupported;
 
 import elemental.json.JsonObject;
 

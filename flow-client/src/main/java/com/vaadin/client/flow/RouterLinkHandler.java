@@ -20,7 +20,7 @@ import java.util.Objects;
 import com.vaadin.client.Registry;
 import com.vaadin.client.URIResolver;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.client.Browser;
 import elemental.dom.Element;

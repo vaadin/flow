@@ -18,8 +18,8 @@ package com.vaadin.flow.tutorial.polymer;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.vaadin.flow.model.Convert;
-import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.templatemodel.Convert;
+import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("polymer-templates/tutorial-template-model-converters.asciidoc")

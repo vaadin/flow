@@ -17,7 +17,7 @@ package com.vaadin.client.communication;
 
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

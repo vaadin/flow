@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.nodefeature.ElementStylePropertyMap;
+import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 
 /**
  * Implementation of {@link Style} for {@link BasicElementStateProvider}.

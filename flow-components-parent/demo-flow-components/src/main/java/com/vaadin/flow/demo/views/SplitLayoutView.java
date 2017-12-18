@@ -17,12 +17,12 @@ package com.vaadin.flow.demo.views;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
 import com.vaadin.router.Route;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.html.Label;
 import com.vaadin.ui.splitlayout.SplitLayout;
 
 /**

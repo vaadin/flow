@@ -24,8 +24,8 @@
         <module>test-spring-war</module>
         <module>test-spring</module>
         <module>test-spring-common</module>
-        <!-- Enable this when we have possibility to have component SNAPSHOTS -->
-        <!--<module>test-components</module>-->
+        <!-- Disabled until component modules are updated with the latest Flow changes -->
+        <!--module>test-components</module-->
     </modules>
 
     <repositories>

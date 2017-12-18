@@ -10,7 +10,7 @@ import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.client.Browser;
 import elemental.dom.Document.Events;

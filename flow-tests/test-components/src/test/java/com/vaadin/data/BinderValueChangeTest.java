@@ -23,11 +23,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.ui.common.HasValue;
-import com.vaadin.ui.common.HasValue.ValueChangeEvent;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.ui.textfield.TextField;
 
@@ -36,7 +36,7 @@ import com.vaadin.ui.textfield.TextField;
  *
  */
 public class BinderValueChangeTest
-extends BinderTestBase<Binder<Person>, Person> {
+        extends BinderTestBase<Binder<Person>, Person> {
 
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
 
@@ -46,9 +46,9 @@ extends BinderTestBase<Binder<Person>, Person> {
     public void setUp() {
         binder = new Binder<Person>() {
             @Override
-            protected void handleError(HasValue<?, ?> field, String error) {
-                super.handleError(field, error);
-                componentErrors.put(field, error);
+            protected void handleError(HasValue<?, ?> field,
+                    ValidationResult result) {
+                componentErrors.put(field, result.getErrorMessage());
             }
 
             @Override
@@ -101,8 +101,8 @@ extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
 
         binder.addValueChangeListener(this::statusChanged);
 
@@ -116,8 +116,8 @@ extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         binder.addValueChangeListener(this::statusChanged);
@@ -133,14 +133,14 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         binder.forField(field).bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
 
         binder.addValueChangeListener(this::statusChanged);
 
         Assert.assertNull(event.get());
         field.getElement().getNode().getFeature(ElementPropertyMap.class)
-        .setProperty("value", "foo", false);
+                .setProperty("value", "foo", false);
         verifyEvent(field, true);
     }
 
@@ -151,8 +151,8 @@ extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         Assert.assertNull(event.get());

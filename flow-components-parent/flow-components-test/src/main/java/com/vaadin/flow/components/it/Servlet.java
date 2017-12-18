@@ -19,11 +19,11 @@ import java.util.List;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.flow.components.it.Servlet.TestRouterConfigurator;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
 
 /**
  * The test application servlet.

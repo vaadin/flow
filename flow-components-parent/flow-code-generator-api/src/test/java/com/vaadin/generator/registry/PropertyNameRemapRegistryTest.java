@@ -26,13 +26,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.generator.ComponentGenerator;
 import com.vaadin.generator.ComponentGeneratorTestUtils;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentMetadata;
 import com.vaadin.generator.metadata.ComponentPropertyData;
-import com.vaadin.ui.common.HasValue;
 
 /**
  * Unit tests for {@link PropertyNameRemapRegistryTest}.

@@ -26,6 +26,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentSupplier;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.HasClickListeners;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
@@ -35,16 +45,6 @@ import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
-import com.vaadin.ui.common.ComponentSupplier;
-import com.vaadin.ui.common.HasClickListeners;
-import com.vaadin.ui.common.HasComponents;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasText;
-import com.vaadin.ui.common.HasValue;
-import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.EventData;
 
 /**
  * Unit tests for the component generator
@@ -220,8 +220,8 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
-        Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setName(String name)"));
+        Assert.assertTrue("No setter found",
+                generatedClass.contains("public void setName(String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
@@ -430,8 +430,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertTrue("No setter found", generatedClass
-                .contains("public void setName(String name)"));
+        Assert.assertTrue("No setter found",
+                generatedClass.contains("public void setName(String name)"));
 
         Assert.assertTrue("Setter doesn't check for null value",
                 generatedClass.contains(propertyData.getName()
@@ -687,7 +687,7 @@ public class ComponentGeneratorTest {
 
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "@Override public void setValue(ValueProperty property) { if (!Objects.equals(property, getValue()))"));
-    
+
     }
 
     @Test
@@ -898,8 +898,7 @@ public class ComponentGeneratorTest {
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
                 generatedClass, "MyComponent", HasValue.class);
         Assert.assertThat(generatedClass, CoreMatchers
-                .containsString(
-                        "@Override public String getValue()"));
+                .containsString("@Override public String getValue()"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "@Override public void setValue(String value)"));
     }
@@ -921,8 +920,8 @@ public class ComponentGeneratorTest {
         generatedClass = ComponentGeneratorTestUtils
                 .removeIndentation(generatedClass);
 
-        Assert.assertTrue(generatedClass.contains(
-                "@Override public void setValue(String value) {"
+        Assert.assertTrue(generatedClass
+                .contains("@Override public void setValue(String value) {"
                         + " Objects.requireNonNull(value, \"value cannot be null\");"
                         + " if (!Objects.equals(value, getValue())) {"));
         Assert.assertTrue(generatedClass.contains(
@@ -946,11 +945,9 @@ public class ComponentGeneratorTest {
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
                 generatedClass, "MyComponent", HasValue.class);
 
-        Assert.assertTrue(generatedClass
-                .contains(
-                        "@Override public String getValue() { String value = getElement().getProperty(\"value\"); return value == null ? getEmptyValue() : value; }"));
+        Assert.assertTrue(generatedClass.contains(
+                "@Override public String getValue() { String value = getElement().getProperty(\"value\"); return value == null ? getEmptyValue() : value; }"));
     }
-
 
     @Test
     public void componentContainsNumberValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTypes() {
@@ -973,10 +970,10 @@ public class ComponentGeneratorTest {
                 generatedClass, "MyComponent", HasValue.class);
         Assert.assertTrue(
                 generatedClass.contains("@Override public Double getValue()"));
-        Assert.assertTrue(generatedClass.contains(
-                "@Override public void setValue(Double value)"));
         Assert.assertTrue(generatedClass
-                .contains("public void setValue(Number value)"));
+                .contains("@Override public void setValue(Double value)"));
+        Assert.assertTrue(
+                generatedClass.contains("public void setValue(Number value)"));
     }
 
     @Test
@@ -1148,9 +1145,9 @@ public class ComponentGeneratorTest {
         // @formatter:off
         functionData.setDescription(""
                 + "This is my method documentation,"
-                + "```html\n" 
-                + "<my-component\n" 
-                + "label=\"myLabel\">\n" 
+                + "```html\n"
+                + "<my-component\n"
+                + "label=\"myLabel\">\n"
                 + "</my-component>\n"
                 + "```");
         // @formatter:on

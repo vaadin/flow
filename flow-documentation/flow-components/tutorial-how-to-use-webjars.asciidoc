@@ -55,6 +55,7 @@ After that you can try and add
 ----
 
 There are two things that may go wrong:
+
 * Artifact won't be present in the repository
 * Artifact will be present in the repository, but there would be a conflict among different versions of the package
 

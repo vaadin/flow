@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.component.PropertyDescriptor;
+import com.vaadin.flow.component.PropertyDescriptors;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.router.Route;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.PropertyDescriptor;
-import com.vaadin.ui.common.PropertyDescriptors;
-import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Route("com.vaadin.flow.uitest.ui.template.PolymerDefaultPropertyValueView")
 public class PolymerDefaultPropertyValueView extends AbstractDivView {

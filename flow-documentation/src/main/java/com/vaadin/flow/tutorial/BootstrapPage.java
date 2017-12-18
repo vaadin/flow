@@ -18,17 +18,18 @@ package com.vaadin.flow.tutorial;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.server.BootstrapListener;
+import com.vaadin.flow.server.BootstrapPageResponse;
+import com.vaadin.flow.server.InitialPageSettings;
+import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouterLayout;
-import com.vaadin.server.BootstrapListener;
-import com.vaadin.server.BootstrapPageResponse;
-import com.vaadin.server.InitialPageSettings;
-import com.vaadin.server.PageConfigurator;
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.ui.BodySize;
-import com.vaadin.ui.Viewport;
-import com.vaadin.ui.html.Div;
 
 @CodeFor("application-structure/tutorial-bootstrap.asciidoc")
 public class BootstrapPage {
@@ -113,5 +114,17 @@ public class BootstrapPage {
             settings.addInlineWithContents("body {width: 100vw; height:100vh;}",
                     Dependency.Type.STYLESHEET);
         }
+    }
+
+    @Route(value = "", layout = MyInline.class)
+    public class MyRoot extends Div {
+        public MyRoot() {
+        }
+    }
+
+    @Inline("initialization.js")
+    @Inline("initial_style.css")
+    @Inline(value = "important_styles", wrapping = Inline.Wrapping.CSS)
+    public class MyInline extends Div implements RouterLayout {
     }
 }

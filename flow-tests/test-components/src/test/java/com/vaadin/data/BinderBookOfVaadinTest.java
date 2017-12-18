@@ -15,9 +15,6 @@
  */
 package com.vaadin.data;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -31,19 +28,22 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.BindingValidationStatus.Status;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
-import com.vaadin.ui.html.Label;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.checkbox.Checkbox;
 import com.vaadin.ui.datepicker.DatePicker;
 import com.vaadin.ui.textfield.TextField;
-import com.vaadin.ui.UI;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 /**
  * Book of Vaadin tests.
@@ -168,9 +168,9 @@ public class BinderBookOfVaadinTest {
     public void setUp() {
         binder = new Binder<BookPerson>() {
             @Override
-            protected void handleError(HasValue<?, ?> field, String error) {
-                super.handleError(field, error);
-                componentErrors.put(field, error);
+            protected void handleError(HasValue<?, ?> field,
+                    ValidationResult result) {
+                componentErrors.put(field, result.getErrorMessage());
             }
 
             @Override
@@ -218,10 +218,10 @@ public class BinderBookOfVaadinTest {
     @Test
     public void simpleEmailValidator() {
         binder.forField(field)
-        // Explicit validator instance
-        .withValidator(new EmailValidator(
-                "This doesn't look like a valid email address"))
-        .bind(BookPerson::getEmail, BookPerson::setEmail);
+                // Explicit validator instance
+                .withValidator(new EmailValidator(
+                        "This doesn't look like a valid email address"))
+                .bind(BookPerson::getEmail, BookPerson::setEmail);
 
         field.setValue("not-email");
         BinderValidationStatus<?> status = binder.validate();
@@ -240,10 +240,10 @@ public class BinderBookOfVaadinTest {
     @Test
     public void nameLengthTest() {
         binder.forField(field)
-        // Validator defined based on a lambda and an error message
-        .withValidator(name -> name.length() >= 3,
-                "Last name must contain at least three characters")
-        .bind(BookPerson::getLastName, BookPerson::setLastName);
+                // Validator defined based on a lambda and an error message
+                .withValidator(name -> name.length() >= 3,
+                        "Last name must contain at least three characters")
+                .bind(BookPerson::getLastName, BookPerson::setLastName);
 
         field.setValue("a");
         BinderValidationStatus<?> status = binder.validate();
@@ -262,12 +262,12 @@ public class BinderBookOfVaadinTest {
     @Test
     public void chainedEmailValidator() {
         binder.forField(field)
-        // Explicit validator instance
-        .withValidator(new EmailValidator(
-                "This doesn't look like a valid email address"))
-        .withValidator(email -> email.endsWith("@acme.com"),
-                "Only acme.com email addresses are allowed")
-        .bind(BookPerson::getEmail, BookPerson::setEmail);
+                // Explicit validator instance
+                .withValidator(new EmailValidator(
+                        "This doesn't look like a valid email address"))
+                .withValidator(email -> email.endsWith("@acme.com"),
+                        "Only acme.com email addresses are allowed")
+                .bind(BookPerson::getEmail, BookPerson::setEmail);
 
         field.setValue("not-email");
         BinderValidationStatus<?> status = binder.validate();
@@ -335,11 +335,11 @@ public class BinderBookOfVaadinTest {
         TextField yearOfBirthField = new TextField();
 
         binder.forField(yearOfBirthField)
-        .withConverter(Integer::valueOf, String::valueOf,
-                // Text to use instead of the NumberFormatException
-                // message
-                "Please enter a number")
-        .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
+                .withConverter(Integer::valueOf, String::valueOf,
+                        // Text to use instead of the NumberFormatException
+                        // message
+                        "Please enter a number")
+                .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
 
         binder.setBean(new BookPerson(1900, 5));
         yearOfBirthField.setValue("abc");
@@ -352,9 +352,9 @@ public class BinderBookOfVaadinTest {
     public void crossFieldValidation_validateUsingBinder() {
         Binder<Trip> binder = new Binder<Trip>() {
             @Override
-            protected void handleError(HasValue<?, ?> field, String error) {
-                super.handleError(field, error);
-                componentErrors.put(field, error);
+            protected void handleError(HasValue<?, ?> field,
+                    ValidationResult result) {
+                componentErrors.put(field, result.getErrorMessage());
             }
 
             @Override
@@ -371,8 +371,7 @@ public class BinderBookOfVaadinTest {
         Binding<Trip, LocalDate> returnBinding = binder.forField(returning)
                 .withValidator(
                         returnDate -> returnDate == null
-                        || !returnDate
-                        .isBefore(departing.getValue()),
+                                || !returnDate.isBefore(departing.getValue()),
                         "Cannot return before departing")
                 .bind(Trip::getReturnDate, Trip::setReturnDate);
 
@@ -420,9 +419,9 @@ public class BinderBookOfVaadinTest {
     public void crossFieldValidation_validateUsingBinding() {
         Binder<Trip> binder = new Binder<Trip>() {
             @Override
-            protected void handleError(HasValue<?, ?> field, String error) {
-                super.handleError(field, error);
-                componentErrors.put(field, error);
+            protected void handleError(HasValue<?, ?> field,
+                    ValidationResult result) {
+                componentErrors.put(field, result.getErrorMessage());
             }
 
             @Override
@@ -439,8 +438,7 @@ public class BinderBookOfVaadinTest {
         Binding<Trip, LocalDate> returnBinding = binder.forField(returning)
                 .withValidator(
                         returnDate -> returnDate == null
-                        || !returnDate
-                        .isBefore(departing.getValue()),
+                                || !returnDate.isBefore(departing.getValue()),
                         "Cannot return before departing")
                 .bind(Trip::getReturnDate, Trip::setReturnDate);
 
@@ -485,8 +483,8 @@ public class BinderBookOfVaadinTest {
 
         String msg = "This doesn't look like a valid email address";
         binder.forField(field).withValidator(new EmailValidator(msg))
-        .withStatusLabel(emailStatus)
-        .bind(BookPerson::getEmail, BookPerson::setEmail);
+                .withStatusLabel(emailStatus)
+                .bind(BookPerson::getEmail, BookPerson::setEmail);
 
         field.setValue("foo");
         binder.validate();
@@ -508,13 +506,13 @@ public class BinderBookOfVaadinTest {
 
         String msg = "Full name must contain at least three characters";
         binder.forField(field).withValidator(name -> name.length() >= 3, msg)
-        .withValidationStatusHandler(status -> {
-            nameStatus.setText(status.getMessage().orElse(""));
-            // Only show the label when validation has failed
-            boolean error = status.getStatus() == Status.ERROR;
-            setVisible(nameStatus, error);
-            statusCapture.set(status);
-        }).bind(BookPerson::getLastName, BookPerson::setLastName);
+                .withValidationStatusHandler(status -> {
+                    nameStatus.setText(status.getMessage().orElse(""));
+                    // Only show the label when validation has failed
+                    boolean error = status.getStatus() == Status.ERROR;
+                    setVisible(nameStatus, error);
+                    statusCapture.set(status);
+                }).bind(BookPerson::getLastName, BookPerson::setLastName);
 
         field.setValue("aa");
         binder.validate();
@@ -546,7 +544,7 @@ public class BinderBookOfVaadinTest {
         // Phone or email has to be specified for the bean
         Validator<BookPerson> phoneOrEmail = Validator.from(
                 personBean -> !"".equals(personBean.getPhone())
-                || !"".equals(personBean.getEmail()),
+                        || !"".equals(personBean.getEmail()),
                 "A person must have either a phone number or an email address");
         binder.withValidator(phoneOrEmail);
 
@@ -583,16 +581,16 @@ public class BinderBookOfVaadinTest {
     public void manyConvertersAndValidators() throws ValidationException {
         TextField yearOfBirthField = new TextField();
         binder.forField(yearOfBirthField)
-        // Validator will be run with the String value of the field
-        .withValidator(text -> text.length() == 4,
-                "Doesn't look like a year")
-        // Converter will only be run for strings with 4 characters
-        .withConverter(
-                new StringToIntegerConverter("Must enter a number"))
-        // Validator will be run with the converted value
-        .withValidator(year -> year >= 1900 && year <= 2000,
-                "Person must be born in the 20th century")
-        .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
+                // Validator will be run with the String value of the field
+                .withValidator(text -> text.length() == 4,
+                        "Doesn't look like a year")
+                // Converter will only be run for strings with 4 characters
+                .withConverter(
+                        new StringToIntegerConverter("Must enter a number"))
+                // Validator will be run with the converted value
+                .withValidator(year -> year >= 1900 && year <= 2000,
+                        "Person must be born in the 20th century")
+                .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
 
         yearOfBirthField.setValue("abc");
         Assert.assertEquals("Doesn't look like a year", binder.validate()
@@ -603,7 +601,7 @@ public class BinderBookOfVaadinTest {
         yearOfBirthField.setValue("1200");
         Assert.assertEquals("Person must be born in the 20th century",
                 binder.validate().getFieldValidationErrors().get(0).getMessage()
-                .get());
+                        .get());
 
         yearOfBirthField.setValue("1950");
         Assert.assertFalse(binder.validate().hasErrors());
@@ -642,7 +640,7 @@ public class BinderBookOfVaadinTest {
 
         // Using the converter
         binder.forField(yearOfBirthField).withConverter(new MyConverter())
-        .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
+                .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
 
         BookPerson p = new BookPerson(1500, 12);
         binder.setBean(p);
@@ -674,10 +672,10 @@ public class BinderBookOfVaadinTest {
         TextField yearOfBirth = new TextField();
         BookPerson p = new BookPerson(1500, 12);
         binder.forField(yearOfBirth)
-        .withConverter(new StringToIntegerConverter("err"))
-        .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
+                .withConverter(new StringToIntegerConverter("err"))
+                .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
         binder.withValidator(bean -> bean.yearOfBirth < 2000, message)
-        .withValidator(bean -> bean.yearOfBirth != 2000, message2);
+                .withValidator(bean -> bean.yearOfBirth != 2000, message2);
 
         binder.setBean(p);
 
@@ -739,11 +737,11 @@ public class BinderBookOfVaadinTest {
         TextField yearOfBirth = new TextField();
         BookPerson p = new BookPerson(1500, 12);
         binder.forField(yearOfBirth)
-        .withConverter(new StringToIntegerConverter("err"))
-        .withValidator(value -> value % 2 == 0, bindingMessage)
-        .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
+                .withConverter(new StringToIntegerConverter("err"))
+                .withValidator(value -> value % 2 == 0, bindingMessage)
+                .bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
         binder.withValidator(bean -> bean.yearOfBirth < 2000, message)
-        .withValidator(bean -> bean.yearOfBirth != 2000, message2);
+                .withValidator(bean -> bean.yearOfBirth != 2000, message2);
 
         binder.setBean(p);
 
@@ -806,8 +804,8 @@ public class BinderBookOfVaadinTest {
             resetButton.setDisabled(!hasChanges);
         });
         binder.forField(field)
-        .withValidator(new StringLengthValidator("", 1, 3))
-        .bind(BookPerson::getLastName, BookPerson::setLastName);
+                .withValidator(new StringLengthValidator("", 1, 3))
+                .bind(BookPerson::getLastName, BookPerson::setLastName);
         // no changes
         Assert.assertTrue(saveButton.isDisabled());
         Assert.assertTrue(resetButton.isDisabled());
@@ -864,8 +862,8 @@ public class BinderBookOfVaadinTest {
             resetButton.setDisabled(!hasChanges);
         });
         binder.forField(field)
-        .withValidator(new StringLengthValidator("", 1, 3))
-        .bind(BookPerson::getLastName, BookPerson::setLastName);
+                .withValidator(new StringLengthValidator("", 1, 3))
+                .bind(BookPerson::getLastName, BookPerson::setLastName);
         // no changes
         Assert.assertTrue(saveButton.isDisabled());
         Assert.assertTrue(resetButton.isDisabled());

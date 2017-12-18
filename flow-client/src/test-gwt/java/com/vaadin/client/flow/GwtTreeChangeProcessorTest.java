@@ -17,7 +17,7 @@ package com.vaadin.client.flow;
 
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.flow.nodefeature.NodeList;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

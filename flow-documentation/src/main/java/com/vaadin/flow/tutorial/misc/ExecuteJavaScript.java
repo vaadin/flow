@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.tutorial.misc;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.Page;
-import com.vaadin.ui.UI;
 
 @CodeFor("miscellaneous/tutorial-execute-javascript.asciidoc")
 public class ExecuteJavaScript {

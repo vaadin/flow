@@ -28,11 +28,11 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.spring.SpringServlet;
+import com.vaadin.flow.spring.VaadinMVCWebAppInitializer;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.Route;
-import com.vaadin.spring.SpringServlet;
-import com.vaadin.spring.VaadinMVCWebAppInitializer;
-import com.vaadin.ui.html.Div;
 
 @CodeFor("spring/tutorial-spring-basic.asciidoc")
 public class BasicSpringUsage {

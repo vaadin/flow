@@ -13,18 +13,20 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.change.NodeChange;
-import com.vaadin.flow.model.Bean;
-import com.vaadin.flow.model.BeanContainingBeans;
-import com.vaadin.flow.model.Exclude;
-import com.vaadin.flow.model.Include;
-import com.vaadin.flow.model.InvalidTemplateModelException;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
+import com.vaadin.flow.template.angular.AngularTemplate;
 import com.vaadin.flow.template.angular.InlineTemplate;
-import com.vaadin.ui.AngularTemplate;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModelTypeParser;
+import com.vaadin.flow.templatemodel.Bean;
+import com.vaadin.flow.templatemodel.BeanContainingBeans;
+import com.vaadin.flow.templatemodel.Exclude;
+import com.vaadin.flow.templatemodel.Include;
+import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
+import com.vaadin.flow.util.ReflectTools;
 
 public class TemplateModelTest {
 

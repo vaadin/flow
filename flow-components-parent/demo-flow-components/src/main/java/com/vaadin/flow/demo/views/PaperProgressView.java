@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.paper.progress.GeneratedPaperProgress;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
 import com.vaadin.router.Route;
-import com.vaadin.ui.common.StyleSheet;
-import com.vaadin.ui.html.Label;
-import com.vaadin.ui.paper.progress.GeneratedPaperProgress;
 
 /**
  * View for {@link GeneratedPaperProgress} demo.

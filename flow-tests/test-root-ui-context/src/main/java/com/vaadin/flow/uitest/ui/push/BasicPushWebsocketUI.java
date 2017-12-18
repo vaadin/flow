@@ -1,9 +1,9 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import com.vaadin.ui.Push;
-import com.vaadin.flow.nodefeature.PushConfigurationMap;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.shared.ui.Transport;
+import com.vaadin.flow.component.Push;
+import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.shared.ui.Transport;
 
 @Push(transport = Transport.WEBSOCKET)
 public class BasicPushWebsocketUI extends BasicPushUI {

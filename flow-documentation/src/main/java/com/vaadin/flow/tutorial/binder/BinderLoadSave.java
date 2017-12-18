@@ -17,10 +17,10 @@ package com.vaadin.flow.tutorial.binder;
 
 import java.util.List;
 
-import com.vaadin.data.Binder;
-import com.vaadin.data.BinderValidationStatus;
-import com.vaadin.data.ValidationException;
-import com.vaadin.data.ValidationResult;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.button.Button;
 

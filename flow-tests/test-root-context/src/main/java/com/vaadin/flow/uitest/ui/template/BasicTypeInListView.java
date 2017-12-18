@@ -18,13 +18,13 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.router.Route;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Route("com.vaadin.flow.uitest.ui.template.BasicTypeInListView")
 public class BasicTypeInListView extends AbstractDivView {

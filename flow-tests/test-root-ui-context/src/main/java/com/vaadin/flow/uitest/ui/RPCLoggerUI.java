@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Input;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.server.VaadinRequest;
 
 /**
  * @author Vaadin Ltd

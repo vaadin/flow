@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
-import com.vaadin.ui.html.Input;
-import com.vaadin.ui.html.NativeButton;
+import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.CallFunctionBeforeRemoveView", layout = ViewTestLayout.class)
 public class CallFunctionBeforeRemoveView extends AbstractDivView {

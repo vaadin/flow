@@ -20,6 +20,13 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.template.angular.ElementTemplateBuilder;
+import com.vaadin.flow.template.angular.ElementTemplateNode;
+import com.vaadin.flow.template.angular.StaticBindingValueProvider;
+import com.vaadin.flow.template.angular.TemplateNode;
+import com.vaadin.flow.template.angular.TextTemplateBuilder;
+import com.vaadin.flow.template.angular.TextTemplateNode;
+
 public class TemplateBuilderTest {
     @Test
     public void testBasicTemplate() {

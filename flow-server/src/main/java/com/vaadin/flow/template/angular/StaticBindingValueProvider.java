@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.template.angular;
 
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.internal.StateNode;
 
 import elemental.json.JsonValue;
 

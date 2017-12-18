@@ -17,9 +17,9 @@ package com.vaadin.flow.tutorial;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.server.VaadinServletConfiguration;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.server.VaadinServlet;
 
 @CodeFor("application-structure/tutorial-hello-world.asciidoc")
 @WebServlet(urlPatterns = "/*", name = "HelloWorldServlet")

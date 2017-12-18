@@ -20,8 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.HasValidation;
 import com.vaadin.testbench.By;
-import com.vaadin.ui.common.HasValidation;
 
 /**
  * Base class for validation tests of components that implement

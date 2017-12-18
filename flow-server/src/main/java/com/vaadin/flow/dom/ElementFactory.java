@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
-import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.ui.Tag;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Helpers to create {@link Element} instances.

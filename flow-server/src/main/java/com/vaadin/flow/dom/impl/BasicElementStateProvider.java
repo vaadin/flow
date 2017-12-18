@@ -24,35 +24,40 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.dom.NodeVisitor;
+import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
-import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
-import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.flow.nodefeature.ElementAttributeMap;
-import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.ElementClassList;
-import com.vaadin.flow.nodefeature.ElementData;
-import com.vaadin.flow.nodefeature.ElementListenerMap;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.nodefeature.VirtualChildrenList;
-import com.vaadin.flow.nodefeature.NodeFeature;
-import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
-import com.vaadin.flow.nodefeature.PolymerEventListenerMap;
-import com.vaadin.flow.nodefeature.PolymerServerEventHandlers;
-import com.vaadin.flow.nodefeature.ShadowRootData;
-import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
-import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
+import com.vaadin.flow.internal.nodefeature.ClientDelegateHandlers;
+import com.vaadin.flow.internal.nodefeature.ComponentMapping;
+import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.internal.nodefeature.ElementClassList;
+import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.nodefeature.ParentGeneratorHolder;
+import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
+import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
+import com.vaadin.flow.internal.nodefeature.ShadowRootData;
+import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
+import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.template.angular.AbstractControlTemplateNode;
-import com.vaadin.server.AbstractStreamResource;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.event.PropertyChangeListener;
+
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -340,6 +345,40 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
+    public void visit(StateNode node, NodeVisitor visitor,
+            boolean visitDescendants) {
+        Element element = Element.get(node);
+        ElementData data = node.getFeature(ElementData.class);
+        JsonValue payload = data.getPayload();
+
+        if (payload instanceof JsonObject) {
+            JsonObject object = (JsonObject) payload;
+            String type = object.getString(NodeProperties.TYPE);
+            if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
+                visitor.visit(NodeVisitor.ElementType.VIRTUAL, element);
+            } else if (NodeProperties.INJECT_BY_ID.equals(type)
+                    || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
+                visitor.visit(NodeVisitor.ElementType.VIRTUAL_ATTACHED,
+                        element);
+            } else {
+                assert false : "Unexpected payload type : " + type;
+            }
+        } else if (payload == null) {
+            visitor.visit(NodeVisitor.ElementType.REGULAR, element);
+        } else {
+            assert false : "Unexpected payload in element data : "
+                    + payload.toJson();
+        }
+
+        if (visitDescendants) {
+            visitDescendants(element, visitor);
+
+            element.getShadowRoot()
+                    .ifPresent(root -> root.accept(visitor, visitDescendants));
+        }
+    }
+
+    @Override
     protected Node<?> getNode(StateNode node) {
         assert supports(node);
         return Element.get(node);
@@ -349,4 +388,5 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     protected Class<? extends NodeFeature>[] getProviderFeatures() {
         return features;
     }
+
 }

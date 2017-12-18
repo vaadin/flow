@@ -21,6 +21,7 @@ import org.junit.Test;
 import com.vaadin.flow.template.angular.AbstractBindingValueProvider;
 import com.vaadin.flow.template.angular.JsExpressionBindingProvider;
 import com.vaadin.flow.template.angular.ModelValueBindingProvider;
+import com.vaadin.flow.template.angular.parser.AbstractTemplateBuilderFactory;
 
 /**
  * @author Vaadin Ltd

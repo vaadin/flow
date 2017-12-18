@@ -18,7 +18,7 @@ package com.vaadin.flow.template.angular;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.ui.AngularTemplate;
+import com.vaadin.flow.template.angular.AngularTemplate;
 
 /**
  * @author Vaadin Ltd

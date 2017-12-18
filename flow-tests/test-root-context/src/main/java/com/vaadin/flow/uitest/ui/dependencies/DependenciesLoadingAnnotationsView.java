@@ -1,10 +1,10 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import com.vaadin.router.Route;
-import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * See corresponding IT for more details.

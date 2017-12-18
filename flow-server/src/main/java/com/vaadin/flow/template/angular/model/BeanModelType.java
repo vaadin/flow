@@ -26,16 +26,16 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
-import com.vaadin.flow.model.BasicModelType;
-import com.vaadin.flow.model.ComplexModelType;
-import com.vaadin.flow.model.InvalidTemplateModelException;
-import com.vaadin.flow.model.ModelType;
-import com.vaadin.flow.model.PropertyFilter;
-import com.vaadin.flow.model.TemplateModelUtil;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
+import com.vaadin.flow.templatemodel.BasicModelType;
+import com.vaadin.flow.templatemodel.ComplexModelType;
+import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
+import com.vaadin.flow.templatemodel.ModelType;
+import com.vaadin.flow.templatemodel.PropertyFilter;
+import com.vaadin.flow.templatemodel.TemplateModelUtil;
+import com.vaadin.flow.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

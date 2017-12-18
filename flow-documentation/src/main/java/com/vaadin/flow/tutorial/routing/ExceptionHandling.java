@@ -2,14 +2,14 @@ package com.vaadin.flow.tutorial.routing;
 
 import java.nio.file.AccessDeniedException;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.NotFoundException;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationObserver;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 
 @CodeFor("routing/tutorial-routing-exception-handling.asciidoc")
 public class ExceptionHandling {

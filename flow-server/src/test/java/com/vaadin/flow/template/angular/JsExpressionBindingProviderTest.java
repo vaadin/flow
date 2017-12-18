@@ -21,13 +21,14 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.nodefeature.TemplateMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
+import com.vaadin.flow.internal.nodefeature.TemplateMap;
+import com.vaadin.flow.template.angular.JsExpressionBindingProvider;
 import com.vaadin.flow.template.angular.model.BeanModelType;
 import com.vaadin.flow.template.angular.model.TestModelDescriptor;
-import com.vaadin.flow.model.BasicModelType;
-import com.vaadin.flow.model.ModelType;
+import com.vaadin.flow.templatemodel.BasicModelType;
+import com.vaadin.flow.templatemodel.ModelType;
 
 /**
  * @author Vaadin Ltd

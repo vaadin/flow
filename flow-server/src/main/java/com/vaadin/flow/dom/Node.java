@@ -20,8 +20,8 @@ import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 /**
  * A class representing a node in the DOM.
@@ -354,6 +354,26 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(getNode(), getStateProvider());
+    }
+
+    /**
+     * Applies the {@code visitor} for the node.
+     * <p>
+     * If {@code visitDescendants} is {@code true} then the {@code visitor} will
+     * be applied to the direct descendants as well. The descendants includes no
+     * only the children returned by the {@link #getChildren()} but also virtual
+     * children which are not in the regular children list.
+     *
+     * @param visitor
+     *            the visitor to apply to the node
+     * @param visitDescendants
+     *            whether descendants should be visited along with the node
+     * 
+     * @return this element
+     */
+    public N accept(NodeVisitor visitor, boolean visitDescendants) {
+        getStateProvider().visit(getNode(), visitor, visitDescendants);
+        return getSelf();
     }
 
     @Override

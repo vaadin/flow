@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.router.Route;
-import com.vaadin.server.VaadinService;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Label;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * @author Vaadin Ltd.
@@ -33,7 +33,8 @@ public class RequestParametersHistoryView extends AbstractDivView {
     private final Label requestParamLabel;
 
     public RequestParametersHistoryView() {
-        NativeButton backwardButton = new NativeButton("Go back", event -> getPage().getHistory().back());
+        NativeButton backwardButton = new NativeButton("Go back",
+                event -> getPage().getHistory().back());
         backwardButton.setId(BACK_BUTTON_ID);
 
         requestParamLabel = new Label(NO_INPUT_TEXT);

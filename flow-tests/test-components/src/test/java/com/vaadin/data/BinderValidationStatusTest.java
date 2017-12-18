@@ -27,9 +27,9 @@ import org.junit.Test;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.BindingValidationStatus.Status;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.tests.data.bean.Person;
-import com.vaadin.ui.common.HasValue;
-import com.vaadin.ui.html.Label;
 
 public class BinderValidationStatusTest
         extends BinderTestBase<Binder<Person>, Person> {
@@ -42,9 +42,9 @@ public class BinderValidationStatusTest
     public void setUp() {
         binder = new Binder<Person>() {
             @Override
-            protected void handleError(HasValue<?, ?> field, String error) {
-                super.handleError(field, error);
-                componentErrors.put(field, error);
+            protected void handleError(HasValue<?, ?> field,
+                    ValidationResult result) {
+                componentErrors.put(field, result.getErrorMessage());
             }
 
             @Override

@@ -16,9 +16,9 @@
 package com.vaadin.flow.tutorial.misc;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.StreamReceiver;
+import com.vaadin.flow.server.StreamVariable;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.server.StreamReceiver;
-import com.vaadin.server.StreamVariable;
 
 @CodeFor("miscellaneous/tutorial-stream-resources.asciidoc")
 public class StreamResources {

@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.tutorial.misc;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.i18n.LocaleChangeEvent;
-import com.vaadin.ui.i18n.LocaleChangeObserver;
 
 @CodeFor("miscellaneous/tutorial-i18n-localization.asciidoc")
 public class TranslationSources {

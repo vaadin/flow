@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.dom;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
-import com.vaadin.flow.nodefeature.ShadowRootHost;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
 
 /**
  * A class representing a shadow dom root of an element.
@@ -44,7 +44,7 @@ public class ShadowRoot extends Node<ShadowRoot> {
      */
     public static ShadowRoot get(StateNode node) {
         assert node != null;
-        if (node.hasFeature(ShadowRootHost.class)) {
+        if (isShadowRoot(node)) {
             return new ShadowRoot(node);
         } else {
             throw new IllegalArgumentException(
@@ -52,8 +52,19 @@ public class ShadowRoot extends Node<ShadowRoot> {
         }
     }
 
+    /**
+     * Checks whether the given {@code node} is a shadow root node.
+     *
+     * @param node
+     *            the state node, not <code>null</code>
+     * @return {@code true} if it's a shadow root, not <code>null</code>
+     */
+    public static boolean isShadowRoot(StateNode node) {
+        return node.hasFeature(ShadowRootHost.class);
+    }
+
     @Override
-    public Node getParentNode() {
+    public Node<?> getParentNode() {
         return null;
     }
 
