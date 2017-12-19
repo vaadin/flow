@@ -16,6 +16,7 @@
 package com.vaadin.flow.shared.ui;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -135,34 +136,20 @@ public class Dependency implements Serializable {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((loadMode == null) ? 0 : loadMode.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + ((url == null) ? 0 : url.hashCode());
-        return result;
+        return Objects.hash(type, url, loadMode);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
-        if (obj == null)
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Dependency other = (Dependency) obj;
-        if (loadMode != other.loadMode)
-            return false;
-        if (type != other.type)
-            return false;
-        if (url == null) {
-            if (other.url != null)
-                return false;
-        } else if (!url.equals(other.url))
-            return false;
-        return true;
+        }
+        Dependency that = (Dependency) o;
+        return type == that.type && loadMode == that.loadMode
+                && Objects.equals(url, that.url);
     }
 
     @Override

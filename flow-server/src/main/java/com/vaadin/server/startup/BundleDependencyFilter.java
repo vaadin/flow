@@ -57,9 +57,9 @@ public class BundleDependencyFilter implements DependencyFilter {
                     .get(clearFlowProtocols(dependency.getUrl()));
             if (bundleUrls != null) {
                 if (bundleUrls.size() > 1) {
-                    getLogger().warn(String.format(
-                            "Dependency '%s' is contained in multiple fragments: '%s', this may lead to performance degradation",
-                            dependency, bundleUrls));
+                    getLogger().warn(
+                            "Dependency '{}' is contained in multiple fragments: '{}', this may lead to performance degradation",
+                            dependency, bundleUrls);
                 }
                 bundleUrlsToInclude.addAll(bundleUrls);
             } else {
@@ -67,20 +67,11 @@ public class BundleDependencyFilter implements DependencyFilter {
             }
         }
 
-        bundleUrlsToInclude.stream().forEach(bundleUrl -> {
-            if (MAIN_BUNDLE_URL.equals(bundleUrl)) {
-                dependenciesWithBundles.add(0,
-                        createBundleDependency(bundleUrl));
-                return;
-            }
-            dependenciesWithBundles.add(createBundleDependency(bundleUrl));
-        });
-        if (!bundleUrlsToInclude.isEmpty()
-                && !bundleUrlsToInclude.contains(MAIN_BUNDLE_URL)) {
-            dependenciesWithBundles.add(0,
-                    new Dependency(Dependency.Type.HTML_IMPORT,
-                            MAIN_BUNDLE_URL, LoadMode.EAGER));
-        }
+        dependenciesWithBundles.add(0, createBundleDependency(MAIN_BUNDLE_URL));
+        bundleUrlsToInclude.stream()
+                .filter(bundleUrl -> !MAIN_BUNDLE_URL.equals(bundleUrl))
+                .map(BundleDependencyFilter::createBundleDependency)
+                .forEach(dependenciesWithBundles::add);
 
         return dependenciesWithBundles;
     }

@@ -55,8 +55,8 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
             Map<String, Set<String>> importsInBundles = readBundleDependencies(
                     event, es6ContextPathResolver);
             if (!importsInBundles.isEmpty()) {
-                if (importsInBundles.entrySet().stream()
-                        .noneMatch(entry -> entry.getValue().contains(
+                if (importsInBundles.values().stream()
+                        .noneMatch(importSet -> importSet.contains(
                                 BundleDependencyFilter.MAIN_BUNDLE_URL))) {
                     throw new IllegalArgumentException(String.format(
                             "Attempted to initialize BundleDependencyFilter with an "
@@ -80,9 +80,9 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         try (InputStream bundleManifestStream = servletContext
                 .getResourceAsStream(bundleManifestContextPath)) {
             if (bundleManifestStream == null) {
-                getLogger().info(String.format(
-                        "Bundling disabled: Flow bundle manifest '%s' was not found in servlet context",
-                        bundleManifestContextPath));
+                getLogger().info(
+                        "Bundling disabled: Flow bundle manifest '{}' was not found in servlet context",
+                        bundleManifestContextPath);
                 return Collections.emptyMap();
             }
 
