@@ -20,6 +20,7 @@ import java.util.List;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Assert;
 import org.junit.Test;
+import sun.awt.ComponentFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -97,6 +98,10 @@ public class RouterUtilTest {
     @Tag(Tag.DIV)
     public static class RootWithParents extends Component {
     }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(Parent.class)
+    public static class NonRouteTargetWithParents extends Component {}
 
     @Test
     public void route_path_should_contain_parent_prefix() {
@@ -284,6 +289,19 @@ public class RouterUtilTest {
                 "Expected to receive MiddleParent and Parent classes as parents.",
                 parentLayouts, IsIterableContainingInOrder.contains(
                         new Class[] { MiddleParent.class, Parent.class }));
+    }
+
+    @Test
+    public void expected_to_get_parent_layout() {
+        List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+                .collectRootRouteParentLayouts(NonRouteTargetWithParents.class);
+
+        Assert.assertEquals("Expected one parent layout", 1, parentLayouts.size());
+
+        Assert.assertThat(
+                "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
+                parentLayouts, IsIterableContainingInOrder
+                        .contains(new Class[] { Parent.class }));
     }
 
     @Test
