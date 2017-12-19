@@ -16,6 +16,7 @@
 package com.vaadin.flow.shared.ui;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -28,6 +29,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 public class Dependency implements Serializable {
+
     public static final String KEY_URL = "url";
     public static final String KEY_TYPE = "type";
     public static final String KEY_LOAD_MODE = "mode";
@@ -130,5 +132,29 @@ public class Dependency implements Serializable {
         jsonObject.put(KEY_TYPE, type.name());
         jsonObject.put(KEY_LOAD_MODE, loadMode.name());
         return jsonObject;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, url, loadMode);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Dependency that = (Dependency) o;
+        return type == that.type && loadMode == that.loadMode
+                && Objects.equals(url, that.url);
+    }
+
+    @Override
+    public String toString() {
+        return "Dependency [type=" + type + ", url=" + url + ", loadMode="
+                + loadMode + "]";
     }
 }
