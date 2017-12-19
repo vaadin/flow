@@ -20,7 +20,6 @@ import java.util.List;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Assert;
 import org.junit.Test;
-import sun.awt.ComponentFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -29,7 +28,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.RouterUtil;
 
 /**
  * Test that {@link RouterUtil} route resolving works as intended for both
@@ -294,9 +292,11 @@ public class RouterUtilTest {
     @Test
     public void expected_to_get_parent_layout() {
         List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
-                .collectRootRouteParentLayouts(NonRouteTargetWithParents.class);
+                .getParentLayoutsForNonRouteTarget(
+                        NonRouteTargetWithParents.class);
 
-        Assert.assertEquals("Expected one parent layout", 1, parentLayouts.size());
+        Assert.assertEquals("Expected one parent layout", 1,
+                parentLayouts.size());
 
         Assert.assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",

@@ -44,6 +44,9 @@ import com.vaadin.flow.router.RouterLayout;
  */
 public final class RouterUtil {
 
+    private RouterUtil() {
+    }
+
     /**
      * Get parent layouts for navigation target {@link Route} annotation.
      *
@@ -202,16 +205,16 @@ public final class RouterUtil {
      * annotated with {@link Route} nor {@link RouteAlias}, but may still
      * contain {@link ParentLayout}. Mainly error navigation targets.
      * 
-     * @param route
+     * @param navigationTarget
      *            route to check parent layouts for
      * @return list of parent layouts
      */
-    public static List<Class<? extends RouterLayout>> collectRootRouteParentLayouts(
-            Class<?> route) {
+    public static List<Class<? extends RouterLayout>> getParentLayoutsForNonRouteTarget(
+            Class<?> navigationTarget) {
         List<Class<? extends RouterLayout>> layouts = new ArrayList<>();
 
         Optional<ParentLayout> parentLayout = AnnotationReader
-                .getAnnotationFor(route, ParentLayout.class);
+                .getAnnotationFor(navigationTarget, ParentLayout.class);
         if (parentLayout.isPresent()) {
             layouts.addAll(
                     collectRouteParentLayouts(parentLayout.get().value()));
