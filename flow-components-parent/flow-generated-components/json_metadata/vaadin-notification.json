@@ -1,0 +1,66 @@
+{
+  "name": "Vaadin.NotificationElement",
+  "tag": "vaadin-notification",
+  "baseUrl": "vaadin-notification/vaadin-notification.html",
+  "version": "1.0.0-alpha3",
+  "properties": [
+    {
+      "name": "duration",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "The duration in milliseconds to show the notification.\nSet to `0` or a negative number to disable the notification auto-closing.\n             "
+    },
+    {
+      "name": "opened",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True if the notification is currently displayed.\n             ",
+      "notify": true
+    },
+    {
+      "name": "verticalAlign",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Vertical alignment of the notification in the viewport\nValid values are `top-stretch|top|middle|bottom|bottom-stretch`\n             "
+    },
+    {
+      "name": "horizontalAlign",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Horizontal alignment of the notification in the viewport\nOnly applies for notifications in `top` or `bottom` containers.\nValid values are `start|center|end`\nHorizontal alignment is skipped in case verticalAlign is set to `top-stretch|middle|bottom-stretch`\n             "
+    }
+  ],
+  "methods": [
+    {
+      "name": "open",
+      "description": "Opens the notification.\n         ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "close",
+      "description": "Closes the notification.\n         ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
+  "events": [
+    {
+      "name": "opened-changed",
+      "description": "Fired when the `opened` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [],
+  "description": "`<vaadin-notification>` is a Polymer 2 element providing accessible and customizable notifications (toasts).\n\n```\n<vaadin-notification>\n  <template>\n    Your work has been saved\n  </template>\n</vaadin-notification>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following Shadow DOM parts are available for styling:\n\nPart name  | Description | Theme for Element\n-----------|-------------|------------------\n`content`  | The container of all regions | vaadin-notification-overlay\n`top-stretch` | top-stretch container | vaadin-notification-overlay\n`top` | top container | vaadin-notification-overlay\n`top-start` | top-start container, child of top | vaadin-notification-overlay\n`top-center` | top-center container, child of top | vaadin-notification-overlay\n`top-end` | top-end container, child of top | vaadin-notification-overlay\n`middle` | middle container | vaadin-notification-overlay\n`bottom` | bottom container | vaadin-notification-overlay\n`bottom-start` | bottom-start container, child of bottom | vaadin-notification-overlay\n`bottom-center` | bottom-center container, child of bottom | vaadin-notification-overlay\n`bottom-end` | bottom-end container, child of bottom | vaadin-notification-overlay\n`bottom-stretch` | bottom-stretch container, child of bottom | vaadin-notification-overlay"
+}
