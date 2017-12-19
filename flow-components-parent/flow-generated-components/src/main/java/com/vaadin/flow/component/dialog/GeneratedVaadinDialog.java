@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.dialog;
 
+import javax.annotation.Generated;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -25,8 +27,6 @@ import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.shared.Registration;
-
-import javax.annotation.Generated;
 
 /**
  * <p>
@@ -90,71 +90,6 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      */
     public void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to disable closing dialog on outside click
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code noCloseOnOutsideClick} property from the webcomponent
-     */
-    public boolean isNoCloseOnOutsideClick() {
-        return getElement().getProperty("noCloseOnOutsideClick", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to disable closing dialog on outside click
-     * </p>
-     * 
-     * @param noCloseOnOutsideClick
-     *            the boolean value to set
-     */
-    public void setNoCloseOnOutsideClick(boolean noCloseOnOutsideClick) {
-        getElement().setProperty("noCloseOnOutsideClick",
-                noCloseOnOutsideClick);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to disable closing dialog on Escape press
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code noCloseOnEsc} property from the webcomponent
-     */
-    public boolean isNoCloseOnEsc() {
-        return getElement().getProperty("noCloseOnEsc", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to disable closing dialog on Escape press
-     * </p>
-     * 
-     * @param noCloseOnEsc
-     *            the boolean value to set
-     */
-    public void setNoCloseOnEsc(boolean noCloseOnEsc) {
-        getElement().setProperty("noCloseOnEsc", noCloseOnEsc);
     }
 
     @DomEvent("opened-changed")
