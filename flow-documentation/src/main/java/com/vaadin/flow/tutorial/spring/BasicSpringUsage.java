@@ -29,10 +29,10 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.VaadinMVCWebAppInitializer;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.router.Route;
 
 @CodeFor("spring/tutorial-spring-basic.asciidoc")
 public class BasicSpringUsage {

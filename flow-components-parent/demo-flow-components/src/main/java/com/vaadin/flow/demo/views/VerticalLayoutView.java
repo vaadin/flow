@@ -16,16 +16,16 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.orderedlayout.FlexLayout.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexLayout.JustifyContentMode;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
-import com.vaadin.router.Route;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.layout.FlexLayout.Alignment;
-import com.vaadin.ui.layout.FlexLayout.JustifyContentMode;
-import com.vaadin.ui.layout.VerticalLayout;
+import com.vaadin.flow.router.Route;
 
 /**
  * View for the {@link VerticalLayout} component.

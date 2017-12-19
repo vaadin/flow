@@ -29,9 +29,9 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.demo.MainLayout.MainLayoutModel;
 import com.vaadin.flow.demo.model.DemoObject;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.router.Route;
-import com.vaadin.router.RouterLayout;
 
 /**
  * Main layout of the application. It contains the menu, header and the main

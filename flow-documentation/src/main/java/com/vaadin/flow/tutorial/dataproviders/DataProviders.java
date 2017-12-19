@@ -24,8 +24,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
+import com.vaadin.flow.data.provider.CallbackDataProvider.CountCallback;
+import com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -33,15 +39,9 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.provider.SortOrder;
-import com.vaadin.flow.data.provider.CallbackDataProvider.CountCallback;
-import com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person;
 import com.vaadin.flow.tutorial.binder.Person.Department;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.combobox.ComboBox;
-import com.vaadin.ui.grid.Grid;
-import com.vaadin.ui.textfield.TextField;
 
 @CodeFor("data-provider/tutorial-flow-data-provider.asciidoc")
 public class DataProviders {
@@ -138,15 +138,16 @@ public class DataProviders {
 
         // Sets items as a collection
         comboBox.setItems(EnumSet.allOf(Status.class));
-        
+
         List<Status> itemsToShow = null;
-        
-        /* Not implemented
+
+        // @formatter:off
+        /*
         comboBox.setItems(
-                (itemCaption, filterText) ->
-                  itemCaption.startsWith(filterText),
+                (itemCaption, filterText) -> itemCaption.startsWith(filterText),
                 itemsToShow);
         */
+        // @formatter:on
     }
 
     public void grid() {
@@ -164,12 +165,11 @@ public class DataProviders {
                 new Person("James Madison", 1751)
               );
         // @formatter:on
-        
-        grid.addColumn(Person::getName)
-        .setHeader("Name")
-        // Override default natural sorting
-        .setComparator(Comparator.comparing(
-          person -> person.getName().toLowerCase()));
+
+        grid.addColumn(Person::getName).setHeader("Name")
+                // Override default natural sorting
+                .setComparator(Comparator
+                        .comparing(person -> person.getName().toLowerCase()));
     }
 
     public void listDataProvider() {
@@ -421,17 +421,16 @@ public class DataProviders {
             dataProvider.refreshItem(newInstance);
         });
     }
-    
+
     public void sortOrderProvider() {
         Grid<Person> grid = new Grid<>();
 
         grid.addColumn(person -> person.getName() + " " + person.getLastName())
-                .setHeader("Name")
-                .setSortOrderProvider(
-                    // Sort according to last name, then first name
-                    direction -> Stream.of(
-                            new QuerySortOrder("lastName", direction),
-                            new QuerySortOrder("firstName", direction)));
+                .setHeader("Name").setSortOrderProvider(
+                        // Sort according to last name, then first name
+                        direction -> Stream.of(
+                                new QuerySortOrder("lastName", direction),
+                                new QuerySortOrder("firstName", direction)));
 
         // Will be sortable by the user
         // When sorting by this column, the query will have a SortOrder
@@ -444,27 +443,30 @@ public class DataProviders {
     }
 
     public void filteringBy() {
-        /* not implemented
+        // @formatter:off
+        /*
+         * not implemented
+
         ComboBox<Person> comboBox = new ComboBox<>();
         List<Person> persons = null;
-        
-        ListDataProvider<Person> dataProvider =
-                DataProvider.ofCollection(persons);
 
-              comboBox.setDataProvider(dataProvider.filteringBy(
-                (person, filterText) -> {
-                  if (person.getName().contains(filterText)) {
-                    return true;
-                  }
+        ListDataProvider<Person> dataProvider = DataProvider
+                .ofCollection(persons);
 
-                  if (person.getEmail().contains(filterText)) {
-                    return true;
-                  }
+        comboBox.setDataProvider(
+                dataProvider.filteringBy((person, filterText) -> {
+                    if (person.getName().contains(filterText)) {
+                        return true;
+                    }
 
-                  return false;
-                }
-              ));
-        */
+                    if (person.getEmail().contains(filterText)) {
+                        return true;
+                    }
+
+                    return false;
+                }));
+         */
+        // @formatter:on
     }
 
     public void withConvertedFilter() {

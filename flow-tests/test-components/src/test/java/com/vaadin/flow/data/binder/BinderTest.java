@@ -14,7 +14,19 @@
  * the License.
  */
 
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,29 +38,24 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.data.Binder.Binding;
-import com.vaadin.data.Binder.BindingBuilder;
-import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.data.validator.IntegerRangeValidator;
-import com.vaadin.data.validator.NotEmptyValidator;
-import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.tests.data.bean.Person;
-import com.vaadin.tests.data.bean.Sex;
-import com.vaadin.ui.textfield.TextField;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyString;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Binder.Binding;
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.binder.BindingValidationStatus;
+import com.vaadin.flow.data.binder.BindingValidationStatusHandler;
+import com.vaadin.flow.data.binder.ErrorLevel;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.validator.IntegerRangeValidator;
+import com.vaadin.flow.data.validator.NotEmptyValidator;
+import com.vaadin.flow.data.validator.StringLengthValidator;
+import com.vaadin.flow.tests.data.bean.Person;
+import com.vaadin.flow.tests.data.bean.Sex;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
@@ -752,8 +759,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         // Test that the binding does work
         assertTrue("Field not initially empty", ageField.isEmpty());
         binder.setBean(item);
-        assertEquals("Binding did not work",
-                String.valueOf(item.getAge()), ageField.getValue());
+        assertEquals("Binding did not work", String.valueOf(item.getAge()),
+                ageField.getValue());
         binder.setBean(null);
         assertTrue("Field not cleared", ageField.isEmpty());
 
@@ -799,8 +806,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         // Test that the binding does work
         assertTrue("Field not initially empty", ageField.isEmpty());
         binder.setBean(item);
-        assertEquals("Binding did not work",
-                String.valueOf(item.getAge()), ageField.getValue());
+        assertEquals("Binding did not work", String.valueOf(item.getAge()),
+                ageField.getValue());
         binder.setBean(null);
         assertTrue("Field not cleared", ageField.isEmpty());
 
@@ -979,7 +986,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.withValidator(p -> !p.getFirstName().equals(p.getLastName()),
                 "First name and last name can't be the same");
     }
-    
+
     @Test
     public void info_validator_not_considered_error() {
         String infoMessage = "Young";
@@ -990,8 +997,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.setBean(item);
         ageField.setValue("3");
-        Assert.assertEquals(infoMessage,
-                ageField.getErrorMessage());
+        Assert.assertEquals(infoMessage, ageField.getErrorMessage());
 
         Assert.assertEquals(3, item.getAge());
     }
@@ -1015,15 +1021,16 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertThat("Name with a value should not be an error",
                 nameField.getErrorMessage(), isEmptyString());
 
-        assertThat("Age field should not be in error, since it has not been modified.",
+        assertThat(
+                "Age field should not be in error, since it has not been modified.",
                 ageField.getErrorMessage(), isEmptyString());
 
         nameField.setValue("");
         assertNotNull("Empty name should now be in error.",
                 nameField.getErrorMessage());
 
-        assertThat("Age field should still be ok.",
-                ageField.getErrorMessage(), isEmptyString());
+        assertThat("Age field should still be ok.", ageField.getErrorMessage(),
+                isEmptyString());
     }
 
     @Test

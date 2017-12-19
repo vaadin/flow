@@ -17,7 +17,7 @@ package com.vaadin.flow.components.it;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValidation;
-import com.vaadin.ui.button.Button;
+import com.vaadin.flow.component.button.Button;
 
 /**
  * Abstract view class for testing validation with components that implement
@@ -55,7 +55,7 @@ public abstract class ValidationTestView extends TestView {
 
     /**
      * Gets the component to be tested.
-     * 
+     *
      * @return a component that implements {@link HasValidation}
      */
     protected abstract HasValidation getValidationComponent();

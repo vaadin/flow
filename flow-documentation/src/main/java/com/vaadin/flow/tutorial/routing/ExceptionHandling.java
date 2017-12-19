@@ -4,12 +4,12 @@ import java.nio.file.AccessDeniedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.router.ErrorParameter;
-import com.vaadin.router.HasErrorParameter;
-import com.vaadin.router.NotFoundException;
-import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationObserver;
 
 @CodeFor("routing/tutorial-routing-exception-handling.asciidoc")
 public class ExceptionHandling {
@@ -21,8 +21,8 @@ public class ExceptionHandling {
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<NotFoundException> parameter) {
-            getElement().setText(
-                    "Could not navigate to '" + event.getLocation().getPath() + "'");
+            getElement().setText("Could not navigate to '"
+                    + event.getLocation().getPath() + "'");
             return 404;
         }
     }
