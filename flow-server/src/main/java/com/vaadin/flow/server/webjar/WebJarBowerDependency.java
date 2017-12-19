@@ -96,17 +96,21 @@ public class WebJarBowerDependency {
      *         integer otherwise
      * @throws IllegalArgumentException
      *             if dependencies have different
-     *             {@link WebJarBowerDependency#bowerName}
-     * @throws IllegalArgumentException
-     *             as a
-     *             {@link SemanticVersion#comparePatchParts(SemanticVersion)}
-     *             result
+     *             {@link WebJarBowerDependency#bowerName} or other version has
+     *             different major or minor version
      */
     public int compareVersions(WebJarBowerDependency dependency) {
         if (!Objects.equals(bowerName,
                 Objects.requireNonNull(dependency).bowerName)) {
             throw new IllegalArgumentException(String.format(
                     "Received incomparable bower webJars with different bower names: '%s' and '%s'",
+                    this, dependency));
+        }
+        if (semanticVersion.getMajor() != dependency.semanticVersion.getMajor()
+                || semanticVersion.getMinor() != dependency.semanticVersion
+                        .getMinor()) {
+            throw new IllegalArgumentException(String.format(
+                    "Received incomparable bower webJars with different major or minor version parts: '%s' and '%s'",
                     this, dependency));
         }
         return semanticVersion.comparePatchParts(dependency.semanticVersion);

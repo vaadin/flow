@@ -16,16 +16,14 @@
 
 package com.vaadin.flow.server.webjar;
 
+import org.junit.Test;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-
-import org.junit.Test;
-
-import com.vaadin.flow.server.webjar.WebJarBowerDependency;
 
 /**
  * @author Vaadin Ltd.
@@ -55,6 +53,20 @@ public class WebJarBowerDependencyTest {
         new WebJarBowerDependency("bowerName1", "webJarName", "1.2.3")
                 .compareVersions(new WebJarBowerDependency("bowerName2",
                         "webJarName", "1.2.3"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void versionsWithDifferentMajorVersionPartsAreIncompatible() {
+        new WebJarBowerDependency("bowerName", "webJarName", "1.2.3")
+                .compareVersions(new WebJarBowerDependency("bowerName",
+                        "webJarName", "2.2.3"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void versionsWithDifferentMinorVersionPartsAreIncompatible() {
+        new WebJarBowerDependency("bowerName", "webJarName", "1.2.3")
+                .compareVersions(new WebJarBowerDependency("bowerName",
+                        "webJarName", "1.3.3"));
     }
 
     @Test
