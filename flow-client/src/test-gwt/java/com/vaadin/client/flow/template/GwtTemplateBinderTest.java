@@ -678,6 +678,23 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals(0, element.getChildElementCount());
     }
 
+    public void testParentStateNodeSetOnBind() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("span");
+
+        StateNode templateState = new StateNode(1, stateNode.getTree());
+        registerTemplateNode(templateNode, templateState, templateState.getId());
+
+        StateNode simpleNode = new StateNode(2, tree);
+        simpleNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.TAG).setValue("div");
+        simpleNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, templateState);
+
+        Binder.bind(simpleNode, createElement(simpleNode));
+
+        assertEquals(simpleNode, templateState.getParent());
+    }
+
     public void testEventHandler() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
@@ -1236,5 +1253,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         node.getMap(NodeFeatures.TEMPLATE)
                 .getProperty(NodeProperties.MODEL_DESCRIPTOR)
                 .setValue(constantId);
+    }
+
+    private static Element createElement(StateNode node) {
+        return new SimpleElementBindingStrategy().create(node);
     }
 }

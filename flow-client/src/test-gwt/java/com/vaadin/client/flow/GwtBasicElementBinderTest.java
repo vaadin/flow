@@ -262,6 +262,82 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("child", childElement.getId());
     }
 
+    public void testParentChainOnBind() {
+        Binder.bind(node, element);
+
+        StateNode simpleNode = new StateNode(2, tree);
+        simpleNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.TAG).setValue("div");
+
+        node.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, simpleNode);
+
+        StateNode childNode = createChildNode("child");
+
+        simpleNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+
+        Reactive.flush();
+
+        assertEquals("SimpleNode did not get the correct parent rootNode", node,
+                simpleNode.getParent());
+        assertEquals("ChildNode did not get the correct parent simpleNode",
+                simpleNode, childNode.getParent());
+
+        StateNode secondChild = createChildNode("child2");
+
+        simpleNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(1, secondChild);
+
+        assertNull(secondChild.getParent());
+
+        Reactive.flush();
+
+        assertEquals("Second child did not get the correct parent", simpleNode,
+                secondChild.getParent());
+    }
+
+    public void testParentNodeIsRemovedOnRemoval() {
+        Binder.bind(node, element);
+        
+        StateNode simpleNode = new StateNode(2, tree);
+        simpleNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.TAG).setValue("div");
+
+        node.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, simpleNode);
+
+        StateNode childNode = createChildNode("child");
+
+        simpleNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
+
+        Reactive.flush();
+
+        assertEquals("ChildNode did not get the correct parent simpleNode",
+                simpleNode, childNode.getParent());
+
+        simpleNode.getList(NodeFeatures.ELEMENT_CHILDREN).splice(0, 1);
+
+        Reactive.flush();
+
+        assertNull("ChildNode should not have a parent after it is removed.",
+                childNode.getParent());
+    }
+
+    public void testParentOnBindForVirtualChildren() {
+        Binder.bind(node, element);
+
+        StateNode childNode = createChildNode("child");
+
+        NodeMap elementData = childNode.getMap(NodeFeatures.ELEMENT_DATA);
+        JsonObject object = Json.createObject();
+        object.put(NodeProperties.TYPE, NodeProperties.IN_MEMORY_CHILD);
+        elementData.getProperty(NodeProperties.PAYLOAD).setValue(object);
+
+        node.getList(NodeFeatures.VIRTUAL_CHILDREN).add(0, childNode);
+
+        Reactive.flush();
+
+        assertEquals("VirtualChild did not get rootNode as parent", node,
+                childNode.getParent());
+    }
+
     public void testVirtualChild() {
         Binder.bind(node, element);
 

@@ -314,6 +314,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             BindingContext newContext = new BindingContext(shadowRootNode,
                     shadowRoot, context.binderContext);
+            shadowRootNode.setParent(context.node);
             bindChildren(newContext);
         }
     }
@@ -549,6 +550,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
+            childNode.setParent(context.node);
 
             ExistingElementMap existingElementMap = childNode.getTree()
                     .getRegistry().getExistingElementMap();
@@ -602,6 +604,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             boolean reactivePhase) {
         JsonObject object = getPayload(node);
         String type = object.getString(NodeProperties.TYPE);
+        node.setParent(context.node);
 
         if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
             context.binderContext.createAndBind(node);
@@ -785,6 +788,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsArray<?> remove = event.getRemove();
         for (int i = 0; i < remove.length(); i++) {
             StateNode childNode = (StateNode) remove.get(i);
+            childNode.setParent(null);
             Node child = childNode.getDomNode();
 
             assert child != null : "Can't find element to remove";
@@ -830,6 +834,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         for (int i = 0; i < add.length(); i++) {
             Object newChildObject = add.get(i);
             StateNode newChild = (StateNode) newChildObject;
+            newChild.setParent(context.node);
 
             ExistingElementMap existingElementMap = newChild.getTree()
                     .getRegistry().getExistingElementMap();
