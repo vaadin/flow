@@ -82,11 +82,14 @@ public class BundleDependencyFilter implements DependencyFilter {
             }
         }
 
-        dependenciesWithBundles.add(0, createBundleDependency(MAIN_BUNDLE_URL));
-        bundleUrlsToInclude.stream()
-                .filter(bundleUrl -> !MAIN_BUNDLE_URL.equals(bundleUrl))
-                .map(BundleDependencyFilter::createBundleDependency)
-                .forEach(dependenciesWithBundles::add);
+        if (!bundleUrlsToInclude.isEmpty()) {
+            dependenciesWithBundles.add(0,
+                    createBundleDependency(MAIN_BUNDLE_URL));
+            bundleUrlsToInclude.stream()
+                    .filter(bundleUrl -> !MAIN_BUNDLE_URL.equals(bundleUrl))
+                    .map(BundleDependencyFilter::createBundleDependency)
+                    .forEach(dependenciesWithBundles::add);
+        }
 
         return dependenciesWithBundles;
     }
