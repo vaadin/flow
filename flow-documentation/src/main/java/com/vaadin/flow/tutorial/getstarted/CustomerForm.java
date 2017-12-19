@@ -1,9 +1,10 @@
 package com.vaadin.flow.tutorial.getstarted;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.combobox.ComboBox;
-import com.vaadin.ui.formlayout.FormLayout;
-import com.vaadin.ui.layout.HorizontalLayout;
-import com.vaadin.ui.textfield.TextField;
+
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 

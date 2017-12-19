@@ -4,11 +4,11 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterConfiguration;
-import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.flow.router.legacy.Router;
+import com.vaadin.flow.router.legacy.RouterConfiguration;
+import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.router.RouterInterface;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("web-components/tutorial-webcomponents-es5.asciidoc")

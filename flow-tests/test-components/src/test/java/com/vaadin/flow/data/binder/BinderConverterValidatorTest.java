@@ -13,7 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -25,26 +34,23 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.data.Binder.Binding;
-import com.vaadin.data.Binder.BindingBuilder;
-import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.data.validator.NotEmptyValidator;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Binder.Binding;
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.binder.BindingValidationStatus;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.function.SerializablePredicate;
-import com.vaadin.tests.data.bean.Person;
-import com.vaadin.ui.textfield.TextField;
-
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.isEmptyString;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import com.vaadin.flow.tests.data.bean.Person;
 
 public class BinderConverterValidatorTest
         extends BinderTestBase<Binder<Person>, Person> {
@@ -184,9 +190,11 @@ public class BinderConverterValidatorTest
     }
 
     private void assertValidationError(BinderValidationStatus<Person> status,
-                                       String errorMessage) {
-        List<BindingValidationStatus<?>> validationErrors = status.getFieldValidationErrors();
-        assertThat("Got one error message, should have one validation error", validationErrors, hasSize(1));
+            String errorMessage) {
+        List<BindingValidationStatus<?>> validationErrors = status
+                .getFieldValidationErrors();
+        assertThat("Got one error message, should have one validation error",
+                validationErrors, hasSize(1));
         BindingValidationStatus<?> error = validationErrors.get(0);
         assertEquals(errorMessage, error.getMessage().get());
         assertInvalidField(errorMessage, (HasValidation) error.getField());
@@ -639,11 +647,11 @@ public class BinderConverterValidatorTest
 
         // bind a new field that has invalid value in bean
         TextField lastNameField = new TextField();
-        
+
         // The test starts with a valid value as the last name of the person,
         // since the binder assumes any non-changed values to be valid.
         person.setLastName("bar");
-        
+
         BindingBuilder<Person, String> binding2 = binder.forField(lastNameField)
                 .withValidator(notEmpty);
         binding2.bind(Person::getLastName, Person::setLastName);

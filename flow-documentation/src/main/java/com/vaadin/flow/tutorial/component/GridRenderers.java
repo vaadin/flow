@@ -19,20 +19,20 @@ import java.time.Year;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcons;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.renderer.ComponentTemplateRenderer;
 import com.vaadin.flow.renderer.TemplateRenderer;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person.Gender;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.grid.Grid;
-import com.vaadin.ui.icon.Icon;
-import com.vaadin.ui.icon.VaadinIcons;
-import com.vaadin.ui.layout.HorizontalLayout;
-import com.vaadin.ui.layout.VerticalLayout;
-import com.vaadin.ui.textfield.TextField;
 
 @CodeFor("flow-components/tutorial-flow-grid.asciidoc")
 public class GridRenderers {

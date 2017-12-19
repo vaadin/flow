@@ -21,10 +21,10 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.RouterConfiguration;
-import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.flow.router.View;
+import com.vaadin.flow.router.legacy.HasChildView;
+import com.vaadin.flow.router.legacy.RouterConfiguration;
+import com.vaadin.flow.router.legacy.RouterConfigurator;
+import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 

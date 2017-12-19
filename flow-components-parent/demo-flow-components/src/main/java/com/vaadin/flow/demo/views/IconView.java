@@ -17,15 +17,15 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcons;
+import com.vaadin.flow.component.orderedlayout.FlexLayout.Alignment;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
-import com.vaadin.router.Route;
-import com.vaadin.ui.icon.Icon;
-import com.vaadin.ui.icon.VaadinIcons;
-import com.vaadin.ui.layout.FlexLayout.Alignment;
-import com.vaadin.ui.layout.HorizontalLayout;
-import com.vaadin.ui.layout.VerticalLayout;
+import com.vaadin.flow.router.Route;
 
 /**
  * View for {@link Icon} demo.

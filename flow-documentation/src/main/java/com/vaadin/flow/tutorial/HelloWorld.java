@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.tutorial;
 
-import com.vaadin.router.Route;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("application-structure/tutorial-hello-world.asciidoc")

@@ -32,8 +32,8 @@ public class RouteNotFoundError extends Component
     @Override
     public int setErrorParameter(BeforeNavigationEvent event,
             ErrorParameter<NotFoundException> parameter) {
-        getElement().setText(
-                "Could not navigate to '" + event.getLocation().getPath() + "'");
+        getElement().setText("Could not navigate to '"
+                    + event.getLocation().getPath() + "'");
         return 404;
     }
 }

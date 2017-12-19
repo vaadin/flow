@@ -155,7 +155,8 @@ public class MainView extends VerticalLayout {
     public MainView() {
         ExampleTemplate template = new ExampleTemplate();
 
-        Button button = new Button("Click me", event -> template.setValue("Clicked!"));
+        Button button = new Button("Click me",
+                event -> template.setValue("Clicked!"));
 
         add(button, template);
     }
@@ -267,7 +268,8 @@ following line in the main view constructor:
 
 [source,java]
 ----
-Button button = new Button("Click me", event -> template.setValue("Clicked!"));
+Button button = new Button("Click me",
+                event -> template.setValue("Clicked!"));
 ----
 
 Doing so adds a breakpoint to the selected line. If you then reload the page in
@@ -490,7 +492,8 @@ to the init method, for example right after your `filterText` configuration:
 
 [source,java]
 ----
-Button clearFilterTextBtn = new Button(new Icon(VaadinIcons.CLOSE_CIRCLE));
+Button clearFilterTextBtn = new Button(
+        new Icon(VaadinIcons.CLOSE_CIRCLE));
 clearFilterTextBtn.addClickListener(e -> filterText.clear());
 ----
 
@@ -505,7 +508,8 @@ configured the `clearFilterTextBtn`:
 
 [source,java]
 ----
-HorizontalLayout filtering = new HorizontalLayout(filterText, clearFilterTextBtn);
+HorizontalLayout filtering = new HorizontalLayout(filterText,
+    clearFilterTextBtn);
 ----
 
 Finally, *change* the line in the init method that currently adds only the grid,
@@ -759,7 +763,8 @@ this after the previously created `addCustomerBtn`:
 
 [source,java]
 ----
-HorizontalLayout toolbar = new HorizontalLayout(filtering, addCustomerBtn);
+HorizontalLayout toolbar = new HorizontalLayout(filtering,
+    addCustomerBtn);
 ----
 
 And, again, *replace* the line that populates your main layout to add the

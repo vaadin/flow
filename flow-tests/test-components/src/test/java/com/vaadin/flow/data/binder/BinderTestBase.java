@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
@@ -29,7 +29,10 @@ import org.junit.Before;
 
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.UI;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.converter.Converter;
 
 /**
  * A base class for {@code Binder} unit tests.

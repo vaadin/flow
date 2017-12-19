@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,8 +26,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.tests.data.bean.BeanToValidate;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.tests.data.bean.BeanToValidate;
 
 /**
  * @author Vaadin Ltd

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -22,16 +22,20 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.tests.data.bean.Address;
-import com.vaadin.tests.data.bean.Person;
-import com.vaadin.ui.datepicker.DatePicker;
-import com.vaadin.ui.formlayout.FormLayout;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.BeanPropertySet;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.PropertyFilterDefinition;
+import com.vaadin.flow.data.binder.PropertyId;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.validator.StringLengthValidator;
+import com.vaadin.flow.tests.data.bean.Address;
+import com.vaadin.flow.tests.data.bean.Person;
 
 public class BinderInstanceFieldTest {
 
@@ -118,7 +122,7 @@ public class BinderInstanceFieldTest {
     }
 
     public static abstract class AbstractTextField extends Component
-    implements HasValue<AbstractTextField, String> {
+            implements HasValue<AbstractTextField, String> {
 
     }
 
@@ -157,7 +161,7 @@ public class BinderInstanceFieldTest {
 
     @Tag("input")
     public static class CustomField<T> extends Component
-    implements HasValue<CustomField<T>, T> {
+            implements HasValue<CustomField<T>, T> {
 
         private T value;
 
@@ -530,9 +534,9 @@ public class BinderInstanceFieldTest {
         TextField name = new TextField();
         form.firstName = name;
         binder.forField(form.firstName)
-        .withValidator(
-                new StringLengthValidator("Name is invalid", 3, 10))
-        .bind("firstName");
+                .withValidator(
+                        new StringLengthValidator("Name is invalid", 3, 10))
+                .bind("firstName");
 
         binder.bindInstanceFields(form);
 
@@ -567,14 +571,14 @@ public class BinderInstanceFieldTest {
         TextField name = new TextField();
         form.firstName = name;
         binder.forField(form.firstName)
-        .withValidator(
-                new StringLengthValidator("Name is invalid", 3, 10))
-        .bind("firstName");
+                .withValidator(
+                        new StringLengthValidator("Name is invalid", 3, 10))
+                .bind("firstName");
         TextField ageField = new TextField();
         form.noFieldInPerson = ageField;
         binder.forField(form.noFieldInPerson)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
 
         binder.bindInstanceFields(form);
 
@@ -613,9 +617,9 @@ public class BinderInstanceFieldTest {
         form.firstName = new TextField();
         Binder<Person> binder = new Binder<>(Person.class);
         binder.forField(form.age)
-        .withConverter(str -> Integer.parseInt(str) / 2,
-                integer -> Integer.toString(integer * 2))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(str -> Integer.parseInt(str) / 2,
+                        integer -> Integer.toString(integer * 2))
+                .bind(Person::getAge, Person::setAge);
         binder.bindInstanceFields(form);
         Person person = new Person();
         person.setFirstName("first");

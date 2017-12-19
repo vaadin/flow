@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -21,17 +21,21 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.data.Binder.Binding;
-import com.vaadin.data.Binder.BindingBuilder;
-import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.tests.data.bean.Person;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Binder.Binding;
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
+import com.vaadin.flow.data.binder.StatusChangeEvent;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.tests.data.bean.Person;
 
 /**
  * @author Vaadin Ltd
  *
  */
 public class BinderStatusChangeTest
-extends BinderTestBase<Binder<Person>, Person> {
+        extends BinderTestBase<Binder<Person>, Person> {
 
     private AtomicReference<StatusChangeEvent> event;
 
@@ -104,8 +108,8 @@ extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
@@ -118,7 +122,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     @Test
     public void setInvalidValue_bound_singleEventOnSetValue() {
         binder.forField(nameField).withValidator(name -> false, "")
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
         binder.setBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
@@ -158,8 +162,8 @@ extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.addStatusChangeListener(this::statusChanged);
         Assert.assertNull(event.get());
         binder.readBean(item);
@@ -209,8 +213,8 @@ extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
@@ -236,8 +240,8 @@ extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
@@ -249,7 +253,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     @Test
     public void writeBeanInvalidValue_hasBindings_singleEvent() {
         binder.forField(nameField).withValidator(name -> false, "")
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
@@ -264,7 +268,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     @Test
     public void writeBeanIfValid_invalidValueAndBinderHasBindings_singleEvent() {
         binder.forField(nameField).withValidator(name -> false, "")
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
@@ -276,10 +280,10 @@ extends BinderTestBase<Binder<Person>, Person> {
     @Test
     public void writeBeanIfValid_invalidValueAndBinderHasSeveralBindings_singleEvent() {
         binder.forField(nameField).withValidator(name -> false, "")
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
@@ -349,8 +353,8 @@ extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
@@ -363,10 +367,10 @@ extends BinderTestBase<Binder<Person>, Person> {
     @Test
     public void validateBinder_validationErrors_statusEventWithError() {
         binder.forField(nameField).withValidator(name -> false, "")
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
@@ -381,8 +385,8 @@ extends BinderTestBase<Binder<Person>, Person> {
         Binding<Person, String> binding = binder.forField(nameField)
                 .bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
@@ -398,8 +402,8 @@ extends BinderTestBase<Binder<Person>, Person> {
                 .withValidator(name -> false, "")
                 .bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter(""))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
