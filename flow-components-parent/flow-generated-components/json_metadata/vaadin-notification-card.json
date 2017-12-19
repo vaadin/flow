@@ -1,0 +1,17 @@
+{
+  "name": "Vaadin.VaadinNotificationCard",
+  "tag": "vaadin-notification-card",
+  "baseUrl": "vaadin-notification/vaadin-notification.html",
+  "version": "UNKNOWN",
+  "properties": [],
+  "methods": [],
+  "events": [],
+  "slots": [
+    ""
+  ],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.ThemableMixin"
+  ],
+  "description": "The container element for the notification\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)"
+}
