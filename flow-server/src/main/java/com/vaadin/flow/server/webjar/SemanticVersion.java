@@ -57,6 +57,24 @@ public class SemanticVersion {
         preRelease = patchAndPreReleaseParts.length > 1 ? patchAndPreReleaseParts[1] : "";
     }
 
+    /**
+     * Gets major version number.
+     *
+     * @return major version number
+     */
+    public int getMajor() {
+        return major;
+    }
+
+    /**
+     * Gets minor version number.
+     *
+     * @return minor version number
+     */
+    public int getMinor() {
+        return minor;
+    }
+
     private String createSemanticVersioningErrorString(String versionString) {
         return String.format(
                 "Could not parse string '%s' as a semantic version string, see http://semver.org/ for details.",
@@ -86,30 +104,21 @@ public class SemanticVersion {
      * parts of the dependency are the same.
      *
      * @param version
-     *            the version to compare with
+     *            the version to compare with, not {@code null}
      * @return zero integer, if versions have the same patch part, positive
      *         integer, if current version was released later, negative integer
      *         otherwise
-     *
-     * @throws IllegalArgumentException
-     *             if other version has different major or minor version
      */
     public int comparePatchParts(SemanticVersion version) {
-        Objects.requireNonNull(version);
-        if (major != version.major || minor != version.minor) {
-            throw new IllegalArgumentException(String.format(
-                    "Received incomparable bower webJars with different bower names: '%s' and '%s'",
-                    this, version));
-        }
-        int patchComparison = Integer.compare(patch, version.patch);
+        int patchComparison = Integer.compare(patch, Objects.requireNonNull(version).patch);
         return patchComparison == 0 ? compareStringsByCharacter(preRelease, version.preRelease) : patchComparison;
     }
 
     private int compareStringsByCharacter(String first, String second) {
-        if (first.length() == 0 && second.length() != 0) {
+        if (first.isEmpty() && !second.isEmpty()) {
             return 1;
         }
-        if (first.length() != 0 && second.length() == 0) {
+        if (!first.isEmpty() && second.isEmpty()) {
             return -1;
         }
 

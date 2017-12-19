@@ -16,17 +16,15 @@
 
 package com.vaadin.flow.server.webjar;
 
+import java.util.stream.Stream;
+
+import org.junit.Test;
+
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-
-import java.util.stream.Stream;
-
-import org.junit.Test;
-
-import com.vaadin.flow.server.webjar.SemanticVersion;
 
 /**
  * @author Vaadin Ltd.
@@ -79,18 +77,6 @@ public class SemanticVersionTest {
                         versionString));
             }
         }
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void versionsWithDifferentMajorVersionPartsAreIncompatible() {
-        new SemanticVersion("1.2.3")
-                .comparePatchParts(new SemanticVersion("2.2.3"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void versionsWithDifferentMinorVersionPartsAreIncompatible() {
-        new SemanticVersion("1.2.3")
-                .comparePatchParts(new SemanticVersion("1.1.3"));
     }
 
     @Test
