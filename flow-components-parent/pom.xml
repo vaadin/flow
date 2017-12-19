@@ -57,8 +57,7 @@
             <modules>
                 <module>flow-webcomponent-api-analyzer</module>
                 <module>flow-generated-components</module>
-                <!--  Temporary disabled until components are updated with changes from Flow -->
-                <!--  module>demo-flow-components</module -->
+                <module>demo-flow-components</module>
             </modules>
         </profile>
 
@@ -71,9 +70,8 @@
             </activation>
             <modules>
                 <module>flow-generated-components</module>
-                <!--  Temporary disabled until components are updated with changes from Flow -->
-                <!--  module>demo-flow-components</module-->
-                <!--  module>flow-components-test</module -->
+                <module>demo-flow-components</module>
+                <module>flow-components-test</module>
             </modules>
         </profile>
     </profiles>

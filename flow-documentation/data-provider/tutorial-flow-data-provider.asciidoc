@@ -27,7 +27,8 @@ comboBox.setItemLabelGenerator(Status::getLabel);
 
 Grid<Person> grid = new Grid<>();
 grid.addColumn(Person::getName).setHeader("Name");
-grid.addColumn(Person::getYearOfBirth).setHeader("Year of birth");
+grid.addColumn(person -> Integer.toString(person.getYearOfBirth()))
+        .setHeader("Year of birth");
 ----
 
 [NOTE]
@@ -58,11 +59,10 @@ The comparator can either be based on the item instances or on the values of the
 
 [source, java]
 ----
-grid.addColumn(Person::getName)
-  .setHeader("Name")
-  // Override default natural sorting
-  .setComparator(Comparator.comparing(
-    person -> person.getName().toLowerCase()));
+grid.addColumn(Person::getName).setHeader("Name")
+        // Override default natural sorting
+        .setComparator(Comparator
+                .comparing(person -> person.getName().toLowerCase()));
 ----
 
 [NOTE]
@@ -78,9 +78,8 @@ The filter is defined as an additional parameter to `setItems`.
 [source, java]
 ----
 comboBox.setItems(
-  (itemCaption, filterText) ->
-    itemCaption.startsWith(filterText),
-  itemsToShow);
+        (itemCaption, filterText) -> itemCaption.startsWith(filterText),
+        itemsToShow);
 ----
 
 [NOTE]
@@ -147,22 +146,21 @@ To configure filtering through a component beyond what is possible with `Caption
 
 [source, java]
 ----
-ListDataProvider<Person> dataProvider =
-  DataProvider.ofCollection(persons);
+ListDataProvider<Person> dataProvider = DataProvider
+        .ofCollection(persons);
 
-comboBox.setDataProvider(dataProvider.filteringBy(
-  (person, filterText) -> {
-    if (person.getName().contains(filterText)) {
-      return true;
-    }
+comboBox.setDataProvider(
+        dataProvider.filteringBy((person, filterText) -> {
+            if (person.getName().contains(filterText)) {
+                return true;
+            }
 
-    if (person.getEmail().contains(filterText)) {
-      return true;
-    }
+            if (person.getEmail().contains(filterText)) {
+                return true;
+            }
 
-    return false;
-  }
-));
+            return false;
+        }));
 ----
 When the user types something into the combo box, the lambda expression will be run for each person in the data provider.
 Any person for which `true` is returned will be included.
@@ -313,9 +311,8 @@ grid.setDataProvider(dataProvider);
 // Will be sortable by the user
 // When sorting by this column, the query will have a SortOrder
 // where getSorted() returns "name"
-grid.addColumn(Person::getName)
-    .setHeader("Name")
-    .setSortProperty("name");
+grid.addColumn(Person::getName).setHeader("Name")
+                .setSortProperty("name");
 
 // Will not be sortable since no sorting info is given
 grid.addColumn(Person::getYearOfBirth).setHeader("Year of birth");
@@ -328,12 +325,11 @@ In such cases, we can define a callback that generates suitable `SortOrder` valu
 [source, java]
 ----
 grid.addColumn(person -> person.getName() + " " + person.getLastName())
-        .setHeader("Name")
-        .setSortOrderProvider(
-            // Sort according to last name, then first name
-            direction -> Stream.of(
-                    new QuerySortOrder("lastName", direction),
-                    new QuerySortOrder("firstName", direction)));
+        .setHeader("Name").setSortOrderProvider(
+                // Sort according to last name, then first name
+                direction -> Stream.of(
+                        new QuerySortOrder("lastName", direction),
+                        new QuerySortOrder("firstName", direction)));
 ----
 
 [[lazy-filtering]]

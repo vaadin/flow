@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,13 +23,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.data.Binder.BindingBuilder;
-import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-import com.vaadin.tests.data.bean.Person;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.tests.data.bean.Person;
 
 /**
  * @author Vaadin Ltd

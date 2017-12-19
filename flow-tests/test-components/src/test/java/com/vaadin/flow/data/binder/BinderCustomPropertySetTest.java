@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -24,8 +24,12 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.PropertyDefinition;
+import com.vaadin.flow.data.binder.PropertySet;
+import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.ui.textfield.TextField;
 
 public class BinderCustomPropertySetTest {
     public static class MapPropertyDefinition
@@ -61,7 +65,7 @@ public class BinderCustomPropertySetTest {
         }
 
         @Override
-        public Class<?> getPropertyHolderType(){
+        public Class<?> getPropertyHolderType() {
             return Map.class;
         }
 
@@ -88,7 +92,7 @@ public class BinderCustomPropertySetTest {
     }
 
     public static class MapPropertySet
-    implements PropertySet<Map<String, String>> {
+            implements PropertySet<Map<String, String>> {
         @Override
         public Stream<PropertyDefinition<Map<String, String>, ?>> getProperties() {
             return Stream.of("one", "two", "three").map(this::createProperty);

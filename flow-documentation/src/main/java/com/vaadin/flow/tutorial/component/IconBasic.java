@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.tutorial.component;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcons;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.icon.Icon;
-import com.vaadin.ui.icon.VaadinIcons;
 
 @CodeFor("flow-components/tutorial-flow-icon.asciidoc")
 public class IconBasic {
@@ -27,7 +27,7 @@ public class IconBasic {
         Icon icon = VaadinIcons.VAADIN_H.create();
         new Button("Vaadin", icon);
     }
-    
+
     public void customCollection() {
         Icon icon = new Icon("valo", "clock");
         new Button("Clock", icon);

@@ -13,7 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -28,22 +31,29 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.data.Binder.Binding;
-import com.vaadin.data.Binder.BindingBuilder;
-import com.vaadin.data.BindingValidationStatus.Status;
-import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.data.validator.EmailValidator;
-import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.checkbox.Checkbox;
-import com.vaadin.ui.datepicker.DatePicker;
-import com.vaadin.ui.textfield.TextField;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Binder.Binding;
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.binder.BinderValidationStatusHandler;
+import com.vaadin.flow.data.binder.BindingValidationStatus;
+import com.vaadin.flow.data.binder.BindingValidationStatus.Status;
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.converter.Converter;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.validator.EmailValidator;
+import com.vaadin.flow.data.validator.StringLengthValidator;
 
 /**
  * Book of Vaadin tests.

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
 
 import static org.junit.Assert.assertEquals;
 
@@ -29,9 +29,10 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.internal.BeanUtil;
-import com.vaadin.tests.data.bean.BeanToValidate;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.tests.data.bean.BeanToValidate;
 
 /**
  * @author Vaadin Ltd
@@ -47,7 +48,8 @@ public class Jsr303Test {
 
         @Override
         public Class<?> loadClass(String name) throws ClassNotFoundException {
-            String vaadinPackagePrefix = getClass().getPackage().getName();
+            String vaadinPackagePrefix = VaadinServlet.class.getPackage()
+                    .getName();
             vaadinPackagePrefix = vaadinPackagePrefix.substring(0,
                     vaadinPackagePrefix.lastIndexOf('.'));
             if (name.equals(UnitTest.class.getName())) {
@@ -112,9 +114,9 @@ public class Jsr303Test {
 
     @Test
     public void beanBinderWithoutJsr303() throws ClassNotFoundException,
-    NoSuchMethodException, SecurityException, InstantiationException,
-    IllegalAccessException, IllegalArgumentException,
-    InvocationTargetException, IOException, InterruptedException {
+            NoSuchMethodException, SecurityException, InstantiationException,
+            IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException, IOException, InterruptedException {
         try (URLClassLoader loader = new TestClassLoader()) {
             Class<?> clazz = loader.loadClass(Jsr303UnitTest.class.getName());
             UnitTest test = (UnitTest) clazz.newInstance();

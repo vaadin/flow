@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,12 +24,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.data.Binder.Binding;
-import com.vaadin.data.Binder.BindingBuilder;
-import com.vaadin.data.BindingValidationStatus.Status;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.tests.data.bean.Person;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Binder.Binding;
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.binder.BindingValidationStatus;
+import com.vaadin.flow.data.binder.BindingValidationStatus.Status;
+import com.vaadin.flow.data.binder.BindingValidationStatusHandler;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.tests.data.bean.Person;
 
 public class BinderValidationStatusTest
         extends BinderTestBase<Binder<Person>, Person> {

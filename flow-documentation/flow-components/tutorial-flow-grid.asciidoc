@@ -43,7 +43,7 @@ Grid<Person> grid = new Grid<>();
 grid.setItems(people);
 grid.addColumn(Person::getName).setHeader("Name");
 grid.addColumn(person -> Integer.toString(person.getYearOfBirth()))
-    .setHeader("Year of birth");
+        .setHeader("Year of birth");
 
 layout.add(grid);
 ----
@@ -338,11 +338,12 @@ add a new column to display that.
 
 [source, java]
 ----
-grid.addColumn(TemplateRenderer.<Person> of("[[item.age]] years old")
-                .withProperty("age",
-                        person -> Year.now().getValue()
-                                - person.getYearOfBirth()))
-                .setHeader("Age");
+grid.addColumn(
+            TemplateRenderer.<Person> of("[[item.age]] years old")
+                    .withProperty("age",
+                            person -> Year.now().getValue()
+                                    - person.getYearOfBirth()))
+            .setHeader("Age");
 ----
 
 === Binding Beans

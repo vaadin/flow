@@ -19,7 +19,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.View;
+import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("web-components/tutorial-webcomponent-basic.asciidoc")

@@ -22,9 +22,17 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.formlayout.FormLayout.FormItem;
+import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
@@ -35,15 +43,7 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
 import com.vaadin.flow.function.SerializablePredicate;
-import com.vaadin.router.Route;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.checkbox.Checkbox;
-import com.vaadin.ui.datepicker.DatePicker;
-import com.vaadin.ui.formlayout.FormLayout;
-import com.vaadin.ui.formlayout.FormLayout.FormItem;
-import com.vaadin.ui.formlayout.FormLayout.ResponsiveStep;
-import com.vaadin.ui.layout.HorizontalLayout;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.router.Route;
 
 /**
  * Demo view for {@link FormLayout}.

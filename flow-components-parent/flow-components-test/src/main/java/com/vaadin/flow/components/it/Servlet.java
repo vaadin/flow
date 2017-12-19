@@ -20,8 +20,8 @@ import java.util.List;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.components.it.Servlet.TestRouterConfigurator;
-import com.vaadin.flow.router.RouterConfiguration;
-import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.flow.router.legacy.RouterConfiguration;
+import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 

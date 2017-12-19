@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -33,14 +33,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.data.BeanBinderTest.RequiredConstraints.SubConstraint;
-import com.vaadin.data.BeanBinderTest.RequiredConstraints.SubSubConstraint;
-import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.tests.data.bean.BeanToValidate;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.binder.BindingValidationStatus;
+import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubConstraint;
+import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubSubConstraint;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.tests.data.bean.BeanToValidate;
 
 public class BeanBinderTest
-extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
+        extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
 
     private enum TestEnum {
     }
@@ -192,7 +196,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         TestClass testClass = new TestClass();
 
         otherBinder.forField(testClass.number)
-        .withConverter(new StringToIntegerConverter(""));
+                .withConverter(new StringToIntegerConverter(""));
 
         // Should throw an IllegalStateException since the binding for number is
         // not completed with bind
@@ -213,8 +217,8 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         PersonForm form = new PersonForm();
         Binder<Person> binder = new Binder<>(Person.class);
         binder.forMemberField(form.mydate)
-        .withConverter(str -> LocalDate.now(), date -> "Hello")
-        .bind("mydate");
+                .withConverter(str -> LocalDate.now(), date -> "Hello")
+                .bind("mydate");
         binder.bindInstanceFields(form);
 
     }
@@ -234,7 +238,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         TestClass testClass = new TestClass();
 
         otherBinder.forMemberField(testClass.number)
-        .withConverter(new StringToIntegerConverter(""));
+                .withConverter(new StringToIntegerConverter(""));
 
         // Should throw an IllegalStateException since the forMemberField
         // binding has not been completed
@@ -359,7 +363,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
     @Test
     public void fieldWithConverterBound_bindBean_fieldValueUpdated() {
         binder.forField(ageField)
-        .withConverter(Integer::valueOf, String::valueOf).bind("age");
+                .withConverter(Integer::valueOf, String::valueOf).bind("age");
         binder.setBean(item);
 
         assertEquals("32", ageField.getValue());
@@ -368,7 +372,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
     @Test(expected = ClassCastException.class)
     public void fieldWithInvalidConverterBound_bindBean_fieldValueUpdated() {
         binder.forField(ageField).withConverter(Float::valueOf, String::valueOf)
-        .bind("age");
+                .bind("age");
         binder.setBean(item);
 
         assertEquals("32", ageField.getValue());
@@ -377,7 +381,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
     @Test
     public void beanBinderWithBoxedType() {
         binder.forField(ageField)
-        .withConverter(Integer::valueOf, String::valueOf).bind("age");
+                .withConverter(Integer::valueOf, String::valueOf).bind("age");
         binder.setBean(item);
 
         ageField.setValue(String.valueOf(20));

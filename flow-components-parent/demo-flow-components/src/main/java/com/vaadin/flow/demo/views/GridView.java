@@ -23,30 +23,28 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.grid.ColumnGroup;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.GridMultiSelectionModel;
+import com.vaadin.flow.component.grid.GridSelectionModel;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
-import com.vaadin.flow.demo.views.GridView.PersonCard;
-import com.vaadin.flow.demo.views.GridView.PersonComponent;
 import com.vaadin.flow.renderer.ComponentTemplateRenderer;
 import com.vaadin.flow.renderer.TemplateRenderer;
-import com.vaadin.router.Route;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.checkbox.Checkbox;
-import com.vaadin.ui.grid.ColumnGroup;
-import com.vaadin.ui.grid.Grid;
-import com.vaadin.ui.grid.Grid.Column;
-import com.vaadin.ui.grid.Grid.SelectionMode;
-import com.vaadin.ui.grid.GridMultiSelectionModel;
-import com.vaadin.ui.grid.GridSelectionModel;
-import com.vaadin.ui.layout.HorizontalLayout;
-import com.vaadin.ui.layout.VerticalLayout;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.router.Route;
 
 /**
  * View for {@link Grid} demo.

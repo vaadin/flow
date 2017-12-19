@@ -17,12 +17,12 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.textfield.GeneratedVaadinTextField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
-import com.vaadin.router.Route;
-import com.vaadin.ui.textfield.GeneratedVaadinTextField;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.router.Route;
 
 /**
  * View for {@link GeneratedVaadinTextField} demo.

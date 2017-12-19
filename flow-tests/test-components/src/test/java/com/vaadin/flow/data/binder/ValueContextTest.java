@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data;
+package com.vaadin.flow.data.binder;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -22,9 +22,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.ui.datepicker.DatePicker;
-import com.vaadin.ui.textfield.TextField;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.server.VaadinRequest;
 
 public class ValueContextTest extends UI {

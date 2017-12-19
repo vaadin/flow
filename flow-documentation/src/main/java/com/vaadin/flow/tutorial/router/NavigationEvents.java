@@ -22,15 +22,15 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.router.ActivationState;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.router.ContinueNavigationAction;
-import com.vaadin.router.Route;
-import com.vaadin.router.event.ActivationState;
-import com.vaadin.router.event.AfterNavigationEvent;
-import com.vaadin.router.event.AfterNavigationObserver;
-import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationObserver;
 
 @CodeFor("routing/tutorial-routing-lifecycle.asciidoc")
 public class NavigationEvents {

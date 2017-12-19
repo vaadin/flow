@@ -18,10 +18,10 @@ package com.vaadin.flow.tutorial.routing;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.Route;
-import com.vaadin.router.event.BeforeNavigationEvent;
 
 @CodeFor("routing/tutorial-routing-url-generation.asciidoc")
 public class RoutingUrlGeneration {
