@@ -95,7 +95,7 @@
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-radio-button</artifactId>
                 <version>1.0.0-alpha8</version>  
-            </dependency>          
+            </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-notification</artifactId>
