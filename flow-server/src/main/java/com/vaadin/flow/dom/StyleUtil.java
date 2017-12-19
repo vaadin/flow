@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
-import com.vaadin.shared.util.SharedUtil;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Utility methods for {@link Style}.

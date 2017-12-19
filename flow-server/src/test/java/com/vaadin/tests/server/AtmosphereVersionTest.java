@@ -2,7 +2,7 @@ package com.vaadin.tests.server;
 
 import org.atmosphere.util.Version;
 
-import com.vaadin.server.Constants;
+import com.vaadin.flow.server.Constants;
 
 import junit.framework.TestCase;
 

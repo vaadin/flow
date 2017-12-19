@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.tutorial.webcomponent;
 
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.event.ComponentEvent;
 
 @CodeFor("web-components/tutorial-webcomponent-events.asciidoc")
 public class WebComponentEvents {

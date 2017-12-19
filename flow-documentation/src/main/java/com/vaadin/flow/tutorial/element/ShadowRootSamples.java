@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.tutorial.element;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 
 @CodeFor("element-api/tutorial-shadow-root.asciidoc")
 public class ShadowRootSamples {

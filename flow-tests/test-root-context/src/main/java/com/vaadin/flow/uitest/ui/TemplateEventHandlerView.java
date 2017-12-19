@@ -18,13 +18,13 @@ package com.vaadin.flow.uitest.ui;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
-import com.vaadin.ui.common.ClientDelegate;
-import com.vaadin.ui.common.HtmlContainer;
+import com.vaadin.flow.router.Route;
 
 import elemental.json.JsonValue;
 

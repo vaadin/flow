@@ -17,7 +17,7 @@
 package com.vaadin.client;
 
 import com.google.gwt.user.client.Timer;
-import com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap;
+import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;

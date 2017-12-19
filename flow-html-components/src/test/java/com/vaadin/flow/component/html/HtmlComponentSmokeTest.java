@@ -37,16 +37,16 @@ import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.change.NodeChange;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.OrderedList.NumberingType;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HtmlComponent;
-import com.vaadin.ui.common.HtmlContainer;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.change.NodeChange;
 
 public class HtmlComponentSmokeTest {
 

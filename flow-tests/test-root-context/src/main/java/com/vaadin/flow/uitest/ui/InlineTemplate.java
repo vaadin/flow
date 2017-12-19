@@ -18,8 +18,8 @@ package com.vaadin.flow.uitest.ui;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.template.angular.AngularTemplate;
 import com.vaadin.flow.template.angular.model.TemplateModel;
-import com.vaadin.ui.AngularTemplate;
 
 /**
  * @author Vaadin Ltd

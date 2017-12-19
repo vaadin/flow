@@ -30,13 +30,13 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-testbench</artifactId>
-            <version>5.1.0</version>
+            <version>5.1.1</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-button-flow</artifactId>
-            <version>1.0.0.alpha2</version>
-        </dependency>  
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!-- override scope for junit -->
         <dependency>
             <groupId>junit</groupId>

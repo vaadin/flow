@@ -25,10 +25,10 @@ import org.junit.Test;
 
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.tests.data.bean.Person;
-import com.vaadin.ui.common.HasValue;
-import com.vaadin.ui.common.HasValue.ValueChangeEvent;
 import com.vaadin.ui.textfield.TextField;
 
 /**

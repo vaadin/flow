@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
-import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.ui.LoadingIndicatorConfiguration;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.BeforeNavigationEvent;
 
 @Route(value = "com.vaadin.flow.uitest.ui.LoadingIndicatorView", layout = ViewTestLayout.class)
 @StyleSheet("/com/vaadin/flow/uitest/ui/loading-indicator.css")

@@ -30,6 +30,9 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.template.angular.model.BeanModelType;
+import com.vaadin.flow.template.angular.model.ListModelType;
+import com.vaadin.flow.template.angular.model.ModelDescriptor;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.BasicTypeModel;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.BeanModel;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.ListBeanModel;
@@ -45,10 +48,10 @@ import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithExcl
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithInclude.ModelWithInclude;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithIncludeOnList.ModelWithIncludeOnList;
-import com.vaadin.flow.model.BasicModelType;
-import com.vaadin.flow.model.Bean;
-import com.vaadin.flow.model.InvalidTemplateModelException;
-import com.vaadin.flow.model.ModelType;
+import com.vaadin.flow.templatemodel.BasicModelType;
+import com.vaadin.flow.templatemodel.Bean;
+import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
+import com.vaadin.flow.templatemodel.ModelType;
 
 public class ModelDescriptorTest {
 

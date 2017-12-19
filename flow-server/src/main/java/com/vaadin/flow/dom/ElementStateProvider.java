@@ -20,13 +20,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.server.AbstractStreamResource;
-import com.vaadin.server.StreamResource;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.event.PropertyChangeListener;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ComponentMapping;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Handles storing and retrieval of the state information for an element using a

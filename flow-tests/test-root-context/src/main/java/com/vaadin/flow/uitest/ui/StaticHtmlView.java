@@ -16,8 +16,8 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
-import com.vaadin.ui.Html;
+import com.vaadin.flow.component.Html;
+import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.StaticHtmlView", layout = ViewTestLayout.class)
 public class StaticHtmlView extends Html {

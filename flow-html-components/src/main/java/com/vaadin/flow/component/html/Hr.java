@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlComponent;
+import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;hr&gt;</code> element.

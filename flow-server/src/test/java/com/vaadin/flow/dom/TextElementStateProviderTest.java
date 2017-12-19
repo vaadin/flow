@@ -18,12 +18,14 @@ package com.vaadin.flow.dom;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.TemplateElementStateProviderTest.NullTemplateResolver;
 import com.vaadin.flow.dom.impl.TemplateTextElementStateProvider;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.nodefeature.TextNodeMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
+import com.vaadin.flow.internal.nodefeature.TemplateMap;
+import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 import com.vaadin.flow.template.angular.TextTemplateNode;
 import com.vaadin.flow.template.angular.parser.TemplateParser;
 

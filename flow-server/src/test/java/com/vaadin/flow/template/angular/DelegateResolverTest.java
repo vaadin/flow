@@ -21,6 +21,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.template.angular.DelegateResolver;
+import com.vaadin.flow.template.angular.RelativeFileResolver;
+
 public class DelegateResolverTest {
 
     private RelativeFileResolver mainResolver = new RelativeFileResolver(

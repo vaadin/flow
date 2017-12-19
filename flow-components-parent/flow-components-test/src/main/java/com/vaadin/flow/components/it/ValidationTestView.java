@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.components.it;
 
-import com.vaadin.ui.Component;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValidation;
 import com.vaadin.ui.button.Button;
-import com.vaadin.ui.common.HasValidation;
 
 /**
  * Abstract view class for testing validation with components that implement

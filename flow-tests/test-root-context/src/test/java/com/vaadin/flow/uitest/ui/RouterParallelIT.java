@@ -20,8 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.testutil.AbstractParallelTestBenchTest;
-import com.vaadin.ui.Tag;
 
 public class RouterParallelIT extends AbstractParallelTestBenchTest {
 

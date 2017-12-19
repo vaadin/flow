@@ -16,7 +16,7 @@
 package com.vaadin.flow.servlet;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 
 /**
  * Navigation target for which a servlet should automatically be registered.

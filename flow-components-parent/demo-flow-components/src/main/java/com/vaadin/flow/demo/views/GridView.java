@@ -22,18 +22,22 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.vaadin.data.provider.DataProvider;
-import com.vaadin.data.provider.ListDataProvider;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
+import com.vaadin.flow.demo.views.GridView.PersonCard;
+import com.vaadin.flow.demo.views.GridView.PersonComponent;
+import com.vaadin.flow.renderer.ComponentTemplateRenderer;
+import com.vaadin.flow.renderer.TemplateRenderer;
 import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.checkbox.Checkbox;
-import com.vaadin.ui.common.HasComponents;
-import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.ColumnGroup;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.Grid.Column;
@@ -42,8 +46,6 @@ import com.vaadin.ui.grid.GridMultiSelectionModel;
 import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.layout.HorizontalLayout;
 import com.vaadin.ui.layout.VerticalLayout;
-import com.vaadin.ui.renderers.ComponentTemplateRenderer;
-import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.ui.textfield.TextField;
 
 /**

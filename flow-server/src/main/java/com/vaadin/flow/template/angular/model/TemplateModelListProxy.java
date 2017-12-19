@@ -17,10 +17,10 @@ package com.vaadin.flow.template.angular.model;
 
 import java.util.AbstractList;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.model.ComplexModelType;
-import com.vaadin.flow.model.PropertyFilter;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.templatemodel.ComplexModelType;
+import com.vaadin.flow.templatemodel.PropertyFilter;
 
 /**
  * A list implementation which uses a {@link ModelList} in a {@link StateNode}

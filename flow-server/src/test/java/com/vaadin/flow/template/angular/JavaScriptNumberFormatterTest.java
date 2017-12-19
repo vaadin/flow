@@ -22,6 +22,8 @@ import javax.script.ScriptException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.template.angular.JavaScriptNumberFormatter;
+
 public class JavaScriptNumberFormatterTest {
     ScriptEngine nashhorn = new ScriptEngineManager()
             .getEngineByName("nashorn");

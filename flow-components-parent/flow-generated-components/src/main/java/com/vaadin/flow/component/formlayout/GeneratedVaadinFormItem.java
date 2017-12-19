@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.component.formlayout;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.common.HasClickListeners;
-import com.vaadin.ui.common.ComponentSupplier;
 import javax.annotation.Generated;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.HasComponents;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentSupplier;
+import com.vaadin.flow.component.HasClickListeners;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 
 /**
  * <p>

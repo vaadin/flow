@@ -21,8 +21,8 @@ import com.vaadin.client.LoadingIndicator;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
-import com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap;
-import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 /**
  * Observes the loading indicator configuration stored in the given node and

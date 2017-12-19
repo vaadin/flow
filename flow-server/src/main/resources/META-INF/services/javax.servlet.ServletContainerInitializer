@@ -1,3 +1,3 @@
-com.vaadin.server.startup.CustomElementRegistryInitializer
-com.vaadin.server.startup.RouteRegistryInitializer
-com.vaadin.server.startup.ErrorNavigationTargetInitializer
+com.vaadin.flow.server.startup.CustomElementRegistryInitializer
+com.vaadin.flow.server.startup.RouteRegistryInitializer
+com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer

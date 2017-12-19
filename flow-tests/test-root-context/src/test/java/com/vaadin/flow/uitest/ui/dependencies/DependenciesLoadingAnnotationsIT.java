@@ -31,7 +31,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * {@link DependenciesLoadingPageApiView} and
  * {@link DependenciesLoadingPageApiIT}, designed to test exactly the same
  * dependency loading functionality (hence reusing all methods and constants),
- * but using {@link com.vaadin.ui.Page} api to add dependencies.
+ * but using {@link com.vaadin.flow.component.page.Page} api to add dependencies.
  *
  * @author Vaadin Ltd.
  * @see DependenciesLoadingBaseView

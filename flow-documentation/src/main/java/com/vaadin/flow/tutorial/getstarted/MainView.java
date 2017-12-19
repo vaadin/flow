@@ -17,13 +17,13 @@ package com.vaadin.flow.tutorial.getstarted;
 
 import com.vaadin.router.Route;
 import com.vaadin.ui.button.Button;
-import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.icon.Icon;
 import com.vaadin.ui.icon.VaadinIcons;
 import com.vaadin.ui.layout.HorizontalLayout;
 import com.vaadin.ui.layout.VerticalLayout;
 import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 /**

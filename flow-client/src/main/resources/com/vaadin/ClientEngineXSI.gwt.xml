@@ -16,7 +16,7 @@
 	<inherits name="com.google.gwt.precompress.Precompress" />
 
 	<source path="client" />
-	<source path="shared" />
+	<source path="flow/shared" />
 
 	<entry-point class="com.vaadin.client.bootstrap.Bootstrapper" />
 

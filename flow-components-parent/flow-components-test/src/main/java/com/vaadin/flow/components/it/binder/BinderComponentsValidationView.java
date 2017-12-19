@@ -16,8 +16,8 @@
 
 package com.vaadin.flow.components.it.binder;
 
-import com.vaadin.data.Binder;
 import com.vaadin.flow.components.it.TestView;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.textfield.TextField;
 

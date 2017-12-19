@@ -1,8 +1,8 @@
 package com.vaadin.flow.tutorial.misc;
 
+import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.server.ServiceInitEvent;
-import com.vaadin.server.VaadinServiceInitListener;
 
 @CodeFor("miscellaneous/tutorial-service-init-listener.asciidoc")
 public class VaadinServiceInitListenerPage {

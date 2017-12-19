@@ -21,8 +21,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.template.angular.InlineTemplate;
-import com.vaadin.ui.Component;
 
 public class ElementUtilTest {
     @Test

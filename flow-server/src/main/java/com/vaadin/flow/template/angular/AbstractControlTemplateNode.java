@@ -17,8 +17,8 @@ package com.vaadin.flow.template.angular;
 
 import java.util.Optional;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.StateNode;
 
 /**
  * A template node that generates a different number of child element depending

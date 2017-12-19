@@ -27,9 +27,9 @@ import org.junit.Test;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.BindingValidationStatus.Status;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.tests.data.bean.Person;
-import com.vaadin.ui.common.HasValue;
 
 public class BinderValidationStatusTest
         extends BinderTestBase<Binder<Person>, Person> {

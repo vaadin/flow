@@ -32,9 +32,9 @@ import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.IntegerRangeValidator;
 import com.vaadin.data.validator.NotEmptyValidator;
 import com.vaadin.data.validator.StringLengthValidator;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
-import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.textfield.TextField;
 
 import static org.hamcrest.CoreMatchers.is;

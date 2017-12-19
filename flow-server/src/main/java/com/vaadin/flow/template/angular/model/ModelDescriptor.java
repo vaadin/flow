@@ -17,9 +17,9 @@ package com.vaadin.flow.template.angular.model;
 
 import java.util.Map;
 
-import com.vaadin.flow.model.ModelType;
-import com.vaadin.flow.model.PropertyFilter;
-import com.vaadin.flow.util.ReflectionCache;
+import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.templatemodel.ModelType;
+import com.vaadin.flow.templatemodel.PropertyFilter;
 
 /**
  * Describes the model type of a template class.

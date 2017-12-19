@@ -18,10 +18,10 @@ package com.vaadin.flow.uitest.servlet;
 import javax.servlet.annotation.WebServlet;
 import java.util.Properties;
 
-import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.server.Constants;
-import com.vaadin.server.VaadinServletConfiguration;
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Servlet created to test the environment when the property

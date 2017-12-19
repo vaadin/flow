@@ -28,7 +28,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.flow.nodefeature.ElementChildrenList;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 public abstract class AbstractNodeTest {
 

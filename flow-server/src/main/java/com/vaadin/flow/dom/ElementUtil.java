@@ -23,8 +23,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Composite;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Composite;
 
 /**
  * Provides utility methods for {@link Element}.

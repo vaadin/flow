@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 
 /**
  * @author Vaadin Ltd

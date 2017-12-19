@@ -2,10 +2,10 @@ package com.vaadin.flow.contexttest.ui;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
 
 public class SubContextUI extends DependencyUI {
 

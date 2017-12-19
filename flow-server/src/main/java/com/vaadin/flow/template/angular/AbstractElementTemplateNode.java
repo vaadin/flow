@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.template.angular;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
+import com.vaadin.flow.internal.StateNode;
 
 /**
  * A template node that always represents one element in the DOM tree.
