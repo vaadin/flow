@@ -169,6 +169,6 @@ public class ErrorStateRenderer implements NavigationHandler {
             Class<? extends Component> targetType) {
         assert targetType == navigationState.getNavigationTarget();
 
-        return RouterUtil.getParentLayouts(targetType);
+        return RouterUtil.getParentLayoutsForNonRouteTarget(targetType);
     }
 }

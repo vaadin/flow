@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,8 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletResponse;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,30 +39,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
-import com.vaadin.flow.router.ActivationState;
-import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.AfterNavigationObserver;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.BeforeLeaveObserver;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.HasDynamicTitle;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.InternalServerError;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationStateBuilder;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.RoutePrefix;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
@@ -76,7 +47,10 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -513,6 +487,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @RoutePrefix("parent")
+    @Tag(Tag.DIV)
     public static class RouteParent extends Component implements RouterLayout {
     }
 
@@ -584,6 +559,18 @@ public class RouterTest extends RoutingTestBase {
 
     @Tag(Tag.DIV)
     public static class NonExtendingNotFoundTarget extends Component
+            implements HasErrorParameter<NotFoundException> {
+        @Override
+        public int setErrorParameter(BeforeNavigationEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            getElement().setText(EXCEPTION_TEXT);
+            return HttpServletResponse.SC_NOT_FOUND;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(RouteParent.class)
+    public static class ErrorTargetWithParent extends Component
             implements HasErrorParameter<NotFoundException> {
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
@@ -1773,6 +1760,29 @@ public class RouterTest extends RoutingTestBase {
                 CustomNotFoundTarget.class, getUIComponent());
 
         assertExceptionComponent(EXCEPTION_TEXT, CustomNotFoundTarget.class);
+    }
+
+    @Test
+    public void error_target_has_parent_layout() {
+        router.getRegistry().setErrorNavigationTargets(
+                Stream.of(ErrorTargetWithParent.class, RouteNotFoundError.class)
+                        .collect(Collectors.toSet()));
+
+        int result = router.navigate(ui, new Location("exception"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Non existent route should have returned.",
+                HttpServletResponse.SC_NOT_FOUND, result);
+
+        Component parenComponent = ComponentUtil
+                .findParentComponent(ui.getElement().getChild(0)).get();
+
+        Assert.assertEquals(RouteParent.class, parenComponent.getClass());
+
+        Assert.assertEquals("Expected only one child component", 1,
+                parenComponent.getChildren().count());
+        Assert.assertEquals("Error target should have been the only child.",
+                ErrorTargetWithParent.class,
+                parenComponent.getChildren().findFirst().get().getClass());
     }
 
     @Test

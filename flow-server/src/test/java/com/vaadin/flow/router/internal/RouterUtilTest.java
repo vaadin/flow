@@ -28,7 +28,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.RouterUtil;
 
 /**
  * Test that {@link RouterUtil} route resolving works as intended for both
@@ -97,6 +96,10 @@ public class RouterUtilTest {
     @Tag(Tag.DIV)
     public static class RootWithParents extends Component {
     }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(Parent.class)
+    public static class NonRouteTargetWithParents extends Component {}
 
     @Test
     public void route_path_should_contain_parent_prefix() {
@@ -284,6 +287,21 @@ public class RouterUtilTest {
                 "Expected to receive MiddleParent and Parent classes as parents.",
                 parentLayouts, IsIterableContainingInOrder.contains(
                         new Class[] { MiddleParent.class, Parent.class }));
+    }
+
+    @Test
+    public void expected_to_get_parent_layout() {
+        List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+                .getParentLayoutsForNonRouteTarget(
+                        NonRouteTargetWithParents.class);
+
+        Assert.assertEquals("Expected one parent layout", 1,
+                parentLayouts.size());
+
+        Assert.assertThat(
+                "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
+                parentLayouts, IsIterableContainingInOrder
+                        .contains(new Class[] { Parent.class }));
     }
 
     @Test
