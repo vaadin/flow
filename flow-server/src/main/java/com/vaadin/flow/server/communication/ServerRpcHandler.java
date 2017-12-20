@@ -26,10 +26,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
@@ -123,8 +123,7 @@ public class ServerRpcHandler implements Serializable {
                 clientToServerMessageId = (int) json
                         .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID);
             } else {
-                getLogger()
-                        .warn("Server message without client id received");
+                getLogger().warn("Server message without client id received");
                 clientToServerMessageId = -1;
             }
             invocations = json.getArray(ApplicationConstants.RPC_INVOCATIONS);
@@ -269,14 +268,13 @@ public class ServerRpcHandler implements Serializable {
                 // Just a duplicate message due to a bad connection or similar
                 // It has already been handled by the server so it is safe to
                 // ignore
-                getLogger()
-                        .debug("Ignoring old message from the client. Expected: {}, got: {}",
-                            expectedId, rpcRequest.getClientToServerId());
+                getLogger().debug(
+                        "Ignoring old message from the client. Expected: {}, got: {}",
+                        expectedId, rpcRequest.getClientToServerId());
             } else {
                 getLogger().warn(
                         "Unexpected message id from the client. Expected: {}, got: {}",
-                                expectedId,
-                                rpcRequest.getClientToServerId());
+                        expectedId, rpcRequest.getClientToServerId());
             }
 
             throw new UnsupportedOperationException(

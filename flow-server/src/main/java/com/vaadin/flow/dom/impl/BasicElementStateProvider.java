@@ -36,6 +36,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.internal.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
+import com.vaadin.flow.internal.nodefeature.ConcealData;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementClassList;
@@ -85,7 +86,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
             ClientDelegateHandlers.class, PolymerEventListenerMap.class,
             ShadowRootData.class, AttachExistingElementFeature.class,
-            VirtualChildrenList.class };
+            VirtualChildrenList.class, ConcealData.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -376,6 +377,18 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             element.getShadowRoot()
                     .ifPresent(root -> root.accept(visitor, visitDescendants));
         }
+    }
+
+    @Override
+    public void setVisi̋ble(StateNode node, boolean visible) {
+        assert node.hasFeature(ConcealData.class);
+        node.getFeature(ConcealData.class).setConcealed(visible);
+    }
+
+    @Override
+    public boolean isVisi̋ble(StateNode node) {
+        assert node.hasFeature(ConcealData.class);
+        return node.getFeature(ConcealData.class).isConcealed();
     }
 
     @Override

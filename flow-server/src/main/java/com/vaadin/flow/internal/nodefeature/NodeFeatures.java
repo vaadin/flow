@@ -157,6 +157,11 @@ public final class NodeFeatures {
      */
     public static final int VIRTUAL_CHILDREN = 29;
 
+    /**
+     * Id for {@link ConcealData}.
+     */
+    public static final int CONCEAL_DATA = 30;
+
     private NodeFeatures() {
         // Only static
     }
