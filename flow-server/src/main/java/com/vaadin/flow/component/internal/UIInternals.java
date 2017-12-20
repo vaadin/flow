@@ -51,6 +51,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.router.legacy.HasChildView;
 import com.vaadin.flow.router.legacy.View;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
@@ -795,5 +796,19 @@ public class UIInternals implements Serializable {
     public void setContinueNavigationAction(
             ContinueNavigationAction continueNavigationAction) {
         this.continueNavigationAction = continueNavigationAction;
+    }
+
+    /**
+     * Gets the application id tied with this UI. Different applications in the
+     * same page have different unique ids.
+     * 
+     * @return the id of the application tied with this UI
+     */
+    public String getAppId() {
+        VaadinSession session = getSession();
+        String appId = session.getService().getMainDivId(session,
+                VaadinRequest.getCurrent());
+        appId = appId.substring(0, appId.indexOf("-"));
+        return appId;
     }
 }
