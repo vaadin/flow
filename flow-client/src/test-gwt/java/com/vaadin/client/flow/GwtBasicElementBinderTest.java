@@ -262,38 +262,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("child", childElement.getId());
     }
 
-    public void testParentChainOnBind() {
-        Binder.bind(node, element);
-
-        StateNode simpleNode = new StateNode(2, tree);
-        simpleNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.TAG).setValue("div");
-
-        node.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, simpleNode);
-
-        StateNode childNode = createChildNode("child");
-
-        simpleNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, childNode);
-
-        Reactive.flush();
-
-        assertEquals("SimpleNode did not get the correct parent rootNode", node,
-                simpleNode.getParent());
-        assertEquals("ChildNode did not get the correct parent simpleNode",
-                simpleNode, childNode.getParent());
-
-        StateNode secondChild = createChildNode("child2");
-
-        simpleNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(1, secondChild);
-
-        assertNull(secondChild.getParent());
-
-        Reactive.flush();
-
-        assertEquals("Second child did not get the correct parent", simpleNode,
-                secondChild.getParent());
-    }
-
     public void testVirtualChild() {
         Binder.bind(node, element);
 
