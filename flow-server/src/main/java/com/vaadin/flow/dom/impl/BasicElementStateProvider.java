@@ -382,13 +382,13 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     @Override
     public void setVisi̋ble(StateNode node, boolean visible) {
         assert node.hasFeature(ConcealData.class);
-        node.getFeature(ConcealData.class).setConcealed(visible);
+        node.getFeature(ConcealData.class).setConcealed(!visible);
     }
 
     @Override
     public boolean isVisi̋ble(StateNode node) {
         assert node.hasFeature(ConcealData.class);
-        return node.getFeature(ConcealData.class).isConcealed();
+        return !node.getFeature(ConcealData.class).isConcealed();
     }
 
     @Override

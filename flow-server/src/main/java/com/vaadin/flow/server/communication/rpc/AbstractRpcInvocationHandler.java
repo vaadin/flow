@@ -57,6 +57,8 @@ public abstract class AbstractRpcInvocationHandler
         if (invokeRpc) {
             handleNode(node, invocationJson);
         } else {
+            // ignore RPC requests from the client side for the nodes that are
+            // concealed
             LoggerFactory.getLogger(AbstractRpcInvocationHandler.class).warn(
                     String.format("RPC request for invocation handler '%s' "
                             + "is recieved from the client side for concealed node id='%s'",

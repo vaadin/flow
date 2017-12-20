@@ -1398,7 +1398,7 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Sets the {@code node} visibility.
+     * Sets the element visibility value.
      *
      * @param visible
      *            the element visibility value
@@ -1410,7 +1410,7 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Gets the {@code node} visibility.
+     * Gets the element visibility value.
      *
      * @param visible
      *            the element visibility value

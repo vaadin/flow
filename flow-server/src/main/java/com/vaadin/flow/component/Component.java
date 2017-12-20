@@ -473,4 +473,25 @@ public abstract class Component
         return VaadinService.getCurrent().getInstantiator().getI18NProvider();
     }
 
+    /**
+     * Sets the component visibility value.
+     *
+     * @param visible
+     *            the component visibility value
+     */
+    public void setVisible(boolean visible) {
+        getElement().setVisible(visible);
+    }
+
+    /**
+     * Gets the component visibility value.
+     *
+     * @param visible
+     *            the component visibility value
+     * @return this element
+     */
+    public boolean isVisible() {
+        return getElement().isVisible();
+    }
+
 }
