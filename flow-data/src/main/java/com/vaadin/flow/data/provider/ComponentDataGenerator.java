@@ -54,7 +54,7 @@ public class ComponentDataGenerator<T> implements DataGenerator<T> {
      * @param container
      *            the element used as parent for all generated components
      * @param nodeIdPropertyName
-     *            the property name used in the json to transmit the nodeId of
+     *            the property name used in the JSON to transmit the nodeId of
      *            the generated component to the client
      * @param keyMapper
      *            the KeyMapper used to fetch keys for items
