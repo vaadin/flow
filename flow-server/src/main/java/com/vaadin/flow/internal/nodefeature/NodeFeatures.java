@@ -158,9 +158,9 @@ public final class NodeFeatures {
     public static final int VIRTUAL_CHILDREN = 29;
 
     /**
-     * Id for {@link ConcealData}.
+     * Id for {@link VisibilityData}.
      */
-    public static final int CONCEAL_DATA = 30;
+    public static final int VISIBILITY_DATA = 30;
 
     private NodeFeatures() {
         // Only static

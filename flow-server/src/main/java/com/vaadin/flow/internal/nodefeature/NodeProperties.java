@@ -75,9 +75,9 @@ public final class NodeProperties {
     public static final String TEMPLATE_IN_TEMPLATE = "subTemplate";
 
     /**
-     * Key for {@link ConcealData#isConcealed()}.
+     * Key for {@link VisibilityData#isVisible()}.
      */
-    public static final String CONCEAL = "conceal";
+    public static final String VISIBLE = "visible";
 
     /** Key for id property. */
     public static final String ID = "id";

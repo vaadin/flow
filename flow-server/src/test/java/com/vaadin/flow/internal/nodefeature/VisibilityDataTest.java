@@ -20,19 +20,20 @@ import org.junit.Test;
 
 import com.vaadin.flow.internal.StateNode;
 
-public class ConcealDataTest {
+public class VisibilityDataTest {
 
     @Test
     public void setConcealed() {
-        StateNode node = new StateNode(ConcealData.class);
-        ConcealData data = node.getFeature(ConcealData.class);
+        StateNode node = new StateNode(VisibilityData.class);
+        VisibilityData data = node.getFeature(VisibilityData.class);
 
         Assert.assertNull(data.getValue());
+        Assert.assertTrue(data.isVisible());
 
         data.setValue(true);
-        Assert.assertTrue(data.getValue());
+        Assert.assertTrue(data.isVisible());
 
         data.setValue(false);
-        Assert.assertFalse(data.getValue());
+        Assert.assertFalse(data.isVisible());
     }
 }

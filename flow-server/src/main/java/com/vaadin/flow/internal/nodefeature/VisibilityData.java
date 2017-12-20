@@ -18,12 +18,12 @@ package com.vaadin.flow.internal.nodefeature;
 import com.vaadin.flow.internal.StateNode;
 
 /**
- * Data to conceal node.
+ * Data to make node visible/invisible.
  *
  * @author Vaadin Ltd
  *
  */
-public class ConcealData extends NodeValue<Boolean> {
+public class VisibilityData extends NodeValue<Boolean> {
 
     /**
      * Creates a new feature for the given node.
@@ -32,21 +32,32 @@ public class ConcealData extends NodeValue<Boolean> {
      *            the node that the map belongs to
      *
      */
-    public ConcealData(StateNode node) {
+    public VisibilityData(StateNode node) {
         super(node);
     }
 
     @Override
     protected String getKey() {
-        return NodeProperties.CONCEAL;
+        return NodeProperties.VISIBLE;
     }
 
-    public void setConcealed(boolean concealed) {
-        setValue(concealed);
+    /**
+     * Sets the node visibility value.
+     *
+     * @param visible
+     *            the visibility value
+     */
+    public void setVisible(boolean visible) {
+        setValue(visible);
     }
 
-    public boolean isConcealed() {
-        return Boolean.TRUE.equals(getValue());
+    /**
+     * Checks whether the node is visible.
+     *
+     * @return {@code true} if the node is visible, {@code false} otherwise
+     */
+    public boolean isVisible() {
+        return !Boolean.FALSE.equals(getValue());
     }
 
 }

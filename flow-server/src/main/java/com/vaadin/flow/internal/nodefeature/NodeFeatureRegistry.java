@@ -89,7 +89,7 @@ public class NodeFeatureRegistry {
                 AttachExistingElementFeature::new);
         registerFeature(BasicTypeValue.class, BasicTypeValue::new);
         registerFeature(VirtualChildrenList.class, VirtualChildrenList::new);
-        registerFeature(ConcealData.class, ConcealData::new);
+        registerFeature(VisibilityData.class, VisibilityData::new);
     }
 
     private NodeFeatureRegistry() {
