@@ -27,6 +27,7 @@ import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
@@ -239,6 +240,80 @@ public class TreeChangeProcessorTest {
         node.getList(featureId);
 
         Assert.assertEquals(node, updatedNode);
+    }
+
+
+
+    @Test
+    public void testPutNodeGetsParent() {
+        StateNode child = new StateNode(2, tree);
+        tree.registerNode(child);
+
+        JsonObject change = putNodeChange(rootId, ns, myKey, child.getId());
+
+        StateNode node = TreeChangeProcessor.processChange(tree, change);
+
+        Object value = tree.getRootNode().getMap(ns).getProperty(myKey)
+                .getValue();
+
+        Assert.assertSame(child, value);
+        Assert.assertEquals(tree.getRootNode(), node);
+
+        Assert.assertEquals(node, child.getParent());
+    }
+
+    @Test
+    public void testNodeChainGetsCorrectParents() {
+        StateNode child = new StateNode(2, tree);
+        tree.registerNode(child);
+
+
+        StateNode subChild = new StateNode(3, tree);
+        tree.registerNode(subChild);
+        child.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, child);
+
+        JsonObject change = putNodeChange(rootId, ns, myKey, child.getId());
+        JsonObject subChange = putNodeChange(child.getId(), ns, myKey, subChild.getId());
+
+        StateNode node = TreeChangeProcessor.processChange(tree, change);
+        Assert.assertEquals(tree.getRootNode(), node);
+
+        Object value = tree.getRootNode().getMap(ns).getProperty(myKey)
+                .getValue();
+
+        Assert.assertSame(child, value);
+        Assert.assertEquals(node, child.getParent());
+
+        node = TreeChangeProcessor.processChange(tree, subChange);
+
+        Assert.assertEquals(child, node);
+
+        Assert.assertEquals(child, subChild.getParent());
+    }
+
+
+    @Test
+    public void testNodeDetachRemovesParent() {
+        StateNode child = new StateNode(2, tree);
+        tree.registerNode(child);
+
+        JsonObject change = putNodeChange(rootId, ns, myKey, child.getId());
+
+        StateNode node = TreeChangeProcessor.processChange(tree, change);
+        Assert.assertEquals(tree.getRootNode(), node);
+
+        Object value = tree.getRootNode().getMap(ns).getProperty(myKey)
+                .getValue();
+
+        Assert.assertSame(child, value);
+        Assert.assertEquals(node, child.getParent());
+
+
+        change = detachChange(child.getId());
+
+        TreeChangeProcessor.processChange(tree, change);
+
+        Assert.assertNull(child.getParent());
     }
 
     private static JsonArray toArray(JsonValue... changes) {

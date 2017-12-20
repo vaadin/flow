@@ -130,6 +130,7 @@ public class TreeChangeProcessor {
 
     private static void processDetachChange(StateNode node) {
         node.getTree().unregisterNode(node);
+        node.setParent(null);
     }
 
     private static void populateFeature(JsonObject change, StateNode node) {
@@ -156,6 +157,7 @@ public class TreeChangeProcessor {
                     .getNumber(JsonConstants.CHANGE_PUT_NODE_VALUE);
             StateNode child = node.getTree().getNode(childId);
             assert child != null;
+            child.setParent(node);
 
             property.setValue(child);
         } else {
@@ -210,6 +212,7 @@ public class TreeChangeProcessor {
                 int childId = (int) addNodes.getNumber(i);
                 StateNode child = tree.getNode(childId);
                 assert child != null : "No child node found with id " + childId;
+                child.setParent(node);
 
                 add.set(i, child);
             }
