@@ -118,12 +118,12 @@ public class BasicElementStateProviderTest {
         Assert.assertTrue(
                 element.getNode().getFeature(VisibilityData.class).isVisible());
 
-        BasicElementStateProvider.get().setVisi̋ble(element.getNode(), true);
+        BasicElementStateProvider.get().setVisible(element.getNode(), true);
 
         Assert.assertTrue(
                 element.getNode().getFeature(VisibilityData.class).isVisible());
 
-        BasicElementStateProvider.get().setVisi̋ble(element.getNode(), false);
+        BasicElementStateProvider.get().setVisible(element.getNode(), false);
 
         Assert.assertFalse(
                 element.getNode().getFeature(VisibilityData.class).isVisible());

@@ -380,13 +380,13 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void setVisi̋ble(StateNode node, boolean visible) {
+    public void setVisible(StateNode node, boolean visible) {
         assert node.hasFeature(VisibilityData.class);
         node.getFeature(VisibilityData.class).setVisible(visible);
     }
 
     @Override
-    public boolean isVisi̋ble(StateNode node) {
+    public boolean isVisible(StateNode node) {
         assert node.hasFeature(VisibilityData.class);
         return node.getFeature(VisibilityData.class).isVisible();
     }

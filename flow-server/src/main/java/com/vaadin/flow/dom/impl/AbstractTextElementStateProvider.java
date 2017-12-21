@@ -200,12 +200,12 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void setVisi̋ble(StateNode node, boolean visible) {
+    public void setVisible(StateNode node, boolean visible) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isVisi̋ble(StateNode node) {
+    public boolean isVisible(StateNode node) {
         throw new UnsupportedOperationException();
     }
 

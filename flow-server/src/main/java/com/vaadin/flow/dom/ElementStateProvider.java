@@ -455,7 +455,7 @@ public interface ElementStateProvider extends Serializable {
      * @param visible
      *            the node visibility value
      */
-    void setVisi̋ble(StateNode node, boolean visible);
+    void setVisible(StateNode node, boolean visible);
 
     /**
      * Gets the {@code node} visibility.
@@ -464,6 +464,6 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @return the node visibility
      */
-    boolean isVisi̋ble(StateNode node);
+    boolean isVisible(StateNode node);
 
 }
