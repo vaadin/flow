@@ -104,34 +104,6 @@ public class CompositeDataGeneratorTest {
     }
 
     @Test
-    public void generateData_orderOfGeneratorsIsRespected() {
-        CompositeDataGenerator<String> composite = new CompositeDataGenerator<>();
-
-        MockDataGenerator mock1 = new MockDataGenerator("mock", "value1");
-        MockDataGenerator mock2 = new MockDataGenerator("mock2", "value1");
-        MockDataGenerator mock3 = new MockDataGenerator("mock", "value2");
-        MockDataGenerator mock4 = new MockDataGenerator("mock2", "value2");
-        MockDataGenerator mock5 = new MockDataGenerator("mock", "value3");
-
-        composite.addDataGenerator(mock1);
-        composite.addDataGenerator(mock2);
-        composite.addDataGenerator(mock3);
-        composite.addDataGenerator(mock4);
-        composite.addDataGenerator(mock5);
-
-        JsonObject json = Json.createObject();
-        composite.generateData("item1", json);
-
-        Assert.assertEquals("value3", json.getString("mock"));
-        Assert.assertEquals("value2", json.getString("mock2"));
-        Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock4.getProcessed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock5.getProcessed(), CoreMatchers.hasItem("item1"));
-    }
-
-    @Test
     public void refreshData_innerGeneratorsAreInvoked() {
         CompositeDataGenerator<String> composite = new CompositeDataGenerator<>();
 
