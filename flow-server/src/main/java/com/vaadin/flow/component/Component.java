@@ -486,9 +486,7 @@ public abstract class Component
     /**
      * Gets the component visibility value.
      *
-     * @param visible
-     *            the component visibility value
-     * @return this element
+     * @return {@code true} if the component is visible, {@code false} otherwise
      */
     public boolean isVisible() {
         return getElement().isVisible();

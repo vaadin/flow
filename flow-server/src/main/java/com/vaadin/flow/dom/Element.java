@@ -1412,9 +1412,7 @@ public class Element extends Node<Element> {
     /**
      * Gets the element visibility value.
      *
-     * @param visible
-     *            the element visibility value
-     * @return this element
+     * @return {@code true} if the element is visible, {@code false} otherwise
      */
     public boolean isVisible() {
         return getStateProvider().isVisi̋ble(getNode());
