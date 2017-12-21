@@ -805,10 +805,9 @@ public class UIInternals implements Serializable {
      * @return the id of the application tied with this UI
      */
     public String getAppId() {
-        VaadinSession session = getSession();
         String appId = session.getService().getMainDivId(session,
                 VaadinRequest.getCurrent());
-        appId = appId.substring(0, appId.indexOf("-"));
+        appId = appId.substring(0, appId.indexOf('-'));
         return appId;
     }
 }
