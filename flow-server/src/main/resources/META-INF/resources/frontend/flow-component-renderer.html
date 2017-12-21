@@ -1,5 +1,7 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+
 <dom-module id="flow-component-renderer"> 
-  <template> 
+  <template>
     <slot></slot> 
   </template> 
   <script>
@@ -13,20 +15,11 @@
     }
     static get observers() {
       return [
-        '_asyncAttachRenderedComponentIfAble(appid, nodeid)'
+        '_attachRenderedComponentIfAble(appid, nodeid)'
       ]
     }
     
-    constructor() {
-      super();
-      this.hidden = true;
-    }
-    
     _asyncAttachRenderedComponentIfAble() {
-      if (!this.nodeid || !this.appid) {
-        return;
-      }
-      this.hidden = true;
       this._debouncer = Polymer.Debouncer.debounce(
         this._debouncer,
         Polymer.Async.idlePeriod,
@@ -35,6 +28,9 @@
     }
 
     _attachRenderedComponentIfAble() {
+      if (!this.nodeid || !this.appid) {
+        return;
+      }
       const renderedComponent = window.vaadin.clients[this.appid].getByNodeId(this.nodeid);
       if (this.firstElementChild) {
         if (!renderedComponent) {
@@ -42,16 +38,13 @@
           this._asyncAttachRenderedComponentIfAble();
         } else if (this.firstElementChild !== renderedComponent){
           this.replaceChild(renderedComponent, this.firstElementChild);
-          this.hidden = false;
           this.onComponentRendered();
         } else {
-          this.hidden = false;
           this.onComponentRendered();
         }
       } else {
         if (renderedComponent) {
           this.appendChild(renderedComponent);
-          this.hidden = false;
           this.onComponentRendered();
         } else {
           this._asyncAttachRenderedComponentIfAble();

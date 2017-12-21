@@ -119,7 +119,8 @@ public class ComponentTemplateRenderer<COMPONENT extends Component, ITEM>
      *            the attribute to set on the internal component renderer
      *            element
      * @param value
-     *            the value of the attribute, not <code>null</code>
+     *            the value of the attribute, or <code>null</code> to add the
+     *            attribute without any value (such as boolean attributes)
      */
     public void setTemplateAttribute(String attribute, String value) {
         rendererAttributes.put(attribute, value);
@@ -153,9 +154,12 @@ public class ComponentTemplateRenderer<COMPONENT extends Component, ITEM>
                 "The componentRendererTag can not be null");
         StringBuilder builder = new StringBuilder();
         builder.append("<").append(componentRendererTag);
-        rendererAttributes.entrySet()
-                .forEach(entry -> builder.append(" ").append(entry.getKey())
-                        .append("=\"").append(entry.getValue()).append("\""));
+        rendererAttributes.entrySet().forEach(entry -> {
+            builder.append(" ").append(entry.getKey());
+            if (entry.getValue() != null) {
+                builder.append("=\"").append(entry.getValue()).append("\"");
+            }
+        });
         builder.append("></").append(componentRendererTag).append(">");
 
         return builder.toString();
