@@ -19,10 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -59,6 +56,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -205,6 +203,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.push(bindShadowRoot(context));
 
         bindPolymerModelProperties(stateNode, htmlNode);
+
+        bindVisibility(context);
     }
 
     private native void bindPolymerModelProperties(StateNode node,
@@ -434,6 +434,35 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         return map.addPropertyAddListener(
                 e -> bindProperty(user, e.getProperty(), bindings));
+    }
+
+    private EventRemover bindVisibility(BindingContext context) {
+        updateVisibility(context);
+        return context.node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBLE)
+                .addChangeListener(event -> updateVisibility(context));
+    }
+
+    private void updateVisibility(BindingContext context) {
+        NodeMap visibilityMap = context.node
+                .getMap(NodeFeatures.VISIBILITY_DATA);
+        Boolean visibility = (Boolean) visibilityMap
+                .getProperty(NodeProperties.VISIBLE).getValue();
+
+        assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
+                + context.node.getId() + " is not an Element";
+
+        Element element = (Element) context.htmlNode;
+        /*
+         * Absence of value or "true" means that the node should be visible. So
+         * only "false" means "hide".
+         */
+        if (Boolean.FALSE.equals(visibility)) {
+            WidgetUtil.updateAttribute(element, "hidden",
+                    Boolean.TRUE.toString());
+        } else {
+            WidgetUtil.updateAttribute(element, "hidden", null);
+        }
     }
 
     private static void bindProperty(PropertyUser user, MapProperty property,
