@@ -44,6 +44,7 @@ public abstract class ComponentTest {
     public void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException {
         component = createComponent();
+        addProperty("visible", Boolean.class, true, false);
         addProperties();
         BeanInfo componentInfo = Introspector.getBeanInfo(component.getClass());
         for (PropertyDescriptor pd : componentInfo.getPropertyDescriptors()) {
@@ -76,7 +77,8 @@ public abstract class ComponentTest {
 
     protected void addStringProperty(String propertyName, String defaultValue,
             boolean removeDefault) {
-        addProperty(propertyName, String.class, defaultValue, false, removeDefault);
+        addProperty(propertyName, String.class, defaultValue, false,
+                removeDefault);
     }
 
     protected void addOptionalStringProperty(String propertyName) {
@@ -91,14 +93,15 @@ public abstract class ComponentTest {
     protected <U> void addProperty(String propertyName, Class<U> propertyType,
             U defaultValue, boolean isOptional, boolean removeDefault) {
         addProperty(propertyName, propertyType, defaultValue, null, isOptional,
-                removeDefault);;
+                removeDefault);
     }
 
     protected <U> void addProperty(String propertyName, Class<U> propertyType,
-            U defaultValue, U otherValue, boolean isOptional, boolean removeDefault) {
+            U defaultValue, U otherValue, boolean isOptional,
+            boolean removeDefault) {
         properties.add(new ComponentProperty(getComponent().getClass(),
-                propertyName, propertyType, defaultValue, otherValue, isOptional,
-                removeDefault));
+                propertyName, propertyType, defaultValue, otherValue,
+                isOptional, removeDefault));
     }
 
     protected HtmlComponent createComponent() throws InstantiationException,
@@ -228,9 +231,8 @@ public abstract class ComponentTest {
     private void testEmptyStringForOptionalStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, "");
-            Assert.assertEquals(
-                    "The getter for '" + p.name
-                            + "' should return an empty optional after setting \"\"",
+            Assert.assertEquals("The getter for '" + p.name
+                    + "' should return an empty optional after setting \"\"",
                     Optional.empty(), p.getUsingGetter(component));
         } catch (Exception e) {
             throw new AssertionError(e);
@@ -240,9 +242,8 @@ public abstract class ComponentTest {
     private void testNullForOptionalNonStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, null);
-            Assert.assertEquals(
-                    "Setting the property " + p.name
-                            + " to null should cause an empty optional to be returned by the getter",
+            Assert.assertEquals("Setting the property " + p.name
+                    + " to null should cause an empty optional to be returned by the getter",
                     Optional.empty(), p.getUsingGetter(component));
         } catch (Exception e) {
             throw new AssertionError(
