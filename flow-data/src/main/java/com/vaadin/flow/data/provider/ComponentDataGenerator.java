@@ -44,7 +44,7 @@ public class ComponentDataGenerator<T> implements DataGenerator<T> {
     private final Map<String, Component> renderedComponents;
     private final Element container;
     private final String nodeIdPropertyName;
-    private final KeyMapper<T> keyMapper;
+    private final DataKeyMapper<T> keyMapper;
 
     /**
      * Creates a new generator.
@@ -57,12 +57,12 @@ public class ComponentDataGenerator<T> implements DataGenerator<T> {
      *            the property name used in the JSON to transmit the nodeId of
      *            the generated component to the client
      * @param keyMapper
-     *            the KeyMapper used to fetch keys for items
+     *            the DataKeyMapper used to fetch keys for items
      */
     public ComponentDataGenerator(
             ComponentTemplateRenderer<? extends Component, T> componentRenderer,
             Element container, String nodeIdPropertyName,
-            KeyMapper<T> keyMapper) {
+            DataKeyMapper<T> keyMapper) {
         this.componentRenderer = componentRenderer;
         this.container = container;
         this.nodeIdPropertyName = nodeIdPropertyName;
