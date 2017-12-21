@@ -1397,6 +1397,27 @@ public class Element extends Node<Element> {
         return Optional.of(ShadowRoot.get(shadowRoot));
     }
 
+    /**
+     * Sets the element visibility value.
+     *
+     * @param visible
+     *            the element visibility value
+     * @return this element
+     */
+    public Element setVisible(boolean visible) {
+        getStateProvider().setVisible(getNode(), visible);
+        return getSelf();
+    }
+
+    /**
+     * Gets the element visibility value.
+     *
+     * @return {@code true} if the element is visible, {@code false} otherwise
+     */
+    public boolean isVisible() {
+        return getStateProvider().isVisible(getNode());
+    }
+
     @Override
     protected Element getSelf() {
         return this;

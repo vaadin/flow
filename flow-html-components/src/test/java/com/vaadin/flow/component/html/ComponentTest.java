@@ -23,8 +23,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
@@ -40,20 +42,18 @@ public abstract class ComponentTest {
     private HtmlComponent component;
     private List<ComponentProperty> properties = new ArrayList<>();
 
+    private Set<String> WHITE_LIST = new HashSet<>();
+
     @Before
     public void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException {
         component = createComponent();
+        WHITE_LIST.add("visible");
         addProperties();
         BeanInfo componentInfo = Introspector.getBeanInfo(component.getClass());
-        for (PropertyDescriptor pd : componentInfo.getPropertyDescriptors()) {
-            if (pd.getReadMethod() != null && pd.getWriteMethod() != null) {
-                if (!hasProperty(pd.getName())) {
-                    throw new IllegalStateException("Property information for '"
-                            + pd.getName() + "' missing");
-                }
-            }
-        }
+        Stream.of(componentInfo.getPropertyDescriptors()).filter(
+                descriptor -> !WHITE_LIST.contains(descriptor.getName()))
+                .forEach(this::assertProperty);
     }
 
     protected void addProperties() {
@@ -76,7 +76,8 @@ public abstract class ComponentTest {
 
     protected void addStringProperty(String propertyName, String defaultValue,
             boolean removeDefault) {
-        addProperty(propertyName, String.class, defaultValue, false, removeDefault);
+        addProperty(propertyName, String.class, defaultValue, false,
+                removeDefault);
     }
 
     protected void addOptionalStringProperty(String propertyName) {
@@ -91,14 +92,15 @@ public abstract class ComponentTest {
     protected <U> void addProperty(String propertyName, Class<U> propertyType,
             U defaultValue, boolean isOptional, boolean removeDefault) {
         addProperty(propertyName, propertyType, defaultValue, null, isOptional,
-                removeDefault);;
+                removeDefault);
     }
 
     protected <U> void addProperty(String propertyName, Class<U> propertyType,
-            U defaultValue, U otherValue, boolean isOptional, boolean removeDefault) {
+            U defaultValue, U otherValue, boolean isOptional,
+            boolean removeDefault) {
         properties.add(new ComponentProperty(getComponent().getClass(),
-                propertyName, propertyType, defaultValue, otherValue, isOptional,
-                removeDefault));
+                propertyName, propertyType, defaultValue, otherValue,
+                isOptional, removeDefault));
     }
 
     protected HtmlComponent createComponent() throws InstantiationException,
@@ -228,9 +230,8 @@ public abstract class ComponentTest {
     private void testEmptyStringForOptionalStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, "");
-            Assert.assertEquals(
-                    "The getter for '" + p.name
-                            + "' should return an empty optional after setting \"\"",
+            Assert.assertEquals("The getter for '" + p.name
+                    + "' should return an empty optional after setting \"\"",
                     Optional.empty(), p.getUsingGetter(component));
         } catch (Exception e) {
             throw new AssertionError(e);
@@ -240,9 +241,8 @@ public abstract class ComponentTest {
     private void testNullForOptionalNonStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, null);
-            Assert.assertEquals(
-                    "Setting the property " + p.name
-                            + " to null should cause an empty optional to be returned by the getter",
+            Assert.assertEquals("Setting the property " + p.name
+                    + " to null should cause an empty optional to be returned by the getter",
                     Optional.empty(), p.getUsingGetter(component));
         } catch (Exception e) {
             throw new AssertionError(
@@ -339,5 +339,15 @@ public abstract class ComponentTest {
         Element element = component.getElement();
         Assert.assertNotEquals(element.hasAttribute(propertyOrAttribute),
                 element.hasProperty(propertyOrAttribute));
+    }
+
+    private void assertProperty(PropertyDescriptor descriptor) {
+        if (descriptor.getReadMethod() != null
+                && descriptor.getWriteMethod() != null) {
+            if (!hasProperty(descriptor.getName())) {
+                throw new IllegalStateException("Property information for '"
+                        + descriptor.getName() + "' missing");
+            }
+        }
     }
 }

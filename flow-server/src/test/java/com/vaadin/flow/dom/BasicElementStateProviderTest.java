@@ -7,15 +7,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.Node;
-import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.nodefeature.VisibilityData;
 import com.vaadin.flow.server.VaadinRequest;
 
 public class BasicElementStateProviderTest {
@@ -112,6 +109,25 @@ public class BasicElementStateProviderTest {
         Assert.assertEquals(
                 "The collected descendants doesn't match expected descendatns",
                 map, visitor.visited);
+    }
+
+    @Test
+    public void setVisible() {
+        Element element = ElementFactory.createDiv();
+
+        Assert.assertTrue(
+                element.getNode().getFeature(VisibilityData.class).isVisible());
+
+        BasicElementStateProvider.get().setVisible(element.getNode(), true);
+
+        Assert.assertTrue(
+                element.getNode().getFeature(VisibilityData.class).isVisible());
+
+        BasicElementStateProvider.get().setVisible(element.getNode(), false);
+
+        Assert.assertFalse(
+                element.getNode().getFeature(VisibilityData.class).isVisible());
+
     }
 
     private Element createHierarchy(Map<Node<?>, ElementType> map) {

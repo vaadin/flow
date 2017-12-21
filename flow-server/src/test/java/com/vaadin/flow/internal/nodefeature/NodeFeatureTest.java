@@ -24,38 +24,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
-import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
-import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
-import com.vaadin.flow.internal.nodefeature.ClientDelegateHandlers;
-import com.vaadin.flow.internal.nodefeature.ComponentMapping;
-import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
-import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
-import com.vaadin.flow.internal.nodefeature.ElementClassList;
-import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
-import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
-import com.vaadin.flow.internal.nodefeature.ModelList;
-import com.vaadin.flow.internal.nodefeature.ModelMap;
-import com.vaadin.flow.internal.nodefeature.NodeFeature;
-import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.OverrideElementData;
-import com.vaadin.flow.internal.nodefeature.ParentGeneratorHolder;
-import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
-import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
-import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
-import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
-import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.internal.nodefeature.ShadowRootData;
-import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.flow.internal.nodefeature.TemplateMap;
-import com.vaadin.flow.internal.nodefeature.TemplateOverridesMap;
-import com.vaadin.flow.internal.nodefeature.TextNodeMap;
-import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 
 public class NodeFeatureTest {
@@ -133,6 +101,7 @@ public class NodeFeatureTest {
         expectedIds.put(BasicTypeValue.class, NodeFeatures.BASIC_TYPE_VALUE);
         expectedIds.put(VirtualChildrenList.class,
                 NodeFeatures.VIRTUAL_CHILDREN);
+        expectedIds.put(VisibilityData.class, NodeFeatures.VISIBILITY_DATA);
 
         return expectedIds;
     }

@@ -42,8 +42,6 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.OrderedList.NumberingType;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.NodeChange;
@@ -62,6 +60,7 @@ public class HtmlComponentSmokeTest {
     private static final Map<Class<?>, Object> testValues = new HashMap<>();
     static {
         testValues.put(String.class, "asdf");
+        testValues.put(boolean.class, false);
         testValues.put(NumberingType.class, NumberingType.LOWERCASE_ROMAN);
     }
 
@@ -116,14 +115,12 @@ public class HtmlComponentSmokeTest {
             HtmlComponent instance = constructor.newInstance(parameterValue);
 
             if (clazz.getAnnotation(Tag.class) == null) {
-                Assert.assertEquals(
-                        constructor
-                                + " should set the tag for a class without @Tag",
+                Assert.assertEquals(constructor
+                        + " should set the tag for a class without @Tag",
                         parameterValue, instance.getElement().getTag());
             } else {
-                Assert.assertEquals(
-                        constructor
-                                + " should set the text content for a class with @Tag",
+                Assert.assertEquals(constructor
+                        + " should set the text content for a class with @Tag",
                         parameterValue, instance.getElement().getText());
             }
         } catch (NoSuchMethodException e) {
@@ -230,7 +227,15 @@ public class HtmlComponentSmokeTest {
 
     private static Method findGetter(Method setter) {
         String setterName = setter.getName();
-        String getterName = setterName.replaceFirst("set", "get");
+        String getterName;
+
+        Class<?>[] parameterTypes = setter.getParameterTypes();
+        if (parameterTypes.length == 1
+                && boolean.class.equals(parameterTypes[0])) {
+            getterName = setterName.replaceFirst("set", "is");
+        } else {
+            getterName = setterName.replaceFirst("set", "get");
+        }
 
         try {
             return setter.getDeclaringClass().getMethod(getterName);
@@ -272,7 +277,8 @@ public class HtmlComponentSmokeTest {
         return HtmlComponent.class.isAssignableFrom(cls);
     }
 
-    private static Class<? extends HtmlComponent> asHtmlComponentSubclass(Class<?> cls) {
+    private static Class<? extends HtmlComponent> asHtmlComponentSubclass(
+            Class<?> cls) {
         return cls.asSubclass(HtmlComponent.class);
     }
 }

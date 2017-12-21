@@ -54,7 +54,12 @@ public class ComponentProperty {
     }
 
     public Method getGetter() throws NoSuchMethodException, SecurityException {
-        String getterName = "get" + SharedUtil.capitalize(name);
+        String getterName;
+        if (boolean.class.equals(type)) {
+            getterName = "is" + SharedUtil.capitalize(name);
+        } else {
+            getterName = "get" + SharedUtil.capitalize(name);
+        }
         Method m = componentType.getMethod(getterName, (Class<?>[]) null);
         return m;
     }

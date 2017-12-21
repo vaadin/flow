@@ -20,13 +20,14 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.VisibilityData;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 
 /**
  * Abstract invocation handler implementation with common methods.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -48,14 +49,29 @@ public abstract class AbstractRpcInvocationHandler
                     getNodeId(invocationJson));
             return;
         }
-        handleNode(node, invocationJson);
+
+        boolean invokeRpc = true;
+        if (node.hasFeature(VisibilityData.class)) {
+            invokeRpc = node.getFeature(VisibilityData.class).isVisible();
+        }
+        if (invokeRpc) {
+            handleNode(node, invocationJson);
+        } else {
+            // ignore RPC requests from the client side for the nodes that are
+            // invisible
+            LoggerFactory.getLogger(AbstractRpcInvocationHandler.class).warn(
+                    String.format("RPC request for invocation handler '%s' "
+                            + "is recieved from the client side for concealed node id='%s'",
+                            getClass().getName(), node.getId()));
+        }
     }
 
     protected abstract void handleNode(StateNode node,
             JsonObject invocationJson);
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(AbstractRpcInvocationHandler.class.getName());
+        return LoggerFactory
+                .getLogger(AbstractRpcInvocationHandler.class.getName());
     }
 
     private static int getNodeId(JsonObject invocationJson) {

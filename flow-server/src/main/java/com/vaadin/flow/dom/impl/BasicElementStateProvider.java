@@ -52,6 +52,7 @@ import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.internal.nodefeature.VisibilityData;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.template.angular.AbstractControlTemplateNode;
@@ -85,7 +86,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
             ClientDelegateHandlers.class, PolymerEventListenerMap.class,
             ShadowRootData.class, AttachExistingElementFeature.class,
-            VirtualChildrenList.class };
+            VirtualChildrenList.class, VisibilityData.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -376,6 +377,18 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             element.getShadowRoot()
                     .ifPresent(root -> root.accept(visitor, visitDescendants));
         }
+    }
+
+    @Override
+    public void setVisible(StateNode node, boolean visible) {
+        assert node.hasFeature(VisibilityData.class);
+        node.getFeature(VisibilityData.class).setVisible(visible);
+    }
+
+    @Override
+    public boolean isVisible(StateNode node) {
+        assert node.hasFeature(VisibilityData.class);
+        return node.getFeature(VisibilityData.class).isVisible();
     }
 
     @Override

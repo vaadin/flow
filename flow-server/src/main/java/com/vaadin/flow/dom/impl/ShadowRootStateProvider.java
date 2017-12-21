@@ -220,4 +220,13 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
         return ShadowRoot.get(node);
     }
 
+    @Override
+    public void setVisible(StateNode node, boolean visible) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isVisible(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
 }
