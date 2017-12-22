@@ -27,15 +27,17 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.shared.util.SharedUtil;
-
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.googlecode.gentyref.GenericTypeReflector;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * An util class with helpers for reflection operations. Used internally by
@@ -573,28 +575,11 @@ public class ReflectTools implements Serializable {
      */
     public static Class<?> getGenericInterfaceType(Class<?> clazz,
             Class<?> interfaceType) {
-        Type[] genericInterfaces = clazz.getGenericInterfaces();
-        ParameterizedType parameterizedType = null;
-        for (Type genericInterface : genericInterfaces) {
-            Class<?> interfaceClass;
-            if (genericInterface instanceof ParameterizedType) {
-                interfaceClass = (Class<?>) ((ParameterizedType) genericInterface)
-                        .getRawType();
-            } else if (genericInterface instanceof Class) {
-                interfaceClass = (Class<?>) genericInterface;
-            } else {
-                interfaceClass = genericInterface.getClass();
-            }
-            if (interfaceType.isAssignableFrom(interfaceClass)) {
-                parameterizedType = (ParameterizedType) genericInterface;
-            }
-        }
-        if (parameterizedType == null) {
-            return null;
-        }
-        Type[] typeArguments = parameterizedType.getActualTypeArguments();
-        if (typeArguments[0] instanceof Class) {
-            return (Class<?>) typeArguments[0];
+        Type type = GenericTypeReflector
+                .getTypeParameter(clazz, interfaceType.getTypeParameters()[0]);
+
+        if (type instanceof Class || type instanceof ParameterizedType) {
+            return GenericTypeReflector.erase(type);
         }
         return null;
     }
