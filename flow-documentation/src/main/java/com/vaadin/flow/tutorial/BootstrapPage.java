@@ -113,7 +113,17 @@ public class BootstrapPage {
         }
     }
 
-    public class Layout2 extends Div
+    public class Layout2 extends Div implements RouterLayout, PageConfigurator {
+
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineWithContents(
+                    "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">",
+                    Dependency.Type.HTML_IMPORT);
+        }
+    }
+
+    public class Layout3 extends Div
             implements RouterLayout, BootstrapListener {
 
         @Override
@@ -121,16 +131,6 @@ public class BootstrapPage {
             final Element head = response.getDocument().head();
             head.append(
                     "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">");
-        }
-    }
-
-    public class Layout3 extends Div implements RouterLayout, PageConfigurator {
-
-        @Override
-        public void configurePage(InitialPageSettings settings) {
-            settings.addInlineWithContents(
-                    "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">",
-                    Dependency.Type.HTML_IMPORT);
         }
     }
 

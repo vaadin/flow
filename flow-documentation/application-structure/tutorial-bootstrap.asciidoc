@@ -129,13 +129,13 @@ There is another common case that you have html contents to be appended to your 
 
 [source,java]
 ----
-public class Layout extends Div implements RouterLayout, PageConfigurator {
+public class Layout1 extends Div implements RouterLayout, PageConfigurator {
 
     @Override
     public void configurePage(InitialPageSettings settings) {
-		HashMap<String, String> attributes = new HashMap<>();
-		attributes.put("rel", "shortcut icon");
-		settings.addLink("icons/favicon.ico", attributes);
+        HashMap<String, String> attributes = new HashMap<>();
+        attributes.put("rel", "shortcut icon");
+        settings.addLink("icons/favicon.ico", attributes);
     }
 }
 ----
