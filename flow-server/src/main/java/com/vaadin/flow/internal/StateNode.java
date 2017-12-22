@@ -67,6 +67,8 @@ public class StateNode implements Serializable {
     // Only the root node is attached at this point
     private boolean wasAttached = isAttached();
 
+    private boolean inactive;
+
     /**
      * Creates a state node with the given feature types.
      *
@@ -569,7 +571,23 @@ public class StateNode implements Serializable {
     }
 
     public void updateActiveState() {
+        setInactive(getDissalowFeatures().count() != 0);
+    }
 
+    private Stream<NodeFeature> getDissalowFeatures() {
+        return getFeatures().values().stream()
+                .filter(feature -> !feature.allowsChanges());
+    }
+
+    private void setInactive(boolean inactive) {
+        this.inactive = inactive;
+    }
+
+    private boolean isInactive() {
+        if (inactive || getParent() == null) {
+            return inactive;
+        }
+        return getParent().isInactive();
     }
 
     /**
