@@ -123,65 +123,6 @@ public class MainLayout extends Div
     }
 }
 ----
-There is another common case that you have html contents to be appended to your page, for an example you will have a `favicon`. There are a few ways of doing this:
-
- - using `InitialPageSettings#addLink()`
-
-[source,java]
-----
-public class Layout1 extends Div implements RouterLayout, PageConfigurator {
-
-    @Override
-    public void configurePage(InitialPageSettings settings) {
-        HashMap<String, String> attributes = new HashMap<>();
-        attributes.put("rel", "shortcut icon");
-        settings.addLink("icons/favicon.ico", attributes);
-    }
-}
-----
-
- - using `InitialPageSettings::addInlineWithContents()`
-[source,java]
-----
-public class Layout3 extends Div implements RouterLayout, PageConfigurator {
-
-        @Override
-        public void configurePage(InitialPageSettings settings) {
-            settings.addInlineWithContents(
-                    "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">",
-                    Dependency.Type.HTML_IMPORT);
-        }
-    }
-----
-
- - using `BootstrapListener#modifyBootstrapPage()`
-
-[source,java]
-----
-public class Layout2 extends Div
-            implements RouterLayout, BootstrapListener {
-
-        @Override
-        public void modifyBootstrapPage(BootstrapPageResponse response) {
-            final Element head = response.getDocument().head();
-            head.append(
-                    "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">");
-        }
-    }
-----
-
-But most commonly, `favicon` contains quite a lot small icons, in this case, you can see that you will easily do a lot of hard coding. To avoid this, we are highly suggest you to move all the html contents into a file, (e.g. `favicon.html`) and inline this file in your `PageConfigurator`
-[source,java]
-----
-public class Layout4 extends Div implements RouterLayout, PageConfigurator {
-
-        @Override
-        public void configurePage(InitialPageSettings settings) {
-            settings.addInlineFromFile("favicon.html",
-                    Dependency.Type.HTML_IMPORT);
-        }
-    }
-----
 
 [NOTE]
 If the PageConfigurator implementation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
@@ -265,3 +206,62 @@ public class CustomBootstrapListener implements BootstrapListener {
 ----
 
 Now this listener should be added to a `ServiceInitEvent` which is sent when a Vaadin service is initialized. Take a look on the <<../miscellaneous/tutorial-service-init-listener#,ServiceInitListener tutorial>> on how to configure it.
+
+== Adding static HTML contents
+There is another common case that you have html contents to be appended to your page, for an example you will have a `favicon`. There are a few ways of doing this:
+
+ - using `InitialPageSettings#addLink()`
+
+[source,java]
+----
+public class Layout1 extends Div implements RouterLayout, PageConfigurator {
+
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        HashMap<String, String> attributes = new HashMap<>();
+        attributes.put("rel", "shortcut icon");
+        settings.addLink("icons/favicon.ico", attributes);
+    }
+}
+----
+
+ - using `InitialPageSettings#addInlineWithContents()`
+[source,java]
+----
+public class Layout2 extends Div implements RouterLayout, PageConfigurator {
+
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        settings.addInlineWithContents(
+                "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">",
+                Dependency.Type.HTML_IMPORT);
+    }
+}
+----
+
+ - using <<../application-structure/tutorial-bootstrap.asciidoc#bootstraplistener,`BootstrapListener>>#modifyBootstrapPage()`
+
+[source,java]
+----
+public class Layout3 extends Div implements RouterLayout, BootstrapListener{
+
+    @Override
+    public void modifyBootstrapPage(BootstrapPageResponse response) {
+        final Element head = response.getDocument().head();
+        head.append("<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">");
+    }
+}
+----
+
+But most commonly, `favicon` contains quite a lot small icons, in this case, you can see that you will easily do a lot of hard coding. To avoid this, we are *highly suggest* you to move all the html contents into a file, (e.g. `favicon.html`) and inline this file in your `PageConfigurator`
+[source,java]
+----
+public class Layout4 extends Div implements RouterLayout, PageConfigurator {
+
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineFromFile("favicon.html",
+                    Dependency.Type.HTML_IMPORT);
+        }
+    }
+----
