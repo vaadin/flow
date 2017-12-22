@@ -78,10 +78,6 @@ public class MyInline extends Div implements RouterLayout {
 }
 ----
 
-Inline annotation is highly recommended, when you have a lot of html contents to be appended to your inital page. In order to avoid long coding for modifying the page, we suggest you to move all the HTMLs to another file and import it via using `@Inline` annotation. 
-
-For an example: it is very common that you will have a lot of small icons for your `favicon`. Instead of adding the tags one by one by using `InitialPageSettings#addLink()` and `BootstrapListener#modifyBootstrapPage()`, you could move all the icons' `rel`, `href` settings to another file (e.g. `favicon.html`) and inline the `favicon.html` to your page.
-
 [NOTE]
 If the Inline annotations is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
 
@@ -126,6 +122,88 @@ public class MainLayout extends Div
                 "http://ia.media-imdb.com/images/rock.jpg");
     }
 }
+----
+There is another common case that you have html contents to be appended to your page, for an example you will have a `favicon`. There are a few ways of doing this:
+
+ - using `InitialPageSettings#addLink()`
+
+[source,java]
+----
+public class Layout extends Div implements RouterLayout, PageConfigurator {
+
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+		HashMap<String, String> attributes = new HashMap<>();
+		attributes.put("rel", "shortcut icon");
+		settings.addLink("icons/favicon.ico", attributes);
+    }
+}
+----
+
+ - using `InitialPageSettings::addInlineWithContents()`
+[source,java]
+----
+public class Layout3 extends Div implements RouterLayout, PageConfigurator {
+
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineWithContents(
+                    "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">",
+                    Dependency.Type.HTML_IMPORT);
+        }
+    }
+----
+
+ - using `BootstrapListener#modifyBootstrapPage()`
+
+[source,java]
+----
+public class Layout2 extends Div
+            implements RouterLayout, BootstrapListener {
+
+        @Override
+        public void modifyBootstrapPage(BootstrapPageResponse response) {
+            final Element head = response.getDocument().head();
+            head.append(
+                    "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">");
+        }
+    }
+----
+
+But most commonly, `favicon` contains quite a lot small icons, in this case, you can see that you will easily do a lot of hard coding. To avoid this, we are highly suggest you to move all the html contents into a file, (e.g. `favicon.html`) and inline this file in your `PageConfigurator`
+[source,java]
+----
+public class Layout4 extends Div implements RouterLayout, PageConfigurator {
+
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineFromFile("favicon.html",
+                    Dependency.Type.HTML_IMPORT);
+        }
+    }
+----
+
+Inline is highly recommended, when you have a lot of html contents to be appended to your inital page. In order to avoid long coding for modifying the page, we suggest you to move all the HTMLs to another file and import it via using `@Inline` annotation. 
+
+For an example: it is very common that you will have a lot of small icons for your `favicon`. Instead of adding the tags one by one by using `InitialPageSettings#addLink()` and `BootstrapListener#modifyBootstrapPage()`, you could move all the icons' `rel`, `href` settings to another file (e.g. `favicon.html`) and inline the `favicon.html` to your `pageConfigurator` (code example is shown below). 
+Following code example is showing to using inline in `PageConfigurator`:
+
+[source,java]
+----
+@Route(value = "", layout = Layout.class)
+public class RootPage extends Div {
+}
+
+public class Layout extends Div implements RouterLayout, PageConfigurator {
+
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        settings.addInlineFromFile("favicon.html",
+                Dependency.Type.HTML_IMPORT);
+    }
+
+}
+
 ----
 
 [NOTE]

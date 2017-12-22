@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.tutorial;
 
+import java.util.HashMap;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -100,6 +102,47 @@ public class BootstrapPage {
                     "http://ia.media-imdb.com/images/rock.jpg");
         }
     }
+
+    public class Layout1 extends Div implements RouterLayout, PageConfigurator {
+
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            HashMap<String, String> attributes = new HashMap<>();
+            attributes.put("rel", "shortcut icon");
+            settings.addLink("icons/favicon.ico", attributes);
+        }
+    }
+
+    public class Layout2 extends Div
+            implements RouterLayout, BootstrapListener {
+
+        @Override
+        public void modifyBootstrapPage(BootstrapPageResponse response) {
+            final Element head = response.getDocument().head();
+            head.append(
+                    "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">");
+        }
+    }
+
+    public class Layout3 extends Div implements RouterLayout, PageConfigurator {
+
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineWithContents(
+                    "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">",
+                    Dependency.Type.HTML_IMPORT);
+        }
+    }
+
+    public class Layout4 extends Div implements RouterLayout, PageConfigurator {
+
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineFromFile("favicon.html",
+                    Dependency.Type.HTML_IMPORT);
+        }
+    }
+
 
     @Route("")
     @BodySize(height = "100vh", width = "100vw")
