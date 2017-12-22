@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,12 +31,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -44,7 +44,9 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
@@ -58,6 +60,7 @@ public class RouteRegistry implements Serializable {
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
+    private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
 
     private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
             .of(RouteNotFoundError.class, InternalServerError.class)
@@ -137,7 +140,8 @@ public class RouteRegistry implements Serializable {
         Map<Class<?>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
         errorNavigationTargets.removeAll(defaultErrorHandlers);
         for (Class<? extends Component> target : errorNavigationTargets) {
-            Class<?> exceptionType = getExceptionType(target);
+            Class<?> exceptionType = ReflectTools
+                    .getGenericInterfaceType(target, HasErrorParameter.class);
 
             if (exceptionTargetsMap.containsKey(exceptionType)) {
                 handleRegisteredExceptionType(exceptionTargetsMap, target,
@@ -149,16 +153,51 @@ public class RouteRegistry implements Serializable {
         initErrorTargets(exceptionTargetsMap);
     }
 
-    private Class<?> getExceptionType(Class<? extends Component> target) {
-        Class<?> exceptionType = ReflectTools.getGenericInterfaceType(target,
-                HasErrorParameter.class);
+    /**
+     * Get the {@link RouteData} for all registered navigation targets.
+     *
+     * @return list of routes available for this registry
+     */
+    public List<RouteData> getRegisteredRoutes() {
+        // Build and collect only on first request
+        if (routeData.get() == null) {
+            List<RouteData> routes = new ArrayList<>();
+            targetRoutes.get().forEach((target, url) -> {
+                List<Class<?>> parameters = new ArrayList<>();
+                getRouteParameters(target)
+                        .ifPresent(classes -> parameters.addAll(classes));
 
-        if (exceptionType == null) {
-            return getExceptionType(
-                    (Class<? extends Component>) target.getSuperclass());
+                RouteData route = new RouteData(getParentLayout(target), url,
+                        parameters, target);
+                routes.add(route);
+            });
+
+            Collections.sort(routes,
+                    (o1, o2) -> o1.getUrl().compareToIgnoreCase(o2.getUrl()));
+
+            routeData.set(routes);
         }
 
-        return exceptionType;
+        return routeData.get();
+    }
+
+    private Class<? extends RouterLayout> getParentLayout(
+            Class<? extends Component> target) {
+        return AnnotationReader.getAnnotationFor(target, Route.class)
+                .map(Route::layout).orElse(null);
+    }
+
+    private Optional<List<Class<?>>> getRouteParameters(
+            Class<? extends Component> target) {
+        List<Class<?>> parameters = null;
+        if (HasUrlParameter.class.isAssignableFrom(target)) {
+            Class<?> genericInterfaceType = ReflectTools
+                    .getGenericInterfaceType(target, HasUrlParameter.class);
+            parameters = new ArrayList<>();
+            parameters.add(genericInterfaceType);
+        }
+
+        return Optional.ofNullable(parameters);
     }
 
     /**
@@ -341,12 +380,13 @@ public class RouteRegistry implements Serializable {
             Class<? extends Component> navigationTarget) {
         StringBuilder route = new StringBuilder(
                 targetRoutes.get().get(navigationTarget));
-        if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
-            Class<?> genericInterfaceType = ReflectTools
-                    .getGenericInterfaceType(navigationTarget,
-                            HasUrlParameter.class);
-            route.append("/{").append(genericInterfaceType.getSimpleName())
-                    .append("}");
+
+        Optional<List<Class<?>>> routeParameters = getRouteParameters(
+                navigationTarget);
+
+        if (routeParameters.isPresent()) {
+            routeParameters.get().forEach(param -> route.append("/{")
+                    .append(param.getSimpleName()).append("}"));
         }
         return route.toString();
     }

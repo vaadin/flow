@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,6 +34,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
@@ -43,6 +45,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
@@ -50,9 +53,6 @@ import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.startup.DuplicateNavigationTitleException;
-import com.vaadin.flow.server.startup.RouteRegistry;
-import com.vaadin.flow.server.startup.RouteRegistryInitializer;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -171,7 +171,7 @@ public class RouteRegistryInitializerTest {
     public void routeRegistry_route_with_absolute_ignores_parent_route_prefix()
             throws ServletException {
         routeRegistryInitializer.onStartup(
-                Stream.of(AbosulteRoute.class).collect(Collectors.toSet()),
+                Stream.of(AbsoluteRoute.class).collect(Collectors.toSet()),
                 servletContext);
 
         Optional<Class<? extends Component>> navigationTarget = registry
@@ -180,7 +180,7 @@ public class RouteRegistryInitializerTest {
         Assert.assertTrue("Could not find navigation target for `absolute`",
                 navigationTarget.isPresent());
         Assert.assertEquals("Route 'absolute' was not registered correctly",
-                AbosulteRoute.class, navigationTarget.get());
+                AbsoluteRoute.class, navigationTarget.get());
     }
 
     @Test
@@ -258,7 +258,7 @@ public class RouteRegistryInitializerTest {
             throws ServletException {
         routeRegistryInitializer.onStartup(Stream
                 .of(NavigationTarget.class, NavigationTargetFoo.class,
-                        AbosulteRoute.class, ExtendingPrefix.class)
+                        AbsoluteRoute.class, ExtendingPrefix.class)
                 .collect(Collectors.toSet()), servletContext);
 
         Assert.assertEquals("",
@@ -266,7 +266,7 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals("foo",
                 registry.getTargetUrl(NavigationTargetFoo.class).get());
         Assert.assertEquals("absolute",
-                registry.getTargetUrl(AbosulteRoute.class).get());
+                registry.getTargetUrl(AbsoluteRoute.class).get());
         Assert.assertEquals("parent/prefix",
                 registry.getTargetUrl(ExtendingPrefix.class).get());
     }
@@ -383,7 +383,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Route(value = "absolute", layout = ParentWithRoutePrefix.class, absolute = true)
-    private static class AbosulteRoute extends Component {
+    private static class AbsoluteRoute extends Component {
     }
 
     @RoutePrefix(value = "absolute", absolute = true)
@@ -1026,6 +1026,172 @@ public class RouteRegistryInitializerTest {
         routeRegistryInitializer.onStartup(
                 Stream.of(InlineAliasView.class).collect(Collectors.toSet()),
                 servletContext);
+    }
+
+    /* RouteData tests */
+
+    @Test
+    public void routeData_returns_all_registered_routes()
+            throws ServletException {
+        Set<Class<?>> routes = Stream.of(NavigationTarget.class,
+                NavigationTargetFoo.class, NavigationTargetBar.class)
+                .collect(Collectors.toSet());
+        routeRegistryInitializer.onStartup(routes, servletContext);
+        List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
+
+        Assert.assertEquals("Not all registered routes were returned", 3,
+                registeredRoutes.size());
+
+        Set<Class<?>> collectedRoutes = registeredRoutes.stream()
+                .map(RouteData::getNavigationTarget)
+                .collect(Collectors.toSet());
+
+        Assert.assertTrue("Not all targets were correct",
+                routes.containsAll(collectedRoutes));
+    }
+
+    @Test
+    public void routeData_gets_correct_urls_for_targets()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream.of(NavigationTarget.class,
+                NavigationRootWithParent.class, AbsoluteRoute.class,
+                ExtendingPrefix.class, StringParameterRoute.class,
+                ParameterRoute.class, MultiLevelRouteAlias.class)
+                .collect(Collectors.toSet()), servletContext);
+
+        List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
+
+        Assert.assertEquals("Not all registered routes were returned", 7,
+                registeredRoutes.size());
+
+        // RouteData should be sorted by url
+        Assert.assertEquals("Sort order was not the one expected", "",
+                registeredRoutes.get(0).getUrl());
+        Assert.assertEquals("Sort order was not the one expected", "absolute",
+                registeredRoutes.get(1).getUrl());
+        Assert.assertEquals("Sort order was not the one expected",
+                "absolute/levels", registeredRoutes.get(2).getUrl());
+        Assert.assertEquals("Sort order was not the one expected", "parameter",
+                registeredRoutes.get(3).getUrl());
+        Assert.assertEquals("Sort order was not the one expected", "parent",
+                registeredRoutes.get(4).getUrl());
+        Assert.assertEquals("Sort order was not the one expected",
+                "parent/prefix", registeredRoutes.get(5).getUrl());
+        Assert.assertEquals("Sort order was not the one expected", "string",
+                registeredRoutes.get(6).getUrl());
+    }
+
+    @Test
+    public void routeData_gets_correct_parents_for_targets()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream.of(NavigationTarget.class,
+                NavigationRootWithParent.class, AbsoluteRoute.class,
+                ExtendingPrefix.class, StringParameterRoute.class,
+                ParameterRoute.class, MultiLevelRouteAlias.class)
+                .collect(Collectors.toSet()), servletContext);
+
+        List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
+
+        Assert.assertEquals("Not all registered routes were returned", 7,
+                registeredRoutes.size());
+
+        Assert.assertEquals("Parent is wrongly set to data", UI.class,
+                registeredRoutes.get(0).getParentLayout());
+        Assert.assertEquals("Parent is wrongly set to data",
+                ParentWithRoutePrefix.class,
+                registeredRoutes.get(1).getParentLayout());
+        Assert.assertEquals("Parent is wrongly set to data",
+                AbsoluteMiddleParent.class,
+                registeredRoutes.get(2).getParentLayout());
+        Assert.assertEquals("Parent is wrongly set to data", UI.class,
+                registeredRoutes.get(3).getParentLayout());
+        Assert.assertEquals("Parent is wrongly set to data",
+                ParentWithRoutePrefix.class,
+                registeredRoutes.get(4).getParentLayout());
+        Assert.assertEquals("Parent is wrongly set to data",
+                ParentWithRoutePrefix.class,
+                registeredRoutes.get(5).getParentLayout());
+        Assert.assertEquals("Parent is wrongly set to data", UI.class,
+                registeredRoutes.get(6).getParentLayout());
+
+    }
+
+    @Test
+    public void routeData_gets_correct_parameters_for_targets()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream.of(NavigationTarget.class,
+                NavigationRootWithParent.class, AbsoluteRoute.class,
+                ExtendingPrefix.class, StringParameterRoute.class,
+                ParameterRoute.class, MultiLevelRouteAlias.class)
+                .collect(Collectors.toSet()), servletContext);
+
+        List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
+
+        Assert.assertEquals("Not all registered routes were returned", 7,
+                registeredRoutes.size());
+
+        Assert.assertEquals("Unexpected parameters encountered", 0,
+                registeredRoutes.get(0).getParameters().size());
+        Assert.assertEquals("Unexpected parameters encountered", 0,
+                registeredRoutes.get(1).getParameters().size());
+        Assert.assertEquals("Unexpected parameters encountered", 0,
+                registeredRoutes.get(2).getParameters().size());
+        Assert.assertEquals("Missing parameters", 1,
+                registeredRoutes.get(3).getParameters().size());
+
+        Assert.assertEquals("Unexpected parameters encountered", 0,
+                registeredRoutes.get(4).getParameters().size());
+        Assert.assertEquals("Unexpected parameters encountered", 0,
+                registeredRoutes.get(5).getParameters().size());
+        Assert.assertEquals("Missing parameters", 1,
+                registeredRoutes.get(6).getParameters().size());
+
+        Assert.assertEquals("Unexpected parameter type encountered",
+                Boolean.class, registeredRoutes.get(3).getParameters().get(0));
+        Assert.assertEquals("Unexpected parameter type encountered",
+                String.class, registeredRoutes.get(6).getParameters().get(0));
+    }
+
+    @Test
+    public void routeData_for_alias_data_is_correct() throws ServletException {
+        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+                .collect(Collectors.toSet()), servletContext);
+
+        List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
+
+        Assert.assertEquals("Not all registered routes were returned", 1,
+                registeredRoutes.size());
+
+        RouteData routeData = registeredRoutes.get(0);
+        Assert.assertEquals("Not all registered routes were returned", 5,
+                routeData.getRouteAliases().size());
+
+        List<RouteData.AliasData> routeAliases = routeData.getRouteAliases();
+
+        Assert.assertEquals("Sort order was not the one expected",
+                "absolute/alias2", routeAliases.get(0).getUrl());
+        Assert.assertEquals("Sort order was not the one expected", "alias3",
+                routeAliases.get(1).getUrl());
+        Assert.assertEquals("Sort order was not the one expected", "alias4",
+                routeAliases.get(2).getUrl());
+        Assert.assertEquals("Sort order was not the one expected",
+                "parent/alias1", routeAliases.get(3).getUrl());
+        Assert.assertEquals("Sort order was not the one expected",
+                "parent/middle/alias5", routeAliases.get(4).getUrl());
+
+        Assert.assertEquals("Sort order was not the one expected",
+                AbsoluteMiddleParent.class,
+                routeAliases.get(0).getParentLayout());
+        Assert.assertEquals("Sort order was not the one expected",
+                ParentWithRoutePrefix.class,
+                routeAliases.get(1).getParentLayout());
+        Assert.assertEquals("Sort order was not the one expected", UI.class,
+                routeAliases.get(2).getParentLayout());
+        Assert.assertEquals("Sort order was not the one expected",
+                ParentWithRoutePrefix.class,
+                routeAliases.get(3).getParentLayout());
+        Assert.assertEquals("Sort order was not the one expected",
+                MiddleParent.class, routeAliases.get(4).getParentLayout());
     }
 
 }

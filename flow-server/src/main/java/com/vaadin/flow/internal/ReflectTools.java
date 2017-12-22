@@ -573,18 +573,10 @@ public class ReflectTools implements Serializable {
      */
     public static Class<?> getGenericInterfaceType(Class<?> clazz,
             Class<?> interfaceType) {
-        Type[] genericInterfaces = clazz.getGenericInterfaces();
+        Type[] genericInterfaces = getGenericInterfaces(clazz, interfaceType);
         ParameterizedType parameterizedType = null;
         for (Type genericInterface : genericInterfaces) {
-            Class<?> interfaceClass;
-            if (genericInterface instanceof ParameterizedType) {
-                interfaceClass = (Class<?>) ((ParameterizedType) genericInterface)
-                        .getRawType();
-            } else if (genericInterface instanceof Class) {
-                interfaceClass = (Class<?>) genericInterface;
-            } else {
-                interfaceClass = genericInterface.getClass();
-            }
+            Class<?> interfaceClass = getInterfaceClass(genericInterface);
             if (interfaceType.isAssignableFrom(interfaceClass)) {
                 parameterizedType = (ParameterizedType) genericInterface;
             }
@@ -597,6 +589,60 @@ public class ReflectTools implements Serializable {
             return (Class<?>) typeArguments[0];
         }
         return null;
+    }
+
+    /**
+     * Get the class for this generic interface {@link Type}.
+     * 
+     * @param genericInterface
+     *            {@link Type} to get class for
+     * @return class for interface {@link Type}
+     */
+    private static Class<?> getInterfaceClass(Type genericInterface) {
+        Class<?> interfaceClass;
+        if (genericInterface instanceof ParameterizedType) {
+            interfaceClass = (Class<?>) ((ParameterizedType) genericInterface)
+                    .getRawType();
+        } else if (genericInterface instanceof Class) {
+            interfaceClass = (Class<?>) genericInterface;
+        } else {
+            interfaceClass = genericInterface.getClass();
+        }
+        return interfaceClass;
+    }
+
+    /**
+     * Get the generic interfaces also from super classes as there is a chance
+     * that the interface we want is in a parent class.
+     * 
+     * @param clazz
+     *            class to get interfaces for
+     * @param expectedInterface
+     *            wanted interface
+     * @return Type[] of generic interfaces for class hierarchy
+     */
+    private static Type[] getGenericInterfaces(Class<?> clazz,
+            Class<?> expectedInterface) {
+        Type[] genericInterfaces = clazz.getGenericInterfaces();
+        if (clazz.getSuperclass() != null) {
+            for (Type genericInterface : genericInterfaces) {
+                if (getInterfaceClass(genericInterface)
+                        .equals(expectedInterface)) {
+                    return genericInterfaces;
+                }
+            }
+            return combine(genericInterfaces, getGenericInterfaces(
+                    clazz.getSuperclass(), expectedInterface));
+        }
+        return genericInterfaces;
+    }
+
+    private static Type[] combine(Type[] a, Type[] b) {
+        int length = a.length + b.length;
+        Type[] result = new Type[length];
+        System.arraycopy(a, 0, result, 0, a.length);
+        System.arraycopy(b, 0, result, a.length, b.length);
+        return result;
     }
 
     /**
