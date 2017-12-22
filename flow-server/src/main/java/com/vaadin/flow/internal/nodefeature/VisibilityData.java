@@ -60,4 +60,9 @@ public class VisibilityData extends NodeValue<Boolean> {
         return !Boolean.FALSE.equals(getValue());
     }
 
+    @Override
+    public boolean allowsChanges() {
+        return isVisible();
+    }
+
 }
