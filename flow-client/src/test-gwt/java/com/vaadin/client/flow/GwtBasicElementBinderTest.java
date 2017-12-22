@@ -1303,6 +1303,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 addressedElement, childElement);
     }
 
+    public void testBindInvisibleNode() {
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBLE).setValue(false);
+
+        Binder.bind(node, element);
+
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+    }
+
+    public void testBindVisibleNode() {
+        Binder.bind(node, element);
+
+        assertNull(element.getAttribute("hidden"));
+    }
+
     private Element createAndAppendElementToShadowRoot(Element shadowRoot,
             String id, String tagName) {
         Element childShadowRootElement = Browser.getDocument()

@@ -272,8 +272,13 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
     private native void initPolymer(Element element)
     /*-{
         $wnd.Polymer = function() {};
+        $wnd.Polymer.dom = function(node){
+            return node;
+        };
         $wnd.Polymer.Element = {};
         element.__proto__ = $wnd.Polymer.Element;
+        element.removeAttribute = function(){
+        };
     }-*/;
 
 }
