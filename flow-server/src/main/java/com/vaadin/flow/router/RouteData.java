@@ -76,6 +76,16 @@ public class RouteData implements Comparable<RouteData> {
         public int compareTo(AliasData otherAlias) {
             return this.getUrl().compareToIgnoreCase(otherAlias.getUrl());
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof AliasData) {
+                AliasData other = (AliasData) obj;
+                return other.parentLayout.equals(this.parentLayout)
+                        && other.url.equals(this.url);
+            }
+            return false;
+        }
     }
 
     /**
@@ -154,6 +164,17 @@ public class RouteData implements Comparable<RouteData> {
     @Override
     public int compareTo(RouteData otherRouteData) {
         return this.getUrl().compareToIgnoreCase(otherRouteData.getUrl());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof RouteData) {
+            RouteData other = (RouteData) obj;
+            return other.parentLayout.equals(this.parentLayout)
+                    && other.url.equals(this.url)
+                    && other.navigationTarget.equals(navigationTarget);
+        }
+        return false;
     }
 
 }
