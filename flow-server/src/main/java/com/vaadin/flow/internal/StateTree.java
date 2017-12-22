@@ -60,6 +60,7 @@ public class StateTree implements NodeOwner {
             // Root is always attached
             return true;
         }
+
     }
 
     /**
