@@ -34,9 +34,9 @@ public class RouteData {
     private final List<AliasData> routeAliases;
 
     /**
-     * Data class with information pertaining to the {@link RouteAlias}
+     * Data class with information pertaining to the {@link RouteAlias}.
      */
-    public class AliasData {
+    public static class AliasData {
         private final Class<? extends RouterLayout> parentLayout;
         private final String url;
 

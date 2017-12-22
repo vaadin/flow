@@ -161,21 +161,20 @@ public class RouteRegistry implements Serializable {
     public List<RouteData> getRegisteredRoutes() {
         // Build and collect only on first request
         if (routeData.get() == null) {
-            List<RouteData> routes = new ArrayList<>();
+            List<RouteData> registeredRoutes = new ArrayList<>();
             targetRoutes.get().forEach((target, url) -> {
                 List<Class<?>> parameters = new ArrayList<>();
-                getRouteParameters(target)
-                        .ifPresent(classes -> parameters.addAll(classes));
+                getRouteParameters(target).ifPresent(parameters::addAll);
 
                 RouteData route = new RouteData(getParentLayout(target), url,
                         parameters, target);
-                routes.add(route);
+                registeredRoutes.add(route);
             });
 
-            Collections.sort(routes,
+            Collections.sort(registeredRoutes,
                     (o1, o2) -> o1.getUrl().compareToIgnoreCase(o2.getUrl()));
 
-            routeData.set(routes);
+            routeData.set(registeredRoutes);
         }
 
         return routeData.get();
