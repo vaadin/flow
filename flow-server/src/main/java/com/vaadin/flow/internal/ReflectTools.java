@@ -27,15 +27,16 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.shared.util.SharedUtil;
-
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * An util class with helpers for reflection operations. Used internally by
@@ -573,7 +574,8 @@ public class ReflectTools implements Serializable {
      */
     public static Class<?> getGenericInterfaceType(Class<?> clazz,
             Class<?> interfaceType) {
-        Type[] genericInterfaces = getGenericInterfaces(clazz, interfaceType);
+        List<Type> genericInterfaces = getGenericInterfaces(clazz,
+                interfaceType);
         ParameterizedType parameterizedType = null;
         for (Type genericInterface : genericInterfaces) {
             Class<?> interfaceClass = getInterfaceClass(genericInterface);
@@ -621,9 +623,10 @@ public class ReflectTools implements Serializable {
      *            wanted interface
      * @return Type[] of generic interfaces for class hierarchy
      */
-    private static Type[] getGenericInterfaces(Class<?> clazz,
+    private static List<Type> getGenericInterfaces(Class<?> clazz,
             Class<?> expectedInterface) {
-        Type[] genericInterfaces = clazz.getGenericInterfaces();
+        List<Type> genericInterfaces = new ArrayList<>(
+                Arrays.asList(clazz.getGenericInterfaces()));
         if (clazz.getSuperclass() != null) {
             for (Type genericInterface : genericInterfaces) {
                 if (getInterfaceClass(genericInterface)
@@ -631,18 +634,10 @@ public class ReflectTools implements Serializable {
                     return genericInterfaces;
                 }
             }
-            return combine(genericInterfaces, getGenericInterfaces(
-                    clazz.getSuperclass(), expectedInterface));
+            genericInterfaces.addAll(getGenericInterfaces(clazz.getSuperclass(),
+                    expectedInterface));
         }
         return genericInterfaces;
-    }
-
-    private static Type[] combine(Type[] a, Type[] b) {
-        int length = a.length + b.length;
-        Type[] result = new Type[length];
-        System.arraycopy(a, 0, result, 0, a.length);
-        System.arraycopy(b, 0, result, a.length, b.length);
-        return result;
     }
 
     /**

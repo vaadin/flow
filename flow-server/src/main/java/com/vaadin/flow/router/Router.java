@@ -403,11 +403,11 @@ public class Router implements RouterInterface {
      */
     public Map<Class<? extends RouterLayout>, List<RouteData>> getRoutesByParent() {
         Map<Class<? extends RouterLayout>, List<RouteData>> grouped = new HashMap<>();
-        getRoutes().forEach(route -> {
+        for (RouteData route : getRoutes()) {
             List<RouteData> routeDataList = grouped.computeIfAbsent(
                     route.getParentLayout(), key -> new ArrayList<>());
             routeDataList.add(route);
-        });
+        }
 
         return grouped;
     }

@@ -163,18 +163,16 @@ public class RouteRegistry implements Serializable {
         if (routeData.get() == null) {
             List<RouteData> registeredRoutes = new ArrayList<>();
             targetRoutes.get().forEach((target, url) -> {
-                List<Class<?>> parameters = new ArrayList<>();
-                getRouteParameters(target).ifPresent(parameters::addAll);
+                List<Class<?>> parameters = getRouteParameters(target);
 
                 RouteData route = new RouteData(getParentLayout(target), url,
                         parameters, target);
                 registeredRoutes.add(route);
             });
 
-            Collections.sort(registeredRoutes,
-                    (o1, o2) -> o1.getUrl().compareToIgnoreCase(o2.getUrl()));
+            Collections.sort(registeredRoutes);
 
-            routeData.set(registeredRoutes);
+            routeData.compareAndSet(null, registeredRoutes);
         }
 
         return routeData.get();
@@ -186,17 +184,16 @@ public class RouteRegistry implements Serializable {
                 .map(Route::layout).orElse(null);
     }
 
-    private Optional<List<Class<?>>> getRouteParameters(
+    private List<Class<?>> getRouteParameters(
             Class<? extends Component> target) {
-        List<Class<?>> parameters = null;
+        List<Class<?>> parameters = new ArrayList<>();
         if (HasUrlParameter.class.isAssignableFrom(target)) {
             Class<?> genericInterfaceType = ReflectTools
                     .getGenericInterfaceType(target, HasUrlParameter.class);
-            parameters = new ArrayList<>();
             parameters.add(genericInterfaceType);
         }
 
-        return Optional.ofNullable(parameters);
+        return parameters;
     }
 
     /**
@@ -380,11 +377,10 @@ public class RouteRegistry implements Serializable {
         StringBuilder route = new StringBuilder(
                 targetRoutes.get().get(navigationTarget));
 
-        Optional<List<Class<?>>> routeParameters = getRouteParameters(
-                navigationTarget);
+        List<Class<?>> routeParameters = getRouteParameters(navigationTarget);
 
-        if (routeParameters.isPresent()) {
-            routeParameters.get().forEach(param -> route.append("/{")
+        if (!routeParameters.isEmpty()) {
+            routeParameters.forEach(param -> route.append("/{")
                     .append(param.getSimpleName()).append("}"));
         }
         return route.toString();

@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.internal;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.vaadin.flow.internal.ReflectTools;
-
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ReflectToolsTest {
     public class NonStaticInnerClass {
@@ -151,6 +148,34 @@ public class ReflectToolsTest {
                     ReflectTools.CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
                     originalClass.getName()), re.getMessage());
         }
+    }
+
+    public interface TestInterface<T> {
+
+    }
+
+    public static class HasInterface implements TestInterface<String> {
+    }
+
+    public static class ParentInterface implements TestInterface<Boolean> {
+    }
+
+    public static class ChildInterface extends ParentInterface {
+    }
+
+    @Test
+    public void getGenericInterfaceClass() {
+        Class<?> genericInterfaceType = ReflectTools
+                .getGenericInterfaceType(HasInterface.class,
+                        TestInterface.class);
+
+        Assert.assertEquals(String.class, genericInterfaceType);
+
+        genericInterfaceType = ReflectTools
+                .getGenericInterfaceType(ChildInterface.class,
+                        TestInterface.class);
+
+        Assert.assertEquals(Boolean.class, genericInterfaceType);
     }
 
     private Class<?> createProxyClass(Class<?> originalClass) {

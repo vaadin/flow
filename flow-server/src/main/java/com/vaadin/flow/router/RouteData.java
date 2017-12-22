@@ -26,7 +26,7 @@ import com.vaadin.flow.router.internal.RouterUtil;
 /**
  * Data collection of information for a specific registered route target.
  */
-public class RouteData {
+public class RouteData implements Comparable<RouteData> {
     private final Class<? extends RouterLayout> parentLayout;
     private final String url;
     private final List<Class<?>> parameters;
@@ -36,7 +36,7 @@ public class RouteData {
     /**
      * Data class with information pertaining to the {@link RouteAlias}.
      */
-    public static class AliasData {
+    public static class AliasData implements Comparable<AliasData> {
         private final Class<? extends RouterLayout> parentLayout;
         private final String url;
 
@@ -71,6 +71,11 @@ public class RouteData {
         public String getUrl() {
             return url;
         }
+
+        @Override
+        public int compareTo(AliasData otherAlias) {
+            return this.getUrl().compareToIgnoreCase(otherAlias.getUrl());
+        }
     }
 
     /**
@@ -98,8 +103,7 @@ public class RouteData {
                 .forEach(alias -> routeAliases
                         .add(new AliasData(alias.layout(), RouterUtil
                                 .getRouteAliasPath(navigationTarget, alias))));
-        Collections.sort(routeAliases,
-                (o1, o2) -> o1.getUrl().compareToIgnoreCase(o2.getUrl()));
+        Collections.sort(routeAliases);
     }
 
     /**
@@ -146,4 +150,10 @@ public class RouteData {
     public List<AliasData> getRouteAliases() {
         return Collections.unmodifiableList(routeAliases);
     }
+
+    @Override
+    public int compareTo(RouteData otherRouteData) {
+        return this.getUrl().compareToIgnoreCase(otherRouteData.getUrl());
+    }
+
 }
