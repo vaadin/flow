@@ -69,6 +69,8 @@ public class StateNode implements Serializable {
 
     private boolean inactive;
 
+    private boolean isInitialChanges = true;
+
     /**
      * Creates a state node with the given feature types.
      *
@@ -305,15 +307,27 @@ public class StateNode implements Serializable {
      *            a consumer accepting node changes
      */
     public void collectChanges(Consumer<NodeChange> collector) {
+        if (inactive) {
+            // don't send anything if this is initial changes
+            if (!isInitialChanges) {
+                doCollectChanges(collector, getDissalowFeatures());
+            }
+        } else {
+            doCollectChanges(collector, getFeatures().values().stream());
+        }
+    }
+
+    private void doCollectChanges(Consumer<NodeChange> collector,
+            Stream<NodeFeature> features) {
         boolean isAttached = isAttached();
         if (isAttached != wasAttached) {
             if (isAttached) {
                 collector.accept(new NodeAttachChange(this));
 
-                // Make all changes show up as if the node was recently attached
+                // Make all changes show up as if the node was recently
+                // attached
                 clearChanges();
-                getFeatures().values()
-                        .forEach(NodeFeature::generateChangesFromEmpty);
+                features.forEach(NodeFeature::generateChangesFromEmpty);
             } else {
                 collector.accept(new NodeDetachChange(this));
             }
@@ -322,7 +336,7 @@ public class StateNode implements Serializable {
         }
 
         if (isAttached) {
-            getFeatures().values().stream().filter(this::hasChangeTracker)
+            features.filter(this::hasChangeTracker)
                     .forEach(feature -> feature.collectChanges(collector));
             clearChanges();
         }
@@ -338,6 +352,7 @@ public class StateNode implements Serializable {
      */
     public void clearChanges() {
         changes = null;
+        isInitialChanges = false;
     }
 
     /**
