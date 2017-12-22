@@ -120,4 +120,17 @@ public abstract class NodeFeature implements Serializable {
     public void onDetach() {
         // NOOP by default
     }
+
+    /**
+     * Returns {@code true} if the underlying node may report its changes.
+     * <p>
+     * If its return value is {@code false} then this node should be considered
+     * as "inactive" and don't send any changes to the client side at all or
+     * only changes for features that disallow the changes
+     *
+     * @return
+     */
+    public boolean allowsChanges() {
+        return true;
+    }
 }
