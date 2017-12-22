@@ -183,29 +183,6 @@ public class Layout4 extends Div implements RouterLayout, PageConfigurator {
     }
 ----
 
-Inline is highly recommended, when you have a lot of html contents to be appended to your inital page. In order to avoid long coding for modifying the page, we suggest you to move all the HTMLs to another file and import it via using `@Inline` annotation. 
-
-For an example: it is very common that you will have a lot of small icons for your `favicon`. Instead of adding the tags one by one by using `InitialPageSettings#addLink()` and `BootstrapListener#modifyBootstrapPage()`, you could move all the icons' `rel`, `href` settings to another file (e.g. `favicon.html`) and inline the `favicon.html` to your `pageConfigurator` (code example is shown below). 
-Following code example is showing to using inline in `PageConfigurator`:
-
-[source,java]
-----
-@Route(value = "", layout = Layout.class)
-public class RootPage extends Div {
-}
-
-public class Layout extends Div implements RouterLayout, PageConfigurator {
-
-    @Override
-    public void configurePage(InitialPageSettings settings) {
-        settings.addInlineFromFile("favicon.html",
-                Dependency.Type.HTML_IMPORT);
-    }
-
-}
-
-----
-
 [NOTE]
 If the PageConfigurator implementation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
 
