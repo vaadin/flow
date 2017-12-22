@@ -568,6 +568,10 @@ public class StateNode implements Serializable {
         return reportedFeatures.contains(featureType);
     }
 
+    public void updateActiveState() {
+
+    }
+
     /**
      * Internal helper for getting the UI instance for a node attached to a
      * StateTree. Assumes the node is attached.

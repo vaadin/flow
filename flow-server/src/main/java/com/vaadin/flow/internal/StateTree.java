@@ -65,7 +65,7 @@ public class StateTree implements NodeOwner {
     /**
      * Object that holds a {@link Runnable} to be executed before the client
      * response, using a {@link StateNode} as context.
-     * 
+     *
      * @see StateTree#beforeClientResponse(StateNode, Runnable) See
      *      {@link StateTree#runExecutionsBeforeClientResponse()}
      */
@@ -106,6 +106,7 @@ public class StateTree implements NodeOwner {
         /**
          * Removes the associated runnable from the execution queue.
          */
+        @Override
         void remove();
     }
 
@@ -208,9 +209,13 @@ public class StateTree implements NodeOwner {
      *            a consumer accepting node changes
      */
     public void collectChanges(Consumer<NodeChange> collector) {
+        Set<StateNode> dirtyNodes = collectDirtyNodes();
+
+        dirtyNodes.forEach(StateNode::updateActiveState);
+
         // TODO fire preCollect events
 
-        collectDirtyNodes().forEach(n -> n.collectChanges(collector));
+        dirtyNodes.forEach(node -> node.collectChanges(collector));
     }
 
     @Override
@@ -264,7 +269,7 @@ public class StateTree implements NodeOwner {
      * If the {@link StateNode} related to the runnable is not attached to the
      * document by the time the runnable is evaluated, the execution is
      * postponed to before the next response.
-     * 
+     *
      * @param context
      *            the StateNode relevant for the execution. Can not be
      *            <code>null</code>
@@ -313,7 +318,7 @@ public class StateTree implements NodeOwner {
      * executed later. It is evaluated again before the next client
      * response.</li>
      * </ol>
-     * 
+     *
      * @param reference
      *            the StateNodeOnBeforeClientResponse object containing the
      *            StateNode and the Runnable
