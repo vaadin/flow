@@ -243,14 +243,16 @@ public class Layout2 extends Div implements RouterLayout, PageConfigurator {
 
 [source,java]
 ----
-public class Layout3 extends Div implements RouterLayout, BootstrapListener{
+public class Layout3 extends Div
+            implements RouterLayout, BootstrapListener {
 
-    @Override
-    public void modifyBootstrapPage(BootstrapPageResponse response) {
-        final Element head = response.getDocument().head();
-        head.append("<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">");
+        @Override
+        public void modifyBootstrapPage(BootstrapPageResponse response) {
+            final Element head = response.getDocument().head();
+            head.append(
+                    "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">");
+        }
     }
-}
 ----
 
 But most commonly, `favicon` contains quite a lot small icons, in this case, you can see that you will easily do a lot of hard coding. To avoid this, we are *highly suggest* you to move all the html contents into a file, (e.g. `favicon.html`) and inline this file in your `PageConfigurator`
