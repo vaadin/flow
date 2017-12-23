@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -30,10 +31,21 @@ public class VisibilityView extends Div {
         div.setId("visibility");
         div.setVisible(false);
 
-        NativeButton button = new NativeButton("Update visibility",
+        Label label = new Label("Nested element");
+        div.add(label);
+
+        NativeButton updateVisibility = new NativeButton("Update visibility",
                 event -> div.setVisible(!div.isVisible()));
-        button.setId("update");
-        add(div, button);
+        updateVisibility.setId("updateVisibiity");
+
+        NativeButton updateStyle = new NativeButton(
+                "Update target element property", event -> {
+                    div.setClassName("foo");
+                    label.setClassName("bar");
+                });
+        updateVisibility.setId("updateProperty");
+
+        add(div, updateVisibility, updateStyle);
     }
 
 }

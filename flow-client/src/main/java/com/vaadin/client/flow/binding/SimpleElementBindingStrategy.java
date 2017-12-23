@@ -138,11 +138,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     @Override
     public Element create(StateNode node) {
+        // if (isVisible(node)) {
         String tag = getTag(node);
 
         assert tag != null : "New child must have a tag";
 
         return Browser.getDocument().createElement(tag);
+        // } else {
+        // // returns a fake element
+        // return Browser.getDocument().createScriptElement();
+        // }
     }
 
     @Override
@@ -158,7 +163,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     @Override
     public void bind(StateNode stateNode, Element htmlNode,
             BinderContext nodeFactory) {
-        assert hasSameTag(stateNode, htmlNode);
+        boolean isVisible = isVisible(stateNode);
+
+        assert hasSameTag(stateNode, htmlNode)
+                || !isVisible : "Element tag name is '" + htmlNode.getTagName()
+                        + "', but the required tag name is " + getTag(stateNode)
+                        + ". It's only possible when the node is invisible. But it's visible";
 
         if (BOUND.has(stateNode)) {
             return;
@@ -173,38 +183,39 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         JsArray<EventRemover> listeners = JsCollections.array();
 
-        listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
-                property -> updateProperty(property, htmlNode),
-                createComputations(computationsCollection), stateNode));
-        listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
-                property -> updateStyleProperty(property, htmlNode),
-                createComputations(computationsCollection), stateNode));
-        listeners.push(bindMap(NodeFeatures.ELEMENT_ATTRIBUTES,
-                property -> updateAttribute(property, htmlNode),
-                createComputations(computationsCollection), stateNode));
+        if (isVisible) {
+            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
+                    property -> updateProperty(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
+            listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
+                    property -> updateStyleProperty(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
+            listeners.push(bindMap(NodeFeatures.ELEMENT_ATTRIBUTES,
+                    property -> updateAttribute(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
 
-        listeners.push(bindSynchronizedPropertyEvents(context));
+            listeners.push(bindSynchronizedPropertyEvents(context));
 
-        listeners.push(bindVirtualChildren(context));
+            listeners.push(bindVirtualChildren(context));
 
-        listeners.push(bindChildren(context));
+            listeners.push(bindChildren(context));
 
-        listeners.push(stateNode.addUnregisterListener(
-                e -> remove(listeners, context, computationsCollection)));
+            listeners.push(stateNode.addUnregisterListener(
+                    e -> remove(listeners, context, computationsCollection)));
 
-        listeners.push(bindDomEventListeners(context));
+            listeners.push(bindDomEventListeners(context));
 
-        listeners.push(bindClassList(htmlNode, stateNode));
+            listeners.push(bindClassList(htmlNode, stateNode));
 
-        listeners.push(bindClientDelegateMethods(context));
+            listeners.push(bindClientDelegateMethods(context));
 
-        listeners.push(bindPolymerEventHandlerNames(context));
+            listeners.push(bindPolymerEventHandlerNames(context));
 
-        listeners.push(bindShadowRoot(context));
+            listeners.push(bindShadowRoot(context));
 
-        bindPolymerModelProperties(stateNode, htmlNode);
-
-        bindVisibility(context);
+            bindPolymerModelProperties(stateNode, htmlNode);
+        }
+        bindVisibility(listeners, context, computationsCollection, nodeFactory);
     }
 
     private native void bindPolymerModelProperties(StateNode node,
@@ -229,7 +240,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -436,33 +447,71 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 e -> bindProperty(user, e.getProperty(), bindings));
     }
 
-    private EventRemover bindVisibility(BindingContext context) {
-        updateVisibility(context);
+    private EventRemover bindVisibility(JsArray<EventRemover> listeners,
+            BindingContext context,
+            JsArray<JsMap<String, Computation>> computationsCollection,
+            BinderContext nodeFactory) {
+        context.node.getMap(NodeFeatures.VISIBILITY_DATA).getProperty("bound")
+                .setValue(isVisible(context.node));
+        updateVisibility(listeners, context, computationsCollection,
+                nodeFactory);
         return context.node.getMap(NodeFeatures.VISIBILITY_DATA)
                 .getProperty(NodeProperties.VISIBLE)
-                .addChangeListener(event -> updateVisibility(context));
+                .addChangeListener(event -> updateVisibility(listeners, context,
+                        computationsCollection, nodeFactory));
     }
 
-    private void updateVisibility(BindingContext context) {
-        NodeMap visibilityMap = context.node
-                .getMap(NodeFeatures.VISIBILITY_DATA);
+    private boolean isVisible(StateNode node) {
+        if (!node.hasFeature(NodeFeatures.VISIBILITY_DATA)) {
+            return true;
+        }
+        NodeMap visibilityMap = node.getMap(NodeFeatures.VISIBILITY_DATA);
         Boolean visibility = (Boolean) visibilityMap
                 .getProperty(NodeProperties.VISIBLE).getValue();
 
-        assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
-                + context.node.getId() + " is not an Element";
-
-        Element element = (Element) context.htmlNode;
         /*
          * Absence of value or "true" means that the node should be visible. So
          * only "false" means "hide".
          */
-        if (Boolean.FALSE.equals(visibility)) {
+        return !Boolean.FALSE.equals(visibility);
+    }
+
+    private void updateVisibility(JsArray<EventRemover> listeners,
+            BindingContext context,
+            JsArray<JsMap<String, Computation>> computationsCollection,
+            BinderContext nodeFactory) {
+        assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
+                + context.node.getId() + " is not an Element";
+
+        Element element = (Element) context.htmlNode;
+
+        if (!isBound(context.node) && isVisible(context.node)) {
+            remove(listeners, context, computationsCollection);
+            Reactive.addFlushListener(() -> {
+                // if (!isVirtualChild()) {
+                // context.node.setDomNode(null);
+                // }
+                Node newNode = nodeFactory.createAndBind(context.node);
+                // if (element.getParentElement() != null) {
+                // element.getParentElement().replaceChild(newNode, element);
+                // }
+            });
+        } else if (isVisible(context.node)) {
+            context.node.getMap(NodeFeatures.VISIBILITY_DATA)
+                    .getProperty("bound").setValue(true);
+            WidgetUtil.updateAttribute(element, "hidden", null);
+        } else {
             WidgetUtil.updateAttribute(element, "hidden",
                     Boolean.TRUE.toString());
-        } else {
-            WidgetUtil.updateAttribute(element, "hidden", null);
         }
+    }
+
+    public static boolean isBound(StateNode node) {
+        boolean isInactive = node.hasFeature(NodeFeatures.VISIBILITY_DATA)
+                && Boolean.FALSE
+                        .equals(node.getMap(NodeFeatures.VISIBILITY_DATA)
+                                .getProperty("bound").getValue());
+        return BOUND.has(node) && !isInactive;
     }
 
     private static void bindProperty(PropertyUser user, MapProperty property,
@@ -625,6 +674,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 }
             });
         });
+    }
+
+    private boolean isVirtualChild() {
+        // TODO
+        return false;
     }
 
     private void appendVirtualChild(BindingContext context, StateNode node,
