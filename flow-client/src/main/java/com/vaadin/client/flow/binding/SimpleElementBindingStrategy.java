@@ -138,16 +138,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     @Override
     public Element create(StateNode node) {
-        // if (isVisible(node)) {
         String tag = getTag(node);
 
         assert tag != null : "New child must have a tag";
 
         return Browser.getDocument().createElement(tag);
-        // } else {
-        // // returns a fake element
-        // return Browser.getDocument().createScriptElement();
-        // }
     }
 
     @Override
@@ -165,10 +160,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BinderContext nodeFactory) {
         boolean isVisible = isVisible(stateNode);
 
-        assert hasSameTag(stateNode, htmlNode)
-                || !isVisible : "Element tag name is '" + htmlNode.getTagName()
-                        + "', but the required tag name is " + getTag(stateNode)
-                        + ". It's only possible when the node is invisible. But it's visible";
+        assert hasSameTag(stateNode, htmlNode) : "Element tag name is '"
+                + htmlNode.getTagName() + "', but the required tag name is "
+                + getTag(stateNode);
 
         if (BOUND.has(stateNode)) {
             return;
@@ -487,15 +481,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         if (!isBound(context.node) && isVisible(context.node)) {
             remove(listeners, context, computationsCollection);
-            Reactive.addFlushListener(() -> {
-                // if (!isVirtualChild()) {
-                // context.node.setDomNode(null);
-                // }
-                Node newNode = nodeFactory.createAndBind(context.node);
-                // if (element.getParentElement() != null) {
-                // element.getParentElement().replaceChild(newNode, element);
-                // }
-            });
+            Reactive.addFlushListener(
+                    () -> nodeFactory.createAndBind(context.node));
         } else if (isVisible(context.node)) {
             context.node.getMap(NodeFeatures.VISIBILITY_DATA)
                     .getProperty("bound").setValue(true);
@@ -674,11 +661,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 }
             });
         });
-    }
-
-    private boolean isVirtualChild() {
-        // TODO
-        return false;
     }
 
     private void appendVirtualChild(BindingContext context, StateNode node,
