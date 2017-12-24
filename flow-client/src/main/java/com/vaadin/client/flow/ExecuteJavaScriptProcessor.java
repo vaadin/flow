@@ -90,12 +90,9 @@ public class ExecuteJavaScriptProcessor {
                 if (isVirtualChildAwaitingInitialization(stateNode)
                         || !isBound(stateNode)) {
                     stateNode.addDomNodeSetListener(node -> {
-                        if (isBound(node)) {
-                            Reactive.addPostFlushListener(
-                                    () -> handleInvocation(invocation));
-                            return true;
-                        }
-                        return false;
+                        Reactive.addPostFlushListener(
+                                () -> handleInvocation(invocation));
+                        return true;
                     });
                     return;
                 }
@@ -130,7 +127,12 @@ public class ExecuteJavaScriptProcessor {
     }
 
     private boolean isBound(StateNode node) {
-        return SimpleElementBindingStrategy.isBound(node);
+        boolean isNodeBound = SimpleElementBindingStrategy.isBound(node)
+                && node.getDomNode() != null;
+        if (!isNodeBound || node.getParent() == null) {
+            return isNodeBound;
+        }
+        return isBound(node.getParent());
     }
 
     /**

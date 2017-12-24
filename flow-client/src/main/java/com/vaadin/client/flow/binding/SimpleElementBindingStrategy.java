@@ -234,7 +234,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -481,8 +481,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         if (!isBound(context.node) && isVisible(context.node)) {
             remove(listeners, context, computationsCollection);
-            Reactive.addFlushListener(
-                    () -> nodeFactory.createAndBind(context.node));
+            Reactive.addFlushListener(() -> doBind(context.node, nodeFactory));
         } else if (isVisible(context.node)) {
             context.node.getMap(NodeFeatures.VISIBILITY_DATA)
                     .getProperty("bound").setValue(true);
@@ -491,6 +490,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             WidgetUtil.updateAttribute(element, "hidden",
                     Boolean.TRUE.toString());
         }
+    }
+
+    private void doBind(StateNode node, BinderContext nodeFactory) {
+        Node domNode = node.getDomNode();
+        // this will fire an event which gives a chance to run logic which
+        // needs to know when the element is completely initialized
+        node.setDomNode(null);
+        node.setDomNode(domNode);
+        nodeFactory.createAndBind(node);
     }
 
     public static boolean isBound(StateNode node) {
