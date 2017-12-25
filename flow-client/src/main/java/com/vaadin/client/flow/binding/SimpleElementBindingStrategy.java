@@ -66,6 +66,8 @@ import jsinterop.annotations.JsFunction;
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
+    private static final String VISIBILITY_BOUND_PROPERTY = "bound";
+
     private static final String ELEMENT_ATTACH_ERROR_PREFIX = "Element addressed by the ";
 
     @FunctionalInterface
@@ -209,7 +211,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             bindPolymerModelProperties(stateNode, htmlNode);
         }
-        bindVisibility(listeners, context, computationsCollection, nodeFactory);
+        listeners.push(bindVisibility(listeners, context,
+                computationsCollection, nodeFactory));
     }
 
     private native void bindPolymerModelProperties(StateNode node,
@@ -445,7 +448,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BindingContext context,
             JsArray<JsMap<String, Computation>> computationsCollection,
             BinderContext nodeFactory) {
-        context.node.getMap(NodeFeatures.VISIBILITY_DATA).getProperty("bound")
+        context.node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(VISIBILITY_BOUND_PROPERTY)
                 .setValue(isVisible(context.node));
         updateVisibility(listeners, context, computationsCollection,
                 nodeFactory);
@@ -484,7 +488,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Reactive.addFlushListener(() -> doBind(context.node, nodeFactory));
         } else if (isVisible(context.node)) {
             context.node.getMap(NodeFeatures.VISIBILITY_DATA)
-                    .getProperty("bound").setValue(true);
+                    .getProperty(VISIBILITY_BOUND_PROPERTY).setValue(true);
             WidgetUtil.updateAttribute(element, "hidden", null);
         } else {
             WidgetUtil.updateAttribute(element, "hidden",
@@ -503,9 +507,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     public static boolean isBound(StateNode node) {
         boolean isInactive = node.hasFeature(NodeFeatures.VISIBILITY_DATA)
-                && Boolean.FALSE
-                        .equals(node.getMap(NodeFeatures.VISIBILITY_DATA)
-                                .getProperty("bound").getValue());
+                && Boolean.FALSE.equals(node
+                        .getMap(NodeFeatures.VISIBILITY_DATA)
+                        .getProperty(VISIBILITY_BOUND_PROPERTY).getValue());
         return BOUND.has(node) && !isInactive;
     }
 
