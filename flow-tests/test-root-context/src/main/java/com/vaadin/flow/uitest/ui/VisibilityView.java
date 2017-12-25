@@ -32,20 +32,26 @@ public class VisibilityView extends Div {
         div.setVisible(false);
 
         Label label = new Label("Nested element");
+        label.setId("nested-label");
         div.add(label);
 
         NativeButton updateVisibility = new NativeButton("Update visibility",
                 event -> div.setVisible(!div.isVisible()));
         updateVisibility.setId("updateVisibiity");
 
+        NativeButton updateLabelVisibility = new NativeButton(
+                "Update label visibility",
+                event -> label.setVisible(!label.isVisible()));
+        updateLabelVisibility.setId("updateLabelVisibiity");
+
         NativeButton updateStyle = new NativeButton(
                 "Update target element property", event -> {
                     div.setClassName("foo");
                     label.setClassName("bar");
                 });
-        updateVisibility.setId("updateProperty");
+        updateStyle.setId("updateProperty");
 
-        add(div, updateVisibility, updateStyle);
+        add(div, updateVisibility, updateStyle, updateLabelVisibility);
     }
 
 }
