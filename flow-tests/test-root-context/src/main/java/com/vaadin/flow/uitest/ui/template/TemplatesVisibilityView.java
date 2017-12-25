@@ -23,10 +23,10 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.template.TemplatesVisibility", layout = ViewTestLayout.class)
-public class TemplatesVisibility extends Div {
+@Route(value = "com.vaadin.flow.uitest.ui.template.TemplatesVisibilityView", layout = ViewTestLayout.class)
+public class TemplatesVisibilityView extends Div {
 
-    public TemplatesVisibility() {
+    public TemplatesVisibilityView() {
         JsGrandParentView grandParent = new JsGrandParentView();
         grandParent.setId("grand-parent");
 

@@ -19,14 +19,13 @@
 <dom-module id="js-injected-grand-child">
     <template>
         <label id='foo-prop'>[[foo]]</label>
-        <div id='prop'>[[bar]]</label>
+        <div id='prop'>[[bar]]</div>
     </template>
     <script>
         class JsInjectedGrandChild extends Polymer.Element {
             static get is() { return 'js-injected-grand-child' }
             
             greet() {
-                console.error('xxxxxxxxxxxx');
                 this.$server.handleClientCall("bar");
             }
         }
