@@ -1330,9 +1330,17 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         node.setDomNode(element);
 
+        List<Integer> list = Arrays.asList(0);
+        node.addDomNodeSetListener(node -> {
+            list.set(0, list.get(0) + 1);
+            return false;
+        });
+
         Binder.bind(node, element);
 
         Reactive.flush();
+
+        assertEquals(Integer.valueOf(0), list.get(0));
 
         assertEquals(0, element.getChildElementCount());
         assertNull(WidgetUtil.getJsProperty(element, "foo"));
@@ -1340,6 +1348,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         setVisible(true);
 
         Reactive.flush();
+
+        // DOM node set listener is notified at least once
+        assertTrue(list.get(0) > 1);
 
         assertEquals(1, element.getChildren().length());
         assertTrue(element.getFirstElementChild().getTagName()

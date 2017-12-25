@@ -126,7 +126,7 @@ public class ExecuteJavaScriptProcessor {
         return false;
     }
 
-    private boolean isBound(StateNode node) {
+    protected boolean isBound(StateNode node) {
         boolean isNodeBound = SimpleElementBindingStrategy.isBound(node)
                 && node.getDomNode() != null;
         if (!isNodeBound || node.getParent() == null) {

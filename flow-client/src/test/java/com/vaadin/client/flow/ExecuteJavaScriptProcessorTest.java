@@ -46,6 +46,8 @@ public class ExecuteJavaScriptProcessorTest {
 
         private final Registry registry;
 
+        private boolean isBound = true;
+
         private CollectingExecuteJavaScriptProcessor() {
             this(new Registry() {
                 {
@@ -70,6 +72,11 @@ public class ExecuteJavaScriptProcessorTest {
             parameterNamesAndCodeList.add(parameterNamesAndCode);
             parametersList.add(parameters);
             nodeParametersList.add(nodeParameters);
+        }
+
+        @Override
+        protected boolean isBound(StateNode node) {
+            return isBound;
         }
     }
 
@@ -178,6 +185,47 @@ public class ExecuteJavaScriptProcessorTest {
 
         Assert.assertEquals(1, processor.nodeParametersList.size());
 
+        Assert.assertEquals(1, processor.nodeParametersList.get(0).size());
+
+        JsMap<Object, StateNode> map = processor.nodeParametersList.get(0);
+
+        StateNode stateNode = map.get(element);
+        Assert.assertEquals(node, stateNode);
+    }
+
+    @Test
+    public void execute_nodeParameterIsHidden() {
+        CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(31, registry.getStateTree());
+
+        processor.isBound = false;
+
+        registry.getStateTree().registerNode(node);
+
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+                Json.create(node.getId()));
+
+        JsonArray invocation = Stream.of(json, Json.create("$0"))
+                .collect(JsonUtils.asArray());
+
+        processor.execute(JsonUtils.createArray(invocation));
+
+        Assert.assertEquals(0, processor.nodeParametersList.size());
+
+        // emulate binding
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        processor.isBound = true;
+
+        Reactive.flush();
+
+        Assert.assertEquals(1, processor.nodeParametersList.size());
         Assert.assertEquals(1, processor.nodeParametersList.get(0).size());
 
         JsMap<Object, StateNode> map = processor.nodeParametersList.get(0);
