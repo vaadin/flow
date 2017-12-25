@@ -237,7 +237,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {

@@ -1318,6 +1318,81 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertNull(element.getAttribute("hidden"));
     }
 
+    public void testBindInvisibleElement_elementIsNotBound_elementBecomesBoundWhenVisible() {
+        setVisible(false);
+
+        setTag();
+
+        StateNode childNode = createChildNode("child");
+        children.add(0, childNode);
+
+        properties.getProperty("foo").setValue("bar");
+
+        node.setDomNode(element);
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals(0, element.getChildElementCount());
+        assertNull(WidgetUtil.getJsProperty(element, "foo"));
+
+        setVisible(true);
+
+        Reactive.flush();
+
+        assertEquals(1, element.getChildren().length());
+        assertTrue(element.getFirstElementChild().getTagName()
+                .equalsIgnoreCase(childNode.getMap(NodeFeatures.ELEMENT_DATA)
+                        .getProperty(NodeProperties.TAG).getValue()
+                        .toString()));
+        assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
+    }
+
+    public void testBindInvisibleElement_unbind() {
+        setVisible(false);
+
+        setTag();
+
+        node.setDomNode(element);
+
+        // Now the node is partially bound (it has "visibility" listener)
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        // it will rebind the element (and has to remove the initial visibility
+        // listener)
+        setVisible(true);
+
+        Reactive.flush();
+
+        // unregister the node
+        node.unregister();
+
+        // make the node invisible, in fact it should not do anything since the
+        // node is unregistered: all listener after REBOUND are removed, but we
+        // should check that initial visibility listener (in partial binding) is
+        // removed as well
+        setVisible(false);
+
+        Reactive.flush();
+
+        // The latter visibility value has no effect on element attribute
+        assertNull(element.getAttribute("hidden"));
+    }
+
+    private void setTag() {
+        node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG)
+                .setValue(element.getTagName());
+    }
+
+    private void setVisible(boolean visible) {
+        NodeMap map = node.getMap(NodeFeatures.VISIBILITY_DATA);
+        MapProperty visibility = map.getProperty(NodeProperties.VISIBLE);
+        visibility.setValue(visible);
+    }
+
     private Element createAndAppendElementToShadowRoot(Element shadowRoot,
             String id, String tagName) {
         Element childShadowRootElement = Browser.getDocument()
