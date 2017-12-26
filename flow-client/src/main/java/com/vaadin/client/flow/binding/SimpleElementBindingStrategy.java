@@ -237,7 +237,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -483,7 +483,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         Element element = (Element) context.htmlNode;
 
-        if (!isBound(context.node) && isVisible(context.node)) {
+        if (needsBind(context.node) && isVisible(context.node)) {
             remove(listeners, context, computationsCollection);
             Reactive.addFlushListener(() -> doBind(context.node, nodeFactory));
         } else if (isVisible(context.node)) {
@@ -505,12 +505,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         nodeFactory.createAndBind(node);
     }
 
-    public static boolean isBound(StateNode node) {
-        boolean isInactive = node.hasFeature(NodeFeatures.VISIBILITY_DATA)
-                && Boolean.FALSE.equals(node
-                        .getMap(NodeFeatures.VISIBILITY_DATA)
+    public static boolean needsBind(StateNode node) {
+        return node.hasFeature(NodeFeatures.VISIBILITY_DATA) && Boolean.FALSE
+                .equals(node.getMap(NodeFeatures.VISIBILITY_DATA)
                         .getProperty(VISIBILITY_BOUND_PROPERTY).getValue());
-        return BOUND.has(node) && !isInactive;
     }
 
     private static void bindProperty(PropertyUser user, MapProperty property,
