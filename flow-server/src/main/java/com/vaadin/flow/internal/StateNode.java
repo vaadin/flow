@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -67,7 +68,7 @@ public class StateNode implements Serializable {
     // Only the root node is attached at this point
     private boolean wasAttached = isAttached();
 
-    private boolean inactive;
+    private boolean isInactive;
 
     private boolean isInitialChanges = true;
 
@@ -308,56 +309,46 @@ public class StateNode implements Serializable {
      */
     public void collectChanges(Consumer<NodeChange> collector) {
         boolean isAttached = isAttached();
-        boolean sendChangesFromEmpty = false;
         if (isAttached != wasAttached) {
             if (isAttached) {
-                sendChangesFromEmpty = true;
                 collector.accept(new NodeAttachChange(this));
+
+                // Make all changes show up as if the node was recently attached
+                clearChanges();
+                getFeatures().values()
+                        .forEach(NodeFeature::generateChangesFromEmpty);
             } else {
                 collector.accept(new NodeDetachChange(this));
             }
             wasAttached = isAttached;
         }
 
-        if (inactive) {
-            // don't send anything if this is initial changes
-            if (!isInitialChanges) {
-                doCollectChanges(collector, getDissalowFeatures());
+        if (!isAttached()) {
+            return;
+        }
+        if (isInactive) {
+            if (isInitialChanges) {
+                // send only required (reported) features updates
+                Stream<NodeFeature> initialFeatures = Stream
+                        .concat(getFeatures().entrySet().stream().filter(
+                                entry -> isReportedFeature(entry.getKey()))
+                                .map(Entry::getValue), getDisalowFeatures());
+                doCollectChanges(collector, initialFeatures);
+            } else {
+                doCollectChanges(collector, getDisalowFeatures());
             }
         } else {
-            if (sendChangesFromEmpty) {
-                // Make all changes show up as if the node was recently attached
-                clearChanges();
-                getFeatures().values()
-                        .forEach(NodeFeature::generateChangesFromEmpty);
-            }
             doCollectChanges(collector, getFeatures().values().stream());
         }
     }
 
     private void doCollectChanges(Consumer<NodeChange> collector,
             Stream<NodeFeature> features) {
-        boolean isAttached = isAttached();
-        if (isAttached != wasAttached) {
-            if (isAttached) {
-                collector.accept(new NodeAttachChange(this));
-
-                // Make all changes show up as if the node was recently
-                // attached
-                clearChanges();
-                features.forEach(NodeFeature::generateChangesFromEmpty);
-            } else {
-                collector.accept(new NodeDetachChange(this));
-            }
-
-            wasAttached = isAttached;
-        }
-
-        if (isAttached) {
-            features.filter(this::hasChangeTracker)
-                    .forEach(feature -> feature.collectChanges(collector));
-            clearChanges();
-        }
+        features.filter(this::hasChangeTracker).forEach(feature -> {
+            feature.collectChanges(collector);
+            changes.remove(feature.getClass());
+        });
+        isInitialChanges = false;
     }
 
     private boolean hasChangeTracker(NodeFeature nodeFeature) {
@@ -370,7 +361,6 @@ public class StateNode implements Serializable {
      */
     public void clearChanges() {
         changes = null;
-        isInitialChanges = false;
     }
 
     /**
@@ -604,21 +594,21 @@ public class StateNode implements Serializable {
     }
 
     public void updateActiveState() {
-        setInactive(getDissalowFeatures().count() != 0);
+        setInactive(getDisalowFeatures().count() != 0);
     }
 
-    private Stream<NodeFeature> getDissalowFeatures() {
+    private Stream<NodeFeature> getDisalowFeatures() {
         return getFeatures().values().stream()
                 .filter(feature -> !feature.allowsChanges());
     }
 
     private void setInactive(boolean inactive) {
-        this.inactive = inactive;
+        this.isInactive = inactive;
     }
 
     private boolean isInactive() {
-        if (inactive || getParent() == null) {
-            return inactive;
+        if (isInactive || getParent() == null) {
+            return isInactive;
         }
         return getParent().isInactive();
     }

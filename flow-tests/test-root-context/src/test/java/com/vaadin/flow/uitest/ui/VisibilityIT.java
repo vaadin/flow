@@ -28,7 +28,11 @@ public class VisibilityIT extends ChromeBrowserTest {
     public void checkVisibility() {
         open();
 
-        WebElement div = findElement(By.id("visibility"));
+        Assert.assertFalse(isElementPresent(By.id("visibility")));
+
+        WebElement main = findElement(By.id("main"));
+        WebElement div = main.findElement(By.tagName("div"));
+
         Assert.assertEquals(Boolean.TRUE.toString(),
                 div.getAttribute("hidden"));
 
@@ -37,6 +41,7 @@ public class VisibilityIT extends ChromeBrowserTest {
         button.click();
 
         Assert.assertNull(div.getAttribute("hidden"));
+        Assert.assertEquals("visibility", div.getAttribute("id"));
 
         button.click();
 

@@ -24,6 +24,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class VisibilityView extends Div {
 
     public VisibilityView() {
+        setId("main");
 
         Div div = new Div();
         div.setText("Target to make visible/invisible");
