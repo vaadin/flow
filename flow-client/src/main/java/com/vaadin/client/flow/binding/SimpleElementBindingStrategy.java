@@ -235,7 +235,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -481,12 +481,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         Element element = (Element) context.htmlNode;
 
-        if (needsBind(context.node) && isVisible(context.node)) {
+        if (needsRebind(context.node) && isVisible(context.node)) {
             remove(listeners, context, computationsCollection);
             Reactive.addFlushListener(() -> doBind(context.node, nodeFactory));
         } else if (isVisible(context.node)) {
             context.node.getMap(NodeFeatures.VISIBILITY_DATA)
-                    .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(true);
+                    .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                    .setValue(true);
             WidgetUtil.updateAttribute(element, "hidden", null);
         } else {
             WidgetUtil.updateAttribute(element, "hidden",
@@ -503,10 +504,24 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         nodeFactory.createAndBind(node);
     }
 
-    public static boolean needsBind(StateNode node) {
+    /**
+     * Checks whether the {@code node} needs re-bind.
+     * <p>
+     * The node needs re-bind if it was initially invisible. As a consequence
+     * such node has not be bound. It has been bound in respect to visibility
+     * feature only (partially bound). Such node needs re-bind once it becomes
+     * visible.
+     *
+     * @param node
+     *            the node to check
+     * @return {@code true} if the node is not entirely bound and needs re-bind
+     *         later on
+     */
+    public static boolean needsRebind(StateNode node) {
         return node.hasFeature(NodeFeatures.VISIBILITY_DATA) && Boolean.FALSE
                 .equals(node.getMap(NodeFeatures.VISIBILITY_DATA)
-                        .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).getValue());
+                        .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                        .getValue());
     }
 
     private static void bindProperty(PropertyUser user, MapProperty property,
