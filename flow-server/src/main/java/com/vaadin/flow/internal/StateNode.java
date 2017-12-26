@@ -307,12 +307,30 @@ public class StateNode implements Serializable {
      *            a consumer accepting node changes
      */
     public void collectChanges(Consumer<NodeChange> collector) {
+        boolean isAttached = isAttached();
+        boolean sendChangesFromEmpty = false;
+        if (isAttached != wasAttached) {
+            if (isAttached) {
+                sendChangesFromEmpty = true;
+                collector.accept(new NodeAttachChange(this));
+            } else {
+                collector.accept(new NodeDetachChange(this));
+            }
+            wasAttached = isAttached;
+        }
+
         if (inactive) {
             // don't send anything if this is initial changes
             if (!isInitialChanges) {
                 doCollectChanges(collector, getDissalowFeatures());
             }
         } else {
+            if (sendChangesFromEmpty) {
+                // Make all changes show up as if the node was recently attached
+                clearChanges();
+                getFeatures().values()
+                        .forEach(NodeFeature::generateChangesFromEmpty);
+            }
             doCollectChanges(collector, getFeatures().values().stream());
         }
     }
