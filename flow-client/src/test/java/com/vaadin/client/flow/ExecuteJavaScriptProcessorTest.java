@@ -321,7 +321,8 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        node.getMap(NodeFeatures.VISIBILITY_DATA).getProperty("bound")
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(true);
 
         Assert.assertTrue(processor.isBound(node));
@@ -341,7 +342,8 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        node.getMap(NodeFeatures.VISIBILITY_DATA).getProperty("bound")
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(false);
 
         Assert.assertFalse(processor.isBound(node));

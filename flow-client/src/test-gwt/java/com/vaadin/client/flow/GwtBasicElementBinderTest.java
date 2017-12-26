@@ -1395,15 +1395,13 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testSimpleElementBindingStrategy_regularElement_needsBind() {
-        setVisible(false);
+        assertFalse(SimpleElementBindingStrategy.needsBind(node));
 
-        Binder.bind(node, element);
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                .setValue(false);
 
         assertTrue(SimpleElementBindingStrategy.needsBind(node));
-
-        setVisible(true);
-
-        assertFalse(SimpleElementBindingStrategy.needsBind(node));
     }
 
     public void testSimpleElementBindingStrategy_elementWithoutFeature_needsBind() {

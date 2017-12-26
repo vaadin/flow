@@ -66,8 +66,6 @@ import jsinterop.annotations.JsFunction;
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
-    private static final String VISIBILITY_BOUND_PROPERTY = "bound";
-
     private static final String ELEMENT_ATTACH_ERROR_PREFIX = "Element addressed by the ";
 
     @FunctionalInterface
@@ -449,7 +447,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             JsArray<JsMap<String, Computation>> computationsCollection,
             BinderContext nodeFactory) {
         context.node.getMap(NodeFeatures.VISIBILITY_DATA)
-                .getProperty(VISIBILITY_BOUND_PROPERTY)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(isVisible(context.node));
         updateVisibility(listeners, context, computationsCollection,
                 nodeFactory);
@@ -488,7 +486,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Reactive.addFlushListener(() -> doBind(context.node, nodeFactory));
         } else if (isVisible(context.node)) {
             context.node.getMap(NodeFeatures.VISIBILITY_DATA)
-                    .getProperty(VISIBILITY_BOUND_PROPERTY).setValue(true);
+                    .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(true);
             WidgetUtil.updateAttribute(element, "hidden", null);
         } else {
             WidgetUtil.updateAttribute(element, "hidden",
@@ -508,7 +506,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     public static boolean needsBind(StateNode node) {
         return node.hasFeature(NodeFeatures.VISIBILITY_DATA) && Boolean.FALSE
                 .equals(node.getMap(NodeFeatures.VISIBILITY_DATA)
-                        .getProperty(VISIBILITY_BOUND_PROPERTY).getValue());
+                        .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).getValue());
     }
 
     private static void bindProperty(PropertyUser user, MapProperty property,
