@@ -23,6 +23,7 @@ import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
@@ -1391,6 +1392,26 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         // The latter visibility value has no effect on element attribute
         assertNull(element.getAttribute("hidden"));
+    }
+
+    public void testSimpleElementBindingStrategy_regularElement_needsBind() {
+        setVisible(false);
+
+        Binder.bind(node, element);
+
+        assertTrue(SimpleElementBindingStrategy.needsBind(node));
+
+        setVisible(true);
+
+        assertFalse(SimpleElementBindingStrategy.needsBind(node));
+    }
+
+    public void testSimpleElementBindingStrategy_elementWithoutFeature_needsBind() {
+        StateNode emptyNode = new StateNode(45, tree);
+        // self control
+        assertFalse(emptyNode.hasFeature(NodeFeatures.VISIBILITY_DATA));
+
+        assertFalse(SimpleElementBindingStrategy.needsBind(node));
     }
 
     private void setTag() {
