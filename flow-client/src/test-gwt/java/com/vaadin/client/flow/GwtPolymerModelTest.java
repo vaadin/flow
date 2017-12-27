@@ -11,8 +11,8 @@ import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.NativeFunction;
-import com.vaadin.flow.nodefeature.NodeFeatures;
-import com.vaadin.flow.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -255,8 +255,8 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                 newPropertyValue,
                 WidgetUtil.getJsProperty(element, propertyName));
 
-        assertEquals("`_propertiesChanged` should be triggered exactly once", 1.0,
-                WidgetUtil.getJsProperty(element,
+        assertEquals("`_propertiesChanged` should be triggered exactly once",
+                1.0, WidgetUtil.getJsProperty(element,
                         "propertiesChangedCallCount"));
         assertEquals(
                 "Exactly one `whenDefined.then` callback should be called after element was initialized",
@@ -270,7 +270,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         element._propertiesChanged = function() {
             element.propertiesChangedCallCount += 1;
         };
-
+    
         element.callbackCallCount = 0;
         $wnd.customElements = {
             whenDefined: function() {
@@ -353,6 +353,8 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         WidgetUtil.setJsProperty(element, "localName", name);
         setupSetMethod(element, PROPERTY_PREFIX);
         setupMockSpliceMethod(element);
+        WidgetUtil.setJsProperty(element, "removeAttribute",
+                new NativeFunction(""));
         return element;
     }
 

@@ -17,11 +17,11 @@ package com.vaadin.flow.dom.impl;
 
 import java.util.Collections;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Node;
-import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
-import com.vaadin.flow.nodefeature.TextNodeMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ComponentMapping;
+import com.vaadin.flow.internal.nodefeature.ParentGeneratorHolder;
+import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 
 /**
  * Handles storing and retrieval of the state information for a text node using

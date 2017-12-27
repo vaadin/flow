@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.template.angular;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
 
 import elemental.json.JsonValue;
 

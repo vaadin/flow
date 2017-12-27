@@ -27,10 +27,10 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.JsonCodec;
-import com.vaadin.flow.nodefeature.NodeFeatures;
-import com.vaadin.flow.nodefeature.NodeProperties;
-import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.js.dom.JsElement;
 import elemental.json.Json;
@@ -45,6 +45,8 @@ public class ExecuteJavaScriptProcessorTest {
         private final List<JsMap<Object, StateNode>> nodeParametersList = new ArrayList<>();
 
         private final Registry registry;
+
+        private boolean isBound = true;
 
         private CollectingExecuteJavaScriptProcessor() {
             this(new Registry() {
@@ -70,6 +72,34 @@ public class ExecuteJavaScriptProcessorTest {
             parameterNamesAndCodeList.add(parameterNamesAndCode);
             parametersList.add(parameters);
             nodeParametersList.add(nodeParameters);
+        }
+
+        @Override
+        protected boolean isBound(StateNode node) {
+            return isBound;
+        }
+
+    }
+
+    private static class TestJsProcessor extends ExecuteJavaScriptProcessor {
+
+        private final Registry registry;
+
+        private TestJsProcessor(Registry registry) {
+            super(registry);
+            this.registry = registry;
+        }
+
+        private TestJsProcessor() {
+            this(new Registry() {
+                {
+                    set(StateTree.class, new StateTree(this));
+                }
+            });
+        }
+
+        Registry getRegistry() {
+            return registry;
         }
     }
 
@@ -187,6 +217,47 @@ public class ExecuteJavaScriptProcessorTest {
     }
 
     @Test
+    public void execute_nodeParameterIsHidden() {
+        CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(31, registry.getStateTree());
+
+        processor.isBound = false;
+
+        registry.getStateTree().registerNode(node);
+
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+                Json.create(node.getId()));
+
+        JsonArray invocation = Stream.of(json, Json.create("$0"))
+                .collect(JsonUtils.asArray());
+
+        processor.execute(JsonUtils.createArray(invocation));
+
+        Assert.assertEquals(0, processor.nodeParametersList.size());
+
+        // emulate binding
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        processor.isBound = true;
+
+        Reactive.flush();
+
+        Assert.assertEquals(1, processor.nodeParametersList.size());
+        Assert.assertEquals(1, processor.nodeParametersList.get(0).size());
+
+        JsMap<Object, StateNode> map = processor.nodeParametersList.get(0);
+
+        StateNode stateNode = map.get(element);
+        Assert.assertEquals(node, stateNode);
+    }
+
+    @Test
     public void execute_nodeParameterIsNotVirtualChild() {
         CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor();
 
@@ -206,5 +277,144 @@ public class ExecuteJavaScriptProcessorTest {
 
         // The invocation has been executed
         Assert.assertEquals(1, processor.nodeParametersList.size());
+    }
+
+    @Test
+    public void isBound_noElement_notBound() {
+        TestJsProcessor processor = new TestJsProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(37, registry.getStateTree());
+
+        Assert.assertFalse(processor.isBound(node));
+    }
+
+    @Test
+    public void isBound_hasElementHasNoFeature_bound() {
+        TestJsProcessor processor = new TestJsProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(37, registry.getStateTree());
+
+        // emulate binding
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        Assert.assertTrue(processor.isBound(node));
+    }
+
+    @Test
+    public void isBound_hasElementHasFeatureAndBound_bound() {
+        TestJsProcessor processor = new TestJsProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(37, registry.getStateTree());
+
+        // emulate binding
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                .setValue(true);
+
+        Assert.assertTrue(processor.isBound(node));
+    }
+
+    @Test
+    public void isBound_hasElementHasFeatureAndNotBound_notBound() {
+        TestJsProcessor processor = new TestJsProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(37, registry.getStateTree());
+
+        // emulate binding
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                .setValue(false);
+
+        Assert.assertFalse(processor.isBound(node));
+    }
+
+    @Test
+    public void isBound_hasElementHasNoFeatureAndBoundParent_bound() {
+        TestJsProcessor processor = new TestJsProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(37, registry.getStateTree());
+
+        StateNode parent = new StateNode(43, registry.getStateTree());
+
+        node.setParent(parent);
+
+        // emulate binding
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        parent.setDomNode(element);
+
+        Assert.assertTrue(processor.isBound(node));
+    }
+
+    @Test
+    public void isBound_hasElementHasNoFeatureAndUnboundParent_notBound() {
+        TestJsProcessor processor = new TestJsProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(37, registry.getStateTree());
+
+        StateNode parent = new StateNode(43, registry.getStateTree());
+
+        node.setParent(parent);
+
+        // emulate binding
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        Assert.assertFalse(processor.isBound(node));
+    }
+
+    @Test
+    public void isBound_hasElementHasFeatureAndBoundAndUnboundParent_notBound() {
+        TestJsProcessor processor = new TestJsProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(37, registry.getStateTree());
+
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                .setValue(true);
+
+        StateNode parent = new StateNode(43, registry.getStateTree());
+
+        node.setParent(parent);
+
+        // emulate binding
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        Assert.assertFalse(processor.isBound(node));
     }
 }

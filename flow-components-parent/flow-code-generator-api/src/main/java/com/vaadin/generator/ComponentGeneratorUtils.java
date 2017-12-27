@@ -29,10 +29,10 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
-import com.vaadin.ui.common.HasValue;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;

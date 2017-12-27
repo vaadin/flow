@@ -1,13 +1,14 @@
 package com.vaadin.flow.tutorial.routing;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.router.HasDynamicTitle;
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.Route;
-import com.vaadin.router.PageTitle;
-import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.html.Div;
 
 @CodeFor("routing/tutorial-routing-page-titles.asciidoc")
 public class RoutingViewTitles {
@@ -32,7 +33,7 @@ public class RoutingViewTitles {
 
         @Override
         public void setParameter(BeforeNavigationEvent event,
-                @com.vaadin.router.OptionalParameter Long parameter) {
+                @OptionalParameter Long parameter) {
             if (parameter != null) {
                 title = "Blog Post #" + parameter;
             } else {

@@ -17,18 +17,18 @@ package com.vaadin.flow.tutorial.binder;
 
 import java.time.LocalDate;
 
-import com.vaadin.data.Binder;
-import com.vaadin.data.Converter;
-import com.vaadin.data.Result;
-import com.vaadin.data.ValueContext;
-import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.data.validator.EmailValidator;
-import com.vaadin.ui.html.Label;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.converter.Converter;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person.Gender;
-import com.vaadin.ui.checkbox.Checkbox;
-import com.vaadin.ui.datepicker.DatePicker;
-import com.vaadin.ui.textfield.TextField;
 
 @CodeFor("binding-data/tutorial-flow-components-binder-validation.asciidoc")
 public class BinderValidation {

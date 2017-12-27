@@ -23,7 +23,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
@@ -32,31 +32,31 @@ import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
+import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
-import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.flow.nodefeature.ElementAttributeMap;
-import com.vaadin.flow.nodefeature.ElementChildrenList;
-import com.vaadin.flow.nodefeature.ElementListenerMap;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.nodefeature.NodeFeature;
-import com.vaadin.flow.nodefeature.OverrideElementData;
-import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
-import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
-import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.nodefeature.TemplateOverridesMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ClientDelegateHandlers;
+import com.vaadin.flow.internal.nodefeature.ComponentMapping;
+import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.OverrideElementData;
+import com.vaadin.flow.internal.nodefeature.ParentGeneratorHolder;
+import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
+import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
+import com.vaadin.flow.internal.nodefeature.TemplateMap;
+import com.vaadin.flow.internal.nodefeature.TemplateOverridesMap;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.template.angular.AngularTemplate;
 import com.vaadin.flow.template.angular.BindingValueProvider;
 import com.vaadin.flow.template.angular.ElementTemplateNode;
 import com.vaadin.flow.template.angular.StaticBindingValueProvider;
 import com.vaadin.flow.template.angular.TemplateNode;
-import com.vaadin.server.AbstractStreamResource;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.AngularTemplate;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.event.PropertyChangeListener;
 
 /**
  * Handles storing and retrieval of the state information for an element defined
@@ -586,5 +586,15 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     public void visit(StateNode node, NodeVisitor visitor,
             boolean visitDescendants) {
         visitor.visit(ElementType.REGULAR, Element.get(node));
+    }
+
+    @Override
+    public void setVisible(StateNode node, boolean visible) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isVisible(StateNode node) {
+        throw new UnsupportedOperationException();
     }
 }

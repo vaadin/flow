@@ -26,8 +26,8 @@ import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.NativeFunction;
-import com.vaadin.flow.nodefeature.NodeFeatures;
-import com.vaadin.flow.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -69,7 +69,8 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
 
         @Override
         public NodeMap getMap(int id) {
-            if (id != NodeFeatures.ELEMENT_DATA && isBound) {
+            if (id != NodeFeatures.ELEMENT_DATA
+                    && id != NodeFeatures.VISIBILITY_DATA && isBound) {
                 fail();
             }
             return super.getMap(id);
@@ -272,8 +273,13 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
     private native void initPolymer(Element element)
     /*-{
         $wnd.Polymer = function() {};
+        $wnd.Polymer.dom = function(node){
+            return node;
+        };
         $wnd.Polymer.Element = {};
         element.__proto__ = $wnd.Polymer.Element;
+        element.removeAttribute = function(){
+        };
     }-*/;
 
 }

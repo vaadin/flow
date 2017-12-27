@@ -21,12 +21,12 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
-import com.vaadin.flow.model.Exclude;
-import com.vaadin.flow.model.Include;
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.model.ModelType;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
+import com.vaadin.flow.templatemodel.Exclude;
+import com.vaadin.flow.templatemodel.Include;
+import com.vaadin.flow.templatemodel.ModelType;
 
 /**
  * Utility class for mapping Bean values to {@link TemplateModel} values.

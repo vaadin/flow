@@ -15,57 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.router.Route;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.PropertyDescriptor;
-import com.vaadin.ui.common.PropertyDescriptors;
-import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Route("com.vaadin.flow.uitest.ui.template.PolymerDefaultPropertyValueView")
 public class PolymerDefaultPropertyValueView extends AbstractDivView {
 
-    private static final PropertyDescriptor<String, String> msgDescriptor = PropertyDescriptors
-            .propertyWithDefault("message", "");
-
-    public interface MyModel extends TemplateModel {
-        void setText(String text);
-
-        void setName(String name);
-    }
-
-    @Tag("default-property")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerDefaultPropertyValue.html")
-    public static class MyTemplate extends PolymerTemplate<MyModel> {
-
-        public MyTemplate() {
-            getModel().setText("foo");
-            setMessage("updated-message");
-        }
-
-        @Synchronize("email-changed")
-        public String getEmail() {
-            return getElement().getProperty("email");
-        }
-
-        @Synchronize("message-changed")
-        public String getMessage() {
-            return get(msgDescriptor);
-        }
-
-        public void setMessage(String value) {
-            set(msgDescriptor, value);
-        }
-
-    }
-
     public PolymerDefaultPropertyValueView() {
-        MyTemplate template = new MyTemplate();
+        PolymerDefaultPropertyValue template = new PolymerDefaultPropertyValue();
         template.setId("template");
         add(template);
 
@@ -75,7 +34,7 @@ public class PolymerDefaultPropertyValueView extends AbstractDivView {
         add(button);
     }
 
-    private void createEmailValue(MyTemplate template) {
+    private void createEmailValue(PolymerDefaultPropertyValue template) {
         Div div = new Div();
         div.setText(template.getEmail());
         div.setId("email-value");

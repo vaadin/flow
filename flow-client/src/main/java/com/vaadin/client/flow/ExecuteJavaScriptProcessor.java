@@ -19,15 +19,16 @@ import java.util.Arrays;
 
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.ClientJsonCodec;
 import com.vaadin.client.flow.util.NativeFunction;
-import com.vaadin.flow.nodefeature.NodeFeatures;
-import com.vaadin.flow.nodefeature.NodeProperties;
-import com.vaadin.ui.Page;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -86,7 +87,8 @@ public class ExecuteJavaScriptProcessor {
             StateNode stateNode = ClientJsonCodec.decodeStateNode(tree,
                     parameterJson);
             if (stateNode != null) {
-                if (isVirtualChildAwaitingInitialization(stateNode)) {
+                if (isVirtualChildAwaitingInitialization(stateNode)
+                        || !isBound(stateNode)) {
                     stateNode.addDomNodeSetListener(node -> {
                         Reactive.addPostFlushListener(
                                 () -> handleInvocation(invocation));
@@ -122,6 +124,15 @@ public class ExecuteJavaScriptProcessor {
             }
         }
         return false;
+    }
+
+    protected boolean isBound(StateNode node) {
+        boolean isNodeBound = node.getDomNode() != null
+                && !SimpleElementBindingStrategy.needsRebind(node);
+        if (!isNodeBound || node.getParent() == null) {
+            return isNodeBound;
+        }
+        return isBound(node.getParent());
     }
 
     /**

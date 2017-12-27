@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Label;
-import com.vaadin.ui.html.NativeButton;
+import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.TextTemplateView", layout = ViewTestLayout.class)
 public class TextTemplateView extends Div {

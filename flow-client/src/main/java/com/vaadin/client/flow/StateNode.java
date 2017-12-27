@@ -40,6 +40,8 @@ public class StateNode {
     private final StateTree tree;
     private final int id;
 
+    private StateNode parent;
+
     private boolean unregistered = false;
 
     private final JsMap<Double, NodeFeature> features = JsCollections.map();
@@ -261,5 +263,24 @@ public class StateNode {
             Function<StateNode, Boolean> listener) {
         domNodeSetListeners.add(listener);
         return () -> domNodeSetListeners.delete(listener);
+    }
+
+    /**
+     * Get the parent {@link StateNode} if set.
+     * 
+     * @return parent state node
+     */
+    public StateNode getParent() {
+        return parent;
+    }
+
+    /**
+     * Set the parent {@link StateNode} for this node.
+     * 
+     * @param parent
+     *            the parent state node
+     */
+    public void setParent(StateNode parent) {
+        this.parent = parent;
     }
 }

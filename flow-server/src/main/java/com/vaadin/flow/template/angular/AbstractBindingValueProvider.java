@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.template.angular;
 
-import com.vaadin.flow.JsonCodec;
+import com.vaadin.flow.internal.JsonCodec;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

@@ -18,6 +18,9 @@ package com.vaadin.data.provider;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.data.provider.AbstractDataProvider;
+import com.vaadin.flow.data.provider.Query;
+
 /**
  * A dummy data provider for testing item replacement and stale elements.
  */

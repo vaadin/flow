@@ -20,17 +20,19 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.TemplateElementStateProviderTest;
 import com.vaadin.flow.dom.TemplateElementStateProviderTest.NullTemplateResolver;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.nodefeature.TemplateMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
+import com.vaadin.flow.internal.nodefeature.TemplateMap;
+import com.vaadin.flow.template.angular.AngularTemplate;
+import com.vaadin.flow.template.angular.HtmlTemplate;
+import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.template.angular.parser.TemplateParser;
 import com.vaadin.flow.template.angular.parser.TemplateResolver;
-import com.vaadin.ui.AngularTemplate;
 
 public class AngularTemplateNodeTest {
 

@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.components.it;
 
-import com.vaadin.flow.router.View;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HasComponents;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.legacy.View;
 
 /**
  * Abstract base class for implementing test views. Routing for views extending

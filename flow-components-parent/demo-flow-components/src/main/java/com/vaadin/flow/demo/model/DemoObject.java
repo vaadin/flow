@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.DemoView;
-import com.vaadin.router.Route;
+import com.vaadin.flow.router.Route;
 
 /**
  * Object that defines a demo to be shown at the application.
@@ -41,7 +41,7 @@ public class DemoObject implements Serializable {
     /**
      * Creates a DemoObject taking the values from the {@link ComponentDemo} and
      * {@link Route} annotations from the input class.
-     * 
+     *
      * @param clazz
      *            the class that contains the {@link ComponentDemo} and
      *            {@link Route} annotations
@@ -56,7 +56,7 @@ public class DemoObject implements Serializable {
 
     /**
      * Gets the relative URL of the demo page.
-     * 
+     *
      * @return the href
      */
     public String getHref() {
@@ -65,7 +65,7 @@ public class DemoObject implements Serializable {
 
     /**
      * Sets the relative URL of the demo page.
-     * 
+     *
      * @param href
      *            the href of the page
      * @return the object instance for method chaining
@@ -77,7 +77,7 @@ public class DemoObject implements Serializable {
 
     /**
      * Gets the name of the demo.
-     * 
+     *
      * @return the name
      */
     public String getName() {
@@ -86,7 +86,7 @@ public class DemoObject implements Serializable {
 
     /**
      * Sets the name of the demo.
-     * 
+     *
      * @param name
      *            the name of the demo.
      * @return the object instance for method chaining
@@ -98,7 +98,7 @@ public class DemoObject implements Serializable {
 
     /**
      * Gets the subcategory of the demo.
-     * 
+     *
      * @return the subcategory to show at the menu of demos
      */
     public String getSubcategory() {
@@ -107,7 +107,7 @@ public class DemoObject implements Serializable {
 
     /**
      * Sets the subcategory of the demo.
-     * 
+     *
      * @param subcategory
      *            the subcategory of the demo to show at the menu of demos.
      * @return the object instance for method chaining

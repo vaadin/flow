@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.paper.button.GeneratedPaperButton;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.flow.demo.MainLayout;
-import com.vaadin.router.Route;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.paper.button.GeneratedPaperButton;
+import com.vaadin.flow.router.Route;
 
 /**
  * View for {@link GeneratedPaperButton} demo.

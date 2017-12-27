@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.Route;
-import com.vaadin.router.WildcardParameter;
-import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.ui.html.Anchor;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.WildcardParameter;
+import com.vaadin.flow.router.BeforeNavigationEvent;
 
 @Route(value = "com.vaadin.flow.uitest.ui.BaseHrefView", layout = ViewTestLayout.class)
 public class BaseHrefView extends AbstractDivView

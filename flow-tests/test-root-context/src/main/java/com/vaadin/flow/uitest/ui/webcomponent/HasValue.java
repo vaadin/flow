@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import com.vaadin.ui.common.HasElement;
-import com.vaadin.ui.common.PropertyDescriptor;
-import com.vaadin.ui.common.PropertyDescriptors;
+import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.PropertyDescriptor;
+import com.vaadin.flow.component.PropertyDescriptors;
 
 /**
  * Defines setters and getters for a "value" property with a default of 0.

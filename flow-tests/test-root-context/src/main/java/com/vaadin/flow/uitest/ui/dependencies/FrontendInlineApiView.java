@@ -17,13 +17,13 @@ package com.vaadin.flow.uitest.ui.dependencies;
 
 import org.jsoup.Jsoup;
 
-import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
-import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Route(value = "com.vaadin.flow.uitest.ui.dependencies.FrontendInlineApiView", layout = ViewTestLayout.class)
 @Tag("frontend-inline-api")

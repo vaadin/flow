@@ -18,8 +18,10 @@ package com.vaadin.flow.template.angular;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
+import com.vaadin.flow.template.angular.BindingValueProvider;
+import com.vaadin.flow.template.angular.ModelValueBindingProvider;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;

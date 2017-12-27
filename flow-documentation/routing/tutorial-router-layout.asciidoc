@@ -50,7 +50,8 @@ public class MenuBar extends Div implements RouterLayout {
         addMenuElement(TutorialView.class, "Tutorial");
         addMenuElement(IconsView.class, "Icons");
     }
-    private void addMenuElement(Class<? extends Component> navigationTarget, String name) {
+    private void addMenuElement(Class<? extends Component> navigationTarget,
+            String name) {
         // implementation omitted
     }
 }

@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
-import com.vaadin.router.ParentLayout;
-import com.vaadin.router.Route;
-import com.vaadin.router.RoutePrefix;
-import com.vaadin.ui.html.Div;
-import com.vaadin.router.RouterLayout;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RoutePrefix;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 
 @CodeFor("routing/tutorial-router-layout.asciidoc")
 public class RouterLayoutTutorial {
@@ -31,7 +31,6 @@ public class RouterLayoutTutorial {
     @Route(value = "company", layout = MainLayout.class)
     public class CompanyComponent extends Component {
     }
-
 
     public class MainLayout extends Div implements RouterLayout {
     }
@@ -42,7 +41,9 @@ public class RouterLayoutTutorial {
             addMenuElement(TutorialView.class, "Tutorial");
             addMenuElement(IconsView.class, "Icons");
         }
-        private void addMenuElement(Class<? extends Component> navigationTarget, String name) {
+
+        private void addMenuElement(Class<? extends Component> navigationTarget,
+                String name) {
             // implementation omitted
         }
     }
@@ -51,7 +52,7 @@ public class RouterLayoutTutorial {
     public class TutorialView extends Div {
     }
 
-    @Route(value="icons", layout = MenuBar.class)
+    @Route(value = "icons", layout = MenuBar.class)
     public class IconsView extends Div {
     }
 

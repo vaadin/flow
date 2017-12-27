@@ -1,5 +1,6 @@
 package com.vaadin.flow.tutorial.getstarted;
 import java.io.Serializable;
+
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 /**

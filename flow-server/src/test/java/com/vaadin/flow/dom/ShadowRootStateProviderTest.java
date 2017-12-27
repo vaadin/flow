@@ -18,9 +18,9 @@ package com.vaadin.flow.dom;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
-import com.vaadin.flow.nodefeature.ShadowRootData;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 
 public class ShadowRootStateProviderTest {
 

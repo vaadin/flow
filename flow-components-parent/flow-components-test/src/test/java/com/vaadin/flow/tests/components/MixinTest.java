@@ -25,17 +25,22 @@ import org.apache.commons.lang3.ClassUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasSize;
-import com.vaadin.ui.common.HasStyle;
-import com.vaadin.ui.dialog.Dialog;
-import com.vaadin.ui.formlayout.FormLayout.FormItem;
-import com.vaadin.ui.grid.AbstractColumn;
-import com.vaadin.ui.grid.ColumnGroup;
-import com.vaadin.ui.grid.Grid;
-import com.vaadin.ui.grid.GridSelectionColumn;
-import com.vaadin.ui.icon.Icon;
-import com.vaadin.ui.icon.IronIcon;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout.FormItem;
+import com.vaadin.flow.component.grid.AbstractColumn;
+import com.vaadin.flow.component.grid.ColumnGroup;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridSelectionColumn;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.IronIcon;
+import com.vaadin.flow.components.it.TestView;
 
 /**
  * Test class for detecting that Vaadin components implement the correct
@@ -48,11 +53,13 @@ public class MixinTest {
     private static final Set<Class<?>> REQUIRED_INTERFACES = new HashSet<>();
 
     static {
-        PACKAGE_WHITELIST.addAll(Arrays.asList("com.vaadin.ui.common",
-                "com.vaadin.ui.html", "com.vaadin.ui.polymertemplate"));
-        CLASS_WHITELIST.addAll(Arrays.asList(Icon.class, IronIcon.class, FormItem.class,
-                GridSelectionColumn.class, Dialog.class, Grid.Column.class,
-                ColumnGroup.class, AbstractColumn.class));
+        PACKAGE_WHITELIST.addAll(Arrays.asList("com.vaadin.flow.component.html",
+                "com.vaadin.flow.component.polymertemplate"));
+        CLASS_WHITELIST.addAll(Arrays.asList(Icon.class, IronIcon.class,
+                FormItem.class, GridSelectionColumn.class, Dialog.class,
+                Grid.Column.class, ColumnGroup.class, AbstractColumn.class,
+                Html.class, UI.class, Text.class, Component.class,
+                Composite.class));
         REQUIRED_INTERFACES
                 .addAll(Arrays.asList(HasSize.class, HasStyle.class));
     }
@@ -63,7 +70,8 @@ public class MixinTest {
                 .getVaadinClassesFromClasspath(path -> true,
                         clazz -> Component.class.isAssignableFrom(clazz)
                                 && clazz.getPackage().getName()
-                                        .startsWith("com.vaadin.ui.")
+                                        .startsWith("com.vaadin.flow.component")
+                                && !TestView.class.isAssignableFrom(clazz)
                                 && !PACKAGE_WHITELIST
                                         .contains(clazz.getPackage().getName())
                                 && !clazz.getSimpleName()

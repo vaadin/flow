@@ -1,2 +1,2 @@
-com.vaadin.spring.service.JavaSPIInstantiator
-com.vaadin.spring.service.JavaNonUniqueSPIInstantiator
+com.vaadin.flow.spring.service.JavaSPIInstantiator
+com.vaadin.flow.spring.service.JavaNonUniqueSPIInstantiator

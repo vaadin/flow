@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
@@ -28,10 +27,11 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
+import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.server.AbstractStreamResource;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.event.PropertyChangeListener;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Abstract element state provider for text nodes. Operations that are not
@@ -197,6 +197,16 @@ public abstract class AbstractTextElementStateProvider
     public void visit(StateNode node, NodeVisitor visitor,
             boolean visitDescendants) {
         visitor.visit(ElementType.REGULAR, Element.get(node));
+    }
+
+    @Override
+    public void setVisible(StateNode node, boolean visible) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isVisible(StateNode node) {
+        throw new UnsupportedOperationException();
     }
 
 }

@@ -17,7 +17,7 @@ package com.vaadin.generator.metadata;
 
 import java.util.List;
 
-import com.vaadin.ui.common.HasComponents;
+import com.vaadin.flow.component.HasComponents;
 
 /**
  * Base class of the representation of a webcomponent for the code generator. It

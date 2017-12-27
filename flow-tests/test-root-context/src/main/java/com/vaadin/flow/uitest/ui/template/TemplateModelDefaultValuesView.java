@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.template.angular.AngularTemplate;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
-import com.vaadin.ui.AngularTemplate;
+import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateModelDefaultValuesView", layout = ViewTestLayout.class)
 public class TemplateModelDefaultValuesView extends AngularTemplate {

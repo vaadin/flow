@@ -26,8 +26,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

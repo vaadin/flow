@@ -16,7 +16,7 @@
 
 package com.vaadin.client;
 
-import com.vaadin.shared.BrowserDetails;
+import com.vaadin.flow.shared.BrowserDetails;
 
 import elemental.client.Browser;
 
@@ -401,7 +401,7 @@ public class BrowserInfo {
     /**
      * Checks if the browser supports ECMAScript 6, based on the user agent.
      *
-     * @see com.vaadin.shared.BrowserDetails#isEs6Supported()
+     * @see com.vaadin.flow.shared.BrowserDetails#isEs6Supported()
      *
      * @return <code>true</code> if the browser supports ES6, <code>false</code>
      *         otherwise.

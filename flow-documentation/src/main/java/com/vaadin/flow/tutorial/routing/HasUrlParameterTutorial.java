@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
-import com.vaadin.router.OptionalParameter;
-import com.vaadin.router.Route;
-import com.vaadin.router.WildcardParameter;
-import com.vaadin.ui.html.Div;
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("routing/tutorial-router-url-parameters.asciidoc")
@@ -38,12 +38,13 @@ public class HasUrlParameterTutorial {
     }
 
     @Route("greet")
-    public class OptionalGreeting extends Div implements HasUrlParameter<String> {
+    public class OptionalGreeting extends Div
+            implements HasUrlParameter<String> {
 
         @Override
         public void setParameter(BeforeNavigationEvent event,
                 @OptionalParameter String parameter) {
-            if(parameter == null) {
+            if (parameter == null) {
                 setText("Welcome anonymous.");
             } else {
                 setText(String.format("Welcome %s.", parameter));
@@ -52,12 +53,13 @@ public class HasUrlParameterTutorial {
     }
 
     @Route("greet")
-    public class WildcardGreeting extends Div implements HasUrlParameter<String> {
+    public class WildcardGreeting extends Div
+            implements HasUrlParameter<String> {
 
         @Override
         public void setParameter(BeforeNavigationEvent event,
                 @WildcardParameter String parameter) {
-            if(parameter.isEmpty()) {
+            if (parameter.isEmpty()) {
                 setText("Welcome anonymous.");
             } else {
                 setText(String.format("Handling parameter %s.", parameter));

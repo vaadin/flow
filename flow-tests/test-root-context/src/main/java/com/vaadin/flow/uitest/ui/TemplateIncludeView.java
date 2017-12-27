@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.template.angular.AngularTemplate;
 import com.vaadin.flow.template.angular.HtmlTemplate;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
-import com.vaadin.ui.AngularTemplate;
+import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.TemplateIncludeView", layout = ViewTestLayout.class)
 @HtmlTemplate("main.html")

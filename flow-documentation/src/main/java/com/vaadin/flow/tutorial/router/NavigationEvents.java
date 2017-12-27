@@ -15,22 +15,22 @@
  */
 package com.vaadin.flow.tutorial.router;
 
-import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.router.ActivationState;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
+import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.ContinueNavigationAction;
+import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.router.ContinueNavigationAction;
-import com.vaadin.router.Route;
-import com.vaadin.router.event.ActivationState;
-import com.vaadin.router.event.AfterNavigationEvent;
-import com.vaadin.router.event.AfterNavigationObserver;
-import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationObserver;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.html.Anchor;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Label;
-import com.vaadin.ui.paper.dialog.GeneratedPaperDialog;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @CodeFor("routing/tutorial-routing-lifecycle.asciidoc")
 public class NavigationEvents {
@@ -107,7 +107,7 @@ public class NavigationEvents {
     }
 }
 
-class ConfirmDialog extends GeneratedPaperDialog<ConfirmDialog> {
+class ConfirmDialog extends Component {
 
     public static ConfirmDialog build(String message) {
         ConfirmDialog dialog = new ConfirmDialog();
@@ -122,5 +122,12 @@ class ConfirmDialog extends GeneratedPaperDialog<ConfirmDialog> {
     public ConfirmDialog ifAccept(Runnable confirmationHandler) {
         confirmationHandler.run();
         return this;
+    }
+
+    public void add(Component label) {
+    }
+
+    public void open() {
+
     }
 }

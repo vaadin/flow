@@ -124,7 +124,7 @@
           "description": "When true, any private values set in\n  `props` will be set. By default, `setProperties` will not set\n  `readOnly: true` root properties."
         }
       ],
-      "returns": "UNDEFINED"
+      "returns": "OBJECT"
     },
     {
       "name": "linkPaths",
@@ -151,7 +151,7 @@
           "description": "Source path to link."
         }
       ],
-      "returns": "UNDEFINED"
+      "returns": "OBJECT"
     },
     {
       "name": "unlinkPaths",
@@ -168,7 +168,7 @@
           "description": "Target path to unlink."
         }
       ],
-      "returns": "UNDEFINED"
+      "returns": "OBJECT"
     },
     {
       "name": "notifySplices",
@@ -191,7 +191,7 @@
           "description": "Array of splice records indicating ordered\n  changes that occurred to the array. Each record should have the\n  following fields:\n   * index: index at which the change occurred\n   * removed: array of items that were removed from this index\n   * addedCount: number of new items added at this index\n   * object: a reference to the array in question\n   * type: the string literal 'splice'\n\n  Note that splice records _must_ be normalized such that they are\n  reported in index order (raw results from `Object.observe` are not\n  ordered and must be normalized/merged before notifying)."
         }
       ],
-      "returns": "UNDEFINED"
+      "returns": "OBJECT"
     },
     {
       "name": "get",
@@ -249,7 +249,7 @@
           "description": "Root object from which the path is evaluated.\n  When specified, no notification will occur."
         }
       ],
-      "returns": "UNDEFINED"
+      "returns": "OBJECT"
     },
     {
       "name": "push",
@@ -397,7 +397,7 @@
           "description": "Value at the path (optional)."
         }
       ],
-      "returns": "UNDEFINED"
+      "returns": "OBJECT"
     },
     {
       "name": "connectedCallback",
@@ -424,7 +424,7 @@
           "description": "Bag of custom property key/values to\n  apply to this element."
         }
       ],
-      "returns": "UNDEFINED"
+      "returns": "OBJECT"
     },
     {
       "name": "resolveUrl",

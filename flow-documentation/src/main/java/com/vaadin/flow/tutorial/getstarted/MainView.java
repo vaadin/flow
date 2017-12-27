@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.tutorial.getstarted;
 
-import com.vaadin.router.Route;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.grid.Grid;
-import com.vaadin.ui.icon.Icon;
-import com.vaadin.ui.icon.VaadinIcons;
-import com.vaadin.ui.layout.HorizontalLayout;
-import com.vaadin.ui.layout.VerticalLayout;
-import com.vaadin.ui.textfield.TextField;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcons;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 /**
@@ -43,10 +43,12 @@ public class MainView extends VerticalLayout {
         filterText.setPlaceholder("filter by name...");
         filterText.addValueChangeListener(e -> updateList());
 
-        Button clearFilterTextBtn = new Button(new Icon(VaadinIcons.CLOSE_CIRCLE));
+        Button clearFilterTextBtn = new Button(
+                new Icon(VaadinIcons.CLOSE_CIRCLE));
         clearFilterTextBtn.addClickListener(e -> filterText.clear());
 
-        HorizontalLayout filtering = new HorizontalLayout(filterText, clearFilterTextBtn);
+        HorizontalLayout filtering = new HorizontalLayout(filterText,
+                clearFilterTextBtn);
 
         Button addCustomerBtn = new Button("Add new customer");
         addCustomerBtn.addClickListener(e -> {
@@ -54,7 +56,8 @@ public class MainView extends VerticalLayout {
             form.setCustomer(new Customer());
         });
 
-        HorizontalLayout toolbar = new HorizontalLayout(filtering, addCustomerBtn);
+        HorizontalLayout toolbar = new HorizontalLayout(filtering,
+                addCustomerBtn);
 
         grid.setSizeFull();
 
@@ -79,7 +82,8 @@ public class MainView extends VerticalLayout {
         });
 
         ExampleTemplate template = new ExampleTemplate();
-        Button button = new Button("Click me", event -> template.setValue("Clicked!"));
+        Button button = new Button("Click me",
+                event -> template.setValue("Clicked!"));
         add(button, template);
         // Add the next two lines:
         // The rest is already there...

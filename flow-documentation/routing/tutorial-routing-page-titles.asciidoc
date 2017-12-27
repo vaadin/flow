@@ -53,7 +53,7 @@ class BlogPost extends Component
 
   @Override
   public void setParameter(BeforeNavigationEvent event,
-        @com.vaadin.router.OptionalParameter Long parameter) {
+        @OptionalParameter Long parameter) {
     if (parameter != null) {
       title = "Blog Post #" + parameter;
     } else {

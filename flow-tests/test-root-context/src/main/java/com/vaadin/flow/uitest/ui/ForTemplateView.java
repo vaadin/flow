@@ -18,19 +18,19 @@ package com.vaadin.flow.uitest.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.nodefeature.TemplateOverridesMap;
+import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.internal.nodefeature.ModelMap;
+import com.vaadin.flow.internal.nodefeature.TemplateOverridesMap;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.router.Route;
-import com.vaadin.server.Command;
-import com.vaadin.ui.common.ClientDelegate;
-import com.vaadin.ui.common.HtmlContainer;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Label;
-import com.vaadin.ui.html.NativeButton;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ForTemplateView", layout = ViewTestLayout.class)
 public class ForTemplateView extends Div {

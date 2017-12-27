@@ -15,74 +15,86 @@
  */
 package com.vaadin.flow.router;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
-import com.vaadin.router.InternalRedirectHandler;
-import com.vaadin.router.Location;
-import com.vaadin.router.NavigationHandler;
-import com.vaadin.router.NavigationTrigger;
-import com.vaadin.router.QueryParameters;
-import com.vaadin.router.RouterInterface;
-import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinService;
-import com.vaadin.server.startup.RouteRegistry;
-import com.vaadin.ui.UI;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.internal.DefaultRouteResolver;
+import com.vaadin.flow.router.internal.ErrorStateRenderer;
+import com.vaadin.flow.router.internal.InternalRedirectHandler;
+import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.router.internal.ResolveRequest;
+import com.vaadin.flow.router.legacy.ImmutableRouterConfiguration;
+import com.vaadin.flow.router.legacy.RouterConfiguration;
+import com.vaadin.flow.router.legacy.RouterConfigurator;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.RouteRegistry;
 
 /**
  * The router takes care of serving content when the user navigates within a
  * site or an application.
  *
- * @author Vaadin Ltd
- * @deprecated do not use! feature is to be removed in the near future
+ * @author Vaadin Ltd.
+ *
+ * @see Route
  */
-@Deprecated
 public class Router implements RouterInterface {
-    /**
-     * The live configuration instance. All changes to the configuration are
-     * done on a copy, which is then swapped into use so that nobody outside
-     * this class ever can have a reference to the actively used instance.
-     */
-    private volatile RouterConfiguration configuration = new RouterConfiguration() {
+
+    private RouteResolver routeResolver;
+
+    private final RouterConfiguration configuration = new RouterConfiguration() {
         @Override
         public boolean isConfigured() {
-            // Regular implementation always returns true
-            return false;
+            return registry.hasRoutes();
         }
     };
 
-    /**
-     * Lock used to ensure there's only one update going on at once.
-     * <p>
-     * The lock is configured to always guarantee a fair ordering.
-     */
-    private final ReentrantLock configUpdateLock = new ReentrantLock(true);
+    private final RouteRegistry registry;
 
     /**
-     * Creates a new router.
+     * Constructs a new router with the given route registry and a
+     * {@link DefaultRouteResolver}.
+     *
+     * @param registry
+     *            the route registry to use, not <code>null</code>
      */
-    public Router() {
-        // Nothing to here
+    public Router(RouteRegistry registry) {
+        assert registry != null;
+        this.registry = registry;
+        routeResolver = new DefaultRouteResolver();
     }
 
-    /**
-     * Enables navigation for a new UI instance. This initializes the UI content
-     * based on the location used for loading the UI and sets up the UI to be
-     * updated when the user navigates to some other location.
-     *
-     * @param ui
-     *            the UI that navigation should be set up for
-     * @param initRequest
-     *            the Vaadin request that bootstraps the provided UI
-     */
     @Override
     public void initializeUI(UI ui, VaadinRequest initRequest) {
-        assert getConfiguration().isConfigured();
+        Location location = getLocationForRequest(initRequest.getPathInfo(),
+                initRequest.getParameterMap());
 
-        String pathInfo = initRequest.getPathInfo();
+        ui.getPage().getHistory().setHistoryStateChangeHandler(
+                e -> navigate(ui, e.getLocation(), e.getTrigger()));
 
+        int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
+
+        VaadinResponse response = VaadinService.getCurrentResponse();
+        if (response != null) {
+            response.setStatus(statusCode);
+        }
+    }
+
+    private Location getLocationForRequest(String pathInfo,
+            Map<String, String[]> parameterMap) {
         final String path;
         if (pathInfo == null) {
             path = "";
@@ -92,136 +104,311 @@ public class Router implements RouterInterface {
         }
 
         final QueryParameters queryParameters = QueryParameters
-                .full(initRequest.getParameterMap());
+                .full(parameterMap);
 
-        ui.getPage().getHistory().setHistoryStateChangeHandler(
-                e -> navigate(ui, e.getLocation(), e.getTrigger()));
-
-        Location location = new Location(path, queryParameters);
-        int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
-
-        VaadinResponse response = VaadinService.getCurrentResponse();
-        if (response != null) {
-            response.setStatus(statusCode);
-        }
-
+        return new Location(path, queryParameters);
     }
 
     /**
-     * Navigates the given UI to the given location.
+     * Resolve the navigation target for given path and parameter map using the
+     * router routeResolver.
      *
-     * @param ui
-     *            the UI to update, not <code>null</code>
-     * @param location
-     *            the location to navigate to, not <code>null</code>
-     * @param trigger
-     *            the type of user action that triggered this navigation, not
-     *            <code>null</code>
-     * @return the HTTP status code resulting from the navigation
+     * @param pathInfo
+     *            the path relative to the application
+     * @param parameterMap
+     *            A mapping of parameter names to arrays of parameter values
+     * @return NavigationTarget for the given path and parameter map if found
      */
+    public Optional<NavigationState> resolveNavigationTarget(String pathInfo,
+            Map<String, String[]> parameterMap) {
+        Location location = getLocationForRequest(pathInfo, parameterMap);
+        NavigationState resolve = null;
+        try {
+            resolve = getRouteResolver()
+                    .resolve(new ResolveRequest(this, location));
+        } catch (NotFoundException nfe) {
+            LoggerFactory.getLogger(Router.class.getName()).warn(
+                    "Failed to resolve navigation target for path: {}",
+                    pathInfo, nfe);
+        }
+        return Optional.ofNullable(resolve);
+    }
+
     @Override
     public int navigate(UI ui, Location location, NavigationTrigger trigger) {
         assert ui != null;
         assert location != null;
         assert trigger != null;
 
-        // Read volatile field only once per navigation
-        ImmutableRouterConfiguration currentConfig = configuration;
-        assert currentConfig.isConfigured();
+        try {
+            NavigationState newState = getRouteResolver()
+                    .resolve(new ResolveRequest(this, location));
+            if (newState != null) {
+                NavigationEvent navigationEvent = new NavigationEvent(this,
+                        location, ui, trigger);
 
-        NavigationEvent navigationEvent = new NavigationEvent(this, location,
-                ui, trigger);
-
-        Optional<NavigationHandler> handler = currentConfig.getResolver()
-                .resolve(navigationEvent);
-
-        if (!handler.isPresent()) {
-            handler = currentConfig.resolveRoute(location);
-        }
-
-        // Redirect foo/bar <-> foo/bar/ if there is no mapping for the given
-        // location but there is a mapping for the other
-        if (!handler.isPresent() && !location.getPath().isEmpty()) {
-            Location toggledLocation = location.toggleTrailingSlash();
-            Optional<NavigationHandler> toggledHandler = currentConfig
-                    .resolveRoute(toggledLocation);
-            if (toggledHandler.isPresent()) {
-                handler = Optional
-                        .of(new InternalRedirectHandler(toggledLocation));
+                NavigationHandler handler = new NavigationStateRenderer(
+                        newState);
+                if (notNavigatingToSameLocation(location,
+                        ui.getInternals().getLastHandledLocation())) {
+                    ui.getInternals().setLastHandledNavigation(location);
+                    return handler.handle(navigationEvent);
+                }
             }
-        }
 
-        if (!handler.isPresent()) {
-            NavigationHandler errorHandler = currentConfig.getErrorHandler();
-            handler = Optional.of(errorHandler);
-        }
+            if (!location.getPath().isEmpty()) {
+                Location slashToggledLocation = location.toggleTrailingSlash();
+                NavigationState slashToggledState = getRouteResolver().resolve(
+                        new ResolveRequest(this, slashToggledLocation));
+                if (slashToggledState != null) {
+                    NavigationEvent navigationEvent = new NavigationEvent(this,
+                            slashToggledLocation, ui, trigger);
 
-        return handler.get().handle(navigationEvent);
+                    NavigationHandler handler = new InternalRedirectHandler(
+                            slashToggledLocation);
+                    return handler.handle(navigationEvent);
+                }
+            }
+
+            throw new NotFoundException(
+                    "Couldn't find route for '" + location.getPath() + "'");
+        } catch (Exception exception) {
+            ErrorParameter<?> errorParameter = new ErrorParameter<>(exception,
+                    exception.getMessage());
+
+            return navigateToExceptionView(ui, location, errorParameter);
+        } finally {
+            ui.getInternals().clearLastHandledNavigation();
+        }
     }
 
-    /**
-     * Updates the configuration of this router in a thread-safe way.
-     *
-     * @param configurator
-     *            the configurator that will update the configuration
-     */
+    private int navigateToExceptionView(UI ui, Location location,
+            ErrorParameter<?> errorParameter) {
+        Optional<Class<? extends Component>> navigationTarget = getRegistry()
+                .getErrorNavigationTarget(errorParameter.getException());
+
+        if (navigationTarget.isPresent()) {
+            ErrorStateRenderer handler = new ErrorStateRenderer(
+                    new NavigationStateBuilder()
+                            .withTarget(navigationTarget.get()).build());
+
+            ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(
+                    this, location, ui, NavigationTrigger.PROGRAMMATIC,
+                    errorParameter);
+
+            return handler.handle(navigationEvent);
+        } else {
+            throw new RuntimeException(errorParameter.getCustomMessage(),
+                    errorParameter.getException());
+        }
+    }
+
+    private boolean notNavigatingToSameLocation(Location location,
+            Location lastHandledNavigation) {
+        if (lastHandledNavigation != null) {
+            return !location.getPathWithQueryParameters()
+                    .equals(lastHandledNavigation.getPathWithQueryParameters());
+        }
+        return true;
+    }
+
     @Override
     public void reconfigure(RouterConfigurator configurator) {
-        /*
-         * This is expected to be run so rarely (during service init and OSGi
-         * style dynamic reconfiguration) that blocking and copying values is
-         * not a problem.
-         */
-        configUpdateLock.lock();
-        try {
-            /*
-             * Create a copy that the configurator can modify without affecting
-             * the live instance.
-             */
-            RouterConfiguration mutableCopy = new RouterConfiguration(
-                    configuration, true);
-
-            configurator.configure(mutableCopy);
-
-            /*
-             * Create an use a new immutable copy that can be shared between
-             * concurrent request threads without risking any races.
-             */
-            configuration = new RouterConfiguration(mutableCopy, false);
-        } finally {
-            configUpdateLock.unlock();
-        }
+        // NO-OP
     }
 
-    /**
-     * Gets the active router configuration. The returned instance cannot be
-     * directly modified. Use {@link #reconfigure(RouterConfigurator)} to update
-     * the configuration.
-     *
-     * @return the currently used router configuration
-     */
     @Override
     public ImmutableRouterConfiguration getConfiguration() {
-        ImmutableRouterConfiguration currentConfig = configuration;
+        return configuration;
+    }
 
-        assert !currentConfig.isModifiable();
-        return currentConfig;
+    private RouteResolver getRouteResolver() {
+        return routeResolver;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * <b>This implementation always throws
-     * {@link UnsupportedOperationException}.</b>
+     * Get the registered url string for given navigation target.
+     *
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @return url for the navigation target
      */
+    public String getUrl(Class<? extends Component> navigationTarget) {
+        String routeString = getUrlForTarget(navigationTarget);
+        if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
+                WildcardParameter.class)) {
+            routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
+        }
+        return trimRouteString(routeString);
+    }
+
+    /**
+     * Trim the given route string of extra characters that can be left in
+     * special cases like root target containing optional parameter.
+     *
+     * @param routeString
+     *            route string to trim
+     * @return trimmed route
+     */
+    private String trimRouteString(String routeString) {
+        if (routeString.startsWith("/")) {
+            routeString = routeString.substring(1);
+        }
+        return routeString;
+    }
+
+    private boolean isAnnotatedParameter(
+            Class<? extends Component> navigationTarget,
+            Class<? extends Annotation>... parameterAnnotations) {
+        for (Class<? extends Annotation> annotation : parameterAnnotations) {
+            if (HasUrlParameter.isAnnotatedParameter(navigationTarget,
+                    annotation)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get the url string for given navigation target with the parameter in the
+     * url.
+     * <p>
+     * Note! Given parameter is checked for correct class type. This means that
+     * if the navigation target defined parameter is of type {@code Boolean}
+     * then calling getUrl with a {@code String} will fail.
+     *
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @param parameter
+     *            parameter to embed into the generated url
+     * @return url for the navigation target with parameter
+     */
+    public <T, C extends Component & HasUrlParameter<T>> String getUrl(
+            Class<? extends C> navigationTarget, T parameter) {
+        return getUrl(navigationTarget, Arrays.asList(parameter));
+    }
+
+    /**
+     * Get the url string for given navigation target with the parameters in the
+     * url.
+     * <p>
+     * Note! Given parameter is checked for correct class type. This means that
+     * if the navigation target defined parameter is of type {@code Boolean}
+     * then calling getUrl with a {@code String} will fail.
+     *
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @param parameters
+     *            parameters to embed into the generated url, not null
+     * @return url for the navigation target with parameter
+     */
+    public <T, C extends Component & HasUrlParameter<T>> String getUrl(
+            Class<? extends C> navigationTarget, List<T> parameters) {
+        return getUrl(navigationTarget, Objects.requireNonNull(parameters),
+                this::serializeUrlParameters);
+    }
+
+    /**
+     * Get the url string for given navigation target with the parameters in the
+     * url that are serialized using the given parameter serializer.
+     * <p>
+     * Note! Given parameter is checked for correct class type. This means that
+     * if the navigation target defined parameter is of type {@code Boolean}
+     * then calling getUrl with a {@code String} will fail.
+     *
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @param parameters
+     *            parameters to embed into the generated url, not null
+     * @param serializer
+     *            parameter serializer to use for serializing parameters list
+     * @return url for the navigation target with parameter
+     */
+    public <T, C extends Component & HasUrlParameter<T>> String getUrl(
+            Class<? extends C> navigationTarget, List<T> parameters,
+            ParameterSerializer<T> serializer) {
+        List<String> serializedParameters = serializer
+                .serializeUrlParameters(Objects.requireNonNull(parameters));
+
+        String routeString = getUrlForTarget(navigationTarget);
+
+        if (!parameters.isEmpty()) {
+            routeString = routeString.replace(
+                    "{" + parameters.get(0).getClass().getSimpleName() + "}",
+                    serializedParameters.stream()
+                            .collect(Collectors.joining("/")));
+        } else if (HasUrlParameter.isAnnotatedParameter(navigationTarget,
+                OptionalParameter.class)
+                || HasUrlParameter.isAnnotatedParameter(navigationTarget,
+                        WildcardParameter.class)) {
+            routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
+        } else {
+            throw new NotFoundException(String.format(
+                    "The navigation target '%s' has a non optional parameter that needs to be given.",
+                    navigationTarget.getName()));
+        }
+        Optional<Class<? extends Component>> registryTarget = getRegistry()
+                .getNavigationTarget(routeString, serializedParameters);
+
+        if (registryTarget.isPresent()
+                && !hasUrlParameters(registryTarget.get())
+                && !registryTarget.get().equals(navigationTarget)) {
+            throw new NotFoundException(String.format(
+                    "Url matches existing navigation target '%s' with higher priority.",
+                    registryTarget.get().getName()));
+        }
+        return trimRouteString(routeString);
+    }
+
+    private String getUrlForTarget(Class<? extends Component> navigationTarget)
+            throws NotFoundException {
+        Optional<String> targetUrl = getRegistry()
+                .getTargetUrl(navigationTarget);
+        if (!targetUrl.isPresent()) {
+            throw new NotFoundException(
+                    "No route found for given navigation target!");
+        }
+        return targetUrl.get();
+    }
+
+    private boolean hasUrlParameters(
+            Class<? extends Component> navigationTarget) {
+        return HasUrlParameter.class.isAssignableFrom(navigationTarget);
+    }
+
+    private <T> List<String> serializeUrlParameters(List<T> urlParameters) {
+        return urlParameters.stream().filter(Objects::nonNull).map(T::toString)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public RouteRegistry getRegistry() {
-        /*
-         * Throwing of this exception is not mentioned in the inherited JavaDocs
-         * of this method since this implementation is expected to be removed or
-         * deprecated after the other implementation is completed.
-         */
-        throw new UnsupportedOperationException(
-                "This router implementation doesn't use a route registry");
+        return registry;
+    }
+
+    /**
+     * Get all available routes.
+     * 
+     * @return RouteData for all registered routes
+     */
+    public List<RouteData> getRoutes() {
+        return Collections
+                .unmodifiableList(getRegistry().getRegisteredRoutes());
+    }
+
+    /**
+     * Get all available routes collected by parent layout.
+     * 
+     * @return map of parent url to route
+     */
+    public Map<Class<? extends RouterLayout>, List<RouteData>> getRoutesByParent() {
+        Map<Class<? extends RouterLayout>, List<RouteData>> grouped = new HashMap<>();
+        for (RouteData route : getRoutes()) {
+            List<RouteData> routeDataList = grouped.computeIfAbsent(
+                    route.getParentLayout(), key -> new ArrayList<>());
+            routeDataList.add(route);
+        }
+
+        return grouped;
     }
 }
