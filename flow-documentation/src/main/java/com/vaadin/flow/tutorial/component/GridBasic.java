@@ -142,6 +142,8 @@ public class GridBasic {
     public void beanGrid() {
         Grid<Person> grid = new Grid<>(Person.class);
         grid.getColumnByKey("yearOfBirth").setFrozen(true);
+
+        grid.addColumn("address.postalCode");
     }
 
     public void gridColumnMerging() {
