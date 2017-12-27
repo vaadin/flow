@@ -1,7 +1,7 @@
 {
   "name": "Vaadin.VaadinNotificationCard",
   "tag": "vaadin-notification-card",
-  "baseUrl": "vaadin-notification/vaadin-notification.html",
+  "baseUrl": "vaadin-notification/src/vaadin-notification.html",
   "version": "UNKNOWN",
   "properties": [],
   "methods": [],
@@ -13,5 +13,5 @@
   "mixins": [
     "Vaadin.ThemableMixin"
   ],
-  "description": "The container element for the notification\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)"
+  "description": "The container element for the notification\n\n### Styling\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`overlay` | The notification container\n`content` | The content of the notification\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)"
 }

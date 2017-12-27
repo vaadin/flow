@@ -15,8 +15,7 @@
  */
 package com.vaadin.generator;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+import javax.annotation.Generated;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,18 +31,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.annotation.Generated;
-
-import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.model.Visibility;
-import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.jboss.forge.roaster.model.source.JavaDocSource;
-import org.jboss.forge.roaster.model.source.MethodSource;
-import org.jboss.forge.roaster.model.source.ParameterSource;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -77,8 +64,18 @@ import com.vaadin.generator.metadata.ComponentType;
 import com.vaadin.generator.registry.BehaviorRegistry;
 import com.vaadin.generator.registry.ExclusionRegistry;
 import com.vaadin.generator.registry.PropertyNameRemapRegistry;
-
 import elemental.json.JsonObject;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.Visibility;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaDocSource;
+import org.jboss.forge.roaster.model.source.MethodSource;
+import org.jboss.forge.roaster.model.source.ParameterSource;
+import org.slf4j.LoggerFactory;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Base class of the component generation process. It takes a
@@ -325,9 +322,15 @@ public class ComponentGenerator {
     private JavaClassSource generateClassSource(ComponentMetadata metadata,
             String basePackage) {
         String targetPackage = basePackage;
-        if (StringUtils.isNotBlank(metadata.getBaseUrl())) {
+        String baseUrl = metadata.getBaseUrl();
+        if (StringUtils.isNotBlank(baseUrl)) {
+            // all analyzed Vaadin Elements are inside <element-name>/src/ folder,
+            // this is a fugly way to remove that
+            if (baseUrl.contains("/src/")) {
+                baseUrl = baseUrl.replace("/src/","/");
+            }
             String subPackage = ComponentGeneratorUtils
-                    .convertFilePathToPackage(metadata.getBaseUrl());
+                    .convertFilePathToPackage(baseUrl);
             if (StringUtils.isNotBlank(subPackage)) {
 
                 int firstDot = subPackage.indexOf('.');

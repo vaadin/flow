@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.component.notification;
 
-import javax.annotation.Generated;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentSupplier;
-import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.ComponentSupplier;
+import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.HasComponents;
 
 /**
  * <p>
@@ -33,6 +32,26 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * </p>
  * <h3>Styling</h3>
  * <p>
+ * The following shadow DOM parts are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code overlay}</td>
+ * <td>The notification container</td>
+ * </tr>
+ * <tr>
+ * <td>{@code content}</td>
+ * <td>The content of the notification</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
  * <a href=
  * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
  * >Generic styling/theming documentation</a>
@@ -42,7 +61,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
         "WebComponent: Vaadin.VaadinNotificationCard#UNKNOWN",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-notification-card")
-@HtmlImport("frontend://bower_components/vaadin-notification/vaadin-notification.html")
+@HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public class GeneratedVaadinNotificationCard<R extends GeneratedVaadinNotificationCard<R>>
         extends Component
         implements HasStyle, ComponentSupplier<R>, HasComponents {
