@@ -326,7 +326,7 @@ public class StateNode implements Serializable {
         if (!isAttached()) {
             return;
         }
-        if (isInactive) {
+        if (isInactive()) {
             if (isInitialChanges) {
                 // send only required (reported) features updates
                 Stream<NodeFeature> initialFeatures = Stream
@@ -593,6 +593,28 @@ public class StateNode implements Serializable {
         return reportedFeatures.contains(featureType);
     }
 
+    /**
+     * Update "active"/"inactive" state of the node.
+     * <p>
+     * The node is considered as inactive if there is at least one feature whose
+     * {@link NodeFeature#allowsChanges()} method returns false or it has
+     * inactive ascendant.
+     * <p>
+     * Inactive nodes should restrict their RPC communication with client: only
+     * features that returns {@code false} via their method
+     * <code>allowsChanges()</code> and reported features send their changes
+     * while the node is inactive (the latter features are necessary on the
+     * client side to be able to find a strategy which has to be selected to
+     * handle the node).
+     *
+     * <p>
+     * Implementation Note: this is done as a separate method instead of
+     * calculating the state on the fly (checking all features) because each
+     * node needs to check this status on its own <em>AND</em> on its parents
+     * (may be all parents up to the root).
+     *
+     * @see NodeFeature#allowsChanges()
+     */
     public void updateActiveState() {
         setInactive(getDisalowFeatures().count() != 0);
     }
@@ -603,7 +625,7 @@ public class StateNode implements Serializable {
     }
 
     private void setInactive(boolean inactive) {
-        this.isInactive = inactive;
+        isInactive = inactive;
     }
 
     private boolean isInactive() {
