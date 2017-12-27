@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -78,6 +79,25 @@ public class StateNodeTest {
         public boolean isAttached() {
             return true;
         }
+    }
+
+    private static class TestStateTree extends StateTree {
+
+        private Set<StateNode> dirtyNodes;
+
+        public TestStateTree() {
+            super(new UI(), ElementChildrenList.class);
+        }
+
+        @Override
+        public void markAsDirty(StateNode node) {
+            super.markAsDirty(node);
+            if (dirtyNodes == null) {
+                dirtyNodes = new HashSet<>();
+            }
+            dirtyNodes.add(node);
+        }
+
     }
 
     @Test
@@ -499,7 +519,7 @@ public class StateNodeTest {
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
 
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        TestStateTree tree = new TestStateTree();
 
         // attach the node to be able to get changes
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
@@ -527,7 +547,7 @@ public class StateNodeTest {
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
 
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        TestStateTree tree = new TestStateTree();
 
         // attach the node to be able to get changes
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
@@ -549,7 +569,7 @@ public class StateNodeTest {
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
 
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        TestStateTree tree = new TestStateTree();
 
         // attach the node to be able to get changes
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
@@ -579,7 +599,7 @@ public class StateNodeTest {
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
 
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        TestStateTree tree = new TestStateTree();
 
         // attach the node to be able to get changes
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
@@ -604,8 +624,21 @@ public class StateNodeTest {
 
         properties.setProperty("foo", "bar");
 
+        TestStateTree tree = (TestStateTree) stateNode.getOwner();
+
+        tree.dirtyNodes.clear();
+
         List<NodeChange> changes = new ArrayList<>();
         stateNode.collectChanges(changes::add);
+
+        if (visibilityChanged) {
+            Assert.assertEquals(0, tree.dirtyNodes.size());
+        } else {
+            // the target node should be marked as dirty because it's visible
+            // but its parent is inactive
+            Assert.assertEquals(1, tree.dirtyNodes.size());
+            tree.dirtyNodes.contains(stateNode);
+        }
 
         Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
@@ -707,6 +740,10 @@ public class StateNodeTest {
         // VisibiltyData, but don't loose changes for other features
 
         properties.setProperty("foo", "baz");
+
+        TestStateTree tree = (TestStateTree) stateNode.getOwner();
+        tree.dirtyNodes.clear();
+
         stateNode.collectChanges(changes::add);
 
         // activity updater may modify visibility of the node itself or its
@@ -719,9 +756,15 @@ public class StateNodeTest {
 
         MapPutChange change;
         if (visibilityChanged) {
+            Assert.assertEquals(0, tree.dirtyNodes.size());
             Assert.assertTrue(changes.get(0) instanceof MapPutChange);
             change = (MapPutChange) changes.get(0);
             Assert.assertEquals(VisibilityData.class, change.getFeature());
+        } else {
+            // the target node should be marked as dirty because it's visible
+            // but its parent is inactive
+            Assert.assertEquals(1, tree.dirtyNodes.size());
+            tree.dirtyNodes.contains(stateNode);
         }
 
         changes.clear();
