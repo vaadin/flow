@@ -518,10 +518,18 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
      *         later on
      */
     public static boolean needsRebind(StateNode node) {
-        return node.hasFeature(NodeFeatures.VISIBILITY_DATA) && Boolean.FALSE
-                .equals(node.getMap(NodeFeatures.VISIBILITY_DATA)
-                        .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
-                        .getValue());
+        if (!node.hasFeature(NodeFeatures.VISIBILITY_DATA)) {
+            // If there is no VISIBILITY_DATA feature then the node doesn't need
+            // re-bind
+            return false;
+        }
+        /*
+         * Absence of value or "true" means that the node doesn't need re-bind.
+         * So only "false" means "needs re-bind".
+         */
+        return Boolean.FALSE.equals(node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                .getValue());
     }
 
     private static void bindProperty(PropertyUser user, MapProperty property,

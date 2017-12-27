@@ -1391,6 +1391,8 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         // The latter visibility value has no effect on element attribute
+        // If the listener had been called then the attribute value would have
+        // been "true".
         assertNull(element.getAttribute("hidden"));
     }
 

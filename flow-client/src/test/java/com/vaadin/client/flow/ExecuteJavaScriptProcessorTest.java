@@ -392,4 +392,29 @@ public class ExecuteJavaScriptProcessorTest {
 
         Assert.assertFalse(processor.isBound(node));
     }
+
+    @Test
+    public void isBound_hasElementHasFeatureAndBoundAndUnboundParent_notBound() {
+        TestJsProcessor processor = new TestJsProcessor();
+
+        Registry registry = processor.getRegistry();
+
+        StateNode node = new StateNode(37, registry.getStateTree());
+
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                .setValue(true);
+
+        StateNode parent = new StateNode(43, registry.getStateTree());
+
+        node.setParent(parent);
+
+        // emulate binding
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        Assert.assertFalse(processor.isBound(node));
+    }
 }
