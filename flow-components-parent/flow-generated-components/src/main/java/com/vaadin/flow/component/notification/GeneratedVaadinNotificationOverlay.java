@@ -15,61 +15,55 @@
  */
 package com.vaadin.flow.component.notification;
 
-import javax.annotation.Generated;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ComponentSupplier;
-import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.ComponentSupplier;
+import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.shared.Registration;
-
-import elemental.json.JsonObject;
+import com.vaadin.flow.dom.Element;
 
 /**
  * <p>
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * The overlay element.
- * </p>
- * <h3>Styling</h3>
- * <p>
- * <a href=
- * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
- * >Generic styling/theming documentation</a>
- * </p>
- * <p>
- * See <a href=
- * "https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html">
- * {@code <vaadin-overlay>} documentation</a> for
- * {@code <vaadin-notification-overlay>} parts.
+ * The notification overlay element.
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: Vaadin.VaadinNotificationOverlay#UNKNOWN",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-notification-overlay")
-@HtmlImport("frontend://bower_components/vaadin-notification/vaadin-notification.html")
+@HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotificationOverlay<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
-     * This property is synchronized automatically from client side when a
-     * 'opened-changed' event happens.
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * True when the overlay is opened
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
      * 
      * @return the {@code opened} property from the webcomponent
      */
-    @Synchronize(property = "opened", value = "opened-changed")
     public boolean isOpened() {
         return getElement().getProperty("opened", false);
     }
 
     /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * True when the overlay is opened
+     * </p>
+     * 
      * @param opened
      *            the boolean value to set
      */
@@ -78,295 +72,231 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
     }
 
     /**
-     * This property is synchronized automatically from client side when a
-     * 'template-changed' event happens.
+     * Adds the given components as children of this component at the slot
+     * 'top-stretch'.
      * 
-     * @return the {@code template} property from the webcomponent
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
      */
-    @Synchronize(property = "template", value = "template-changed")
-    protected JsonObject protectedGetTemplate() {
-        return (JsonObject) getElement().getPropertyRaw("template");
+    public R addToTopStretch(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "top-stretch");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
     }
 
     /**
-     * @param template
-     *            the JsonObject value to set
-     */
-    protected void setTemplate(JsonObject template) {
-        getElement().setPropertyJson("template", template);
-    }
-
-    /**
-     * This property is synchronized automatically from client side when a
-     * 'content-changed' event happens.
+     * Adds the given components as children of this component at the slot
+     * 'top-start'.
      * 
-     * @return the {@code content} property from the webcomponent
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
      */
-    @Synchronize(property = "content", value = "content-changed")
-    protected JsonObject protectedGetContent() {
-        return (JsonObject) getElement().getPropertyRaw("content");
+    public R addToTopStart(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "top-start");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
     }
 
     /**
-     * @param content
-     *            the JsonObject value to set
-     */
-    protected void setContent(JsonObject content) {
-        getElement().setPropertyJson("content", content);
-    }
-
-    /**
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * Adds the given components as children of this component at the slot
+     * 'top-center'.
      * 
-     * @return the {@code withBackdrop} property from the webcomponent
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
      */
-    public boolean isWithBackdrop() {
-        return getElement().getProperty("withBackdrop", false);
+    public R addToTopCenter(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "top-center");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
     }
 
     /**
-     * @param withBackdrop
-     *            the boolean value to set
-     */
-    public void setWithBackdrop(boolean withBackdrop) {
-        getElement().setProperty("withBackdrop", withBackdrop);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * When true the overlay won't disable the main content, showing it doesn’t
-     * change the functionality of the user interface.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
+     * Adds the given components as children of this component at the slot
+     * 'top-end'.
      * 
-     * @return the {@code modeless} property from the webcomponent
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
      */
-    public boolean isModeless() {
-        return getElement().getProperty("modeless", false);
+    public R addToTopEnd(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "top-end");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * When true the overlay won't disable the main content, showing it doesn’t
-     * change the functionality of the user interface.
-     * </p>
+     * Adds the given components as children of this component at the slot
+     * 'middle'.
      * 
-     * @param modeless
-     *            the boolean value to set
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
      */
-    public void setModeless(boolean modeless) {
-        getElement().setProperty("modeless", modeless);
+    public R addToMiddle(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "middle");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * When true move focus to the first focusable element in the overlay, or to
-     * the overlay if there are no focusable elements.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
+     * Adds the given components as children of this component at the slot
+     * 'bottom-start'.
      * 
-     * @return the {@code focusTrap} property from the webcomponent
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
      */
-    public boolean isFocusTrap() {
-        return getElement().getProperty("focusTrap", false);
+    public R addToBottomStart(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "bottom-start");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * When true move focus to the first focusable element in the overlay, or to
-     * the overlay if there are no focusable elements.
-     * </p>
+     * Adds the given components as children of this component at the slot
+     * 'bottom-center'.
      * 
-     * @param focusTrap
-     *            the boolean value to set
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
      */
-    public void setFocusTrap(boolean focusTrap) {
-        getElement().setProperty("focusTrap", focusTrap);
+    public R addToBottomCenter(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "bottom-center");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
     }
 
     /**
-     * @param sourceEvent
-     *            Missing documentation!
+     * Adds the given components as children of this component at the slot
+     * 'bottom-end'.
+     * 
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
      */
-    protected void close(JsonObject sourceEvent) {
-        getElement().callFunction("close", sourceEvent);
+    public R addToBottomEnd(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "bottom-end");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
     }
 
-    @DomEvent("vaadin-overlay-close")
-    public static class VaadinOverlayCloseEvent<R extends GeneratedVaadinNotificationOverlay<R>>
-            extends ComponentEvent<R> {
-        public VaadinOverlayCloseEvent(R source, boolean fromClient) {
-            super(source, fromClient);
+    /**
+     * Adds the given components as children of this component at the slot
+     * 'bottom-stretch'.
+     * 
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
+     */
+    public R addToBottomStretch(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "bottom-stretch");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
+    }
+
+    /**
+     * Removes the given child components from this component.
+     * 
+     * @param components
+     *            The components to remove.
+     * @throws IllegalArgumentException
+     *             if any of the components is not a child of this component.
+     */
+    public void remove(Component... components) {
+        for (Component component : components) {
+            if (getElement().equals(component.getElement().getParent())) {
+                component.getElement().removeAttribute("slot");
+                getElement().removeChild(component.getElement());
+            } else {
+                throw new IllegalArgumentException("The given component ("
+                        + component + ") is not a child of this component");
+            }
         }
     }
 
     /**
-     * Adds a listener for {@code vaadin-overlay-close} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
+     * Removes all contents from this component, this includes child components,
+     * text content as well as child elements that have been added directly to
+     * this component using the {@link Element} API.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayCloseListener(
-            ComponentEventListener<VaadinOverlayCloseEvent<R>> listener) {
-        return addListener(VaadinOverlayCloseEvent.class,
-                (ComponentEventListener) listener);
-    }
-
-    @DomEvent("vaadin-overlay-escape-press")
-    public static class VaadinOverlayEscapePressEvent<R extends GeneratedVaadinNotificationOverlay<R>>
-            extends ComponentEvent<R> {
-        public VaadinOverlayEscapePressEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-        }
-    }
-
-    /**
-     * Adds a listener for {@code vaadin-overlay-escape-press} events fired by
-     * the webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayEscapePressListener(
-            ComponentEventListener<VaadinOverlayEscapePressEvent<R>> listener) {
-        return addListener(VaadinOverlayEscapePressEvent.class,
-                (ComponentEventListener) listener);
-    }
-
-    @DomEvent("vaadin-overlay-open")
-    public static class VaadinOverlayOpenEvent<R extends GeneratedVaadinNotificationOverlay<R>>
-            extends ComponentEvent<R> {
-        public VaadinOverlayOpenEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-        }
-    }
-
-    /**
-     * Adds a listener for {@code vaadin-overlay-open} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayOpenListener(
-            ComponentEventListener<VaadinOverlayOpenEvent<R>> listener) {
-        return addListener(VaadinOverlayOpenEvent.class,
-                (ComponentEventListener) listener);
-    }
-
-    @DomEvent("vaadin-overlay-outside-click")
-    public static class VaadinOverlayOutsideClickEvent<R extends GeneratedVaadinNotificationOverlay<R>>
-            extends ComponentEvent<R> {
-        public VaadinOverlayOutsideClickEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-        }
-    }
-
-    /**
-     * Adds a listener for {@code vaadin-overlay-outside-click} events fired by
-     * the webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayOutsideClickListener(
-            ComponentEventListener<VaadinOverlayOutsideClickEvent<R>> listener) {
-        return addListener(VaadinOverlayOutsideClickEvent.class,
-                (ComponentEventListener) listener);
-    }
-
-    @DomEvent("opened-changed")
-    public static class OpenedChangeEvent<R extends GeneratedVaadinNotificationOverlay<R>>
-            extends ComponentEvent<R> {
-        public OpenedChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-        }
-    }
-
-    /**
-     * Adds a listener for {@code opened-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addOpenedChangeListener(
-            ComponentEventListener<OpenedChangeEvent<R>> listener) {
-        return addListener(OpenedChangeEvent.class,
-                (ComponentEventListener) listener);
-    }
-
-    @DomEvent("template-changed")
-    public static class TemplateChangeEvent<R extends GeneratedVaadinNotificationOverlay<R>>
-            extends ComponentEvent<R> {
-        public TemplateChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-        }
-    }
-
-    /**
-     * Adds a listener for {@code template-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addTemplateChangeListener(
-            ComponentEventListener<TemplateChangeEvent<R>> listener) {
-        return addListener(TemplateChangeEvent.class,
-                (ComponentEventListener) listener);
-    }
-
-    @DomEvent("content-changed")
-    public static class ContentChangeEvent<R extends GeneratedVaadinNotificationOverlay<R>>
-            extends ComponentEvent<R> {
-        public ContentChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-        }
-    }
-
-    /**
-     * Adds a listener for {@code content-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addContentChangeListener(
-            ComponentEventListener<ContentChangeEvent<R>> listener) {
-        return addListener(ContentChangeEvent.class,
-                (ComponentEventListener) listener);
+    public void removeAll() {
+        getElement().getChildren()
+                .forEach(child -> child.removeAttribute("slot"));
+        getElement().removeAllChildren();
     }
 }

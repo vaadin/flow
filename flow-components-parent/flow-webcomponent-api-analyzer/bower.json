@@ -51,6 +51,6 @@
     "vaadin-progress-bar": "1.0.0-alpha6",
     "vaadin-tabs": "1.0.0-beta1",
     "vaadin-radio-button": "1.0.0-alpha8",
-    "vaadin-notification": "1.0.0-alpha3"
+    "vaadin-notification": "1.0.0-alpha4"
   }
 }
