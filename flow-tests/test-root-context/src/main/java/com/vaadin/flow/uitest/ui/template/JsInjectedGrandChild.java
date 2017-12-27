@@ -27,6 +27,7 @@ public class JsInjectedGrandChild extends PolymerTemplate<TemplateModel> {
 
     public JsInjectedGrandChild() {
         getElement().callFunction("greet");
+        getElement().setProperty("bar", "foo");
     }
 
     @ClientDelegate

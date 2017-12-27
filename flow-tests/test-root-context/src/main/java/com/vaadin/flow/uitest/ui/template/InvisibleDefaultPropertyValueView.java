@@ -20,25 +20,28 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
-@Route("com.vaadin.flow.uitest.ui.template.PolymerDefaultPropertyValueView")
-public class PolymerDefaultPropertyValueView extends AbstractDivView {
+@Route("com.vaadin.flow.uitest.ui.template.InvisibleDefaultPropertyValueView")
+public class InvisibleDefaultPropertyValueView extends AbstractDivView {
 
-    public PolymerDefaultPropertyValueView() {
+    public InvisibleDefaultPropertyValueView() {
         PolymerDefaultPropertyValue template = new PolymerDefaultPropertyValue();
+        template.setVisible(false);
         template.setId("template");
         add(template);
 
-        NativeButton button = new NativeButton("Show email value",
-                event -> createEmailValue(template));
-        button.setId("show-email");
-        add(button);
-    }
-
-    private void createEmailValue(PolymerDefaultPropertyValue template) {
         Div div = new Div();
-        div.setText(template.getEmail());
         div.setId("email-value");
         add(div);
+
+        NativeButton showEmail = new NativeButton("Show email value",
+                event -> div.setText(template.getEmail()));
+        showEmail.setId("show-email");
+        add(showEmail);
+
+        NativeButton setVisible = new NativeButton("Make template visible",
+                event -> template.setVisible(true));
+        setVisible.setId("set-visible");
+        add(setVisible);
     }
 
 }

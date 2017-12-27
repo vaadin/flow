@@ -19,6 +19,7 @@ import java.util.Arrays;
 
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -86,7 +87,8 @@ public class ExecuteJavaScriptProcessor {
             StateNode stateNode = ClientJsonCodec.decodeStateNode(tree,
                     parameterJson);
             if (stateNode != null) {
-                if (isVirtualChildAwaitingInitialization(stateNode)) {
+                if (isVirtualChildAwaitingInitialization(stateNode)
+                        || !isBound(stateNode)) {
                     stateNode.addDomNodeSetListener(node -> {
                         Reactive.addPostFlushListener(
                                 () -> handleInvocation(invocation));
@@ -122,6 +124,15 @@ public class ExecuteJavaScriptProcessor {
             }
         }
         return false;
+    }
+
+    protected boolean isBound(StateNode node) {
+        boolean isNodeBound = node.getDomNode() != null
+                && !SimpleElementBindingStrategy.needsRebind(node);
+        if (!isNodeBound || node.getParent() == null) {
+            return isNodeBound;
+        }
+        return isBound(node.getParent());
     }
 
     /**

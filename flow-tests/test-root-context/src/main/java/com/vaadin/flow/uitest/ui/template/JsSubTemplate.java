@@ -27,4 +27,9 @@ public class JsSubTemplate extends PolymerTemplate<TemplateModel> {
 
     @Id("js-grand-child")
     private JsInjectedGrandChild component;
+
+    public JsSubTemplate() {
+        getElement().setProperty("foo", "bar");
+    }
+
 }

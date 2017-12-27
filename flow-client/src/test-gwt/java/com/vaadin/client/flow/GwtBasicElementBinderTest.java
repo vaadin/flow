@@ -23,6 +23,7 @@ import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
@@ -1316,6 +1317,112 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Binder.bind(node, element);
 
         assertNull(element.getAttribute("hidden"));
+    }
+
+    public void testBindInvisibleElement_elementIsNotBound_elementBecomesBoundWhenVisible() {
+        setVisible(false);
+
+        setTag();
+
+        StateNode childNode = createChildNode("child");
+        children.add(0, childNode);
+
+        properties.getProperty("foo").setValue("bar");
+
+        node.setDomNode(element);
+
+        List<Integer> list = Arrays.asList(0);
+        node.addDomNodeSetListener(node -> {
+            list.set(0, list.get(0) + 1);
+            return false;
+        });
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals(Integer.valueOf(0), list.get(0));
+
+        assertEquals(0, element.getChildElementCount());
+        assertNull(WidgetUtil.getJsProperty(element, "foo"));
+
+        setVisible(true);
+
+        Reactive.flush();
+
+        // DOM node set listener is notified at least once
+        assertTrue(list.get(0) > 1);
+
+        assertEquals(1, element.getChildren().length());
+        assertTrue(element.getFirstElementChild().getTagName()
+                .equalsIgnoreCase(childNode.getMap(NodeFeatures.ELEMENT_DATA)
+                        .getProperty(NodeProperties.TAG).getValue()
+                        .toString()));
+        assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
+    }
+
+    public void testBindInvisibleElement_unbind() {
+        setVisible(false);
+
+        setTag();
+
+        node.setDomNode(element);
+
+        // Now the node is partially bound (it has "visibility" listener)
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        // it will rebind the element (and has to remove the initial visibility
+        // listener)
+        setVisible(true);
+
+        Reactive.flush();
+
+        // unregister the node
+        node.unregister();
+
+        // make the node invisible, in fact it should not do anything since the
+        // node is unregistered: all listener after REBOUND are removed, but we
+        // should check that initial visibility listener (in partial binding) is
+        // removed as well
+        setVisible(false);
+
+        Reactive.flush();
+
+        // The latter visibility value has no effect on element attribute
+        // If the listener had been called then the attribute value would have
+        // been "true".
+        assertNull(element.getAttribute("hidden"));
+    }
+
+    public void testSimpleElementBindingStrategy_regularElement_needsBind() {
+        assertFalse(SimpleElementBindingStrategy.needsRebind(node));
+
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                .setValue(false);
+
+        assertTrue(SimpleElementBindingStrategy.needsRebind(node));
+    }
+
+    public void testSimpleElementBindingStrategy_elementWithoutFeature_needsBind() {
+        StateNode emptyNode = new StateNode(45, tree);
+        // self control
+        assertFalse(emptyNode.hasFeature(NodeFeatures.VISIBILITY_DATA));
+
+        assertFalse(SimpleElementBindingStrategy.needsRebind(node));
+    }
+
+    private void setTag() {
+        node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG)
+                .setValue(element.getTagName());
+    }
+
+    private void setVisible(boolean visible) {
+        NodeMap map = node.getMap(NodeFeatures.VISIBILITY_DATA);
+        MapProperty visibility = map.getProperty(NodeProperties.VISIBLE);
+        visibility.setValue(visible);
     }
 
     private Element createAndAppendElementToShadowRoot(Element shadowRoot,

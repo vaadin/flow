@@ -25,22 +25,76 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class VisibilityIT extends ChromeBrowserTest {
 
     @Test
-    public void checkVisibility() {
+    public void checkParentVisibility() {
         open();
 
+        // The element is initially hidden. It shouldn't be bound.
+        Assert.assertFalse(isElementPresent(By.id("visibility")));
+        Assert.assertFalse(isElementPresent(By.id("nested-label")));
+
+        // make the element visible
+        WebElement visibilityButton = findElement(By.id("updateVisibiity"));
+        visibilityButton.click();
+
         WebElement div = findElement(By.id("visibility"));
-        Assert.assertEquals(Boolean.TRUE.toString(),
-                div.getAttribute("hidden"));
-
-        WebElement button = findElement(By.id("update"));
-
-        button.click();
-
         Assert.assertNull(div.getAttribute("hidden"));
 
-        button.click();
+        WebElement label = findElement(By.id("nested-label"));
+        Assert.assertNull(label.getAttribute("hidden"));
+
+        // change some properties for the element itself and it's child
+        findElement(By.id("updateProperty")).click();
+
+        Assert.assertEquals("foo", div.getAttribute("class"));
+        Assert.assertEquals("bar", label.getAttribute("class"));
+
+        // switch the visibility of the parent off and on
+        visibilityButton.click();
 
         Assert.assertEquals(Boolean.TRUE.toString(),
                 div.getAttribute("hidden"));
+
+        visibilityButton.click();
+
+        Assert.assertNull(label.getAttribute("hidden"));
+    }
+
+    @Test
+    public void checkChildVisibility() {
+        open();
+
+        WebElement visibilityButton = findElement(
+                By.id("updateLabelVisibiity"));
+        visibilityButton.click();
+
+        // The element is initially hidden. It shouldn't be bound.
+        Assert.assertFalse(isElementPresent(By.id("visibility")));
+        Assert.assertFalse(isElementPresent(By.id("nested-label")));
+
+        // make the parent visible
+        findElement(By.id("updateVisibiity")).click();
+
+        // now the child element is not bound, so it's invisible
+        Assert.assertFalse(isElementPresent(By.id("nested-label")));
+
+        // change some properties for child while it's invisible
+        findElement(By.id("updateProperty")).click();
+
+        // The element is still unbound and can't be found
+        Assert.assertFalse(isElementPresent(By.id("nested-label")));
+
+        // make it visible now
+        visibilityButton.click();
+
+        WebElement label = findElement(By.id("nested-label"));
+        Assert.assertNull(label.getAttribute("hidden"));
+
+        Assert.assertEquals("bar", label.getAttribute("class"));
+
+        // make it invisible
+        visibilityButton.click();
+
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                label.getAttribute("hidden"));
     }
 }
