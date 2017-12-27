@@ -32,12 +32,15 @@ public class VisibilityIT extends ChromeBrowserTest {
         Assert.assertFalse(isElementPresent(By.id("visibility")));
         Assert.assertFalse(isElementPresent(By.id("nested-label")));
 
+        WebElement main = findElement(By.id("main"));
+        WebElement div = main.findElement(By.tagName("div"));
+
         // make the element visible
         WebElement visibilityButton = findElement(By.id("updateVisibiity"));
         visibilityButton.click();
 
-        WebElement div = findElement(By.id("visibility"));
         Assert.assertNull(div.getAttribute("hidden"));
+        Assert.assertEquals("visibility", div.getAttribute("id"));
 
         WebElement label = findElement(By.id("nested-label"));
         Assert.assertNull(label.getAttribute("hidden"));
