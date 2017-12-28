@@ -61,6 +61,12 @@ public class TemplatesVisibilityView extends Div {
                 event -> grandChild.setVisible(!grandChild.isVisible()));
         grandChildVisibility.setId("grand-child-visibility");
         add(grandChildVisibility);
+
+        NativeButton updateSubTemplateViaClientSide = new NativeButton(
+                "Update su template property via client side",
+                event -> grandParent.updateChildViaClientSide());
+        updateSubTemplateViaClientSide.setId("client-side-update-property");
+        add(updateSubTemplateViaClientSide);
     }
 
 }

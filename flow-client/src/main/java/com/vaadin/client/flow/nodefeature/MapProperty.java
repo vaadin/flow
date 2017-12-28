@@ -18,6 +18,9 @@ package com.vaadin.client.flow.nodefeature;
 import java.util.Map;
 import java.util.Objects;
 
+import com.vaadin.client.flow.StateNode;
+import com.vaadin.client.flow.StateTree;
+import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.reactive.ReactiveEventRouter;
 import com.vaadin.client.flow.reactive.ReactiveValue;
 import com.vaadin.client.flow.reactive.ReactiveValueChangeListener;
@@ -243,9 +246,25 @@ public class MapProperty implements ReactiveValue {
         Object currentValue = hasValue() ? getValue() : null;
 
         if (!Objects.equals(newValue, currentValue)) {
-            setValue(newValue);
+            StateNode node = getMap().getNode();
+            StateTree tree = node.getTree();
+            if (tree.isActive(node)) {
+                setValue(newValue);
 
-            getMap().getNode().getTree().sendNodePropertySyncToServer(this);
+                tree.sendNodePropertySyncToServer(this);
+            } else {
+                /*
+                 * Fire an fake event to reset the property value back in the
+                 * DOM element: we don't know how exactly set this property but
+                 * it has to be set to the property value because of listener
+                 * added to the property during binding.
+                 */
+                eventRouter.fireEvent(new MapPropertyChangeEvent(this,
+                        currentValue, currentValue));
+                // Flush is needed because we are out of normal lifecycle which
+                // call the flush() automatically.
+                Reactive.flush();
+            }
         }
     }
 }

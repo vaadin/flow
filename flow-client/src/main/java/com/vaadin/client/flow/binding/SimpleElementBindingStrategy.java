@@ -235,7 +235,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -458,18 +458,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private boolean isVisible(StateNode node) {
-        if (!node.hasFeature(NodeFeatures.VISIBILITY_DATA)) {
-            return true;
-        }
-        NodeMap visibilityMap = node.getMap(NodeFeatures.VISIBILITY_DATA);
-        Boolean visibility = (Boolean) visibilityMap
-                .getProperty(NodeProperties.VISIBLE).getValue();
-
-        /*
-         * Absence of value or "true" means that the node should be visible. So
-         * only "false" means "hide".
-         */
-        return !Boolean.FALSE.equals(visibility);
+        return node.getTree().isVisible(node);
     }
 
     private void updateVisibility(JsArray<EventRemover> listeners,

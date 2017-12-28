@@ -24,6 +24,7 @@ import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -304,6 +305,45 @@ public class StateTree {
      */
     public Registry getRegistry() {
         return registry;
+    }
+
+    /**
+     * Returns the visibility state of the {@code node}.
+     *
+     * @param node
+     *            the node whose visibility is tested
+     * @return {@code true} is the node is visible, {@code false} otherwise
+     */
+    public boolean isVisible(StateNode node) {
+        if (!node.hasFeature(NodeFeatures.VISIBILITY_DATA)) {
+            return true;
+        }
+        NodeMap visibilityMap = node.getMap(NodeFeatures.VISIBILITY_DATA);
+        Boolean visibility = (Boolean) visibilityMap
+                .getProperty(NodeProperties.VISIBLE).getValue();
+
+        /*
+         * Absence of value or "true" means that the node should be visible. So
+         * only "false" means "hide".
+         */
+        return !Boolean.FALSE.equals(visibility);
+    }
+
+    /**
+     * Checks whether the {@code node} is active.
+     * <p>
+     * The node is active if it's visible and all its ascendant are visible.
+     *
+     * @param node
+     *            the node whose activity is tested
+     * @return {@code true} is the node is active, {@code false} otherwise
+     */
+    public boolean isActive(StateNode node) {
+        boolean isVisible = isVisible(node);
+        if (!isVisible || node.getParent() == null) {
+            return isVisible;
+        }
+        return isActive(node.getParent());
     }
 
     /**
