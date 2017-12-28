@@ -68,7 +68,7 @@ public class StateNode implements Serializable {
     // Only the root node is attached at this point
     private boolean wasAttached = isAttached();
 
-    private boolean isInactive;
+    private boolean isInactiveSelf;
 
     private boolean isInitialChanges = true;
 
@@ -327,7 +327,7 @@ public class StateNode implements Serializable {
             return;
         }
         if (isInactive()) {
-            if (!isInactive) {
+            if (!isInactiveSelf) {
                 /*
                  * We are here if: the node itself is not inactive but it has
                  * some ascendant which is inactive.
@@ -644,12 +644,12 @@ public class StateNode implements Serializable {
     }
 
     private void setInactive(boolean inactive) {
-        isInactive = inactive;
+        isInactiveSelf = inactive;
     }
 
     private boolean isInactive() {
-        if (isInactive || getParent() == null) {
-            return isInactive;
+        if (isInactiveSelf || getParent() == null) {
+            return isInactiveSelf;
         }
         return getParent().isInactive();
     }

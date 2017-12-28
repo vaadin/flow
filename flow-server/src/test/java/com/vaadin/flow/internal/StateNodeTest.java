@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -511,7 +512,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void collectChanges_initiallyActiveElement_sendOnlyDisalowedFeatureChangesWhenInactive() {
+    public void collectChanges_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
         StateNode stateNode = createTestNode("Active node",
                 ElementPropertyMap.class, VisibilityData.class);
 
@@ -533,7 +534,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void collectChanges_inactivateViaParent_initiallyActiveElement_sendOnlyDisalowedFeatureChangesWhenInactive() {
+    public void collectChanges_inactivateViaParent_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
         StateNode stateNode = createTestNode("Active node",
                 ElementPropertyMap.class, VisibilityData.class);
 
@@ -560,7 +561,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void collectChanges_initiallyInactiveElement_sendOnlyDisalowedAndReportedFeatures_sendAllChangesWhenActive() {
+    public void collectChanges_initiallyInactiveElement_sendOnlyDisalowAndReportedFeatures_sendAllChangesWhenActive() {
         Element element = ElementFactory.createAnchor();
 
         StateNode stateNode = element.getNode();
@@ -583,7 +584,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void collectChanges_initiallyInactiveViaParentElement_sendOnlyDisalowedAndReportedFeatures_sendAllChangesWhenActive() {
+    public void collectChanges_initiallyInactiveViaParentElement_sendOnlyDisalowAndReportedFeatures_sendAllChangesWhenActive() {
         Element element = ElementFactory.createAnchor();
 
         StateNode stateNode = element.getNode();
@@ -642,15 +643,18 @@ public class StateNodeTest {
 
         Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
-        Assert.assertTrue(changes.get(0) instanceof NodeAttachChange);
+        Assert.assertThat(changes.get(0),
+                CoreMatchers.instanceOf(NodeAttachChange.class));
         // tag update (ElementData is reported feature) and possible visibility
         // update
-        Assert.assertTrue(changes.get(1) instanceof MapPutChange);
+        Assert.assertThat(changes.get(1),
+                CoreMatchers.instanceOf(MapPutChange.class));
 
         MapPutChange change = (MapPutChange) changes.get(1);
         MapPutChange tagChange;
         if (visibilityChanged) {
-            Assert.assertTrue(changes.get(2) instanceof MapPutChange);
+            Assert.assertThat(changes.get(2),
+                    CoreMatchers.instanceOf(MapPutChange.class));
             tagChange = change.getFeature().equals(ElementData.class) ? change
                     : (MapPutChange) changes.get(2);
             change = tagChange.equals(change) ? (MapPutChange) changes.get(2)
@@ -679,7 +683,8 @@ public class StateNodeTest {
         Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
         // property updates and possible visibility update
-        Assert.assertTrue(changes.get(1) instanceof MapPutChange);
+        Assert.assertThat(changes.get(1),
+                CoreMatchers.instanceOf(MapPutChange.class));
 
         Optional<MapPutChange> visibilityChange = changes.stream()
                 .filter(MapPutChange.class::isInstance)
@@ -726,9 +731,11 @@ public class StateNodeTest {
 
         Assert.assertEquals(2, changes.size());
         // node is attached event
-        Assert.assertTrue(changes.get(0) instanceof NodeAttachChange);
+        Assert.assertThat(changes.get(0),
+                CoreMatchers.instanceOf(NodeAttachChange.class));
         // the property update event
-        Assert.assertTrue(changes.get(1) instanceof MapPutChange);
+        Assert.assertThat(changes.get(1),
+                CoreMatchers.instanceOf(MapPutChange.class));
 
         changes.clear();
 
@@ -757,7 +764,8 @@ public class StateNodeTest {
         MapPutChange change;
         if (visibilityChanged) {
             Assert.assertEquals(0, tree.dirtyNodes.size());
-            Assert.assertTrue(changes.get(0) instanceof MapPutChange);
+            Assert.assertThat(changes.get(0),
+                    CoreMatchers.instanceOf(MapPutChange.class));
             change = (MapPutChange) changes.get(0);
             Assert.assertEquals(VisibilityData.class, change.getFeature());
         } else {
@@ -777,7 +785,8 @@ public class StateNodeTest {
         // Two possible changes: probable visibility value change and property
         // update change
         Assert.assertEquals(visibilityChanged ? 2 : 1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof MapPutChange);
+        Assert.assertThat(changes.get(0),
+                CoreMatchers.instanceOf(MapPutChange.class));
         change = (MapPutChange) changes.get(0);
 
         MapPutChange propertyChange;
