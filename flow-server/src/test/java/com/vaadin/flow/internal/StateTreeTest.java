@@ -27,12 +27,10 @@ import java.util.Set;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.NodeOwner;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -441,6 +439,24 @@ public class StateTreeTest {
                 results.get(2).intValue());
         Assert.assertEquals("The result at index '3' should be 2", 2,
                 results.get(3).intValue());
+    }
+
+    @Test
+    public void collectChanges_updateActiveState() {
+        StateNode node1 = Mockito.mock(StateNode.class);
+        StateNode node2 = Mockito.mock(StateNode.class);
+
+        Mockito.when(node1.getOwner()).thenReturn(tree);
+        Mockito.when(node2.getOwner()).thenReturn(tree);
+
+        tree.markAsDirty(node1);
+        tree.markAsDirty(node2);
+
+        tree.collectChanges(node -> {
+        });
+
+        Mockito.verify(node1).updateActiveState();
+        Mockito.verify(node2).updateActiveState();
     }
 
 }

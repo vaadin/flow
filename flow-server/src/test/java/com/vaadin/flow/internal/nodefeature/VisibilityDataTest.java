@@ -17,13 +17,14 @@ package com.vaadin.flow.internal.nodefeature;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.StateNode;
 
 public class VisibilityDataTest {
 
     @Test
-    public void setConcealed() {
+    public void setVisible() {
         StateNode node = new StateNode(VisibilityData.class);
         VisibilityData data = node.getFeature(VisibilityData.class);
 
@@ -35,5 +36,20 @@ public class VisibilityDataTest {
 
         data.setValue(false);
         Assert.assertFalse(data.isVisible());
+    }
+
+    @Test
+    public void allowsChanges_delegateToIsVisible() {
+        VisibilityData data = Mockito.mock(VisibilityData.class);
+
+        Mockito.doCallRealMethod().when(data).allowsChanges();
+
+        Mockito.when(data.isVisible()).thenReturn(true);
+
+        Assert.assertTrue(data.allowsChanges());
+
+        Mockito.when(data.isVisible()).thenReturn(false);
+
+        Assert.assertFalse(data.allowsChanges());
     }
 }

@@ -32,12 +32,15 @@ public class VisibilityIT extends ChromeBrowserTest {
         Assert.assertFalse(isElementPresent(By.id("visibility")));
         Assert.assertFalse(isElementPresent(By.id("nested-label")));
 
+        WebElement main = findElement(By.id("main"));
+        WebElement div = main.findElement(By.tagName("div"));
+
         // make the element visible
         WebElement visibilityButton = findElement(By.id("updateVisibiity"));
-        visibilityButton.click();
+        scrollIntoViewAndClick(visibilityButton);
 
-        WebElement div = findElement(By.id("visibility"));
         Assert.assertNull(div.getAttribute("hidden"));
+        Assert.assertEquals("visibility", div.getAttribute("id"));
 
         WebElement label = findElement(By.id("nested-label"));
         Assert.assertNull(label.getAttribute("hidden"));
@@ -49,12 +52,12 @@ public class VisibilityIT extends ChromeBrowserTest {
         Assert.assertEquals("bar", label.getAttribute("class"));
 
         // switch the visibility of the parent off and on
-        visibilityButton.click();
+        scrollIntoViewAndClick(visibilityButton);
 
         Assert.assertEquals(Boolean.TRUE.toString(),
                 div.getAttribute("hidden"));
 
-        visibilityButton.click();
+        scrollIntoViewAndClick(visibilityButton);
 
         Assert.assertNull(label.getAttribute("hidden"));
     }
@@ -65,7 +68,7 @@ public class VisibilityIT extends ChromeBrowserTest {
 
         WebElement visibilityButton = findElement(
                 By.id("updateLabelVisibiity"));
-        visibilityButton.click();
+        scrollIntoViewAndClick(visibilityButton);
 
         // The element is initially hidden. It shouldn't be bound.
         Assert.assertFalse(isElementPresent(By.id("visibility")));
@@ -84,7 +87,7 @@ public class VisibilityIT extends ChromeBrowserTest {
         Assert.assertFalse(isElementPresent(By.id("nested-label")));
 
         // make it visible now
-        visibilityButton.click();
+        scrollIntoViewAndClick(visibilityButton);
 
         WebElement label = findElement(By.id("nested-label"));
         Assert.assertNull(label.getAttribute("hidden"));
@@ -92,7 +95,7 @@ public class VisibilityIT extends ChromeBrowserTest {
         Assert.assertEquals("bar", label.getAttribute("class"));
 
         // make it invisible
-        visibilityButton.click();
+        scrollIntoViewAndClick(visibilityButton);
 
         Assert.assertEquals(Boolean.TRUE.toString(),
                 label.getAttribute("hidden"));

@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -66,6 +67,10 @@ public class StateNode implements Serializable {
 
     // Only the root node is attached at this point
     private boolean wasAttached = isAttached();
+
+    private boolean isInactiveSelf;
+
+    private boolean isInitialChanges = true;
 
     /**
      * Creates a state node with the given feature types.
@@ -315,15 +320,54 @@ public class StateNode implements Serializable {
             } else {
                 collector.accept(new NodeDetachChange(this));
             }
-
             wasAttached = isAttached;
         }
 
-        if (isAttached) {
-            getFeatures().values().stream().filter(this::hasChangeTracker)
-                    .forEach(feature -> feature.collectChanges(collector));
-            clearChanges();
+        if (!isAttached()) {
+            return;
         }
+        if (isInactive()) {
+            if (!isInactiveSelf) {
+                /*
+                 * We are here if: the node itself is not inactive but it has
+                 * some ascendant which is inactive.
+                 *
+                 * In this case we send only some subset of changes (not from
+                 * all the features). But we should send changes for all
+                 * remaining features. Normally it automatically happens if the
+                 * node becomes "visible". But if it was visible with some
+                 * invisible parent then only the parent becomes dirty (when
+                 * it's set visible) and this child will never participate in
+                 * collection of changes since it's not marked as dirty.
+                 *
+                 * So here such node (which is active itself but its ascendant
+                 * is inactive) we mark as dirty again to be able to collect its
+                 * changes later on when its ascendant becomes active.
+                 */
+                getOwner().markAsDirty(this);
+            }
+            if (isInitialChanges) {
+                // send only required (reported) features updates
+                Stream<NodeFeature> initialFeatures = Stream
+                        .concat(getFeatures().entrySet().stream().filter(
+                                entry -> isReportedFeature(entry.getKey()))
+                                .map(Entry::getValue), getDisalowFeatures());
+                doCollectChanges(collector, initialFeatures);
+            } else {
+                doCollectChanges(collector, getDisalowFeatures());
+            }
+        } else {
+            doCollectChanges(collector, getFeatures().values().stream());
+        }
+    }
+
+    private void doCollectChanges(Consumer<NodeChange> collector,
+            Stream<NodeFeature> features) {
+        features.filter(this::hasChangeTracker).forEach(feature -> {
+            feature.collectChanges(collector);
+            changes.remove(feature.getClass());
+        });
+        isInitialChanges = false;
     }
 
     private boolean hasChangeTracker(NodeFeature nodeFeature) {
@@ -566,6 +610,48 @@ public class StateNode implements Serializable {
      */
     public boolean isReportedFeature(Class<? extends NodeFeature> featureType) {
         return reportedFeatures.contains(featureType);
+    }
+
+    /**
+     * Update "active"/"inactive" state of the node.
+     * <p>
+     * The node is considered as inactive if there is at least one feature whose
+     * {@link NodeFeature#allowsChanges()} method returns false or it has
+     * inactive ascendant.
+     * <p>
+     * Inactive nodes should restrict their RPC communication with client: only
+     * features that returns {@code false} via their method
+     * <code>allowsChanges()</code> and reported features send their changes
+     * while the node is inactive (the latter features are necessary on the
+     * client side to be able to find a strategy which has to be selected to
+     * handle the node).
+     *
+     * <p>
+     * Implementation Note: this is done as a separate method instead of
+     * calculating the state on the fly (checking all features) because each
+     * node needs to check this status on its own <em>AND</em> on its parents
+     * (may be all parents up to the root).
+     *
+     * @see NodeFeature#allowsChanges()
+     */
+    public void updateActiveState() {
+        setInactive(getDisalowFeatures().count() != 0);
+    }
+
+    private Stream<NodeFeature> getDisalowFeatures() {
+        return getFeatures().values().stream()
+                .filter(feature -> !feature.allowsChanges());
+    }
+
+    private void setInactive(boolean inactive) {
+        isInactiveSelf = inactive;
+    }
+
+    private boolean isInactive() {
+        if (isInactiveSelf || getParent() == null) {
+            return isInactiveSelf;
+        }
+        return getParent().isInactive();
     }
 
     /**
