@@ -210,13 +210,13 @@ public class StateTree implements NodeOwner {
      *            a consumer accepting node changes
      */
     public void collectChanges(Consumer<NodeChange> collector) {
-        Set<StateNode> dirtyNodes = collectDirtyNodes();
+        Set<StateNode> dirtyNodesSet = collectDirtyNodes();
 
-        dirtyNodes.forEach(StateNode::updateActiveState);
+        dirtyNodesSet.forEach(StateNode::updateActiveState);
 
         // TODO fire preCollect events
 
-        dirtyNodes.forEach(node -> node.collectChanges(collector));
+        dirtyNodesSet.forEach(node -> node.collectChanges(collector));
     }
 
     @Override
