@@ -56,6 +56,7 @@ module.exports = class ElementFilter {
     return this.acceptPath(file.path);
   }
 
+
   /**
    * Evaluates whether a given file should be accepted for the analysis.
    *
@@ -63,7 +64,13 @@ module.exports = class ElementFilter {
    * @returns true if the file should be analyzed, false otherwise
    */
   acceptPath(filePath) {
-    const folderName = path.dirname(filePath).split(path.sep).pop();
+    const folders = path.dirname(filePath).split(path.sep);
+    // we'll only analyze files the root or inside /src
+    var folderName = folders.pop();
+    if (folderName.indexOf('src') === 0) {
+      folderName = folders.pop();
+    }
     return this._dependencies.indexOf(folderName) >= 0;
   }
+
 };
