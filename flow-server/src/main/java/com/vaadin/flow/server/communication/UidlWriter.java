@@ -256,7 +256,7 @@ public class UidlWriter implements Serializable {
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else {
-            getLogger().info(
+            getLogger().debug(
                     "The path '{}' for inline resource has been successfully "
                             + "resolved to resource URL '{}'",
                     url, resolvedPath);

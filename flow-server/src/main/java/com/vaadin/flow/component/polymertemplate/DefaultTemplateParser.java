@@ -98,7 +98,7 @@ public class DefaultTemplateParser implements TemplateParser {
             String path = resolvePath(request, url);
 
             if (logEnabled) {
-                getLogger().info("Html import path '{}' is resolved to '{}'", url, path);
+                getLogger().debug("Html import path '{}' is resolved to '{}'", url, path);
             }
             try (InputStream content = context.getResourceAsStream(path)) {
                 if (content == null) {
@@ -108,7 +108,7 @@ public class DefaultTemplateParser implements TemplateParser {
                 }
                 Element templateElement = parseHtmlImport(content, url, tag);
                 if (logEnabled && templateElement != null) {
-                    getLogger().info("Found a template file containing template "
+                    getLogger().debug("Found a template file containing template "
                         + "definition for the tag '{}' by the path '{}'", tag, url);
                 }
 

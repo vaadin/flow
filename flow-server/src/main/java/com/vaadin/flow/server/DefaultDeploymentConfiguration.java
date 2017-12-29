@@ -404,7 +404,7 @@ public class DefaultDeploymentConfiguration
                         excludedDirectories))
                 .orElse(Collections.emptySet());
         if (frontendDirectoryPolyfills.isEmpty()) {
-            getLogger().info(
+            getLogger().debug(
                     "Unable to find {} polyfill in frontend directory, searching the whole context",
                     WEB_COMPONENTS_LOADER_JS_NAME);
             frontendDirectoryPath.ifPresent(excludedDirectories::add);
