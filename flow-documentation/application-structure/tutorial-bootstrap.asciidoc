@@ -209,7 +209,7 @@ Now this listener should be added to a `ServiceInitEvent` which is sent when a V
 
 == Adding static HTML contents
 
-There is another common case that you have html contents to be appended to your page, for an example you will have a `favicon`. There are a few ways of doing this:
+The framework provides multiple ways of adding static content to the page. Here we cover three different ways of adding a favicon.
 
  - using `InitialPageSettings#addLink()`
 
@@ -227,6 +227,7 @@ public class Layout1 extends Div implements RouterLayout, PageConfigurator {
 ----
 
  - using `InitialPageSettings#addInlineWithContents()`
+
 [source,java]
 ----
 public class Layout2 extends Div implements RouterLayout, PageConfigurator {
@@ -256,7 +257,7 @@ public class Layout3 extends Div
     }
 ----
 
-But most commonly, `favicon` contains quite a lot small icons, in this case, you can see that you will easily do a lot of hard coding. To avoid this, we are *highly suggest* you to move all the html contents into a file, (e.g. `favicon.html`) and inline this file in your `PageConfigurator`
+But most commonly, you will deal with quite many files, in this case, you can see that it causes a lot of hard coding easily. To avoid this, we are *highly suggest* you to move all the contents into a file, (e.g. `yourContent.html`) and inline this file in your `PageConfigurator`
 
 [source,java]
 ----
@@ -264,7 +265,7 @@ public class Layout4 extends Div implements RouterLayout, PageConfigurator {
 
         @Override
         public void configurePage(InitialPageSettings settings) {
-            settings.addInlineFromFile("favicon.html",
+            settings.addInlineFromFile("yourContent.html",
                     Dependency.Type.HTML_IMPORT);
         }
     }
