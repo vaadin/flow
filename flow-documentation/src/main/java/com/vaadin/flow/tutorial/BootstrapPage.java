@@ -138,7 +138,7 @@ public class BootstrapPage {
 
         @Override
         public void configurePage(InitialPageSettings settings) {
-            settings.addInlineFromFile("favicon.html",
+            settings.addInlineFromFile("your-content.html",
                     Dependency.Type.HTML_IMPORT);
         }
     }
