@@ -257,7 +257,7 @@ public class Layout3 extends Div
     }
 ----
 
-But most commonly, you will deal with quite many files, in this case, you can see that it causes a lot of hard coding easily. To avoid this, we are *highly suggest* you to move all the contents into a file, (e.g. `yourContent.html`) and inline this file in your `PageConfigurator`
+But most commonly, you will deal with quite many files, in this case, you can see that it causes a lot of hard coding easily. To avoid this, *we recommend* you to move all the contents into a file, (e.g. `your-content.html`) and inline this file in your `PageConfigurator`
 
 [source,java]
 ----
@@ -265,7 +265,7 @@ public class Layout4 extends Div implements RouterLayout, PageConfigurator {
 
         @Override
         public void configurePage(InitialPageSettings settings) {
-            settings.addInlineFromFile("yourContent.html",
+            settings.addInlineFromFile("your-content.html",
                     Dependency.Type.HTML_IMPORT);
         }
     }
