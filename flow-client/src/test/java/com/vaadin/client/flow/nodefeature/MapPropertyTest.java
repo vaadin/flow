@@ -15,21 +15,45 @@
  */
 package com.vaadin.client.flow.nodefeature;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.client.Registry;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.reactive.CountingComputation;
 import com.vaadin.client.flow.reactive.Reactive;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.events.EventRemover;
 
 public class MapPropertyTest {
     private MapProperty property = new MapProperty("foo",
             new NodeMap(0, new StateNode(0, new StateTree(null))));
+
+    private static class TestTree extends StateTree {
+
+        private MapProperty sentProperty;
+
+        private boolean isActive = true;
+
+        public TestTree() {
+            super(new Registry());
+        }
+
+        @Override
+        public void sendNodePropertySyncToServer(MapProperty property) {
+            sentProperty = property;
+        }
+
+        @Override
+        public boolean isActive(StateNode node) {
+            return isActive;
+        }
+    }
 
     @Test
     public void testValue() {
@@ -46,11 +70,10 @@ public class MapPropertyTest {
     public void testChangeListener() {
         AtomicReference<MapPropertyChangeEvent> lastEvent = new AtomicReference<>();
 
-        EventRemover remover = property
-                .addChangeListener(event -> {
-                    Assert.assertNull("Got unexpected event", lastEvent.get());
-                    lastEvent.set(event);
-                });
+        EventRemover remover = property.addChangeListener(event -> {
+            Assert.assertNull("Got unexpected event", lastEvent.get());
+            lastEvent.set(event);
+        });
 
         property.setValue("foo");
 
@@ -177,4 +200,48 @@ public class MapPropertyTest {
         Assert.assertEquals("default", property.getValueOrDefault("default"));
     }
 
+    @Test
+    public void syncToServer_nodeIsActive_propertyIsSent() {
+        TestTree tree = new TestTree();
+
+        StateNode node = new StateNode(7, tree);
+
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+
+        property.syncToServer("bar");
+
+        Assert.assertEquals(property, tree.sentProperty);
+    }
+
+    @Test
+    public void syncToServer_nodeIsInactive_propertyIsNotSent_eventIsFiredAndFlushed() {
+        TestTree tree = new TestTree();
+
+        tree.isActive = false;
+
+        StateNode node = new StateNode(7, tree);
+
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+
+        property.setValue("value");
+
+        AtomicReference<MapPropertyChangeEvent> event = new AtomicReference<MapPropertyChangeEvent>();
+        property.addChangeListener(event::set);
+
+        AtomicBoolean flushListener = new AtomicBoolean();
+        Reactive.addFlushListener(() -> flushListener.set(true));
+
+        property.syncToServer("bar");
+
+        Assert.assertNull(tree.sentProperty);
+
+        Assert.assertNotNull(event.get());
+
+        MapPropertyChangeEvent propertyChangeEvent = event.get();
+
+        Assert.assertEquals("value", propertyChangeEvent.getNewValue());
+        Assert.assertTrue(flushListener.get());
+    }
 }
