@@ -28,6 +28,7 @@ import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.events.EventRemover;
 
@@ -77,6 +78,20 @@ public class StateTreeTest {
 
     private TestServerConnector connector = (TestServerConnector) tree
             .getRegistry().getServerConnector();
+
+    private static class TestVisibilityTree extends StateTree {
+
+        private boolean isVisible;
+
+        public TestVisibilityTree() {
+            super(new Registry());
+        }
+
+        @Override
+        public boolean isVisible(StateNode node) {
+            return isVisible;
+        }
+    }
 
     @Test
     public void testIdMappings() {
@@ -231,4 +246,84 @@ public class StateTreeTest {
         Mockito.verify(propertyHandler).nodeRegistered(node);
     }
 
+    @Test
+    public void isVisible_nodeHasNoFeature_nodeIsVisible() {
+        Assert.assertTrue(tree.isVisible(node));
+    }
+
+    @Test
+    public void isVisible_nodeHasFeatureAndVisibleValue_nodeIsVisible() {
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBLE).setValue(true);
+        Assert.assertTrue(tree.isVisible(node));
+    }
+
+    @Test
+    public void isVisible_nodeHasFeatureAndNoValue_nodeIsVisible() {
+        // initialize the feature
+        node.getMap(NodeFeatures.VISIBILITY_DATA);
+        Assert.assertTrue(tree.isVisible(node));
+    }
+
+    @Test
+    public void isVisible_nodeHasFeatureAndNotVisibleValue_nodeIsNotVisible() {
+        node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBLE).setValue(false);
+        Assert.assertFalse(tree.isVisible(node));
+    }
+
+    @Test
+    public void isActive_nodeIsVisibleAndNoParent_nodeIsActive() {
+        TestVisibilityTree tree = new TestVisibilityTree();
+
+        StateNode stateNode = new StateNode(7, tree);
+
+        tree.isVisible = true;
+
+        Assert.assertTrue(tree.isActive(stateNode));
+    }
+
+    @Test
+    public void isActive_nodeIsInvisibleAndNoParent_nodeIsActive() {
+        TestVisibilityTree tree = new TestVisibilityTree();
+
+        StateNode stateNode = new StateNode(7, tree);
+
+        tree.isVisible = false;
+
+        Assert.assertFalse(tree.isActive(stateNode));
+    }
+
+    @Test
+    public void isActive_nodeIsVisibleAndVisibleParent_nodeIsActive() {
+        TestVisibilityTree tree = new TestVisibilityTree();
+
+        StateNode stateNode = new StateNode(7, tree);
+
+        StateNode parent = new StateNode(8, tree);
+
+        stateNode.setParent(parent);
+
+        tree.isVisible = true;
+
+        Assert.assertTrue(tree.isActive(stateNode));
+    }
+
+    @Test
+    public void isActive_nodeIsVisibleAndInvisibleParent_nodeIsNotActive() {
+        StateNode stateNode = new StateNode(7, tree);
+
+        StateNode parent = new StateNode(8, tree);
+
+        stateNode.setParent(parent);
+
+        TestVisibilityTree tree = new TestVisibilityTree() {
+            @Override
+            public boolean isVisible(StateNode node) {
+                return parent != node;
+            }
+        };
+
+        Assert.assertFalse(tree.isActive(stateNode));
+    }
 }

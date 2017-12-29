@@ -131,6 +131,45 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
         assertBound(subTemplateProp, grandChildFooProp, grandChildProp);
     }
 
+    @Test
+    public void invisibleComponent_dropClientSideChanges() {
+        open();
+
+        // make parent visible
+        findElement(By.id("grand-parent-visibility")).click();
+
+        WebElement grandParent = findElement(By.tagName("js-grand-parent"));
+        WebElement subTemplate = getInShadowRoot(grandParent,
+                By.cssSelector("js-sub-template"));
+
+        WebElement subTemplateProp = getInShadowRoot(subTemplate,
+                By.id("prop"));
+
+        Assert.assertEquals("bar", subTemplateProp.getText());
+
+        // make sub template invisible
+        findElement(By.id("sub-template-visibility")).click();
+
+        // change the sub template property via client side
+        findElement(By.id("client-side-update-property")).click();
+
+        // The property value has not changed
+        Assert.assertEquals("bar", subTemplateProp.getText());
+
+        // make template visible
+        findElement(By.id("sub-template-visibility")).click();
+
+        // One more check : the property value is still the same
+        Assert.assertEquals("bar", subTemplateProp.getText());
+
+        // change the sub template property via client side one more time
+        // (now the component is visible)
+        findElement(By.id("client-side-update-property")).click();
+
+        // Now the property value should be changed
+        Assert.assertEquals("baz", subTemplateProp.getText());
+    }
+
     private WebElement assertInitialPropertyValues(WebElement subTemplateProp,
             WebElement grandChild, WebElement grandChildFooProp) {
         WebElement grandChildProp = getInShadowRoot(grandChild, By.id("prop"));

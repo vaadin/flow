@@ -18,13 +18,17 @@
 
 <dom-module id="js-grand-parent">
     <template>
-      <js-sub-template></js-sub-template>
+      <js-sub-template id='sub-template'></js-sub-template>
     </template>
 
     <script>
         class JsGrandTemplate extends Polymer.Element {
             static get is() {
                 return 'js-grand-parent'
+            }
+            
+            updateSubTempate(){
+                this.$['sub-template'].foo='baz';
             }
         }
         customElements.define(JsGrandTemplate.is, JsGrandTemplate);
