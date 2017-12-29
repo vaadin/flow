@@ -67,6 +67,7 @@ These tutorials show how the different features are used.
 ** <<routing/tutorial-routing-navigation#,Navigating Between Routes>>
 ** <<routing/tutorial-routing-page-titles#,Updating Page Title on Navigation>>
 ** <<routing/tutorial-routing-exception-handling#,Router Exception Handling>>
+** <<routing/tutorial-routing-get-registered-routes#,Getting Registered Routes>>
 * Polymer template
 ** <<polymer-templates/tutorial-template-basic#,Creating A Simple Component Using the Template API>>
 ** <<polymer-templates/tutorial-template-components#,Binding Components from PolymerTemplate>>
