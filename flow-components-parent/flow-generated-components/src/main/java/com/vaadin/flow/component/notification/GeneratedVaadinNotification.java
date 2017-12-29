@@ -15,17 +15,16 @@
  */
 package com.vaadin.flow.component.notification;
 
-import javax.annotation.Generated;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ComponentSupplier;
-import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.ComponentSupplier;
+import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -44,91 +43,12 @@ Your work has been saved
 </template>
 </vaadin-notification>}
  * </p>
- * <h3>Styling</h3>
- * <p>
- * <a href=
- * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
- * >Generic styling/theming documentation</a>
- * </p>
- * <p>
- * The following Shadow DOM parts are available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Part name</th>
- * <th>Description</th>
- * <th>Theme for Element</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code content}</td>
- * <td>The container of all regions</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code top-stretch}</td>
- * <td>top-stretch container</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code top}</td>
- * <td>top container</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code top-start}</td>
- * <td>top-start container, child of top</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code top-center}</td>
- * <td>top-center container, child of top</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code top-end}</td>
- * <td>top-end container, child of top</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code middle}</td>
- * <td>middle container</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code bottom}</td>
- * <td>bottom container</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code bottom-start}</td>
- * <td>bottom-start container, child of bottom</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code bottom-center}</td>
- * <td>bottom-center container, child of bottom</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code bottom-end}</td>
- * <td>bottom-end container, child of bottom</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * <tr>
- * <td>{@code bottom-stretch}</td>
- * <td>bottom-stretch container, child of bottom</td>
- * <td>vaadin-notification-overlay</td>
- * </tr>
- * </tbody>
- * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.NotificationElement#1.0.0-alpha3",
+        "WebComponent: Vaadin.NotificationElement#1.0.0-alpha4",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-notification")
-@HtmlImport("frontend://bower_components/vaadin-notification/vaadin-notification.html")
+@HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
@@ -204,17 +124,17 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Vertical alignment of the notification in the viewport Valid values are
-     * {@code top-stretch|top|middle|bottom|bottom-stretch}
+     * Alignment of the notification in the viewport Valid values are
+     * {@code top-stretch|top-start|top-center|top-end|middle|bottom-start|bottom-center|bottom-end|bottom-stretch}
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
      * 
-     * @return the {@code verticalAlign} property from the webcomponent
+     * @return the {@code position} property from the webcomponent
      */
-    public String getVerticalAlign() {
-        return getElement().getProperty("verticalAlign");
+    public String getPosition() {
+        return getElement().getProperty("position");
     }
 
     /**
@@ -222,55 +142,15 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Vertical alignment of the notification in the viewport Valid values are
-     * {@code top-stretch|top|middle|bottom|bottom-stretch}
+     * Alignment of the notification in the viewport Valid values are
+     * {@code top-stretch|top-start|top-center|top-end|middle|bottom-start|bottom-center|bottom-end|bottom-stretch}
      * </p>
      * 
-     * @param verticalAlign
+     * @param position
      *            the String value to set
      */
-    public void setVerticalAlign(String verticalAlign) {
-        getElement().setProperty("verticalAlign",
-                verticalAlign == null ? "" : verticalAlign);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Horizontal alignment of the notification in the viewport Only applies for
-     * notifications in {@code top} or {@code bottom} containers. Valid values
-     * are {@code start|center|end} Horizontal alignment is skipped in case
-     * verticalAlign is set to {@code top-stretch|middle|bottom-stretch}
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code horizontalAlign} property from the webcomponent
-     */
-    public String getHorizontalAlign() {
-        return getElement().getProperty("horizontalAlign");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Horizontal alignment of the notification in the viewport Only applies for
-     * notifications in {@code top} or {@code bottom} containers. Valid values
-     * are {@code start|center|end} Horizontal alignment is skipped in case
-     * verticalAlign is set to {@code top-stretch|middle|bottom-stretch}
-     * </p>
-     * 
-     * @param horizontalAlign
-     *            the String value to set
-     */
-    public void setHorizontalAlign(String horizontalAlign) {
-        getElement().setProperty("horizontalAlign",
-                horizontalAlign == null ? "" : horizontalAlign);
+    public void setPosition(String position) {
+        getElement().setProperty("position", position == null ? "" : position);
     }
 
     /**

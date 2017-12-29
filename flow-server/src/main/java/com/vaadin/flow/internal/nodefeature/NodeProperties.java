@@ -82,6 +82,12 @@ public final class NodeProperties {
     /** Key for id property. */
     public static final String ID = "id";
 
+    /**
+     * The property value used on the client side only in addition to
+     * {@link #VISIBLE}.
+     */
+    public static final String VISIBILITY_BOUND_PROPERTY = "bound";
+
     private NodeProperties() {
     }
 }

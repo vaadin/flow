@@ -19,10 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -59,6 +56,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -160,7 +158,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     @Override
     public void bind(StateNode stateNode, Element htmlNode,
             BinderContext nodeFactory) {
-        assert hasSameTag(stateNode, htmlNode);
+        boolean isVisible = isVisible(stateNode);
+
+        assert hasSameTag(stateNode, htmlNode) : "Element tag name is '"
+                + htmlNode.getTagName() + "', but the required tag name is "
+                + getTag(stateNode);
 
         if (BOUND.has(stateNode)) {
             return;
@@ -175,36 +177,40 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         JsArray<EventRemover> listeners = JsCollections.array();
 
-        listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
-                property -> updateProperty(property, htmlNode),
-                createComputations(computationsCollection), stateNode));
-        listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
-                property -> updateStyleProperty(property, htmlNode),
-                createComputations(computationsCollection), stateNode));
-        listeners.push(bindMap(NodeFeatures.ELEMENT_ATTRIBUTES,
-                property -> updateAttribute(property, htmlNode),
-                createComputations(computationsCollection), stateNode));
+        if (isVisible) {
+            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
+                    property -> updateProperty(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
+            listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
+                    property -> updateStyleProperty(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
+            listeners.push(bindMap(NodeFeatures.ELEMENT_ATTRIBUTES,
+                    property -> updateAttribute(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
 
-        listeners.push(bindSynchronizedPropertyEvents(context));
+            listeners.push(bindSynchronizedPropertyEvents(context));
 
-        listeners.push(bindVirtualChildren(context));
+            listeners.push(bindVirtualChildren(context));
 
-        listeners.push(bindChildren(context));
+            listeners.push(bindChildren(context));
 
-        listeners.push(stateNode.addUnregisterListener(
-                e -> remove(listeners, context, computationsCollection)));
+            listeners.push(stateNode.addUnregisterListener(
+                    e -> remove(listeners, context, computationsCollection)));
 
-        listeners.push(bindDomEventListeners(context));
+            listeners.push(bindDomEventListeners(context));
 
-        listeners.push(bindClassList(htmlNode, stateNode));
+            listeners.push(bindClassList(htmlNode, stateNode));
 
-        listeners.push(bindClientDelegateMethods(context));
+            listeners.push(bindClientDelegateMethods(context));
 
-        listeners.push(bindPolymerEventHandlerNames(context));
+            listeners.push(bindPolymerEventHandlerNames(context));
 
-        listeners.push(bindShadowRoot(context));
+            listeners.push(bindShadowRoot(context));
 
-        bindPolymerModelProperties(stateNode, htmlNode);
+            bindPolymerModelProperties(stateNode, htmlNode);
+        }
+        listeners.push(bindVisibility(listeners, context,
+                computationsCollection, nodeFactory));
     }
 
     private native void bindPolymerModelProperties(StateNode node,
@@ -229,7 +235,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -434,6 +440,96 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         return map.addPropertyAddListener(
                 e -> bindProperty(user, e.getProperty(), bindings));
+    }
+
+    private EventRemover bindVisibility(JsArray<EventRemover> listeners,
+            BindingContext context,
+            JsArray<JsMap<String, Computation>> computationsCollection,
+            BinderContext nodeFactory) {
+        context.node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                .setValue(isVisible(context.node));
+        updateVisibility(listeners, context, computationsCollection,
+                nodeFactory);
+        return context.node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBLE)
+                .addChangeListener(event -> updateVisibility(listeners, context,
+                        computationsCollection, nodeFactory));
+    }
+
+    private boolean isVisible(StateNode node) {
+        if (!node.hasFeature(NodeFeatures.VISIBILITY_DATA)) {
+            return true;
+        }
+        NodeMap visibilityMap = node.getMap(NodeFeatures.VISIBILITY_DATA);
+        Boolean visibility = (Boolean) visibilityMap
+                .getProperty(NodeProperties.VISIBLE).getValue();
+
+        /*
+         * Absence of value or "true" means that the node should be visible. So
+         * only "false" means "hide".
+         */
+        return !Boolean.FALSE.equals(visibility);
+    }
+
+    private void updateVisibility(JsArray<EventRemover> listeners,
+            BindingContext context,
+            JsArray<JsMap<String, Computation>> computationsCollection,
+            BinderContext nodeFactory) {
+        assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
+                + context.node.getId() + " is not an Element";
+
+        Element element = (Element) context.htmlNode;
+
+        if (needsRebind(context.node) && isVisible(context.node)) {
+            remove(listeners, context, computationsCollection);
+            Reactive.addFlushListener(() -> doBind(context.node, nodeFactory));
+        } else if (isVisible(context.node)) {
+            context.node.getMap(NodeFeatures.VISIBILITY_DATA)
+                    .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                    .setValue(true);
+            WidgetUtil.updateAttribute(element, "hidden", null);
+        } else {
+            WidgetUtil.updateAttribute(element, "hidden",
+                    Boolean.TRUE.toString());
+        }
+    }
+
+    private void doBind(StateNode node, BinderContext nodeFactory) {
+        Node domNode = node.getDomNode();
+        // this will fire an event which gives a chance to run logic which
+        // needs to know when the element is completely initialized
+        node.setDomNode(null);
+        node.setDomNode(domNode);
+        nodeFactory.createAndBind(node);
+    }
+
+    /**
+     * Checks whether the {@code node} needs re-bind.
+     * <p>
+     * The node needs re-bind if it was initially invisible. As a consequence
+     * such node has not be bound. It has been bound in respect to visibility
+     * feature only (partially bound). Such node needs re-bind once it becomes
+     * visible.
+     *
+     * @param node
+     *            the node to check
+     * @return {@code true} if the node is not entirely bound and needs re-bind
+     *         later on
+     */
+    public static boolean needsRebind(StateNode node) {
+        if (!node.hasFeature(NodeFeatures.VISIBILITY_DATA)) {
+            // If there is no VISIBILITY_DATA feature then the node doesn't need
+            // re-bind
+            return false;
+        }
+        /*
+         * Absence of value or "true" means that the node doesn't need re-bind.
+         * So only "false" means "needs re-bind".
+         */
+        return Boolean.FALSE.equals(node.getMap(NodeFeatures.VISIBILITY_DATA)
+                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+                .getValue());
     }
 
     private static void bindProperty(PropertyUser user, MapProperty property,

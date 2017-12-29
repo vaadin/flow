@@ -16,7 +16,10 @@
 package com.vaadin.flow.router;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -381,5 +384,31 @@ public class Router implements RouterInterface {
     @Override
     public RouteRegistry getRegistry() {
         return registry;
+    }
+
+    /**
+     * Get all available routes.
+     * 
+     * @return RouteData for all registered routes
+     */
+    public List<RouteData> getRoutes() {
+        return Collections
+                .unmodifiableList(getRegistry().getRegisteredRoutes());
+    }
+
+    /**
+     * Get all available routes collected by parent layout.
+     * 
+     * @return map of parent url to route
+     */
+    public Map<Class<? extends RouterLayout>, List<RouteData>> getRoutesByParent() {
+        Map<Class<? extends RouterLayout>, List<RouteData>> grouped = new HashMap<>();
+        for (RouteData route : getRoutes()) {
+            List<RouteData> routeDataList = grouped.computeIfAbsent(
+                    route.getParentLayout(), key -> new ArrayList<>());
+            routeDataList.add(route);
+        }
+
+        return grouped;
     }
 }

@@ -16,10 +16,14 @@
 
 package com.vaadin.flow.internal;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,13 +31,14 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.NodeOwner;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.change.NodeDetachChange;
@@ -43,6 +48,7 @@ import com.vaadin.flow.internal.nodefeature.ElementClassList;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.VisibilityData;
 import com.vaadin.flow.shared.Registration;
 
 public class StateNodeTest {
@@ -74,6 +80,25 @@ public class StateNodeTest {
         public boolean isAttached() {
             return true;
         }
+    }
+
+    private static class TestStateTree extends StateTree {
+
+        private Set<StateNode> dirtyNodes;
+
+        public TestStateTree() {
+            super(new UI(), ElementChildrenList.class);
+        }
+
+        @Override
+        public void markAsDirty(StateNode node) {
+            super.markAsDirty(node);
+            if (dirtyNodes == null) {
+                dirtyNodes = new HashSet<>();
+            }
+            dirtyNodes.add(node);
+        }
+
     }
 
     @Test
@@ -484,5 +509,307 @@ public class StateNodeTest {
                 stateNode.isReportedFeature(ElementPropertyMap.class));
         Assert.assertFalse(
                 stateNode.isReportedFeature(ElementAttributeMap.class));
+    }
+
+    @Test
+    public void collectChanges_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
+        StateNode stateNode = createTestNode("Active node",
+                ElementPropertyMap.class, VisibilityData.class);
+
+        VisibilityData visibility = stateNode.getFeature(VisibilityData.class);
+        ElementPropertyMap properties = stateNode
+                .getFeature(ElementPropertyMap.class);
+
+        TestStateTree tree = new TestStateTree();
+
+        // attach the node to be able to get changes
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
+                stateNode);
+
+        assertCollectChanges_initiallyVisible(stateNode, properties,
+                isVisible -> {
+                    visibility.setVisible(isVisible);
+                    stateNode.updateActiveState();
+                });
+    }
+
+    @Test
+    public void collectChanges_inactivateViaParent_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
+        StateNode stateNode = createTestNode("Active node",
+                ElementPropertyMap.class, VisibilityData.class);
+
+        StateNode parent = createTestNode("Parent node",
+                ElementPropertyMap.class, VisibilityData.class,
+                ElementChildrenList.class);
+
+        parent.getFeature(ElementChildrenList.class).add(0, stateNode);
+
+        VisibilityData visibility = parent.getFeature(VisibilityData.class);
+        ElementPropertyMap properties = stateNode
+                .getFeature(ElementPropertyMap.class);
+
+        TestStateTree tree = new TestStateTree();
+
+        // attach the node to be able to get changes
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
+
+        assertCollectChanges_initiallyVisible(stateNode, properties,
+                isVisible -> {
+                    visibility.setVisible(isVisible);
+                    parent.updateActiveState();
+                });
+    }
+
+    @Test
+    public void collectChanges_initiallyInactiveElement_sendOnlyDisalowAndReportedFeatures_sendAllChangesWhenActive() {
+        Element element = ElementFactory.createAnchor();
+
+        StateNode stateNode = element.getNode();
+
+        VisibilityData visibility = stateNode.getFeature(VisibilityData.class);
+        ElementPropertyMap properties = stateNode
+                .getFeature(ElementPropertyMap.class);
+
+        TestStateTree tree = new TestStateTree();
+
+        // attach the node to be able to get changes
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
+                stateNode);
+
+        assertCollectChanges_initiallyInactive(stateNode, properties,
+                isVisible -> {
+                    visibility.setVisible(isVisible);
+                    stateNode.updateActiveState();
+                });
+    }
+
+    @Test
+    public void collectChanges_initiallyInactiveViaParentElement_sendOnlyDisalowAndReportedFeatures_sendAllChangesWhenActive() {
+        Element element = ElementFactory.createAnchor();
+
+        StateNode stateNode = element.getNode();
+
+        StateNode parent = createTestNode("Parent node",
+                ElementPropertyMap.class, VisibilityData.class,
+                ElementChildrenList.class);
+
+        parent.getFeature(ElementChildrenList.class).add(0, stateNode);
+
+        VisibilityData visibility = parent.getFeature(VisibilityData.class);
+
+        ElementPropertyMap properties = stateNode
+                .getFeature(ElementPropertyMap.class);
+
+        TestStateTree tree = new TestStateTree();
+
+        // attach the node to be able to get changes
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
+
+        assertCollectChanges_initiallyInactive(stateNode, properties,
+                isVisible -> {
+                    visibility.setVisible(isVisible);
+                    parent.updateActiveState();
+                });
+    }
+
+    private void assertCollectChanges_initiallyInactive(StateNode stateNode,
+            ElementPropertyMap properties, Consumer<Boolean> activityUpdater) {
+        VisibilityData visibility = stateNode.getFeature(VisibilityData.class);
+
+        activityUpdater.accept(false);
+
+        // activity updater may modify visibility of the node itself or its
+        // ancestor. The number of changes will depend on whether the subject
+        // node is visible or not
+        boolean visibilityChanged = !visibility.isVisible();
+
+        properties.setProperty("foo", "bar");
+
+        TestStateTree tree = (TestStateTree) stateNode.getOwner();
+
+        tree.dirtyNodes.clear();
+
+        List<NodeChange> changes = new ArrayList<>();
+        stateNode.collectChanges(changes::add);
+
+        if (visibilityChanged) {
+            Assert.assertEquals(0, tree.dirtyNodes.size());
+        } else {
+            // the target node should be marked as dirty because it's visible
+            // but its parent is inactive
+            Assert.assertEquals(1, tree.dirtyNodes.size());
+            tree.dirtyNodes.contains(stateNode);
+        }
+
+        Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
+        // node is attached event
+        Assert.assertThat(changes.get(0),
+                CoreMatchers.instanceOf(NodeAttachChange.class));
+        // tag update (ElementData is reported feature) and possible visibility
+        // update
+        Assert.assertThat(changes.get(1),
+                CoreMatchers.instanceOf(MapPutChange.class));
+
+        MapPutChange change = (MapPutChange) changes.get(1);
+        MapPutChange tagChange;
+        if (visibilityChanged) {
+            Assert.assertThat(changes.get(2),
+                    CoreMatchers.instanceOf(MapPutChange.class));
+            tagChange = change.getFeature().equals(ElementData.class) ? change
+                    : (MapPutChange) changes.get(2);
+            change = tagChange.equals(change) ? (MapPutChange) changes.get(2)
+                    : change;
+        } else {
+            tagChange = (MapPutChange) changes.get(1);
+        }
+
+        Assert.assertEquals(Element.get(stateNode).getTag(),
+                tagChange.getValue());
+
+        if (visibilityChanged) {
+            Assert.assertEquals(Boolean.FALSE, change.getValue());
+        }
+
+        changes.clear();
+
+        // now the node becomes active and should send all values from all
+        // features (including values that has not been sent previously).
+
+        activityUpdater.accept(true);
+
+        properties.setProperty("baz", "foo");
+        stateNode.collectChanges(changes::add);
+
+        Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
+        // node is attached event
+        // property updates and possible visibility update
+        Assert.assertThat(changes.get(1),
+                CoreMatchers.instanceOf(MapPutChange.class));
+
+        Optional<MapPutChange> visibilityChange = changes.stream()
+                .filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast).filter(chang -> chang
+                        .getFeature().equals(VisibilityData.class))
+                .findFirst();
+
+        if (visibilityChanged) {
+            Assert.assertTrue(visibilityChange.isPresent());
+            Assert.assertTrue((Boolean) visibilityChange.get().getValue());
+            changes.remove(visibilityChange.get());
+        }
+
+        Optional<MapPutChange> fooUpdate = changes.stream()
+                .filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(chang -> chang.getKey().equals("foo")).findFirst();
+
+        Assert.assertTrue(fooUpdate.isPresent());
+        Assert.assertEquals("bar", fooUpdate.get().getValue());
+
+        changes.remove(fooUpdate.get());
+
+        change = (MapPutChange) changes.get(0);
+        Assert.assertEquals("foo", change.getValue());
+        Assert.assertEquals("baz", change.getKey());
+
+        // Don't make any changes, check that there are no changes collected
+        changes.clear();
+        stateNode.collectChanges(changes::add);
+
+        Assert.assertEquals(0, changes.size());
+    }
+
+    private void assertCollectChanges_initiallyVisible(StateNode stateNode,
+            ElementPropertyMap properties, Consumer<Boolean> activityUpdater) {
+        VisibilityData visibility = stateNode.getFeature(VisibilityData.class);
+
+        // check that normal flow works as it should (without any inactivity)
+        properties.setProperty("foo", "bar");
+
+        List<NodeChange> changes = new ArrayList<>();
+        stateNode.collectChanges(changes::add);
+
+        Assert.assertEquals(2, changes.size());
+        // node is attached event
+        Assert.assertThat(changes.get(0),
+                CoreMatchers.instanceOf(NodeAttachChange.class));
+        // the property update event
+        Assert.assertThat(changes.get(1),
+                CoreMatchers.instanceOf(MapPutChange.class));
+
+        changes.clear();
+
+        // now make the node inactive via the VisibiltyData
+
+        activityUpdater.accept(false);
+
+        // now the node becomes inactive and should send only changes for
+        // VisibiltyData, but don't loose changes for other features
+
+        properties.setProperty("foo", "baz");
+
+        TestStateTree tree = (TestStateTree) stateNode.getOwner();
+        tree.dirtyNodes.clear();
+
+        stateNode.collectChanges(changes::add);
+
+        // activity updater may modify visibility of the node itself or its
+        // ancestor. The number of changes will depend on whether the subject
+        // node is visible or not
+        boolean visibilityChanged = !visibility.isVisible();
+
+        // The only possible change is visibility value change
+        Assert.assertEquals(visibilityChanged ? 1 : 0, changes.size());
+
+        MapPutChange change;
+        if (visibilityChanged) {
+            Assert.assertEquals(0, tree.dirtyNodes.size());
+            Assert.assertThat(changes.get(0),
+                    CoreMatchers.instanceOf(MapPutChange.class));
+            change = (MapPutChange) changes.get(0);
+            Assert.assertEquals(VisibilityData.class, change.getFeature());
+        } else {
+            // the target node should be marked as dirty because it's visible
+            // but its parent is inactive
+            Assert.assertEquals(1, tree.dirtyNodes.size());
+            tree.dirtyNodes.contains(stateNode);
+        }
+
+        changes.clear();
+
+        // make the node active again
+        activityUpdater.accept(true);
+
+        stateNode.collectChanges(changes::add);
+
+        // Two possible changes: probable visibility value change and property
+        // update change
+        Assert.assertEquals(visibilityChanged ? 2 : 1, changes.size());
+        Assert.assertThat(changes.get(0),
+                CoreMatchers.instanceOf(MapPutChange.class));
+        change = (MapPutChange) changes.get(0);
+
+        MapPutChange propertyChange;
+
+        if (visibilityChanged) {
+            MapPutChange visibilityChange = VisibilityData.class
+                    .equals(change.getFeature()) ? change
+                            : (MapPutChange) changes.get(1);
+            propertyChange = change.equals(visibilityChange)
+                    ? (MapPutChange) changes.get(1)
+                    : change;
+        } else {
+            propertyChange = change;
+        }
+
+        Assert.assertEquals(ElementPropertyMap.class,
+                propertyChange.getFeature());
+        assertEquals("baz", propertyChange.getValue());
+
+        // Don't make any changes, check that there are no changes collected
+        changes.clear();
+        stateNode.collectChanges(changes::add);
+
+        Assert.assertEquals(0, changes.size());
     }
 }

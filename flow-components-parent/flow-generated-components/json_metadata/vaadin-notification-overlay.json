@@ -1,7 +1,7 @@
 {
   "name": "Vaadin.VaadinNotificationOverlay",
   "tag": "vaadin-notification-overlay",
-  "baseUrl": "vaadin-notification/vaadin-notification.html",
+  "baseUrl": "vaadin-notification/src/vaadin-notification.html",
   "version": "UNKNOWN",
   "properties": [
     {
@@ -10,120 +10,23 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "",
-      "notify": true
-    },
-    {
-      "name": "template",
-      "type": [
-        "OBJECT"
-      ],
-      "objectType": [],
-      "description": "",
-      "notify": true
-    },
-    {
-      "name": "content",
-      "type": [
-        "OBJECT"
-      ],
-      "objectType": [],
-      "description": "",
-      "notify": true
-    },
-    {
-      "name": "withBackdrop",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": ""
-    },
-    {
-      "name": "modeless",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "When true the overlay won't disable the main content, showing\nit doesn’t change the functionality of the user interface.\n           "
-    },
-    {
-      "name": "focusTrap",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "When true move focus to the first focusable element in the overlay,\nor to the overlay if there are no focusable elements.\n           "
+      "description": "True when the overlay is opened\n             "
     }
   ],
-  "methods": [
-    {
-      "name": "close",
-      "description": "",
-      "parameters": [
-        {
-          "name": "sourceEvent",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        }
-      ],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "connectedCallback",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "disconnectedCallback",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    }
+  "methods": [],
+  "events": [],
+  "slots": [
+    "top-stretch",
+    "top-start",
+    "top-center",
+    "top-end",
+    "middle",
+    "bottom-start",
+    "bottom-center",
+    "bottom-end",
+    "bottom-stretch"
   ],
-  "events": [
-    {
-      "name": "vaadin-overlay-close",
-      "description": "vaadin-overlay-close\nfired before the `vaadin-overlay` will be closed. If canceled the closing of the overlay is canceled as well.",
-      "properties": []
-    },
-    {
-      "name": "vaadin-overlay-escape-press",
-      "description": "vaadin-overlay-escape-press\nfired before the `vaadin-overlay` will be closed on ESC button press. If canceled the closing of the overlay is canceled as well.",
-      "properties": []
-    },
-    {
-      "name": "vaadin-overlay-open",
-      "description": "vaadin-overlay-open\nfired after the `vaadin-overlay` is opened.",
-      "properties": []
-    },
-    {
-      "name": "vaadin-overlay-outside-click",
-      "description": "vaadin-overlay-outside-click\nfired before the `vaadin-overlay` will be closed on outside click. If canceled the closing of the overlay is canceled as well.",
-      "properties": []
-    },
-    {
-      "name": "opened-changed",
-      "description": "Fired when the `opened` property changes.",
-      "properties": []
-    },
-    {
-      "name": "template-changed",
-      "description": "Fired when the `template` property changes.",
-      "properties": []
-    },
-    {
-      "name": "content-changed",
-      "description": "Fired when the `content` property changes.",
-      "properties": []
-    }
-  ],
-  "slots": [],
   "behaviors": [],
   "mixins": [],
-  "description": "The overlay element.\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html)\nfor `<vaadin-notification-overlay>` parts."
+  "description": "The notification overlay element."
 }
