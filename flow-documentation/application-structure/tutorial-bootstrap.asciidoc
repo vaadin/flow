@@ -208,6 +208,7 @@ public class CustomBootstrapListener implements BootstrapListener {
 Now this listener should be added to a `ServiceInitEvent` which is sent when a Vaadin service is initialized. Take a look on the <<../miscellaneous/tutorial-service-init-listener#,ServiceInitListener tutorial>> on how to configure it.
 
 == Adding static HTML contents
+
 There is another common case that you have html contents to be appended to your page, for an example you will have a `favicon`. There are a few ways of doing this:
 
  - using `InitialPageSettings#addLink()`
@@ -256,6 +257,7 @@ public class Layout3 extends Div
 ----
 
 But most commonly, `favicon` contains quite a lot small icons, in this case, you can see that you will easily do a lot of hard coding. To avoid this, we are *highly suggest* you to move all the html contents into a file, (e.g. `favicon.html`) and inline this file in your `PageConfigurator`
+
 [source,java]
 ----
 public class Layout4 extends Div implements RouterLayout, PageConfigurator {
