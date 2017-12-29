@@ -156,14 +156,14 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
         // The property value has not changed
         Assert.assertEquals("bar", subTemplateProp.getText());
 
-        // make template invisible
+        // make template visible
         findElement(By.id("sub-template-visibility")).click();
 
         // One more check : the property value is still the same
         Assert.assertEquals("bar", subTemplateProp.getText());
 
-        // change the sub template property via client side one more time (not
-        // the component is visible)
+        // change the sub template property via client side one more time
+        // (now the component is visible)
         findElement(By.id("client-side-update-property")).click();
 
         // Now the property value should be changed

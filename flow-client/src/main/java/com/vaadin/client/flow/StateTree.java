@@ -332,7 +332,7 @@ public class StateTree {
     /**
      * Checks whether the {@code node} is active.
      * <p>
-     * The node is active if it's visible and all its ascendant are visible.
+     * The node is active if it's visible and all its ancestors are visible.
      *
      * @param node
      *            the node whose activity is tested
