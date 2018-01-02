@@ -146,6 +146,11 @@
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
+                <artifactId>github-com-vaadin-vaadin-valo-styles</artifactId>
+                <version>v2.0.0-alpha6</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-control-state-mixin</artifactId>
                 <version>1.1.5</version>
             </dependency>
