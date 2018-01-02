@@ -53,4 +53,13 @@ public interface NodeOwner extends Serializable {
      *            the node to be marked as dirty
      */
     void markAsDirty(StateNode node);
+
+    /**
+     * Check if given node is registered to this node owner.
+     * 
+     * @param node
+     *            node to check registration status for
+     * @return true if node is registered
+     */
+    boolean hasNode(StateNode node);
 }
