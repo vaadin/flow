@@ -30,7 +30,7 @@ import com.vaadin.flow.function.ValueProvider;
 /**
  * Class used internally by components that support {@link TemplateRenderer}. It
  * contains helper methods to register events triggered by rendered templates.
- * 
+ *
  * @author Vaadin Ltd.
  *
  */
@@ -45,7 +45,7 @@ public class TemplateRendererUtil {
      * {@link TemplateRenderer#getEventHandlers()} are processed and properly
      * configured to trigger messages from the client to the server, so event
      * handlers can catch the events and execute custom logic.
-     * 
+     *
      * @param <T>
      *            the type of the renderer and the associated keyMapper
      * @param renderer
@@ -75,14 +75,19 @@ public class TemplateRendererUtil {
              * the template element must have the "__dataHost" property set with
              * the column element.
              */
-            templateDataHost.getNode().runWhenAttached(
-                    ui -> processTemplateRendererEventHandlers(ui,
-                            templateDataHost, eventHandlers, keyMapper));
+            templateDataHost.getNode()
+                    .runWhenAttached(ui -> ui.getInternals().getStateTree()
+                            .beforeClientResponse(templateDataHost.getNode(),
+                                    () -> processTemplateRendererEventHandlers(
+                                            ui, templateDataHost, eventHandlers,
+                                            keyMapper)));
 
-            contentTemplate.getNode()
-                    .runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                            "$0.__dataHost = $1;", contentTemplate,
-                            templateDataHost));
+            contentTemplate.getNode().runWhenAttached(
+                    ui -> ui.getInternals().getStateTree().beforeClientResponse(
+                            templateDataHost.getNode(),
+                            () -> ui.getPage().executeJavaScript(
+                                    "$0.__dataHost = $1;", contentTemplate,
+                                    templateDataHost)));
         }
     }
 
@@ -126,9 +131,9 @@ public class TemplateRendererUtil {
                                 handlerName, itemKey);
             }
         } else {
-            LoggerFactory.getLogger(TemplateRendererUtil.class.getName())
-                    .info("Received an event for the handler '{}' without any data. Ignoring event.",
-                            handlerName);
+            LoggerFactory.getLogger(TemplateRendererUtil.class.getName()).info(
+                    "Received an event for the handler '{}' without any data. Ignoring event.",
+                    handlerName);
         }
     }
 

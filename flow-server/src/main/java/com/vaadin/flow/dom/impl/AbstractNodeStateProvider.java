@@ -135,14 +135,17 @@ public abstract class AbstractNodeStateProvider
         StateNode proposedNode = BasicElementStateProvider
                 .createStateNode(tagName);
 
-        node.runWhenAttached(ui -> {
-            node.getFeature(AttachExistingElementFeature.class).register(
-                    getNode(node), previousSibling, proposedNode, callback);
-            ui.getPage().executeJavaScript(
-                    "this.attachExistingElement($0, $1, $2, $3);",
-                    getNode(node), previousSibling, tagName,
-                    proposedNode.getId());
-        });
+        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
+                .beforeClientResponse(node, () -> {
+                    node.getFeature(AttachExistingElementFeature.class)
+                            .register(getNode(node), previousSibling,
+                                    proposedNode, callback);
+                    ui.getPage().executeJavaScript(
+                            "this.attachExistingElement($0, $1, $2, $3);",
+                            getNode(node), previousSibling, tagName,
+                            proposedNode.getId());
+                }));
+
     }
 
     @Override
