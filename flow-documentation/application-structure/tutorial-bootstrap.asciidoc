@@ -61,7 +61,7 @@ The configurations available for inlining contents are:
 
  - TargetElement [*HEAD*, BODY]
  - Position [*APPEND*, PREPEND]
- - Wrapping [*AUTOMATIC*, HTML, CSS, SCRIPT]
+ - Wrapping [*AUTOMATIC*, NONE, CSS, SCRIPT]
 
 [source,java]
 ----
@@ -112,7 +112,7 @@ public class MainLayout extends Div
     @Override
     public void configurePage(InitialPageSettings settings) {
         settings.addInlineFromFile(InitialPageSettings.Position.PREPEND,
-                "inline.js", InitialPageSettings.Wrapping.JAVASCRIPT);
+                "inline.js", InitialPageSettings.WrapMode.JAVASCRIPT);
 
         settings.addMetaTag("og:title", "The Rock");
         settings.addMetaTag("og:type", "video.movie");
@@ -154,7 +154,7 @@ public static class InitialPageConfiguratorBodyStyle extends Div
     @Override
     public void configurePage(InitialPageSettings settings) {
         settings.addInlineWithContents("body {width: 100vw; height:100vh;}",
-                InitialPageSettings.Wrapping.STYLESHEET);
+                InitialPageSettings.WrapMode.STYLESHEET);
     }
 }
 ----
@@ -236,7 +236,7 @@ public class Layout2 extends Div implements RouterLayout, PageConfigurator {
     public void configurePage(InitialPageSettings settings) {
         settings.addInlineWithContents(
                 "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">",
-                InitialPageSettings.Wrapping.NONE);
+                InitialPageSettings.WrapMode.NONE);
     }
 }
 ----
@@ -266,7 +266,7 @@ public class Layout4 extends Div implements RouterLayout, PageConfigurator {
         @Override
         public void configurePage(InitialPageSettings settings) {
             settings.addInlineFromFile("your-content.html",
-                    InitialPageSettings.Wrapping.NONE);
+                    InitialPageSettings.WrapMode.NONE);
         }
     }
 ----
