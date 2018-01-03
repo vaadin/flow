@@ -189,6 +189,12 @@ public class StateTree implements NodeOwner {
         }
     }
 
+    @Override
+    public boolean hasNode(StateNode node) {
+        assert node.getOwner() == this;
+        return idToNode.containsKey(node.getId());
+    }
+
     /**
      * Finds a node with the given id.
      *

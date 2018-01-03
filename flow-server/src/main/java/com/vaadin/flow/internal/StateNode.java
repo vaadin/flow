@@ -144,6 +144,9 @@ public class StateNode implements Serializable {
      *            is not attached to another node
      */
     public void setParent(StateNode parent) {
+        if(hasDetached()) {
+            return;
+        }
         boolean attachedBefore = isAttached();
         boolean attachedAfter = false;
 
@@ -174,6 +177,10 @@ public class StateNode implements Serializable {
         } else {
             this.parent = parent;
         }
+    }
+
+    private boolean hasDetached() {
+        return isAttached() && !owner.hasNode(this);
     }
 
     private boolean isAncestorOf(StateNode node) {

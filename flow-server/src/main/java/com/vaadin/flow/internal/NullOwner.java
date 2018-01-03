@@ -57,4 +57,10 @@ public class NullOwner implements NodeOwner {
     public void markAsDirty(StateNode node) {
         assert node.getOwner() == this;
     }
+
+    @Override
+    public boolean hasNode(StateNode node) {
+        assert node.getOwner() == this;
+        return true;
+    }
 }

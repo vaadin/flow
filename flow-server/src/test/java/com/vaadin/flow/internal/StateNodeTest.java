@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.internal;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -348,7 +346,8 @@ public class StateNodeTest {
 
         setParent(child, null);
 
-        Assert.assertTrue(triggered.get());
+        Assert.assertTrue("Detach listener was not triggered.",
+                triggered.get());
     }
 
     @Test
@@ -365,7 +364,42 @@ public class StateNodeTest {
                 .addDetachListener(() -> triggered.set(true));
         registrationHandle.remove();
 
-        Assert.assertFalse(triggered.get());
+        setParent(child, null);
+
+        Assert.assertFalse(
+                "Detach listener was triggered even though handler was removed.",
+                triggered.get());
+    }
+
+    @Test
+    public void testDetachListener_removesNode_notUnregisteredTwice() {
+        StateTree tree = createStateTree();
+        StateNode root = new RootStateNode();
+        setParent(root, tree.getRootNode());
+
+        TestStateNode child = new TestStateNode();
+
+        setParent(child, root);
+        Assert.assertTrue(child.isAttached());
+
+        AtomicBoolean triggered = new AtomicBoolean(false);
+
+        child.addDetachListener(() -> {
+            Assert.assertTrue(
+                    "Child node should still have a parent and be been seen as attached",
+                    child.isAttached());
+            Assert.assertFalse("Child node should have been unregistered",
+                    tree.hasNode(child));
+
+            child.setParent(null);
+
+            triggered.set(true);
+        });
+
+        setParent(child, null);
+
+        Assert.assertTrue("Detach listener was not triggered.",
+                triggered.get());
     }
 
     public static StateNode createEmptyNode() {
@@ -804,7 +838,7 @@ public class StateNodeTest {
 
         Assert.assertEquals(ElementPropertyMap.class,
                 propertyChange.getFeature());
-        assertEquals("baz", propertyChange.getValue());
+        Assert.assertEquals("baz", propertyChange.getValue());
 
         // Don't make any changes, check that there are no changes collected
         changes.clear();
