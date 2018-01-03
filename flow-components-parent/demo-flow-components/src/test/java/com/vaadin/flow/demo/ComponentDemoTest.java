@@ -19,7 +19,7 @@ import org.junit.Before;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 /**
  * Base class for the integration tests of this project.

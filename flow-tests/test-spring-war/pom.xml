@@ -36,27 +36,27 @@
             <dependency>
                 <groupId>org.seleniumhq.selenium</groupId>
                 <artifactId>selenium-api</artifactId>
-                <version>3.4.0</version>
+                <version>3.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.seleniumhq.selenium</groupId>
                 <artifactId>selenium-chrome-driver</artifactId>
-                <version>3.4.0</version>
+                <version>3.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.seleniumhq.selenium</groupId>
                 <artifactId>selenium-server</artifactId>
-                <version>3.4.0</version>
+                <version>3.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.seleniumhq.selenium</groupId>
                 <artifactId>selenium-java</artifactId>
-                <version>3.4.0</version>
+                <version>3.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.seleniumhq.selenium</groupId>
                 <artifactId>selenium-remote-driver</artifactId>
-                <version>3.4.0</version>
+                <version>3.6.0</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>commons-logging</artifactId>

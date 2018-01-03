@@ -25,7 +25,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.components.it.binder.BinderComponentsValidationView;
 import com.vaadin.flow.tests.components.AbstractComponentIT;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 /**
  * @author Vaadin Ltd.

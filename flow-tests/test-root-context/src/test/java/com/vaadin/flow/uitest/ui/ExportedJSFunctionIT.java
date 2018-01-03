@@ -6,7 +6,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.server.Version;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 public class ExportedJSFunctionIT extends ChromeBrowserTest {
     @Test

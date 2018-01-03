@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.demo;
 
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 /**
  * Base class for the component integration tests for views that use tabs.

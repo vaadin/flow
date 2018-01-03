@@ -53,6 +53,23 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
+     * Returns true if an element can be found from the driver with given
+     * selector.
+     * 
+     * @param by
+     *            the selector used to find element
+     * @return true if the element can be found
+     */
+    public boolean isElementPresent(By by) {
+        try {
+            WebElement element = getDriver().findElement(by);
+            return element != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
      * Waits the given number of seconds for the given condition to become
      * false. Use e.g. as {@link #waitUntilNot(ExpectedCondition)}.
      *
