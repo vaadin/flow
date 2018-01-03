@@ -27,8 +27,8 @@ import java.util.ServiceLoader;
  * {@link ServiceLoader}. This means that all implementations must have a
  * zero-argument constructor and the fully qualified name of the implementation
  * class must be listed on a separate line in a
- * META-INF/services/com.vaadin.server.VaadinServiceInitListener file present in
- * the jar file containing the implementation class.
+ * META-INF/services/com.vaadin.flow.server.VaadinServiceInitListener file
+ * present in the jar file containing the implementation class.
  * <p>
  * Integrations for specific runtime environments, such as OSGi or Spring, might
  * also provide other ways of discovering listeners.
