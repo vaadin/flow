@@ -61,7 +61,7 @@ The configurations available for inlining contents are:
 
  - TargetElement [*HEAD*, BODY]
  - Position [*APPEND*, PREPEND]
- - Wrapping [*AUTOMATIC*, HTML, CSS, SCRIPT]
+ - Wrapping [*AUTOMATIC*, NONE, STYLESHEET, JAVASCRIPT]
 
 [source,java]
 ----
@@ -73,7 +73,7 @@ public class MyRoot extends Div {
 
 @Inline("initialization.js")
 @Inline("initial_style.css")
-@Inline(value = "important_styles", wrapping = Inline.Wrapping.CSS)
+@Inline(value = "important_styles", wrapping = Inline.Wrapping.STYLESHEET)
 public class MyInline extends Div implements RouterLayout {
 }
 ----
@@ -112,7 +112,7 @@ public class MainLayout extends Div
     @Override
     public void configurePage(InitialPageSettings settings) {
         settings.addInlineFromFile(InitialPageSettings.Position.PREPEND,
-                "inline.js", Dependency.Type.JAVASCRIPT);
+                "inline.js", InitialPageSettings.WrapMode.JAVASCRIPT);
 
         settings.addMetaTag("og:title", "The Rock");
         settings.addMetaTag("og:type", "video.movie");
@@ -157,7 +157,7 @@ public static class InitialPageConfiguratorBodyStyle extends Div
     @Override
     public void configurePage(InitialPageSettings settings) {
         settings.addInlineWithContents("body {width: 100vw; height:100vh;}",
-                Dependency.Type.STYLESHEET);
+                InitialPageSettings.WrapMode.STYLESHEET);
     }
 }
 ----
@@ -239,7 +239,7 @@ public class Layout2 extends Div implements RouterLayout, PageConfigurator {
     public void configurePage(InitialPageSettings settings) {
         settings.addInlineWithContents(
                 "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">",
-                Dependency.Type.HTML_IMPORT);
+                InitialPageSettings.WrapMode.NONE);
     }
 }
 ----
@@ -269,7 +269,7 @@ public class Layout4 extends Div implements RouterLayout, PageConfigurator {
         @Override
         public void configurePage(InitialPageSettings settings) {
             settings.addInlineFromFile("your-content.html",
-                    Dependency.Type.HTML_IMPORT);
+                    InitialPageSettings.WrapMode.NONE);
         }
     }
 ----

@@ -47,20 +47,12 @@ public class InlineTargets {
      *            the request that is handled
      */
     public void addInlineDependency(Inline inline, VaadinRequest request) {
-        Dependency.Type type;
+        Inline.Wrapping type;
         // Determine the type as given or try to automatically decide
-        switch (inline.wrapping()) {
-        case CSS:
-            type = Dependency.Type.STYLESHEET;
-            break;
-        case HTML:
-            type = Dependency.Type.HTML_IMPORT;
-            break;
-        case SCRIPT:
-            type = Dependency.Type.JAVASCRIPT;
-            break;
-        default:
+        if (inline.wrapping().equals(Inline.Wrapping.AUTOMATIC)) {
             type = determineDependencyType(inline);
+        } else {
+            type = inline.wrapping();
         }
 
         JsonObject dependency = Json.createObject();
@@ -79,14 +71,14 @@ public class InlineTargets {
         }
     }
 
-    private Dependency.Type determineDependencyType(Inline inline) {
-        Dependency.Type type;
+    private Inline.Wrapping determineDependencyType(Inline inline) {
+        Inline.Wrapping type;
         if (inline.value().endsWith(".js")) {
-            type = Dependency.Type.JAVASCRIPT;
+            type = Inline.Wrapping.JAVASCRIPT;
         } else if (inline.value().endsWith(".css")) {
-            type = Dependency.Type.STYLESHEET;
+            type = Inline.Wrapping.STYLESHEET;
         } else {
-            type = Dependency.Type.HTML_IMPORT;
+            type = Inline.Wrapping.NONE;
         }
         return type;
     }

@@ -44,6 +44,13 @@ public class InitialPageSettings {
         PREPEND, APPEND
     }
 
+    /**
+     * Content wrapping mode enum.
+     */
+    public enum WrapMode {
+        NONE, JAVASCRIPT, STYLESHEET
+    }
+
     private final VaadinRequest request;
     private final UI ui;
     private final AfterNavigationEvent afterNavigationEvent;
@@ -143,7 +150,7 @@ public class InitialPageSettings {
      * @param type
      *            dependency type
      */
-    public void addInlineFromFile(String file, Dependency.Type type) {
+    public void addInlineFromFile(String file, WrapMode type) {
         addInlineFromFile(Position.APPEND, file, type);
     }
 
@@ -158,7 +165,7 @@ public class InitialPageSettings {
      *            dependency type
      */
     public void addInlineFromFile(Position position, String file,
-            Dependency.Type type) {
+            WrapMode type) {
         JsonObject prepend = createInlineObject(type);
         prepend.put(Dependency.KEY_CONTENTS,
                 BootstrapUtils.getDependencyContents(request, file));
@@ -173,7 +180,7 @@ public class InitialPageSettings {
      * @param type
      *            dependency type
      */
-    public void addInlineWithContents(String contents, Dependency.Type type) {
+    public void addInlineWithContents(String contents, WrapMode type) {
         addInlineWithContents(Position.APPEND, contents, type);
     }
 
@@ -188,7 +195,7 @@ public class InitialPageSettings {
      *            dependency type
      */
     public void addInlineWithContents(Position position, String contents,
-            Dependency.Type type) {
+            WrapMode type) {
         JsonObject prepend = createInlineObject(type);
         prepend.put(Dependency.KEY_CONTENTS, contents);
         getInline(position).add(prepend);
@@ -358,7 +365,7 @@ public class InitialPageSettings {
         getElement(position).add(meta);
     }
 
-    private JsonObject createInlineObject(Dependency.Type type) {
+    private JsonObject createInlineObject(WrapMode type) {
         JsonObject prepend = Json.createObject();
         prepend.put(Dependency.KEY_TYPE, type.toString());
         prepend.put("LoadMode", LoadMode.INLINE.toString());

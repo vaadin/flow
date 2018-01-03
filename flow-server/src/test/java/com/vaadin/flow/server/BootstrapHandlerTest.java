@@ -99,7 +99,7 @@ public class BootstrapHandlerTest {
             settings.addInlineWithContents(InitialPageSettings.Position.PREPEND,
                     "window.messages = window.messages || [];\n"
                             + "window.messages.push(\"content script\");",
-                    Dependency.Type.JAVASCRIPT);
+                    InitialPageSettings.WrapMode.JAVASCRIPT);
         }
     }
 
@@ -110,7 +110,7 @@ public class BootstrapHandlerTest {
         @Override
         public void configurePage(InitialPageSettings settings) {
             settings.addInlineFromFile(InitialPageSettings.Position.PREPEND,
-                    "inline.js", Dependency.Type.JAVASCRIPT);
+                    "inline.js", InitialPageSettings.WrapMode.JAVASCRIPT);
         }
     }
 
@@ -120,11 +120,11 @@ public class BootstrapHandlerTest {
             implements PageConfigurator {
         @Override
         public void configurePage(InitialPageSettings settings) {
-            settings.addInlineFromFile("inline.js", Dependency.Type.JAVASCRIPT);
+            settings.addInlineFromFile("inline.js", InitialPageSettings.WrapMode.JAVASCRIPT);
             settings.addInlineFromFile("inline.html",
-                    Dependency.Type.HTML_IMPORT);
+                    InitialPageSettings.WrapMode.NONE);
             settings.addInlineFromFile("inline.css",
-                    Dependency.Type.STYLESHEET);
+                    InitialPageSettings.WrapMode.STYLESHEET);
         }
     }
 
@@ -180,7 +180,7 @@ public class BootstrapHandlerTest {
         public void configurePage(InitialPageSettings settings) {
             settings.addInlineWithContents(
                     "body {width: 100vw; height:100vh; margin:0;}",
-                    Dependency.Type.STYLESHEET);
+                    InitialPageSettings.WrapMode.STYLESHEET);
         }
     }
 
@@ -256,7 +256,7 @@ public class BootstrapHandlerTest {
 
     @Route("")
     @Tag(Tag.DIV)
-    @Inline(value = "inline.js", wrapping = Inline.Wrapping.CSS)
+    @Inline(value = "inline.js", wrapping = Inline.Wrapping.STYLESHEET)
     public static class ForcedWrapping extends Component {
     }
 
@@ -542,11 +542,11 @@ public class BootstrapHandlerTest {
                 allElements.get(allElements.size() - 3).toString());
         Assert.assertEquals(
                 "File html should have been appended to head element",
-                "<span hidden><script type=\"text/javascript\">\n"
+                "<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
-                        + "</script></span>",
+                        + "</script>",
                 allElements.get(allElements.size() - 2).toString());
         Assert.assertEquals(
                 "File css should have been appended to head element",
@@ -700,11 +700,11 @@ public class BootstrapHandlerTest {
                 allElements.get(allElements.size() - 3).toString());
         Assert.assertEquals(
                 "File html should have been appended to head element",
-                "<span hidden><script type=\"text/javascript\">\n"
+                "<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
-                        + "</script></span>",
+                        + "</script>",
                 allElements.get(allElements.size() - 2).toString());
         Assert.assertEquals(
                 "File css should have been appended to head element",
@@ -734,11 +734,11 @@ public class BootstrapHandlerTest {
                 allElements.get(1).toString());
         Assert.assertEquals(
                 "File html should have been prepended to head element",
-                "<span hidden><script type=\"text/javascript\">\n"
+                "<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
-                        + "</script></span>",
+                        + "</script>",
                 allElements.get(2).toString());
         Assert.assertEquals(
                 "File css should have been prepended to head element",
@@ -770,11 +770,11 @@ public class BootstrapHandlerTest {
                 allElements.get(allElements.size() - 3).toString());
         Assert.assertEquals(
                 "File html should have been appended to body element",
-                "<span hidden><script type=\"text/javascript\">\n"
+                "<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
-                        + "</script></span>",
+                        + "</script>",
                 allElements.get(allElements.size() - 2).toString());
         Assert.assertEquals(
                 "File javascript should have been appended to body element",
@@ -801,11 +801,11 @@ public class BootstrapHandlerTest {
                 allElements.get(1).toString());
         Assert.assertEquals(
                 "File html should have been prepended to body element",
-                "<span hidden><script type=\"text/javascript\">\n"
+                "<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
-                        + "</script></span>",
+                        + "</script>",
                 allElements.get(2).toString());
         Assert.assertEquals(
                 "File css should have been prepended to body element",

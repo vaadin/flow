@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -32,13 +30,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
@@ -63,6 +64,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -95,6 +97,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String ES6_COLLECTIONS = "//<![CDATA[\n"
             + readResource("es6-collections.js") + "//]]>";
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
+
+    private static final String CAPTION = "caption";
+    private static final String MESSAGE = "message";
+    private static final String URL = "url";
 
     static String clientEngineFile = readClientEngine();
 
@@ -371,17 +377,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             Element head, Element body, InlineTargets targets) {
         targets.getInlineHead(Inline.Position.PREPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(head::prependChild);
+                .forEach(element -> insertElements(element, head::prependChild));
         targets.getInlineHead(Inline.Position.APPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(head::appendChild);
+                .forEach(element -> insertElements(element, head::appendChild));
 
         targets.getInlineBody(Inline.Position.PREPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(body::prependChild);
+                .forEach(element -> insertElements(element, body::prependChild));
         targets.getInlineBody(Inline.Position.APPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(body::appendChild);
+                .forEach(element -> insertElements(element, body::appendChild));
     }
 
     private static void handleInitialPageSettings(BootstrapContext context,
@@ -401,16 +407,27 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         initialPageSettings.getInline(InitialPageSettings.Position.PREPEND)
                 .stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(head::prependChild);
+                .forEach(element -> insertElements(element, head::prependChild));
         initialPageSettings.getInline(InitialPageSettings.Position.APPEND)
                 .stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(head::appendChild);
+                .forEach(element -> insertElements(element, head::appendChild));
 
         initialPageSettings.getElement(InitialPageSettings.Position.PREPEND)
-                .forEach(head::prependChild);
+                .forEach(element -> insertElements(element, head::prependChild));
         initialPageSettings.getElement(InitialPageSettings.Position.APPEND)
-                .forEach(head::appendChild);
+                .forEach(element -> insertElements(element, head::appendChild));
+    }
+
+    private static void insertElements(Element element,
+            Consumer<Element> action) {
+        if (element instanceof Document) {
+            element.getAllElements().stream()
+                    .filter(item -> !(item instanceof Document))
+                    .forEach(action::accept);
+        } else {
+            action.accept(element);
+        }
     }
 
     private static void writeBootstrapPage(VaadinResponse response, String html)
@@ -788,31 +805,31 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (systemMessages != null) {
             // Write the CommunicationError -message to client
             JsonObject comErrMsg = Json.createObject();
-            putValueOrNull(comErrMsg, "caption",
+            putValueOrNull(comErrMsg, CAPTION,
                     systemMessages.getCommunicationErrorCaption());
-            putValueOrNull(comErrMsg, "message",
+            putValueOrNull(comErrMsg, MESSAGE,
                     systemMessages.getCommunicationErrorMessage());
-            putValueOrNull(comErrMsg, "url",
+            putValueOrNull(comErrMsg, URL,
                     systemMessages.getCommunicationErrorURL());
 
             appConfig.put("comErrMsg", comErrMsg);
 
             JsonObject authErrMsg = Json.createObject();
-            putValueOrNull(authErrMsg, "caption",
+            putValueOrNull(authErrMsg, CAPTION,
                     systemMessages.getAuthenticationErrorCaption());
-            putValueOrNull(authErrMsg, "message",
+            putValueOrNull(authErrMsg, MESSAGE,
                     systemMessages.getAuthenticationErrorMessage());
-            putValueOrNull(authErrMsg, "url",
+            putValueOrNull(authErrMsg, URL,
                     systemMessages.getAuthenticationErrorURL());
 
             appConfig.put("authErrMsg", authErrMsg);
 
             JsonObject sessExpMsg = Json.createObject();
-            putValueOrNull(sessExpMsg, "caption",
+            putValueOrNull(sessExpMsg, CAPTION,
                     systemMessages.getSessionExpiredCaption());
-            putValueOrNull(sessExpMsg, "message",
+            putValueOrNull(sessExpMsg, MESSAGE,
                     systemMessages.getSessionExpiredMessage());
-            putValueOrNull(sessExpMsg, "url",
+            putValueOrNull(sessExpMsg, URL,
                     systemMessages.getSessionExpiredURL());
 
             appConfig.put("sessExpMsg", sessExpMsg);
@@ -1042,10 +1059,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static Element createDependencyElement(BootstrapContext context,
             JsonObject dependencyJson) {
-        Dependency.Type dependencyType = Dependency.Type
-                .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
-        return createDependencyElement(context.getUriResolver(),
-                LoadMode.INLINE, dependencyJson, dependencyType);
+        String type = dependencyJson.getString(Dependency.KEY_TYPE);
+        if (Dependency.Type.contains(type)) {
+            Dependency.Type dependencyType = Dependency.Type.valueOf(type);
+            return createDependencyElement(context.getUriResolver(),
+                    LoadMode.INLINE, dependencyJson, dependencyType);
+        }
+        return Jsoup.parse(dependencyJson.getString(Dependency.KEY_CONTENTS),
+                "", Parser.xmlParser());
     }
 
     private static String readClientEngine() {

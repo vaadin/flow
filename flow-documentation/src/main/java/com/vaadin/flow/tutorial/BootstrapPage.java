@@ -30,7 +30,6 @@ import com.vaadin.flow.server.BootstrapListener;
 import com.vaadin.flow.server.BootstrapPageResponse;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("application-structure/tutorial-bootstrap.asciidoc")
@@ -92,7 +91,7 @@ public class BootstrapPage {
         @Override
         public void configurePage(InitialPageSettings settings) {
             settings.addInlineFromFile(InitialPageSettings.Position.PREPEND,
-                    "inline.js", Dependency.Type.JAVASCRIPT);
+                    "inline.js", InitialPageSettings.WrapMode.JAVASCRIPT);
 
             settings.addMetaTag("og:title", "The Rock");
             settings.addMetaTag("og:type", "video.movie");
@@ -122,7 +121,7 @@ public class BootstrapPage {
         public void configurePage(InitialPageSettings settings) {
             settings.addInlineWithContents(
                     "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">",
-                    Dependency.Type.HTML_IMPORT);
+                    InitialPageSettings.WrapMode.NONE);
         }
     }
 
@@ -142,7 +141,7 @@ public class BootstrapPage {
         @Override
         public void configurePage(InitialPageSettings settings) {
             settings.addInlineFromFile("your-content.html",
-                    Dependency.Type.HTML_IMPORT);
+                    InitialPageSettings.WrapMode.NONE);
         }
     }
 
@@ -158,7 +157,7 @@ public class BootstrapPage {
         @Override
         public void configurePage(InitialPageSettings settings) {
             settings.addInlineWithContents("body {width: 100vw; height:100vh;}",
-                    Dependency.Type.STYLESHEET);
+                    InitialPageSettings.WrapMode.STYLESHEET);
         }
     }
 
@@ -170,7 +169,7 @@ public class BootstrapPage {
 
     @Inline("initialization.js")
     @Inline("initial_style.css")
-    @Inline(value = "important_styles", wrapping = Inline.Wrapping.CSS)
+    @Inline(value = "important_styles", wrapping = Inline.Wrapping.STYLESHEET)
     public class MyInline extends Div implements RouterLayout {
     }
 }
