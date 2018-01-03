@@ -239,10 +239,10 @@ public class InitialPageSettings {
     }
 
     /**
-     * Append a link to inital page head.
+     * Append a link to initial page head.
      *
      * @param href
-     *            link href
+     *            location of the linked document
      * @param attributes
      *            map of attributes for link element
      */
@@ -251,12 +251,12 @@ public class InitialPageSettings {
     }
 
     /**
-     * Add a link to inital page head.
+     * Add a link to initial page head.
      *
      * @param position
      *            prepend or append
      * @param href
-     *            link href
+     *            location of the linked document
      * @param attributes
      *            map of attributes for link element
      */
@@ -265,6 +265,68 @@ public class InitialPageSettings {
         Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
         attributes.entrySet()
                 .forEach(entry -> link.attr(entry.getKey(), entry.getValue()));
+        getElement(position).add(link);
+    }
+
+    /**
+     * Append a link to initial page head.
+     * 
+     * @param rel
+     *            link relationship
+     * @param href
+     *            location of the linked document
+     */
+    public void addLink(String rel, String href) {
+        addLink(Position.APPEND, rel, href);
+    }
+
+    /**
+     * Add a link to initial page head.
+     * 
+     * @param position
+     *            prepend or append
+     * @param rel
+     *            link relationship
+     * @param href
+     *            location of the linked document
+     */
+    public void addLink(Position position, String rel, String href) {
+        Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
+        link.attr("rel", rel);
+        getElement(position).add(link);
+    }
+
+    /**
+     * Append a fav icon link to initial page head.
+     * 
+     * @param rel
+     *            link relationship
+     * @param href
+     *            location of the fav icon
+     * @param sizes
+     *            size of the linked fav icon
+     */
+    public void addFavIcon(String rel, String href, String sizes) {
+        addFavIcon(Position.APPEND, rel, href, sizes);
+    }
+
+    /**
+     * Append a fav icon link to initial page head.
+     *
+     * @param position
+     *            prepend or append
+     * @param rel
+     *            link relationship
+     * @param href
+     *            location of the fav icon
+     * @param sizes
+     *            size of the linked fav icon
+     */
+    public void addFavIcon(Position position, String rel, String href,
+            String sizes) {
+        Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
+        link.attr("rel", rel);
+        link.attr("sizes", sizes);
         getElement(position).add(link);
     }
 
