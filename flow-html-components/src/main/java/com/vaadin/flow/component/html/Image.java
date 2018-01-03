@@ -21,6 +21,8 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResource;
 
 /**
  * Component representing a <code>&lt;img&gt;</code> element.
@@ -29,6 +31,7 @@ import com.vaadin.flow.component.Tag;
  */
 @Tag(Tag.IMG)
 public class Image extends HtmlContainer {
+
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
             .attributeWithDefault("src", "");
 
@@ -59,6 +62,22 @@ public class Image extends HtmlContainer {
     }
 
     /**
+     * Creates an image with the given stream resource and an alternative text.
+     *
+     * @param src
+     *            the resource value, not null
+     * @param alt
+     *            the alternate text
+     *
+     * @see #setSrc(AbstractStreamResource)
+     * @see #setAlt(String)
+     */
+    public Image(AbstractStreamResource src, String alt) {
+        setSrc(src);
+        setAlt(alt);
+    }
+
+    /**
      * Gets the image URL.
      *
      * @return the image URL
@@ -75,6 +94,16 @@ public class Image extends HtmlContainer {
      */
     public void setSrc(String src) {
         set(srcDescriptor, src);
+    }
+
+    /**
+     * Sets the image URL with the URL of the given {@link StreamResource}.
+     *
+     * @param src
+     *            the resource value, not null
+     */
+    public void setSrc(AbstractStreamResource src) {
+        getElement().setAttribute("src", src);
     }
 
     /**
