@@ -49,11 +49,9 @@ public class InlineTargets {
     public void addInlineDependency(Inline inline, VaadinRequest request) {
         Inline.Wrapping type;
         // Determine the type as given or try to automatically decide
-        switch (inline.wrapping()) {
-        case AUTOMATIC:
+        if (inline.wrapping().equals(Inline.Wrapping.AUTOMATIC)) {
             type = determineDependencyType(inline);
-            break;
-        default:
+        } else {
             type = inline.wrapping();
         }
 

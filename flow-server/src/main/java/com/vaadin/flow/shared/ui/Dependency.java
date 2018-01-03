@@ -42,6 +42,13 @@ public class Dependency implements Serializable {
     public enum Type {
         STYLESHEET, JAVASCRIPT, HTML_IMPORT;
 
+        /**
+         * Check if the given value is contained as a enum value.
+         * 
+         * @param value
+         *            value to check
+         * @return true if there is a matching enum value
+         */
         public static boolean contains(String value) {
             return Stream.of(values())
                     .anyMatch(enumValue -> enumValue.toString().equals(value));

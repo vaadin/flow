@@ -98,6 +98,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + readResource("es6-collections.js") + "//]]>";
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
 
+    private static final String CAPTION = "caption";
+    private static final String MESSAGE = "message";
+    private static final String URL = "url";
+
     static String clientEngineFile = readClientEngine();
 
     private static Logger getLogger() {
@@ -801,31 +805,31 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (systemMessages != null) {
             // Write the CommunicationError -message to client
             JsonObject comErrMsg = Json.createObject();
-            putValueOrNull(comErrMsg, "caption",
+            putValueOrNull(comErrMsg, CAPTION,
                     systemMessages.getCommunicationErrorCaption());
-            putValueOrNull(comErrMsg, "message",
+            putValueOrNull(comErrMsg, MESSAGE,
                     systemMessages.getCommunicationErrorMessage());
-            putValueOrNull(comErrMsg, "url",
+            putValueOrNull(comErrMsg, URL,
                     systemMessages.getCommunicationErrorURL());
 
             appConfig.put("comErrMsg", comErrMsg);
 
             JsonObject authErrMsg = Json.createObject();
-            putValueOrNull(authErrMsg, "caption",
+            putValueOrNull(authErrMsg, CAPTION,
                     systemMessages.getAuthenticationErrorCaption());
-            putValueOrNull(authErrMsg, "message",
+            putValueOrNull(authErrMsg, MESSAGE,
                     systemMessages.getAuthenticationErrorMessage());
-            putValueOrNull(authErrMsg, "url",
+            putValueOrNull(authErrMsg, URL,
                     systemMessages.getAuthenticationErrorURL());
 
             appConfig.put("authErrMsg", authErrMsg);
 
             JsonObject sessExpMsg = Json.createObject();
-            putValueOrNull(sessExpMsg, "caption",
+            putValueOrNull(sessExpMsg, CAPTION,
                     systemMessages.getSessionExpiredCaption());
-            putValueOrNull(sessExpMsg, "message",
+            putValueOrNull(sessExpMsg, MESSAGE,
                     systemMessages.getSessionExpiredMessage());
-            putValueOrNull(sessExpMsg, "url",
+            putValueOrNull(sessExpMsg, URL,
                     systemMessages.getSessionExpiredURL());
 
             appConfig.put("sessExpMsg", sessExpMsg);
