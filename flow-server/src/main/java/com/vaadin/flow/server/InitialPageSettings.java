@@ -44,6 +44,9 @@ public class InitialPageSettings {
         PREPEND, APPEND
     }
 
+    /**
+     * Content wrapping mode enum.
+     */
     public enum WrapMode {
         NONE, JAVASCRIPT, STYLESHEET
     }

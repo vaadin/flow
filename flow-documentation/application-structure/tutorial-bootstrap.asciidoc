@@ -61,7 +61,7 @@ The configurations available for inlining contents are:
 
  - TargetElement [*HEAD*, BODY]
  - Position [*APPEND*, PREPEND]
- - Wrapping [*AUTOMATIC*, NONE, CSS, SCRIPT]
+ - Wrapping [*AUTOMATIC*, NONE, STYLESHEET, JAVASCRIPT]
 
 [source,java]
 ----
