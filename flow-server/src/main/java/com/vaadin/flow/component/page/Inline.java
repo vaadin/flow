@@ -44,7 +44,7 @@ public @interface Inline {
      * File content wrapping enum.
      */
     enum Wrapping {
-        AUTOMATIC, HTML, CSS, SCRIPT
+        AUTOMATIC, NONE, JAVASCRIPT, STYLESHEET
     }
 
     /**
