@@ -1,11 +1,6 @@
 package com.vaadin.flow.server;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -17,8 +12,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.Document;
@@ -48,20 +41,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.BootstrapListener;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.InitialPageSettings;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.SystemMessages;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
-import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
@@ -69,6 +48,12 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class BootstrapHandlerTest {
 
@@ -162,6 +147,17 @@ public class BootstrapHandlerTest {
                             put("sizes", "192x192");
                         }
                     });
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class InitialPageConfiguratorLinkShorthands extends Component
+            implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addLink("shortcut icon", "icons/favicon.ico");
+            settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
         }
     }
 
@@ -597,6 +593,28 @@ public class BootstrapHandlerTest {
         Assert.assertEquals("<meta name=\"theme-color\" content=\"#227aef\">",
                 allElements.get(1).toString());
     }
+
+
+    @Test // 3203
+    public void page_configurator_link_shorthands_are_added_correctly()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InitialPageConfiguratorLinkShorthands.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Assert.assertEquals(
+                "<link href=\"icons/favicon.ico\" rel=\"shortcut icon\">",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals(
+                "<link href=\"icons/icon-192.png\" rel=\"icon\" sizes=\"192x192\">",
+                allElements.get(allElements.size() - 1).toString());
+    }
+
 
     @Test // 2344
     public void page_configurator_adds_styles_for_body()
