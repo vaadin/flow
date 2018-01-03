@@ -72,8 +72,7 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     private WebDriver createHeadlessChromeDriver() {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
-        options.addArguments("--disable-gpu");
+        options.addArguments("--headless", "--disable-gpu");
         return TestBench.createDriver(new ChromeDriver(options));
     }
 

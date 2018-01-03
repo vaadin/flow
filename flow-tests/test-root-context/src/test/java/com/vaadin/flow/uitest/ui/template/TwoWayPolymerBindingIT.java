@@ -22,7 +22,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
 

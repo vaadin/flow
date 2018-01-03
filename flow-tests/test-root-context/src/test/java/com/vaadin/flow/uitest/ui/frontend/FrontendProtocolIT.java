@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 /**
  * A test that ensures the correct behavior of the "frontend://" protocol under

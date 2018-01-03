@@ -41,7 +41,7 @@ import com.vaadin.testbench.parallel.ParallelTest;
 @RunLocally
 @BrowserFactory(DefaultBrowserFactory.class)
 @LocalExecution
-public class AbstractParallelTestBenchTest extends ParallelTest {
+public class AbstractParallelTestBenchTest extends TestBenchHelpers {
 
     /**
      * Default port for test server, possibly overridden with system property.

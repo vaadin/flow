@@ -19,7 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 public class RouterSessionExpirationIT extends ChromeBrowserTest {
 

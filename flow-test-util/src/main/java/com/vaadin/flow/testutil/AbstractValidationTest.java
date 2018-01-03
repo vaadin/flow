@@ -18,10 +18,10 @@ package com.vaadin.flow.testutil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.HasValidation;
-import com.vaadin.testbench.By;
 
 /**
  * Base class for validation tests of components that implement

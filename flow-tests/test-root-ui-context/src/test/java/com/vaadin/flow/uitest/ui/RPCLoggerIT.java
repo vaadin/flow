@@ -25,7 +25,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 /**
  * @author Vaadin Ltd
