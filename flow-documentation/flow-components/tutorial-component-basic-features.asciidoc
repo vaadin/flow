@@ -28,7 +28,7 @@ For more details, see <<../element-api/tutorial-properties-attributes#,Element P
 
 == Visibility
 
-A component that is set as invisible (by using `component.setVisible(false)`) is not shown on the UI. But more than that, a invisible
+A component that is set as invisible (by using `component.setVisible(false)`) is not shown on the UI. In addition, an invisible
 component doesn't receive updates from the client side, and all the server-side updates are only transmitted once the component becomes
 visible again.
 
@@ -76,7 +76,7 @@ System.out.println("Number of children: "
 ----
 
 If the component is already rendered for the first time, setting it as invisible makes the corresponding element in the DOM to have the attribute `hidden` set.
-In other words, setting a previously visible component as invisible doesn't remove it from the DOM - just make it hidden.
+In other words, setting a previously visible component as invisible doesn't remove it from the DOM - just makes it hidden.
 
 When using components in a `PolymerTemplate` mapped by `@Id`, setting them as invisible also sets the `hidden` attribute on the client-side. No DOM structure is altered.
 
