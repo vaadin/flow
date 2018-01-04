@@ -1500,6 +1500,10 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("", router.getUrl(WildRootParameter.class));
         Assert.assertEquals("wild",
                 router.getUrl(WildRootParameter.class, "wild"));
+
+        List<String> params = Arrays.asList("", null);
+        Assert.assertEquals("",
+                router.getUrl(WildRootParameter.class, params.get(1)));
     }
 
     @Test
@@ -1526,6 +1530,10 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("", router.getUrl(OptionalRootParameter.class));
         Assert.assertEquals("optional",
                 router.getUrl(OptionalRootParameter.class, "optional"));
+
+        List<String> params = Arrays.asList("", null);
+        Assert.assertEquals("",
+                router.getUrl(OptionalRootParameter.class, params.get(1)));
     }
 
     @Test
