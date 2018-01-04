@@ -1,6 +1,6 @@
 ---
 title: Grid
-order: 2
+order: 3
 layout: page
 ---
 

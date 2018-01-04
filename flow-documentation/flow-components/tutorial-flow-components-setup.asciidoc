@@ -1,6 +1,6 @@
 ---
 title: Setup your project to use Flow components
-order: 1
+order: 2
 layout: page
 ---
 
