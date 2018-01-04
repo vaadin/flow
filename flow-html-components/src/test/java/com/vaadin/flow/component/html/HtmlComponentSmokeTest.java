@@ -45,6 +45,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.OrderedList.NumberingType;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.server.AbstractStreamResource;
 
 public class HtmlComponentSmokeTest {
 
@@ -162,6 +163,11 @@ public class HtmlComponentSmokeTest {
         if (method.getDeclaringClass() == Label.class
                 && method.getName().equals("setFor")
                 && method.getParameterTypes()[0] == Component.class) {
+            return true;
+        }
+        // setFoo(AbstractStreamResource) for resource URLs
+        if (method.getParameterCount() == 1 && AbstractStreamResource.class
+                .isAssignableFrom(method.getParameters()[0].getType())) {
             return true;
         }
 

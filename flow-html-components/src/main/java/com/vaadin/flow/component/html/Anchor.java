@@ -21,6 +21,8 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResource;
 
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
@@ -60,6 +62,23 @@ public class Anchor extends HtmlContainer {
     }
 
     /**
+     * Creates an anchor component with the given text content and stream
+     * resource.
+     *
+     * @see #setHref(AbstractStreamResource)
+     * @see #setText(String)
+     *
+     * @param href
+     *            the resource value, not null
+     * @param text
+     *            the text content to set
+     */
+    public Anchor(AbstractStreamResource href, String text) {
+        setHref(href);
+        setText(text);
+    }
+
+    /**
      * Sets the URL that this anchor links to.
      *
      * @param href
@@ -67,6 +86,17 @@ public class Anchor extends HtmlContainer {
      */
     public void setHref(String href) {
         set(hrefDescriptor, href);
+    }
+
+    /**
+     * Sets the URL that this anchor links to with the URL of the given
+     * {@link StreamResource}.
+     *
+     * @param href
+     *            the resource value, not null
+     */
+    public void setHref(AbstractStreamResource href) {
+        getElement().setAttribute("href", href);
     }
 
     /**
