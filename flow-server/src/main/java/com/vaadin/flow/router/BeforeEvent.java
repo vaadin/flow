@@ -173,7 +173,7 @@ public abstract class BeforeEvent extends EventObject {
      */
     public void rerouteTo(String route) {
         getSource().getRegistry().getNavigationTarget(route)
-                .ifPresent(routeTarget -> rerouteTo(routeTarget));
+                .ifPresent(this::rerouteTo);
     }
 
     /**
