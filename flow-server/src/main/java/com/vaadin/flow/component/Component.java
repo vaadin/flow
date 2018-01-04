@@ -475,6 +475,15 @@ public abstract class Component
 
     /**
      * Sets the component visibility value.
+     * <p>
+     * When a component is set as invisible, all the updates of the component
+     * from the server to the client are blocked until the component is set as
+     * visible again.
+     * <p>
+     * Invisible components don't receive any updates from the client-side.
+     * Unlike the server-side updates, client-side updates, if any, are
+     * discarded while the component is invisible, and are not transmitted to
+     * the server when the component is made visible.
      *
      * @param visible
      *            the component visibility value
