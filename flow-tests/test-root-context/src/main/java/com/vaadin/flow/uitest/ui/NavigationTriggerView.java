@@ -22,7 +22,7 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
 
 @Route(value = "com.vaadin.flow.uitest.ui.NavigationTriggerView", layout = ViewTestLayout.class)
 public class NavigationTriggerView extends AbstractDivView implements
@@ -56,7 +56,7 @@ public class NavigationTriggerView extends AbstractDivView implements
     }
 
     @Override
-    public void setParameter(BeforeNavigationEvent event, @OptionalParameter String parameter) {
+    public void setParameter(BeforeEnterEvent event, @OptionalParameter String parameter) {
         String location = event.getLocation().getPathWithQueryParameters();
         assert location.startsWith(CLASS_NAME);
 

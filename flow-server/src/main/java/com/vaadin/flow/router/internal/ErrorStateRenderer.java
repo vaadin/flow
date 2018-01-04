@@ -28,7 +28,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.ActivationState;
 import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.EventUtil;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -111,8 +111,8 @@ public class ErrorStateRenderer implements NavigationHandler {
             chain.add(getRouteTarget(parentType, event));
         }
 
-        BeforeNavigationEvent beforeNavigationActivating = new BeforeNavigationEvent(
-                event, routeTargetType, ActivationState.ACTIVATING);
+        BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
+                event, routeTargetType);
 
         int statusCode = ((HasErrorParameter) componentInstance)
                 .setErrorParameter(beforeNavigationActivating,
@@ -120,9 +120,6 @@ public class ErrorStateRenderer implements NavigationHandler {
 
         validateStatusCode(statusCode, routeTargetType);
 
-        EventUtil.collectBeforeNavigationObservers(chain)
-                .forEach(listener -> listener
-                        .beforeNavigation(beforeNavigationActivating));
         EventUtil.collectBeforeEnterObservers(chain).forEach(
                 listener -> listener.beforeEnter(beforeNavigationActivating));
 

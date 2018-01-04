@@ -18,7 +18,7 @@ package com.vaadin.flow.tutorial.routing;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
@@ -47,7 +47,7 @@ public class RoutingUrlGeneration {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEnterEvent event,
                 String parameter) {
             setText(String.format("Hello, %s!", parameter));
         }

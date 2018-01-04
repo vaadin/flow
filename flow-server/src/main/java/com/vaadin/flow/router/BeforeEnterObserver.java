@@ -33,5 +33,5 @@ public interface BeforeEnterObserver {
      * @param event
      *            before navigation event with event details
      */
-    void beforeEnter(BeforeNavigationEvent event);
+    void beforeEnter(BeforeEnterEvent event);
 }

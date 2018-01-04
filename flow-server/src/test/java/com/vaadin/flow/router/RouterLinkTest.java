@@ -32,11 +32,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.HasCurrentService;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.router.legacy.Router;
 import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.router.legacy.RouterTest.RouterTestUI;
@@ -381,7 +376,7 @@ public class RouterLinkTest extends HasCurrentService {
     public static class GreetingNavigationTarget extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEnterEvent event,
                 String parameter) {
         }
     }

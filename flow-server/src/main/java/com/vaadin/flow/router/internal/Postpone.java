@@ -19,17 +19,18 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveObserver;
-import com.vaadin.flow.router.BeforeNavigationObserver;
 
 /**
  * Container class for containing left over listeners on postponed navigation.
  */
 public class Postpone implements Serializable {
     private final ArrayDeque<BeforeLeaveObserver> remainingLeaveListeners;
-    private final ArrayDeque<BeforeNavigationObserver> remainingNavigationListeners;
+    private final ArrayDeque<BeforeEnterObserver> remainingNavigationListeners;
 
-    private Postpone(Deque<BeforeLeaveObserver> beforeLeave, Deque<BeforeNavigationObserver> beforeNavigation) {
+    private Postpone(Deque<BeforeLeaveObserver> beforeLeave,
+            Deque<BeforeEnterObserver> beforeNavigation) {
         remainingLeaveListeners = new ArrayDeque<>(beforeLeave);
         remainingNavigationListeners = new ArrayDeque<>(beforeNavigation);
     }
@@ -47,14 +48,14 @@ public class Postpone implements Serializable {
     }
 
     /**
-     * Set any remaining {@link BeforeNavigationObserver}s to be continued from.
+     * Set any remaining {@link BeforeEnterObserver}s to be continued from.
      *
      * @param beforeNavigation
      *            listeners to continue calling
      * @return uncalled listeners to continue from
      */
     public static Postpone withNavigationObservers(
-            Deque<BeforeNavigationObserver> beforeNavigation) {
+            Deque<BeforeEnterObserver> beforeNavigation) {
         return new Postpone(new ArrayDeque<>(), beforeNavigation);
     }
 
@@ -69,12 +70,12 @@ public class Postpone implements Serializable {
     }
 
     /**
-     * Get {@link BeforeNavigationObserver}s that have been left over from a
+     * Get {@link BeforeEnterObserver}s that have been left over from a
      * postpone.
      * 
      * @return remaining BeforeNavigationObservers or empty ArrayDeque
      */
-    public Deque<BeforeNavigationObserver> getNavigationObservers() {
+    public Deque<BeforeEnterObserver> getNavigationObservers() {
         return remainingNavigationListeners;
     }
 }

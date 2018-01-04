@@ -18,12 +18,12 @@ package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 
 /**
- * The action to resume a postponed {@link BeforeNavigationEvent}.
+ * The action to resume a postponed {@link BeforeEnterEvent}.
  * @author Vaadin Ltd.
  */
 public class ContinueNavigationAction implements Serializable {

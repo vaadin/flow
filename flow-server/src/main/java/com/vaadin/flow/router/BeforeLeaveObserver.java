@@ -33,5 +33,5 @@ public interface BeforeLeaveObserver {
      * @param event
      *            before navigation event with event details
      */
-    void beforeLeave(BeforeNavigationEvent event);
+    void beforeLeave(BeforeLeaveEvent event);
 }

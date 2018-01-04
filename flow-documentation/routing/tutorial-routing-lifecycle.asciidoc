@@ -21,13 +21,13 @@ of the navigation status.
 During this lifecycle there is the possibility to reroute to another view, reroute to an
 error view and even postpone navigation to get user confirmation.
 
-=== BeforeNavigationObservers
+=== Before navigation observers
 
-Any `Component` implementing `BeforeNavigationObserver` will be informed when they
-are being detached or attached to the UI. The components to inform of navigation
-events will be collected from the root component and children connected to it.
+Any `Component` implementing a before navigation observer will be informed when they
+are being detached (<<detached>>) or attached (<<attached>>) to the UI. The components to inform of navigation
+events will be collected from the root component and the children connected to it.
 
-.Child component implementing BeforNavigationObserver
+.Child component implementing BeforEnterObserver
 [source,java]
 ----
 @Route("")
@@ -41,31 +41,34 @@ public class MainLayout extends PolymerTemplate<TemplateModel> {
     }
 }
 
-public class SideElement extends Div implements BeforeNavigationObserver {
+public class SideElement extends Div implements BeforeEnterObserver {
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
         // Handle for instance before navigation clean up
     }
 }
 ----
 
+[#detached]
 === BeforeLeaveObserver
 The `BeforeLeaveObserver` will only be
 notified when the component will be detached from the UI.
 
 During the `BeforeLeaveObserver` state postponing and rerouting is supported.
 
+[#attached]
 === BeforeEnterObserver
 The `BeforeLeaveObserver` will only be
 notified when the component will be attached to the UI.
 
 During the `BeforeEnterObserver` state only reroute is supported.
 
-== BeforeNavigationEvent
+== BeforeEnterEvent and BeforeLeaveEvent
 
-The `BeforeNavigationEvent` class contains information about the current navigation
-state, and enables optional functions like rerouting and postponing.
+The `BeforeEnterEvent` and `BeforeLeaveEvent` classes contain information about the current navigation
+state, and enables optional functions like <<reroute>> and <<postpone>>.
 
+[#reroute]
 === Reroute
 The `BeforeNavigationEvent` can be used to reroute dynamically if there is a need
 to show completely different information in some state.
@@ -82,9 +85,9 @@ public class NoItemsView extends Div {
 }
 
 @Route("blog")
-public class BlogList extends Div implements BeforeNavigationObserver {
+public class BlogList extends Div implements BeforeEnterObserver {
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
         // implementation omitted
         Object record = getItem();
 
@@ -102,18 +105,18 @@ public class BlogList extends Div implements BeforeNavigationObserver {
 [NOTE]
 `rerouteTo` has several overloads to serve different use cases.
 
+[#postpone]
 === Postpone
-`BeforeNavigationEvent` has a `postpone` method, which can be used to postpone
+`BeforeLeaveEvent` has a `postpone` method, which can be used to postpone
 the current navigational transition until a specific condition is met.
 
 E.g. the client may request the user's confirmation before leaving the page:
 [source,java]
 ----
-public class SignupForm extends Div implements BeforeNavigationObserver {
+public class SignupForm extends Div implements BeforeLeaveObserver {
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
-        if (event.getActivationState() == ActivationState.DEACTIVATING
-                && this.hasChanges()) {
+    public void beforeLeave(BeforeLeaveEvent event) {
+        if (this.hasChanges()) {
             ContinueNavigationAction action = event.postpone();
             ConfirmDialog.build("Are you sure you want to leave this page?")
                     .ifAccept(action::proceed).show();
@@ -136,11 +139,6 @@ event at all and the transition never finishes. If, however, __b__ executes its
 `ContinueNavigationAction` to resume the transition, it is continued from
 where it was interrupted. Thus __a__ and __b__ are not called again, but __c__ is notified.
 
-[NOTE]
-Postpone may only be initiated while navigating away from a page, meaning it is only
-available for a `BeforeNavigationObserver` where the `BeforeNavigationEvent::getActivationState`
-is *DEACTIVATING* or when we use a `BeforeLeaveObserver`. If the method
-is called while entering / activating the new page, it will throw an `IllegalStateException`.
 [NOTE]
 At most one navigation event may be postponed at any time; starting a new
 navigation transition while a previous one is in a postponed state obsoletes

@@ -4,13 +4,13 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PageTitleView", layout = ViewTestLayout.class)
 public class PageTitleView extends AbstractDivView {
 
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
 
         Input input = new Input();
         input.setId("input");

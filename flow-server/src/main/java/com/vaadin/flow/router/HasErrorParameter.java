@@ -38,6 +38,6 @@ public interface HasErrorParameter<T extends Exception> {
      *            exception
      * @return a valid {@link javax.servlet.http.HttpServletResponse} code
      */
-    int setErrorParameter(BeforeNavigationEvent event,
+    int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<T> parameter);
 }

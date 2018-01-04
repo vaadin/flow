@@ -20,16 +20,16 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.LoadingIndicatorView", layout = ViewTestLayout.class)
 @StyleSheet("/com/vaadin/flow/uitest/ui/loading-indicator.css")
 public class LoadingIndicatorView extends AbstractDivView {
 
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
 
         add(divWithText("First delay: "
                 + getLoadingIndicatorConfiguration().getFirstDelay()));

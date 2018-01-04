@@ -25,13 +25,12 @@ import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 public class RouteTargetTest {
 
@@ -53,7 +52,7 @@ public class RouteTargetTest {
     public static class HasUrlRoute extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEnterEvent event,
                 String parameter) {
         }
     }
@@ -63,7 +62,7 @@ public class RouteTargetTest {
     public static class SecondHasUrlRoute extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEnterEvent event,
                 String parameter) {
         }
     }
@@ -73,7 +72,7 @@ public class RouteTargetTest {
     public static class OptionalRoute extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEnterEvent event,
                 @OptionalParameter String parameter) {
         }
     }
@@ -83,7 +82,7 @@ public class RouteTargetTest {
     public static class SecondOptionalRoute extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEnterEvent event,
                 @OptionalParameter String parameter) {
         }
     }
@@ -93,7 +92,7 @@ public class RouteTargetTest {
     public static class WildcardRoute extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEnterEvent event,
                 @WildcardParameter String parameter) {
         }
     }
@@ -103,7 +102,7 @@ public class RouteTargetTest {
     public static class SecondWildcardRoute extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEnterEvent event,
                 @WildcardParameter String parameter) {
         }
     }

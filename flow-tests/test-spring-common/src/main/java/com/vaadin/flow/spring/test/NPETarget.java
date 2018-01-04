@@ -16,15 +16,15 @@
 package com.vaadin.flow.spring.test;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
 
 @Route("npe")
-public class NPETarget extends Div implements BeforeNavigationObserver {
+public class NPETarget extends Div implements BeforeEnterObserver {
 
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
         event.rerouteToError(NullPointerException.class);
     }
 

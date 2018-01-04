@@ -47,7 +47,7 @@ public class GreetingComponent extends Div
         implements HasUrlParameter<String> {
 
     @Override
-    public void setParameter(BeforeNavigationEvent event,
+    public void setParameter(BeforeEnterEvent event,
             String parameter) {
         setText(String.format("Hello, %s!", parameter));
     }

@@ -31,7 +31,7 @@ public class InternalServerError extends Component
         implements HasErrorParameter<Exception> {
 
     @Override
-    public int setErrorParameter(BeforeNavigationEvent event,
+    public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<Exception> parameter) {
         String exceptionText;
         if (parameter.hasCustomMessage()) {

@@ -20,7 +20,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.WildcardParameter;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
 
 @Route(value = "com.vaadin.flow.uitest.ui.BaseHrefView", layout = ViewTestLayout.class)
 public class BaseHrefView extends AbstractDivView
@@ -31,7 +31,7 @@ public class BaseHrefView extends AbstractDivView
     }
 
     @Override
-    public void setParameter(BeforeNavigationEvent event,
+    public void setParameter(BeforeEnterEvent event,
             @WildcardParameter String parameter) {
         // Noop
     }

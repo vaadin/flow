@@ -22,12 +22,6 @@ import org.junit.Before;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterInterface;
 
 public class RoutingTestBase {
 
@@ -58,7 +52,7 @@ public class RoutingTestBase {
     public static class GreetingNavigationTarget extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEnterEvent event,
                 String parameter) {
         }
     }
@@ -69,7 +63,7 @@ public class RoutingTestBase {
     public static class OtherGreetingNavigationTarget extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEnterEvent event,
                 String parameter) {
         }
     }

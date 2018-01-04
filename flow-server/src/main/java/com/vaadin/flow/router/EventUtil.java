@@ -60,20 +60,6 @@ public final class EventUtil {
     }
 
     /**
-     * Collect all Components implementing {@link BeforeNavigationObserver}
-     * connected to the given element tree.
-     *
-     * @param element
-     *            element to search from
-     * @return navigation listeners
-     */
-    public static List<BeforeNavigationObserver> collectBeforeNavigationObservers(
-            Element element) {
-        return getImplementingComponents(flattenDescendants(element),
-                BeforeNavigationObserver.class).collect(Collectors.toList());
-    }
-
-    /**
      * Collect all Components implementing {@link BeforeLeaveObserver} connected
      * to the given element tree.
      *
@@ -85,23 +71,6 @@ public final class EventUtil {
             Element element) {
         return getImplementingComponents(flattenDescendants(element),
                 BeforeLeaveObserver.class).collect(Collectors.toList());
-    }
-
-    /**
-     * Collect all Components implementing {@link BeforeNavigationObserver}
-     * connected to the tree of all given Components in list.
-     *
-     * @param components
-     *            components to search
-     * @return navigation listeners
-     */
-    public static List<BeforeNavigationObserver> collectBeforeNavigationObservers(
-            List<HasElement> components) {
-        Stream<Element> elements = components.stream().flatMap(
-                component -> flattenDescendants(component.getElement()));
-
-        return getImplementingComponents(elements,
-                BeforeNavigationObserver.class).collect(Collectors.toList());
     }
 
     /**

@@ -24,27 +24,18 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 
-/**
- * Event created before navigation happens.
- *
- * @author Vaadin Ltd
- */
-public class BeforeNavigationEvent extends EventObject {
-
+public abstract class AbstractBeforeEvent extends EventObject {
     private final Location location;
     private final NavigationTrigger trigger;
-    private final ActivationState activationState;
 
     private NavigationHandler rerouteTarget;
 
     private final Class<?> navigationTarget;
     private NavigationState rerouteTargetState;
     private ErrorParameter<?> errorParameter;
-    private ContinueNavigationAction continueNavigationAction = null;
 
     /**
      * Construct event from a NavigationEvent.
@@ -53,13 +44,11 @@ public class BeforeNavigationEvent extends EventObject {
      *            NavigationEvent that is on going
      * @param navigationTarget
      *            Navigation target
-     * @param activationState
-     *            activation state that is handled
      */
-    public BeforeNavigationEvent(NavigationEvent event,
-            Class<?> navigationTarget, ActivationState activationState) {
+    public AbstractBeforeEvent(NavigationEvent event,
+            Class<?> navigationTarget) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
-                navigationTarget, activationState);
+                navigationTarget);
     }
 
     /**
@@ -74,23 +63,19 @@ public class BeforeNavigationEvent extends EventObject {
      *            the new location, not {@code null}
      * @param navigationTarget
      *            navigation target class
-     * @param activationState
-     *            activation state that is handled
      */
-    public BeforeNavigationEvent(RouterInterface router,
+    public AbstractBeforeEvent(RouterInterface router,
             NavigationTrigger trigger, Location location,
-            Class<?> navigationTarget, ActivationState activationState) {
+            Class<?> navigationTarget) {
         super(router);
 
         assert trigger != null;
         assert location != null;
         assert navigationTarget != null;
-        assert activationState != null : "Navigation event needs to be for deactivating or activating";
 
         this.trigger = trigger;
         this.location = location;
         this.navigationTarget = navigationTarget;
-        this.activationState = activationState;
     }
 
     /**
@@ -265,22 +250,13 @@ public class BeforeNavigationEvent extends EventObject {
     }
 
     /**
-     * Get current navigation state change direction.
-     *
-     * @return activating or deactivating
-     */
-    public ActivationState getActivationState() {
-        return activationState;
-    }
-
-    /**
      * Reroute to error target for given exception without custom message.
      * <p>
      * Exception class needs to have default no-arg constructor.
      *
      * @param exception
      *            exception to get error target for
-     * @see BeforeNavigationEvent#rerouteToError(Exception, String)
+     * @see BeforeLeaveEvent#rerouteToError(Exception, String)
      */
     public void rerouteToError(Class<? extends Exception> exception) {
         rerouteToError(exception, "");
@@ -295,7 +271,7 @@ public class BeforeNavigationEvent extends EventObject {
      *            exception to get error target for
      * @param customMessage
      *            custom message to send to error target
-     * @see BeforeNavigationEvent#rerouteToError(Exception, String)
+     * @see BeforeLeaveEvent#rerouteToError(Exception, String)
      */
     public void rerouteToError(Class<? extends Exception> exception,
             String customMessage) {
@@ -342,48 +318,5 @@ public class BeforeNavigationEvent extends EventObject {
      */
     public ErrorParameter<?> getErrorParameter() {
         return errorParameter;
-    }
-
-    /**
-     * Initiates the postponement of the current navigation transition, allowing
-     * a listener to e.g. display a confirmation dialog before finishing the
-     * transition.
-     * <p>
-     * This is only valid while leaving (deactivating) a page; if the method is
-     * called while entering / activating the new page, it will throw an
-     * {@link IllegalStateException}.
-     *
-     * @return the action to run when the transition is to be resumed, or null
-     *
-     * @throws IllegalStateException
-     *             if the method is called while entering / activating the new
-     *             page
-     */
-    public ContinueNavigationAction postpone() throws IllegalStateException {
-        if (activationState != ActivationState.DEACTIVATING) {
-            throw new IllegalStateException(
-                    "Transition may only be postponed in its deactivating phase");
-        }
-        continueNavigationAction = new ContinueNavigationAction();
-        return continueNavigationAction;
-    }
-
-    /**
-     * Checks whether this event was postponed.
-     *
-     * @return true if the event was postponed, false otherwise
-     */
-    public boolean isPostponed() {
-        return continueNavigationAction != null;
-    }
-
-    /**
-     * Gets the action used to resume this event, if it was postponed.
-     *
-     * @return the action used to resume this event if it was postponed, or null
-     *         if it is not being postponed
-     */
-    public ContinueNavigationAction getContinueNavigationAction() {
-        return continueNavigationAction;
     }
 }

@@ -28,7 +28,7 @@ public class RouteNotFoundError extends Component
         implements HasErrorParameter<NotFoundException> {
 
     @Override
-    public int setErrorParameter(BeforeNavigationEvent event,
+    public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
         getElement().setText(
                 "Could not navigate to '" + event.getLocation().getPath() + "'");
