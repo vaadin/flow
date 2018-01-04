@@ -22,7 +22,7 @@ import com.vaadin.flow.router.internal.ContinueNavigationAction;
  *
  * @author Vaadin Ltd
  */
-public class BeforeLeaveEvent extends AbstractBeforeEvent {
+public class BeforeLeaveEvent extends BeforeEvent {
 
     private ContinueNavigationAction continueNavigationAction = null;
 
@@ -66,12 +66,8 @@ public class BeforeLeaveEvent extends AbstractBeforeEvent {
      * {@link IllegalStateException}.
      *
      * @return the action to run when the transition is to be resumed, or null
-     *
-     * @throws IllegalStateException
-     *             if the method is called while entering / activating the new
-     *             page
      */
-    public ContinueNavigationAction postpone() throws IllegalStateException {
+    public ContinueNavigationAction postpone() {
         continueNavigationAction = new ContinueNavigationAction();
         return continueNavigationAction;
     }

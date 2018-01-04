@@ -1,8 +1,7 @@
 package com.vaadin.flow.uitest.servlet;
 
-import java.util.stream.Stream;
-
 import javax.servlet.annotation.WebServlet;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
@@ -11,6 +10,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -57,8 +57,7 @@ public class RouterTestServlet extends VaadinServlet {
         }
 
         @Override
-        public void setParameter(BeforeEnterEvent event,
-                String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
             setText(String.format("Hello, %s!", parameter));
         }
     }

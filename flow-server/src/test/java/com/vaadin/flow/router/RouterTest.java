@@ -175,7 +175,7 @@ public class RouterTest extends RoutingTestBase {
         private String param;
 
         @Override
-        public void setParameter(BeforeEnterEvent event, String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
             eventCollector.add("Received param: " + parameter);
             param = parameter;
         }
@@ -194,7 +194,7 @@ public class RouterTest extends RoutingTestBase {
         private String param;
 
         @Override
-        public void setParameter(BeforeEnterEvent event,
+        public void setParameter(BeforeEvent event,
                 @WildcardParameter String parameter) {
             eventCollector.add("Received param: " + parameter);
             param = parameter;
@@ -222,7 +222,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event,
+        public void setParameter(BeforeEvent event,
                 @com.vaadin.flow.router.OptionalParameter String parameter) {
             eventCollector.add(parameter == null ? "No parameter" : parameter);
         }
@@ -234,7 +234,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<Integer> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event,
+        public void setParameter(BeforeEvent event,
                 @WildcardParameter Integer parameter) {
             eventCollector.add("With parameter: " + parameter);
         }
@@ -246,7 +246,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<Integer> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event,
+        public void setParameter(BeforeEvent event,
                 @WildcardParameter Integer parameter) {
             eventCollector.add("With parameter: " + parameter);
         }
@@ -265,7 +265,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event,
+        public void setParameter(BeforeEvent event,
                 @WildcardParameter String parameter) {
             eventCollector.add("With parameter: " + parameter);
         }
@@ -277,7 +277,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event, String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
             eventCollector.add("Parameter: " + parameter);
         }
     }
@@ -288,7 +288,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<Integer> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event, Integer parameter) {
+        public void setParameter(BeforeEvent event, Integer parameter) {
             eventCollector.add("Parameter: " + parameter);
         }
     }
@@ -299,7 +299,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<Long> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event, Long parameter) {
+        public void setParameter(BeforeEvent event, Long parameter) {
             eventCollector.add("Parameter: " + parameter);
         }
     }
@@ -310,7 +310,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<Boolean> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event, Boolean parameter) {
+        public void setParameter(BeforeEvent event, Boolean parameter) {
             eventCollector.add("Parameter: " + parameter);
         }
     }
@@ -412,7 +412,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public void setParameter(BeforeEnterEvent event,
+        public void setParameter(BeforeEvent event,
                 @com.vaadin.flow.router.OptionalParameter String parameter) {
             title = parameter;
         }
@@ -510,7 +510,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event,
+        public void setParameter(BeforeEvent event,
                 @WildcardParameter String parameter) {
             eventCollector.add("With parameter: " + parameter);
         }
@@ -522,7 +522,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event,
+        public void setParameter(BeforeEvent event,
                 @com.vaadin.flow.router.OptionalParameter String parameter) {
             eventCollector.add(parameter == null ? "No parameter" : parameter);
         }
@@ -534,7 +534,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event, String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
             eventCollector.add(parameter);
         }
     }
@@ -642,7 +642,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public void setParameter(BeforeEnterEvent event, String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
             this.message = parameter;
         }
     }
@@ -784,7 +784,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event, String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
             event.rerouteToError(NotFoundException.class);
         }
     }
@@ -795,7 +795,7 @@ public class RouterTest extends RoutingTestBase {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeEnterEvent event, String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
             // NOTE! Expects RootParameter.class to be registered!
             event.rerouteTo("", parameter);
         }
@@ -940,8 +940,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("BeforeEnterObserver should have fired.", 1,
                 eventCollector.size());
-        Assert.assertEquals("EnterListener got event",
-                eventCollector.get(0));
+        Assert.assertEquals("EnterListener got event", eventCollector.get(0));
 
         router.navigate(ui, new Location("leavingTarget"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -953,8 +952,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("BeforeLeaveObserver should have fired", 2,
                 eventCollector.size());
-        Assert.assertEquals("LeaveListener got event",
-                eventCollector.get(1));
+        Assert.assertEquals("LeaveListener got event", eventCollector.get(1));
     }
 
     @Test
@@ -974,8 +972,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(
                 "BeforeNavigationObserver and BeforeEnterObserver should have fired.",
                 2, eventCollector.size());
-        Assert.assertEquals("EnterListener got event",
-                eventCollector.get(0));
+        Assert.assertEquals("EnterListener got event", eventCollector.get(0));
         Assert.assertEquals("BeforeNavigation got event with state ACTIVATING",
                 eventCollector.get(1));
 
@@ -985,8 +982,7 @@ public class RouterTest extends RoutingTestBase {
                 "BeforeNavigationObserver and BeforeLeaveObserver target should have fired.",
                 4, eventCollector.size());
 
-        Assert.assertEquals("LeaveListener got event",
-                eventCollector.get(2));
+        Assert.assertEquals("LeaveListener got event", eventCollector.get(2));
         Assert.assertEquals(
                 "BeforeNavigation got event with state DEACTIVATING",
                 eventCollector.get(3));
@@ -1889,7 +1885,6 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Expected two events", 2, eventCollector.size());
     }
-
 
     @Test
     public void postpone_then_resume_on_before_navigation_event()

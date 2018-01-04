@@ -27,7 +27,7 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.router.AbstractBeforeEvent;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -290,7 +290,7 @@ public class NavigationStateRenderer implements NavigationHandler {
     }
 
     private int reroute(NavigationEvent event,
-            AbstractBeforeEvent beforeNavigation) {
+            BeforeEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getRerouteTarget();
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
@@ -300,7 +300,7 @@ public class NavigationStateRenderer implements NavigationHandler {
     }
 
     private NavigationEvent getNavigationEvent(NavigationEvent event,
-            AbstractBeforeEvent beforeNavigation) {
+            BeforeEvent beforeNavigation) {
         if (beforeNavigation.hasErrorParameter()) {
             ErrorParameter<?> errorParameter = beforeNavigation
                     .getErrorParameter();

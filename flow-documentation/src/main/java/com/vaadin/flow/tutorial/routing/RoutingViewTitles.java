@@ -2,7 +2,7 @@ package com.vaadin.flow.tutorial.routing;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
@@ -32,7 +32,7 @@ public class RoutingViewTitles {
         }
 
         @Override
-        public void setParameter(BeforeEnterEvent event,
+        public void setParameter(BeforeEvent event,
                 @OptionalParameter Long parameter) {
             if (parameter != null) {
                 title = "Blog Post #" + parameter;

@@ -15,14 +15,12 @@
  */
 package com.vaadin.flow.router;
 
-import com.vaadin.flow.router.internal.ContinueNavigationAction;
-
 /**
  * Event created before navigation happens.
  *
  * @author Vaadin Ltd
  */
-public class BeforeEnterEvent extends AbstractBeforeEvent {
+public class BeforeEnterEvent extends BeforeEvent {
 
     /**
      * Construct event from a NavigationEvent.

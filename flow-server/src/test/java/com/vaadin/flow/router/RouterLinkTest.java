@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.router;
 
+import javax.servlet.ServletException;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletException;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,8 +33,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.router.legacy.Router;
-import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.router.legacy.RouterTest.RouterTestUI;
+import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.router.legacy.ViewRendererTest.TestView;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -43,8 +43,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouterLinkTest extends HasCurrentService {
@@ -376,8 +374,7 @@ public class RouterLinkTest extends HasCurrentService {
     public static class GreetingNavigationTarget extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeEnterEvent event,
-                String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
         }
     }
 

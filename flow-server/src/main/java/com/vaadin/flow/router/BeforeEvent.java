@@ -27,7 +27,11 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 
-public abstract class AbstractBeforeEvent extends EventObject {
+/**
+ * Abstract before event class that has the common functionalities for
+ * {@link BeforeLeaveEvent} and {@link BeforeEnterEvent}.
+ */
+public abstract class BeforeEvent extends EventObject {
     private final Location location;
     private final NavigationTrigger trigger;
 
@@ -45,8 +49,7 @@ public abstract class AbstractBeforeEvent extends EventObject {
      * @param navigationTarget
      *            Navigation target
      */
-    public AbstractBeforeEvent(NavigationEvent event,
-            Class<?> navigationTarget) {
+    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
                 navigationTarget);
     }
@@ -64,9 +67,8 @@ public abstract class AbstractBeforeEvent extends EventObject {
      * @param navigationTarget
      *            navigation target class
      */
-    public AbstractBeforeEvent(RouterInterface router,
-            NavigationTrigger trigger, Location location,
-            Class<?> navigationTarget) {
+    public BeforeEvent(RouterInterface router, NavigationTrigger trigger,
+            Location location, Class<?> navigationTarget) {
         super(router);
 
         assert trigger != null;

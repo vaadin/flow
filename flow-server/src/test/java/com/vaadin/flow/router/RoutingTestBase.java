@@ -52,8 +52,7 @@ public class RoutingTestBase {
     public static class GreetingNavigationTarget extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeEnterEvent event,
-                String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
         }
     }
 
@@ -63,8 +62,7 @@ public class RoutingTestBase {
     public static class OtherGreetingNavigationTarget extends Component
             implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeEnterEvent event,
-                String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
         }
     }
 
