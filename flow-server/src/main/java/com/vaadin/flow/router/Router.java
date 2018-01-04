@@ -285,6 +285,9 @@ public class Router implements RouterInterface {
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
             Class<? extends C> navigationTarget, T parameter) {
+        if(parameter == null) {
+            return getUrl(navigationTarget);
+        }
         return getUrl(navigationTarget, Arrays.asList(parameter));
     }
 
