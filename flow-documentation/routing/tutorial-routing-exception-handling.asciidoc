@@ -34,7 +34,7 @@ public class RouteNotFoundError extends Component
             ErrorParameter<NotFoundException> parameter) {
         getElement().setText("Could not navigate to '"
                     + event.getLocation().getPath() + "'");
-        return 404;
+        return HttpServletResponse.SC_NOT_FOUND;
     }
 }
 ----
@@ -57,7 +57,24 @@ public class CustomNotFoundTarget extends RouteNotFoundError {
     public int setErrorParameter(BeforeNavigationEvent event,
             ErrorParameter<NotFoundException> parameter) {
         getElement().setText("My custom not found class!");
-        return 404;
+        return HttpServletResponse.SC_NOT_FOUND;
+    }
+}
+----
+
+.Custom error view for Access denied
+[source, java]
+----
+@Tag(Tag.DIV)
+public class AccessDeniedExceptionHandler extends Component
+        implements HasErrorParameter<AccessDeniedException> {
+
+    @Override
+    public int setErrorParameter(BeforeNavigationEvent event,
+            ErrorParameter<AccessDeniedException> parameter) {
+        getElement().setText(
+            "Tried to navigate to a view without correct access rights");
+        return HttpServletResponse.SC_FORBIDDEN;
     }
 }
 ----
@@ -99,4 +116,52 @@ public class AuthenticationHandler implements BeforeNavigationObserver {
 In cases where the rerouting method catches an exception and there is a need to add a custom
 message it is possible to use the `rerouteToError(Exception, String)` method to set a custom message.
 
+.Blog sample error view with a custom message
+[source, java]
+----
+@Tag(Tag.DIV)
+public class BlogPost extends Component implements HasUrlParameter<Long> {
 
+    @Override
+    public void setParameter(BeforeNavigationEvent event, Long parameter) {
+        removeAll();
+
+        Optional<BlogRecord> record = getRecord(parameter);
+
+        if (!record.isPresent()) {
+            event.rerouteToError(IllegalArgumentException.class,
+                    getI18NProvider().getTranslation("blog.post.not.found",
+                            event.getLocation().getPath()));
+        } else {
+            displayRecord(record.get());
+        }
+    }
+
+    private void removeAll() {
+        // NO-OP
+    }
+
+    private void displayRecord(BlogRecord record) {
+        // NO-OP
+    }
+
+    public Optional<BlogRecord> getRecord(Long id) {
+        // Implementation omitted
+        return Optional.empty();
+    }
+}
+
+@Tag(Tag.DIV)
+public class FaultyBlogPostHandler extends Component
+        implements HasErrorParameter<IllegalArgumentException> {
+
+    @Override
+    public int setErrorParameter(BeforeNavigationEvent event,
+            ErrorParameter<IllegalArgumentException> parameter) {
+        Label message = new Label(parameter.getCustomMessage());
+        getElement().appendChild(message.getElement());
+
+        return HttpServletResponse.SC_NOT_FOUND;
+    }
+}
+----

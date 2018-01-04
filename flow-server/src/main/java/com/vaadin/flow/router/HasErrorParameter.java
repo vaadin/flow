@@ -16,8 +16,8 @@
 package com.vaadin.flow.router;
 
 /**
- * Event sent to the error handler that handlers given Exception type T. This is
- * done for caught exceptions during navigation.
+ * Interface for defining a view that handles the exceptions for the set
+ * Exception type T.
  *
  * @author Vaadin Ltd
  */
@@ -25,8 +25,7 @@ package com.vaadin.flow.router;
 public interface HasErrorParameter<T extends Exception> {
 
     /**
-     * Method called for the implementing class when a corresponding exception
-     * has been caught during navigation.
+     * Method called before rendering the exception view.
      * <p>
      * Note! returned int should be a valid
      * {@link javax.servlet.http.HttpServletResponse} code
