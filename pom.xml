@@ -630,6 +630,43 @@
                 <maven.javadoc.skip>false</maven.javadoc.skip>
             </properties>
         </profile>
+        <profile>
+          <id>prerelease</id>
+          <modules>
+              <module>flow</module>
+              <module>flow-server</module>
+              <module>flow-push</module>
+              <module>flow-data</module>
+              <module>flow-client</module>
+              <module>flow-html-components</module>
+              <module>flow-spring-addon</module>
+              <module>flow-spring-boot-starter</module>
+              <module>flow-documentation</module>
+              <module>flow-test-util</module>
+              <module>flow-tests</module>
+              <module>flow-server-production-mode</module>
+              <module>flow-components-parent</module>
+              <module>build-tools</module>
+          </modules>
+          <properties>
+              <staging.server.id>vaadin-prerelease-staging</staging.server.id>
+              <!-- staging.server.url is set by the build environment profile -->
+          </properties>
+          <build>
+              <plugins>
+              <plugin>
+                  <groupId>org.sonatype.plugins</groupId>
+                  <artifactId>nexus-staging-maven-plugin</artifactId>
+                  <version>1.6.8</version>
+                  <extensions>true</extensions>
+                  <configuration>
+                      <nexusUrl>${staging.server.url}</nexusUrl>
+                      <serverId>${staging.server.id}</serverId>
+                  </configuration>
+              </plugin>
+              </plugins>
+          </build>
+        </profile>
     </profiles>
 
 </project>
