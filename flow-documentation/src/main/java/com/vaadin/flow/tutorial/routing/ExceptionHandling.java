@@ -4,8 +4,8 @@ import java.nio.file.AccessDeniedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
@@ -19,7 +19,7 @@ public class ExceptionHandling {
             implements HasErrorParameter<NotFoundException> {
 
         @Override
-        public int setErrorParameter(BeforeNavigationEvent event,
+        public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText("Could not navigate to '"
                     + event.getLocation().getPath() + "'");
@@ -30,16 +30,16 @@ public class ExceptionHandling {
     public class CustomNotFoundTarget extends RouteNotFoundError {
 
         @Override
-        public int setErrorParameter(BeforeNavigationEvent event,
+        public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText("My custom not found class!");
             return 404;
         }
     }
 
-    public class AuthenticationHandler implements BeforeNavigationObserver {
+    public class AuthenticationHandler implements BeforeEnterObserver {
         @Override
-        public void beforeNavigation(BeforeNavigationEvent event) {
+        public void beforeEnter(BeforeEnterEvent event) {
             Class<?> target = event.getNavigationTarget();
             if (!currentUserMayEnter(target)) {
                 event.rerouteToError(AccessDeniedException.class);

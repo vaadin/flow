@@ -16,7 +16,7 @@
 package com.vaadin.flow.tutorial.routing;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
@@ -31,8 +31,7 @@ public class HasUrlParameterTutorial {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeNavigationEvent event,
-                String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
             setText(String.format("Hello, %s!", parameter));
         }
     }
@@ -42,7 +41,7 @@ public class HasUrlParameterTutorial {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEvent event,
                 @OptionalParameter String parameter) {
             if (parameter == null) {
                 setText("Welcome anonymous.");
@@ -57,7 +56,7 @@ public class HasUrlParameterTutorial {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeNavigationEvent event,
+        public void setParameter(BeforeEvent event,
                 @WildcardParameter String parameter) {
             if (parameter.isEmpty()) {
                 setText("Welcome anonymous.");

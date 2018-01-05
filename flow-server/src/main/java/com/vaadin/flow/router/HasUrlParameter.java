@@ -46,7 +46,7 @@ public interface HasUrlParameter<T> {
      * @param parameter
      *            the resolved url parameter
      */
-    void setParameter(BeforeNavigationEvent event, T parameter);
+    void setParameter(BeforeEvent event, T parameter);
 
     /**
      * Method used to deserialize the list of url segments to an instance of the
@@ -173,7 +173,7 @@ public interface HasUrlParameter<T> {
             Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
 
             Method setParameter = navigationTarget.getMethod(methodName,
-                    BeforeNavigationEvent.class, parameterClass);
+                    BeforeEvent.class, parameterClass);
             return setParameter.getParameters()[1]
                     .isAnnotationPresent(parameterAnnotation);
         } catch (NoSuchMethodException e) {

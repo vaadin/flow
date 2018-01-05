@@ -38,7 +38,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
@@ -416,8 +416,7 @@ public class RouteRegistryInitializerTest {
             implements HasUrlParameter<Boolean> {
 
         @Override
-        public void setParameter(BeforeNavigationEvent event,
-                Boolean parameter) {
+        public void setParameter(BeforeEvent event, Boolean parameter) {
 
         }
     }
@@ -427,8 +426,7 @@ public class RouteRegistryInitializerTest {
             implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeNavigationEvent event,
-                String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
 
         }
     }

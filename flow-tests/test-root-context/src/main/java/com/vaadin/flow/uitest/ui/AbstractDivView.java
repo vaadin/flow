@@ -18,11 +18,11 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 
 public abstract class AbstractDivView extends Div
-        implements BeforeNavigationObserver {
+        implements BeforeEnterObserver {
 
     public AbstractDivView() {
     }
@@ -32,7 +32,7 @@ public abstract class AbstractDivView extends Div
     }
 
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
         onShow();
     }
 

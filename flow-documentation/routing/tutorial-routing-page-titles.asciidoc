@@ -52,7 +52,7 @@ class BlogPost extends Component
   }
 
   @Override
-  public void setParameter(BeforeNavigationEvent event,
+  public void setParameter(BeforeEvent event,
         @OptionalParameter Long parameter) {
     if (parameter != null) {
       title = "Blog Post #" + parameter;

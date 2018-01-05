@@ -1,16 +1,16 @@
 package com.vaadin.flow.uitest.servlet;
 
-import java.util.stream.Stream;
-
 import javax.servlet.annotation.WebServlet;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -57,8 +57,7 @@ public class RouterTestServlet extends VaadinServlet {
         }
 
         @Override
-        public void setParameter(BeforeNavigationEvent event,
-                String parameter) {
+        public void setParameter(BeforeEvent event, String parameter) {
             setText(String.format("Hello, %s!", parameter));
         }
     }
@@ -111,7 +110,7 @@ public class RouterTestServlet extends VaadinServlet {
     }
 
     public static class Layout extends Div
-            implements RouterLayout, BeforeNavigationObserver {
+            implements RouterLayout, BeforeEnterObserver {
 
         private Element sessionId;
 
@@ -124,7 +123,7 @@ public class RouterTestServlet extends VaadinServlet {
         }
 
         @Override
-        public void beforeNavigation(BeforeNavigationEvent event) {
+        public void beforeEnter(BeforeEnterEvent event) {
             WrappedSession session = VaadinSession.getCurrent().getSession();
             if (session == null) {
                 sessionId.setText("No session");
@@ -170,10 +169,10 @@ public class RouterTestServlet extends VaadinServlet {
 
     @Route(value = "ViewWhichCausesInternalException", layout = Layout.class)
     public static class ViewWhichCausesInternalException extends MyAbstractView
-            implements BeforeNavigationObserver {
+            implements BeforeEnterObserver {
 
         @Override
-        public void beforeNavigation(BeforeNavigationEvent event) {
+        public void beforeEnter(BeforeEnterEvent event) {
             throw new RuntimeException(
                     "Intentionally caused by " + getClass().getSimpleName());
         }
@@ -181,10 +180,10 @@ public class RouterTestServlet extends VaadinServlet {
 
     @Route(value = "ViewWhichInvalidatesSession", layout = Layout.class)
     public static class ViewWhichInvalidatesSession extends MyAbstractView
-            implements BeforeNavigationObserver {
+            implements BeforeEnterObserver {
 
         @Override
-        public void beforeNavigation(BeforeNavigationEvent event) {
+        public void beforeEnter(BeforeEnterEvent event) {
             VaadinSession.getCurrent().getSession().invalidate();
         }
     }
