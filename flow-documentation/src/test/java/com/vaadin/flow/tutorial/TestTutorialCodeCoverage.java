@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.flow.tutorial.annotations.Helper;
 
 public class TestTutorialCodeCoverage {
     private static final String ASCII_DOC_EXTENSION = ".asciidoc";
@@ -132,15 +133,17 @@ public class TestTutorialCodeCoverage {
         try {
             Class<?> clazz = Class.forName(className, false,
                     getClass().getClassLoader());
-            if (clazz == CodeFor.class) {
+            if (clazz == CodeFor.class || clazz == Helper.class) {
                 // Ignore the annotation itself
                 return;
             }
 
             CodeFor codeFor = clazz.getAnnotation(CodeFor.class);
             if (codeFor == null) {
-                addDocumentationError(
-                        "Java file without @CodeFor: " + className);
+                if (clazz.getAnnotation(Helper.class) == null) {
+                    addDocumentationError(
+                            "Java file without @CodeFor or @Helper: " + className);
+                }
                 return;
             }
 

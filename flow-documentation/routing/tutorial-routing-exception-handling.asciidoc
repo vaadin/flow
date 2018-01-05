@@ -9,7 +9,8 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 = Router Exception Handling
 
-There is special support for navigation targets that are activated to show an error message to the user.
+There is special support for navigation targets that are activated for an unhandled exception
+thrown *during navigation* to show an "error view" to the user.
 
 These targets generally work in the same way as regular navigation targets, although they do typically
 not have any specific `@Route` as they are shown for arbitrary URLs.
@@ -34,7 +35,7 @@ public class RouteNotFoundError extends Component
             ErrorParameter<NotFoundException> parameter) {
         getElement().setText("Could not navigate to '"
                     + event.getLocation().getPath() + "'");
-        return 404;
+        return HttpServletResponse.SC_NOT_FOUND;
     }
 }
 ----
@@ -48,16 +49,85 @@ and `InternalServerError` for `java.lang.Exception` with a `500`.
 
 The default exception handlers can be overridden by extending them like:
 
-.Custom route not found
+.Custom route not found that is using our application layout
 [source, java]
 ----
+@ParentLayout(MainLayout.class)
 public class CustomNotFoundTarget extends RouteNotFoundError {
 
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
         getElement().setText("My custom not found class!");
-        return 404;
+        return HttpServletResponse.SC_NOT_FOUND;
+    }
+}
+----
+
+As a more complex sample we could have a Dashboard that collects and shows widgets
+to the user and can have widgets that should not be shown for unauthenticated users.
+For some reason a `ProtectedWidget` is loaded for an un-authenticated user.
+
+The collection should have caught the protected widget, but for some reason
+instantiates it, but luckily the widget checks authentication on creation and throws
+and `AccessDeniedException`.
+
+This unhandled exception propagates during navigation and is handled by the
+`AccessDeniedExceptionHandler` that still keeps the MainLayout with its menu bar,
+but displays information that an exception has happened.
+
+.Access denied exception sample when protected widget is loaded by mistake
+[source, java]
+----
+@Route(value = "dashboard", layout = MainLayout.class)
+@Tag(Tag.DIV)
+public class Dashboard extends Component {
+    public Dashboard() {
+        init();
+    }
+
+    private void init() {
+        getWidgets().forEach(this::addWidget);
+    }
+
+    public void addWidget(Widget widget) {
+        // Implementation omitted
+    }
+
+    private Stream<Widget> getWidgets() {
+        // Implementation omitted, gets faulty state widget
+        return Stream.of(new ProtectedWidget());
+    }
+}
+
+public class ProtectedWidget extends Widget {
+    public ProtectedWidget() {
+        if (!AccessHandler.getInstance().isAuthenticated()) {
+            throw new AccessDeniedException("Unauthorized widget access");
+        }
+        // Implementation omitted
+    }
+}
+
+@Tag(Tag.DIV)
+public abstract class Widget extends Component {
+    public boolean isProtected() {
+        // Implementation omitted
+        return true;
+    }
+}
+
+@Tag(Tag.DIV)
+@ParentLayout(MainLayout.class)
+public class AccessDeniedExceptionHandler extends Component
+        implements HasErrorParameter<AccessDeniedException> {
+
+    @Override
+    public int setErrorParameter(BeforeEnterEvent event,
+            ErrorParameter<AccessDeniedException> parameter) {
+        getElement().setText(
+            "Tried to navigate to a view without correct access rights");
+        return HttpServletResponse.SC_FORBIDDEN;
     }
 }
 ----
@@ -99,4 +169,52 @@ public class AuthenticationHandler implements BeforeEnterObserver {
 In cases where the rerouting method catches an exception and there is a need to add a custom
 message it is possible to use the `rerouteToError(Exception, String)` method to set a custom message.
 
+.Blog sample error view with a custom message
+[source, java]
+----
+@Tag(Tag.DIV)
+public class BlogPost extends Component implements HasUrlParameter<Long> {
 
+    @Override
+    public void setParameter(BeforeEvent event, Long parameter) {
+        removeAll();
+
+        Optional<BlogRecord> record = getRecord(parameter);
+
+        if (!record.isPresent()) {
+            event.rerouteToError(IllegalArgumentException.class,
+                    getI18NProvider().getTranslation("blog.post.not.found",
+                            event.getLocation().getPath()));
+        } else {
+            displayRecord(record.get());
+        }
+    }
+
+    private void removeAll() {
+        // NO-OP
+    }
+
+    private void displayRecord(BlogRecord record) {
+        // NO-OP
+    }
+
+    public Optional<BlogRecord> getRecord(Long id) {
+        // Implementation omitted
+        return Optional.empty();
+    }
+}
+
+@Tag(Tag.DIV)
+public class FaultyBlogPostHandler extends Component
+        implements HasErrorParameter<IllegalArgumentException> {
+
+    @Override
+    public int setErrorParameter(BeforeEnterEvent event,
+            ErrorParameter<IllegalArgumentException> parameter) {
+        Label message = new Label(parameter.getCustomMessage());
+        getElement().appendChild(message.getElement());
+
+        return HttpServletResponse.SC_NOT_FOUND;
+    }
+}
+----
