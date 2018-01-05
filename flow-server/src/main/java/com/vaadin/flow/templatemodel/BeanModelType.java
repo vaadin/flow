@@ -19,12 +19,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.ReflectTools;
@@ -94,7 +99,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                             + "It might be that you are trying to use some "
                             + "abstract super class which is not a bean instead "
                             + "of its direct bean subclass",
-                            proxyType.getCanonicalName()));
+                    proxyType.getCanonicalName()));
         }
 
         this.proxyType = proxyType;
@@ -172,8 +177,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         throw new InvalidTemplateModelException(String.format(
                 "Type '%s' is not supported."
                         + " Used in class '%s' with property named '%s'. %s",
-                        propertyType.toString(), declaringClass.getSimpleName(),
-                        propertyName, ModelType.getSupportedTypesString()));
+                propertyType.toString(), declaringClass.getSimpleName(),
+                propertyName, ModelType.getSupportedTypesString()));
     }
 
     static ModelType getConvertedModelType(Type propertyType,
@@ -184,7 +189,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             throw new UnsupportedOperationException(String.format(
                     "Using converters with parameterized types is not currently supported."
                             + "Used in class '%s' with property named '%s'",
-                            declaringClass.getSimpleName(), propertyName));
+                    declaringClass.getSimpleName(), propertyName));
         }
 
         Optional<ModelConverter<?, ?>> converterOptional = converterProvider
@@ -221,8 +226,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         throw new InvalidTemplateModelException(String.format(
                 "Converter '%s' implements an unsupported model type. "
                         + "Used in class '%s' with property named '%s'. '%s'",
-                        converter.getClass().getName(), declaringClass.getSimpleName(),
-                        propertyName, ModelType.getSupportedTypesString()));
+                converter.getClass().getName(), declaringClass.getSimpleName(),
+                propertyName, ModelType.getSupportedTypesString()));
     }
 
     private static ModelType getListModelType(Type propertyType,
@@ -247,8 +252,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             throw new InvalidTemplateModelException(String.format(
                     "Element type '%s' is not a valid Bean type. "
                             + "Used in class '%s' with property named '%s' with list type '%s'.",
-                            itemType.getTypeName(), declaringClass.getSimpleName(),
-                            propertyName, propertyType.getTypeName()));
+                    itemType.getTypeName(), declaringClass.getSimpleName(),
+                    propertyName, propertyType.getTypeName()));
         }
     }
 
@@ -320,12 +325,12 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                             + "Check your model definition. Client side objects cannot be "
                             + "converted automatically to model bean instances. "
                             + "Most likely you should use JsonValue type for your model property",
-                            modelValue));
+                    modelValue));
         } else {
             throw new IllegalArgumentException(String.format(
                     "The stored model value '%s' type '%s' "
                             + "cannot be used as a type for a model property",
-                            modelValue, modelValue.getClass().getName()));
+                    modelValue, modelValue.getClass().getName()));
         }
     }
 
@@ -498,6 +503,15 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      *            the node whose properties need to be populated
      */
     public void createInitialValues(StateNode node) {
+        Predicate<Entry<String, Method>> isFinal = entry -> Modifier
+                .isFinal(entry.getValue().getModifiers());
+        StringBuilder builder = new StringBuilder();
+        findBeanGetters(getProxyType()).entrySet().stream().filter(isFinal)
+                .forEach(entry -> builder.append("property '")
+                        .append(entry.getKey()).append("' has final getter '")
+                        .append(entry.getValue().getName()).append("'"));
+        Stream setters = findBeanSetters(getProxyType()).entrySet().stream()
+                .filter(isFinal);
         properties.forEach(
                 (property, type) -> type.createInitialValue(node, property));
     }
@@ -527,6 +541,15 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         });
 
         return getters;
+    }
+
+    private Map<String, Method> findBeanSetters(Class<?> beanType) {
+        return ReflectTools.getSetterMethods(beanType)
+                .filter(setter -> properties
+                        .containsKey(ReflectTools.getPropertyName(setter)))
+                .collect(Collectors.toMap(ReflectTools::getPropertyName,
+                        Function.identity()));
+
     }
 
     private void readObject(ObjectInputStream in)
