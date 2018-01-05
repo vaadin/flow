@@ -1,8 +1,8 @@
 package com.vaadin.flow.tutorial.routing;
 
 import javax.servlet.http.HttpServletResponse;
-import java.nio.file.AccessDeniedException;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -13,6 +13,9 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("routing/tutorial-routing-exception-handling.asciidoc")
@@ -31,6 +34,7 @@ public class ExceptionHandling {
         }
     }
 
+    @ParentLayout(MainLayout.class)
     public class CustomNotFoundTarget extends RouteNotFoundError {
 
         @Override
@@ -56,7 +60,46 @@ public class ExceptionHandling {
         }
     }
 
+    @Route(value = "dashboard", layout = MainLayout.class)
     @Tag(Tag.DIV)
+    public class Dashboard extends Component {
+        public Dashboard() {
+            init();
+        }
+
+        private void init() {
+            getWidgets().forEach(this::addWidget);
+        }
+
+        public void addWidget(Widget widget) {
+            // Implementation omitted
+        }
+
+        private Stream<Widget> getWidgets() {
+            // Implementation omitted, gets faulty state widget
+            return Stream.of(new ProtectedWidget());
+        }
+    }
+
+    public class ProtectedWidget extends Widget {
+        public ProtectedWidget() {
+            if (!AccessHandler.getInstance().isAuthenticated()) {
+                throw new AccessDeniedException("Unauthorized widget access");
+            }
+            // Implementation omitted
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public abstract class Widget extends Component {
+        public boolean isProtected() {
+            // Implementation omitted
+            return true;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(MainLayout.class)
     public class AccessDeniedExceptionHandler extends Component
             implements HasErrorParameter<AccessDeniedException> {
 
@@ -105,7 +148,6 @@ public class ExceptionHandling {
     public class FaultyBlogPostHandler extends Component
             implements HasErrorParameter<IllegalArgumentException> {
 
-
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<IllegalArgumentException> parameter) {
@@ -119,4 +161,16 @@ public class ExceptionHandling {
     private class BlogRecord {
     }
 
+    public class MainLayout extends Component implements RouterLayout {
+    }
+
+    public class AccessDeniedException extends RuntimeException {
+        public AccessDeniedException() {
+            super();
+        }
+
+        public AccessDeniedException(String message) {
+            super(message);
+        }
+    }
 }
