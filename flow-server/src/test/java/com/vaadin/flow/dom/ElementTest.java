@@ -1090,12 +1090,63 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertEquals(validStyle, style.get("background"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void warnAboutDashSeparated() {
+    @Test
+    public void dashSeparatedSetStyle() {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
         style.set("border-color", "blue");
+        Assert.assertEquals("blue", style.get("border-color"));
+    }
+
+    @Test
+    public void dashSeparatedGetStyle() {
+        Element element = ElementFactory.createDiv();
+
+        Style style = element.getStyle();
+        style.set("borderColor", "blue");
+        style.set("border-foo", "bar");
+        Assert.assertEquals("blue", style.get("border-color"));
+        Assert.assertEquals("bar", style.get("border-foo"));
+    }
+
+    @Test
+    public void dashSeparatedHasStyle() {
+        Element element = ElementFactory.createDiv();
+
+        Style style = element.getStyle();
+        style.set("borderColor", "blue");
+        style.set("border-foo", "bar");
+        Assert.assertTrue(style.has("border-color"));
+        Assert.assertTrue(style.has("border-foo"));
+    }
+
+    @Test
+    public void dashSeparatedRemoveStyle() {
+        Element element = ElementFactory.createDiv();
+
+        Style style = element.getStyle();
+        style.set("borderColor", "blue");
+        style.set("border-foo", "bar");
+        style.remove("border-color");
+        style.remove("border-foo");
+
+        Assert.assertFalse(style.has("border-color"));
+        Assert.assertFalse(style.has("border-foo"));
+    }
+
+    @Test
+    public void styleGetNamesDashAndCamelCase() {
+        Element element = ElementFactory.createDiv();
+
+        Style style = element.getStyle();
+        style.set("borderColor", "blue");
+        style.set("border-foo", "bar");
+
+        List<String> styles = style.getNames().collect(Collectors.toList());
+        Assert.assertEquals(2, styles.size());
+        Assert.assertTrue(styles.contains("borderColor"));
+        Assert.assertTrue(styles.contains("borderFoo"));
     }
 
     @Test(expected = IllegalArgumentException.class)

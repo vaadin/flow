@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.dom.StyleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 
 /**
@@ -50,7 +51,7 @@ public class BasicElementStyle implements Style {
         String trimmedValue = value.trim();
         ElementUtil.validateStylePropertyValue(trimmedValue);
 
-        propertyMap.setProperty(name, trimmedValue, true);
+        propertyMap.setProperty(StyleUtil.styleAttributeToProperty(name), trimmedValue, true);
         return this;
     }
 
@@ -58,7 +59,7 @@ public class BasicElementStyle implements Style {
     public Style remove(String name) {
         ElementUtil.validateStylePropertyName(name);
 
-        propertyMap.removeProperty(name);
+        propertyMap.removeProperty(StyleUtil.styleAttributeToProperty(name));
         return this;
     }
 
@@ -72,7 +73,7 @@ public class BasicElementStyle implements Style {
     public String get(String name) {
         ElementUtil.validateStylePropertyName(name);
 
-        return (String) propertyMap.getProperty(name);
+        return (String) propertyMap.getProperty(StyleUtil.styleAttributeToProperty(name));
     }
 
     @Override
@@ -82,6 +83,6 @@ public class BasicElementStyle implements Style {
 
     @Override
     public boolean has(String name) {
-        return propertyMap.hasProperty(name);
+        return propertyMap.hasProperty(StyleUtil.styleAttributeToProperty(name));
     }
 }

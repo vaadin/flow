@@ -116,12 +116,6 @@ public class ElementUtil {
                     name);
         }
 
-        if (name.contains("-")) {
-            return String.format(
-                    "Invalid style property name '%s': a style property name cannot contain dashes. Use the camelCase property name",
-                    name);
-        }
-
         return null;
     }
 
