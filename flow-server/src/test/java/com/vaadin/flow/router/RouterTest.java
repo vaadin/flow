@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.http.HttpServletResponse;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,18 +29,21 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
@@ -44,13 +51,11 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -61,6 +66,11 @@ public class RouterTest extends RoutingTestBase {
     private static List<String> eventCollector = new ArrayList<>(0);
 
     private UI ui;
+
+    private VaadinService service = Mockito.mock(VaadinService.class);
+
+    private DeploymentConfiguration configuration = Mockito
+            .mock(DeploymentConfiguration.class);
 
     @Route("")
     @Tag(Tag.DIV)
@@ -820,11 +830,19 @@ public class RouterTest extends RoutingTestBase {
         super.init();
         ui = new RouterTestUI(router);
         eventCollector.clear();
+
+        VaadinService.setCurrent(service);
+
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
     }
 
     @After
     public void tearDown() {
         UI.setCurrent(null);
+        VaadinService.setCurrent(null);
     }
 
     @Rule
