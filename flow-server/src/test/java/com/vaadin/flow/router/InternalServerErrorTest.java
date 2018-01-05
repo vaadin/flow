@@ -95,6 +95,7 @@ public class InternalServerErrorTest {
         Assert.assertEquals("pre", stacktrace.getTag());
         Assert.assertTrue(stacktrace.getText()
                 .contains(NullPointerException.class.getName()));
+        Assert.assertTrue(stacktrace.getText().contains("foo"));
     }
 
     @Test
@@ -120,5 +121,6 @@ public class InternalServerErrorTest {
         Assert.assertEquals("pre", stacktrace.getTag());
         Assert.assertTrue(stacktrace.getText()
                 .contains(NullPointerException.class.getName()));
+        Assert.assertTrue(stacktrace.getText().contains("foo"));
     }
 }
