@@ -30,8 +30,7 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class InternalServerErrorTest {
 
-    private BeforeNavigationEvent event = Mockito
-            .mock(BeforeNavigationEvent.class);
+    private BeforeEnterEvent event = Mockito.mock(BeforeEnterEvent.class);
 
     private VaadinService service = Mockito.mock(VaadinService.class);
 
