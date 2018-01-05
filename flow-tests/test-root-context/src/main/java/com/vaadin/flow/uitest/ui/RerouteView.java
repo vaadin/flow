@@ -23,7 +23,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
@@ -56,13 +56,13 @@ public class RerouteView extends AbstractDivView {
     }
 
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
         if (reroute) {
             event.rerouteToError(NotFoundException.class,
                     "Rerouting to error view");
         }
 
-        super.beforeNavigation(event);
+        super.beforeEnter(event);
     }
 
     @Tag(Tag.DIV)

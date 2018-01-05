@@ -19,6 +19,9 @@ package com.vaadin.flow.router;
  * Interface for defining a view that handles the exceptions for the set
  * Exception type T.
  *
+ * @param <T>
+ *            type Exception type handled
+ *
  * @author Vaadin Ltd
  */
 @FunctionalInterface
@@ -37,6 +40,5 @@ public interface HasErrorParameter<T extends Exception> {
      *            exception
      * @return a valid {@link javax.servlet.http.HttpServletResponse} code
      */
-    int setErrorParameter(BeforeNavigationEvent event,
-            ErrorParameter<T> parameter);
+    int setErrorParameter(BeforeEnterEvent event, ErrorParameter<T> parameter);
 }

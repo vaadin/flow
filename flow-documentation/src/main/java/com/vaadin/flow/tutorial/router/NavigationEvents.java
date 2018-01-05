@@ -22,11 +22,12 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.router.ActivationState;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.templatemodel.TemplateModel;
@@ -46,9 +47,9 @@ public class NavigationEvents {
         }
     }
 
-    public class SideElement extends Div implements BeforeNavigationObserver {
+    public class SideElement extends Div implements BeforeEnterObserver {
         @Override
-        public void beforeNavigation(BeforeNavigationEvent event) {
+        public void beforeEnter(BeforeEnterEvent event) {
             // Handle for instance before navigation clean up
         }
     }
@@ -61,9 +62,9 @@ public class NavigationEvents {
     }
 
     @Route("blog")
-    public class BlogList extends Div implements BeforeNavigationObserver {
+    public class BlogList extends Div implements BeforeEnterObserver {
         @Override
-        public void beforeNavigation(BeforeNavigationEvent event) {
+        public void beforeEnter(BeforeEnterEvent event) {
             // implementation omitted
             Object record = getItem();
 
@@ -78,11 +79,10 @@ public class NavigationEvents {
         }
     }
 
-    public class SignupForm extends Div implements BeforeNavigationObserver {
+    public class SignupForm extends Div implements BeforeLeaveObserver {
         @Override
-        public void beforeNavigation(BeforeNavigationEvent event) {
-            if (event.getActivationState() == ActivationState.DEACTIVATING
-                    && this.hasChanges()) {
+        public void beforeLeave(BeforeLeaveEvent event) {
+            if (this.hasChanges()) {
                 ContinueNavigationAction action = event.postpone();
                 ConfirmDialog.build("Are you sure you want to leave this page?")
                         .ifAccept(action::proceed).show();

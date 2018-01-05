@@ -17,13 +17,13 @@ package com.vaadin.flow.uitest.ui.temp;
 
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
 
 @Route(value = "npe")
 public class NPETargetView extends AbstractDivView {
 
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
         event.rerouteToError(NullPointerException.class);
     }
 

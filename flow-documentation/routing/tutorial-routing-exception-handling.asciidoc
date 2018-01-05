@@ -31,7 +31,7 @@ public class RouteNotFoundError extends Component
         implements HasErrorParameter<NotFoundException> {
 
     @Override
-    public int setErrorParameter(BeforeNavigationEvent event,
+    public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
         getElement().setText("Could not navigate to '"
                     + event.getLocation().getPath() + "'");
@@ -56,7 +56,7 @@ The default exception handlers can be overridden by extending them like:
 public class CustomNotFoundTarget extends RouteNotFoundError {
 
     @Override
-    public int setErrorParameter(BeforeNavigationEvent event,
+    public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
         getElement().setText("My custom not found class!");
         return HttpServletResponse.SC_NOT_FOUND;
@@ -141,17 +141,17 @@ One exception may only have one exception handler (only extending instances are 
 
 == Rerouting to an error view
 
-It is possible to reroute to an error view registered for an exception from the `BeforeNavigationEvent`.
+It is possible to reroute to an error view registered for an exception from the `BeforeEnterEvent` and `BeforeLeaveEvent`.
 
-The rerouting is done by using one of the overloads for `BeforeNavigationEvent::rerouteToError` with only the
+The rerouting is done by using one of the overloads for `rerouteToError` with only the
 exception class to target or with an added custom error message.
 
 .Reroute to error view
 [source, java]
 ----
-public class AuthenticationHandler implements BeforeNavigationObserver {
+public class AuthenticationHandler implements BeforeEnterObserver {
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
         Class<?> target = event.getNavigationTarget();
         if (!currentUserMayEnter(target)) {
             event.rerouteToError(AccessDeniedException.class);

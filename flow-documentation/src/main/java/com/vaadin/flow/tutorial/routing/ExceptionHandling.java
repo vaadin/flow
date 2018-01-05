@@ -7,8 +7,9 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -26,7 +27,7 @@ public class ExceptionHandling {
             implements HasErrorParameter<NotFoundException> {
 
         @Override
-        public int setErrorParameter(BeforeNavigationEvent event,
+        public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText("Could not navigate to '"
                     + event.getLocation().getPath() + "'");
@@ -38,16 +39,16 @@ public class ExceptionHandling {
     public class CustomNotFoundTarget extends RouteNotFoundError {
 
         @Override
-        public int setErrorParameter(BeforeNavigationEvent event,
+        public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText("My custom not found class!");
             return HttpServletResponse.SC_NOT_FOUND;
         }
     }
 
-    public class AuthenticationHandler implements BeforeNavigationObserver {
+    public class AuthenticationHandler implements BeforeEnterObserver {
         @Override
-        public void beforeNavigation(BeforeNavigationEvent event) {
+        public void beforeEnter(BeforeEnterEvent event) {
             Class<?> target = event.getNavigationTarget();
             if (!currentUserMayEnter(target)) {
                 event.rerouteToError(AccessDeniedException.class);
@@ -104,7 +105,7 @@ public class ExceptionHandling {
             implements HasErrorParameter<AccessDeniedException> {
 
         @Override
-        public int setErrorParameter(BeforeNavigationEvent event,
+        public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<AccessDeniedException> parameter) {
             getElement().setText(
                     "Tried to navigate to a view without correct access rights");
@@ -116,7 +117,7 @@ public class ExceptionHandling {
     public class BlogPost extends Component implements HasUrlParameter<Long> {
 
         @Override
-        public void setParameter(BeforeNavigationEvent event, Long parameter) {
+        public void setParameter(BeforeEvent event, Long parameter) {
             removeAll();
 
             Optional<BlogRecord> record = getRecord(parameter);
@@ -149,7 +150,7 @@ public class ExceptionHandling {
             implements HasErrorParameter<IllegalArgumentException> {
 
         @Override
-        public int setErrorParameter(BeforeNavigationEvent event,
+        public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<IllegalArgumentException> parameter) {
             Label message = new Label(parameter.getCustomMessage());
             getElement().appendChild(message.getElement());

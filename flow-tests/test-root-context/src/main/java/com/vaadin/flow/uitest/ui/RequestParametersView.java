@@ -20,14 +20,13 @@ import java.util.Collections;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.RequestParametersView", layout = ViewTestLayout.class)
-public class RequestParametersView extends Div
-        implements BeforeNavigationObserver {
+public class RequestParametersView extends Div implements BeforeEnterObserver {
     static final String REQUEST_PARAM_NAME = "testRequestParam";
     static final String NO_INPUT_TEXT = "No input";
     static final String REQUEST_PARAM_ID = "requestParamDisplayLabel";
@@ -41,7 +40,7 @@ public class RequestParametersView extends Div
     }
 
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
         requestParamLabel.setText(event.getLocation().getQueryParameters()
                 .getParameters()
                 .getOrDefault(REQUEST_PARAM_NAME, Collections.emptyList())

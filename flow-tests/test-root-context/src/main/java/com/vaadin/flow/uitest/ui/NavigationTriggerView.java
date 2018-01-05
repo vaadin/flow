@@ -17,16 +17,16 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.BeforeNavigationEvent;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.NavigationTriggerView", layout = ViewTestLayout.class)
-public class NavigationTriggerView extends AbstractDivView implements
-        HasUrlParameter<String> {
+public class NavigationTriggerView extends AbstractDivView
+        implements HasUrlParameter<String> {
     private static final String CLASS_NAME = NavigationTriggerView.class
             .getName();
 
@@ -56,7 +56,8 @@ public class NavigationTriggerView extends AbstractDivView implements
     }
 
     @Override
-    public void setParameter(BeforeNavigationEvent event, @OptionalParameter String parameter) {
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter String parameter) {
         String location = event.getLocation().getPathWithQueryParameters();
         assert location.startsWith(CLASS_NAME);
 

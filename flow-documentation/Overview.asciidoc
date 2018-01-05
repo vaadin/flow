@@ -42,6 +42,7 @@ These tutorials show how the different features are used.
 ** <<web-components/tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
 ** <<web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
 * Flow components
+** <<flow-components/tutorial-component-basic-features#,Component Basic Features>>
 ** <<flow-components/tutorial-flow-components-setup#,Setup your project to use Flow components>>
 ** <<flow-components/tutorial-flow-grid#,Grid>>
 ** Binding Data to Forms

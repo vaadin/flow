@@ -15,36 +15,35 @@
  */
 package com.vaadin.flow.router.internal;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletResponse;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.router.ActivationState;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
 import com.vaadin.flow.router.ErrorNavigationEvent;
+import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.EventUtil;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationHandler;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
 
@@ -119,8 +118,8 @@ public class NavigationStateRenderer implements NavigationHandler {
         clearContinueNavigationAction(ui);
         RouterUtil.checkForDuplicates(routeTargetType, routeLayoutTypes);
 
-        BeforeNavigationEvent beforeNavigationDeactivating = new BeforeNavigationEvent(
-                event, routeTargetType, ActivationState.DEACTIVATING);
+        BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
+                event, routeTargetType);
 
         TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
                 beforeNavigationDeactivating, ui.getElement());
@@ -143,8 +142,8 @@ public class NavigationStateRenderer implements NavigationHandler {
             chain.add(getRouteTarget(parentType, event));
         }
 
-        BeforeNavigationEvent beforeNavigationActivating = new BeforeNavigationEvent(
-                event, routeTargetType, ActivationState.ACTIVATING);
+        BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
+                event, routeTargetType);
 
         navigationState.getUrlParameters().ifPresent(urlParameters -> {
             HasUrlParameter hasUrlParameter = (HasUrlParameter) componentInstance;
@@ -225,12 +224,12 @@ public class NavigationStateRenderer implements NavigationHandler {
             Class<? extends Component> targetType) {
         assert targetType == navigationState.getNavigationTarget();
 
-        return RouterUtil.getParentLayouts(targetType, navigationState.getResolvedPath());
+        return RouterUtil.getParentLayouts(targetType,
+                navigationState.getResolvedPath());
     }
 
     /**
-     * First inform any {@link BeforeLeaveObserver}s in detaching element chain,
-     * the inform {@link BeforeNavigationObserver}s.
+     * Inform any {@link BeforeLeaveObserver}s in detaching element chain.
      *
      * @param beforeNavigation
      *            navigation event sent to observers
@@ -239,7 +238,7 @@ public class NavigationStateRenderer implements NavigationHandler {
      * @return result of observer events
      */
     private TransitionOutcome executeBeforeLeaveNavigation(
-            BeforeNavigationEvent beforeNavigation, Element element) {
+            BeforeLeaveEvent beforeNavigation, Element element) {
         Deque<BeforeLeaveObserver> leaveObservers;
         if (postponed != null) {
             leaveObservers = postponed.getLeaveObservers();
@@ -263,34 +262,11 @@ public class NavigationStateRenderer implements NavigationHandler {
             }
         }
 
-        Deque<BeforeNavigationObserver> navigationObservers;
-        if (postponed != null) {
-            navigationObservers = postponed.getNavigationObservers();
-            postponed = null;
-        } else {
-            navigationObservers = new ArrayDeque<>(
-                    EventUtil.collectBeforeNavigationObservers(element));
-        }
-
-        while (!navigationObservers.isEmpty()) {
-            BeforeNavigationObserver listener = navigationObservers.remove();
-            listener.beforeNavigation(beforeNavigation);
-
-            if (beforeNavigation.hasRerouteTarget()) {
-                return TransitionOutcome.REROUTED;
-            } else if (beforeNavigation.isPostponed()) {
-                postponed = Postpone
-                        .withNavigationObservers(navigationObservers);
-                return TransitionOutcome.POSTPONED;
-            }
-        }
-
         return TransitionOutcome.FINISHED;
     }
 
     /**
-     * First inform any {@link BeforeNavigationObserver}s in attaching element
-     * chain, the inform {@link BeforeEnterObserver}s.
+     * Inform any {@link BeforeEnterObserver}s in attaching element chain.
      * 
      * @param beforeNavigation
      *            navigation event sent to observers
@@ -299,17 +275,7 @@ public class NavigationStateRenderer implements NavigationHandler {
      * @return result of observer events
      */
     private TransitionOutcome executeBeforeEnterNavigation(
-            BeforeNavigationEvent beforeNavigation, List<HasElement> elements) {
-        List<BeforeNavigationObserver> navigateObservers = EventUtil
-                .collectBeforeNavigationObservers(elements);
-        for (BeforeNavigationObserver observer : navigateObservers) {
-            observer.beforeNavigation(beforeNavigation);
-
-            if (beforeNavigation.hasRerouteTarget()) {
-                return TransitionOutcome.REROUTED;
-            }
-        }
-
+            BeforeEnterEvent beforeNavigation, List<HasElement> elements) {
         List<BeforeEnterObserver> enterObservers = EventUtil
                 .collectBeforeEnterObservers(elements);
 
@@ -324,7 +290,7 @@ public class NavigationStateRenderer implements NavigationHandler {
     }
 
     private int reroute(NavigationEvent event,
-            BeforeNavigationEvent beforeNavigation) {
+            BeforeEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getRerouteTarget();
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
@@ -334,7 +300,7 @@ public class NavigationStateRenderer implements NavigationHandler {
     }
 
     private NavigationEvent getNavigationEvent(NavigationEvent event,
-            BeforeNavigationEvent beforeNavigation) {
+            BeforeEvent beforeNavigation) {
         if (beforeNavigation.hasErrorParameter()) {
             ErrorParameter<?> errorParameter = beforeNavigation
                     .getErrorParameter();

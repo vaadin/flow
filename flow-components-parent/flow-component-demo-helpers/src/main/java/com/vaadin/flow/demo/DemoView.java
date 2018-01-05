@@ -29,10 +29,10 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.BeforeNavigationEvent;
 
 /**
  * Base class for all the Views that demo some component.
@@ -203,7 +203,7 @@ public abstract class DemoView extends Component
     }
 
     @Override
-    public void setParameter(BeforeNavigationEvent event,
+    public void setParameter(BeforeEvent event,
             @OptionalParameter String parameter) {
         showTab(parameter == null ? "" : parameter);
     }

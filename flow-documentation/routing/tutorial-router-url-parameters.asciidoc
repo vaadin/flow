@@ -26,8 +26,7 @@ public class GreetingComponent extends Div
         implements HasUrlParameter<String> {
 
     @Override
-    public void setParameter(BeforeNavigationEvent event,
-            String parameter) {
+    public void setParameter(BeforeEvent event, String parameter) {
         setText(String.format("Hello, %s!", parameter));
     }
 }
@@ -46,7 +45,7 @@ public class OptionalGreeting extends Div
         implements HasUrlParameter<String> {
 
     @Override
-    public void setParameter(BeforeNavigationEvent event,
+    public void setParameter(BeforeEvent event,
             @OptionalParameter String parameter) {
         if (parameter == null) {
             setText("Welcome anonymous.");
@@ -71,7 +70,7 @@ public class WildcardGreeting extends Div
         implements HasUrlParameter<String> {
 
     @Override
-    public void setParameter(BeforeNavigationEvent event,
+    public void setParameter(BeforeEvent event,
             @WildcardParameter String parameter) {
         if (parameter.isEmpty()) {
             setText("Welcome anonymous.");

@@ -25,13 +25,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.BeforeNavigationEvent;
-import com.vaadin.flow.router.BeforeNavigationObserver;
 
 public class ViewTestLayout extends Div
-        implements RouterLayout, BeforeNavigationObserver {
+        implements RouterLayout, BeforeEnterObserver {
 
     private Element element = ElementFactory.createDiv();
     private Element viewContainer = ElementFactory.createDiv();
@@ -88,7 +88,7 @@ public class ViewTestLayout extends Div
     }
 
     @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
+    public void beforeEnter(BeforeEnterEvent event) {
         // Defer value setting until all option elements have been attached
         UI.getCurrent().getPage().executeJavaScript(
                 "setTimeout(function() {$0.value = $1}, 0)", viewSelect,
