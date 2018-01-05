@@ -37,7 +37,7 @@ public class ExceptionStacktraceIT extends ChromeBrowserTest {
         // be shown
         Assert.assertThat(
                 "There is no warning message about SLF4J binding absence",
-                warning.getText(), CoreMatchers.containsString("SL4J"));
+                warning.getText(), CoreMatchers.containsString("SLF4J"));
 
         WebElement stacktrace = main.findElement(By.tagName("pre"));
 
