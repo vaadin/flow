@@ -123,7 +123,7 @@ public class AccessDeniedExceptionHandler extends Component
         implements HasErrorParameter<AccessDeniedException> {
 
     @Override
-    public int setErrorParameter(BeforeNavigationEvent event,
+    public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<AccessDeniedException> parameter) {
         getElement().setText(
             "Tried to navigate to a view without correct access rights");
@@ -176,7 +176,7 @@ message it is possible to use the `rerouteToError(Exception, String)` method to 
 public class BlogPost extends Component implements HasUrlParameter<Long> {
 
     @Override
-    public void setParameter(BeforeNavigationEvent event, Long parameter) {
+    public void setParameter(BeforeEvent event, Long parameter) {
         removeAll();
 
         Optional<BlogRecord> record = getRecord(parameter);
@@ -209,7 +209,7 @@ public class FaultyBlogPostHandler extends Component
         implements HasErrorParameter<IllegalArgumentException> {
 
     @Override
-    public int setErrorParameter(BeforeNavigationEvent event,
+    public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<IllegalArgumentException> parameter) {
         Label message = new Label(parameter.getCustomMessage());
         getElement().appendChild(message.getElement());
