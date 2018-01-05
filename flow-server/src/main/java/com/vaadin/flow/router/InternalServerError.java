@@ -65,8 +65,15 @@ public class InternalServerError extends Component
         return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
     }
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(InternalServerError.class.getName());
+    /**
+     * Returns {@code true} if there is a logging binding available for SLF4J.
+     *
+     * @return {@code true} if there is a SLF4J logging binding
+     */
+    protected boolean hasLogBinding() {
+        ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
+        return loggerFactory != null
+                && !NOPLoggerFactory.class.equals(loggerFactory.getClass());
     }
 
     private void reportException(Exception exception, String path,
@@ -102,10 +109,7 @@ public class InternalServerError extends Component
     }
 
     private void checkLogBinding() {
-        ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
-        boolean hasLogBinding = loggerFactory != null
-                && !NOPLoggerFactory.class.equals(loggerFactory.getClass());
-        if (!hasLogBinding) {
+        if (!hasLogBinding()) {
             Element logInfo = ElementFactory
                     .createDiv("Your application doesn't have SLF4J binding. "
                             + "As a result the logger doesn't do any real logging. "
@@ -119,5 +123,9 @@ public class InternalServerError extends Component
                     "https://www.slf4j.org/manual.html#swapping", "here"));
             getElement().appendChild(logInfo);
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(InternalServerError.class.getName());
     }
 }
