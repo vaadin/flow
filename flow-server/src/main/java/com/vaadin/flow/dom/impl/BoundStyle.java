@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.dom.StyleUtil;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.template.angular.ElementTemplateNode;
 
@@ -52,7 +53,8 @@ public class BoundStyle implements Style {
 
     @Override
     public String get(String styleProperty) {
-        return staticStyles.get(styleProperty);
+        return staticStyles
+                .get(StyleUtil.styleAttributeToProperty(styleProperty));
     }
 
     @Override
@@ -67,7 +69,8 @@ public class BoundStyle implements Style {
 
     @Override
     public boolean has(String styleProperty) {
-        return staticStyles.containsKey(styleProperty);
+        return staticStyles
+                .containsKey(StyleUtil.styleAttributeToProperty(styleProperty));
     }
 
     @Override
