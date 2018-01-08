@@ -33,7 +33,7 @@ public class StyleUtil {
 
     /**
      * Converts the given attribute style (dash-separated) into a property style
-     * (camelCase) which is accepted by {@link Style#set(String, String)}.
+     * (camelCase).
      *
      * @param attributeStyle
      *            the attribute style
