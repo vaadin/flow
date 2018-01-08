@@ -38,6 +38,14 @@ public @interface Tag {
      */
     String A = "a";
     /**
+     * Tag for an <code>&lt;article&gt;</code>.
+     */
+    String ARTICLE = "article";
+    /**
+     * Tag for an <code>&lt;aside&gt;</code>.
+     */
+    String ASIDE = "aside";
+    /**
      * Tag for an <code>&lt;br&gt;</code>.
      */
     String BR = "br";
@@ -66,6 +74,10 @@ public @interface Tag {
      */
     String EM = "em";
     /**
+     * Tag for an <code>&lt;footer&gt;</code>.
+     */
+    String FOOTER = "footer";
+    /**
      * Tag for an <code>&lt;h1&gt;</code>.
      */
     String H1 = "h1";
@@ -90,6 +102,10 @@ public @interface Tag {
      */
     String H6 = "h6";
     /**
+     * Tag for an <code>&lt;header&gt;</code>.
+     */
+    String HEADER = "header";
+    /**
      * Tag for an <code>&lt;hr&gt;</code>.
      */
     String HR = "hr";
@@ -110,6 +126,14 @@ public @interface Tag {
      */
     String LI = "li";
     /**
+     * Tag for an <code>&lt;main&gt;</code>.
+     */
+    String MAIN = "main";
+    /**
+     * Tag for an <code>&lt;nav&gt;</code>.
+     */
+    String NAV = "nav";
+    /**
      * Tag for an <code>&lt;ol&gt;</code>.
      */
     String OL = "ol";
@@ -125,6 +149,10 @@ public @interface Tag {
      * Tag for an <code>&lt;pre&gt;</code>.
      */
     String PRE = "pre";
+    /**
+     * Tag for an <code>&lt;section&gt;</code>.
+     */
+    String SECTION = "section";
     /**
      * Tag for an <code>&lt;select&gt;</code>.
      */
