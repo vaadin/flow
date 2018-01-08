@@ -507,13 +507,30 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                 .isFinal(entry.getValue().getModifiers());
         StringBuilder builder = new StringBuilder();
         findBeanGetters(getProxyType()).entrySet().stream().filter(isFinal)
-                .forEach(entry -> builder.append("property '")
-                        .append(entry.getKey()).append("' has final getter '")
-                        .append(entry.getValue().getName()).append("'"));
-        Stream setters = findBeanSetters(getProxyType()).entrySet().stream()
-                .filter(isFinal);
+                .forEach(entry -> writeInvalidAccessor(entry, builder,
+                        "getter"));
+        findBeanSetters(getProxyType()).entrySet().stream().filter(isFinal)
+                .forEach(entry -> writeInvalidAccessor(entry, builder,
+                        "setter"));
+        if (builder.length() > 0) {
+            builder.insert(0, "Bean type '" + getProxyType()
+                    + "' cannot be used in "
+                    + "the template model because it has accessors which cannot be proxied:\n");
+            builder.append("Use @").append(Exclude.class.getSimpleName())
+                    .append(" or @").append(Include.class.getSimpleName())
+                    .append(" annotations to limit properties to use in the model so "
+                            + "that all properties with final accessors are excluded from the model");
+            throw new IllegalStateException(builder.toString());
+        }
         properties.forEach(
                 (property, type) -> type.createInitialValue(node, property));
+    }
+
+    private void writeInvalidAccessor(Entry<String, Method> entry,
+            StringBuilder builder, String accessorType) {
+        builder.append("property '").append(entry.getKey())
+                .append("' has final ").append(accessorType).append(" '")
+                .append(entry.getValue().getName()).append("'\n");
     }
 
     private void initBeanPropertyCache() {
