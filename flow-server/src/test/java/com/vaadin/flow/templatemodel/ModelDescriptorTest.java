@@ -34,14 +34,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
-import com.vaadin.flow.templatemodel.BasicComplexModelType;
-import com.vaadin.flow.templatemodel.BasicModelType;
-import com.vaadin.flow.templatemodel.BeanModelType;
-import com.vaadin.flow.templatemodel.ComplexModelType;
-import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
-import com.vaadin.flow.templatemodel.ListModelType;
-import com.vaadin.flow.templatemodel.ModelDescriptor;
-import com.vaadin.flow.templatemodel.ModelType;
 import com.vaadin.flow.templatemodel.TemplateModelTest.BasicTypeModel;
 import com.vaadin.flow.templatemodel.TemplateModelTest.BeanModel;
 import com.vaadin.flow.templatemodel.TemplateModelTest.ListBeanModel;
