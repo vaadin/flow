@@ -1,9 +1,9 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ExportedJSFunctionView", layout = ViewTestLayout.class)
 @PageTitle("Exported JS function view")
@@ -14,7 +14,7 @@ public class ExportedJSFunctionView extends AbstractDivView {
         Div version = new Div();
         version.setId("version");
         add(version);
-        String client = "window.vaadin.clients[Object.keys(window.vaadin.clients)]";
+        String client = "window.Vaadin.Flow.clients[Object.keys(window.Vaadin.Flow.clients)]";
         String versionJs = "var msg = '';" + "var versionInfoMethod = " + client
                 + ".getVersionInfo;" + "if (versionInfoMethod) {"
                 + "  msg += 'version: '+versionInfoMethod().flow;" + "} else {" //

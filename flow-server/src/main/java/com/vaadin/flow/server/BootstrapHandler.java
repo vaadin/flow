@@ -75,9 +75,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
-            + "flow.gwtStatsEvents = [];"
+            + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
-            + "flow.gwtStatsEvents.push(event); " + "return true;};};";
+            + "window.Vaadin.Flow.gwtStatsEvents.push(event); " + "return true;};};";
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String DEFER_ATTRIBUTE = "defer";
     private static final String VIEWPORT = "viewport";

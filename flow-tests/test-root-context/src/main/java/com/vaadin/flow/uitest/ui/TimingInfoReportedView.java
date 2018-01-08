@@ -18,8 +18,8 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.TimingInfoReportedView", layout = ViewTestLayout.class)
 public class TimingInfoReportedView extends Div {
@@ -43,7 +43,7 @@ public class TimingInfoReportedView extends Div {
             + "}"
             + "div.appendChild(document.createTextNode('Timings ok'));"
             + "}; "
-            + "report(window.vaadin.clients[Object.keys(window.vaadin.clients)].getProfilingData());"
+            + "report(window.Vaadin.Flow.clients[Object.keys(window.Vaadin.Flow.clients)].getProfilingData());"
             + "},0);";
   //@formatter:on
 

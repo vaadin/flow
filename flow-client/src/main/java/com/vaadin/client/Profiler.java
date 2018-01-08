@@ -615,7 +615,7 @@ public class Profiler {
 
     private static native JsArray<GwtStatsEvent> getGwtStatsEvents()
     /*-{
-        return $wnd.flow.gwtStatsEvents || [];
+        return $wnd.Vaadin.Flow.gwtStatsEvents || [];
     }-*/;
 
     /**
@@ -625,11 +625,11 @@ public class Profiler {
     private static native void ensureLogger()
     /*-{
         if (typeof $wnd.__gwtStatsEvent != 'function') {
-            if (typeof $wnd.flow.gwtStatsEvents != 'object') {
-                $wnd.flow.gwtStatsEvents = [];
+            if (typeof $wnd.Vaadin.Flow.gwtStatsEvents != 'object') {
+                $wnd.Vaadin.Flow.gwtStatsEvents = [];
             }
             $wnd.__gwtStatsEvent = function(event) {
-                $wnd.flow.gwtStatsEvents.push(event);
+                $wnd.Vaadin.Flow.gwtStatsEvents.push(event);
                 return true;
             }
         }
@@ -641,8 +641,8 @@ public class Profiler {
      */
     private static native void ensureNoLogger()
     /*-{
-        if (typeof $wnd.flow.gwtStatsEvents == 'object') {
-            delete $wnd.flow.gwtStatsEvents;
+        if (typeof $wnd.Vaadin.Flow.gwtStatsEvents == 'object') {
+            delete $wnd.Vaadin.Flow.gwtStatsEvents;
             if (typeof $wnd.__gwtStatsEvent == 'function') {
                 $wnd.__gwtStatsEvent = function() { return true; };
             }
@@ -651,7 +651,7 @@ public class Profiler {
 
     private static native JsArray<GwtStatsEvent> clearEventsList()
     /*-{
-        $wnd.flow.gwtStatsEvents = [];
+        $wnd.Vaadin.Flow.gwtStatsEvents = [];
     }-*/;
 
     /**

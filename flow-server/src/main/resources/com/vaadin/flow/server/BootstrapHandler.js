@@ -67,16 +67,16 @@
 	 * bootstrapping unless the legacy vaadinBootstrap.js file is loaded before
 	 * this script.
 	 */
-	window.vaadin = window.vaadin || {
-		clients: {}
-	};
-	
-	window.flow = window.flow || {
+    window.Vaadin = window.Vaadin || {};
+
+	window.Vaadin.Flow = window.Vaadin.Flow || {
+        clients: {},
+
 		initApplication: function(appId, config) {
 			var testbenchId = appId.replace(/-\d+$/, '');
 			
 			if (apps[appId]) {
-				if (window.vaadin && window.vaadin.clients && window.vaadin.clients[testbenchId] && window.vaadin.clients[testbenchId].initializing) {
+				if (window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.clients && window.Vaadin.Flow.clients[testbenchId] && window.Vaadin.Flow.clients[testbenchId].initializing) {
 					throw "Application " + appId + " is already being initialized";
 				}
 				if (isInitializedInDom(appId)) {
@@ -86,7 +86,7 @@
 	
 			log("init application", appId, config);
 			
-			window.vaadin.clients[testbenchId] = {
+			window.Vaadin.Flow.clients[testbenchId] = {
 					isActive: function() {
 						return true;
 					},
@@ -156,6 +156,6 @@
 	var uidl = {{INITIAL_UIDL}};
 	var config = {{CONFIG_JSON}};
 	config.uidl = uidl;
-	
-	flow.initApplication("{{APP_ID}}", config);
+
+    window.Vaadin.Flow.initApplication("{{APP_ID}}", config);
 })();

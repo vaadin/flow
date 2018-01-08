@@ -178,12 +178,12 @@ public class Bootstrapper implements EntryPoint {
      */
     private static native JsoConfiguration getJsoConfiguration(String appId)
     /*-{
-        return $wnd.flow.getApp(appId);
+        return $wnd.Vaadin.Flow.getApp(appId);
      }-*/;
 
     private static native boolean vaadinBootstrapLoaded()
     /*-{
-         return $wnd.flow != null;
+         return $wnd.Vaadin.Flow != null;
      }-*/;
 
     private static native void deferStartApplication(String applicationId)
@@ -210,7 +210,7 @@ public class Bootstrapper implements EntryPoint {
     public static native void registerCallback(String widgetsetName)
     /*-{
         var callbackHandler = $entry(@com.vaadin.client.bootstrap.Bootstrapper::startApplication(Ljava/lang/String;));
-        $wnd.flow.registerWidgetset(widgetsetName, callbackHandler);
+        $wnd.Vaadin.Flow.registerWidgetset(widgetsetName, callbackHandler);
     }-*/;
 
 }

@@ -139,19 +139,19 @@ public class ApplicationConnection {
         });
         client.productionMode = productionMode;
 
-        $wnd.vaadin.resolveUri = $entry(function(uriToResolve) {
+        $wnd.Vaadin.Flow.resolveUri = $entry(function(uriToResolve) {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
     
-        $wnd.vaadin.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
+        $wnd.Vaadin.Flow.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
     
         client.initializing = false;
     
-        $wnd.vaadin.clients[applicationId] = client;
+        $wnd.Vaadin.Flow.clients[applicationId] = client;
     }-*/;
 
     private Node getDomElementByNodeId(int id) {
@@ -168,7 +168,7 @@ public class ApplicationConnection {
             String applicationId, String servletVersion)
     /*-{
         var ap = this;
-        var client = $wnd.vaadin.clients[applicationId];
+        var client = $wnd.Vaadin.Flow.clients[applicationId];
         client.isActive = $entry(function() {
             return ap.@com.vaadin.client.ApplicationConnection::isActive()();
         });

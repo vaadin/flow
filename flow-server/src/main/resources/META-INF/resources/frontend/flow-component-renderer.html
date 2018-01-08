@@ -31,7 +31,7 @@
       if (!this.nodeid || !this.appid) {
         return;
       }
-      const renderedComponent = window.vaadin.clients[this.appid].getByNodeId(this.nodeid);
+      const renderedComponent = window.Vaadin.Flow.clients[this.appid].getByNodeId(this.nodeid);
       if (this.firstElementChild) {
         if (!renderedComponent) {
           this._clear();
