@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Locale;
 
 import com.vaadin.client.ExistingElementMap;
+import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
@@ -31,6 +32,7 @@ import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.template.TemplateRegistry;
 import com.vaadin.client.flow.template.TestElementTemplateNode;
+import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
@@ -1414,6 +1416,33 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertFalse(SimpleElementBindingStrategy.needsRebind(node));
     }
 
+    public void testReadyCallback_polymerElementAndNoListeners_readyIsCalled() {
+        assertOriginalReadyIsCalled();
+    }
+
+    public void testReadyCallback_polymerElement_readyIsCalledAndNotified() {
+        PolymerUtils.addReadyListener(element,
+                () -> WidgetUtil.setJsProperty(element, "baz", "foobar"));
+
+        assertOriginalReadyIsCalled();
+
+        assertEquals("foobar", WidgetUtil.getJsProperty(element, "baz"));
+    }
+
+    private void assertOriginalReadyIsCalled() {
+        initPolymer(element);
+
+        NativeFunction function = NativeFunction.create("this['foo']='bar';");
+        WidgetUtil.setJsProperty(element, "ready", function);
+
+        Binder.bind(node, element);
+
+        NativeFunction readyCall = new NativeFunction("this.ready();");
+        readyCall.call(element);
+
+        assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
+    }
+
     private void setTag() {
         node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.TAG)
                 .setValue(element.getTagName());
@@ -1490,6 +1519,18 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     private native void runWhenDefined(Element element)
     /*-{
         element.callback();
+    }-*/;
+
+    private native void initPolymer(Element element)
+    /*-{
+        $wnd.Polymer = function() {};
+        $wnd.Polymer.dom = function(node){
+            return node;
+        };
+        $wnd.Polymer.Element = {};
+        element.__proto__ = $wnd.Polymer.Element;
+        element.removeAttribute = function(){
+        };
     }-*/;
 
 }
