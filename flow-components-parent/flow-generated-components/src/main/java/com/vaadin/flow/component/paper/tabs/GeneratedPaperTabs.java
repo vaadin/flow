@@ -16,22 +16,20 @@
 package com.vaadin.flow.component.paper.tabs;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ComponentSupplier;
-import com.vaadin.flow.component.DomEvent;
-import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.NotSupported;
-import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.ComponentSupplier;
+import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.shared.Registration;
-
-import javax.annotation.Generated;
-
+import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
+import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.component.HasComponents;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-tabs#2.0.0", "Flow#1.0-SNAPSHOT" })
@@ -1028,7 +1026,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(double value) {
+    public void select(String value) {
         getElement().callFunction("select", value);
     }
 
@@ -1045,7 +1043,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(String value) {
+    public void select(double value) {
         getElement().callFunction("select", value);
     }
 

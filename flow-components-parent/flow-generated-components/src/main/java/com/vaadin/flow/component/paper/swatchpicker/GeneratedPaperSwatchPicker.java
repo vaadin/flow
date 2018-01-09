@@ -16,19 +16,17 @@
 package com.vaadin.flow.component.paper.swatchpicker;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ComponentSupplier;
-import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.ComponentSupplier;
+import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.shared.Registration;
-
-import javax.annotation.Generated;
-
+import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonArray;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.shared.Registration;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-swatch-picker#2.0.1", "Flow#1.0-SNAPSHOT" })

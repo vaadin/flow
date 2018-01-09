@@ -15,16 +15,14 @@
  */
 package com.vaadin.flow.component.combobox;
 
-import javax.annotation.Generated;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentSupplier;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.ComponentSupplier;
+import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-
 import elemental.json.JsonObject;
+import com.vaadin.flow.component.NotSupported;
 import elemental.json.JsonArray;
 
 /**
@@ -367,7 +365,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Target path to unlink.
      */
     @NotSupported
-    protected void unlinkPaths(String path) {
+    protected void unlinkPaths(JsonObject path) {
     }
 
     /**
@@ -390,7 +388,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Target path to unlink.
      */
     @NotSupported
-    protected void unlinkPaths(JsonObject path) {
+    protected void unlinkPaths(String path) {
     }
 
     /**
@@ -657,7 +655,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void pop(String path) {
+    protected void pop(JsonObject path) {
     }
 
     /**
@@ -684,7 +682,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void pop(JsonObject path) {
+    protected void pop(String path) {
     }
 
     /**
@@ -781,7 +779,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void shift(String path) {
+    protected void shift(JsonObject path) {
     }
 
     /**
@@ -808,7 +806,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      *            Path to array.
      */
     @NotSupported
-    protected void shift(JsonObject path) {
+    protected void shift(String path) {
     }
 
     /**
