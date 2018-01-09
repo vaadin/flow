@@ -1417,19 +1417,52 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testReadyCallback_polymerElementAndNoListeners_readyIsCalled() {
-        assertOriginalReadyIsCalled();
+        assertPolymerElement_originalReadyIsCalled();
     }
 
     public void testReadyCallback_polymerElement_readyIsCalledAndNotified() {
         PolymerUtils.addReadyListener(element,
                 () -> WidgetUtil.setJsProperty(element, "baz", "foobar"));
 
-        assertOriginalReadyIsCalled();
+        assertPolymerElement_originalReadyIsCalled();
 
         assertEquals("foobar", WidgetUtil.getJsProperty(element, "baz"));
     }
 
-    private void assertOriginalReadyIsCalled() {
+    public void testReadyCallback_deferredPolymerElementAndNoListeners_readyIsCalled() {
+        element = Browser.getDocument().createElement("x-my");
+        assertDeferredPolymerElement_originalReadyIsCalled(element);
+    }
+
+    public void testReadyCallback_deferredPolymerElement_readyIsCalledAndNotified() {
+        element = Browser.getDocument().createElement("x-my");
+
+        PolymerUtils.addReadyListener(element,
+                () -> WidgetUtil.setJsProperty(element, "baz", "foobar"));
+
+        assertDeferredPolymerElement_originalReadyIsCalled(element);
+
+        assertEquals("foobar", WidgetUtil.getJsProperty(element, "baz"));
+    }
+
+    private void assertDeferredPolymerElement_originalReadyIsCalled(
+            Element element) {
+        mockWhenDefined(element);
+
+        NativeFunction function = NativeFunction.create("this['foo']='bar';");
+        WidgetUtil.setJsProperty(element, "ready", function);
+
+        Binder.bind(node, element);
+
+        runWhenDefined(element);
+
+        NativeFunction readyCall = new NativeFunction("this.ready();");
+        readyCall.call(element);
+
+        assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
+    }
+
+    private void assertPolymerElement_originalReadyIsCalled() {
         initPolymer(element);
 
         NativeFunction function = NativeFunction.create("this['foo']='bar';");
