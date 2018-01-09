@@ -217,12 +217,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Element element)
     /*-{
       if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
-          this.@SimpleElementBindingStrategy::bindPolymerProperties(*)(node, element);
+          this.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
       } else if ( @com.vaadin.client.PolymerUtils::mayBePolymerElement(*)(element) ) {
           var self = this;
           try {
               $wnd.customElements.whenDefined(element.localName).then( function () {
-                  self.@SimpleElementBindingStrategy::bindPolymerProperties(*)(node, element);
+                  self.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
               });
           }
           catch (e) {
@@ -231,19 +231,25 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
       }
     }-*/;
 
-    private native void bindPolymerProperties(StateNode node, Element element)
+    private native void hookUpPolymerElement(StateNode node, Element element)
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
-        var originalFunction = element._propertiesChanged;
-        if (originalFunction) {
+    
+        var originalPropertiesChanged = element._propertiesChanged;
+        if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
                 $entry(function () {
                     self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
                 })();
-                originalFunction.apply(this, arguments);
+                originalPropertiesChanged.apply(this, arguments);
             };
+        }
+    
+        var originalReady = element.ready;
+        element.ready = function (){
+            originalReady.apply(this, arguments);
+            @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
         }
     }-*/;
 

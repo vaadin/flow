@@ -40,9 +40,9 @@ public interface Style extends Serializable {
     /**
      * Sets the given style property to the given value.
      * <p>
-     * Note that the name should be in camelCase and not dash-separated, i.e.
-     * use "fontFamily" and not "font-family"
-     *
+     * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
+     * <code>font-family</code> versions are supported.
+     * 
      * @param name
      *            the style property name as camelCase, not <code>null</code>
      * @param value
@@ -54,8 +54,8 @@ public interface Style extends Serializable {
     /**
      * Removes the given style property if it has been set.
      * <p>
-     * Note that the name should be in camelCase and not dash-separated, i.e.
-     * use "fontFamily" and not "font-family"
+     * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
+     * <code>font-family</code> versions are supported.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
@@ -73,8 +73,8 @@ public interface Style extends Serializable {
     /**
      * Checks if the given style property has been set.
      * <p>
-     * Note that the name should be in camelCase and not dash-separated, i.e.
-     * use "fontFamily" and not "font-family"
+     * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
+     * <code>font-family</code> versions are supported.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
@@ -86,6 +86,10 @@ public interface Style extends Serializable {
 
     /**
      * Gets the defined style property names.
+     * <p>
+     * Note that this always returns the name as camelCased, e.g.
+     * <code>fontFamily</code> even if it has been set as dash-separated
+     * (<code>font-family</code>).
      *
      * @return a stream of defined style property names
      */

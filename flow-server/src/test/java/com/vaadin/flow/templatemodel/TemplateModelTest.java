@@ -9,10 +9,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.jsoup.Jsoup;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
@@ -25,15 +28,15 @@ import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.templatemodel.Exclude;
-import com.vaadin.flow.templatemodel.Include;
-import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
-import com.vaadin.flow.templatemodel.TemplateModel;
 
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class TemplateModelTest extends HasCurrentService {
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
     public interface EmptyModel extends TemplateModel {
     }
 
@@ -452,6 +455,36 @@ public class TemplateModelTest extends HasCurrentService {
             return super.getModel();
         }
 
+    }
+
+    public static class BeanWithFinalAccessors implements TemplateModel {
+        public final void setFoo(String foo) {
+
+        }
+
+        public final String getBar() {
+            return null;
+        }
+
+        public void setName(String name) {
+
+        }
+    }
+
+    public static class BeanWithInvalidSubBean implements TemplateModel {
+
+        public BeanWithFinalAccessors getBean() {
+            return null;
+        }
+    }
+
+    public static class BeanWithExcludedInvalidAccessorsInSubBean
+            implements TemplateModel {
+
+        @Exclude({ "foo", "bar" })
+        public BeanWithFinalAccessors getBean() {
+            return null;
+        }
     }
 
     @Override
@@ -1275,6 +1308,53 @@ public class TemplateModelTest extends HasCurrentService {
         Assert.assertEquals(0, template.getModel().getInt());
         Assert.assertNull(template.getModel().getInteger());
         Assert.assertNull(template.getModel().getString());
+    }
+
+    @Test
+    public void modelHasFinalAccessors_throws() {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers
+                        .containsString(BeanWithFinalAccessors.class.getName()),
+                CoreMatchers.containsString(
+                        "property 'bar' has final getter 'getBar'"),
+                CoreMatchers.containsString(
+                        "property 'foo' has final setter 'setFoo'"),
+                CoreMatchers
+                        .containsString("@" + Exclude.class.getSimpleName()),
+                CoreMatchers
+                        .containsString("@" + Include.class.getSimpleName())));
+
+        new EmptyDivTemplate<BeanWithFinalAccessors>() {
+
+        };
+    }
+
+    @Test
+    public void modelHasSubBeanWithFinalAccessors_throws() {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers
+                        .containsString(BeanWithFinalAccessors.class.getName()),
+                CoreMatchers.containsString(
+                        "property 'bar' has final getter 'getBar'"),
+                CoreMatchers.containsString(
+                        "property 'foo' has final setter 'setFoo'"),
+                CoreMatchers
+                        .containsString("@" + Exclude.class.getSimpleName()),
+                CoreMatchers
+                        .containsString("@" + Include.class.getSimpleName())));
+
+        new EmptyDivTemplate<BeanWithInvalidSubBean>() {
+
+        };
+    }
+
+    @Test
+    public void modelHasSubBeanWithExcludedFinalAccessors_modelIsCreated() {
+        new EmptyDivTemplate<BeanWithExcludedInvalidAccessorsInSubBean>() {
+
+        };
     }
 
     private static Set<String> getKeys(ElementPropertyMap map) {

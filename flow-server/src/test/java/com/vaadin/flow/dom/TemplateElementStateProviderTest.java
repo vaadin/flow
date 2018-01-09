@@ -855,8 +855,7 @@ public class TemplateElementStateProviderTest {
     }
 
     private void assertClassList(ClassList classList, String... expectedNames) {
-        Set<String> expectedSet = new HashSet<>(
-                Arrays.asList(expectedNames));
+        Set<String> expectedSet = new HashSet<>(Arrays.asList(expectedNames));
 
         Assert.assertEquals(expectedNames.length, classList.size());
         Assert.assertEquals(expectedNames.length, classList.stream().count());
@@ -1045,6 +1044,24 @@ public class TemplateElementStateProviderTest {
         Assert.assertEquals("blue", element.getStyle().get("background"));
         Assert.assertArrayEquals(new Object[] { "style" },
                 element.getAttributeNames().toArray());
+    }
+
+    @Test
+    public void templateStaticStyleGetUsingDashSeparated() {
+        Element element = createElement("<div style='font-size:14px'></div>");
+
+        Assert.assertEquals("14px", element.getStyle().get("font-size"));
+        Assert.assertEquals("14px", element.getStyle().get("fontSize"));
+        Assert.assertNull(element.getStyle().get("fontsize"));
+    }
+
+    @Test
+    public void templateStaticStyleHasUsingDashSeparated() {
+        Element element = createElement("<div style='font-size:14px'></div>");
+
+        Assert.assertTrue(element.getStyle().has("font-size"));
+        Assert.assertTrue(element.getStyle().has("fontSize"));
+        Assert.assertFalse(element.getStyle().has("fontsize"));
     }
 
     @Test

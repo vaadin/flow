@@ -17,6 +17,9 @@
 package com.vaadin.client;
 
 import com.vaadin.client.flow.StateNode;
+import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.collection.JsSet;
+import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeFeature;
@@ -39,6 +42,10 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd.
  */
 public final class PolymerUtils {
+
+    private static final JsWeakMap<Element, JsSet<Runnable>> readyListeners = JsCollections
+            .weakMap();
+
     private PolymerUtils() {
     }
 
@@ -331,6 +338,43 @@ public final class PolymerUtils {
     public static String getTag(StateNode node) {
         return (String) node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.TAG).getValue();
+    }
+
+    /**
+     * Adds the {@code listener} which will be invoked when the
+     * {@code polymerElement} becomes "ready" meaning that it's method
+     * {@code ready} is called.
+     * <p>
+     * The listener won't be called if the element is already "ready" and the
+     * listener will be removed immediately once it's executed.
+     *
+     * @param polymerElement
+     *            the custom (polymer) element to listen its readiness state
+     * @param listener
+     *            the callback to execute once the element becomes ready
+     */
+    public static void addReadyListener(Element polymerElement,
+            Runnable listener) {
+        JsSet<Runnable> set = readyListeners.get(polymerElement);
+        if (set == null) {
+            set = JsCollections.set();
+            readyListeners.set(polymerElement, set);
+        }
+        set.add(listener);
+    }
+
+    /**
+     * Fires the ready event for the {@code polymerElement}.
+     *
+     * @param polymerElement
+     *            the custom (polymer) element whose state is "ready"
+     */
+    public static void fireReadyEvent(Element polymerElement) {
+        JsSet<Runnable> listeners = readyListeners.get(polymerElement);
+        if (listeners != null) {
+            readyListeners.delete(polymerElement);
+            listeners.forEach(Runnable::run);
+        }
     }
 
     private static Node getChildIgnoringStyles(Node parent, int index) {
