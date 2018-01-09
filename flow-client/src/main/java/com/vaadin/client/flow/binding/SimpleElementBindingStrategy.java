@@ -16,7 +16,6 @@
 package com.vaadin.client.flow.binding;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -49,7 +48,6 @@ import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
 import elemental.dom.Element;
 import elemental.dom.Node;
-import elemental.dom.ShadowRoot;
 import elemental.events.Event;
 import elemental.events.EventRemover;
 import elemental.json.Json;
@@ -843,32 +841,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return (JsonObject) map.getProperty(NodeProperties.PAYLOAD).getValue();
     }
 
-    private static Optional<String> extractNodeId(StateNode node) {
-        if (node.hasFeature(NodeFeatures.ELEMENT_ATTRIBUTES)) {
-            return Optional.ofNullable(node
-                    .getMap(NodeFeatures.ELEMENT_ATTRIBUTES)
-                    .getProperty(NodeProperties.ID).getValueOrDefault(null));
-        }
-        return Optional.empty();
-    }
-
     private void invokeWhenNodeIsConstructed(Command command, StateNode node) {
         Computation computation = Reactive.runWhenDependenciesChange(command);
         node.addUnregisterListener(event -> computation.stop());
-    }
-
-    private static void bindElementFromShadowRootByTagName(
-            BinderContext binderContext, StateNode childNode, String childTag,
-            ShadowRoot shadowRoot) {
-        Node shadowRootElement = PolymerUtils
-                .searchForElementInShadowRoot(shadowRoot, childTag);
-        if (shadowRootElement == null) {
-            throw new IllegalStateException(
-                    "Could not locate element imported with @Id annotation, tag = '"
-                            + childTag
-                            + "', in shadow root of a parent element");
-        }
-        binderContext.bind(childNode, shadowRootElement);
     }
 
     private void handleChildrenSplice(ListSpliceEvent event,
