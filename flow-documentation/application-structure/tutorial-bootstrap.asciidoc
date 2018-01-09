@@ -145,7 +145,7 @@ public static class BodySizeAnnotatedRoute extends Div {
 }
 ----
 
-You can define height and with or just one of them as wanted.
+You can define height and width or just one of them as wanted.
 
 With the `PageConfigurator` you can just addInlineContent like:
 
