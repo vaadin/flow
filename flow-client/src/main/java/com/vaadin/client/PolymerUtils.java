@@ -316,19 +316,6 @@ public final class PolymerUtils {
     }-*/;
 
     /**
-     * Invokes the {@code runnable} when the custom element with the tag name of
-     * the {@code node} is initialized (its DOM structure becomes available).
-     *
-     * @param node
-     *            the node whose tag name is awaiting for
-     * @param runnable
-     *            the command to run when the element if initialized
-     */
-    public static void invokeWhenDefined(Node node, Runnable runnable) {
-        invokeWhenDefined(node.getLocalName(), runnable);
-    }
-
-    /**
      * Gets the tag name of the {@code node}.
      *
      * @param node

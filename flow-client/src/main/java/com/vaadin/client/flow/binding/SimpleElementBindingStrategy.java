@@ -233,7 +233,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -243,7 +243,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-    
+
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -697,6 +697,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
+        assert context.htmlNode instanceof Element : "Unexpected html node. The node is supposed to be a custom element";
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
             String id = object.getString(NodeProperties.PAYLOAD);
             String address = "id='" + id + "'";
@@ -705,7 +706,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 return;
             }
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
-                PolymerUtils.invokeWhenDefined(context.htmlNode,
+                PolymerUtils.addReadyListener((Element) context.htmlNode,
                         () -> appendVirtualChild(context, node, false));
                 return;
             }
@@ -726,7 +727,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
 
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
-                PolymerUtils.invokeWhenDefined(context.htmlNode,
+                PolymerUtils.addReadyListener((Element) context.htmlNode,
                         () -> appendVirtualChild(context, node, false));
                 return;
             }
