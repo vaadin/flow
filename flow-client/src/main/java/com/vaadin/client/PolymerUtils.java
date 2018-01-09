@@ -340,6 +340,19 @@ public final class PolymerUtils {
                 .getProperty(NodeProperties.TAG).getValue();
     }
 
+    /**
+     * Adds the {@code listener} which will be invoked when the
+     * {@code polymerElement} becomes "ready" meaning that it's method
+     * {@code ready} is called.
+     * <p>
+     * The listener won't be called if the element is already "ready" and the
+     * listener will be removed immediately once it's executed.
+     *
+     * @param polymerElement
+     *            the custom (polymer) element to listen its readiness state
+     * @param listener
+     *            the callback to execute once the element becomes ready
+     */
     public static void addReadyListener(Element polymerElement,
             Runnable listener) {
         JsSet<Runnable> set = readyListeners.get(polymerElement);
@@ -350,6 +363,12 @@ public final class PolymerUtils {
         set.add(listener);
     }
 
+    /**
+     * Fires the ready event for the {@code polymerElement}.
+     *
+     * @param polymerElement
+     *            the custom (polymer) element whose state is "ready"
+     */
     public static void fireReadyEvent(Element polymerElement) {
         JsSet<Runnable> listeners = readyListeners.get(polymerElement);
         if (listeners != null) {
