@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.component.tabs;
 
-import javax.annotation.Generated;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentSupplier;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.ComponentSupplier;
+import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.HasComponents;
 
 /**
  * <p>
@@ -30,11 +30,6 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * <p>
  * {@code <vaadin-tab>} is a Polymer 2 element providing an accessible and
  * customizable tab.
- * </p>
- * <p>
- * <a href=
- * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
- * >Generic styling/theming documentation</a>
  * </p>
  * <p>
  * {@code
@@ -86,13 +81,18 @@ Tab 1
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TabElement#1.0.0-beta1", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.TabElement#2.0.0-alpha5", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-tab")
-@HtmlImport("frontend://bower_components/vaadin-tabs/vaadin-tab.html")
-public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+@HtmlImport("frontend://bower_components/vaadin-tabs/src/vaadin-tab.html")
+public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>> extends
+        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
      * <p>
@@ -190,5 +190,22 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      */
     public void setSelected(boolean selected) {
         getElement().setProperty("selected", selected);
+    }
+
+    /**
+     * Adds the given components as children of this component.
+     * 
+     * @param components
+     *            the components to add
+     * @see HasComponents#add(Component...)
+     */
+    public GeneratedVaadinTab(Component... components) {
+        add(components);
+    }
+
+    /**
+     * Default constructor.
+     */
+    public GeneratedVaadinTab() {
     }
 }

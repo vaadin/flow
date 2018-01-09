@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.tabs;
+package com.vaadin.flow.component.listbox;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
@@ -21,8 +21,8 @@ import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import elemental.json.JsonArray;
 import com.vaadin.flow.component.Synchronize;
+import elemental.json.JsonArray;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
@@ -35,17 +35,16 @@ import com.vaadin.flow.component.HasComponents;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-tabs>} is a Polymer 2 element for easy switching between
- * different view
+ * {@code <vaadin-list-box>} is a Polymer 2 element for menus
  * </p>
  * <p>
  * {@code
-<vaadin-tabs selected="4">
-<vaadin-tab>Page 1</vaadin-tab>
-<vaadin-tab>Page 2</vaadin-tab>
-<vaadin-tab>Page 3</vaadin-tab>
-<vaadin-tab>Page 4</vaadin-tab>
-</vaadin-tabs>}
+<vaadin-list-box selected="2">
+<vaadin-item>Item 1</vaadin-item>
+<vaadin-item>Item 2</vaadin-item>
+<vaadin-item>Item 3</vaadin-item>
+<vaadin-item>Item 4</vaadin-item>
+</vaadin-list-box>}
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -59,40 +58,8 @@ import com.vaadin.flow.component.HasComponents;
  * </tr>
  * </thead> <tbody>
  * <tr>
- * <td>{@code back-button}</td>
- * <td>Button for moving the scroll back</td>
- * </tr>
- * <tr>
- * <td>{@code tabs}</td>
- * <td>The tabs container</td>
- * </tr>
- * <tr>
- * <td>{@code forward-button}</td>
- * <td>Button for moving the scroll forward</td>
- * </tr>
- * </tbody>
- * </table>
- * <p>
- * The following state attributes are available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Attribute</th>
- * <th>Description</th>
- * <th>Part name</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code orientation}</td>
- * <td>Tabs disposition, valid values are {@code horizontal} and
- * {@code vertical}.</td>
- * <td>:host</td>
- * </tr>
- * <tr>
- * <td>{@code overflow}</td>
- * <td>It's set to {@code start}, {@code end}, none or both.</td>
- * <td>:host</td>
+ * <td>{@code items}</td>
+ * <td>The items container</td>
  * </tr>
  * </tbody>
  * </table>
@@ -103,11 +70,45 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TabsElement#2.0.0-alpha5", "Flow#1.0-SNAPSHOT" })
-@Tag("vaadin-tabs")
-@HtmlImport("frontend://bower_components/vaadin-tabs/src/vaadin-tabs.html")
-public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
+        "WebComponent: Vaadin.ListBoxElement#1.0.0-alpha7",
+        "Flow#1.0-SNAPSHOT" })
+@Tag("vaadin-list-box")
+@HtmlImport("frontend://bower_components/vaadin-list-box/src/vaadin-list-box.html")
+public class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>> extends
         Component implements HasStyle, ComponentSupplier<R>, HasComponents {
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The index of the item selected in the items array
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'selected-changed' event happens.
+     * </p>
+     * 
+     * @return the {@code selected} property from the webcomponent
+     */
+    @Synchronize(property = "selected", value = "selected-changed")
+    public double getSelected() {
+        return getElement().getProperty("selected", 0.0);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The index of the item selected in the items array
+     * </p>
+     * 
+     * @param selected
+     *            the double value to set
+     */
+    public void setSelected(double selected) {
+        getElement().setProperty("selected", selected);
+    }
 
     /**
      * <p>
@@ -131,8 +132,39 @@ public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
         getElement().callFunction("focus");
     }
 
+    @DomEvent("selected-changed")
+    public static class SelectedChangeEvent<R extends GeneratedVaadinListBox<R>>
+            extends ComponentEvent<R> {
+        private final double selected;
+
+        public SelectedChangeEvent(R source, boolean fromClient,
+                @EventData("event.selected") double selected) {
+            super(source, fromClient);
+            this.selected = selected;
+        }
+
+        public double getSelected() {
+            return selected;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code selected-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public Registration addSelectedChangeListener(
+            ComponentEventListener<SelectedChangeEvent<R>> listener) {
+        return addListener(SelectedChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
     @DomEvent("items-changed")
-    public static class ItemsChangeEvent<R extends GeneratedVaadinTabs<R>>
+    public static class ItemsChangeEvent<R extends GeneratedVaadinListBox<R>>
             extends ComponentEvent<R> {
         private final JsonArray items;
 
@@ -169,13 +201,13 @@ public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public GeneratedVaadinTabs(Component... components) {
+    public GeneratedVaadinListBox(Component... components) {
         add(components);
     }
 
     /**
      * Default constructor.
      */
-    public GeneratedVaadinTabs() {
+    public GeneratedVaadinListBox() {
     }
 }

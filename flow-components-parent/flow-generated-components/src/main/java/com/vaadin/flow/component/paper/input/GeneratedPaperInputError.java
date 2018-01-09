@@ -15,17 +15,15 @@
  */
 package com.vaadin.flow.component.paper.input;
 
-import javax.annotation.Generated;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentSupplier;
-import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.JsonSerializable;
+import com.vaadin.flow.component.ComponentSupplier;
+import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-
 import elemental.json.JsonObject;
+import com.vaadin.flow.component.JsonSerializable;
+import com.vaadin.flow.component.HasComponents;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-input-error#2.0.2", "Flow#1.0-SNAPSHOT" })

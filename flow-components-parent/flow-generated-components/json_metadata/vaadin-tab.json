@@ -1,8 +1,8 @@
 {
   "name": "Vaadin.TabElement",
   "tag": "vaadin-tab",
-  "baseUrl": "vaadin-tabs/vaadin-tab.html",
-  "version": "1.0.0-beta1",
+  "baseUrl": "vaadin-tabs/src/vaadin-tab.html",
+  "version": "2.0.0-alpha5",
   "properties": [
     {
       "name": "value",
@@ -29,17 +29,16 @@
       "description": "If true, the item is in selected state.\n         "
     }
   ],
-  "methods": [
-    {
-      "name": "disconnectedCallback",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    }
-  ],
+  "methods": [],
   "events": [],
-  "slots": [],
+  "slots": [
+    ""
+  ],
   "behaviors": [],
-  "mixins": [],
-  "description": "`<vaadin-tab>` is a Polymer 2 element providing an accessible and customizable tab.\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\n```\n  <vaadin-tab>\n    Tab 1\n  </vaadin-tab>\n```\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled` | Set to a disabled tab | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`selected` | Set when the tab is selected | :host\n`active` | Set when mousedown or enter/spacebar pressed | :host\n`orientation` | Set to `horizontal` or `vertical` dependinng on the direction of items  | :host"
+  "mixins": [
+    "Vaadin.ElementMixin",
+    "Vaadin.ThemableMixin",
+    "Vaadin.ItemMixin"
+  ],
+  "description": "`<vaadin-tab>` is a Polymer 2 element providing an accessible and customizable tab.\n\n```\n  <vaadin-tab>\n    Tab 1\n  </vaadin-tab>\n```\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled` | Set to a disabled tab | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`selected` | Set when the tab is selected | :host\n`active` | Set when mousedown or enter/spacebar pressed | :host\n`orientation` | Set to `horizontal` or `vertical` dependinng on the direction of items  | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }
