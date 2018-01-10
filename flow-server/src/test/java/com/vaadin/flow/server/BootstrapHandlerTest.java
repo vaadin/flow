@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -258,6 +259,38 @@ public class BootstrapHandlerTest {
     @Tag(Tag.DIV)
     @Inline(value = "inline.js", wrapping = Inline.Wrapping.STYLESHEET)
     public static class ForcedWrapping extends Component {
+    }
+
+    public static class MyTheme implements AbstractTheme {
+
+        @Override
+        public String getBaseUrl() {
+            return null;
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+
+        @Override
+        public List<String> getInlineContents() {
+            return Arrays.asList("<style type=\"text/css\">/* theme inlined css */\n" + "\n"
+                    + "#preloadedDiv {\n" + "    color: rgba(255, 255, 0, 1);\n"
+                    + "}\n" + "\n" + "#inlineCssTestDiv {\n"
+                    + "    color: rgba(255, 255, 0, 1);\n" + "}\n</style>","<script type=\"text/javascript\">\n"
+                    + "    // document.body might not yet be accessible, so just leave a message\n"
+                    + "    window.messages = window.messages || [];\n"
+                    + "    window.messages.push(\"inline.html\");\n"
+                    + "</script>");
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Theme(MyTheme.class)
+    public static class MyThemeTest extends Component {
+
     }
 
     private TestUI testUI;
@@ -832,6 +865,34 @@ public class BootstrapHandlerTest {
                 "<style type=\"text/css\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</style>",
                 allElements.get(allElements.size() - 1).toString());
+    }
+
+    @Test //3197
+    public void theme_contents_are_appended_to_head() throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(), Collections.singleton(MyThemeTest.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals(
+                "File css should have been prepended to body element",
+                "<style type=\"text/css\">/* theme inlined css */\n" + "\n"
+                        + "#preloadedDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
+                        + "#inlineCssTestDiv {\n"
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n</style>",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals(
+                "File html should have been prepended to body element",
+                "<script type=\"text/javascript\">\n"
+                        + "    // document.body might not yet be accessible, so just leave a message\n"
+                        + "    window.messages = window.messages || [];\n"
+                        + "    window.messages.push(\"inline.html\");\n"
+                        + "</script>",
+                allElements.get(allElements.size() - 1).toString());
+
     }
 
     @Test

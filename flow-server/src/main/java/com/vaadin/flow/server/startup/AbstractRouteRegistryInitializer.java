@@ -36,6 +36,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.Theme;
 
 /**
  * Common validation methods for route registry initializer.
@@ -92,7 +93,7 @@ public abstract class AbstractRouteRegistryInitializer {
         }
 
         /* Validate annotation usage */
-        Stream.of(Viewport.class, BodySize.class, Inline.class)
+        Stream.of(Viewport.class, BodySize.class, Inline.class, Theme.class)
                 .forEach(annotation -> {
                     validateRouteAnnotation(route, annotation);
 

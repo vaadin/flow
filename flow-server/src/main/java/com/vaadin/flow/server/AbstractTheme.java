@@ -48,7 +48,7 @@ public interface AbstractTheme {
      * will be handled as no-wrap as is and will be appended to the initial page
      * head.
      * 
-     * @return
+     * @return list of string content to inline
      */
     List<String> getInlineContents();
 

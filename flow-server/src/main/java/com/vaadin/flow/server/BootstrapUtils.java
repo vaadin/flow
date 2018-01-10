@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
@@ -42,6 +44,11 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Utility methods used by the BootstrapHandler.
@@ -295,6 +302,53 @@ class BootstrapUtils {
             VaadinRequest request, Router router) {
         return router.resolveNavigationTarget(request.getPathInfo(),
                 request.getParameterMap());
+    }
+
+    static List<JsonObject> getThemeSettings(
+            BootstrapHandler.BootstrapContext context) {
+
+        UI ui = context.getUI();
+        VaadinRequest request = context.getRequest();
+
+        Optional<Router> router = ui.getRouter();
+        if (router.isPresent()) {
+            Optional<NavigationState> navigationTarget = getRouteTargetInformation(
+                    request, router.get());
+
+            if (navigationTarget.isPresent()) {
+                Optional<Theme> themeAnnotation = getThemeAnnotation(
+                        navigationTarget.get());
+                if (themeAnnotation.isPresent()) {
+                    AbstractTheme theme = ReflectTools
+                            .createInstance(themeAnnotation.get().value());
+                    return theme.getInlineContents().stream()
+                            .map(BootstrapUtils::createInlineDependencyObject)
+                            .collect(Collectors.toList());
+                }
+            }
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+    private static JsonObject createInlineDependencyObject(String content) {
+        JsonObject dependency = Json.createObject();
+        dependency.put(Dependency.KEY_TYPE, "none");
+        dependency.put("LoadMode", LoadMode.INLINE.toString());
+
+        dependency.put(Dependency.KEY_CONTENTS, content);
+        return dependency;
+    }
+
+    private static Optional<Theme> getThemeAnnotation(NavigationState state) {
+        Class<? extends RouterLayout> parentLayout = RouterUtil
+                .getTopParentLayout(state.getNavigationTarget(),
+                        state.getResolvedPath());
+
+        if (parentLayout == null) {
+            return AnnotationReader
+                    .getAnnotationFor(state.getNavigationTarget(), Theme.class);
+        }
+        return AnnotationReader.getAnnotationFor(parentLayout, Theme.class);
     }
 
 }

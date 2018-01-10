@@ -364,6 +364,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 initialPageSettings -> handleInitialPageSettings(context, head,
                         initialPageSettings));
 
+        /* Append any theme elements to initial page. */
+        BootstrapUtils.getThemeSettings(context).stream()
+                .map(dependency -> createDependencyElement(context, dependency))
+                .forEach(element -> insertElements(element, head::appendChild));
+
         BootstrapPageResponse response = new BootstrapPageResponse(
                 context.getRequest(), context.getSession(),
                 context.getResponse(), document, context.getUI(),
@@ -377,14 +382,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             Element head, Element body, InlineTargets targets) {
         targets.getInlineHead(Inline.Position.PREPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, head::prependChild));
+                .forEach(
+                        element -> insertElements(element, head::prependChild));
         targets.getInlineHead(Inline.Position.APPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
                 .forEach(element -> insertElements(element, head::appendChild));
 
         targets.getInlineBody(Inline.Position.PREPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, body::prependChild));
+                .forEach(
+                        element -> insertElements(element, body::prependChild));
         targets.getInlineBody(Inline.Position.APPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
                 .forEach(element -> insertElements(element, body::appendChild));
@@ -407,14 +414,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         initialPageSettings.getInline(InitialPageSettings.Position.PREPEND)
                 .stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, head::prependChild));
+                .forEach(
+                        element -> insertElements(element, head::prependChild));
         initialPageSettings.getInline(InitialPageSettings.Position.APPEND)
                 .stream()
                 .map(dependency -> createDependencyElement(context, dependency))
                 .forEach(element -> insertElements(element, head::appendChild));
 
         initialPageSettings.getElement(InitialPageSettings.Position.PREPEND)
-                .forEach(element -> insertElements(element, head::prependChild));
+                .forEach(
+                        element -> insertElements(element, head::prependChild));
         initialPageSettings.getElement(InitialPageSettings.Position.APPEND)
                 .forEach(element -> insertElements(element, head::appendChild));
     }

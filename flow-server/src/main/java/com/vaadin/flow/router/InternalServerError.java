@@ -80,8 +80,9 @@ public class InternalServerError extends Component
             String exceptionText) {
         getElement().appendChild(Element.createText(exceptionText));
 
-        boolean productionMode = VaadinService.getCurrent()
-                .getDeploymentConfiguration().isProductionMode();
+        boolean productionMode = VaadinService.getCurrent() == null ? false
+                : VaadinService.getCurrent().getDeploymentConfiguration()
+                        .isProductionMode();
         if (!productionMode) {
             checkLogBinding();
             printStacktrace(exception);
