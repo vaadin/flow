@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.spring;
 
-import static com.vaadin.flow.spring.VaadinServletConfiguration.VAADIN_URL_MAPINGS;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -69,17 +67,13 @@ public class SpringBootAutoConfiguration {
      */
     @Bean
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean() {
-        String[] mappings = new String[VAADIN_URL_MAPINGS.length + 1];
         String mapping = configurationProperties.getUrlMapping();
         if (RootMappedCondition.isRootMapping(mapping)) {
-            mappings[0] = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
-        } else {
-            mappings[0] = mapping;
+            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
         }
-        System.arraycopy(VAADIN_URL_MAPINGS, 0, mappings, 1,
-                VAADIN_URL_MAPINGS.length);
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                new SpringServlet(context), mappings);
+                new SpringServlet(context),
+                configurationProperties.getUrlMapping());
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());
         registration.setName(
