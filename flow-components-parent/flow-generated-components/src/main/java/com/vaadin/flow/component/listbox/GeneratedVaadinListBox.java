@@ -15,20 +15,22 @@
  */
 package com.vaadin.flow.component.listbox;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.Synchronize;
-import elemental.json.JsonArray;
-import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.DomEvent;
+
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.component.ComponentSupplier;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.shared.Registration;
+
+import elemental.json.JsonArray;
 
 /**
  * <p>
@@ -64,9 +66,9 @@ import com.vaadin.flow.component.HasComponents;
  * </tbody>
  * </table>
  * <p>
- * See <a
- * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
- * how to apply styles for shadow parts</a>
+ * See
+ * <a href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin
+ * – how to apply styles for shadow parts</a>
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
@@ -76,39 +78,6 @@ import com.vaadin.flow.component.HasComponents;
 @HtmlImport("frontend://bower_components/vaadin-list-box/src/vaadin-list-box.html")
 public class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>> extends
         Component implements HasStyle, ComponentSupplier<R>, HasComponents {
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The index of the item selected in the items array
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'selected-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code selected} property from the webcomponent
-     */
-    @Synchronize(property = "selected", value = "selected-changed")
-    public double getSelected() {
-        return getElement().getProperty("selected", 0.0);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The index of the item selected in the items array
-     * </p>
-     * 
-     * @param selected
-     *            the double value to set
-     */
-    public void setSelected(double selected) {
-        getElement().setProperty("selected", selected);
-    }
 
     /**
      * <p>
@@ -130,37 +99,6 @@ public class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>> extends
 
     public void focus() {
         getElement().callFunction("focus");
-    }
-
-    @DomEvent("selected-changed")
-    public static class SelectedChangeEvent<R extends GeneratedVaadinListBox<R>>
-            extends ComponentEvent<R> {
-        private final double selected;
-
-        public SelectedChangeEvent(R source, boolean fromClient,
-                @EventData("event.selected") double selected) {
-            super(source, fromClient);
-            this.selected = selected;
-        }
-
-        public double getSelected() {
-            return selected;
-        }
-    }
-
-    /**
-     * Adds a listener for {@code selected-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedChangeListener(
-            ComponentEventListener<SelectedChangeEvent<R>> listener) {
-        return addListener(SelectedChangeEvent.class,
-                (ComponentEventListener) listener);
     }
 
     @DomEvent("items-changed")
