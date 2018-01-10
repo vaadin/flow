@@ -1193,9 +1193,10 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 addressedElement, childElement);
     }
 
-    public void testBindVirtualChild_withPostponedElementInShadowRoot_byId() {
+    public void testBindVirtualChild_withDeferredElementInShadowRoot_byId() {
         String childId = "childElement";
-        StateNode childNode = createChildNode(childId, element.getTagName());
+        String tag = element.getTagName();
+        StateNode childNode = createChildNode(childId, tag);
 
         Binder.bind(node, element);
 
@@ -1203,7 +1204,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 Json.create(childId));
 
         Element shadowRoot = Browser.getDocument().createElement("div");
-        mockWhenDefined(shadowRoot);
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
@@ -1221,9 +1221,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         WidgetUtil.setJsProperty(element, "root", shadowRoot);
         Element addressedElement = createAndAppendElementToShadowRoot(
-                shadowRoot, childId, element.getTagName());
+                shadowRoot, childId, tag);
 
-        runWhenDefined(shadowRoot);
+        PolymerUtils.fireReadyEvent(element);
 
         Reactive.flush();
 
@@ -1248,9 +1248,11 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 addressedElement, childElement);
     }
 
-    public void testBindVirtualChild_withPostponedElementInShadowRoot_byIndicesPath() {
+    public void testBindVirtualChild_withDeferredElementInShadowRoot_byIndicesPath() {
         String childId = "childElement";
         StateNode childNode = createChildNode(childId, element.getTagName());
+
+        WidgetUtil.setJsProperty(element, "ready", NativeFunction.create(""));
 
         Binder.bind(node, element);
 
@@ -1261,7 +1263,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 path);
 
         Element shadowRoot = Browser.getDocument().createElement("div");
-        mockWhenDefined(shadowRoot);
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
@@ -1281,7 +1282,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Element addressedElement = createAndAppendElementToShadowRoot(
                 shadowRoot, childId, element.getTagName());
 
-        runWhenDefined(shadowRoot);
+        PolymerUtils.fireReadyEvent(element);
 
         Reactive.flush();
 
