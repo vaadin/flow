@@ -21,7 +21,6 @@ import java.util.stream.IntStream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasElement;
-import com.vaadin.flow.data.binder.HasItemsAndComponents.ItemComponent;
 
 /**
  * Mixin interface for components that display a collection of items and can
@@ -36,11 +35,8 @@ import com.vaadin.flow.data.binder.HasItemsAndComponents.ItemComponent;
  * 
  * @param <T>
  *            the type of the displayed items
- * @param <C>
- *            the type of the components that display the items
  */
-public interface HasItemsAndComponents<T, C extends ItemComponent<T>>
-        extends HasComponents, HasItems<T> {
+public interface HasItemsAndComponents<T> extends HasComponents, HasItems<T> {
 
     /**
      * Interface for components that are used inside an
@@ -52,7 +48,7 @@ public interface HasItemsAndComponents<T, C extends ItemComponent<T>>
      *            the type of the displayed item
      */
     public interface ItemComponent<T> extends HasElement {
-        public T getItem();
+        T getItem();
     }
 
     /**
