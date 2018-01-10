@@ -35,6 +35,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
+import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -1059,6 +1060,22 @@ public class Element extends Node<Element> {
      */
     public ClassList getClassList() {
         return getStateProvider().getClassList(getNode());
+    }
+
+    /**
+     * Gets the set of the theme names applied to the corresponding element in
+     * {@code theme} attribute. The set returned can be modified to add or
+     * remove the theme names, changes to the set will be reflected in the
+     * attribute value.
+     * <p>
+     * Despite the name implying a list being returned, the return type is
+     * actually a {@link Set} since the in-browser return value behaves like a
+     * {@link Set} in Java.
+     *
+     * @return a list of theme names, never {@code null}
+     */
+    public ThemeList getThemeList() {
+        return new ThemeListImpl(this);
     }
 
     /**
