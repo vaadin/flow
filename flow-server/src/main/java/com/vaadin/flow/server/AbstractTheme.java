@@ -20,10 +20,10 @@ import java.util.stream.Stream;
 
 /**
  * Abstract theme definition class for defining theme variables when in use.
- * 
+ *
  * @author Vaadin Ltd
  */
-public abstract class AbstractTheme {
+public interface AbstractTheme {
 
     /**
      * The url for the base component implementation.
@@ -32,7 +32,7 @@ public abstract class AbstractTheme {
      *
      * @return the base component path
      */
-    public abstract String getBaseUrl();
+     String getBaseUrl();
 
     /**
      * The url for the components themed version implementation.
@@ -41,7 +41,7 @@ public abstract class AbstractTheme {
      * 
      * @return the themed component path
      */
-    public abstract String getThemeUrl();
+    String getThemeUrl();
 
     /**
      * Return a list of contents to inline to the bootstrap head. The contents
@@ -50,7 +50,7 @@ public abstract class AbstractTheme {
      * 
      * @return
      */
-    public abstract List<String> getInlineContents();
+    List<String> getInlineContents();
 
     /**
      * Get the translated theme path for the given url. If the url beginning
@@ -66,7 +66,7 @@ public abstract class AbstractTheme {
      *            .html resources available for this servlet context
      * @return translated url path
      */
-    public String getTranslatedUrl(String url,
+    default String getTranslatedUrl(String url,
             Stream<String> availableHtmlResources) {
         if (url.contains(getBaseUrl())) {
 
