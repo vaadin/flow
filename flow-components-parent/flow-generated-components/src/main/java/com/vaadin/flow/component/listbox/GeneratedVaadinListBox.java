@@ -21,8 +21,8 @@ import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonArray;
+import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
@@ -69,145 +69,82 @@ import com.vaadin.flow.component.HasComponents;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ListBoxElement#1.0.0-alpha7",
-        "Flow#1.0-SNAPSHOT" })
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+		"WebComponent: Vaadin.ListBoxElement#1.0.0-alpha7", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-list-box")
 @HtmlImport("frontend://bower_components/vaadin-list-box/src/vaadin-list-box.html")
-public class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>> extends
-        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
+public class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>>
+		extends
+			Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The index of the item selected in the items array
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'selected-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code selected} property from the webcomponent
-     */
-    @Synchronize(property = "selected", value = "selected-changed")
-    public double getSelected() {
-        return getElement().getProperty("selected", 0.0);
-    }
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * The array of list items
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * 'items-changed' event happens.
+	 * </p>
+	 * 
+	 * @return the {@code items} property from the webcomponent
+	 */
+	@Synchronize(property = "items", value = "items-changed")
+	protected JsonArray protectedGetItems() {
+		return (JsonArray) getElement().getPropertyRaw("items");
+	}
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The index of the item selected in the items array
-     * </p>
-     * 
-     * @param selected
-     *            the double value to set
-     */
-    public void setSelected(double selected) {
-        getElement().setProperty("selected", selected);
-    }
+	public void focus() {
+		getElement().callFunction("focus");
+	}
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The array of list items
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'items-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code items} property from the webcomponent
-     */
-    @Synchronize(property = "items", value = "items-changed")
-    protected JsonArray protectedGetItems() {
-        return (JsonArray) getElement().getPropertyRaw("items");
-    }
+	@DomEvent("items-changed")
+	public static class ItemsChangeEvent<R extends GeneratedVaadinListBox<R>>
+			extends
+				ComponentEvent<R> {
+		private final JsonArray items;
 
-    public void focus() {
-        getElement().callFunction("focus");
-    }
+		public ItemsChangeEvent(R source, boolean fromClient,
+				@EventData("event.items") JsonArray items) {
+			super(source, fromClient);
+			this.items = items;
+		}
 
-    @DomEvent("selected-changed")
-    public static class SelectedChangeEvent<R extends GeneratedVaadinListBox<R>>
-            extends ComponentEvent<R> {
-        private final double selected;
+		public JsonArray getItems() {
+			return items;
+		}
+	}
 
-        public SelectedChangeEvent(R source, boolean fromClient,
-                @EventData("event.selected") double selected) {
-            super(source, fromClient);
-            this.selected = selected;
-        }
+	/**
+	 * Adds a listener for {@code items-changed} events fired by the
+	 * webcomponent.
+	 * 
+	 * @param listener
+	 *            the listener
+	 * @return a {@link Registration} for removing the event listener
+	 */
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	public Registration addItemsChangeListener(
+			ComponentEventListener<ItemsChangeEvent<R>> listener) {
+		return addListener(ItemsChangeEvent.class,
+				(ComponentEventListener) listener);
+	}
 
-        public double getSelected() {
-            return selected;
-        }
-    }
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public GeneratedVaadinListBox(Component... components) {
+		add(components);
+	}
 
-    /**
-     * Adds a listener for {@code selected-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedChangeListener(
-            ComponentEventListener<SelectedChangeEvent<R>> listener) {
-        return addListener(SelectedChangeEvent.class,
-                (ComponentEventListener) listener);
-    }
-
-    @DomEvent("items-changed")
-    public static class ItemsChangeEvent<R extends GeneratedVaadinListBox<R>>
-            extends ComponentEvent<R> {
-        private final JsonArray items;
-
-        public ItemsChangeEvent(R source, boolean fromClient,
-                @EventData("event.items") JsonArray items) {
-            super(source, fromClient);
-            this.items = items;
-        }
-
-        public JsonArray getItems() {
-            return items;
-        }
-    }
-
-    /**
-     * Adds a listener for {@code items-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addItemsChangeListener(
-            ComponentEventListener<ItemsChangeEvent<R>> listener) {
-        return addListener(ItemsChangeEvent.class,
-                (ComponentEventListener) listener);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinListBox(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinListBox() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public GeneratedVaadinListBox() {
+	}
 }
