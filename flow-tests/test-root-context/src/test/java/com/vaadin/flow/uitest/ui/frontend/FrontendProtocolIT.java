@@ -19,10 +19,10 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
 
 /**
  * A test that ensures the correct behavior of the "frontend://" protocol under
@@ -88,7 +88,7 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
     }
 
     private Object executeClientSideResolveUri() {
-        return executeScript("return window.vaadin.resolveUri(arguments[0]);",
+        return executeScript("return window.Vaadin.Flow.resolveUri(arguments[0]);",
                 "frontend://components/frontend-protocol.html");
     }
 
