@@ -114,8 +114,7 @@ public class VaadinSessionScope implements Scope, BeanFactoryPostProcessor {
     public static void cleanupSession(VaadinSession session) {
         assert session != null;
 
-        SessionAwareBeanStore beanStore = session
-                .getAttribute(SessionAwareBeanStore.class);
+        BeanStore beanStore = session.getAttribute(BeanStore.class);
         if (beanStore != null) {
             LOGGER.debug("Vaadin session has been destroyed, destroying [{}]",
                     beanStore);
