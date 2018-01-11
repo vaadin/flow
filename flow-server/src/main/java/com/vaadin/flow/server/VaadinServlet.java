@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -22,17 +28,11 @@ import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -61,6 +61,8 @@ public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileServer staticFileServer;
     private WebJarServer webJarServer;
+
+    private Set<String> resourcePaths;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -93,6 +95,7 @@ public class VaadinServlet extends HttpServlet {
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
+        resourcePaths = traverseResourcePaths("/");
 
         servletInitialized();
         CurrentInstance.clearAll();
@@ -621,5 +624,24 @@ public class VaadinServlet extends HttpServlet {
                 c > 64 && c < 91 || // A-Z
                 c > 96 && c < 123 // a-z
         ;
+    }
+
+    /**
+     * Get all servlet resources.
+     * 
+     * @return servlet resources as a set
+     */
+    public Set<String> getServletResources() {
+        return resourcePaths;
+    }
+
+    private Set<String> traverseResourcePaths(String path) {
+        Set<String> resources = new HashSet<>();
+        Set<String> resourcePaths = getServletContext().getResourcePaths(path);
+        resources.addAll(resourcePaths);
+        resourcePaths.stream().filter(s -> s.endsWith("/"))
+                .forEach(resourcePath -> resources
+                        .addAll(traverseResourcePaths(resourcePath)));
+        return resources;
     }
 }

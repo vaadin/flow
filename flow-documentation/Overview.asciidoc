@@ -86,6 +86,8 @@ These tutorials show how the different features are used.
 ** <<spring/tutorial-spring-scopes#,Vaadin Spring Scopes>>
 ** <<spring/tutorial-spring-configuration#,Vaadin Spring Configuration>>
 ** <<spring/tutorial-spring-examples#,Getting Started with Spring and Flow>>
+* Theme
+** <<theme/tutorial-built-in-themes#,Component themes>>
 * Misc
 ** <<miscellaneous/tutorial-i18n-localization#,I18N localization>>
 ** <<miscellaneous/tutorial-execute-javascript#,Executing JavaScript>>

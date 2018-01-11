@@ -788,8 +788,7 @@ public class UIInternals implements Serializable {
                 return urlTranslations.get(html.value());
             }
             String translatedUrl = theme.getTranslatedUrl(html.value(),
-                    VaadinServlet.getCurrent().getServletContext()
-                            .getResourcePaths("/").stream());
+                    VaadinServlet.getCurrent().getServletResources().stream());
             urlTranslations.put(html.value(), translatedUrl);
             return translatedUrl;
         }
