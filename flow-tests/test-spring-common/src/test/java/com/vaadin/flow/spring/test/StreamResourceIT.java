@@ -18,7 +18,6 @@ package com.vaadin.flow.spring.test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +41,7 @@ public class StreamResourceIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void ensureStreamResourceWorks()
-            throws MalformedURLException, IOException {
+    public void ensureStreamResourceWorks() throws IOException {
         open();
 
         WebElement link = findElement(By.id("download"));

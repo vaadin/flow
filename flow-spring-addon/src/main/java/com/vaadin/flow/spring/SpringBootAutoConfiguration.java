@@ -72,8 +72,7 @@ public class SpringBootAutoConfiguration {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
         }
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                new SpringServlet(context),
-                configurationProperties.getUrlMapping());
+                new SpringServlet(context), mapping);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());
         registration.setName(

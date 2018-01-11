@@ -61,7 +61,7 @@ public class VaadinServletConfiguration {
         mapping.setOrder(Ordered.LOWEST_PRECEDENCE - 1);
 
         mapping.setUrlMap(
-                Collections.singletonMap("/**", vaadinForwardingController()));
+                Collections.singletonMap("/*", vaadinForwardingController()));
 
         return mapping;
     }
