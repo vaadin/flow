@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -81,7 +82,7 @@ public class InternalServerError extends Component
         VaadinService vaadinService = VaadinService.getCurrent();
         boolean productionMode = vaadinService == null ? false
                 : vaadinService.getDeploymentConfiguration().isProductionMode();
-        
+
         if (!productionMode) {
             checkLogBinding();
             printStacktrace(exception);
@@ -93,11 +94,20 @@ public class InternalServerError extends Component
     }
 
     private void printStacktrace(Exception exception) {
-        try (PrintWriter writer = new PrintWriter(new StringWriter())) {
-            exception.printStackTrace();
+        StringWriter writer = new StringWriter();
+        try {
+            exception.printStackTrace(new PrintWriter(writer));
             getElement().appendChild(
                     ElementFactory.createPreformatted(writer.toString()));
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                // StringWriter doesn't throw an exception
+                assert false;
+            }
         }
+
     }
 
     private void checkLogBinding() {

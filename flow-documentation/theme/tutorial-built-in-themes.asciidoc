@@ -15,7 +15,7 @@ To get a themed element just add the `Theme` annotation the navigation target wi
 @Route or the top most RouterLayout that builds the navigation target chain. This
 will update the imported element on the fly to be the correct import for the themed version.
 
-Each root `RouterLayout` may in principle have it's own theme, but it is not recommended
+Each root `RouterLayout` may in principle define its own theme, but it is not recommended
 as any bootstrap addition the later loaded theme would use would not be added nor used.
 
 .Sample setup for single view setup to get Lumo themed components
