@@ -107,7 +107,7 @@ public class TemplateRendererUtil {
         // vaadin.sendEventMessage is an exported function at the client
         // side
         ui.getPage().executeJavaScript(String.format(
-                "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model ? e.model.__data.item.key : e.target.__dataHost.__data.item.key})}",
+                "$0.%s = function(e) {Vaadin.Flow.sendEventMessage(%d, '%s', {key: e.model ? e.model.__data.item.key : e.target.__dataHost.__data.item.key})}",
                 handlerName, eventOrigin.getNode().getId(), handlerName),
                 eventOrigin);
 
