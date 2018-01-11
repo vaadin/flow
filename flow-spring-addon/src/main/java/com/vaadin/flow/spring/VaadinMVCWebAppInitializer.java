@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.spring;
 
-import static com.vaadin.flow.spring.VaadinServletConfiguration.VAADIN_URL_MAPINGS;
-
 import java.util.Collection;
 import java.util.stream.Stream;
 
@@ -59,18 +57,13 @@ public abstract class VaadinMVCWebAppInitializer
 
         String mapping = env
                 .getProperty(RootMappedCondition.URL_MAPPING_PROPERTY, "/*");
-        String[] mappings = new String[VAADIN_URL_MAPINGS.length + 1];
-        System.arraycopy(VAADIN_URL_MAPINGS, 0, mappings, 1,
-                VAADIN_URL_MAPINGS.length);
         if (RootMappedCondition.isRootMapping(mapping)) {
-            mappings[0] = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
             Dynamic dispatcherRegistration = servletContext
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
-        } else {
-            mappings[0] = mapping;
+            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
         }
-        registration.addMapping(mappings);
+        registration.addMapping(mapping);
         registration.setAsyncSupported(
                 Boolean.TRUE.toString().equals(env.getProperty(
                         "vaadin.asyncSupported", Boolean.TRUE.toString())));

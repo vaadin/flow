@@ -48,9 +48,6 @@ public class VaadinServletConfiguration {
 
     static final String VAADIN_SERVLET_MAPPING = "/vaadinServlet/*";
 
-    static final String[] VAADIN_URL_MAPINGS = new String[] { "/VAADIN/*",
-            "/PUSH/*", "/webjars/*" };
-
     /**
      * Makes an url handler mapping allowing to forward requests from a
      * {@link DispatcherServlet} to {@link VaadinServlet}.
@@ -65,6 +62,7 @@ public class VaadinServletConfiguration {
 
         mapping.setUrlMap(
                 Collections.singletonMap("/*", vaadinForwardingController()));
+
         return mapping;
     }
 
