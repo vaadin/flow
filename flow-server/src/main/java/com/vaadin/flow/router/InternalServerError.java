@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.router;
 
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
@@ -80,9 +78,10 @@ public class InternalServerError extends Component
             String exceptionText) {
         getElement().appendChild(Element.createText(exceptionText));
 
-        boolean productionMode = VaadinService.getCurrent() == null ? false
-                : VaadinService.getCurrent().getDeploymentConfiguration()
-                        .isProductionMode();
+        VaadinService vaadinService = VaadinService.getCurrent();
+        boolean productionMode = vaadinService == null ? false
+                : vaadinService.getDeploymentConfiguration().isProductionMode();
+        
         if (!productionMode) {
             checkLogBinding();
             printStacktrace(exception);
@@ -94,18 +93,10 @@ public class InternalServerError extends Component
     }
 
     private void printStacktrace(Exception exception) {
-        StringWriter writer = new StringWriter();
-        try {
-            exception.printStackTrace(new PrintWriter(writer));
+        try (PrintWriter writer = new PrintWriter(new StringWriter())) {
+            exception.printStackTrace();
             getElement().appendChild(
                     ElementFactory.createPreformatted(writer.toString()));
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException e) {
-                // StringWriter doesn't throw an exception
-                assert false;
-            }
         }
     }
 

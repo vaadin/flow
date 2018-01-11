@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -23,7 +24,7 @@ import java.util.stream.Stream;
  *
  * @author Vaadin Ltd
  */
-public interface AbstractTheme {
+public interface AbstractTheme extends Serializable {
 
     /**
      * The url for the base component implementation.

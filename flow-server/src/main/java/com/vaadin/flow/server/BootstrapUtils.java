@@ -327,7 +327,7 @@ class BootstrapUtils {
                 }
             }
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     private static JsonObject createInlineDependencyObject(String content) {

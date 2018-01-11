@@ -637,10 +637,11 @@ public class VaadinServlet extends HttpServlet {
 
     private Set<String> traverseResourcePaths(String path) {
         Set<String> resources = new HashSet<>();
-        Set<String> resourcePaths = getServletContext().getResourcePaths(path);
-        if (resourcePaths != null) {
-            resources.addAll(resourcePaths);
-            resourcePaths.stream().filter(s -> s.endsWith("/"))
+        Set<String> servletResourcePaths = getServletContext()
+                .getResourcePaths(path);
+        if (servletResourcePaths != null) {
+            resources.addAll(servletResourcePaths);
+            servletResourcePaths.stream().filter(s -> s.endsWith("/"))
                     .forEach(resourcePath -> resources
                             .addAll(traverseResourcePaths(resourcePath)));
         }
