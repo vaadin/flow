@@ -17,7 +17,7 @@
 <link rel="import" href="/frontend/bower_components/polymer/polymer.html">
 <link rel="import" href="/frontend/bower_components/polymer/polymer-element.html">
 
-<dom-module id="my-injects">
+<dom-module id="mixin-injects">
     <template>
       <div id="injected"></div>
     </template>
@@ -25,7 +25,7 @@
     <script>
         class MixinInjects extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
             static get is() {
-                return 'my-injects'
+                return 'mixin-injects'
             }
         }
         customElements.define(MixinInjects.is, MixinInjects);

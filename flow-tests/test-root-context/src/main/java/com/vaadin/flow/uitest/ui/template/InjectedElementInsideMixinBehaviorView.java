@@ -25,7 +25,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.InjectedElementInsideMixinBehaviorView", layout = ViewTestLayout.class)
-@Tag("my-injects")
+@Tag("mixin-injects")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/MixinInjectsElement.html")
 public class InjectedElementInsideMixinBehaviorView
         extends PolymerTemplate<TemplateModel> {
