@@ -267,4 +267,11 @@ public class Page implements Serializable {
     public History getHistory() {
         return history;
     }
+
+    /**
+     * Reloads the page in the browser.
+     */
+    public void reload() {
+        executeJavaScript("window.location.reload();");
+    }
 }
