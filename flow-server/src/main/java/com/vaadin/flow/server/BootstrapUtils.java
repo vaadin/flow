@@ -312,19 +312,15 @@ class BootstrapUtils {
 
         Optional<Router> router = ui.getRouter();
         if (router.isPresent()) {
-            Optional<NavigationState> navigationTarget = getRouteTargetInformation(
-                    request, router.get());
-
-            if (navigationTarget.isPresent()) {
-                Optional<Theme> themeAnnotation = getThemeAnnotation(
-                        navigationTarget.get());
-                if (themeAnnotation.isPresent()) {
-                    AbstractTheme theme = ReflectTools
-                            .createInstance(themeAnnotation.get().value());
-                    return theme.getInlineContents().stream()
-                            .map(BootstrapUtils::createInlineDependencyObject)
-                            .collect(Collectors.toList());
-                }
+            Optional<Theme> themeAnnotation = getThemeAnnotation(request,
+                    router.get());
+            
+            if (themeAnnotation.isPresent()) {
+                AbstractTheme theme = ReflectTools
+                        .createInstance(themeAnnotation.get().value());
+                return theme.getInlineContents().stream()
+                        .map(BootstrapUtils::createInlineDependencyObject)
+                        .collect(Collectors.toList());
             }
         }
         return Collections.emptyList();
@@ -339,7 +335,17 @@ class BootstrapUtils {
         return dependency;
     }
 
-    private static Optional<Theme> getThemeAnnotation(NavigationState state) {
+    private static Optional<Theme> getThemeAnnotation(VaadinRequest request,
+            Router router) {
+        Optional<NavigationState> navigationTarget = getRouteTargetInformation(
+                request, router);
+
+        if (!navigationTarget.isPresent()) {
+            return Optional.empty();
+        }
+
+        NavigationState state = navigationTarget.get();
+
         Class<? extends RouterLayout> parentLayout = RouterUtil
                 .getTopParentLayout(state.getNavigationTarget(),
                         state.getResolvedPath());

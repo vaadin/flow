@@ -641,7 +641,7 @@ public class VaadinServlet extends HttpServlet {
                 .getResourcePaths(path);
         if (servletResourcePaths != null) {
             resources.addAll(servletResourcePaths);
-            servletResourcePaths.stream().filter(s -> s.endsWith("/"))
+            servletResourcePaths.stream().filter(resourcePath -> resourcePath.endsWith("/"))
                     .forEach(resourcePath -> resources
                             .addAll(traverseResourcePaths(resourcePath)));
         }

@@ -579,7 +579,7 @@ public class UIInternals implements Serializable {
         assert target != null;
         assert viewLocation != null;
 
-        handleSettingTheme(target);
+        updateTheme(target);
 
         this.viewLocation = viewLocation;
 
@@ -637,7 +637,7 @@ public class UIInternals implements Serializable {
         }
     }
 
-    private void handleSettingTheme(Component target) {
+    private void updateTheme(Component target) {
         Class<? extends RouterLayout> topParentLayout = RouterUtil
                 .getTopParentLayout(target.getClass());
         Theme themeAnnotation;
@@ -649,19 +649,19 @@ public class UIInternals implements Serializable {
         if (themeAnnotation != null) {
             if (theme == null
                     || !theme.getClass().equals(themeAnnotation.value())) {
-                cacheThemeTranslations();
+                cacheThemeTranslations(theme);
                 theme = ReflectTools.createInstance(themeAnnotation.value());
                 urlTranslations.clear();
                 urlTranslations.putAll(themeTranslations.computeIfAbsent(
                         theme.getClass(), themeClass -> new HashMap<>()));
             }
         } else {
-            cacheThemeTranslations();
+            cacheThemeTranslations(theme);
             theme = null;
         }
     }
 
-    private void cacheThemeTranslations() {
+    private void cacheThemeTranslations(AbstractTheme theme) {
         if (theme != null) {
             themeTranslations.put(theme.getClass(), urlTranslations);
         }
@@ -784,8 +784,9 @@ public class UIInternals implements Serializable {
 
     private String getHtmlImportValue(HtmlImport html) {
         if (theme != null) {
-            if (urlTranslations.containsKey(html.value())) {
-                return urlTranslations.get(html.value());
+            String translation = urlTranslations.get(html.value());
+            if (translation != null) {
+                return translation;
             }
             String translatedUrl = theme.getTranslatedUrl(html.value(),
                     VaadinServlet.getCurrent().getServletResources().stream());

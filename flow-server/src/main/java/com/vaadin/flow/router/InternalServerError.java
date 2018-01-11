@@ -80,6 +80,9 @@ public class InternalServerError extends Component
         getElement().appendChild(Element.createText(exceptionText));
 
         VaadinService vaadinService = VaadinService.getCurrent();
+        // Check that we have a vaadinService as else we will fail on a NPE and
+        // the stacktrace we actually got will disappear and getting a NPE is
+        // confusing.
         boolean productionMode = vaadinService == null ? false
                 : vaadinService.getDeploymentConfiguration().isProductionMode();
 
