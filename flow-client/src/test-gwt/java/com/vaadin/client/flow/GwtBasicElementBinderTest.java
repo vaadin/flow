@@ -1198,17 +1198,19 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         String tag = element.getTagName();
         StateNode childNode = createChildNode(childId, tag);
 
-        Binder.bind(node, element);
-
         addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
                 Json.create(childId));
 
         Element shadowRoot = Browser.getDocument().createElement("div");
 
+        WidgetUtil.setJsProperty(element, "root", shadowRoot);
+
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
                 NodeFeatures.ELEMENT_CHILDREN,
                 NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+
+        Binder.bind(node, element);
 
         Reactive.flush();
 
@@ -1219,7 +1221,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                         + notExpectedFeature,
                 childNode.hasFeature(notExpectedFeature)));
 
-        WidgetUtil.setJsProperty(element, "root", shadowRoot);
         Element addressedElement = createAndAppendElementToShadowRoot(
                 shadowRoot, childId, tag);
 

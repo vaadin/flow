@@ -233,7 +233,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -243,7 +243,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-
+    
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -705,7 +705,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (!verifyAttachRequest(context.node, node, id, address)) {
                 return;
             }
-            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
+            if (!PolymerUtils.isReady(context.htmlNode)) {
                 PolymerUtils.addReadyListener((Element) context.htmlNode,
                         () -> appendVirtualChild(context, node, false));
                 return;
