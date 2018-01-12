@@ -44,10 +44,7 @@ public class BlogPost extends Div {
 ----
 
 [NOTE]
-Adding the annotation on a layout that has a parent layout will fail on startup.
-
-[NOTE]
-If the Theme annotation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
+If the Theme annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
 
 = Creating your own component theme
 
@@ -56,7 +53,7 @@ you need to create a theme class that informs flow how to translate the base un-
 component html import to use your themed version.
 
 The `getBaseUrl` should return the part of the htmlImport that can be used to determine if
-it is a import that could be changed to a theme import. (for Vaadin Elements that is `/src/`)
+it is an import that could be changed to a theme import. (for Vaadin Elements that is `/src/`)
 
 The `getThemeUrl` should return what the base url part should be changed to to get the
 correct theme import. (for Vaadin Elements that `/theme/[themeName]` is used)
