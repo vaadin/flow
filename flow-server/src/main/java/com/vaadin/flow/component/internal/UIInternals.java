@@ -40,6 +40,7 @@ import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -49,10 +50,14 @@ import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
+import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.router.legacy.HasChildView;
 import com.vaadin.flow.router.legacy.View;
+import com.vaadin.flow.server.AbstractTheme;
+import com.vaadin.flow.server.Theme;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -158,6 +163,10 @@ public class UIInternals implements Serializable {
     private final DependencyList dependencyList = new DependencyList();
 
     private final ConstantPool constantPool = new ConstantPool();
+
+    private AbstractTheme theme = null;
+    private final Map<String, String> urlTranslations = new HashMap<>();
+    private final Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations = new HashMap<>();
 
     /**
      * Creates a new instance for the given UI.
@@ -570,6 +579,8 @@ public class UIInternals implements Serializable {
         assert target != null;
         assert viewLocation != null;
 
+        updateTheme(target);
+
         this.viewLocation = viewLocation;
 
         Element uiElement = ui.getElement();
@@ -623,6 +634,36 @@ public class UIInternals implements Serializable {
             uiElement.removeAllChildren();
             rootElement.removeFromParent();
             uiElement.appendChild(rootElement);
+        }
+    }
+
+    private void updateTheme(Component target) {
+        Class<? extends RouterLayout> topParentLayout = RouterUtil
+                .getTopParentLayout(target.getClass());
+        Theme themeAnnotation;
+        if (topParentLayout != null) {
+            themeAnnotation = topParentLayout.getAnnotation(Theme.class);
+        } else {
+            themeAnnotation = target.getClass().getAnnotation(Theme.class);
+        }
+        if (themeAnnotation != null) {
+            if (theme == null
+                    || !theme.getClass().equals(themeAnnotation.value())) {
+                cacheThemeTranslations(theme);
+                theme = ReflectTools.createInstance(themeAnnotation.value());
+                urlTranslations.clear();
+                urlTranslations.putAll(themeTranslations.computeIfAbsent(
+                        theme.getClass(), themeClass -> new HashMap<>()));
+            }
+        } else {
+            cacheThemeTranslations(theme);
+            theme = null;
+        }
+    }
+
+    private void cacheThemeTranslations(AbstractTheme theme) {
+        if (theme != null) {
+            themeTranslations.put(theme.getClass(), urlTranslations);
         }
     }
 
@@ -733,12 +774,26 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(componentClass);
-        dependencies.getHtmlImports().forEach(
-                html -> page.addHtmlImport(html.value(), html.loadMode()));
+        dependencies.getHtmlImports().forEach(html -> page
+                .addHtmlImport(getHtmlImportValue(html), html.loadMode()));
         dependencies.getJavaScripts()
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+    }
+
+    private String getHtmlImportValue(HtmlImport html) {
+        if (theme != null) {
+            String translation = urlTranslations.get(html.value());
+            if (translation != null) {
+                return translation;
+            }
+            String translatedUrl = theme.getTranslatedUrl(html.value(),
+                    VaadinServlet.getCurrent().getServletResources().stream());
+            urlTranslations.put(html.value(), translatedUrl);
+            return translatedUrl;
+        }
+        return html.value();
     }
 
     /**

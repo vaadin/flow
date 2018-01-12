@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
@@ -80,8 +79,13 @@ public class InternalServerError extends Component
             String exceptionText) {
         getElement().appendChild(Element.createText(exceptionText));
 
-        boolean productionMode = VaadinService.getCurrent()
-                .getDeploymentConfiguration().isProductionMode();
+        VaadinService vaadinService = VaadinService.getCurrent();
+        // Check that we have a vaadinService as else we will fail on a NPE and
+        // the stacktrace we actually got will disappear and getting a NPE is
+        // confusing.
+        boolean productionMode = vaadinService == null ? false
+                : vaadinService.getDeploymentConfiguration().isProductionMode();
+
         if (!productionMode) {
             checkLogBinding();
             printStacktrace(exception);
@@ -106,6 +110,7 @@ public class InternalServerError extends Component
                 assert false;
             }
         }
+
     }
 
     private void checkLogBinding() {

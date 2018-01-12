@@ -32,11 +32,6 @@ public class AbstractThemeTest {
             public String getThemeUrl() {
                 return "theme/custom/";
             }
-
-            @Override
-            public List<String> getInlineContents() {
-                return new ArrayList<>();
-            }
         };
 
         assertUrlTranslations(theme);
@@ -53,11 +48,6 @@ public class AbstractThemeTest {
             @Override
             public String getThemeUrl() {
                 return "theme/custom/";
-            }
-
-            @Override
-            public List<String> getInlineContents() {
-                return new ArrayList<>();
             }
         };
 
@@ -79,11 +69,6 @@ public class AbstractThemeTest {
             public String getThemeUrl() {
                 return "theme/custom/";
             }
-
-            @Override
-            public List<String> getInlineContents() {
-                return new ArrayList<>();
-            }
         };
 
         assertUrlTranslations(theme);
@@ -100,11 +85,6 @@ public class AbstractThemeTest {
             @Override
             public String getThemeUrl() {
                 return "theme/custom";
-            }
-
-            @Override
-            public List<String> getInlineContents() {
-                return new ArrayList<>();
             }
         };
 
