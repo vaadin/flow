@@ -53,9 +53,20 @@ If the Theme annotation is not on a `@Route` Component or a `RouterLayout` used 
 
 To create your own component theme to be used with the wrapped Vaadin Element components
 you need to create a theme class that informs flow how to translate the base un-themed
-component html import to use your themed version e.g.
+component html import to use your themed version.
 
-[source,java]
+The `getBaseUrl` should return the part of the htmlImport that can be used to determine if
+it is a import that could be changed to a theme import. (for Vaadin Elements that is `/src/`)
+
+The `getThemeUrl` should return what the base url part should be changed to to get the
+correct theme import. (for Vaadin Elements that `/theme/[themeName]` is used)
+
+The `getInlineContents` is a collection of html that will be inlined to the BootstrapPage
+head. this could return for instance add a custom style to have
+the correct typography e.g. `<custom-style><style include="lumo-typography"></style></custom-style>`
+
+
+[ource,java]
 ----
 public class MyTheme implements AbstractTheme {
     @Override

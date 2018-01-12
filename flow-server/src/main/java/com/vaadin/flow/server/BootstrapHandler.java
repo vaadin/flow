@@ -432,7 +432,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             Consumer<Element> action) {
         if (element instanceof Document) {
             element.getAllElements().stream()
-                    .filter(item -> !(item instanceof Document))
+                    .filter(item -> !(item instanceof Document)
+                            && element.equals(item.parent()))
                     .forEach(action::accept);
         } else {
             action.accept(element);

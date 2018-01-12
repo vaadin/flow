@@ -121,7 +121,8 @@ public class BootstrapHandlerTest {
             implements PageConfigurator {
         @Override
         public void configurePage(InitialPageSettings settings) {
-            settings.addInlineFromFile("inline.js", InitialPageSettings.WrapMode.JAVASCRIPT);
+            settings.addInlineFromFile("inline.js",
+                    InitialPageSettings.WrapMode.JAVASCRIPT);
             settings.addInlineFromFile("inline.html",
                     InitialPageSettings.WrapMode.NONE);
             settings.addInlineFromFile("inline.css",
@@ -275,14 +276,8 @@ public class BootstrapHandlerTest {
 
         @Override
         public List<String> getInlineContents() {
-            return Arrays.asList("<style type=\"text/css\">/* theme inlined css */\n" + "\n"
-                    + "#preloadedDiv {\n" + "    color: rgba(255, 255, 0, 1);\n"
-                    + "}\n" + "\n" + "#inlineCssTestDiv {\n"
-                    + "    color: rgba(255, 255, 0, 1);\n" + "}\n</style>","<script type=\"text/javascript\">\n"
-                    + "    // document.body might not yet be accessible, so just leave a message\n"
-                    + "    window.messages = window.messages || [];\n"
-                    + "    window.messages.push(\"inline.html\");\n"
-                    + "</script>");
+            return Arrays.asList(
+                    "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
         }
     }
 
@@ -627,13 +622,12 @@ public class BootstrapHandlerTest {
                 allElements.get(1).toString());
     }
 
-
     @Test // 3203
     public void page_configurator_link_shorthands_are_added_correctly()
             throws InvalidRouteConfigurationException {
 
-        initUI(testUI, createVaadinRequest(),
-                Collections.singleton(InitialPageConfiguratorLinkShorthands.class));
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(InitialPageConfiguratorLinkShorthands.class));
 
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
@@ -647,7 +641,6 @@ public class BootstrapHandlerTest {
                 "<link href=\"icons/icon-192.png\" rel=\"icon\" sizes=\"192x192\">",
                 allElements.get(allElements.size() - 1).toString());
     }
-
 
     @Test // 2344
     public void page_configurator_adds_styles_for_body()
@@ -867,32 +860,24 @@ public class BootstrapHandlerTest {
                 allElements.get(allElements.size() - 1).toString());
     }
 
-    @Test //3197
-    public void theme_contents_are_appended_to_head() throws InvalidRouteConfigurationException {
-        initUI(testUI, createVaadinRequest(), Collections.singleton(MyThemeTest.class));
+    @Test // 3197
+    public void theme_contents_are_appended_to_head()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyThemeTest.class));
 
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
         Elements allElements = page.head().getAllElements();
-        // Note element 0 is the full head element.
-        Assert.assertEquals(
-                "File css should have been prepended to body element",
-                "<style type=\"text/css\">/* theme inlined css */\n" + "\n"
-                        + "#preloadedDiv {\n"
-                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
-                        + "#inlineCssTestDiv {\n"
-                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n</style>",
+        // Selecting with -2 as getAllElement will return the inner style as
+        // it's own element with a parent reference to custom-style
+        Assert.assertEquals("Custom style should have been added to head.",
+                "<custom-style><style include=\"lumo-typography\"></style></custom-style>",
                 allElements.get(allElements.size() - 2).toString());
-        Assert.assertEquals(
-                "File html should have been prepended to body element",
-                "<script type=\"text/javascript\">\n"
-                        + "    // document.body might not yet be accessible, so just leave a message\n"
-                        + "    window.messages = window.messages || [];\n"
-                        + "    window.messages.push(\"inline.html\");\n"
-                        + "</script>",
-                allElements.get(allElements.size() - 1).toString());
 
+        Assert.assertTrue("Style should have been wrapped in custom style",
+                page.head().toString().contains("<custom-style><style include=\"lumo-typography\"></style></custom-style>"));
     }
 
     @Test
