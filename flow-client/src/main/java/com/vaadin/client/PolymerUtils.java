@@ -244,6 +244,20 @@ public final class PolymerUtils {
     }-*/;
 
     /**
+     * Returns {@code true} if the DOM structure of the polymer custom element
+     * {@code shadowRootParent} is ready (meaning that it has shadow root and
+     * its shadow root may be queried for children referenced by id).
+     *
+     * @param shadowRootParent
+     *            the polymer custom element
+     * @return {@code true} if the {@code shadowRootParent} element is ready
+     */
+    public static native boolean isReady(Node shadowRootParent)
+    /*-{
+        return typeof(shadowRootParent.$) != "undefined";
+    }-*/;
+
+    /**
      * Checks whether the {@code node} has required {@code tag}.
      *
      * @param node
