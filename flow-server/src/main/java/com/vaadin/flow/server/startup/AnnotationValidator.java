@@ -22,6 +22,7 @@ import javax.servlet.annotation.HandlesTypes;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,6 +39,10 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.Theme;
 
+/**
+ * Validation class that is run during servlet container initialization which
+ * checks that specific annotations are not configured wrong.
+ */
 @HandlesTypes({ Viewport.class, BodySize.class, Inline.class, Theme.class })
 public class AnnotationValidator implements ServletContainerInitializer {
 
@@ -74,7 +79,9 @@ public class AnnotationValidator implements ServletContainerInitializer {
     private List<String> validateAnnotatedClasses(Set<Class<?>> classSet) {
         List<String> offendingAnnotations = new ArrayList<>();
 
-        classSet.forEach(clazz -> {
+        Iterator<Class<?>> iterator = classSet.iterator();
+        while (iterator.hasNext()) {
+            Class<?> clazz = iterator.next();
             Route route = clazz.getAnnotation(Route.class);
             if (route != null) {
                 if (!UI.class.equals(route.layout())) {
@@ -95,7 +102,7 @@ public class AnnotationValidator implements ServletContainerInitializer {
                 offendingAnnotations.add(String.format(MIDDLE_ROUTER_LAYOUT,
                         clazz.getName(), getClassAnnotations(clazz)));
             }
-        });
+        }
 
         return offendingAnnotations;
     }
