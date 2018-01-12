@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.tutorial.theme;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.flow.component.html.Div;
@@ -58,10 +58,10 @@ public class ComponentTheme {
 
         @Override
         public List<String> getInlineContents() {
-            return null;
+            return Arrays.asList(
+                    "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
         }
     }
-
 
     public class MyTheme implements AbstractTheme {
         @Override
@@ -72,11 +72,6 @@ public class ComponentTheme {
         @Override
         public String getThemeUrl() {
             return "/theme/myTheme/";
-        }
-
-        @Override
-        public List<String> getInlineContents() {
-            return Collections.EMPTY_LIST;
         }
     }
 }

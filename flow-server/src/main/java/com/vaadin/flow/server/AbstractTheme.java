@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -33,7 +34,7 @@ public interface AbstractTheme extends Serializable {
      *
      * @return the base component path
      */
-     String getBaseUrl();
+    String getBaseUrl();
 
     /**
      * The url for the components themed version implementation.
@@ -49,9 +50,12 @@ public interface AbstractTheme extends Serializable {
      * will be handled as no-wrap as is and will be appended to the initial page
      * head.
      * 
-     * @return list of string content to inline
+     * @return list of string content to inline or empty list if nothing to
+     *         inline
      */
-    List<String> getInlineContents();
+    default List<String> getInlineContents() {
+        return Collections.emptyList();
+    }
 
     /**
      * Get the translated theme path for the given url. If the url beginning

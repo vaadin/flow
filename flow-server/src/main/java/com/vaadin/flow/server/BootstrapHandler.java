@@ -77,7 +77,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
-            + "window.Vaadin.Flow.gwtStatsEvents.push(event); " + "return true;};};";
+            + "window.Vaadin.Flow.gwtStatsEvents.push(event); "
+            + "return true;};};";
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String DEFER_ATTRIBUTE = "defer";
     private static final String VIEWPORT = "viewport";
@@ -535,8 +536,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 CSS_TYPE_ATTRIBUTE_VALUE);
         // Add any body style that is defined for the application using
         // @BodySize
-        String bodySizeContent = BootstrapUtils
-                .getBodySizeContent(context.getUI(), context.getRequest())
+        String bodySizeContent = BootstrapUtils.getBodySizeContent(context)
                 .orElse("body {margin:0;}");
         styles.appendText(bodySizeContent);
         // Basic reconnect dialog style just to make it visible and outside of
@@ -574,7 +574,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendElement("base").attr("href", getServiceUrl(context));
 
-        BootstrapUtils.getViewportContent(context.getUI(), context.getRequest())
+        BootstrapUtils.getViewportContent(context)
                 .ifPresent(content -> head.appendElement(META_TAG)
                         .attr("name", VIEWPORT)
                         .attr(CONTENT_ATTRIBUTE, content));

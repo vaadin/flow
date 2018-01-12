@@ -2,8 +2,6 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,10 +26,10 @@ import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.Theme;
 
 import static com.vaadin.flow.server.startup.AnnotationValidator.ERROR_MESSAGE_BEGINNING;
-import static com.vaadin.flow.server.startup.AnnotationValidator.middleRouterLayout;
-import static com.vaadin.flow.server.startup.AnnotationValidator.nonParent;
-import static com.vaadin.flow.server.startup.AnnotationValidator.nonParentAlias;
-import static com.vaadin.flow.server.startup.AnnotationValidator.nonRouterLayout;
+import static com.vaadin.flow.server.startup.AnnotationValidator.MIDDLE_ROUTER_LAYOUT;
+import static com.vaadin.flow.server.startup.AnnotationValidator.NON_PARENT;
+import static com.vaadin.flow.server.startup.AnnotationValidator.NON_PARENT_ALIAS;
+import static com.vaadin.flow.server.startup.AnnotationValidator.NON_ROUTER_LAYOUT;
 
 public class AnnotationValidatorTest {
 
@@ -57,11 +55,6 @@ public class AnnotationValidatorTest {
         @Override
         public String getThemeUrl() {
             return "theme/myTheme/";
-        }
-
-        @Override
-        public List<String> getInlineContents() {
-            return Collections.EMPTY_LIST;
         }
     }
 
@@ -143,7 +136,7 @@ public class AnnotationValidatorTest {
             throws ServletException {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING + String.format(
-                nonParent, ThemeViewportWithParent.class.getName(),
+                NON_PARENT, ThemeViewportWithParent.class.getName(),
                 Theme.class.getSimpleName()));
 
         annotationValidator.onStartup(Stream.of(ThemeViewportWithParent.class)
@@ -166,19 +159,19 @@ public class AnnotationValidatorTest {
             Assert.assertTrue("Exception has wrong beginning.",
                     errorMessage.startsWith(ERROR_MESSAGE_BEGINNING));
             Assert.assertTrue("Exception was missing Theme exception",
-                    errorMessage.contains(String.format(nonParent,
+                    errorMessage.contains(String.format(NON_PARENT,
                             ThemeViewportWithParent.class.getName(),
                             Theme.class.getSimpleName())));
             Assert.assertTrue("Exception was missing Inline exception",
-                    errorMessage.contains(String.format(nonParent,
+                    errorMessage.contains(String.format(NON_PARENT,
                             InlineViewportWithParent.class.getName(),
                             Inline.class.getSimpleName())));
             Assert.assertTrue("Exception was missing Viewport exception",
-                    errorMessage.contains(String.format(nonParent,
+                    errorMessage.contains(String.format(NON_PARENT,
                             ViewPortViewportWithParent.class.getName(),
                             Viewport.class.getSimpleName())));
             Assert.assertTrue("Exception was missing BodySize exception",
-                    errorMessage.contains(String.format(nonParent,
+                    errorMessage.contains(String.format(NON_PARENT,
                             BodySizeViewportWithParent.class.getName(),
                             BodySize.class.getSimpleName())));
         }
@@ -189,7 +182,7 @@ public class AnnotationValidatorTest {
             throws ServletException {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING + String.format(
-                nonParentAlias, ThemeViewportWithAliasParent.class.getName(),
+                NON_PARENT_ALIAS, ThemeViewportWithAliasParent.class.getName(),
                 Theme.class.getSimpleName()));
 
         annotationValidator
@@ -201,7 +194,7 @@ public class AnnotationValidatorTest {
     public void onStartUp_non_linked_theme_throws() throws ServletException {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(
-                ERROR_MESSAGE_BEGINNING + String.format(nonRouterLayout,
+                ERROR_MESSAGE_BEGINNING + String.format(NON_ROUTER_LAYOUT,
                         NonRoute.class.getName(), Theme.class.getSimpleName()));
 
         annotationValidator.onStartup(
@@ -213,7 +206,7 @@ public class AnnotationValidatorTest {
     public void onStartUp_middle_theme_throws() throws ServletException {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING + String.format(
-                middleRouterLayout, MiddleThemeLayout.class.getName(),
+                MIDDLE_ROUTER_LAYOUT, MiddleThemeLayout.class.getName(),
                 Theme.class.getSimpleName()));
 
         annotationValidator.onStartup(
@@ -226,7 +219,7 @@ public class AnnotationValidatorTest {
             throws ServletException {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING + String.format(
-                nonParent, FailingMultiAnnotation.class.getName(),
+                NON_PARENT, FailingMultiAnnotation.class.getName(),
                 Inline.class.getSimpleName() + ", "
                         + BodySize.class.getSimpleName()));
 

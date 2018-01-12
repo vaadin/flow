@@ -44,10 +44,10 @@ public class AnnotationValidator implements ServletContainerInitializer {
     public static final String ERROR_MESSAGE_BEGINNING = "Found configuration annotations that will not be used in the application. \n"
             + "Move the following annotations to a single route or the top RouterLayout of the application: \n";
 
-    public static final String nonParent = "Non parent Route target: %s contains: %s";
-    public static final String nonParentAlias = "Non parent RouteAlias target: %s contains: %s";
-    public static final String nonRouterLayout = "Non RouterLayout: %s contains: %s";
-    public static final String middleRouterLayout = "Middle layout: %s contains: %s";
+    public static final String NON_PARENT = "Non parent Route target: %s contains: %s";
+    public static final String NON_PARENT_ALIAS = "Non parent RouteAlias target: %s contains: %s";
+    public static final String NON_ROUTER_LAYOUT = "Non RouterLayout: %s contains: %s";
+    public static final String MIDDLE_ROUTER_LAYOUT = "Middle layout: %s contains: %s";
 
     private List<Class<?>> typeAnnotations;
 
@@ -78,21 +78,21 @@ public class AnnotationValidator implements ServletContainerInitializer {
             Route route = clazz.getAnnotation(Route.class);
             if (route != null) {
                 if (!UI.class.equals(route.layout())) {
-                    offendingAnnotations.add(String.format(nonParent,
+                    offendingAnnotations.add(String.format(NON_PARENT,
                             clazz.getName(), getClassAnnotations(clazz)));
                 }
                 RouteAlias routeAlias = clazz.getAnnotation(RouteAlias.class);
                 if (routeAlias != null
                         && !UI.class.equals(routeAlias.layout())) {
-                    offendingAnnotations.add(String.format(nonParentAlias,
+                    offendingAnnotations.add(String.format(NON_PARENT_ALIAS,
                             clazz.getName(), getClassAnnotations(clazz)));
                 }
             } else if (!RouterLayout.class.isAssignableFrom(clazz)) {
-                offendingAnnotations.add(String.format(nonRouterLayout,
+                offendingAnnotations.add(String.format(NON_ROUTER_LAYOUT,
                         clazz.getName(), getClassAnnotations(clazz)));
             } else if (RouterLayout.class.isAssignableFrom(clazz)
                     && clazz.getAnnotation(ParentLayout.class) != null) {
-                offendingAnnotations.add(String.format(middleRouterLayout,
+                offendingAnnotations.add(String.format(MIDDLE_ROUTER_LAYOUT,
                         clazz.getName(), getClassAnnotations(clazz)));
             }
         });

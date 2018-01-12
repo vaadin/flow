@@ -1205,11 +1205,6 @@ public class RouteRegistryInitializerTest {
         public String getThemeUrl() {
             return "theme/myTheme/";
         }
-
-        @Override
-        public List<String> getInlineContents() {
-            return Collections.EMPTY_LIST;
-        }
     }
 
     @Route("single")

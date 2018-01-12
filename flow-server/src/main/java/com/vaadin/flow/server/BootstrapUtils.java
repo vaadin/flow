@@ -63,24 +63,21 @@ class BootstrapUtils {
      * was navigated to, specified with {@link Viewport} on the {@link Route}
      * annotated class or the {@link ParentLayout} of the route.
      *
-     * @param ui
-     *            the application ui
-     * @param request
-     *            the request for the ui
+     * @param context
+     *            the bootstrap context
      * @return the content value string for viewport meta tag
      */
-    static Optional<String> getViewportContent(UI ui, VaadinRequest request) {
+    static Optional<String> getViewportContent(
+            BootstrapHandler.BootstrapContext context) {
 
-        Optional<Router> router = ui.getRouter();
-        if (router.isPresent()) {
-            Optional<NavigationState> navigationTarget = getRouteTargetInformation(
-                    request, router.get());
-
-            return navigationTarget
-                    .flatMap(BootstrapUtils::getViewportAnnotation)
-                    .map(Viewport::value);
+        Optional<NavigationState> navigationTarget = getNavigationState(
+                context);
+        if (!navigationTarget.isPresent()) {
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        return navigationTarget.flatMap(BootstrapUtils::getViewportAnnotation)
+                .map(Viewport::value);
     }
 
     private static Optional<Viewport> getViewportAnnotation(
@@ -161,23 +158,21 @@ class BootstrapUtils {
      * was navigated to, specified with {@link BodySize} on the {@link Route}
      * annotated class or the {@link ParentLayout} of the route.
      *
-     * @param ui
-     *            the application ui
-     * @param request
-     *            the request for the ui
+     * @param context
+     *            the bootstrap context
      * @return the content value string for body size style element
      */
-    static Optional<String> getBodySizeContent(UI ui, VaadinRequest request) {
-        Optional<Router> router = ui.getRouter();
-        if (router.isPresent()) {
-            Optional<NavigationState> navigationTarget = getRouteTargetInformation(
-                    request, router.get());
+    static Optional<String> getBodySizeContent(
+            BootstrapHandler.BootstrapContext context) {
+        Optional<NavigationState> navigationTarget = getNavigationState(
+                context);
 
-            return navigationTarget
-                    .flatMap(BootstrapUtils::getBodySizeAnnotation)
-                    .map(BootstrapUtils::composeBodySizeString);
+        if (!navigationTarget.isPresent()) {
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        return navigationTarget.flatMap(BootstrapUtils::getBodySizeAnnotation)
+                .map(BootstrapUtils::composeBodySizeString);
     }
 
     private static Optional<BodySize> getBodySizeAnnotation(
@@ -219,26 +214,20 @@ class BootstrapUtils {
      */
     static Optional<InlineTargets> getInlineTargets(
             BootstrapHandler.BootstrapContext context) {
+        Optional<NavigationState> navigationTarget = getNavigationState(
+                context);
 
-        UI ui = context.getUI();
-        VaadinRequest request = context.getRequest();
-
-        Optional<Router> router = ui.getRouter();
-        if (router.isPresent()) {
-            Optional<NavigationState> navigationTarget = getRouteTargetInformation(
-                    request, router.get());
-
-            if (navigationTarget.isPresent()) {
-                List<Inline> inlineAnnotations = getInlineAnnotations(
-                        navigationTarget.get());
-                if (!inlineAnnotations.isEmpty()) {
-                    InlineTargets inlines = new InlineTargets();
-                    inlineAnnotations.forEach(inline -> inlines
-                            .addInlineDependency(inline, request));
-                    return Optional.of(inlines);
-                }
+        if (navigationTarget.isPresent()) {
+            List<Inline> inlineAnnotations = getInlineAnnotations(
+                    navigationTarget.get());
+            if (!inlineAnnotations.isEmpty()) {
+                InlineTargets inlines = new InlineTargets();
+                inlineAnnotations.forEach(inline -> inlines
+                        .addInlineDependency(inline, context.getRequest()));
+                return Optional.of(inlines);
             }
         }
+
         return Optional.empty();
     }
 
@@ -307,21 +296,14 @@ class BootstrapUtils {
     static List<JsonObject> getThemeSettings(
             BootstrapHandler.BootstrapContext context) {
 
-        UI ui = context.getUI();
-        VaadinRequest request = context.getRequest();
+        Optional<Theme> themeAnnotation = getThemeAnnotation(context);
 
-        Optional<Router> router = ui.getRouter();
-        if (router.isPresent()) {
-            Optional<Theme> themeAnnotation = getThemeAnnotation(request,
-                    router.get());
-            
-            if (themeAnnotation.isPresent()) {
-                AbstractTheme theme = ReflectTools
-                        .createInstance(themeAnnotation.get().value());
-                return theme.getInlineContents().stream()
-                        .map(BootstrapUtils::createInlineDependencyObject)
-                        .collect(Collectors.toList());
-            }
+        if (themeAnnotation.isPresent()) {
+            AbstractTheme theme = ReflectTools
+                    .createInstance(themeAnnotation.get().value());
+            return theme.getInlineContents().stream()
+                    .map(BootstrapUtils::createInlineDependencyObject)
+                    .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
@@ -335,10 +317,10 @@ class BootstrapUtils {
         return dependency;
     }
 
-    private static Optional<Theme> getThemeAnnotation(VaadinRequest request,
-            Router router) {
-        Optional<NavigationState> navigationTarget = getRouteTargetInformation(
-                request, router);
+    private static Optional<Theme> getThemeAnnotation(
+            BootstrapHandler.BootstrapContext context) {
+        Optional<NavigationState> navigationTarget = getNavigationState(
+                context);
 
         if (!navigationTarget.isPresent()) {
             return Optional.empty();
@@ -355,6 +337,20 @@ class BootstrapUtils {
                     .getAnnotationFor(state.getNavigationTarget(), Theme.class);
         }
         return AnnotationReader.getAnnotationFor(parentLayout, Theme.class);
+    }
+
+    private static Optional<NavigationState> getNavigationState(
+            BootstrapHandler.BootstrapContext context) {
+        UI ui = context.getUI();
+        VaadinRequest request = context.getRequest();
+
+        Optional<Router> router = ui.getRouter();
+        if (!router.isPresent()) {
+            return Optional.empty();
+        }
+        Optional<NavigationState> navigationTarget = getRouteTargetInformation(
+                request, router.get());
+        return navigationTarget;
     }
 
 }

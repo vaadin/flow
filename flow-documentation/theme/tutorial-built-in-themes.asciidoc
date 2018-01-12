@@ -61,11 +61,6 @@ it is a import that could be changed to a theme import. (for Vaadin Elements tha
 The `getThemeUrl` should return what the base url part should be changed to to get the
 correct theme import. (for Vaadin Elements that `/theme/[themeName]` is used)
 
-The `getInlineContents` is a collection of html that will be inlined to the BootstrapPage
-head. this could return for instance add a custom style to have
-the correct typography e.g. `<custom-style><style include="lumo-typography"></style></custom-style>`
-
-
 [ource,java]
 ----
 public class MyTheme implements AbstractTheme {
@@ -78,13 +73,13 @@ public class MyTheme implements AbstractTheme {
     public String getThemeUrl() {
         return "/theme/myTheme/";
     }
-
-    @Override
-    public List<String> getInlineContents() {
-        return Collections.EMPTY_LIST;
-    }
 }
 ----
+
+For more control there is `getInlineContents()` that returns a collection of html
+that will be inlined to the BootstrapPage head. this could return for instance add a
+custom style to have the correct typography e.g.
+`<custom-style><style include="lumo-typography"></style></custom-style>`
 
 Then you need to create the themed .html files for the elements for an example see:
 https://github.com/vaadin/vaadin-button/blob/master/theme/valo/vaadin-button.html[Themed Vaadin Button]
