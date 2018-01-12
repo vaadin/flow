@@ -6,8 +6,8 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.BeforeEnterEvent;
 
-@Route(value = "com.vaadin.flow.uitest.ui.PageTitleView", layout = ViewTestLayout.class)
-public class PageTitleView extends AbstractDivView {
+@Route(value = "com.vaadin.flow.uitest.ui.PageView", layout = ViewTestLayout.class)
+public class PageView extends AbstractDivView {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
@@ -31,7 +31,14 @@ public class PageTitleView extends AbstractDivView {
             getPage().setTitle("OVERRIDDEN");
         });
 
-        add(input, updateButton, overrideButton);
+        Div reloadButton = new Div();
+        reloadButton.setId("reload");
+        reloadButton.setText("Reloads the page");
+        reloadButton.addClickListener(e -> {
+            getPage().reload();
+        });
+
+        add(input, updateButton, overrideButton, reloadButton);
     }
 
 }

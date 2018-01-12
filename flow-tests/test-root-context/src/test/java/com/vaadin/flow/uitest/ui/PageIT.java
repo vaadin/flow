@@ -3,10 +3,12 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
-public class PageTitleIT extends ChromeBrowserTest {
+public class PageIT extends ChromeBrowserTest {
 
     @Test
     public void testPageTitleUpdates() {
@@ -52,5 +54,17 @@ public class PageTitleIT extends ChromeBrowserTest {
         findElement(By.id("input")).clear();
         findElement(By.id("input")).sendKeys(title);
         findElement(By.id("button")).click();
+    }
+
+    @Test
+    public void testReload() {
+        open();
+
+        TestBenchElement input = (TestBenchElement) findElement(By.id("input"));
+        input.sendKeys("foo");
+        Assert.assertEquals("foo", input.getPropertyString("value"));
+        findElement(By.id("reload")).click();
+        input = (TestBenchElement) findElement(By.id("input"));
+        Assert.assertEquals("", input.getPropertyString("value"));
     }
 }
