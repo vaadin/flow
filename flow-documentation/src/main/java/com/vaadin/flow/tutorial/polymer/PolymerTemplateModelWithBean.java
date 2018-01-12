@@ -64,4 +64,28 @@ public class PolymerTemplateModelWithBean {
         }
     }
 
+    public class OrderForm extends PolymerTemplate<FormModel> {
+
+        public OrderForm() {
+            Person person = new Person("John", "Doe", 82);
+            getModel().setPerson(person);
+        }
+
+        @EventHandler
+        public void submit() {
+            Person person = getModel().getPerson();
+            getService().placeOrder(new Person(person.getFirstName(), person.getLastName(), person.getAge()));
+        }
+
+        private OrderService getService() {
+            // Implementation omitted
+            return new OrderService();
+        }
+    }
+
+    public class OrderService {
+        public void placeOrder(Person person){
+            // no-op
+        }
+    }
 }
