@@ -20,13 +20,12 @@ import java.io.Serializable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.ui.Dependency;
-import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.ui.Dependency.Type;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Represents the web page open in the browser, containing the UI it is
