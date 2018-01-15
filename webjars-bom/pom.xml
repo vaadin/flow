@@ -381,156 +381,22 @@
                 <version>1.0.0-alpha2</version>
             </dependency>
             <!-- dependency for paper Elements. -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>iron-dropdown</artifactId> -->
-<!--                 <version>2.1.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-polymerelements-iron-dropdown</artifactId> -->
-<!--                 <version>2.1.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-PolymerElements-iron-dropdown</artifactId> -->
-<!--                 <version>2.1.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>iron-behaviors</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-polymerelements-iron-behaviors</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-PolymerElements-iron-behaviors</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>neon-animation</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-polymerelements-neon-animation</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-PolymerElements-neon-animation</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>iron-selector</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-polymerelements-iron-selector</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-PolymerElements-iron-selector</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>font-roboto</artifactId> -->
-<!--                 <version>1.0.3</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-polymerelements-font-roboto</artifactId> -->
-<!--                 <version>1.0.3</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-PolymerElements-font-roboto</artifactId> -->
-<!--                 <version>1.0.3</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>paper-styles</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-polymerelements-paper-styles</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-PolymerElements-paper-styles</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>paper-button</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-polymerelements-paper-button</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-PolymerElements-paper-button</artifactId> -->
-<!--                 <version>2.0.0</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>paper-icon-button</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-polymerelements-paper-icon-button</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-PolymerElements-paper-icon-button</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>paper-progress</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-polymerelements-paper-progress</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-PolymerElements-paper-progress</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>paper-ripple</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-polymerelements-paper-ripple</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
-<!--             <dependency> -->
-<!--                 <groupId>org.webjars.bower</groupId> -->
-<!--                 <artifactId>github-com-PolymerElements-paper-ripple</artifactId> -->
-<!--                 <version>2.0.1</version> -->
-<!--             </dependency> -->
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>iron-behaviors</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>github-com-polymerelements-iron-behaviors</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>github-com-PolymerElements-iron-behaviors</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+            
         </dependencies>
     </dependencyManagement>
 </project>
