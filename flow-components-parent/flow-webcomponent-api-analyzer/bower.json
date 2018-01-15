@@ -50,7 +50,7 @@
     "vaadin-upload": "4.0.0-alpha3",
     "vaadin-progress-bar": "1.0.0-alpha11",
     "vaadin-tabs": "2.0.0-alpha6",
-    "vaadin-radio-button": "1.0.0-alpha9",
+    "vaadin-radio-button": "1.0.0-alpha11",
     "vaadin-notification": "1.0.0-alpha6",
     "vaadin-list-box": "1.0.0-alpha8"
   }
