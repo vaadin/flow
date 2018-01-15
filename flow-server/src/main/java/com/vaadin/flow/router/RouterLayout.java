@@ -19,12 +19,10 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.router.Route;
 
 /**
- *
  * Implementations of this interface represent a parent for a navigation target
  * components via the {@link Route#layout()} parameter.
  *
  * @author Vaadin Ltd
- *
  */
 public interface RouterLayout extends HasElement {
 
@@ -32,11 +30,13 @@ public interface RouterLayout extends HasElement {
      * Sets the content of the layout which is the router target component
      * annotated with a {@link Route}.
      *
-     * @param content
-     *            the content component
+     * @param content the content component
      */
     default void setRouterLayoutContent(HasElement content) {
-        getElement().appendChild(content.getElement());
+        getElement().removeAllChildren();
+        if (content != null && content.getElement() != null) {
+            getElement().setChild(0, content.getElement());
+        }
     }
 
 }
