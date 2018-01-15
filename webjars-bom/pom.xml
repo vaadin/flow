@@ -119,11 +119,6 @@
                 <artifactId>github-com-polymer-polymer</artifactId>
                 <version>v2.3.1</version>
             </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-Polymer-polymer</artifactId>
-                <version>v2.3.1</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.webjars.bower</groupId>
@@ -290,11 +285,7 @@
                 <artifactId>github-com-polymerelements-iron-meta</artifactId>
                 <version>2.0.4</version>
             </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-meta</artifactId>
-                <version>2.0.4</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>iron-overlay-behavior</artifactId>
