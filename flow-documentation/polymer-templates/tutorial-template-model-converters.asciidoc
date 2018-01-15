@@ -1,6 +1,6 @@
 ---
 title: Using Model Converters with a PolymerTemplate Model
-order: 10
+order: 9
 layout: page
 ---
 

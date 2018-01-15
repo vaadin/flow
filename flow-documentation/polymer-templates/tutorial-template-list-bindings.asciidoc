@@ -1,6 +1,6 @@
 ---
 title: Creating Template Contents Dynamically Based on a List of Items
-order: 8
+order: 7
 layout: page
 ---
 

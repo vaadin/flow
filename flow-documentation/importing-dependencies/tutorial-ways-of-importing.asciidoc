@@ -1,6 +1,6 @@
 ---
 title: Importing HTML and JavaScript
-order: 4
+order: 2
 layout: page
 ---
 

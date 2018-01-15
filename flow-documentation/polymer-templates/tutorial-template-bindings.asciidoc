@@ -2,6 +2,9 @@
 title: Binding Model Data in a PolymerTemplate
 order: 6
 layout: page
+subnav:
+  - title: Two-way data binding
+    href: '#two-way-binding'
 ---
 
 ifdef::env-github[:outfilesuffix: .asciidoc]

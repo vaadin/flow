@@ -1,6 +1,6 @@
 ---
 title: Vaadin Tutorial
-order: 1
+order: 3
 layout: page
 subnav_auto_list_numbers: true
 subnav:

@@ -1,6 +1,6 @@
 ---
 title: Flow application runtime configuration
-order: 9
+order: 3
 layout: page
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Showing a list of data with Data Providers
-order: 4
+order: 5
 layout: page
 ---
 

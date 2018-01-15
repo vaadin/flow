@@ -1,6 +1,6 @@
 ---
 title: Localization
-order: 8
+order: 1
 layout: page
 ---
 

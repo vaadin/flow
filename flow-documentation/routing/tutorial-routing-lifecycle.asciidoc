@@ -1,6 +1,6 @@
 ---
 title: Navigation Lifecycle
-order: 3
+order: 2
 layout: page
 ---
 

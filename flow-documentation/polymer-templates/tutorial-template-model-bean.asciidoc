@@ -1,6 +1,6 @@
 ---
 title: Using Beans with a PolymerTemplate Model
-order: 9
+order: 8
 layout: page
 ---
 

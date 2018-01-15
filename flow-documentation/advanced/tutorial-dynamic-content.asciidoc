@@ -1,6 +1,6 @@
 ---
 title: Dynamic Content
-order: 5
+order: 7
 layout: page
 ---
 

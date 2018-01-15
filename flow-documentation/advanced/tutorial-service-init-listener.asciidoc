@@ -1,6 +1,6 @@
 ---
 title: VaadinServiceInitListener
-order: 4
+order: 6
 layout: page
 ---
 

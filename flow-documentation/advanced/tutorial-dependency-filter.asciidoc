@@ -1,6 +1,6 @@
 ---
 title: Modifying how dependencies are loaded with DependencyFilters
-order: 3
+order: 5
 layout: page
 ---
 
