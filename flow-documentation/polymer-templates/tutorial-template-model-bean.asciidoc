@@ -158,3 +158,38 @@ The proxy bean returned by the getter is not meant to be passed on to an `Entity
 
 [WARNING]
 There is at the time of writing no way to get a detached bean from the model.
+
+When wanting to use model data with an entity manager you need to re-instantiate a new
+entity and set the values using the getters for the item gotten from the model.
+
+Note! in the example that we can't send the Person object from the model directly to
+the service as the the object is proxied and only returns data when the getters are used.
+
+[source,java]
+----
+public class OrderForm extends PolymerTemplate<FormModel> {
+
+    public interface FormModel extends TemplateModel {
+      @Exclude("id")
+      void setPerson(Person person);
+      Person getPerson();
+    }
+
+    public OrderForm() {
+        Person person = new Person("John", "Doe", 82);
+        getModel().setPerson(person);
+    }
+
+    @EventHandler
+    public void submit() {
+        Person person = getModel().getPerson();
+        getService().placeOrder(new Person(person.getFirstName(), person.getLastName(), person.getAge()));
+    }
+
+    private OrderService getService() {
+        // Implementation omitted
+        return new OrderService();
+    }
+}
+----
+

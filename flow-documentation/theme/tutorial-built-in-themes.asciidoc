@@ -1,0 +1,86 @@
+---
+title: Component themes
+order: 1
+layout: page
+---
+
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+= Component themes
+
+The flow wrapped Vaadin Element components import by default an un-themed version
+of the element.
+
+To get a themed element just add the `Theme` annotation the navigation target with
+@Route or the top most RouterLayout that builds the navigation target chain. This
+will update the imported element on the fly to be the correct import for the themed version.
+
+Each root `RouterLayout` may in principle define its own theme, but it is not recommended
+as any bootstrap addition the later loaded theme would use would not be added nor used.
+
+.Sample setup for single view setup to get Lumo themed components
+[source,java]
+----
+@Route(value = "")
+@Theme(Lumo.class)
+public class Application extends Div {
+}
+----
+
+.Sample setup for multi navigation target application to get Lumo themed components
+[source,java]
+----
+@Theme(Lumo.class)
+public class MainLayout extends Div implements RouterLayout {
+}
+
+@Route(value = "", layout = MainLayout.class)
+public class HomeView extends Div {
+}
+
+@Route(value = "blog", layout = MainLayout.class)
+public class BlogPost extends Div {
+}
+----
+
+[NOTE]
+If the Theme annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
+
+= Creating your own component theme
+
+To create your own component theme to be used with the wrapped Vaadin Element components
+you need to create a theme class that informs flow how to translate the base un-themed
+component html import to use your themed version.
+
+The `getBaseUrl` should return the part of the htmlImport that can be used to determine if
+it is an import that could be changed to a theme import. (for Vaadin Elements that is `/src/`)
+
+The `getThemeUrl` should return what the base url part should be changed to to get the
+correct theme import. (for Vaadin Elements that `/theme/[themeName]` is used)
+
+[ource,java]
+----
+public class MyTheme implements AbstractTheme {
+    @Override
+    public String getBaseUrl() {
+        return "/src/";
+    }
+
+    @Override
+    public String getThemeUrl() {
+        return "/theme/myTheme/";
+    }
+}
+----
+
+For more control there is `getInlineContents()` that returns a collection of html
+that will be inlined to the BootstrapPage head. this could return for instance add a
+custom style to have the correct typography e.g.
+`<custom-style><style include="lumo-typography"></style></custom-style>`
+
+Then you need to create the themed .html files for the elements for an example see:
+https://github.com/vaadin/vaadin-button/blob/master/theme/valo/vaadin-button.html[Themed Vaadin Button]
+
+[NOTE]
+The themed files should be stored to
+`${frontend.working.directory}/bower_components/{component}/theme/myTheme` which would by default for vaadin-button be `src/main/webapp/frontend/bower_components/vaadin-button/theme/myTheme/vaadin-button.html`

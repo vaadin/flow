@@ -77,7 +77,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
-            + "window.Vaadin.Flow.gwtStatsEvents.push(event); " + "return true;};};";
+            + "window.Vaadin.Flow.gwtStatsEvents.push(event); "
+            + "return true;};};";
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String DEFER_ATTRIBUTE = "defer";
     private static final String VIEWPORT = "viewport";
@@ -364,6 +365,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 initialPageSettings -> handleInitialPageSettings(context, head,
                         initialPageSettings));
 
+        /* Append any theme elements to initial page. */
+        BootstrapUtils.getThemeSettings(context).stream()
+                .map(dependency -> createDependencyElement(context, dependency))
+                .forEach(element -> insertElements(element, head::appendChild));
+
         BootstrapPageResponse response = new BootstrapPageResponse(
                 context.getRequest(), context.getSession(),
                 context.getResponse(), document, context.getUI(),
@@ -377,14 +383,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             Element head, Element body, InlineTargets targets) {
         targets.getInlineHead(Inline.Position.PREPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, head::prependChild));
+                .forEach(
+                        element -> insertElements(element, head::prependChild));
         targets.getInlineHead(Inline.Position.APPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
                 .forEach(element -> insertElements(element, head::appendChild));
 
         targets.getInlineBody(Inline.Position.PREPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, body::prependChild));
+                .forEach(
+                        element -> insertElements(element, body::prependChild));
         targets.getInlineBody(Inline.Position.APPEND).stream()
                 .map(dependency -> createDependencyElement(context, dependency))
                 .forEach(element -> insertElements(element, body::appendChild));
@@ -407,14 +415,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         initialPageSettings.getInline(InitialPageSettings.Position.PREPEND)
                 .stream()
                 .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, head::prependChild));
+                .forEach(
+                        element -> insertElements(element, head::prependChild));
         initialPageSettings.getInline(InitialPageSettings.Position.APPEND)
                 .stream()
                 .map(dependency -> createDependencyElement(context, dependency))
                 .forEach(element -> insertElements(element, head::appendChild));
 
         initialPageSettings.getElement(InitialPageSettings.Position.PREPEND)
-                .forEach(element -> insertElements(element, head::prependChild));
+                .forEach(
+                        element -> insertElements(element, head::prependChild));
         initialPageSettings.getElement(InitialPageSettings.Position.APPEND)
                 .forEach(element -> insertElements(element, head::appendChild));
     }
@@ -423,7 +433,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             Consumer<Element> action) {
         if (element instanceof Document) {
             element.getAllElements().stream()
-                    .filter(item -> !(item instanceof Document))
+                    .filter(item -> !(item instanceof Document)
+                            && element.equals(item.parent()))
                     .forEach(action::accept);
         } else {
             action.accept(element);
@@ -525,8 +536,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 CSS_TYPE_ATTRIBUTE_VALUE);
         // Add any body style that is defined for the application using
         // @BodySize
-        String bodySizeContent = BootstrapUtils
-                .getBodySizeContent(context.getUI(), context.getRequest())
+        String bodySizeContent = BootstrapUtils.getBodySizeContent(context)
                 .orElse("body {margin:0;}");
         styles.appendText(bodySizeContent);
         // Basic reconnect dialog style just to make it visible and outside of
@@ -564,7 +574,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendElement("base").attr("href", getServiceUrl(context));
 
-        BootstrapUtils.getViewportContent(context.getUI(), context.getRequest())
+        BootstrapUtils.getViewportContent(context)
                 .ifPresent(content -> head.appendElement(META_TAG)
                         .attr("name", VIEWPORT)
                         .attr(CONTENT_ATTRIBUTE, content));
