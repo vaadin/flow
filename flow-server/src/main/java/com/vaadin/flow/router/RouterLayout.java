@@ -16,7 +16,8 @@
 package com.vaadin.flow.router;
 
 import com.vaadin.flow.component.HasElement;
-import com.vaadin.flow.router.Route;
+
+import java.util.Objects;
 
 /**
  * Implementations of this interface represent a parent for a navigation target
@@ -28,14 +29,14 @@ public interface RouterLayout extends HasElement {
 
     /**
      * Sets the content of the layout which is the router target component
-     * annotated with a {@link Route}.
+     * annotated with a {@link Route}. Previous content of the layout {@code Element} is removed.
      *
-     * @param content the content component
+     * @param content the content component or {@code null} if the layout content is to be cleared.
      */
     default void setRouterLayoutContent(HasElement content) {
         getElement().removeAllChildren();
-        if (content != null && content.getElement() != null) {
-            getElement().setChild(0, content.getElement());
+        if (content != null) {
+            getElement().setChild(0, Objects.requireNonNull(content.getElement()));
         }
     }
 
