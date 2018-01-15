@@ -69,9 +69,11 @@ We've also imported some dependencies:
 The `../bower_components/polymer/polymer-element.html` is a link to Polymer library that should be imported in order to have the
 functionality working.
 
-[NOTE] You should take care about proper handling of the polymer template file URL, it should be available via URL.
+[NOTE]
+You should take care about proper handling of the polymer template file URL, it should be available via URL.
 
-[NOTE] To get `polymer-element.html` into your project, you can use one of the ways provided by
+[NOTE]
+To get `polymer-element.html` into your project, you can use one of the ways provided by
 https://www.polymer-project.org/2.0/start/install-2-0[official Polymer page] or use Maven plugins, such as
 https://github.com/eirslett/frontend-maven-plugin[frontend-maven-plugin]
 
@@ -82,7 +84,8 @@ https://github.com/vaadin/flow-demo/[GitHub page] of a demo for more details.
 
 For clarity and demonstration purposes, this example uses https://github.com/PolymerElements/paper-input[paper-input.html] component.
 
-[NOTE] In order to retrieve and use the component in the demo, same rules as for `polymer-element.html` apply.
+[NOTE]
+In order to retrieve and use the component in the demo, same rules as for `polymer-element.html` apply.
 
 === Server side
 
@@ -146,7 +149,8 @@ public interface HelloWorldModel extends TemplateModel {
 
 In order for a component to be processed correctly, we need to bind a Java class with the template, created earlier, by specifying `@HtmlImport` with path to a template
 
-[NOTE] Java class name and template file name doesn't have to match each other, this is just a resource file which you can put to any location.
+[NOTE]
+Java class name and template file name doesn't have to match each other, this is just a resource file which you can put to any location.
 But you have to be sure that it's accessible via the web.
 
 The `/src/HelloWorld.html` is the URL of the polymer template file declared earlier.
