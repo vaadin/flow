@@ -21,8 +21,8 @@ import java.util.List;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.AbstractTheme;
-import com.vaadin.flow.server.Theme;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("theme/tutorial-built-in-themes.asciidoc")

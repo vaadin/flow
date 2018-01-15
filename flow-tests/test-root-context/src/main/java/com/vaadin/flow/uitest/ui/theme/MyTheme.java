@@ -15,9 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import java.util.List;
-
-import com.vaadin.flow.server.AbstractTheme;
+import com.vaadin.flow.theme.AbstractTheme;
 
 public class MyTheme implements AbstractTheme {
     @Override

@@ -48,6 +48,8 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.template.angular.InlineTemplate;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.hamcrest.Matchers.is;

@@ -21,9 +21,9 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.AbstractTheme;
+import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
-import com.vaadin.flow.server.Theme;
+import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.startup.AnnotationValidator.ERROR_MESSAGE_BEGINNING;
 import static com.vaadin.flow.server.startup.AnnotationValidator.MIDDLE_ROUTER_LAYOUT;

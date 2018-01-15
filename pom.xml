@@ -18,6 +18,7 @@
         <module>flow-data</module>
         <module>flow-client</module>
         <module>flow-html-components</module>
+        <module>flow-theme-integrations</module>
         <module>flow-spring-addon</module>
         <module>flow-spring-boot-starter</module>
         <module>flow-documentation</module>

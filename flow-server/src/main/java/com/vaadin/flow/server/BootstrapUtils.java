@@ -46,6 +46,8 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

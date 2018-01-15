@@ -37,7 +37,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
-import com.vaadin.flow.server.Theme;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Validation class that is run during servlet container initialization which

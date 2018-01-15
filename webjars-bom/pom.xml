@@ -40,7 +40,7 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-button</artifactId>
-                <version>1.0.4</version>
+                <version>2.0.0-alpha5</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
@@ -76,6 +76,11 @@
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-valo-theme</artifactId>
                 <version>2.0.0-alpha5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>github-com-vaadin-vaadin-lumo-styles</artifactId>
+                <version>v1.0.0-alpha2</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>

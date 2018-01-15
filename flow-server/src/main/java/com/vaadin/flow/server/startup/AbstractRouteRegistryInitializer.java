@@ -36,7 +36,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.Theme;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Common validation methods for route registry initializer.
