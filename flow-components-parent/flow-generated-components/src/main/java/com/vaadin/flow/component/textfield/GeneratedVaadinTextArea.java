@@ -25,11 +25,11 @@ import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.HasValue;
 import java.util.Objects;
 import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -46,11 +46,6 @@ import com.vaadin.flow.dom.Element;
  * </p>
  * <h3>Styling</h3>
  * <p>
- * <a href=
- * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
- * >Generic styling/theming documentation</a>
- * </p>
- * <p>
  * The following shadow DOM parts are available for styling:
  * </p>
  * <table>
@@ -65,16 +60,16 @@ import com.vaadin.flow.dom.Element;
  * <td>The label element</td>
  * </tr>
  * <tr>
+ * <td>{@code input-field}</td>
+ * <td>The element that wraps prefix, value and suffix</td>
+ * </tr>
+ * <tr>
  * <td>{@code value}</td>
- * <td>The textarea element</td>
+ * <td>The text value element inside the {@code input-field} element</td>
  * </tr>
  * <tr>
  * <td>{@code error-message}</td>
  * <td>The error message element</td>
- * </tr>
- * <tr>
- * <td>{@code text-area}</td>
- * <td>The element that wraps prefix, value and suffix</td>
  * </tr>
  * </tbody>
  * </table>
@@ -121,12 +116,17 @@ import com.vaadin.flow.dom.Element;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TextAreaElement#1.2.0-alpha2",
+        "WebComponent: Vaadin.TextAreaElement#2.0.0-alpha7",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-text-area")
-@HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-area.html")
+@HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-area.html")
 public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
         extends Component
         implements HasStyle, Focusable<R>, HasValue<R, String> {
@@ -619,9 +619,13 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * Returns true if the current input value satisfies all constraints (if
      * any)
      * </p>
+     * <p>
+     * This function is not supported by Flow because it returns a
+     * <code>boolean</code>. Functions with return types different than void are
+     * not supported at this moment.
      */
-    public void checkValidity() {
-        getElement().callFunction("checkValidity");
+    @NotSupported
+    protected void checkValidity() {
     }
 
     /**
@@ -639,52 +643,6 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      */
     @NotSupported
     protected void validate() {
-    }
-
-    @DomEvent("iron-form-element-register")
-    public static class IronFormElementRegisterEvent<R extends GeneratedVaadinTextArea<R>>
-            extends ComponentEvent<R> {
-        public IronFormElementRegisterEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-        }
-    }
-
-    /**
-     * Adds a listener for {@code iron-form-element-register} events fired by
-     * the webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronFormElementRegisterListener(
-            ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
-        return addListener(IronFormElementRegisterEvent.class,
-                (ComponentEventListener) listener);
-    }
-
-    @DomEvent("iron-form-element-unregister")
-    public static class IronFormElementUnregisterEvent<R extends GeneratedVaadinTextArea<R>>
-            extends ComponentEvent<R> {
-        public IronFormElementUnregisterEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-        }
-    }
-
-    /**
-     * Adds a listener for {@code iron-form-element-unregister} events fired by
-     * the webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronFormElementUnregisterListener(
-            ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
-        return addListener(IronFormElementUnregisterEvent.class,
-                (ComponentEventListener) listener);
     }
 
     @DomEvent("invalid-changed")

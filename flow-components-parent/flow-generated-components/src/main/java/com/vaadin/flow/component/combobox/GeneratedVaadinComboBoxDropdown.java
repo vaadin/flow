@@ -38,9 +38,9 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.DropdownElement#3.0.1", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.DropdownElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-dropdown")
-@HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-dropdown.html")
+@HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-dropdown.html")
 public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDropdown<R>>
         extends Component
         implements HasStyle, ComponentSupplier<R>, HasComponents {
@@ -145,38 +145,6 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      */
     protected void setPositionTarget(JsonObject positionTarget) {
         getElement().setPropertyJson("positionTarget", positionTarget);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Vertical offset for the overlay position.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code verticalOffset} property from the webcomponent
-     */
-    public double getVerticalOffset() {
-        return getElement().getProperty("verticalOffset", 0.0);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Vertical offset for the overlay position.
-     * </p>
-     * 
-     * @param verticalOffset
-     *            the double value to set
-     */
-    public void setVerticalOffset(double verticalOffset) {
-        getElement().setProperty("verticalOffset", verticalOffset);
     }
 
     /**

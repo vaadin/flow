@@ -1,8 +1,8 @@
 {
   "name": "InfiniteScrollerElement",
   "tag": "vaadin-infinite-scroller",
-  "baseUrl": "vaadin-date-picker/vaadin-infinite-scroller.html",
-  "version": "2.0.5",
+  "baseUrl": "vaadin-date-picker/src/vaadin-infinite-scroller.html",
+  "version": "UNKNOWN",
   "properties": [
     {
       "name": "rootPath",

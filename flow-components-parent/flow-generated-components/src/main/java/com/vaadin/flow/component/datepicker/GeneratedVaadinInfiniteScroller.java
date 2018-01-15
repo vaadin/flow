@@ -26,9 +26,9 @@ import com.vaadin.flow.component.NotSupported;
 import elemental.json.JsonArray;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: InfiniteScrollerElement#2.0.5", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: InfiniteScrollerElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-infinite-scroller")
-@HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-infinite-scroller.html")
+@HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-infinite-scroller.html")
 public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteScroller<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 

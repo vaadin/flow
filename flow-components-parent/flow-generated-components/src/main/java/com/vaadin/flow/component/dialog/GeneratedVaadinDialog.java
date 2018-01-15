@@ -40,21 +40,21 @@ import com.vaadin.flow.shared.Registration;
  * </p>
  * <h3>Styling</h3>
  * <p>
- * <a href=
- * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
- * >Generic styling/theming documentation</a>
- * </p>
- * <p>
  * See <a href=
  * "https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html">
  * {@code <vaadin-overlay>} documentation</a> for
  * {@code <vaadin-dialog-overlay>} parts.
  * </p>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: Vaadin.VaadinDialog#null", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-dialog")
-@HtmlImport("frontend://bower_components/vaadin-dialog/vaadin-dialog.html")
+@HtmlImport("frontend://bower_components/vaadin-dialog/src/vaadin-dialog.html")
 public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 

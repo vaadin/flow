@@ -33,11 +33,6 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * </p>
  * <h3>Styling</h3>
  * <p>
- * <a href=
- * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
- * >Generic styling/theming documentation</a>
- * </p>
- * <p>
  * See vaadin-text-field.html for the styling documentation
  * </p>
  * <p>
@@ -76,12 +71,17 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.PasswordFieldElement#1.2.0-alpha2",
+        "WebComponent: Vaadin.PasswordFieldElement#2.0.0-alpha7",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-password-field")
-@HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-password-field.html")
+@HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-password-field.html")
 public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R>>
         extends GeneratedVaadinTextField<R> {
 
