@@ -1,6 +1,6 @@
 # Contributing to Vaadin Flow
 
-*There are many ways to participate to the Vaadin Flow project. You can ask questions and participate to discussion in [gitter](gitter.im/vaadin-flow/Lobby), [forum](https://vaadin.com/forum), [fill bug reports](https://github.com/vaadin/flow/issues) and enhancement suggestions and contribute code. These instructions are for contributing code to Flow.*
+*There are many ways to participate to the Vaadin Flow project. You can ask questions and participate to discussion in [gitter](https://gitter.im/vaadin-flow/Lobby), [forum](https://vaadin.com/forum), [fill bug reports](https://github.com/vaadin/flow/issues) and enhancement suggestions and contribute code. These instructions are for contributing code to Flow.*
 
 # Summary
 
@@ -20,7 +20,7 @@ In other words:
 
 # We encourage you to get in touch
 
-Getting in touch with us on the [gitter](gitter.im/vaadin-flow/Lobby) is the best place to start. We’re more than happy to help you get started, and we’re happy to engage in conversation about feature suggestions and bug fixes. We welcome contributors and contributions and we’re here to help.
+Getting in touch with us on the [gitter](https://gitter.im/vaadin-flow/Lobby) is the best place to start. We’re more than happy to help you get started, and we’re happy to engage in conversation about feature suggestions and bug fixes. We welcome contributors and contributions and we’re here to help.
 
 Getting in touch with us early will also help us co-ordinate efforts so that not everyone ends up working on the same bug or feature at the same time.
 
