@@ -90,27 +90,4 @@
             </plugins>
         </pluginManagement>
     </build>
-    <profiles>
-        <profile>
-            <id>prerelease</id>
-            <properties>
-                <staging.server.id>vaadin-prerelease-staging</staging.server.id>
-                <!-- staging.server.url is set by the build environment profile -->
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <nexusUrl>${staging.server.url}</nexusUrl>
-                            <serverId>${staging.server.id}</serverId>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
