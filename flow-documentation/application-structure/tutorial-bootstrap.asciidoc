@@ -46,7 +46,7 @@ public class MyLayout extends Div implements RouterLayout {
 ----
 
 [NOTE]
-If the Theme annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
+If the `Viewport annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
 
 == Inline annotation
 
@@ -79,7 +79,7 @@ public class MyInline extends Div implements RouterLayout {
 ----
 
 [NOTE]
-If the Theme annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
+If the `Inline` annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
 
 == PageConfigurator
 
@@ -168,7 +168,7 @@ mean that by default the `PageConfigurator` will override the `@BodySize` except
 a `PREPEND` then the `@BodySize` will be the deciding one.
 
 [NOTE]
-If the Theme annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
+If the `BodySize` annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
 
 [NOTE]
 It is recommended that the body sizes be set to `height = 100vh, width = 100vw`
