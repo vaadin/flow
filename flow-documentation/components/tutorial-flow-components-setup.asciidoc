@@ -1,43 +1,43 @@
 ---
 title: Vaadin Components
-order: 2
+order: 1
 layout: page
 ---
 
 = Using Vaadin Components in Flow
 
-There is a set of pre-built server-side components for Vaadin Web Components,
-such as `Button`, `TextField` and so on. Those components are part of
-the Vaadin 10 package, and are included as a dependency by default in Flow projects.
+There is a set of pre-built server-side components with Java API for https://vaadin.com/elements/browse[Vaadin Web Components],
+such as `Button`, `TextField` and so on. Those components are part of the Vaadin 10 platform,
+and are included as a dependency by default in the platform together with Flow.
 
-Currently there are the following implementations:
+The platform has the following components with Java API available:
+
+- `Button` - https://vaadin.com/elements/vaadin-button/java-examples[Demos], https://github.com/vaadin/vaadin-button-flow[sources and issue tracking]
+- `CheckBox` - https://vaadin.com/elements/vaadin-checkbox/java-examples[Demos], https://github.com/vaadin/vaadin-checkbox-flow[sources and issue tracking]
+- `ComboBox` - https://vaadin.com/elements/vaadin-combo-box/java-examples[Demos], https://github.com/vaadin/vaadin-combo-box-flow[sources and issue tracking]
+- `DatePicker` - https://vaadin.com/elements/vaadin-date-picker/java-examples[Demos], https://github.com/vaadin/vaadin-date-picker-flow[sources and issue tracking]
+- `Dialog` - https://vaadin.com/elements/vaadin-dialog/java-examples[Demos], https://github.com/vaadin/vaadin-dialog-flow[sources and issue tracking]
+- `FormLayout` - https://vaadin.com/elements/vaadin-form-layout/java-examples[Demos], https://github.com/vaadin/vaadin-form-layout-flow[sources and issue tracking]
+- `Grid` - https://vaadin.com/elements/vaadin-grid/java-examples[Demos], <<tutorial-flow-grid#,Documentation>>, https://github.com/vaadin/vaadin-grid-flow[sources and issue tracking]
+- `Icons` - https://vaadin.com/elements/vaadin-icons/java-examples[Demos], <<tutorial-flow-icon#,Documentation>>, https://github.com/vaadin/vaadin-icons-flow[sources and issue tracking]
+- `IronList` - https://github.com/vaadin/vaadin-iron-list-flow[examples, sources and issue tracking] //// NO IDEA WHERE DEMO COULD BE DEPLOYED ////
+- `Notification` - https://vaadin.com/elements/vaadin-notification/java-examples[Demos], https://github.com/vaadin/vaadin-notification-flow[sources and issue tracking]
+- `HorizontalLayout` & `VerticalLayout` & `FlexLayout` - https://vaadin.com/elements/vaadin-ordered-layout/java-examples[Demos], https://github.com/vaadin/vaadin-ordered-layout-flow[sources and issue tracking]
+- `ProgressBar` - https://vaadin.com/elements/vaadin-progress-bar/java-examples[Demos], https://github.com/vaadin/vaadin-progress-bar-flow[sources and issue tracking]
+- `SplitLayout` - https://vaadin.com/elements/vaadin-split-layout/java-examples[Demos], https://github.com/vaadin/vaadin-split-layout-flow[sources and issue tracking]
+- `Tabs` - https://vaadin.com/elements/vaadin-tabs/java-examples[Demos], https://github.com/vaadin/vaadin-tabs-flow[sources and issue tracking]
+- `TextField` & `TextArea` & `PasswordField` - https://vaadin.com/elements/vaadin-text-field/java-examples[Demos], https://github.com/vaadin/vaadin-text-field-flow[sources and issue tracking]
+- `Upload` - https://vaadin.com/elements/vaadin-upload/java-examples[Demos], https://github.com/vaadin/vaadin-upload-flow[sources and issue tracking]
 
 
-- https://github.com/vaadin/vaadin-button-flow[vaadin-button-flow]
-- https://github.com/vaadin/vaadin-checkbox-flow[vaadin-checkbox-flow]
-- https://github.com/vaadin/vaadin-combo-box-flow[vaadin-combo-box-flow]
-- https://github.com/vaadin/vaadin-date-picker-flow[vaadin-date-picker-flow]
-- https://github.com/vaadin/vaadin-dialog-flow[vaadin-dialog-flow]
-- https://github.com/vaadin/vaadin-form-layout-flow[vaadin-form-layout-flow]
-- https://github.com/vaadin/vaadin-grid-flow[vaadin-grid-flow]
-- https://github.com/vaadin/vaadin-icons-flow[vaadin-icons-flow]
-- https://github.com/vaadin/vaadin-iron-list-flow[vaadin-iron-list-flow]
-- https://github.com/vaadin/vaadin-notification-flow[vaadin-notification-flow]
-- https://github.com/vaadin/vaadin-ordered-layout-flow[vaadin-ordered-layout-flow]
-- https://github.com/vaadin/vaadin-progress-bar-flow[vaadin-progress-bar-flow]
-- https://github.com/vaadin/vaadin-split-layout-flow[vaadin-split-layout-flow]
-- https://github.com/vaadin/vaadin-tabs-flow[vaadin-tabs-flow]
-- https://github.com/vaadin/vaadin-text-field-flow[vaadin-text-field-flow]
-- https://github.com/vaadin/vaadin-upload-flow[vaadin-upload-flow]
-
-These components are available as optional dependencies that can be added to
-any Flow project. Besides, you can add `vaadin-platform` dependency, if you need flow components for your project. It will automatically add dependencies to *ALL* available components.
+When you use the Vaadin 10 platform dependency, you automatically get *ALL* available components.
+Using the platform dependency guarantees that you'll get versions of Flow and the components that are compatible together.
 [source,xml]
 ----
 <repositories>
     <repository>
-    <id>vaadin-platform</id>
-    <url>https://repo.vaadin.com/nexus/content/repositories/flow</url>
+        <id>vaadin-prereleases</id>
+        <url>https://maven.vaadin.com/vaadin-prereleases</url>
     </repository>
 </repositories>
 
@@ -55,17 +55,23 @@ any Flow project. Besides, you can add `vaadin-platform` dependency, if you need
 `vaadin.platform` releases regularly and you can check the version number https://github.com/vaadin/platform/releases[here]
 
 [NOTE]
+The components are also provided as single dependencies per component. See https://github.com/vaadin/platform/blob/master/vaadin/pom.xml#L68[the platform pom.xml] for example.
 If you are not using the Vaadin 10 platform dependency and wish to use the Flow components, make sure it is
-properly configured to run with Polymer webcomponents. Please refer to
+properly configured to run with Polymer web components. Please refer to
 <<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
 for more information.
 
-= Overview
+The platform also contains ready made _theming_ for the components that help you tweak and tune the look and feel of the components.
+See the <<../theme/tutorial-built-in-themes#,Component themes>> for more info.
+
+For more ready-made Java APIs for Web Components, you should check the https://vaadin.com/directory/search?framework=Vaadin%2010[Vaadin Directory.]
+
+= Flow Component Package Contents Explained
 
 A Flow component package consists of two main sections:
 
-* java api classes
-* web components' files (html, js, css etc)
+* Java API classes
+* Web Components' files (html, js, css etc)
 
 All sections are used by Flow to display the components in web pages correctly.
 By default, both sections are provided in the same jar.
