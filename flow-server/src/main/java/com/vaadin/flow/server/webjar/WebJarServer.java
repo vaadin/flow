@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.webjar;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,12 +26,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import org.slf4j.LoggerFactory;
 import org.webjars.WebJarAssetLocator;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -103,7 +102,7 @@ public class WebJarServer implements Serializable {
         int comparison = oldDependency.compareVersions(newDependency);
         if (comparison == 0) {
             LoggerFactory.getLogger(getClass().getName())
-                    .info("Have found multiple webJars with name and version: '{}'", oldDependency);
+                    .trace("Have found multiple webJars with name and version: '{}'", oldDependency);
             return oldDependency;
         } else if (comparison > 0) {
             return oldDependency;
