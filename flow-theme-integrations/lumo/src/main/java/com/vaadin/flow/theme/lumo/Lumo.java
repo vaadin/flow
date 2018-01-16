@@ -16,7 +16,7 @@
 package com.vaadin.flow.theme.lumo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.flow.shared.VaadinUriResolver;
@@ -57,7 +57,7 @@ public class Lumo implements AbstractTheme {
 
     @Override
     public List<String> getBodyInlineContents() {
-        return Arrays.asList("<custom-style>\n"
+        return Collections.singletonList("<custom-style>\n"
                 + "    <style include=\"lumo-color lumo-typography\"></style>\n"
                 + "</custom-style>");
     }
