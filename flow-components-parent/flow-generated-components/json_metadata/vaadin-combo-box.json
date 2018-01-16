@@ -1,8 +1,8 @@
 {
   "name": "Vaadin.ComboBoxElement",
   "tag": "vaadin-combo-box",
-  "baseUrl": "vaadin-combo-box/vaadin-combo-box.html",
-  "version": "3.0.1",
+  "baseUrl": "vaadin-combo-box/src/vaadin-combo-box.html",
+  "version": "4.0.0-alpha5",
   "properties": [
     {
       "name": "opened",
@@ -63,21 +63,12 @@
       "notify": true
     },
     {
-      "name": "hasValue",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "A read-only property indicating whether this combo box has a value\nselected or not. It can be used for example in styling of the component.\n         ",
-      "readOnly": true
-    },
-    {
       "name": "loading",
       "type": [
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "When set to `true`, \"loading\" attibute is added to host and the overlay element.\n         "
+      "description": "When set to `true`, \"loading\" attribute is added to host and the overlay element.\n         "
     },
     {
       "name": "filter",
@@ -114,14 +105,6 @@
       "description": "Path for the value of the item. If `items` is an array of objects, the\n`itemValuePath:` is used to fetch the string value for the selected\nitem.\n\nThe item value is used in the `value` property of the combo box,\nto provide the form value.\n         "
     },
     {
-      "name": "required",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "Set to true to mark the input as required.\n         "
-    },
-    {
       "name": "name",
       "type": [
         "STRING"
@@ -147,20 +130,20 @@
       "description": "The label for this element.\n             "
     },
     {
+      "name": "required",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to mark the input as required.\n             "
+    },
+    {
       "name": "preventInvalidInput",
       "type": [
         "BOOLEAN"
       ],
       "objectType": [],
       "description": "Set to true to prevent the user from entering invalid input.\n             "
-    },
-    {
-      "name": "allowedPattern",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "Set this to specify the pattern allowed by `preventInvalidInput`.\n             "
     },
     {
       "name": "pattern",
@@ -187,28 +170,12 @@
       "description": ""
     },
     {
-      "name": "inputmode",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": ""
-    },
-    {
       "name": "placeholder",
       "type": [
         "STRING"
       ],
       "objectType": [],
       "description": "A placeholder string in addition to the label.\n             "
-    },
-    {
-      "name": "size",
-      "type": [
-        "NUMBER"
-      ],
-      "objectType": [],
-      "description": ""
     }
   ],
   "methods": [
@@ -232,32 +199,14 @@
     },
     {
       "name": "validate",
-      "description": "Returns true if `value` is valid, and sets the `invalid` flag appropriatelly.",
-      "parameters": [
-        {
-          "name": "value",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        }
-      ],
+      "description": "Returns true if `value` is valid, and sets the `invalid` flag appropriately.",
+      "parameters": [],
       "returns": "BOOLEAN"
     },
     {
       "name": "checkValidity",
       "description": "Returns true if the current input value satisfies all constraints (if any)\n\nYou can override the `checkValidity` method for custom validations.\n     ",
-      "parameters": [
-        {
-          "name": "value",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        }
-      ],
+      "parameters": [],
       "returns": "UNDEFINED"
     },
     {
@@ -345,8 +294,7 @@
   "behaviors": [],
   "mixins": [
     "Vaadin.ComboBoxMixin",
-    "Vaadin.ThemableMixin",
-    "Vaadin.ComboBoxDropdownMixin"
+    "Vaadin.ThemableMixin"
   ],
-  "description": "`<vaadin-combo-box>` is a combo box element combining a dropdown list with an\ninput field for filtering the list of items. If you want to replace the default\ninput field with a custom implementation, you should use the\n[`<vaadin-combo-box-light>`](#/elements/vaadin-combo-box-light) element.\n\nItems in the dropdown list must be provided as a list of `String` values.\nDefining the items is done using the `items` property, which can be assigned\nwith data-binding, using an attribute or directly with the JavaScript property.\n\n```html\n<vaadin-combo-box\n    label=\"Fruit\"\n    items=\"[[data]]\">\n</vaadin-combo-box>\n```\n\n```js\ncombobox.items = ['apple', 'orange', 'banana'];\n```\n\nWhen the selected `value` is changed, a `value-changed` event is triggered.\n\nThis element can be used within an `iron-form`.\n\n### Item Template\n\n`<vaadin-combo-box>` supports using custom item template provided in the light\nDOM:\n\n```html\n<vaadin-combo-box items='[{\"label\": \"Hydrogen\", \"value\": \"H\"}]'>\n  <template>\n    [[index]]: [[item.label]] <b>[[item.value]</b>\n  </template>\n</vaadin-combo-box>\n```\n\nThe following properties are available for item template bindings:\n\nProperty name | Type | Description\n--------------|------|------------\n`index`| Number | Index of the item in the `items` array\n`item` | String or Object | The item reference\n`selected` | Boolean | True when item is selected\n`focused` | Boolean | True when item is focused\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following custom properties are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|-------------\n`--vaadin-combo-box-overlay-max-height` | Property that determines the max height of overlay | `65vh`\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`text-field` | The text field\n`clear-button` | The clear button\n`toggle-button` | The toggle button\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html)\nfor `<vaadin-combo-box-overlay>` parts.\n\nSee [`<vaadin-text-field>` documentation](https://vaadin.com/elements/vaadin-text-field/html-api/elements/Vaadin.TextFieldElement)\nfor the text field parts.\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`opened` | Set when the combo box dropdown is open | :host\n`disabled` | Set to a disabled combo box | :host\n`readonly` | Set to a read only combo box | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`loading` | Set when new items are expected | :host"
+  "description": "`<vaadin-combo-box>` is a combo box element combining a dropdown list with an\ninput field for filtering the list of items. If you want to replace the default\ninput field with a custom implementation, you should use the\n[`<vaadin-combo-box-light>`](#/elements/vaadin-combo-box-light) element.\n\nItems in the dropdown list must be provided as a list of `String` values.\nDefining the items is done using the `items` property, which can be assigned\nwith data-binding, using an attribute or directly with the JavaScript property.\n\n```html\n<vaadin-combo-box\n    label=\"Fruit\"\n    items=\"[[data]]\">\n</vaadin-combo-box>\n```\n\n```js\ncombobox.items = ['apple', 'orange', 'banana'];\n```\n\nWhen the selected `value` is changed, a `value-changed` event is triggered.\n\nThis element can be used within an `iron-form`.\n\n### Item Template\n\n`<vaadin-combo-box>` supports using custom item template provided in the light\nDOM:\n\n```html\n<vaadin-combo-box items='[{\"label\": \"Hydrogen\", \"value\": \"H\"}]'>\n  <template>\n    [[index]]: [[item.label]] <b>[[item.value]</b>\n  </template>\n</vaadin-combo-box>\n```\n\nThe following properties are available for item template bindings:\n\nProperty name | Type | Description\n--------------|------|------------\n`index`| Number | Index of the item in the `items` array\n`item` | String or Object | The item reference\n`selected` | Boolean | True when item is selected\n`focused` | Boolean | True when item is focused\n\n### Styling\n\nThe following custom properties are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|-------------\n`--vaadin-combo-box-overlay-max-height` | Property that determines the max height of overlay | `65vh`\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`text-field` | The text field\n`clear-button` | The clear button\n`toggle-button` | The toggle button\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html)\nfor `<vaadin-combo-box-overlay>` parts.\n\nSee [`<vaadin-text-field>` documentation](https://vaadin.com/elements/vaadin-text-field/html-api/elements/Vaadin.TextFieldElement)\nfor the text field parts.\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`opened` | Set when the combo box dropdown is open | :host\n`disabled` | Set to a disabled combo box | :host\n`readonly` | Set to a read only combo box | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`loading` | Set when new items are expected | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

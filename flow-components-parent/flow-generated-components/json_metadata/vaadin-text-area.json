@@ -1,8 +1,8 @@
 {
   "name": "Vaadin.TextAreaElement",
   "tag": "vaadin-text-area",
-  "baseUrl": "vaadin-text-field/vaadin-text-area.html",
-  "version": "1.2.0-alpha2",
+  "baseUrl": "vaadin-text-field/src/vaadin-text-area.html",
+  "version": "2.0.0-alpha7",
   "properties": [
     {
       "name": "autofocus",
@@ -111,16 +111,6 @@
       "notify": true
     },
     {
-      "name": "hasValue",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "A read-only property indicating whether this input has a non empty value.\nIt can be used for example in styling of the component.\n           ",
-      "readOnly": true,
-      "notify": true
-    },
-    {
       "name": "preventInvalidInput",
       "type": [
         "BOOLEAN"
@@ -132,9 +122,9 @@
   "methods": [
     {
       "name": "checkValidity",
-      "description": "Returns true if the current input value satisfies all constraints (if any)\n       ",
+      "description": "Returns true if the current input value satisfies all constraints (if any)",
       "parameters": [],
-      "returns": "UNDEFINED"
+      "returns": "BOOLEAN"
     },
     {
       "name": "validate",
@@ -143,18 +133,7 @@
       "returns": "BOOLEAN"
     }
   ],
-  "events": [
-    {
-      "name": "iron-form-element-register",
-      "description": "iron-form-element-register",
-      "properties": []
-    },
-    {
-      "name": "iron-form-element-unregister",
-      "description": "iron-form-element-unregister",
-      "properties": []
-    }
-  ],
+  "events": [],
   "slots": [
     "prefix",
     "suffix"
@@ -163,8 +142,7 @@
   "mixins": [
     "Vaadin.TextFieldMixin",
     "Vaadin.ThemableMixin",
-    "Vaadin.ControlStateMixin",
-    "Vaadin.FormElementMixin"
+    "Vaadin.ControlStateMixin"
   ],
-  "description": "`<vaadin-text-area>` is a Polymer 2 element for text area control in forms.\n\n```html\n<vaadin-text-area label=\"Add description\">\n</vaadin-text-area>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`value` | The textarea element\n`error-message` | The error message element\n`text-area` | The element that wraps prefix, value and suffix\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`readonly` | Set to a readonly text field | :host"
+  "description": "`<vaadin-text-area>` is a Polymer 2 element for text area control in forms.\n\n```html\n<vaadin-text-area label=\"Add description\">\n</vaadin-text-area>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`input-field` | The element that wraps prefix, value and suffix\n`value` | The text value element inside the `input-field` element\n`error-message` | The error message element\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`readonly` | Set to a readonly text field | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

@@ -136,99 +136,102 @@ import com.vaadin.flow.component.HasComponents;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.FormLayoutElement#1.0.3", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.FormLayoutElement#2.0.0-alpha3",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-form-layout")
-@HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-layout.html")
+@HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-layout.html")
 public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
         extends Component
         implements HasStyle, ComponentSupplier<R>, HasComponents {
 
     /**
-    	 * <p>Description copied from corresponding location in WebComponent:</p>
-    	<p>Allows specifying a responsive behavior with the number of columns
-    	and the label position depending on the layout width.</p>
-    	<p>Format: array of objects, each object defines one responsive step
-    	with {@code minWidth} CSS length, {@code columns} number, and optional
-    	{@code labelsPosition} string of {@code &quot;aside&quot;} or {@code &quot;top&quot;}. At least one item is required.</p>
-    	<h4>Examples</h4>
-    	<dl>
-    	  <dt>{@code [{columns: 1}]}</dt>
-    	  <dd>
-    	    <p>The layout is always a single column, labels aside.
-    	  </dd>
-    	  <dt><pre><code>[
-    	  {minWidth: 0, columns: 1},
-    	  {minWidth: '40em', columns: 2}
-    	]</code></pre></dt>
-    	  <dd>
-    	    <p>Sets two responsive steps:
-    	    <ol>
-    	      <li>When the layout width is < 40em, one column, labels aside.
-    	      <li>Width >= 40em, two columns, labels aside.
-    	    </ol>
-    	  </dd>
-    	  <dt><pre><code>[
-    	  {minWidth: 0, columns: 1, labelsPosition: 'top'},
-    	  {minWidth: '20em', columns: 1},
-    	  {minWidth: '40em', columns: 2}
-    	]</code></pre></dt>
-    	  <dd>
-    	    <p>Default value. Three responsive steps:
-    	    <ol>
-    	      <li>Width < 20em, one column, labels on top.
-    	      <li>20em <= width < 40em, one column, labels aside.
-    	      <li>Width >= 40em, two columns, labels aside.
-    	    </ol>
-    	  </dd>
-    	</dl><p>This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
-    
-    	 * @return the {@code responsiveSteps} property from the webcomponent
-    	 */
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Allows specifying a responsive behavior with the number of columns and
+     * the label position depending on the layout width.
+     * </p>
+     * <p>
+     * Format: array of objects, each object defines one responsive step with
+     * {@code minWidth} CSS length, {@code columns} number, and optional
+     * {@code labelsPosition} string of {@code &quot;aside&quot;} or
+     * {@code &quot;top&quot;}. At least one item is required.
+     * </p>
+     * <h4>Examples</h4>
+     * <p>
+     * {@code javascript formLayout.responsiveSteps = [ columns: 1}]; // The
+     * layout is always a single column, labels aside.}
+     * </p>
+     * <p>
+     * {@code javascript
+    formLayout.responsiveSteps = [
+     * 
+     * {minWidth: 0, columns: 1}, {minWidth: '40em', columns: 2} ]; // Sets two
+     * responsive steps: // 1. When the layout width is &lt; 40em, one column,
+     * labels aside. // 2. Width &gt;= 40em, two columns, labels aside.}
+     * </p>
+     * <p>
+     * {@code javascript
+    formLayout.responsiveSteps = [
+     * 
+     * {minWidth: 0, columns: 1, labelsPosition: 'top'}, {minWidth: '20em',
+     * columns: 1}, {minWidth: '40em', columns: 2} ]; // Default value. Three
+     * responsive steps: // 1. Width &lt; 20em, one column, labels on top. // 2.
+     * 20em &lt;= width &lt; 40em, one column, labels aside. // 3. Width &gt;=
+     * 40em, two columns, labels aside.}
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code responsiveSteps} property from the webcomponent
+     */
     protected JsonObject protectedGetResponsiveSteps() {
         return (JsonObject) getElement().getPropertyRaw("responsiveSteps");
     }
 
     /**
-    	 * <p>Description copied from corresponding location in WebComponent:</p>
-    	<p>Allows specifying a responsive behavior with the number of columns
-    	and the label position depending on the layout width.</p>
-    	<p>Format: array of objects, each object defines one responsive step
-    	with {@code minWidth} CSS length, {@code columns} number, and optional
-    	{@code labelsPosition} string of {@code &quot;aside&quot;} or {@code &quot;top&quot;}. At least one item is required.</p>
-    	<h4>Examples</h4>
-    	<dl>
-    	  <dt>{@code [{columns: 1}]}</dt>
-    	  <dd>
-    	    <p>The layout is always a single column, labels aside.
-    	  </dd>
-    	  <dt><pre><code>[
-    	  {minWidth: 0, columns: 1},
-    	  {minWidth: '40em', columns: 2}
-    	]</code></pre></dt>
-    	  <dd>
-    	    <p>Sets two responsive steps:
-    	    <ol>
-    	      <li>When the layout width is < 40em, one column, labels aside.
-    	      <li>Width >= 40em, two columns, labels aside.
-    	    </ol>
-    	  </dd>
-    	  <dt><pre><code>[
-    	  {minWidth: 0, columns: 1, labelsPosition: 'top'},
-    	  {minWidth: '20em', columns: 1},
-    	  {minWidth: '40em', columns: 2}
-    	]</code></pre></dt>
-    	  <dd>
-    	    <p>Default value. Three responsive steps:
-    	    <ol>
-    	      <li>Width < 20em, one column, labels on top.
-    	      <li>20em <= width < 40em, one column, labels aside.
-    	      <li>Width >= 40em, two columns, labels aside.
-    	    </ol>
-    	  </dd>
-    	</dl>
-    
-    	 * @param responsiveSteps the JsonObject value to set
-    	 */
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Allows specifying a responsive behavior with the number of columns and
+     * the label position depending on the layout width.
+     * </p>
+     * <p>
+     * Format: array of objects, each object defines one responsive step with
+     * {@code minWidth} CSS length, {@code columns} number, and optional
+     * {@code labelsPosition} string of {@code &quot;aside&quot;} or
+     * {@code &quot;top&quot;}. At least one item is required.
+     * </p>
+     * <h4>Examples</h4>
+     * <p>
+     * {@code javascript formLayout.responsiveSteps = [ columns: 1}]; // The
+     * layout is always a single column, labels aside.}
+     * </p>
+     * <p>
+     * {@code javascript
+    formLayout.responsiveSteps = [
+     * 
+     * {minWidth: 0, columns: 1}, {minWidth: '40em', columns: 2} ]; // Sets two
+     * responsive steps: // 1. When the layout width is &lt; 40em, one column,
+     * labels aside. // 2. Width &gt;= 40em, two columns, labels aside.}
+     * </p>
+     * <p>
+     * {@code javascript
+    formLayout.responsiveSteps = [
+     * 
+     * {minWidth: 0, columns: 1, labelsPosition: 'top'}, {minWidth: '20em',
+     * columns: 1}, {minWidth: '40em', columns: 2} ]; // Default value. Three
+     * responsive steps: // 1. Width &lt; 20em, one column, labels on top. // 2.
+     * 20em &lt;= width &lt; 40em, one column, labels aside. // 3. Width &gt;=
+     * 40em, two columns, labels aside.}
+     * </p>
+     * 
+     * @param responsiveSteps
+     *            the JsonObject value to set
+     */
     protected void setResponsiveSteps(JsonObject responsiveSteps) {
         getElement().setPropertyJson("responsiveSteps", responsiveSteps);
     }

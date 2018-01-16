@@ -30,8 +30,8 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * {@code <vaadin-progress-bar>} is a Polymer 2 progress bar.
  * </p>
  * <p>
- * &lt;vaadin-progress-bar value=&quot;30&quot; min=&quot;10&quot;
- * max=&quot;100&quot;&gt; &lt;/vaadin-progress-bar&gt;
+ * &lt;vaadin-progress-bar min=&quot;0&quot; max=&quot;1&quot;
+ * value=&quot;0.5&quot;&gt; &lt;/vaadin-progress-bar&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -54,6 +54,11 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  * <p>
  * The following custom properties are available:
  * </p>
@@ -92,10 +97,10 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ProgressBarElement#1.0.0-alpha6",
+        "WebComponent: Vaadin.ProgressBarElement#1.0.0-alpha11",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-progress-bar")
-@HtmlImport("frontend://bower_components/vaadin-progress-bar/vaadin-progress-bar.html")
+@HtmlImport("frontend://bower_components/vaadin-progress-bar/src/vaadin-progress-bar.html")
 public class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgressBar<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
@@ -200,7 +205,8 @@ public class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgressBar<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Indeterminate state of the progress bar.
+     * Indeterminate state of the progress bar. This property takes precedence
+     * over other state properties (min, max, value).
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
@@ -217,7 +223,8 @@ public class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgressBar<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Indeterminate state of the progress bar.
+     * Indeterminate state of the progress bar. This property takes precedence
+     * over other state properties (min, max, value).
      * </p>
      * 
      * @param indeterminate

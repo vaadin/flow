@@ -8,7 +8,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
  * application this could for example be a JPA entity.
  */
 @SuppressWarnings("serial")
-@CodeFor("get-started.asciidoc")
+@CodeFor("introduction/tutorial-get-started.asciidoc")
 public class Customer implements Serializable, Cloneable {
 
     private Long id;

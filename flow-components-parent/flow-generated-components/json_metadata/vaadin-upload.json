@@ -1,8 +1,8 @@
 {
-  "name": "vaadin-upload",
+  "name": "Vaadin.UploadElement",
   "tag": "vaadin-upload",
-  "baseUrl": "vaadin-upload/vaadin-upload.html",
-  "version": "2.1.2",
+  "baseUrl": "vaadin-upload/src/vaadin-upload.html",
+  "version": "4.0.0-alpha3",
   "properties": [
     {
       "name": "nodrop",
@@ -18,7 +18,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The server URL. The default value is an empty string, which means that\n_window.location_ will be used.\n       "
+      "description": "The server URL. The default value is an empty string, which means that\n_window.location_ will be used.\n             "
     },
     {
       "name": "method",
@@ -26,7 +26,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "HTTP Method used to send the files. Only POST and PUT are allowed.\n       "
+      "description": "HTTP Method used to send the files. Only POST and PUT are allowed.\n             "
     },
     {
       "name": "headers",
@@ -34,7 +34,7 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "Key-Value map to send to the server. If you set this property as an\nattribute, use a valid JSON string, for example:\n```\n<vaadin-upload headers='{\"X-Foo\": \"Bar\"}'></vaadin-upload>\n```\n       "
+      "description": "Key-Value map to send to the server. If you set this property as an\nattribute, use a valid JSON string, for example:\n```\n<vaadin-upload headers='{\"X-Foo\": \"Bar\"}'></vaadin-upload>\n```\n             "
     },
     {
       "name": "timeout",
@@ -42,7 +42,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "Max time in milliseconds for the entire upload process, if exceeded the\nrequest will be aborted. Zero means that there is no timeout.\n\n       "
+      "description": "Max time in milliseconds for the entire upload process, if exceeded the\nrequest will be aborted. Zero means that there is no timeout.\n\n             "
     },
     {
       "name": "files",
@@ -50,7 +50,7 @@
         "ARRAY"
       ],
       "objectType": [],
-      "description": "The array of files being processed, or already uploaded.\n\nEach element is a [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)\nobject with a number of extra properties  to track the upload process:\n- `uploadTarget`: The target URL used to upload this file.\n- `elapsed`: Elapsed time since the upload started.\n- `elapsedStr`: Human-readable elapsed time.\n- `remaining`: Number of seconds remaining for the upload to finish.\n- `remainingStr`: Human-readable remaining time for the upload to finish.\n- `progress`: Percentage of the file already uploaded.\n- `speed`: Upload speed in kB/s.\n- `size`: File size in bytes.\n- `totalStr`: Human-readable total size of the file.\n- `loaded`: Bytes transferred so far.\n- `loadedStr`: Human-readable uploaded size at the moment.\n- `status`: Status of the upload process.\n- `error`: Error message in case the upload failed.\n- `abort`: True if the file was canceled by the user.\n- `complete`: True when the file was transferred to the server.\n- `uploading`: True while trasferring data to the server.\n       ",
+      "description": "The array of files being processed, or already uploaded.\n\nEach element is a [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)\nobject with a number of extra properties  to track the upload process:\n- `uploadTarget`: The target URL used to upload this file.\n- `elapsed`: Elapsed time since the upload started.\n- `elapsedStr`: Human-readable elapsed time.\n- `remaining`: Number of seconds remaining for the upload to finish.\n- `remainingStr`: Human-readable remaining time for the upload to finish.\n- `progress`: Percentage of the file already uploaded.\n- `speed`: Upload speed in kB/s.\n- `size`: File size in bytes.\n- `totalStr`: Human-readable total size of the file.\n- `loaded`: Bytes transferred so far.\n- `loadedStr`: Human-readable uploaded size at the moment.\n- `status`: Status of the upload process.\n- `error`: Error message in case the upload failed.\n- `abort`: True if the file was canceled by the user.\n- `complete`: True when the file was transferred to the server.\n- `uploading`: True while trasferring data to the server.\n             ",
       "notify": true
     },
     {
@@ -59,7 +59,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "Limit of files to upload, by default it is unlimited. If the value is\nset to one, native file browser will prevent selecting multiple files.\n       "
+      "description": "Limit of files to upload, by default it is unlimited. If the value is\nset to one, native file browser will prevent selecting multiple files.\n             "
     },
     {
       "name": "maxFilesReached",
@@ -67,7 +67,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Specifies if the maximum number of files have been uploaded\n       ",
+      "description": "Specifies if the maximum number of files have been uploaded\n             ",
       "readOnly": true,
       "notify": true
     },
@@ -77,7 +77,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "Specifies the types of files that the server accepts.\nSyntax: a comma-separated list of MIME type patterns (wildcards are\nallowed) or file extensions.\nNotice that MIME types are widely supported, while file extensions\nare only implemented in certain browsers, so avoid using it.\nExample: accept=\"video/*,image/tiff\" or accept=\".pdf,audio/mp3\"\n       "
+      "description": "Specifies the types of files that the server accepts.\nSyntax: a comma-separated list of MIME type patterns (wildcards are\nallowed) or file extensions.\nNotice that MIME types are widely supported, while file extensions\nare only implemented in certain browsers, so avoid using it.\nExample: accept=\"video/*,image/tiff\" or accept=\".pdf,audio/mp3\"\n             "
     },
     {
       "name": "maxFileSize",
@@ -85,7 +85,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "Specifies the maximum file size in bytes allowed to upload.\nNotice that it is a client-side constraint, which will be checked before\nsending the request. Obviously you need to do the same validation in\nthe server-side and be sure that they are aligned.\n       "
+      "description": "Specifies the maximum file size in bytes allowed to upload.\nNotice that it is a client-side constraint, which will be checked before\nsending the request. Obviously you need to do the same validation in\nthe server-side and be sure that they are aligned.\n             "
     },
     {
       "name": "formDataName",
@@ -93,7 +93,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "Specifies the 'name' property at Content-Disposition\n       "
+      "description": "Specifies the 'name' property at Content-Disposition\n             "
     },
     {
       "name": "noAuto",
@@ -101,7 +101,15 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Prevents upload(s) from immediately uploading upon adding file(s).\nWhen set, you must manually trigger uploads using the `uploadFiles` method\n       "
+      "description": "Prevents upload(s) from immediately uploading upon adding file(s).\nWhen set, you must manually trigger uploads using the `uploadFiles` method\n             "
+    },
+    {
+      "name": "withCredentials",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set the withCredentials flag on the request.\n             "
     },
     {
       "name": "i18n",
@@ -109,7 +117,7 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "The object used to localize this component.\nFor changing the default localization, change the entire\n_i18n_ object or just the property you want to modify.\n\nThe object has the following JSON structure and default values:\n\n    {\n      dropFiles: {\n       one: 'Drop file here...',\n       many: 'Drop files here...'\n      },\n      addFiles: {\n       one: 'Select File',\n       many: 'Upload Files'\n      },\n      cancel: 'Cancel',\n      error: {\n       tooManyFiles: 'Too Many Files.',\n       fileIsTooBig: 'File is Too Big.',\n       incorrectFileType: 'Incorrect File Type.'\n      },\n      uploading: {\n       status: {\n         connecting: 'Connecting...',\n         stalled: 'Stalled.',\n         processing: 'Processing File...',\n         held: 'Queued'\n       },\n       remainingTime: {\n         prefix: 'remaining time: ',\n         unknown: 'unknown remaining time'\n       },\n       error: {\n         serverUnavailable: 'Server Unavailable',\n         unexpectedServerError: 'Unexpected Server Error',\n         forbidden: 'Forbidden'\n       }\n      },\n      units: {\n       size: ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']\n      },\n      formatSize: function(bytes) {\n       // returns the size followed by the best suitable unit\n      },\n      formatTime: function(seconds, [secs, mins, hours]) {\n       // returns a 'HH:MM:SS' string\n      }\n    }"
+      "description": "The object used to localize this component.\nFor changing the default localization, change the entire\n_i18n_ object or just the property you want to modify.\n\nThe object has the following JSON structure and default values:\n\n            {\n              dropFiles: {\n              one: 'Drop file here...',\n              many: 'Drop files here...'\n              },\n              addFiles: {\n              one: 'Select File',\n              many: 'Upload Files'\n              },\n              cancel: 'Cancel',\n              error: {\n              tooManyFiles: 'Too Many Files.',\n              fileIsTooBig: 'File is Too Big.',\n              incorrectFileType: 'Incorrect File Type.'\n              },\n              uploading: {\n              status: {\n                connecting: 'Connecting...',\n                stalled: 'Stalled.',\n                processing: 'Processing File...',\n                held: 'Queued'\n              },\n              remainingTime: {\n                prefix: 'remaining time: ',\n                unknown: 'unknown remaining time'\n              },\n              error: {\n                serverUnavailable: 'Server Unavailable',\n                unexpectedServerError: 'Unexpected Server Error',\n                forbidden: 'Forbidden'\n              }\n              },\n              units: {\n              size: ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']\n              },\n              formatSize: function(bytes) {\n              // returns the size followed by the best suitable unit\n              },\n              formatTime: function(seconds, [secs, mins, hours]) {\n              // returns a 'HH:MM:SS' string\n              }\n            }"
     }
   ],
   "methods": [
@@ -465,6 +473,8 @@
     ""
   ],
   "behaviors": [],
-  "mixins": [],
-  "description": ""
+  "mixins": [
+    "Vaadin.ThemableMixin"
+  ],
+  "description": "`<vaadin-upload>` is a Polymer 2 element for uploading multiple files with drag and drop support.\n\nExample:\n\n```\n<vaadin-upload></vaadin-upload>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n---|---\n`primary-buttons` | Upload container\n`upload-button` | Upload button\n`drop-label` | Label for drop indicator\n`drop-label-icon` | Icon for drop indicator\n`file-list` | File list container\n\nThe following state attributes are available for styling:\n\nAttribute | Description | Part name\n---|---|---\n`nodrop` | Set when drag and drop is disabled (e. g., on touch devices) | `:host`\n`dragover` | A file is being dragged over the element | `:host`\n`dragover-valid` | A dragged file is valid with `maxFiles` and `accept` criteria | `:host`\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

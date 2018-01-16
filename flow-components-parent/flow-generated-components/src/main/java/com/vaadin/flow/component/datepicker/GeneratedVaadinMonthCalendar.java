@@ -28,9 +28,9 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: MonthCalendarElement#2.0.5", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: MonthCalendarElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-month-calendar")
-@HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-month-calendar.html")
+@HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-month-calendar.html")
 public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 

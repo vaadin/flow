@@ -18,6 +18,7 @@ package com.vaadin.flow.component.radiobutton;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasClickListeners;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -41,11 +42,6 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  * <h3>Styling</h3>
  * <p>
- * <a href=
- * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
- * >Generic styling/theming documentation</a>
- * </p>
- * <p>
  * The following shadow DOM parts are available for styling:
  * </p>
  * <table>
@@ -56,21 +52,12 @@ import com.vaadin.flow.component.HasComponents;
  * </tr>
  * </thead> <tbody>
  * <tr>
- * <td>{@code wrapper}</td>
- * <td>The {@code <label>} element which wrapps the radio button and
- * [part=&quot;label&quot;]</td>
- * </tr>
- * <tr>
- * <td>{@code native-radio}</td>
- * <td>The {@code <input type="radio">} element</td>
- * </tr>
- * <tr>
  * <td>{@code radio}</td>
- * <td>The {@code <span>} element for a custom graphical radio button</td>
+ * <td>The radio button element</td>
  * </tr>
  * <tr>
  * <td>{@code label}</td>
- * <td>The {@code <span>} element for slotted text/HTML label</td>
+ * <td>The label content element</td>
  * </tr>
  * </tbody>
  * </table>
@@ -107,14 +94,20 @@ import com.vaadin.flow.component.HasComponents;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.RadioButtonElement#1.0.0-alpha8",
+        "WebComponent: Vaadin.RadioButtonElement#1.0.0-alpha11",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-radio-button")
-@HtmlImport("frontend://bower_components/vaadin-radio-button/vaadin-radio-button.html")
+@HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-button.html")
 public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
-        extends Component implements HasStyle, Focusable<R>, HasComponents {
+        extends Component
+        implements HasStyle, Focusable<R>, HasClickListeners<R>, HasComponents {
 
     /**
      * <p>

@@ -1,4 +1,4 @@
-tutorial::miscellaneous/tutorial-loading-indicator.asciidoc
+tutorial::advanced/tutorial-loading-indicator.asciidoc
 .v-loading-indicator {
   position: fixed; /* Occupy whole screen even if scrolled */
   top: 0;

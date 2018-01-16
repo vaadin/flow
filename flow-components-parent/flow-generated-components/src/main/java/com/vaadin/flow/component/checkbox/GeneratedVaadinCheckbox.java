@@ -43,11 +43,6 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  * <h3>Styling</h3>
  * <p>
- * <a href=
- * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
- * >Generic styling/theming documentation</a>
- * </p>
- * <p>
  * The following shadow DOM parts are available for styling:
  * </p>
  * <table>
@@ -58,21 +53,12 @@ import com.vaadin.flow.component.HasComponents;
  * </tr>
  * </thead> <tbody>
  * <tr>
- * <td>{@code wrapper}</td>
- * <td>The {@code <label>} element which wraps the checkbox and
- * [part=&quot;label&quot;]</td>
- * </tr>
- * <tr>
- * <td>{@code native-checkbox}</td>
- * <td>The {@code <input type="checkbox">} element</td>
- * </tr>
- * <tr>
  * <td>{@code checkbox}</td>
- * <td>The {@code <span>} element for a custom graphical check</td>
+ * <td>The checkbox element</td>
  * </tr>
  * <tr>
  * <td>{@code label}</td>
- * <td>The {@code <span>} element for slotted text/HTML label</td>
+ * <td>The label content element</td>
  * </tr>
  * </tbody>
  * </table>
@@ -113,11 +99,17 @@ import com.vaadin.flow.component.HasComponents;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.CheckboxElement#1.0.0", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.CheckboxElement#2.0.0-alpha6",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-checkbox")
-@HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
+@HtmlImport("frontend://bower_components/vaadin-checkbox/src/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
         extends Component implements HasStyle, Focusable<R>,
         HasClickListeners<R>, HasValue<R, Boolean>, HasComponents {
@@ -184,6 +176,24 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      */
     public void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code name} property from the webcomponent
+     */
+    public String getName() {
+        return getElement().getProperty("name");
+    }
+
+    /**
+     * @param name
+     *            the String value to set
+     */
+    public void setName(String name) {
+        getElement().setProperty("name", name == null ? "" : name);
     }
 
     /**
@@ -262,38 +272,6 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
      */
     public void setIndeterminate(boolean indeterminate) {
         getElement().setProperty("indeterminate", indeterminate);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The name of the control, which is submitted with the form data.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code name} property from the webcomponent
-     */
-    public String getName() {
-        return getElement().getProperty("name");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The name of the control, which is submitted with the form data.
-     * </p>
-     * 
-     * @param name
-     *            the String value to set
-     */
-    public void setName(String name) {
-        getElement().setProperty("name", name == null ? "" : name);
     }
 
     /**

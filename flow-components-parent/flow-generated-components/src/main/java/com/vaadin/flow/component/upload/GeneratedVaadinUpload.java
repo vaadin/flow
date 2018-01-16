@@ -31,10 +31,93 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.component.HasComponents;
 
+/**
+ * <p>
+ * Description copied from corresponding location in WebComponent:
+ * </p>
+ * <p>
+ * {@code <vaadin-upload>} is a Polymer 2 element for uploading multiple files
+ * with drag and drop support.
+ * </p>
+ * <p>
+ * Example:
+ * </p>
+ * <p>
+ * {@code <vaadin-upload></vaadin-upload>}
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
+ * The following shadow DOM parts are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code primary-buttons}</td>
+ * <td>Upload container</td>
+ * </tr>
+ * <tr>
+ * <td>{@code upload-button}</td>
+ * <td>Upload button</td>
+ * </tr>
+ * <tr>
+ * <td>{@code drop-label}</td>
+ * <td>Label for drop indicator</td>
+ * </tr>
+ * <tr>
+ * <td>{@code drop-label-icon}</td>
+ * <td>Icon for drop indicator</td>
+ * </tr>
+ * <tr>
+ * <td>{@code file-list}</td>
+ * <td>File list container</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
+ * The following state attributes are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Attribute</th>
+ * <th>Description</th>
+ * <th>Part name</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code nodrop}</td>
+ * <td>Set when drag and drop is disabled (e. g., on touch devices)</td>
+ * <td>{@code :host}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code dragover}</td>
+ * <td>A file is being dragged over the element</td>
+ * <td>{@code :host}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code dragover-valid}</td>
+ * <td>A dragged file is valid with {@code maxFiles} and {@code accept} criteria
+ * </td>
+ * <td>{@code :host}</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
+ */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: vaadin-upload#2.1.2", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.UploadElement#4.0.0-alpha3",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-upload")
-@HtmlImport("frontend://bower_components/vaadin-upload/vaadin-upload.html")
+@HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload.html")
 public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
         Component implements HasStyle, ComponentSupplier<R>, HasComponents {
 
@@ -190,7 +273,7 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * </p>
      * 
      * <pre>
-     * <code>   &lt;p&gt;This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
+     * <code>         &lt;p&gt;This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
      * 	</code>
      * </pre>
      * 
@@ -506,6 +589,38 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * Set the withCredentials flag on the request.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code withCredentials} property from the webcomponent
+     */
+    public boolean isWithCredentials() {
+        return getElement().getProperty("withCredentials", false);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Set the withCredentials flag on the request.
+     * </p>
+     * 
+     * @param withCredentials
+     *            the boolean value to set
+     */
+    public void setWithCredentials(boolean withCredentials) {
+        getElement().setProperty("withCredentials", withCredentials);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * The object used to localize this component. For changing the default
      * localization, change the entire <em>i18n</em> object or just the property
      * you want to modify.
@@ -515,48 +630,48 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * </p>
      * 
      * <pre>
-     * <code>{
-     * 	  dropFiles: {
-     * 	   one: 'Drop file here...',
-     * 	   many: 'Drop files here...'
-     * 	  },
-     * 	  addFiles: {
-     * 	   one: 'Select File',
-     * 	   many: 'Upload Files'
-     * 	  },
-     * 	  cancel: 'Cancel',
-     * 	  error: {
-     * 	   tooManyFiles: 'Too Many Files.',
-     * 	   fileIsTooBig: 'File is Too Big.',
-     * 	   incorrectFileType: 'Incorrect File Type.'
-     * 	  },
-     * 	  uploading: {
-     * 	   status: {
-     * 	     connecting: 'Connecting...',
-     * 	     stalled: 'Stalled.',
-     * 	     processing: 'Processing File...',
-     * 	     held: 'Queued'
-     * 	   },
-     * 	   remainingTime: {
-     * 	     prefix: 'remaining time: ',
-     * 	     unknown: 'unknown remaining time'
-     * 	   },
-     * 	   error: {
-     * 	     serverUnavailable: 'Server Unavailable',
-     * 	     unexpectedServerError: 'Unexpected Server Error',
-     * 	     forbidden: 'Forbidden'
-     * 	   }
-     * 	  },
-     * 	  units: {
-     * 	   size: ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-     * 	  },
-     * 	  formatSize: function(bytes) {
-     * 	   // returns the size followed by the best suitable unit
-     * 	  },
-     * 	  formatTime: function(seconds, [secs, mins, hours]) {
-     * 	   // returns a 'HH:MM:SS' string
-     * 	  }
-     * 	}&lt;p&gt;This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
+     * <code>        {
+     * 	          dropFiles: {
+     * 	          one: 'Drop file here...',
+     * 	          many: 'Drop files here...'
+     * 	          },
+     * 	          addFiles: {
+     * 	          one: 'Select File',
+     * 	          many: 'Upload Files'
+     * 	          },
+     * 	          cancel: 'Cancel',
+     * 	          error: {
+     * 	          tooManyFiles: 'Too Many Files.',
+     * 	          fileIsTooBig: 'File is Too Big.',
+     * 	          incorrectFileType: 'Incorrect File Type.'
+     * 	          },
+     * 	          uploading: {
+     * 	          status: {
+     * 	            connecting: 'Connecting...',
+     * 	            stalled: 'Stalled.',
+     * 	            processing: 'Processing File...',
+     * 	            held: 'Queued'
+     * 	          },
+     * 	          remainingTime: {
+     * 	            prefix: 'remaining time: ',
+     * 	            unknown: 'unknown remaining time'
+     * 	          },
+     * 	          error: {
+     * 	            serverUnavailable: 'Server Unavailable',
+     * 	            unexpectedServerError: 'Unexpected Server Error',
+     * 	            forbidden: 'Forbidden'
+     * 	          }
+     * 	          },
+     * 	          units: {
+     * 	          size: ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+     * 	          },
+     * 	          formatSize: function(bytes) {
+     * 	          // returns the size followed by the best suitable unit
+     * 	          },
+     * 	          formatTime: function(seconds, [secs, mins, hours]) {
+     * 	          // returns a 'HH:MM:SS' string
+     * 	          }
+     * 	        }&lt;p&gt;This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
      * 	</code>
      * </pre>
      * 
@@ -580,48 +695,48 @@ public class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>> extends
      * </p>
      * 
      * <pre>
-     * <code>{
-     * 	  dropFiles: {
-     * 	   one: 'Drop file here...',
-     * 	   many: 'Drop files here...'
-     * 	  },
-     * 	  addFiles: {
-     * 	   one: 'Select File',
-     * 	   many: 'Upload Files'
-     * 	  },
-     * 	  cancel: 'Cancel',
-     * 	  error: {
-     * 	   tooManyFiles: 'Too Many Files.',
-     * 	   fileIsTooBig: 'File is Too Big.',
-     * 	   incorrectFileType: 'Incorrect File Type.'
-     * 	  },
-     * 	  uploading: {
-     * 	   status: {
-     * 	     connecting: 'Connecting...',
-     * 	     stalled: 'Stalled.',
-     * 	     processing: 'Processing File...',
-     * 	     held: 'Queued'
-     * 	   },
-     * 	   remainingTime: {
-     * 	     prefix: 'remaining time: ',
-     * 	     unknown: 'unknown remaining time'
-     * 	   },
-     * 	   error: {
-     * 	     serverUnavailable: 'Server Unavailable',
-     * 	     unexpectedServerError: 'Unexpected Server Error',
-     * 	     forbidden: 'Forbidden'
-     * 	   }
-     * 	  },
-     * 	  units: {
-     * 	   size: ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-     * 	  },
-     * 	  formatSize: function(bytes) {
-     * 	   // returns the size followed by the best suitable unit
-     * 	  },
-     * 	  formatTime: function(seconds, [secs, mins, hours]) {
-     * 	   // returns a 'HH:MM:SS' string
-     * 	  }
-     * 	}
+     * <code>        {
+     * 	          dropFiles: {
+     * 	          one: 'Drop file here...',
+     * 	          many: 'Drop files here...'
+     * 	          },
+     * 	          addFiles: {
+     * 	          one: 'Select File',
+     * 	          many: 'Upload Files'
+     * 	          },
+     * 	          cancel: 'Cancel',
+     * 	          error: {
+     * 	          tooManyFiles: 'Too Many Files.',
+     * 	          fileIsTooBig: 'File is Too Big.',
+     * 	          incorrectFileType: 'Incorrect File Type.'
+     * 	          },
+     * 	          uploading: {
+     * 	          status: {
+     * 	            connecting: 'Connecting...',
+     * 	            stalled: 'Stalled.',
+     * 	            processing: 'Processing File...',
+     * 	            held: 'Queued'
+     * 	          },
+     * 	          remainingTime: {
+     * 	            prefix: 'remaining time: ',
+     * 	            unknown: 'unknown remaining time'
+     * 	          },
+     * 	          error: {
+     * 	            serverUnavailable: 'Server Unavailable',
+     * 	            unexpectedServerError: 'Unexpected Server Error',
+     * 	            forbidden: 'Forbidden'
+     * 	          }
+     * 	          },
+     * 	          units: {
+     * 	          size: ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+     * 	          },
+     * 	          formatSize: function(bytes) {
+     * 	          // returns the size followed by the best suitable unit
+     * 	          },
+     * 	          formatTime: function(seconds, [secs, mins, hours]) {
+     * 	          // returns a 'HH:MM:SS' string
+     * 	          }
+     * 	        }
      * 	</code>
      * </pre>
      * 

@@ -158,11 +158,17 @@ import com.vaadin.flow.component.HasComponents;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.FormItemElement#1.0.3", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.FormItemElement#2.0.0-alpha3",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-form-item")
-@HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-item.html")
+@HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-item.html")
 public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
         extends Component implements HasStyle, HasClickListeners<R>,
         ComponentSupplier<R>, HasComponents {

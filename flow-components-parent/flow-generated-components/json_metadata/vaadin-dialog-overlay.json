@@ -1,7 +1,7 @@
 {
   "name": "Vaadin.VaadinDialogOverlay",
   "tag": "vaadin-dialog-overlay",
-  "baseUrl": "vaadin-dialog/vaadin-dialog.html",
+  "baseUrl": "vaadin-dialog/src/vaadin-dialog.html",
   "version": "UNKNOWN",
   "properties": [
     {

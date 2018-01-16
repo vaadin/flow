@@ -1,7 +1,7 @@
 {
   "name": "Vaadin.VaadinDialog",
   "tag": "vaadin-dialog",
-  "baseUrl": "vaadin-dialog/vaadin-dialog.html",
+  "baseUrl": "vaadin-dialog/src/vaadin-dialog.html",
   "properties": [
     {
       "name": "opened",
@@ -39,6 +39,8 @@
   ],
   "slots": [],
   "behaviors": [],
-  "mixins": [],
-  "description": "`<vaadin-dialog>` is a Polymer 2 element for customised modal dialogs.\n\n```html\n<vaadin-dialog opened>\n  <template>\n    Sample dialog\n  </template>\n</vaadin-dialog>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html)\nfor `<vaadin-dialog-overlay>` parts."
+  "mixins": [
+    "Vaadin.ElementMixin"
+  ],
+  "description": "`<vaadin-dialog>` is a Polymer 2 element for customised modal dialogs.\n\n```html\n<vaadin-dialog opened>\n  <template>\n    Sample dialog\n  </template>\n</vaadin-dialog>\n```\n\n### Styling\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html)\nfor `<vaadin-dialog-overlay>` parts.\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

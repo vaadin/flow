@@ -1,0 +1,164 @@
+---
+title: Vaadin Components
+order: 2
+layout: page
+---
+
+= Using Vaadin Components in Flow
+
+There is a set of pre-built server-side components for Vaadin Web Components,
+such as `Button`, `TextField` and so on. Those components are part of
+the Vaadin 10 package, and are included as a dependency by default in Flow projects.
+
+Currently there are the following implementations:
+
+
+- https://github.com/vaadin/vaadin-button-flow[vaadin-button-flow]
+- https://github.com/vaadin/vaadin-checkbox-flow[vaadin-checkbox-flow]
+- https://github.com/vaadin/vaadin-combo-box-flow[vaadin-combo-box-flow]
+- https://github.com/vaadin/vaadin-date-picker-flow[vaadin-date-picker-flow]
+- https://github.com/vaadin/vaadin-dialog-flow[vaadin-dialog-flow]
+- https://github.com/vaadin/vaadin-form-layout-flow[vaadin-form-layout-flow]
+- https://github.com/vaadin/vaadin-grid-flow[vaadin-grid-flow]
+- https://github.com/vaadin/vaadin-icons-flow[vaadin-icons-flow]
+- https://github.com/vaadin/vaadin-iron-list-flow[vaadin-iron-list-flow]
+- https://github.com/vaadin/vaadin-notification-flow[vaadin-notification-flow]
+- https://github.com/vaadin/vaadin-ordered-layout-flow[vaadin-ordered-layout-flow]
+- https://github.com/vaadin/vaadin-progress-bar-flow[vaadin-progress-bar-flow]
+- https://github.com/vaadin/vaadin-split-layout-flow[vaadin-split-layout-flow]
+- https://github.com/vaadin/vaadin-tabs-flow[vaadin-tabs-flow]
+- https://github.com/vaadin/vaadin-text-field-flow[vaadin-text-field-flow]
+- https://github.com/vaadin/vaadin-upload-flow[vaadin-upload-flow]
+
+These components are available as optional dependencies that can be added to
+any Flow project. Besides, you can add `vaadin-platform` dependency, if you need flow components for your project. It will automatically add dependencies to *ALL* available components.
+[source,xml]
+----
+<repositories>
+    <repository>
+    <id>vaadin-platform</id>
+    <url>https://repo.vaadin.com/nexus/content/repositories/flow</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <!-- other dependencies -->
+    <!-- component dependency -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin</artifactId>
+        <version>${vaadin.platform.version}</version>
+    </dependency>
+</dependencies>
+----
+[NOTE]
+`vaadin.platform` releases regularly and you can check the version number https://github.com/vaadin/platform/releases[here]
+
+[NOTE]
+If you are not using the Vaadin 10 platform dependency and wish to use the Flow components, make sure it is
+properly configured to run with Polymer webcomponents. Please refer to
+<<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+for more information.
+
+= Overview
+
+A Flow component package consists of two main sections:
+
+* java api classes
+* web components' files (html, js, css etc)
+
+All sections are used by Flow to display the components in web pages correctly.
+By default, both sections are provided in the same jar.
+
+Web components' files are provided as https://github.com/webjars/webjars/[webjars] –
+jar files that contain webcomponents' files,
+heavily influenced by current Polymer package manager: https://bower.io/[bower]
+(not developed or maintained by Vaadin)
+
+Webjars are designed to replace `bower` usage by using `Maven` for the same purposes.
+
+`Flow` is able to resolve requests into webjars' contents (if intended by request),
+imitating the regular web component's files.
+
+Although currently enabled by default, webjars do not restrict users from using external
+web components' files:
+
+* webjar resolving can be turned off
+* if no suitable webjar is found, request resolving falls back to configured
+external web components' locations
+
+[NOTE]
+Due to current webjar https://github.com/webjars/webjars/issues[limitations],
+extra maven configuration (extra repository + bom file declaration) is required.
+
+== Maven configuration to use only single components
+
+If you don't want to take everything provided by the `com.vaadin:vaadin` dependency,
+you can also optionally declare single components as dependencies.
+
+The first step is to add the `bom` and the wanted `flow-component` (e.g. `vaadin-button-flow`)
+package to your project dependencies.
+
+When using Maven you can add a the button component into your `pom.xml` as this:
+
+[source,xml]
+----
+<repositories>
+    <repository>
+        <id>vaadin-prereleases</id>
+        <url>https://maven.vaadin.com/vaadin-prereleases</url>
+    </repository>
+</repositories>
+
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-bom</artifactId>
+            <version>${vaadin.platform.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <!-- other dependencies -->
+
+    <!-- component dependency -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-button-flow</artifactId>
+    </dependency>
+
+    <!-- other dependencies -->
+</dependencies>
+----
+
+== Maven configuration to exclude webjars
+
+If webjar dependencies are not needed, they can be excluded from the project using standard Maven mechanism:
+[source,xml]
+----
+<!-- No webjars == no bom needed and no extra repo needed, but you have to get webjars' files into the build yourself -->
+<dependencies>
+    <!-- other dependencies -->
+
+    <!-- the dependency with webjars excluded -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-button-flow</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>*</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+
+    <!-- other dependencies -->
+</dependencies>
+----
+
+More documentation on webjars in can be found here: <<../web-components/tutorial-flow-webjars#,WebJars in Flow>>
+General webJars usage manual is here: <<../web-components/tutorial-how-to-use-webjars#, How to use webjars>>

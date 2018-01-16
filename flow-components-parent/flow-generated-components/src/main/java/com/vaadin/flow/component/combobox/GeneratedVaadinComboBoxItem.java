@@ -54,11 +54,17 @@ import elemental.json.JsonObject;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxItemElement#3.0.1", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.ComboBoxItemElement#UNKNOWN",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-item")
-@HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-item.html")
+@HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-item.html")
 public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
