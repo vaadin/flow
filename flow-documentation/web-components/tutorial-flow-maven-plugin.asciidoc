@@ -114,9 +114,8 @@ The goal parameters are:
 * skipEs5 `default: false`
     ES5 transpilation can be turned off with this parameter, in this case no `es5OutputDirectoryName` will be present.
 
-* bundle `default: false`
+* bundle `default: true`
     Collect all project frontend dependencies into a single file, bundle. Works both for es6 and es5 (if enabled).
-    Feature is in development, so it is a subject to change in future. One of the changes expected – default value to be changed to `true`.
 
 * fragments `default: null`
     Optional way to split the project frontend dependencies' bundle into multiple fragments.
