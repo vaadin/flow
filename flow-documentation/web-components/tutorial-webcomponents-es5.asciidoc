@@ -359,7 +359,7 @@ Jetty Plugin by using the `mvn jetty:run` command.
 ----
 
 [TIP]
-There is <<tutorial-tutorial-flow-maven-plugin#,Taking your app into production>> tutorial available which shows how 
+There is <<tutorial-flow-maven-plugin#,Taking your app into production>> tutorial available which shows how 
 to use only one `flow-maven-plugin` to achieve the same result. 
 
 === Production mode
