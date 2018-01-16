@@ -358,6 +358,10 @@ Jetty Plugin by using the `mvn jetty:run` command.
 </profiles>
 ----
 
+[TIP]
+There is <<tutorial-flow-maven-plugin#,Taking your app into production>> tutorial available which shows how 
+to use only one `flow-maven-plugin` to achieve the same result. 
+
 === Production mode
 
 By default, Flow applications run are packaged debug mode (or development mode),

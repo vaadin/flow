@@ -1,12 +1,32 @@
-# flow-maven-plugin
+---
+title: Taking your app into production
+order: 7
+layout: page
+---
 
-`flow-maven-plugin` is a plugin created to ease the Flow project set up for production mode builds.
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Taking your app into production
 
-It can be used to:
-* copy web files (html, css, js etc.) from WebJars and other dependencies to the directory that is used by Flow 
-in production mode to serve files from (`copy-production-files` goal)
-* transpile and optimize web files located in the directory specified (`transpile-production-files` goal).
-In order to transpile files, additional frontend tools are installed.
+As mentioned in <<tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>> 
+tutorial transpilation to to ECMAScript 5 is required to use an application with browsers that don't support ES6.
+You may also want to optimize web files (reduce a number of files and optimize their content) via bundling.
+In this case we provide `flow-maven-plugin` which sets up the project for the production mode.
+It simplifies the steps described in <<tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>> 
+tutorial.
+
+To be able to build the application for production the web files should be 
+transpiled and copied into the directory that is used by Flow in production mode to serve files from.
+
+Once the project is built for the production mode, you can run the application with `vaadin.productionMode` system property which will tell Flow to use the files built. For instance, with Jetty maven plugin, the app can be started as: 
+
+[source,bash]
+----
+mvn jetty:run -Dvaadin.productionMode
+----
+
+The `flow-maven-plugin` plugin has two goals:
+* `copy-production-files` goal. Copies web files to the target directory that is used by Flow in production mode.
+* `transpile-production-files` goal. Transpile and optimize web files.
 
 Usage example: 
 
@@ -29,15 +49,10 @@ Usage example:
                 <goal>copy-production-files</goal>
                 <goal>transpile-production-files</goal>
             </goals>
-            <!-- specify goals' configuration here, can be omitted, if defaults are used -->
-            <configuration>
-                <skipEs5>true</skipEs5>
-            </configuration>
         </execution>
     </executions>
 </plugin>
 ```
-
 The plugin supports Flow default frontend directory structure out of the box, but can be configured to process any other structure, if necessary.
 
 ## Goals and parameters description
@@ -131,7 +146,10 @@ and with all `*.css`, `*.js` and `*.html` additionally optimized for production 
 
 ## Bundle Configuration
 
-Note: The bundling feature is still work in progress and the following are subject to change in the future.
+As mentioned above for `bundle` parameter the bundling is used to collect all project frontend dependencies into a single file.
+
+[NOTE]
+The bundling feature is still work in progress and the following are subject to change in the future.
 
 ### Defining Fragments
 

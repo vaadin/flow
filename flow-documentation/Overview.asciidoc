@@ -85,6 +85,7 @@ and keep the page state intact. The following tutorials explain how to use the R
 * <<web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
 * <<web-components/tutorial-flow-webjars#,Webjars in Flow>>
 * <<web-components/tutorial-how-to-use-webjars#,How to use Webjars>>
+* <<web-components/tutorial-flow-maven-plugin#,Taking your app into production>>
 
 == Polymer template
 * <<polymer-templates/tutorial-template-basic#,Creating A Simple Component Using the Template API>>
