@@ -47,7 +47,7 @@ import com.vaadin.flow.shared.Registration;
         "WebComponent: Vaadin.VaadinDialogOverlay#UNKNOWN",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-dialog-overlay")
-@HtmlImport("frontend://bower_components/vaadin-dialog/vaadin-dialog.html")
+@HtmlImport("frontend://bower_components/vaadin-dialog/src/vaadin-dialog.html")
 public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 

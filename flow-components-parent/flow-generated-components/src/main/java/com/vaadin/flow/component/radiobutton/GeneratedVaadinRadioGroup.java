@@ -42,11 +42,6 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  * <h3>Styling</h3>
  * <p>
- * <a href=
- * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
- * >Generic styling/theming documentation</a>
- * </p>
- * <p>
  * The following state attributes are available for styling:
  * </p>
  * <table>
@@ -64,12 +59,17 @@ import com.vaadin.flow.component.HasComponents;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.RadioGroupElement#1.0.0-alpha8",
+        "WebComponent: Vaadin.RadioGroupElement#1.0.0-alpha11",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-radio-group")
-@HtmlImport("frontend://bower_components/vaadin-radio-button/vaadin-radio-group.html")
+@HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-group.html")
 public class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
         extends Component
         implements HasStyle, ComponentSupplier<R>, HasComponents {

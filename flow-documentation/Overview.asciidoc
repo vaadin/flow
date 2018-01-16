@@ -5,143 +5,114 @@ layout: page
 ---
 
 ifdef::env-github[:outfilesuffix: .asciidoc]
-= Flow
-:toc:
-== Product overview
+= Vaadin Flow
 
-Flow is a Java framework for building interactive web sites.
-The heart of Flow will consist of three ways of interacting with the DOM in the user's web browser:
+Vaadin Flow is a new Java web framework for building modern web apps and websites.
+It is part of the Vaadin Platform and a successor for the Vaadin Framework bringing Web Component support to Java users.
+Flow allows developers to be super productive by creating UIs in Java or
+by using HTML Templates for composing the UI and binding it to any backend using Java.
 
- 1. HTML-based templates that are bound to server-side Model data.
- 1. A server-side representation of the client-side DOM tree.
- 1. A type-safe Java RPC API for interacting with JavaScript in the browser.
+The Power of Vaadin Flow comes from the following concepts:
 
-These mechanisms are intended to be encapsulated into reusable components with a high-level Java API.
+* A set of beautiful UI components build with focus on end-user and developer experience
+* Powerful abstraction layers for easily building your own reusable UI components with either Java or HTML templates
+* Data Binding API for connecting the UI components to any backend using type safe Java
+* Router API for easily creating hierarchical page structures for the user to navigate
 
-The current version provides a complete DOM tree implementation and beginnings of the mechanisms for both templates and RPC.
+This is the documentation for Flow. It is divided into the following subsections in recommended reading order :
 
-== Tutorials
+== Introduction and Getting Started
+** <<introduction/introduction-overview#,Introduction to Flow>>
+** <<introduction/tutorial-hello-world#,Building a Hello World Application>>
+** <<introduction/tutorial-get-started#,Getting Started>>
 
-These tutorials show how the different features are used.
+== Router and Navigation
+Router is a core concept in Vaadin Flow, enabling Navigation for your website or web app.
+It is based on HTML5 History API, and makes it possible to for the user to navigate pages back and forward,
+and keep the page state intact. The following tutorials explain how to use the Router:
 
-* Application structure
-** <<application-structure/tutorial-hello-world#,Hello World>>
-** <<application-structure/tutorial-include-css#,Including Style Sheets>>
-** <<application-structure/tutorial-importing#,Importing html/javascript>>
-** <<application-structure/tutorial-ways-of-importing#,Ways of importing the dependencies>>
-** <<application-structure/tutorial-bootstrap#,Modifying bootstrap page>>
-* Element API
-** <<element-api/tutorial-properties-attributes#,Element Properties and Attributes>>
-** <<element-api/tutorial-event-listener#,Listening to User Events>>
-** <<element-api/tutorial-user-input#,Retrieving User Input>>
-** <<element-api/tutorial-dynamic-styling#,Dynamic styling>>
-** <<element-api/tutorial-shadow-root#,Shadow root in server-side Element>>
-* Web components
-** <<web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
-** <<web-components/tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
-** <<web-components/tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
-** <<web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
-* Flow components
-** <<flow-components/tutorial-component-basic-features#,Component Basic Features>>
-** <<flow-components/tutorial-flow-components-setup#,Setup your project to use Flow components>>
-** <<flow-components/tutorial-flow-grid#,Grid>>
-** Binding Data to Forms
-*** <<binding-data/tutorial-flow-components-binder#,Binder overview>>
-*** <<binding-data/tutorial-flow-components-binder-validation#,Validating and Converting User Input>>
-*** <<binding-data/tutorial-flow-components-binder-load#,Loading from and Saving to Business Objects>>
-*** <<binding-data/tutorial-flow-components-binder-beans#,Binding Beans to Forms>>
-**  <<data-provider/tutorial-flow-data-provider#,Data Providers>>
-* Creating your own components
-** <<creating-components/tutorial-component-basic#,Creating A Simple Component Using the Element API>>
-** <<creating-components/tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
-** <<creating-components/tutorial-component-property-descriptor#,Using API Helpers for Defining Component Properties>>
-** <<creating-components/tutorial-component-composite#,Creating a Component Using Existing Components>>
-** <<creating-components/tutorial-component-events#,Using Events with Components>>
-** <<creating-components/tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
-** <<creating-components/tutorial-component-with-dependencies#,Creating a Component with External Dependencies>>
-* Routing and navigation (Work in progress)
-** <<routing/tutorial-routing-annotation#,Defining Routes with @Route>>
-** <<routing/tutorial-routing-lifecycle#,Navigation Lifecycle>>
-** <<routing/tutorial-router-layout#,Router Layouts and Nested Router Targets>>
-** <<routing/tutorial-router-url-parameters#,URL Parameters for Navigation Targets>>
-** <<routing/tutorial-routing-url-generation#,URL generation>>
-** <<routing/tutorial-routing-navigation#,Navigating Between Routes>>
-** <<routing/tutorial-routing-page-titles#,Updating Page Title on Navigation>>
-** <<routing/tutorial-routing-exception-handling#,Router Exception Handling>>
-** <<routing/tutorial-routing-get-registered-routes#,Getting Registered Routes>>
-* Polymer template
-** <<polymer-templates/tutorial-template-basic#,Creating A Simple Component Using the Template API>>
-** <<polymer-templates/tutorial-template-components#,Binding Components from PolymerTemplate>>
-** <<polymer-templates/tutorial-template-subtemplate#,Using sub-template from PolymerTemplate>>
-** <<polymer-templates/tutorial-template-components-in-slot#,Using <slot> in PolymerTemplates>>
-** <<polymer-templates/tutorial-template-event-handlers#,Handling User Events in a PolymerTemplate>>
-** <<polymer-templates/tutorial-template-bindings#,Binding Model Data in a PolymerTemplate>>
-*** <<polymer-templates/tutorial-template-bindings#two-way-binding,Two-way data binding>>
-*** <<polymer-templates/tutorial-template-list-bindings#,Using List of Items in a PolymerTemplate with template repeater>>
-** <<polymer-templates/tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>
-** <<polymer-templates/tutorial-template-model-converters#,Using Model Converters with a PolymerTemplate Model>>
-* Spring
-** <<spring/tutorial-spring-basic#,Use Flow with Spring>>
-** <<spring/tutorial-spring-routing#,Routing with Spring>>
-** <<spring/tutorial-spring-scopes#,Vaadin Spring Scopes>>
-** <<spring/tutorial-spring-configuration#,Vaadin Spring Configuration>>
-** <<spring/tutorial-spring-examples#,Getting Started with Spring and Flow>>
-* Theme
-** <<theme/tutorial-built-in-themes#,Component themes>>
-* Misc
-** <<miscellaneous/tutorial-i18n-localization#,I18N localization>>
-** <<miscellaneous/tutorial-execute-javascript#,Executing JavaScript>>
-** <<miscellaneous/tutorial-history-api#,The History API>>
-** <<miscellaneous/tutorial-dynamic-content#,Dynamic Content>>
-** <<miscellaneous/tutorial-loading-indicator#,The Loading Indicator>>
-** <<miscellaneous/tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
-** <<miscellaneous/tutorial-service-init-listener#,Configure RequestHandlers, BootstrapListeners and DependencyFilters using VaadinServiceInitListener>>
-** <<miscellaneous/tutorial-stream-resources#,Using stream resources>>
-** <<miscellaneous/tutorial-flow-runtime-configuration#,Flow runtime configuration>>
+* <<routing/tutorial-routing-annotation#,Defining Routes with @Route>>
+* <<routing/tutorial-routing-lifecycle#,Navigation Lifecycle>>
+* <<routing/tutorial-router-layout#,Router Layouts and Nested Router Targets>>
+* <<routing/tutorial-router-url-parameters#,URL Parameters for Navigation Targets>>
+* <<routing/tutorial-routing-url-generation#,URL generation>>
+* <<routing/tutorial-routing-navigation#,Navigating Between Routes>>
+* <<routing/tutorial-routing-page-titles#,Updating Page Title on Navigation>>
+* <<routing/tutorial-routing-exception-handling#,Router Exception Handling>>
+* <<routing/tutorial-routing-get-registered-routes#,Getting Registered Routes>>
 
-The rest of this document gives a high-level overview of the features and explains how they fit together.
+== Using Vaadin Components
+* <<components/tutorial-component-basic-features#,Component Basic Features>>
+* <<components/tutorial-flow-components-setup#,Using Vaadin Components in Flow>>
+* <<components/tutorial-flow-grid#,Grid>>
+* <<components/tutorial-flow-icon#,Using Icons>>
 
-== Server-side DOM tree
+== Binding Components to Data
+* <<binding-data/tutorial-flow-components-binder#,Binder overview>>
+* <<binding-data/tutorial-flow-components-binder-validation#,Validating and Converting User Input>>
+* <<binding-data/tutorial-flow-components-binder-load#,Loading from and Saving to Business Objects>>
+* <<binding-data/tutorial-flow-components-binder-beans#,Binding Beans to Forms>>
+* <<binding-data/tutorial-flow-data-provider#,Showing a list of data with Data Providers>>
 
-Tutorials: <<element-api/tutorial-properties-attributes#,Element Properties and Attributes>>, <<element-api/tutorial-event-listener#,Listening to User Events>>, <<element-api/tutorial-user-input#,Retrieving User Input>>,  <<element-api/tutorial-dynamic-styling#,Dynamic styling>>
+== Importing HTML, JavaScript and CSS files
+* <<importing-dependencies/tutorial-include-css#,Including Style Sheets>>
+* <<importing-dependencies/tutorial-importing#,Importing html/javascript>>
+* <<importing-dependencies/tutorial-ways-of-importing#,Ways of importing the dependencies>>
 
-Flow allows Java code to control the DOM in the user's browser through a server-side representation of the same DOM tree.
-All changes are automatically synchronized to the real DOM tree in the browser.
+== Theming Flow Applications
+* <<theme/tutorial-built-in-themes#,Component themes>>
 
-The DOM tree is built up from `Element` instances, each one representing a DOM element in the browser.
-The root of the server-side DOM tree is the `Element` of the `UI` instance, accessible using `ui.getElement()`.
-This element represents the `<body>` tag.
+== Creating Components
+* <<creating-components/tutorial-component-basic#,Creating A Simple Component Using the Element API>>
+* <<creating-components/tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
+* <<creating-components/tutorial-component-property-descriptor#,Using API Helpers for Defining Component Properties>>
+* <<creating-components/tutorial-component-composite#,Creating a Component Using Existing Components>>
+* <<creating-components/tutorial-component-events#,Using Events with Components>>
+* <<creating-components/tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
+* <<creating-components/tutorial-component-lifecycle-callbacks#,Component Lifecycle Callbacks>>
 
-Elements on the server are implemented as flyweight instances.
-This means that you cannot compare elements using `==` and `!=`.
-Instead, `element.equals(otherElement)` should be used to check whether two instances refer to the same DOM element in the browser.
+== Manipulating the DOM with Element API
+* <<element-api/tutorial-properties-attributes#,Element Properties and Attributes>>
+* <<element-api/tutorial-event-listener#,Listening to User Events>>
+* <<element-api/tutorial-user-input#,Retrieving User Input>>
+* <<element-api/tutorial-dynamic-styling#,Dynamic styling>>
+* <<element-api/tutorial-shadow-root#,Shadow root in server-side Element>>
 
-=== Element Hierarchy
+== Integrating Web Components
+* <<web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+* <<web-components/tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
+* <<web-components/tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
+* <<web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
+* <<web-components/tutorial-flow-webjars#,Webjars in Flow>>
+* <<web-components/tutorial-how-to-use-webjars#,How to use Webjars>>
 
-A web application is structured as a tree of elements with the root being the element of the `UI` instance. An element can be added as a child of another element using methods such as `element.appendChild(Element)` for adding an element to the end of a parent's child list or `element.insertChild(int, Element)` for adding to any position in the child list.
+== Polymer template
+* <<polymer-templates/tutorial-template-basic#,Creating A Simple Component Using the Template API>>
+* <<polymer-templates/tutorial-template-components#,Binding Components from PolymerTemplate>>
+* <<polymer-templates/tutorial-template-subtemplate#,Using sub-template from PolymerTemplate>>
+* <<polymer-templates/tutorial-template-components-in-slot#,Using <slot> in PolymerTemplates>>
+* <<polymer-templates/tutorial-template-event-handlers#,Handling User Events in a PolymerTemplate>>
+* <<polymer-templates/tutorial-template-bindings#,Binding Model Data in a PolymerTemplate>>
+** <<polymer-templates/tutorial-template-bindings#two-way-binding,Two-way data binding>>
+* <<polymer-templates/tutorial-template-list-bindings#,Using List of Items in a PolymerTemplate with template repeater>>
+* <<polymer-templates/tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>
+* <<polymer-templates/tutorial-template-model-converters#,Using Model Converters with a PolymerTemplate Model>>
 
-The element hierarchy can be navigated upwards using `element.getParent()` and downwards using `element.getChildCount()` and `element.getChild(int)`.
+== Spring
+* <<spring/tutorial-spring-basic#,Use Flow with Spring>>
+* <<spring/tutorial-spring-routing#,Routing with Spring>>
+* <<spring/tutorial-spring-scopes#,Vaadin Spring Scopes>>
+* <<spring/tutorial-spring-configuration#,Vaadin Spring Configuration>>
+* <<spring/tutorial-spring-examples#,Getting Started with Spring and Flow>>
 
-=== Component Hierarchy
-The component hierarchy provides an higher level abstraction on top of the element hierarchy. A component consists of a root element and can optionally contain any number of child elements. Components can be added inside other components using methods such as `UI.add(Component)`, provided the parent component supports child components.
-
-Composite is a special kind of component which does not have a root element of its own but instead encapsulates another component. The main use case for a composite is to combine existing components into new components while hiding the original component API.
-
-The component hierarchy can be navigated upwards using `component.getParent()` and downwards using `component.getChildren()`. The component hierarchy is constructed based on the element hierarchy, so they are always in sync.
-
-== Templates
-Instead of writing Java code for building the DOM from individual elements, it's also possible to use the `Template` component to define the overall DOM structure in an HTML template file and then use a model to control the contents of the elements.
-
-In addition to giving a clearer overview of the structure of a Component, the template functionality does also help improve performance –
-the same template definition is reused for all component instance using the same template file. This means that less memory is used on the server and less data needs to be sent to the browser.
-
-== History API
-
-Tutorial: <<miscellaneous/tutorial-history-api#,The History API>>
-
-The _History API_ allows you to access the browser navigation history through `ui.getPage().getHistory()`.
-The API allows you to:
-
-* Programmatically traverse the history.
-* Modify the history by adding a new entry or replacing the current entry.
-* Listen to user originated history traversal events from the browser.
+== Advanced Topics
+* <<advanced/tutorial-i18n-localization#,Application Localization (I18N)>>
+* <<advanced/tutorial-bootstrap#,Modifying the bootstrap page>>
+* <<advanced/tutorial-flow-runtime-configuration#,Flow runtime configuration>>
+* <<advanced/tutorial-execute-javascript#,Executing JavaScript from Server Side>>
+* <<advanced/tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
+* <<advanced/tutorial-service-init-listener#,Configure RequestHandlers, BootstrapListeners and DependencyFilters using VaadinServiceInitListener>>
+* <<advanced/tutorial-dynamic-content#,Showing Dynamic Content>>
+* <<advanced/tutorial-loading-indicator#,Customizing the Loading Indicator>>
+* <<advanced/tutorial-history-api#,History API>>
+* <<advanced/tutorial-stream-resources#,Using stream resources>>

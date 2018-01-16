@@ -17,6 +17,7 @@ package com.vaadin.flow.component.splitlayout;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasClickListeners;
 import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
@@ -41,17 +42,18 @@ import com.vaadin.flow.dom.Element;
  * </p>
  * <h3>Horizontal and Vertical Layouts</h3>
  * <p>
- * By default, the split is horizontal, meaning that the content elements are
- * positioned side by side in a flex container with a horizontal layout.
+ * By default, the split's orientation is horizontal, meaning that the content
+ * elements are positioned side by side in a flex container with a horizontal
+ * layout.
  * </p>
  * <p>
- * You can change the split mode to vertical by adding the {@code vertical}
- * attribute:
+ * You can change the split mode to vertical by setting the {@code orientation}
+ * attribute to {@code &quot;vertical&quot;}:
  * </p>
  * <p>
- * &lt;vaadin-split-layout vertical&gt; &lt;div&gt;Content on the
- * top&lt;/div&gt; &lt;div&gt;Content on the bottom&lt;/div&gt;
- * &lt;/vaadin-split-layout&gt;
+ * &lt;vaadin-split-layout orientation=&quot;vertical&quot;&gt;
+ * &lt;div&gt;Content on the top&lt;/div&gt; &lt;div&gt;Content on the
+ * bottom&lt;/div&gt; &lt;/vaadin-split-layout&gt;
  * </p>
  * <h3>Layouts Combination</h3>
  * <p>
@@ -65,13 +67,13 @@ import com.vaadin.flow.dom.Element;
  * </p>
  * <p>
  * &lt;vaadin-split-layout&gt; &lt;div&gt;First content element&lt;/div&gt;
- * &lt;vaadin-split-layout vertical&gt; &lt;div&gt;Second content
- * element&lt;/div&gt; &lt;div&gt;Third content element&lt;/div&gt;
- * &lt;/vaadin-split-layout&gt; &lt;/vaadin-split-layout&gt;
+ * &lt;vaadin-split-layout orientation=&quot;vertical&quot;&gt;
+ * &lt;div&gt;Second content element&lt;/div&gt; &lt;div&gt;Third content
+ * element&lt;/div&gt; &lt;/vaadin-split-layout&gt; &lt;/vaadin-split-layout&gt;
  * </p>
  * <p>
- * You can also trigger the vertical mode by setting the property:
- * {@code splitLayout.vertical = true;}.
+ * You can also trigger the vertical mode in JavaScript by setting the property:
+ * {@code splitLayout.orientation = &quot;vertical&quot;;}.
  * </p>
  * <h3>Split Layout Element Height</h3>
  * <p>
@@ -124,7 +126,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  * <p>
  * When setting initial sizes with relative units, such as percentages, it is
- * recommended to assing the size for both content elements:
+ * recommended to assign the size for both content elements:
  * </p>
  * <p>
  * &lt;vaadin-split-layout&gt; &lt;div style=&quot;width: 75%;&quot;&gt;Three
@@ -177,29 +179,37 @@ import com.vaadin.flow.dom.Element;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.SplitLayoutElement#3.0.0", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.SplitLayoutElement#4.0.0-alpha4",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-split-layout")
-@HtmlImport("frontend://bower_components/vaadin-split-layout/vaadin-split-layout.html")
+@HtmlImport("frontend://bower_components/vaadin-split-layout/src/vaadin-split-layout.html")
 public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component
+        implements HasStyle, HasClickListeners<R>, ComponentSupplier<R> {
 
     /**
      * <p>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Change the split layout to vertical
+     * The split layout's orientation. Possible values are:
+     * {@code horizontal|vertical}.
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
      * 
-     * @return the {@code vertical} property from the webcomponent
+     * @return the {@code orientation} property from the webcomponent
      */
-    public boolean isVertical() {
-        return getElement().getProperty("vertical", false);
+    public String getOrientation() {
+        return getElement().getProperty("orientation");
     }
 
     /**
@@ -207,14 +217,16 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Change the split layout to vertical
+     * The split layout's orientation. Possible values are:
+     * {@code horizontal|vertical}.
      * </p>
      * 
-     * @param vertical
-     *            the boolean value to set
+     * @param orientation
+     *            the String value to set
      */
-    public void setVertical(boolean vertical) {
-        getElement().setProperty("vertical", vertical);
+    public void setOrientation(String orientation) {
+        getElement().setProperty("orientation",
+                orientation == null ? "" : orientation);
     }
 
     @DomEvent("iron-resize")

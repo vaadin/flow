@@ -1,45 +1,38 @@
 {
-  "name": "DatePickerOverlayElement",
+  "name": "VaadinDatePickerOverlayElement",
   "tag": "vaadin-date-picker-overlay",
-  "baseUrl": "vaadin-date-picker/vaadin-date-picker-overlay.html",
-  "version": "2.0.5",
+  "baseUrl": "vaadin-date-picker/src/vaadin-date-picker-overlay.html",
+  "version": "UNKNOWN",
   "properties": [
     {
-      "name": "selectedDate",
+      "name": "opened",
       "type": [
-        "OBJECT"
+        "BOOLEAN"
       ],
       "objectType": [],
-      "description": "The value for this element.\n             ",
+      "description": "",
       "notify": true
     },
     {
-      "name": "focusedDate",
+      "name": "template",
       "type": [
         "OBJECT"
       ],
       "objectType": [],
-      "description": "Date value which is focused using keyboard.\n             ",
+      "description": "",
       "notify": true
     },
     {
-      "name": "initialPosition",
+      "name": "content",
       "type": [
         "OBJECT"
       ],
       "objectType": [],
-      "description": "Date which should be visible when there is no value selected.\n             "
+      "description": "",
+      "notify": true
     },
     {
-      "name": "i18n",
-      "type": [
-        "OBJECT"
-      ],
-      "objectType": [],
-      "description": ""
-    },
-    {
-      "name": "showWeekNumbers",
+      "name": "withBackdrop",
       "type": [
         "BOOLEAN"
       ],
@@ -47,31 +40,38 @@
       "description": ""
     },
     {
-      "name": "minDate",
+      "name": "modeless",
       "type": [
-        "OBJECT"
+        "BOOLEAN"
       ],
       "objectType": [],
-      "description": "The earliest date that can be selected. All earlier dates will be disabled.\n             "
+      "description": "When true the overlay won't disable the main content, showing\nit doesn’t change the functionality of the user interface.\n           "
     },
     {
-      "name": "maxDate",
+      "name": "focusTrap",
       "type": [
-        "OBJECT"
+        "BOOLEAN"
       ],
       "objectType": [],
-      "description": "The latest date that can be selected. All later dates will be disabled.\n             "
-    },
-    {
-      "name": "label",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "Input label\n             "
+      "description": "When true move focus to the first focusable element in the overlay,\nor to the overlay if there are no focusable elements.\n           "
     }
   ],
   "methods": [
+    {
+      "name": "close",
+      "description": "",
+      "parameters": [
+        {
+          "name": "sourceEvent",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ],
+      "returns": "UNDEFINED"
+    },
     {
       "name": "connectedCallback",
       "description": "",
@@ -79,92 +79,51 @@
       "returns": "UNDEFINED"
     },
     {
-      "name": "announceFocusedDate",
+      "name": "disconnectedCallback",
       "description": "",
       "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "focusCancel",
-      "description": "Focuses the cancel button\n         ",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "scrollToDate",
-      "description": "Scrolls the list to the given Date.\n         ",
-      "parameters": [
-        {
-          "name": "date",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        },
-        {
-          "name": "animate",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        }
-      ],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "revealDate",
-      "description": "Scrolls the month and year scrollers enough to reveal the given date.\n         ",
-      "parameters": [
-        {
-          "name": "date",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        }
-      ],
       "returns": "UNDEFINED"
     }
   ],
   "events": [
     {
-      "name": "scroll-animation-finished",
-      "description": "scroll-animation-finished",
-      "properties": [
-        {
-          "name": "detail.position",
-          "type": [
-            "NUMBER"
-          ],
-          "objectType": [],
-          "description": "new position"
-        },
-        {
-          "name": "detail.oldPosition",
-          "type": [
-            "NUMBER"
-          ],
-          "objectType": [],
-          "description": "old position"
-        }
-      ]
-    },
-    {
-      "name": "selected-date-changed",
-      "description": "Fired when the `selectedDate` property changes.",
+      "name": "vaadin-overlay-close",
+      "description": "vaadin-overlay-close\nfired before the `vaadin-overlay` will be closed. If canceled the closing of the overlay is canceled as well.",
       "properties": []
     },
     {
-      "name": "focused-date-changed",
-      "description": "Fired when the `focusedDate` property changes.",
+      "name": "vaadin-overlay-escape-press",
+      "description": "vaadin-overlay-escape-press\nfired before the `vaadin-overlay` will be closed on ESC button press. If canceled the closing of the overlay is canceled as well.",
+      "properties": []
+    },
+    {
+      "name": "vaadin-overlay-open",
+      "description": "vaadin-overlay-open\nfired after the `vaadin-overlay` is opened.",
+      "properties": []
+    },
+    {
+      "name": "vaadin-overlay-outside-click",
+      "description": "vaadin-overlay-outside-click\nfired before the `vaadin-overlay` will be closed on outside click. If canceled the closing of the overlay is canceled as well.",
+      "properties": []
+    },
+    {
+      "name": "opened-changed",
+      "description": "Fired when the `opened` property changes.",
+      "properties": []
+    },
+    {
+      "name": "template-changed",
+      "description": "Fired when the `template` property changes.",
+      "properties": []
+    },
+    {
+      "name": "content-changed",
+      "description": "Fired when the `content` property changes.",
       "properties": []
     }
   ],
   "slots": [],
   "behaviors": [],
   "mixins": [],
-  "description": ""
+  "description": "The overlay element.\n\n### Styling\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html)\nfor `<vaadin-date-picker-overlay>` parts.\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

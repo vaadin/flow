@@ -1,0 +1,45 @@
+---
+title: Modifying how dependencies are loaded with DependencyFilters
+order: 5
+layout: page
+---
+
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Modifying how dependencies are loaded with DependencyFilters
+
+As seen on the tutorials about using `@JavaScript`, `@HtmlImport` and `@StyleSheet` (see <<../importing-dependencies/tutorial-include-css#,Including Style Sheets>> and <<../importing-dependencies/tutorial-importing#,Importing html/javascript>>), you can use annotations or an imperative API to add resources (or dependencies) to your application when needed. But in some cases, a more fine control is needed: for example, when bundling resources into multiple different bundles, you may want to control the application to import the right bundle when some specific resource is requested.
+
+To control how the dependencies are loaded, and which files are effectively added or removed from the loading process, you can use DependencyFilters.
+
+Here is one example - it removes all dependencies and add one single bundle when running in production mode:
+
+[source,java]
+----
+public class BundleFilter implements DependencyFilter {
+    @Override
+    public List<Dependency> filter(List<Dependency> dependencies,
+            FilterContext filterContext) {
+
+        if (filterContext.getService().getDeploymentConfiguration()
+                .isProductionMode()) {
+            dependencies.clear();
+            dependencies.add(new Dependency(Dependency.Type.HTML_IMPORT,
+                    "my-bundle.html", LoadMode.EAGER));
+        }
+
+        return dependencies;
+    }
+}
+----
+[TIP]
+You can also use the `frontend://` and `context://` protocols on dependencies returned by the DependencyFilter. These protocols are resolved after the filters are applied. To know more about `frontend://` and `context://` protocols, read <<../web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>.
+
+The DependencyFilters are called in two particular situations: when a <<../polymer-templates/tutorial-template-basic#,PolymerTemplate>> is parsed for the first time, and when a set of dependencies are about to be sent to the client.
+
+* When a polymer template is parsed, all `@HtmlImport` of the class are analyzed and sent to the DependencyFilters for evaluation. The filter must return a dependency that contains the definition of the template, so it can be parsed. In the example provided above, the `my-bundle.html` file must contain the definition of the polymer templates needed by the application.
+* When a route changes and a new set of components are requested, all dependencies are gathered in a list and sent to the filters for evaluation. The filters can change, remove or add new dependencies as needed.
+
+[WARNING]
+DependencyFilters allow you to change, add and remove any dependencies. You may leave your application in a broken state if you remove a required dependency for your project without providing a suitable replacement. With great power comes great responsibility.
+
+With your DependencyFilter in place, you need to add it to a `ServiceInitEvent` which is sent when a Vaadin service is initialized. Take a look on the <<tutorial-service-init-listener#,ServiceInitListener tutorial>> on how to configure it.

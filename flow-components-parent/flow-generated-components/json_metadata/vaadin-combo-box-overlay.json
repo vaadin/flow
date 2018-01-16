@@ -1,7 +1,7 @@
 {
   "name": "Vaadin.VaadinComboBoxOverlay",
   "tag": "vaadin-combo-box-overlay",
-  "baseUrl": "vaadin-combo-box/vaadin-combo-box-dropdown.html",
+  "baseUrl": "vaadin-combo-box/src/vaadin-combo-box-dropdown.html",
   "version": "UNKNOWN",
   "properties": [
     {
@@ -125,5 +125,5 @@
   "slots": [],
   "behaviors": [],
   "mixins": [],
-  "description": "The overlay element.\n\n### Styling\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html)\nfor `<vaadin-combo-box-overlay>` parts."
+  "description": "The overlay element.\n\n### Styling\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html)\nfor `<vaadin-combo-box-overlay>` parts.\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

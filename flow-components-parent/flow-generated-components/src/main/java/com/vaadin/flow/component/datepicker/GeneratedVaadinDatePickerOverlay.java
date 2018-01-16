@@ -21,216 +21,114 @@ import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonObject;
-import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
 
+/**
+ * <p>
+ * Description copied from corresponding location in WebComponent:
+ * </p>
+ * <p>
+ * The overlay element.
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
+ * See <a href=
+ * "https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html">
+ * {@code <vaadin-overlay>} documentation</a> for
+ * {@code <vaadin-date-picker-overlay>} parts.
+ * </p>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
+ */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: DatePickerOverlayElement#2.0.5", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: VaadinDatePickerOverlayElement#UNKNOWN",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker-overlay")
-@HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-overlay.html")
+@HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-overlay.html")
 public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePickerOverlay<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The value for this element.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
+     * This property is synchronized automatically from client side when a
+     * 'opened-changed' event happens.
      * 
-     * @return the {@code selectedDate} property from the webcomponent
+     * @return the {@code opened} property from the webcomponent
      */
-    protected JsonObject protectedGetSelectedDate() {
-        return (JsonObject) getElement().getPropertyRaw("selectedDate");
+    @Synchronize(property = "opened", value = "opened-changed")
+    public boolean isOpened() {
+        return getElement().getProperty("opened", false);
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The value for this element.
-     * </p>
-     * 
-     * @param selectedDate
-     *            the JsonObject value to set
-     */
-    protected void setSelectedDate(JsonObject selectedDate) {
-        getElement().setPropertyJson("selectedDate", selectedDate);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Date value which is focused using keyboard.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code focusedDate} property from the webcomponent
-     */
-    protected JsonObject protectedGetFocusedDate() {
-        return (JsonObject) getElement().getPropertyRaw("focusedDate");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Date value which is focused using keyboard.
-     * </p>
-     * 
-     * @param focusedDate
-     *            the JsonObject value to set
-     */
-    protected void setFocusedDate(JsonObject focusedDate) {
-        getElement().setPropertyJson("focusedDate", focusedDate);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Date which should be visible when there is no value selected.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code initialPosition} property from the webcomponent
-     */
-    protected JsonObject protectedGetInitialPosition() {
-        return (JsonObject) getElement().getPropertyRaw("initialPosition");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Date which should be visible when there is no value selected.
-     * </p>
-     * 
-     * @param initialPosition
-     *            the JsonObject value to set
-     */
-    protected void setInitialPosition(JsonObject initialPosition) {
-        getElement().setPropertyJson("initialPosition", initialPosition);
-    }
-
-    /**
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * 
-     * @return the {@code i18n} property from the webcomponent
-     */
-    protected JsonObject protectedGetI18n() {
-        return (JsonObject) getElement().getPropertyRaw("i18n");
-    }
-
-    /**
-     * @param i18n
-     *            the JsonObject value to set
-     */
-    protected void setI18n(JsonObject i18n) {
-        getElement().setPropertyJson("i18n", i18n);
-    }
-
-    /**
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * 
-     * @return the {@code showWeekNumbers} property from the webcomponent
-     */
-    public boolean isShowWeekNumbers() {
-        return getElement().getProperty("showWeekNumbers", false);
-    }
-
-    /**
-     * @param showWeekNumbers
+     * @param opened
      *            the boolean value to set
      */
-    public void setShowWeekNumbers(boolean showWeekNumbers) {
-        getElement().setProperty("showWeekNumbers", showWeekNumbers);
+    public void setOpened(boolean opened) {
+        getElement().setProperty("opened", opened);
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The earliest date that can be selected. All earlier dates will be
-     * disabled.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
+     * This property is synchronized automatically from client side when a
+     * 'template-changed' event happens.
      * 
-     * @return the {@code minDate} property from the webcomponent
+     * @return the {@code template} property from the webcomponent
      */
-    protected JsonObject protectedGetMinDate() {
-        return (JsonObject) getElement().getPropertyRaw("minDate");
+    @Synchronize(property = "template", value = "template-changed")
+    protected JsonObject protectedGetTemplate() {
+        return (JsonObject) getElement().getPropertyRaw("template");
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The earliest date that can be selected. All earlier dates will be
-     * disabled.
-     * </p>
-     * 
-     * @param minDate
+     * @param template
      *            the JsonObject value to set
      */
-    protected void setMinDate(JsonObject minDate) {
-        getElement().setPropertyJson("minDate", minDate);
+    protected void setTemplate(JsonObject template) {
+        getElement().setPropertyJson("template", template);
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The latest date that can be selected. All later dates will be disabled.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
+     * This property is synchronized automatically from client side when a
+     * 'content-changed' event happens.
      * 
-     * @return the {@code maxDate} property from the webcomponent
+     * @return the {@code content} property from the webcomponent
      */
-    protected JsonObject protectedGetMaxDate() {
-        return (JsonObject) getElement().getPropertyRaw("maxDate");
+    @Synchronize(property = "content", value = "content-changed")
+    protected JsonObject protectedGetContent() {
+        return (JsonObject) getElement().getPropertyRaw("content");
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The latest date that can be selected. All later dates will be disabled.
-     * </p>
-     * 
-     * @param maxDate
+     * @param content
      *            the JsonObject value to set
      */
-    protected void setMaxDate(JsonObject maxDate) {
-        getElement().setPropertyJson("maxDate", maxDate);
+    protected void setContent(JsonObject content) {
+        getElement().setPropertyJson("content", content);
+    }
+
+    /**
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * 
+     * @return the {@code withBackdrop} property from the webcomponent
+     */
+    public boolean isWithBackdrop() {
+        return getElement().getProperty("withBackdrop", false);
+    }
+
+    /**
+     * @param withBackdrop
+     *            the boolean value to set
+     */
+    public void setWithBackdrop(boolean withBackdrop) {
+        getElement().setProperty("withBackdrop", withBackdrop);
     }
 
     /**
@@ -238,16 +136,17 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Input label
+     * When true the overlay won't disable the main content, showing it doesn’t
+     * change the functionality of the user interface.
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
      * 
-     * @return the {@code label} property from the webcomponent
+     * @return the {@code modeless} property from the webcomponent
      */
-    public String getLabel() {
-        return getElement().getProperty("label");
+    public boolean isModeless() {
+        return getElement().getProperty("modeless", false);
     }
 
     /**
@@ -255,18 +154,15 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Input label
+     * When true the overlay won't disable the main content, showing it doesn’t
+     * change the functionality of the user interface.
      * </p>
      * 
-     * @param label
-     *            the String value to set
+     * @param modeless
+     *            the boolean value to set
      */
-    public void setLabel(String label) {
-        getElement().setProperty("label", label == null ? "" : label);
-    }
-
-    public void announceFocusedDate() {
-        getElement().callFunction("announceFocusedDate");
+    public void setModeless(boolean modeless) {
+        getElement().setProperty("modeless", modeless);
     }
 
     /**
@@ -274,28 +170,17 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Focuses the cancel button
-     * </p>
-     */
-    public void focusCancel() {
-        getElement().callFunction("focusCancel");
-    }
-
-    /**
+     * When true move focus to the first focusable element in the overlay, or to
+     * the overlay if there are no focusable elements.
      * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Scrolls the list to the given Date.
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
      * </p>
      * 
-     * @param date
-     *            Missing documentation!
-     * @param animate
-     *            Missing documentation!
+     * @return the {@code focusTrap} property from the webcomponent
      */
-    protected void scrollToDate(JsonObject date, JsonObject animate) {
-        getElement().callFunction("scrollToDate", date, animate);
+    public boolean isFocusTrap() {
+        return getElement().getProperty("focusTrap", false);
     }
 
     /**
@@ -303,41 +188,35 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Scrolls the month and year scrollers enough to reveal the given date.
+     * When true move focus to the first focusable element in the overlay, or to
+     * the overlay if there are no focusable elements.
      * </p>
      * 
-     * @param date
-     *            Missing documentation!
+     * @param focusTrap
+     *            the boolean value to set
      */
-    protected void revealDate(JsonObject date) {
-        getElement().callFunction("revealDate", date);
+    public void setFocusTrap(boolean focusTrap) {
+        getElement().setProperty("focusTrap", focusTrap);
     }
 
-    @DomEvent("scroll-animation-finished")
-    public static class ScrollAnimationFinishedEvent<R extends GeneratedVaadinDatePickerOverlay<R>>
+    /**
+     * @param sourceEvent
+     *            Missing documentation!
+     */
+    protected void close(JsonObject sourceEvent) {
+        getElement().callFunction("close", sourceEvent);
+    }
+
+    @DomEvent("vaadin-overlay-close")
+    public static class VaadinOverlayCloseEvent<R extends GeneratedVaadinDatePickerOverlay<R>>
             extends ComponentEvent<R> {
-        private final double detailPosition;
-        private final double detailOldPosition;
-
-        public ScrollAnimationFinishedEvent(R source, boolean fromClient,
-                @EventData("event.detail.position") double detailPosition,
-                @EventData("event.detail.oldPosition") double detailOldPosition) {
+        public VaadinOverlayCloseEvent(R source, boolean fromClient) {
             super(source, fromClient);
-            this.detailPosition = detailPosition;
-            this.detailOldPosition = detailOldPosition;
-        }
-
-        public double getDetailPosition() {
-            return detailPosition;
-        }
-
-        public double getDetailOldPosition() {
-            return detailOldPosition;
         }
     }
 
     /**
-     * Adds a listener for {@code scroll-animation-finished} events fired by the
+     * Adds a listener for {@code vaadin-overlay-close} events fired by the
      * webcomponent.
      * 
      * @param listener
@@ -345,45 +224,45 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addScrollAnimationFinishedListener(
-            ComponentEventListener<ScrollAnimationFinishedEvent<R>> listener) {
-        return addListener(ScrollAnimationFinishedEvent.class,
+    public Registration addVaadinOverlayCloseListener(
+            ComponentEventListener<VaadinOverlayCloseEvent<R>> listener) {
+        return addListener(VaadinOverlayCloseEvent.class,
                 (ComponentEventListener) listener);
     }
 
-    @DomEvent("selected-date-changed")
-    public static class SelectedDateChangeEvent<R extends GeneratedVaadinDatePickerOverlay<R>>
+    @DomEvent("vaadin-overlay-escape-press")
+    public static class VaadinOverlayEscapePressEvent<R extends GeneratedVaadinDatePickerOverlay<R>>
             extends ComponentEvent<R> {
-        public SelectedDateChangeEvent(R source, boolean fromClient) {
+        public VaadinOverlayEscapePressEvent(R source, boolean fromClient) {
             super(source, fromClient);
         }
     }
 
     /**
-     * Adds a listener for {@code selected-date-changed} events fired by the
-     * webcomponent.
+     * Adds a listener for {@code vaadin-overlay-escape-press} events fired by
+     * the webcomponent.
      * 
      * @param listener
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedDateChangeListener(
-            ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
-        return addListener(SelectedDateChangeEvent.class,
+    public Registration addVaadinOverlayEscapePressListener(
+            ComponentEventListener<VaadinOverlayEscapePressEvent<R>> listener) {
+        return addListener(VaadinOverlayEscapePressEvent.class,
                 (ComponentEventListener) listener);
     }
 
-    @DomEvent("focused-date-changed")
-    public static class FocusedDateChangeEvent<R extends GeneratedVaadinDatePickerOverlay<R>>
+    @DomEvent("vaadin-overlay-open")
+    public static class VaadinOverlayOpenEvent<R extends GeneratedVaadinDatePickerOverlay<R>>
             extends ComponentEvent<R> {
-        public FocusedDateChangeEvent(R source, boolean fromClient) {
+        public VaadinOverlayOpenEvent(R source, boolean fromClient) {
             super(source, fromClient);
         }
     }
 
     /**
-     * Adds a listener for {@code focused-date-changed} events fired by the
+     * Adds a listener for {@code vaadin-overlay-open} events fired by the
      * webcomponent.
      * 
      * @param listener
@@ -391,9 +270,101 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFocusedDateChangeListener(
-            ComponentEventListener<FocusedDateChangeEvent<R>> listener) {
-        return addListener(FocusedDateChangeEvent.class,
+    public Registration addVaadinOverlayOpenListener(
+            ComponentEventListener<VaadinOverlayOpenEvent<R>> listener) {
+        return addListener(VaadinOverlayOpenEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("vaadin-overlay-outside-click")
+    public static class VaadinOverlayOutsideClickEvent<R extends GeneratedVaadinDatePickerOverlay<R>>
+            extends ComponentEvent<R> {
+        public VaadinOverlayOutsideClickEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code vaadin-overlay-outside-click} events fired by
+     * the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public Registration addVaadinOverlayOutsideClickListener(
+            ComponentEventListener<VaadinOverlayOutsideClickEvent<R>> listener) {
+        return addListener(VaadinOverlayOutsideClickEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("opened-changed")
+    public static class OpenedChangeEvent<R extends GeneratedVaadinDatePickerOverlay<R>>
+            extends ComponentEvent<R> {
+        public OpenedChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code opened-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public Registration addOpenedChangeListener(
+            ComponentEventListener<OpenedChangeEvent<R>> listener) {
+        return addListener(OpenedChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("template-changed")
+    public static class TemplateChangeEvent<R extends GeneratedVaadinDatePickerOverlay<R>>
+            extends ComponentEvent<R> {
+        public TemplateChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code template-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public Registration addTemplateChangeListener(
+            ComponentEventListener<TemplateChangeEvent<R>> listener) {
+        return addListener(TemplateChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("content-changed")
+    public static class ContentChangeEvent<R extends GeneratedVaadinDatePickerOverlay<R>>
+            extends ComponentEvent<R> {
+        public ContentChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code content-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public Registration addContentChangeListener(
+            ComponentEventListener<ContentChangeEvent<R>> listener) {
+        return addListener(ContentChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 }

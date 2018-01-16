@@ -29,7 +29,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 @SuppressWarnings("serial")
 @Tag("example-template")
 @HtmlImport("ExampleTemplate.html")
-@CodeFor("get-started.asciidoc")
+@CodeFor("introduction/tutorial-get-started.asciidoc")
 public class ExampleTemplate extends PolymerTemplate<ExampleModel> {
     /**
      * Template model which defines the single "value" property.
