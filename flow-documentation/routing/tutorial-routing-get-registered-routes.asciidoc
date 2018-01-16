@@ -1,6 +1,6 @@
 ---
 title: Getting Registered Routes
-order: 9
+order: 8
 layout: page
 ---
 

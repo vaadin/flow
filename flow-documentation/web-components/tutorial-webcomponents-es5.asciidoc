@@ -463,7 +463,7 @@ code. You just need to set:
 * `vaadin.frontend.url.es6` for the ES6 files URL
 * `vaadin.frontend.url.es5` for the ES5 files URL
 
-More details on parameters can be found in <<../miscellaneous/tutorial-flow-runtime-configuration#,Flow runtime configuration>>
+More details on parameters can be found in <<../advanced/tutorial-flow-runtime-configuration#,Flow runtime configuration>>
 
 When you set, for example, your `frontend.url.es6` property to
 `http://mydomain.com/es6/`, the resulting URL for a component annotated with

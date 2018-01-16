@@ -19,7 +19,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
  * In demos/tutorials/examples, get a reference to this service class with
  * {@link CustomerService#getInstance()}.
  */
-@CodeFor("get-started.asciidoc")
+@CodeFor("introduction/tutorial-get-started.asciidoc")
 public class CustomerService {
 
     private static CustomerService instance;

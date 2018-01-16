@@ -9,7 +9,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @SuppressWarnings("serial")
-@CodeFor("get-started.asciidoc")
+@CodeFor("introduction/tutorial-get-started.asciidoc")
 public class CustomerForm extends FormLayout {
     private TextField firstName = new TextField("First name");
     private TextField lastName = new TextField("Last name");
