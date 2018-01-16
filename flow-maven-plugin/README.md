@@ -1,0 +1,268 @@
+# flow-maven-plugin
+
+`flow-maven-plugin` is a plugin created to ease the Flow project set up for production mode builds.
+
+It can be used to:
+* copy web files (html, css, js etc.) from WebJars and other dependencies to the directory that is used by Flow 
+in production mode to serve files from (`copy-production-files` goal)
+* transpile and optimize web files located in the directory specified (`transpile-production-files` goal).
+In order to transpile files, additional frontend tools are installed.
+
+Usage example: 
+
+```xml
+<pluginRepositories>
+    <pluginRepository>
+        <id>vaadin-prereleases</id>
+        <url>https://maven.vaadin.com/vaadin-prereleases</url>
+    </pluginRepository>
+</pluginRepositories>
+
+<plugin>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-maven-plugin</artifactId>
+    <version>${flow.maven.plugin.version}</version>
+    <executions>
+        <execution>
+            <goals>
+                <!-- specify goals required here -->
+                <goal>copy-production-files</goal>
+                <goal>transpile-production-files</goal>
+            </goals>
+            <!-- specify goals' configuration here, can be omitted, if defaults are used -->
+            <configuration>
+                <skipEs5>true</skipEs5>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+The plugin supports Flow default frontend directory structure out of the box, but can be configured to process any other structure, if necessary.
+
+## Goals and parameters description
+
+### copy-production-files
+
+The intention of the goal is to provide jar resources support by copying all files required for Flow production mode from them and application's frontend directory.
+If no jars with the dependencies to be copied are present in the project's dependencies, this goal can be omitted or replaced with more simple plugins to copy files from application's frontend directory.
+
+The goal parameters are:
+
+* copyOutputDirectory `default: ${project.build.directory}/frontend/`
+    The directory to copy files to. 
+    
+* excludes `default: **/LICENSE*,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md`
+    File globs to specify files that should not be copied to copyOutputDirectory, set in regular Maven fashion: single string, comma-separated values.
+    
+* frontendWorkingDirectory `default: ${project.basedir}/src/main/webapp/frontend/`
+    Can also be set with `frontend.working.directory` Maven property.
+    The application's directory to copy files from.
+
+After the goal is complete, the web files required by an application to work properly are copied into the `copyOutputDirectory`.
+Files are copied from: 
+* WebJars that are in the project's dependencies: all directories in any WebJar that contain `bower.json` will be copied to the output.
+* regular jars, all files from `META-INF/resources/frontend` directories inside of a jar, if present
+* `frontendWorkingDirectory`
+
+All files are filtered so that no file is copied if it matches any glob pattern from `excludes`.
+
+### transpile-production-files
+
+The intention of the goal is to process application web files in order to optimize them for production usage: minify them, transpile to ES5, if required.
+In order to process the files, special frontend tools are downloaded. The tools are: `node`, `yarn`, `gulp` and a set of libraries required by `gulp` that are installed with `yarn`.
+If any error occurs during the actual processing, it is logged, but the processing does not stop.
+The goal produces two sets of files:
+* ES6 set, for modern browsers
+* ES5 set, for old browsers that do not support ES6 (optional, can be turned off if not needed)
+Both sets are used by Flow depending on the browser type.
+
+The goal parameters are:
+
+* transpileEs6SourceDirectory `default: ${project.build.directory}/frontend/`
+    The directory with application's web files to be processed, by default it's the same as `copyOutputDirectory` from the `copy-production-files` goal.
+    All js, html and css files in the directory will be processed before the goal finishes except for `webcomponentsjs` directory, if present.
+    This directory contains special libraries required for the ES5 WebComponents to work and should not be touched.
+    
+* transpileWorkingDirectory `default: ${project.build.directory}/`
+    The directory to download all frontend tools to.
+    
+* transpileOutputDirectory `default: ${project.build.directory}/${project.build.finalName}/`
+    The directory to put produced sets of files into.
+    
+* es6OutputDirectoryName `default: frontend-es6`
+    The name of the directory with ES6 file set, will be created in `transpileOutputDirectory`.
+    
+* es5OutputDirectoryName `default: frontend-es5`
+    The name of the directory with ES5 file set, will be created in `transpileOutputDirectory`.
+    
+* skipEs5 `default: false`
+    ES5 transpilation can be turned off with this parameter, in this case no `es5OutputDirectoryName` will be present.
+
+* bundle `default: false`
+    Collect all project frontend dependencies into a single file, bundle. Works both for es6 and es5 (if enabled).
+    Feature is in development, so it is a subject to change in future. One of the changes expected – default value to be changed to `true`.
+
+* fragments `default: null`
+    Optional way to split the project frontend dependencies' bundle into multiple fragments.
+    Will be used only if bundling is enabled. See [Bundle Configuration](#bundle-configuration) section for details.
+
+* bundleConfiguration `default: ${project.basedir}/bundle-configuration.json`
+    Optional path to a json file containing additional configuration parameters used when bundling dependencies.
+    The file will only be used if bundling is enabled and the file exists.
+    The possible configurations this file can contain are documented below in the [Bundle Configuration](#bundle-configuration) section.
+
+* nodeVersion `default: v8.9.0`
+    If any different `node` version should be used, it can be specified here.
+
+* yarnVersion `default: v1.3.2`
+    If any different `yarn` version should be used, it can be specified here.
+    
+* ignoreMavenProxies `default: true`
+    Turn it on to download all frontend tools using Maven proxy configurations.
+    
+After the goal is complete, the files from `transpileEs6SourceDirectory` are processed. 
+It results in:
+* `transpileOutputDirectory/es6OutputDirectoryName` with all files from `transpileEs6SourceDirectory` copied into it 
+and with all `*.css`, `*.js` and `*.html` additionally optimized for production usage.
+* If not configured to be skipped, `transpileOutputDirectory/es5OutputDirectoryName` with all files from `transpileEs6SourceDirectory` copied into it 
+and with all `*.css`, `*.js` and `*.html` additionally optimized for production usage AND transpiled into ES5 so that old browsers are able to use the application still
+* `transpileWorkingDirectory` with all frontend tools and additional files created for the tools, can be ignored after the process
+
+## Bundle Configuration
+
+Note: The bundling feature is still work in progress and the following are subject to change in the future.
+
+### Defining Fragments
+
+By default the plugin will bundle all front-end dependencies into a single html import that contains all dependencies and their transitive dependencies.
+To split this potentially large file up into several smaller files that can be served only as needed, the plugin can be configured to produce fragment files.
+Fragments are html imports containing dependencies that have been split out of the main bundle file.
+
+Basic principle is the same: you specify a files that should go into each fragment by giving their paths.
+The paths listed in a fragment should be given relative to the `transpileEs6SourceDirectory` you have configured,
+which defaults to the value `${project.build.directory}/frontend/`.
+
+Note that any shared dependencies between multiple fragments will be detected and added to the main bundle file.
+Thus to effectively split your bundle into fragments, shared dependencies should be taken into account when defining
+the fragment split to use.
+
+As a starting point for splitting a bundle into fragments it is recommended that you first run the plugin without any
+fragments defined and inspect the produced `vaadin-flow-bundle.html` file, which contains all the front-end dependencies
+found in your projects run time classpath.
+The produced bundle can be found in the location defined by the `transpileWorkingDirectory` parameter, which defaults to
+`${project.build.directory}/`, i.e. `target/` if the project build directory has not been configured separately.
+
+When running a bundle enabled flow application in production mode a `DependencyFilter` is automatically registered during startup
+to serve the bundle and fragment files instead of their individual dependencies whenever requested.
+
+An example bundle configuration is given below, where three fragments are defined:
+
+* A fragment containing only `vaadin-icons`
+* A fragment containing several components
+* A fragment containing `vaadin-grid` and its flow integration dependencies
+
+#### Defining Fragments with Maven 
+
+Fragments are configured by adding `<fragments>` to the configuration of the plugin.
+Each fragment should have its name and at least one file specified.
+
+ ```xml
+<plugin>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-maven-plugin</artifactId>
+    <version>${flow.maven.plugin.version}</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>transpile-production-files</goal>
+            </goals>
+            <configuration>
+                <bundle>true</bundle>
+                <fragments>
+                    <fragment>
+                        <name>icons-fragment</name>
+                        <files>
+                            <file>bower_components/vaadin-icons/vaadin-icons.html</file>
+                        </files>
+                    </fragment>
+                    <fragment>
+                        <name>important-components</name>
+                        <files>
+                            <file>bower_components/vaadin-form-layout/vaadin-form-layout.html</file>
+                            <file>bower_components/vaadin-form-layout/vaadin-form-item.html</file>
+                            <file>bower_components/vaadin-text-field/vaadin-text-field.html</file>
+                            <file>bower_components/vaadin-text-field/vaadin-password-field.html</file>
+                            <file>bower_components/vaadin-combo-box/vaadin-combo-box.html</file>
+                        </files>
+                    </fragment>
+                    <fragment>
+                        <name>grid-fragment</name>
+                        <files>
+                            <file>gridConnector.js</file>
+                            <file>vaadin-grid-flow-selection-column.html</file>
+                            <file>bower_components/vaadin-grid/vaadin-grid.html</file>
+                            <file>bower_components/vaadin-grid/vaadin-grid-column-group.html</file>
+                            <file>bower_components/vaadin-grid/vaadin-grid-sorter.html</file>
+                        </files>
+                    </fragment>
+                </fragments>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+#### Defining Fragments with a configuration file
+
+Same result may be achieved with a custom configuration file instead.
+Fragments are configured by adding a `fragments` object to your bundle configuration file.
+The `fragments` object should be an array of arrays, where each array defines which dependencies
+belong in one particular fragment.
+
+```json
+{
+  "fragments": [
+    [
+      "bower_components/vaadin-icons/vaadin-icons.html"
+    ],
+
+    [
+      "bower_components/vaadin-form-layout/vaadin-form-layout.html",
+      "bower_components/vaadin-form-layout/vaadin-form-item.html",
+      "bower_components/vaadin-text-field/vaadin-text-field.html",
+      "bower_components/vaadin-text-field/vaadin-password-field.html",
+      "bower_components/vaadin-combo-box/vaadin-combo-box.html"
+    ],
+
+    [
+      "gridConnector.js",
+      "vaadin-grid-flow-selection-column.html",
+      "bower_components/vaadin-grid/vaadin-grid.html",
+      "bower_components/vaadin-grid/vaadin-grid-column-group.html",
+      "bower_components/vaadin-grid/vaadin-grid-sorter.html"
+    ]
+  ]
+}
+```
+
+You still have to configure Maven plugin if the json file is not in the default path (see corresponding parameter description for details): 
+
+```xml
+<plugin>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-maven-plugin</artifactId>
+    <version>${flow.maven.plugin.version}</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>transpile-production-files</goal>
+            </goals>
+            <configuration>
+                <bundle>true</bundle>
+                <bundleConfiguration>${path.to.json.file.declared.above}</bundleConfiguration>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
