@@ -233,6 +233,8 @@ public class MapPropertyTest {
         AtomicBoolean flushListener = new AtomicBoolean();
         Reactive.addFlushListener(() -> flushListener.set(true));
 
+        property.syncToServer("value");
+
         property.syncToServer("bar");
 
         Assert.assertNull(tree.sentProperty);
