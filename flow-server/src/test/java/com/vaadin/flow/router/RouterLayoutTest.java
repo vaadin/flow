@@ -19,10 +19,12 @@ public class RouterLayoutTest {
     @Test
     public void testNotNull() {
         Assert.assertEquals(0, testRouterLayout.getElement().getChildCount());
-        testRouterLayout.setRouterLayoutContent(new ComponentTest.TestDiv());
+        ComponentTest.TestDiv content = new ComponentTest.TestDiv();
+        testRouterLayout.setRouterLayoutContent(content);
         Assert.assertEquals(1, testRouterLayout.getElement().getChildCount());
         ComponentTest.TestDiv newContent = new ComponentTest.TestDiv();
         newContent.setId(NEW_ID);
+        content.getElement().removeFromParent();
         testRouterLayout.setRouterLayoutContent(newContent);
         Assert.assertEquals(1, testRouterLayout.getElement().getChildCount());
         Assert.assertSame(NEW_ID, testRouterLayout.getElement().getChild(0).getAttribute("id"));
@@ -30,9 +32,6 @@ public class RouterLayoutTest {
 
     @Test
     public void testNull() {
-        Assert.assertEquals(0, testRouterLayout.getElement().getChildCount());
-        testRouterLayout.setRouterLayoutContent(new ComponentTest.TestDiv());
-        Assert.assertEquals(1, testRouterLayout.getElement().getChildCount());
         testRouterLayout.setRouterLayoutContent(null);
         Assert.assertEquals(0, testRouterLayout.getElement().getChildCount());
     }
