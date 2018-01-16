@@ -225,15 +225,11 @@ public class MapPropertyTest {
         MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
                 .getProperty("foo");
 
-        property.setValue("value");
-
         AtomicReference<MapPropertyChangeEvent> event = new AtomicReference<MapPropertyChangeEvent>();
         property.addChangeListener(event::set);
 
         AtomicBoolean flushListener = new AtomicBoolean();
         Reactive.addFlushListener(() -> flushListener.set(true));
-
-        property.syncToServer("value");
 
         property.syncToServer("bar");
 
@@ -243,7 +239,7 @@ public class MapPropertyTest {
 
         MapPropertyChangeEvent propertyChangeEvent = event.get();
 
-        Assert.assertEquals("value", propertyChangeEvent.getNewValue());
+        Assert.assertNull(propertyChangeEvent.getNewValue());
         Assert.assertTrue(flushListener.get());
     }
 }
