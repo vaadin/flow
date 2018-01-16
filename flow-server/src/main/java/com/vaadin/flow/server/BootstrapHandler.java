@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponents;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
@@ -366,9 +367,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         initialPageSettings));
 
         /* Append any theme elements to initial page. */
-        BootstrapUtils.getThemeSettings(context).stream()
-                .map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, head::appendChild));
+        handleThemeContents(context, document);
 
         BootstrapPageResponse response = new BootstrapPageResponse(
                 context.getRequest(), context.getSession(),
@@ -377,6 +376,28 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         context.getSession().getService().modifyBootstrapPage(response);
 
         return document;
+    }
+
+    private static void handleThemeContents(BootstrapContext context,
+            Document document) {
+        Map<TargetElement, List<JsonObject>> themeSettings = BootstrapUtils
+                .getThemeSettings(context);
+
+        List<JsonObject> themeContents = themeSettings.get(TargetElement.HEAD);
+        if (themeContents != null) {
+            themeContents.stream().map(
+                    dependency -> createDependencyElement(context, dependency))
+                    .forEach(element -> insertElements(element,
+                            document.head()::appendChild));
+        }
+
+        themeContents = themeSettings.get(TargetElement.BODY);
+        if (themeContents != null) {
+            themeContents.stream().map(
+                    dependency -> createDependencyElement(context, dependency))
+                    .forEach(element -> insertElements(element,
+                            document.body()::appendChild));
+        }
     }
 
     private static void handleInlineTargets(BootstrapContext context,

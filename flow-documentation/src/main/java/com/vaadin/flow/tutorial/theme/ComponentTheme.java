@@ -15,14 +15,16 @@
  */
 package com.vaadin.flow.tutorial.theme;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("theme/tutorial-built-in-themes.asciidoc")
@@ -45,24 +47,6 @@ public class ComponentTheme {
     public class BlogPost extends Div {
     }
 
-    public static class Lumo implements AbstractTheme {
-        @Override
-        public String getBaseUrl() {
-            return "/src/";
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return "/theme/lumo/";
-        }
-
-        @Override
-        public List<String> getInlineContents() {
-            return Arrays.asList(
-                    "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
-        }
-    }
-
     public class MyTheme implements AbstractTheme {
         @Override
         public String getBaseUrl() {
@@ -73,5 +57,14 @@ public class ComponentTheme {
         public String getThemeUrl() {
             return "/theme/myTheme/";
         }
+
+        @Override
+        public List<String> getHeadInlineContents(VaadinUriResolver resolver) {
+            String colorUrl = resolver.resolveVaadinUri("frontend://bower_components/vaadin-lumo-styles/color.html");
+            List<String> contents = new ArrayList<>();
+            contents.add("<link rel=\"import\" href=\"" + colorUrl + "\">");
+            return contents;
+        }
     }
+
 }

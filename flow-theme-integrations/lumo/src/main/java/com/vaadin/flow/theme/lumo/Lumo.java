@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.theme.lumo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.theme.AbstractTheme;
 
 /**
@@ -35,17 +37,35 @@ public class Lumo implements AbstractTheme {
         return "theme/lumo/";
     }
 
-//    @Override
-//    public List<String> getInlineContents() {
-//        return Arrays.asList("<link rel=\"import\" href=\"bower_components/vaadin-lumo-styles/color.html\">",
-//                "<link rel=\"import\" href=\"bower_components/vaadin-lumo-styles/typography.html\">",
-////                "<link rel=\"import\" href=\"../sizing.html\">",
-////                "<link rel=\"import\" href=\"../spacing.html\">",
-////                "<link rel=\"import\" href=\"../style.html\">",
-////                "<link rel=\"import\" href=\"../icons.html\">",
-//
-//                "<custom-style>"
-//                        + "  <style include=\"lumo-color lumo-typography\"></style>"
-//                        + "</custom-style>;");
-//    }
+    @Override
+    public List<String> getHeadInlineContents(VaadinUriResolver resolver) {
+        List<String> contents = new ArrayList<>();
+        contents.add(createImportLink(resolver,
+                "frontend://bower_components/vaadin-lumo-styles/color.html"));
+        contents.add(createImportLink(resolver,
+                "frontend://bower_components/vaadin-lumo-styles/typography.html"));
+        contents.add(createImportLink(resolver,
+                "frontend://bower_components/vaadin-lumo-styles/sizing.html"));
+        contents.add(createImportLink(resolver,
+                "frontend://bower_components/vaadin-lumo-styles/spacing.html"));
+        contents.add(createImportLink(resolver,
+                "frontend://bower_components/vaadin-lumo-styles/style.html"));
+        contents.add(createImportLink(resolver,
+                "frontend://bower_components/vaadin-lumo-styles/icons.html"));
+        return contents;
+    }
+
+    @Override
+    public List<String> getBodyInlineContents() {
+        return Arrays.asList("<custom-style>\n"
+                + "    <style include=\"lumo-color lumo-typography\"></style>\n"
+                + "</custom-style>");
+    }
+
+    private static String createImportLink(VaadinUriResolver resolver,
+            String href) {
+        String resolvedLink = resolver.resolveVaadinUri(href);
+        return "<link rel=\"import\" href=\"" + resolvedLink + "\">";
+
+    }
 }

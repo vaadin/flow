@@ -58,7 +58,7 @@ it is an import that could be changed to a theme import. (for Vaadin Elements th
 The `getThemeUrl` should return what the base url part should be changed to to get the
 correct theme import. (for Vaadin Elements that `/theme/[themeName]` is used)
 
-[ource,java]
+[source,java]
 ----
 public class MyTheme implements AbstractTheme {
     @Override
@@ -73,7 +73,7 @@ public class MyTheme implements AbstractTheme {
 }
 ----
 
-For more control there is `getInlineContents()` that returns a collection of html
+For more control there is `getHeadInlineContents()` and `getBodyInlineContents()` that returns a collection of html
 that will be inlined to the BootstrapPage head. this could return for instance add a
 custom style to have the correct typography e.g.
 `<custom-style><style include="lumo-typography"></style></custom-style>`
@@ -84,3 +84,20 @@ https://github.com/vaadin/vaadin-button/blob/master/theme/valo/vaadin-button.htm
 [NOTE]
 The themed files should be stored to
 `${frontend.working.directory}/bower_components/{component}/theme/myTheme` which would by default for vaadin-button be `src/main/webapp/frontend/bower_components/vaadin-button/theme/myTheme/vaadin-button.html`
+
+
+If you need in your theme to import some files that are found using for instance the uri scheme `frontend://`
+then AbstractTheme has a method override `getHeadInlineContents(VaadinUriResolver resolver)`
+which makes it possible to resolve the uri scheme.
+
+.Import link for a "frontend://" file
+[source,java]
+----
+@Override
+public List<String> getHeadInlineContents(VaadinUriResolver resolver) {
+    String colorUrl = resolver.resolveVaadinUri("frontend://bower_components/vaadin-lumo-styles/color.html");
+    List<String> contents = new ArrayList<>();
+    contents.add("<link rel=\"import\" href=\"" + colorUrl + "\">");
+    return contents;
+}
+----

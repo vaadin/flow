@@ -32,14 +32,6 @@ import java.lang.annotation.Target;
 @Documented
 @Repeatable(Inline.Container.class)
 public @interface Inline {
-
-    /**
-     * Inline target element enum.
-     */
-    enum TargetElement {
-        HEAD, BODY
-    }
-
     /**
      * File content wrapping enum.
      */

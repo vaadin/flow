@@ -1,12 +1,10 @@
-package com.vaadin.flow.server;
+package com.vaadin.flow.theme;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.Test;
-
-import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.junit.Assert.assertEquals;
 

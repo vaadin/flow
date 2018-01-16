@@ -22,14 +22,18 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
@@ -295,19 +299,33 @@ class BootstrapUtils {
                 request.getParameterMap());
     }
 
-    static List<JsonObject> getThemeSettings(
+    static Map<TargetElement, List<JsonObject>> getThemeSettings(
             BootstrapHandler.BootstrapContext context) {
 
         Optional<Theme> themeAnnotation = getThemeAnnotation(context);
 
         if (themeAnnotation.isPresent()) {
+            Map<TargetElement, List<JsonObject>> themeContents = new HashMap<>();
+
             AbstractTheme theme = ReflectTools
                     .createInstance(themeAnnotation.get().value());
-            return theme.getInlineContents().stream()
+            Stream<String> headImports = Stream.concat(
+                    theme.getHeadInlineContents().stream(),
+                    theme.getHeadInlineContents(context.getUriResolver())
+                            .stream());
+            List<JsonObject> head = headImports
                     .map(BootstrapUtils::createInlineDependencyObject)
                     .collect(Collectors.toList());
+            themeContents.put(TargetElement.HEAD, head);
+
+            List<JsonObject> body = theme.getBodyInlineContents().stream()
+                    .map(BootstrapUtils::createInlineDependencyObject)
+                    .collect(Collectors.toList());
+            themeContents.put(TargetElement.BODY, body);
+
+            return themeContents;
         }
-        return Collections.emptyList();
+        return Collections.emptyMap();
     }
 
     private static JsonObject createInlineDependencyObject(String content) {
