@@ -36,6 +36,8 @@ public class MapProperty implements ReactiveValue {
     private final String name;
     private final NodeMap map;
 
+    private boolean isServerUpdate;
+
     private final ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent> eventRouter = new ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent>(
             this) {
         @Override
@@ -120,11 +122,8 @@ public class MapProperty implements ReactiveValue {
      *            the new property value
      */
     public void setValue(Object value) {
-        if (hasValue && Objects.equals(value, this.value)) {
-            // Nothing to do
-            return;
-        }
-        updateValue(value, true);
+        isServerUpdate = true;
+        doSetValue(value);
     }
 
     /**
@@ -143,6 +142,14 @@ public class MapProperty implements ReactiveValue {
         if (hasValue) {
             updateValue(null, false);
         }
+    }
+
+    private void doSetValue(Object value) {
+        if (hasValue && Objects.equals(value, this.value)) {
+            // Nothing to do
+            return;
+        }
+        updateValue(value, true);
     }
 
     private void updateValue(Object value, boolean hasValue) {
@@ -245,7 +252,9 @@ public class MapProperty implements ReactiveValue {
     public void syncToServer(Object newValue) {
         Object currentValue = hasValue() ? getValue() : null;
 
-        if (!Objects.equals(newValue, currentValue)) {
+        if (Objects.equals(newValue, currentValue)) {
+            isServerUpdate = false;
+        } else if (!isServerUpdate) {
             StateNode node = getMap().getNode();
             StateTree tree = node.getTree();
             if (tree.isActive(node)) {
