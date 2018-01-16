@@ -48,8 +48,16 @@ import com.vaadin.flow.component.HasComponents;
  * </tr>
  * </thead> <tbody>
  * <tr>
- * <td>{@code button}</td>
- * <td>The internal {@code <button>} element</td>
+ * <td>{@code label}</td>
+ * <td>The label (text) inside the button</td>
+ * </tr>
+ * <tr>
+ * <td>{@code prefix}</td>
+ * <td>A slot for e.g. an icon before the label</td>
+ * </tr>
+ * <tr>
+ * <td>{@code suffix}</td>
+ * <td>A slot for e.g. an icon after the label</td>
  * </tr>
  * </tbody>
  * </table>
@@ -82,11 +90,17 @@ import com.vaadin.flow.component.HasComponents;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ButtonElement#1.0.4", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.ButtonElement#2.0.0-alpha5",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-button")
-@HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
+@HtmlImport("frontend://bower_components/vaadin-button/src/vaadin-button.html")
 public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
         extends Component implements HasStyle, HasClickListeners<R>, HasText,
         Focusable<R>, HasComponents {
@@ -153,6 +167,70 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      */
     public void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+    }
+
+    /**
+     * Adds the given components as children of this component at the slot
+     * 'prefix'.
+     * 
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
+     */
+    public R addToPrefix(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "prefix");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
+    }
+
+    /**
+     * Adds the given components as children of this component at the slot
+     * 'suffix'.
+     * 
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     * @return this instance, for method chaining
+     */
+    public R addToSuffix(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "suffix");
+            getElement().appendChild(component.getElement());
+        }
+        return get();
+    }
+
+    @Override
+    public void remove(Component... components) {
+        for (Component component : components) {
+            if (getElement().equals(component.getElement().getParent())) {
+                component.getElement().removeAttribute("slot");
+                getElement().removeChild(component.getElement());
+            } else {
+                throw new IllegalArgumentException("The given component ("
+                        + component + ") is not a child of this component");
+            }
+        }
+    }
+
+    @Override
+    public void removeAll() {
+        getElement().getChildren()
+                .forEach(child -> child.removeAttribute("slot"));
+        getElement().removeAllChildren();
     }
 
     /**

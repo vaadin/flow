@@ -34,10 +34,10 @@ import elemental.json.JsonArray;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxOverlayElement#3.0.1",
+        "WebComponent: Vaadin.ComboBoxOverlayElement#UNKNOWN",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-dropdown-wrapper")
-@HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-dropdown-wrapper.html")
+@HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-dropdown-wrapper.html")
 public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinComboBoxDropdownWrapper<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
@@ -169,6 +169,38 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * The element to position/align the dropdown by.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code positionTarget} property from the webcomponent
+     */
+    protected JsonObject protectedGetPositionTarget() {
+        return (JsonObject) getElement().getPropertyRaw("positionTarget");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The element to position/align the dropdown by.
+     * </p>
+     * 
+     * @param positionTarget
+     *            the JsonObject value to set
+     */
+    protected void setPositionTarget(JsonObject positionTarget) {
+        getElement().setPropertyJson("positionTarget", positionTarget);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * {@code true} when new items are being loaded.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -194,38 +226,6 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      */
     public void setLoading(boolean loading) {
         getElement().setProperty("loading", loading);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Vertical offset for the overlay position.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code verticalOffset} property from the webcomponent
-     */
-    public double getVerticalOffset() {
-        return getElement().getProperty("verticalOffset", 0.0);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Vertical offset for the overlay position.
-     * </p>
-     * 
-     * @param verticalOffset
-     *            the double value to set
-     */
-    public void setVerticalOffset(double verticalOffset) {
-        getElement().setProperty("verticalOffset", verticalOffset);
     }
 
     /**

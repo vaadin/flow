@@ -42,12 +42,17 @@ import com.vaadin.flow.shared.Registration;
  * {@code <vaadin-overlay>} documentation</a> for
  * {@code <vaadin-combo-box-overlay>} parts.
  * </p>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: Vaadin.VaadinComboBoxOverlay#UNKNOWN",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-overlay")
-@HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-dropdown.html")
+@HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-dropdown.html")
 public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOverlay<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 

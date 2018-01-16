@@ -17,8 +17,8 @@ package com.vaadin.flow.component.datepicker;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasClickListeners;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -83,67 +83,67 @@ import com.vaadin.flow.dom.Element;
  * <tr>
  * <td>{@code overlay-header}</td>
  * <td>Fullscreen mode header</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code label}</td>
  * <td>Fullscreen mode value/label</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code clear-button}</td>
  * <td>Fullscreen mode clear button</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code toggle-button}</td>
  * <td>Fullscreen mode toggle button</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code years-toggle-button}</td>
  * <td>Fullscreen mode years scroller toggle</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code months}</td>
  * <td>Months scroller</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code years}</td>
  * <td>Years scroller</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code toolbar}</td>
  * <td>Footer bar with buttons</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code today-button}</td>
  * <td>Today button</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code cancel-button}</td>
  * <td>Cancel button</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code month}</td>
  * <td>Month calendar</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code year-number}</td>
  * <td>Year number</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code year-separator}</td>
  * <td>Year separator</td>
- * <td>vaadin-date-picker-overlay</td>
+ * <td>vaadin-date-picker-overlay-content</td>
  * </tr>
  * <tr>
  * <td>{@code month-header}</td>
@@ -178,18 +178,116 @@ import com.vaadin.flow.dom.Element;
  * </tbody>
  * </table>
  * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
+ * <p>
+ * The following state attributes are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Attribute</th>
+ * <th>Description</th>
+ * <th>Part name</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code invalid}</td>
+ * <td>Set when the element is invalid</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code opened}</td>
+ * <td>Set when the date selector overlay is opened</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code readonly}</td>
+ * <td>Set when the element is readonly</td>
+ * <td>:host</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
  * If you want to replace the default input field with a custom implementation,
  * you should use the <a href="#vaadin-date-picker-light">
  * {@code <vaadin-date-picker-light>}</a> element.
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.DatePickerElement#2.0.5", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.DatePickerElement#3.0.0-alpha5",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker")
-@HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker.html")
+@HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
 public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
         extends Component
-        implements HasStyle, HasClickListeners<R>, ComponentSupplier<R> {
+        implements HasStyle, Focusable<R>, HasClickListeners<R> {
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Specify that this control should have input focus when the page loads.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code autofocus} property from the webcomponent
+     */
+    public boolean isAutofocus() {
+        return getElement().getProperty("autofocus", false);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Specify that this control should have input focus when the page loads.
+     * </p>
+     * 
+     * @param autofocus
+     *            the boolean value to set
+     */
+    public void setAutofocus(boolean autofocus) {
+        getElement().setProperty("autofocus", autofocus);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Set to true to disable this element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code disabled} property from the webcomponent
+     */
+    public boolean isDisabled() {
+        return getElement().getProperty("disabled", false);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Set to true to disable this element.
+     * </p>
+     * 
+     * @param disabled
+     *            the boolean value to set
+     */
+    public void setDisabled(boolean disabled) {
+        getElement().setProperty("disabled", disabled);
+    }
 
     /**
      * <p>
@@ -303,23 +401,6 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      */
     public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Indicates whether this date picker has a value.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code hasValue} property from the webcomponent
-     */
-    public boolean hasValue() {
-        return getElement().getProperty("hasValue", false);
     }
 
     /**
@@ -518,21 +599,21 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 	          // Translation of the Cancel button text.
      * 	          cancel: 'Cancel',
      * 
-     * 	          // A function to format given {@code Date} object as
-     * 	          // date string.
+     * 	          // A function to format given {@code Object} as
+     * 	          // date string. Object is in the format {@code { day: ..., month: ..., year: ... }}
      * 	          formatDate: d =&gt; {
      * 	            // returns a string representation of the given
-     * 	            // Date object in 'MM/DD/YYYY' -format
+     * 	            // object in 'MM/DD/YYYY' -format
      * 	          },
      * 
-     * 	          // A function to parse the given text to a {@code Date}
-     * 	          // object. Must properly parse (at least) text
+     * 	          // A function to parse the given text to an {@code Object} in the format {@code { day: ..., month: ..., year: ... }}.
+     * 	          // Must properly parse (at least) text
      * 	          // formatted by {@code formatDate}.
      * 	          // Setting the property to null will disable
      * 	          // keyboard input feature.
      * 	          parseDate: text =&gt; {
      * 	            // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to
-     * 	            // a Date object
+     * 	            // an {@code Object} in the format {@code { day: ..., month: ..., year: ... }}.
      * 	          }
      * 
      * 	          // A function to format given {@code monthName} and
@@ -606,21 +687,21 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * 	          // Translation of the Cancel button text.
      * 	          cancel: 'Cancel',
      * 
-     * 	          // A function to format given {@code Date} object as
-     * 	          // date string.
+     * 	          // A function to format given {@code Object} as
+     * 	          // date string. Object is in the format {@code { day: ..., month: ..., year: ... }}
      * 	          formatDate: d =&gt; {
      * 	            // returns a string representation of the given
-     * 	            // Date object in 'MM/DD/YYYY' -format
+     * 	            // object in 'MM/DD/YYYY' -format
      * 	          },
      * 
-     * 	          // A function to parse the given text to a {@code Date}
-     * 	          // object. Must properly parse (at least) text
+     * 	          // A function to parse the given text to an {@code Object} in the format {@code { day: ..., month: ..., year: ... }}.
+     * 	          // Must properly parse (at least) text
      * 	          // formatted by {@code formatDate}.
      * 	          // Setting the property to null will disable
      * 	          // keyboard input feature.
      * 	          parseDate: text =&gt; {
      * 	            // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to
-     * 	            // a Date object
+     * 	            // an {@code Object} in the format {@code { day: ..., month: ..., year: ... }}.
      * 	          }
      * 
      * 	          // A function to format given {@code monthName} and
@@ -735,38 +816,6 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      */
     public void setMaxAsString(String maxAsString) {
         getElement().setProperty("max", maxAsString == null ? "" : maxAsString);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to disable this element.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code disabled} property from the webcomponent
-     */
-    public boolean isDisabled() {
-        return getElement().getProperty("disabled", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to disable this element.
-     * </p>
-     * 
-     * @param disabled
-     *            the boolean value to set
-     */
-    public void setDisabled(boolean disabled) {
-        getElement().setProperty("disabled", disabled);
     }
 
     /**
@@ -932,7 +981,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * </p>
      * <p>
      * Returns true if {@code value} is valid, and sets the {@code invalid} flag
-     * appropriatelly.
+     * appropriately.
      * </p>
      * <p>
      * This function is not supported by Flow because it returns a
@@ -940,10 +989,10 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * not supported at this moment.
      * 
      * @param value
-     *            Missing documentation!
+     *            Value to validate. Optional, defaults to user's input value.
      */
     @NotSupported
-    protected void validate(JsonObject value) {
+    protected void validate(String value) {
     }
 
     /**
@@ -957,12 +1006,16 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
      * <p>
      * Override the {@code checkValidity} method for custom validations.
      * </p>
+     * <p>
+     * This function is not supported by Flow because it returns a
+     * <code>boolean</code>. Functions with return types different than void are
+     * not supported at this moment.
      * 
      * @param value
-     *            Missing documentation!
+     *            Value to validate. Optional, defaults to the selected date.
      */
-    protected void checkValidity(JsonObject value) {
-        getElement().callFunction("checkValidity", value);
+    @NotSupported
+    protected void checkValidity(String value) {
     }
 
     @DomEvent("invalid-changed")

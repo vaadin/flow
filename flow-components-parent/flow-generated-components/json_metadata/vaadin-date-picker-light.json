@@ -1,8 +1,8 @@
 {
   "name": "Vaadin.DatePickerLightElement",
   "tag": "vaadin-date-picker-light",
-  "baseUrl": "vaadin-date-picker/vaadin-date-picker-light.html",
-  "version": "2.0.5",
+  "baseUrl": "vaadin-date-picker/src/vaadin-date-picker-light.html",
+  "version": "3.0.0-alpha5",
   "properties": [
     {
       "name": "value",
@@ -28,15 +28,6 @@
       ],
       "objectType": [],
       "description": "The name of this element.\n         "
-    },
-    {
-      "name": "hasValue",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "Indicates whether this date picker has a value.\n         ",
-      "readOnly": true
     },
     {
       "name": "initialPosition",
@@ -77,7 +68,7 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "The object used to localize this component.\nTo change the default localization, replace the entire\n_i18n_ object or just the property you want to modify.\n\nThe object has the following JSON structure and default values:\n\n            {\n              // An array with the full names of months starting\n              // with January.\n              monthNames: [\n                'January', 'February', 'March', 'April', 'May',\n                'June', 'July', 'August', 'September',\n                'October', 'November', 'December'\n              ],\n\n              // An array of weekday names starting with Sunday. Used\n              // in screen reader announcements.\n              weekdays: [\n                'Sunday', 'Monday', 'Tuesday', 'Wednesday',\n                'Thursday', 'Friday', 'Saturday'\n              ],\n\n              // An array of short weekday names starting with Sunday.\n              // Displayed in the calendar.\n              weekdaysShort: [\n                'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'\n              ],\n\n              // An integer indicating the first day of the week\n              // (0 = Sunday, 1 = Monday, etc.).\n              firstDayOfWeek: 0,\n\n              // Used in screen reader announcements along with week\n              // numbers, if they are displayed.\n              week: 'Week',\n\n              // Translation of the Calendar icon button title.\n              calendar: 'Calendar',\n\n              // Translation of the Clear icon button title.\n              clear: 'Clear',\n\n              // Translation of the Today shortcut button text.\n              today: 'Today',\n\n              // Translation of the Cancel button text.\n              cancel: 'Cancel',\n\n              // A function to format given `Date` object as\n              // date string.\n              formatDate: d => {\n                // returns a string representation of the given\n                // Date object in 'MM/DD/YYYY' -format\n              },\n\n              // A function to parse the given text to a `Date`\n              // object. Must properly parse (at least) text\n              // formatted by `formatDate`.\n              // Setting the property to null will disable\n              // keyboard input feature.\n              parseDate: text => {\n                // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to\n                // a Date object\n              }\n\n              // A function to format given `monthName` and\n              // `fullYear` integer as calendar title string.\n              formatTitle: (monthName, fullYear) => {\n                return monthName + ' ' + fullYear;\n              }\n            }"
+      "description": "The object used to localize this component.\nTo change the default localization, replace the entire\n_i18n_ object or just the property you want to modify.\n\nThe object has the following JSON structure and default values:\n\n            {\n              // An array with the full names of months starting\n              // with January.\n              monthNames: [\n                'January', 'February', 'March', 'April', 'May',\n                'June', 'July', 'August', 'September',\n                'October', 'November', 'December'\n              ],\n\n              // An array of weekday names starting with Sunday. Used\n              // in screen reader announcements.\n              weekdays: [\n                'Sunday', 'Monday', 'Tuesday', 'Wednesday',\n                'Thursday', 'Friday', 'Saturday'\n              ],\n\n              // An array of short weekday names starting with Sunday.\n              // Displayed in the calendar.\n              weekdaysShort: [\n                'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'\n              ],\n\n              // An integer indicating the first day of the week\n              // (0 = Sunday, 1 = Monday, etc.).\n              firstDayOfWeek: 0,\n\n              // Used in screen reader announcements along with week\n              // numbers, if they are displayed.\n              week: 'Week',\n\n              // Translation of the Calendar icon button title.\n              calendar: 'Calendar',\n\n              // Translation of the Clear icon button title.\n              clear: 'Clear',\n\n              // Translation of the Today shortcut button text.\n              today: 'Today',\n\n              // Translation of the Cancel button text.\n              cancel: 'Cancel',\n\n              // A function to format given `Object` as\n              // date string. Object is in the format `{ day: ..., month: ..., year: ... }`\n              formatDate: d => {\n                // returns a string representation of the given\n                // object in 'MM/DD/YYYY' -format\n              },\n\n              // A function to parse the given text to an `Object` in the format `{ day: ..., month: ..., year: ... }`.\n              // Must properly parse (at least) text\n              // formatted by `formatDate`.\n              // Setting the property to null will disable\n              // keyboard input feature.\n              parseDate: text => {\n                // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to\n                // an `Object` in the format `{ day: ..., month: ..., year: ... }`.\n              }\n\n              // A function to format given `monthName` and\n              // `fullYear` integer as calendar title string.\n              formatTitle: (monthName, fullYear) => {\n                return monthName + ' ' + fullYear;\n              }\n            }"
     },
     {
       "name": "min",
@@ -106,6 +97,18 @@
   ],
   "methods": [
     {
+      "name": "connectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "disconnectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
       "name": "open",
       "description": "Opens the dropdown.\n     ",
       "parameters": [],
@@ -119,33 +122,33 @@
     },
     {
       "name": "validate",
-      "description": "Returns true if `value` is valid, and sets the `invalid` flag appropriatelly.",
+      "description": "Returns true if `value` is valid, and sets the `invalid` flag appropriately.",
       "parameters": [
         {
           "name": "value",
           "type": [
-            "OBJECT"
+            "STRING"
           ],
           "objectType": [],
-          "description": "Missing documentation!"
+          "description": "Value to validate. Optional, defaults to user's input value."
         }
       ],
       "returns": "BOOLEAN"
     },
     {
       "name": "checkValidity",
-      "description": "Returns true if the current input value satisfies all constraints (if any)\n\nOverride the `checkValidity` method for custom validations.\n     ",
+      "description": "Returns true if the current input value satisfies all constraints (if any)\n\nOverride the `checkValidity` method for custom validations.",
       "parameters": [
         {
           "name": "value",
           "type": [
-            "OBJECT"
+            "STRING"
           ],
           "objectType": [],
-          "description": "Missing documentation!"
+          "description": "Value to validate. Optional, defaults to the selected date."
         }
       ],
-      "returns": "UNDEFINED"
+      "returns": "BOOLEAN"
     }
   ],
   "events": [],
@@ -154,7 +157,8 @@
   ],
   "behaviors": [],
   "mixins": [
+    "Vaadin.ThemableMixin",
     "Vaadin.DatePickerMixin"
   ],
-  "description": "`<vaadin-date-picker-light>` is a customizable version of the `<vaadin-date-picker>` providing\nonly the scrollable month calendar view and leaving the input field definition to the user.\n\nTo create a custom input field, you need to add a child element which has a two-way\ndata-bindable property representing the input value. The property name is expected\nto be `bindValue` by default. See the example below for a simplest possible example\nusing an `<input>` element extended with `iron-input`.\n\n```html\n<vaadin-date-picker-light>\n<iron-input>\n<input/>\n</iron-input>\n</vaadin-date-picker-light>\n```\n\nIf you are using other custom input fields like `<paper-input>`, you\nneed to define the name of value property using the `attrForValue` property.\n\n```html\n<vaadin-date-picker-light attr-for-value=\"value\">\n<paper-input label=\"Birthday\">\n</paper-input>\n</vaadin-date-picker-light>\n```"
+  "description": "`<vaadin-date-picker-light>` is a customizable version of the `<vaadin-date-picker>` providing\nonly the scrollable month calendar view and leaving the input field definition to the user.\n\nTo create a custom input field, you need to add a child element which has a two-way\ndata-bindable property representing the input value. The property name is expected\nto be `bindValue` by default. See the example below for a simplest possible example\nusing an `<input>` element extended with `iron-input`.\n\n```html\n<vaadin-date-picker-light>\n  <iron-input>\n    <input/>\n  </iron-input>\n</vaadin-date-picker-light>\n```\n\nIf you are using other custom input fields like `<paper-input>`, you\nneed to define the name of value property using the `attrForValue` property.\n\n```html\n<vaadin-date-picker-light attr-for-value=\"value\">\n  <paper-input label=\"Birthday\">\n  </paper-input>\n</vaadin-date-picker-light>\n```"
 }

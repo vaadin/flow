@@ -1,8 +1,8 @@
 {
   "name": "Vaadin.ProgressBarElement",
   "tag": "vaadin-progress-bar",
-  "baseUrl": "vaadin-progress-bar/vaadin-progress-bar.html",
-  "version": "1.0.0-alpha6",
+  "baseUrl": "vaadin-progress-bar/src/vaadin-progress-bar.html",
+  "version": "1.0.0-alpha11",
   "properties": [
     {
       "name": "value",
@@ -34,7 +34,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Indeterminate state of the progress bar.\n           "
+      "description": "Indeterminate state of the progress bar.\nThis property takes precedence over other state properties (min, max, value). \n           "
     }
   ],
   "methods": [],
@@ -45,5 +45,5 @@
     "Vaadin.ProgressMixin",
     "Vaadin.ThemableMixin"
   ],
-  "description": "`<vaadin-progress-bar>` is a Polymer 2 progress bar.\n\n```html\n<vaadin-progress-bar value=\"30\" min=\"10\" max=\"100\">\n</vaadin-progress-bar>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description \n----------------|----------------\n`bar` | Progress-bar's background \n`value` | Progress-bar's foreground \n\nThe following custom properties are available:\n\nCustom property | Description | Default\n----------------|-------------|-------------\n`--vaadin-progress-value` | current progress value (between 0 and 1) | 0\n\nThe following state attributes are available for styling:\n\nAttribute       | Description | Part name\n----------------|-------------|------------\n`indeterminate` | Set to an indeterminate progress bar | :host"
+  "description": "`<vaadin-progress-bar>` is a Polymer 2 progress bar.\n\n```html\n<vaadin-progress-bar min=\"0\" max=\"1\" value=\"0.5\">\n</vaadin-progress-bar>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`bar` | Progress-bar's background\n`value` | Progress-bar's foreground\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)\n\nThe following custom properties are available:\n\nCustom property | Description | Default\n----------------|-------------|-------------\n`--vaadin-progress-value` | current progress value (between 0 and 1) | 0\n\nThe following state attributes are available for styling:\n\nAttribute       | Description | Part name\n----------------|-------------|------------\n`indeterminate` | Set to an indeterminate progress bar | :host"
 }

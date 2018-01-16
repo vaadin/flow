@@ -1,8 +1,8 @@
 {
   "name": "Vaadin.ComboBoxItemElement",
   "tag": "vaadin-combo-box-item",
-  "baseUrl": "vaadin-combo-box/vaadin-combo-box-item.html",
-  "version": "3.0.1",
+  "baseUrl": "vaadin-combo-box/src/vaadin-combo-box-item.html",
+  "version": "UNKNOWN",
   "properties": [
     {
       "name": "index",
@@ -60,5 +60,5 @@
   "mixins": [
     "Vaadin.ThemableMixin"
   ],
-  "description": "The default element used for items in the vaadin-combobox.\n\n### Styling\n\nThe following state attributes are exposed for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`selected` | Set when the item is selected | :host\n`focused` | Set when the item is focused | :host"
+  "description": "The default element used for items in the vaadin-combobox.\n\n### Styling\n\nThe following state attributes are exposed for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`selected` | Set when the item is selected | :host\n`focused` | Set when the item is focused | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

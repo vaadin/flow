@@ -73,7 +73,8 @@ import com.vaadin.flow.component.HasComponents;
  * <p>
  * &lt;vaadin-combo-box-light&gt; &lt;paper-input label=&quot;Elements&quot;
  * class=&quot;input&quot;&gt; &lt;iron-icon icon=&quot;toll&quot;
- * prefix&gt;&lt;/iron-icon&gt; &lt;paper-button slot=&quot;suffix&quot;
+ * slot=&quot;prefix&quot;&gt;&lt;/iron-icon&gt; &lt;paper-button
+ * slot=&quot;suffix&quot;
  * class=&quot;clear-button&quot;&gt;Clear&lt;/paper-button&gt; &lt;paper-button
  * slot=&quot;suffix&quot;
  * class=&quot;toggle-button&quot;&gt;Toggle&lt;/paper-button&gt;
@@ -81,10 +82,10 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxLightElement#3.0.1",
+        "WebComponent: Vaadin.ComboBoxLightElement#4.0.0-alpha5",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-light")
-@HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
+@HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-light.html")
 public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
         extends Component
         implements HasStyle, HasValue<R, String>, HasComponents {
@@ -359,25 +360,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * A read-only property indicating whether this combo box has a value
-     * selected or not. It can be used for example in styling of the component.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code hasValue} property from the webcomponent
-     */
-    public boolean hasValue() {
-        return getElement().getProperty("hasValue", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * When set to {@code true}, &quot;loading&quot; attibute is added to host
+     * When set to {@code true}, &quot;loading&quot; attribute is added to host
      * and the overlay element.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -395,7 +378,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * When set to {@code true}, &quot;loading&quot; attibute is added to host
+     * When set to {@code true}, &quot;loading&quot; attribute is added to host
      * and the overlay element.
      * </p>
      * 
@@ -576,38 +559,6 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Set to true to mark the input as required.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code required} property from the webcomponent
-     */
-    public boolean isRequired() {
-        return getElement().getProperty("required", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to mark the input as required.
-     * </p>
-     * 
-     * @param required
-     *            the boolean value to set
-     */
-    public void setRequired(boolean required) {
-        getElement().setProperty("required", required);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * The name of this element.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -704,41 +655,6 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Number of pixels used as the vertical offset in positioning of the
-     * dropdown.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code overlayVerticalOffset} property from the webcomponent
-     */
-    public double getOverlayVerticalOffset() {
-        return getElement().getProperty("overlayVerticalOffset", 0.0);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Number of pixels used as the vertical offset in positioning of the
-     * dropdown.
-     * </p>
-     * 
-     * @param overlayVerticalOffset
-     *            the double value to set
-     */
-    public void setOverlayVerticalOffset(double overlayVerticalOffset) {
-        getElement().setProperty("overlayVerticalOffset",
-                overlayVerticalOffset);
-    }
-
-    /**
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * 
@@ -790,18 +706,15 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * </p>
      * <p>
      * Returns true if {@code value} is valid, and sets the {@code invalid} flag
-     * appropriatelly.
+     * appropriately.
      * </p>
      * <p>
      * This function is not supported by Flow because it returns a
      * <code>boolean</code>. Functions with return types different than void are
      * not supported at this moment.
-     * 
-     * @param value
-     *            Missing documentation!
      */
     @NotSupported
-    protected void validate(JsonObject value) {
+    protected void validate() {
     }
 
     /**
@@ -815,12 +728,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
      * <p>
      * You can override the {@code checkValidity} method for custom validations.
      * </p>
-     * 
-     * @param value
-     *            Missing documentation!
      */
-    protected void checkValidity(JsonObject value) {
-        getElement().callFunction("checkValidity", value);
+    public void checkValidity() {
+        getElement().callFunction("checkValidity");
     }
 
     @DomEvent("change")

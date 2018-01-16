@@ -1,8 +1,8 @@
 {
   "name": "Vaadin.RadioButtonElement",
   "tag": "vaadin-radio-button",
-  "baseUrl": "vaadin-radio-button/vaadin-radio-button.html",
-  "version": "1.0.0-alpha8",
+  "baseUrl": "vaadin-radio-button/src/vaadin-radio-button.html",
+  "version": "1.0.0-alpha11",
   "properties": [
     {
       "name": "autofocus",
@@ -59,8 +59,10 @@
   ],
   "behaviors": [],
   "mixins": [
+    "Vaadin.ElementMixin",
     "Vaadin.ControlStateMixin",
-    "Vaadin.ThemableMixin"
+    "Vaadin.ThemableMixin",
+    "Polymer.GestureEventListeners"
   ],
-  "description": "`<vaadin-radio-button>` is a Polymer element for radio buttons.\n\n```html\n<vaadin-radio-button value=\"foo\">Foo</vaadin-radio-button>\n```\n\n### Styling\n\n[Generic styling/theming documentation](https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html)\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|----------------\n`wrapper`         | The `<label>` element which wrapps the radio button and [part=\"label\"]\n`native-radio`    | The `<input type=\"radio\">` element\n`radio`           | The `<span>` element for a custom graphical radio button\n`label`           | The `<span>` element for slotted text/HTML label\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the radio button is disabled. | :host\n`focus-ring` | Set when the radio button is focused using the keyboard. | :host\n`focused`    | Set when the radio button is focused. | :host\n`checked`    | Set when the radio button is checked. | :host"
+  "description": "`<vaadin-radio-button>` is a Polymer element for radio buttons.\n\n```html\n<vaadin-radio-button value=\"foo\">Foo</vaadin-radio-button>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|----------------\n`radio`           | The radio button element\n`label`           | The label content element\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the radio button is disabled. | :host\n`focus-ring` | Set when the radio button is focused using the keyboard. | :host\n`focused`    | Set when the radio button is focused. | :host\n`checked`    | Set when the radio button is checked. | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

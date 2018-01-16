@@ -1,8 +1,8 @@
 {
   "name": "Vaadin.ComboBoxOverlayElement",
   "tag": "vaadin-combo-box-dropdown-wrapper",
-  "baseUrl": "vaadin-combo-box/vaadin-combo-box-dropdown-wrapper.html",
-  "version": "3.0.1",
+  "baseUrl": "vaadin-combo-box/src/vaadin-combo-box-dropdown-wrapper.html",
+  "version": "UNKNOWN",
   "properties": [
     {
       "name": "rootPath",
@@ -55,20 +55,20 @@
       "description": ""
     },
     {
+      "name": "positionTarget",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The element to position/align the dropdown by.\n           "
+    },
+    {
       "name": "loading",
       "type": [
         "BOOLEAN"
       ],
       "objectType": [],
       "description": "`true` when new items are being loaded.\n           "
-    },
-    {
-      "name": "verticalOffset",
-      "type": [
-        "NUMBER"
-      ],
-      "objectType": [],
-      "description": "Vertical offset for the overlay position.\n           "
     }
   ],
   "methods": [

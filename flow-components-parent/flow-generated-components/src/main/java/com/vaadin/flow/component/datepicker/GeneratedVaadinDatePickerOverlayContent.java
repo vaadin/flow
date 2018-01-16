@@ -22,16 +22,18 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: MonthCalendarElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
-@Tag("vaadin-month-calendar")
-@HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-month-calendar.html")
-public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar<R>>
+        "WebComponent: DatePickerOverlayContentElement#UNKNOWN",
+        "Flow#1.0-SNAPSHOT" })
+@Tag("vaadin-date-picker-overlay-content")
+@HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-overlay-content.html")
+public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDatePickerOverlayContent<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -39,41 +41,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * A {@code Date} object defining the month to be displayed. Only year and
-     * month properties are actually used.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code month} property from the webcomponent
-     */
-    protected JsonObject protectedGetMonth() {
-        return (JsonObject) getElement().getPropertyRaw("month");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * A {@code Date} object defining the month to be displayed. Only year and
-     * month properties are actually used.
-     * </p>
-     * 
-     * @param month
-     *            the JsonObject value to set
-     */
-    protected void setMonth(JsonObject month) {
-        getElement().setPropertyJson("month", month);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * A {@code Date} object for the currently selected date.
+     * The value for this element.
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
@@ -90,7 +58,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * A {@code Date} object for the currently selected date.
+     * The value for this element.
      * </p>
      * 
      * @param selectedDate
@@ -105,7 +73,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * A {@code Date} object for the currently focused date.
+     * Date value which is focused using keyboard.
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
@@ -122,7 +90,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * A {@code Date} object for the currently focused date.
+     * Date value which is focused using keyboard.
      * </p>
      * 
      * @param focusedDate
@@ -133,21 +101,35 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
     }
 
     /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Date which should be visible when there is no value selected.
+     * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
+     * </p>
      * 
-     * @return the {@code showWeekNumbers} property from the webcomponent
+     * @return the {@code initialPosition} property from the webcomponent
      */
-    public boolean isShowWeekNumbers() {
-        return getElement().getProperty("showWeekNumbers", false);
+    protected JsonObject protectedGetInitialPosition() {
+        return (JsonObject) getElement().getPropertyRaw("initialPosition");
     }
 
     /**
-     * @param showWeekNumbers
-     *            the boolean value to set
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Date which should be visible when there is no value selected.
+     * </p>
+     * 
+     * @param initialPosition
+     *            the JsonObject value to set
      */
-    public void setShowWeekNumbers(boolean showWeekNumbers) {
-        getElement().setProperty("showWeekNumbers", showWeekNumbers);
+    protected void setInitialPosition(JsonObject initialPosition) {
+        getElement().setPropertyJson("initialPosition", initialPosition);
     }
 
     /**
@@ -169,35 +151,21 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Flag stating whether taps on the component should be ignored.
-     * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
-     * </p>
      * 
-     * @return the {@code ignoreTaps} property from the webcomponent
+     * @return the {@code showWeekNumbers} property from the webcomponent
      */
-    public boolean isIgnoreTaps() {
-        return getElement().getProperty("ignoreTaps", false);
+    public boolean isShowWeekNumbers() {
+        return getElement().getProperty("showWeekNumbers", false);
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Flag stating whether taps on the component should be ignored.
-     * </p>
-     * 
-     * @param ignoreTaps
+     * @param showWeekNumbers
      *            the boolean value to set
      */
-    public void setIgnoreTaps(boolean ignoreTaps) {
-        getElement().setProperty("ignoreTaps", ignoreTaps);
+    public void setShowWeekNumbers(boolean showWeekNumbers) {
+        getElement().setProperty("showWeekNumbers", showWeekNumbers);
     }
 
     /**
@@ -267,17 +235,125 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
     }
 
     /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Input label
+     * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
+     * </p>
      * 
-     * @return the {@code disabled} property from the webcomponent
+     * @return the {@code label} property from the webcomponent
      */
-    public boolean isDisabled() {
-        return getElement().getProperty("disabled", false);
+    public String getLabel() {
+        return getElement().getProperty("label");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Input label
+     * </p>
+     * 
+     * @param label
+     *            the String value to set
+     */
+    public void setLabel(String label) {
+        getElement().setProperty("label", label == null ? "" : label);
+    }
+
+    public void announceFocusedDate() {
+        getElement().callFunction("announceFocusedDate");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Focuses the cancel button
+     * </p>
+     */
+    public void focusCancel() {
+        getElement().callFunction("focusCancel");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Scrolls the list to the given Date.
+     * </p>
+     * 
+     * @param date
+     *            Missing documentation!
+     * @param animate
+     *            Missing documentation!
+     */
+    protected void scrollToDate(JsonObject date, JsonObject animate) {
+        getElement().callFunction("scrollToDate", date, animate);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Scrolls the month and year scrollers enough to reveal the given date.
+     * </p>
+     * 
+     * @param date
+     *            Missing documentation!
+     */
+    protected void revealDate(JsonObject date) {
+        getElement().callFunction("revealDate", date);
+    }
+
+    @DomEvent("scroll-animation-finished")
+    public static class ScrollAnimationFinishedEvent<R extends GeneratedVaadinDatePickerOverlayContent<R>>
+            extends ComponentEvent<R> {
+        private final double detailPosition;
+        private final double detailOldPosition;
+
+        public ScrollAnimationFinishedEvent(R source, boolean fromClient,
+                @EventData("event.detail.position") double detailPosition,
+                @EventData("event.detail.oldPosition") double detailOldPosition) {
+            super(source, fromClient);
+            this.detailPosition = detailPosition;
+            this.detailOldPosition = detailOldPosition;
+        }
+
+        public double getDetailPosition() {
+            return detailPosition;
+        }
+
+        public double getDetailOldPosition() {
+            return detailOldPosition;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code scroll-animation-finished} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public Registration addScrollAnimationFinishedListener(
+            ComponentEventListener<ScrollAnimationFinishedEvent<R>> listener) {
+        return addListener(ScrollAnimationFinishedEvent.class,
+                (ComponentEventListener) listener);
     }
 
     @DomEvent("selected-date-changed")
-    public static class SelectedDateChangeEvent<R extends GeneratedVaadinMonthCalendar<R>>
+    public static class SelectedDateChangeEvent<R extends GeneratedVaadinDatePickerOverlayContent<R>>
             extends ComponentEvent<R> {
         public SelectedDateChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
@@ -296,6 +372,29 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
     public Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
         return addListener(SelectedDateChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("focused-date-changed")
+    public static class FocusedDateChangeEvent<R extends GeneratedVaadinDatePickerOverlayContent<R>>
+            extends ComponentEvent<R> {
+        public FocusedDateChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code focused-date-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public Registration addFocusedDateChangeListener(
+            ComponentEventListener<FocusedDateChangeEvent<R>> listener) {
+        return addListener(FocusedDateChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 }

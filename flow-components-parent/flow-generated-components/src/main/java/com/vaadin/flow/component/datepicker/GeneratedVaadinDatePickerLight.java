@@ -64,10 +64,10 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.DatePickerLightElement#2.0.5",
+        "WebComponent: Vaadin.DatePickerLightElement#3.0.0-alpha5",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker-light")
-@HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
+@HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-light.html")
 public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R>>
         extends Component
         implements HasStyle, HasValue<R, String>, HasComponents {
@@ -194,23 +194,6 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      */
     public void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Indicates whether this date picker has a value.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code hasValue} property from the webcomponent
-     */
-    public boolean hasValue() {
-        return getElement().getProperty("hasValue", false);
     }
 
     /**
@@ -409,21 +392,21 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 	          // Translation of the Cancel button text.
      * 	          cancel: 'Cancel',
      * 
-     * 	          // A function to format given {@code Date} object as
-     * 	          // date string.
+     * 	          // A function to format given {@code Object} as
+     * 	          // date string. Object is in the format {@code { day: ..., month: ..., year: ... }}
      * 	          formatDate: d =&gt; {
      * 	            // returns a string representation of the given
-     * 	            // Date object in 'MM/DD/YYYY' -format
+     * 	            // object in 'MM/DD/YYYY' -format
      * 	          },
      * 
-     * 	          // A function to parse the given text to a {@code Date}
-     * 	          // object. Must properly parse (at least) text
+     * 	          // A function to parse the given text to an {@code Object} in the format {@code { day: ..., month: ..., year: ... }}.
+     * 	          // Must properly parse (at least) text
      * 	          // formatted by {@code formatDate}.
      * 	          // Setting the property to null will disable
      * 	          // keyboard input feature.
      * 	          parseDate: text =&gt; {
      * 	            // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to
-     * 	            // a Date object
+     * 	            // an {@code Object} in the format {@code { day: ..., month: ..., year: ... }}.
      * 	          }
      * 
      * 	          // A function to format given {@code monthName} and
@@ -497,21 +480,21 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 	          // Translation of the Cancel button text.
      * 	          cancel: 'Cancel',
      * 
-     * 	          // A function to format given {@code Date} object as
-     * 	          // date string.
+     * 	          // A function to format given {@code Object} as
+     * 	          // date string. Object is in the format {@code { day: ..., month: ..., year: ... }}
      * 	          formatDate: d =&gt; {
      * 	            // returns a string representation of the given
-     * 	            // Date object in 'MM/DD/YYYY' -format
+     * 	            // object in 'MM/DD/YYYY' -format
      * 	          },
      * 
-     * 	          // A function to parse the given text to a {@code Date}
-     * 	          // object. Must properly parse (at least) text
+     * 	          // A function to parse the given text to an {@code Object} in the format {@code { day: ..., month: ..., year: ... }}.
+     * 	          // Must properly parse (at least) text
      * 	          // formatted by {@code formatDate}.
      * 	          // Setting the property to null will disable
      * 	          // keyboard input feature.
      * 	          parseDate: text =&gt; {
      * 	            // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to
-     * 	            // a Date object
+     * 	            // an {@code Object} in the format {@code { day: ..., month: ..., year: ... }}.
      * 	          }
      * 
      * 	          // A function to format given {@code monthName} and
@@ -693,7 +676,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * </p>
      * <p>
      * Returns true if {@code value} is valid, and sets the {@code invalid} flag
-     * appropriatelly.
+     * appropriately.
      * </p>
      * <p>
      * This function is not supported by Flow because it returns a
@@ -701,10 +684,10 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * not supported at this moment.
      * 
      * @param value
-     *            Missing documentation!
+     *            Value to validate. Optional, defaults to user's input value.
      */
     @NotSupported
-    protected void validate(JsonObject value) {
+    protected void validate(String value) {
     }
 
     /**
@@ -718,12 +701,16 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * <p>
      * Override the {@code checkValidity} method for custom validations.
      * </p>
+     * <p>
+     * This function is not supported by Flow because it returns a
+     * <code>boolean</code>. Functions with return types different than void are
+     * not supported at this moment.
      * 
      * @param value
-     *            Missing documentation!
+     *            Value to validate. Optional, defaults to the selected date.
      */
-    protected void checkValidity(JsonObject value) {
-        getElement().callFunction("checkValidity", value);
+    @NotSupported
+    protected void checkValidity(String value) {
     }
 
     @DomEvent("opened-changed")
