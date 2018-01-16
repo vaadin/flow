@@ -49,12 +49,12 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.flow.server.AbstractTheme;
+import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.Theme;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.

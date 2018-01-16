@@ -35,6 +35,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
@@ -48,6 +49,8 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.template.angular.InlineTemplate;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.hamcrest.Matchers.is;
@@ -242,17 +245,17 @@ public class BootstrapHandlerTest {
 
     @Route("")
     @Tag(Tag.DIV)
-    @Inline(value = "inline.css", target = Inline.TargetElement.BODY)
-    @Inline(value = "inline.html", target = Inline.TargetElement.BODY)
-    @Inline(value = "inline.js", target = Inline.TargetElement.BODY)
+    @Inline(value = "inline.css", target = TargetElement.BODY)
+    @Inline(value = "inline.html", target = TargetElement.BODY)
+    @Inline(value = "inline.js", target = TargetElement.BODY)
     public static class InlineAnnotationsBodyTarget extends Component {
     }
 
     @Route("")
     @Tag(Tag.DIV)
-    @Inline(value = "inline.css", target = Inline.TargetElement.BODY, position = Inline.Position.PREPEND)
-    @Inline(value = "inline.html", target = Inline.TargetElement.BODY, position = Inline.Position.PREPEND)
-    @Inline(value = "inline.js", target = Inline.TargetElement.BODY, position = Inline.Position.PREPEND)
+    @Inline(value = "inline.css", target = TargetElement.BODY, position = Inline.Position.PREPEND)
+    @Inline(value = "inline.html", target = TargetElement.BODY, position = Inline.Position.PREPEND)
+    @Inline(value = "inline.js", target = TargetElement.BODY, position = Inline.Position.PREPEND)
     public static class PrependInlineAnnotationsBodyTarget extends Component {
     }
 
@@ -275,7 +278,20 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public List<String> getInlineContents() {
+        public List<String> getHeadInlineContents() {
+            return Arrays.asList(
+                    "<link rel=\"import\" href=\"frontend://bower_components/vaadin-lumo-styles/color.html\">");
+        }
+
+        @Override
+        public List<String> getHeadInlineContents(VaadinUriResolver resolver) {
+            String url = resolver.resolveVaadinUri(
+                    "frontend://bower_components/vaadin-lumo-styles/color.html");
+            return Arrays.asList("<link rel=\"import\" href=\"" + url + "\">");
+        }
+
+        @Override
+        public List<String> getBodyInlineContents() {
             return Arrays.asList(
                     "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
         }
@@ -870,14 +886,22 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, testUI));
 
         Elements allElements = page.head().getAllElements();
-        // Selecting with -2 as getAllElement will return the inner style as
-        // it's own element with a parent reference to custom-style
+        Assert.assertEquals("Custom style should have been added to head.",
+                "<link rel=\"import\" href=\"frontend://bower_components/vaadin-lumo-styles/color.html\">",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals("Custom style should have been added to head.",
+                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">",
+                allElements.get(allElements.size() - 1).toString());
+
+        allElements = page.body().getAllElements();
+        // Note element 0 is the full head element.
         Assert.assertEquals("Custom style should have been added to head.",
                 "<custom-style><style include=\"lumo-typography\"></style></custom-style>",
-                allElements.get(allElements.size() - 2).toString());
+                allElements.get(2).toString());
 
         Assert.assertTrue("Style should have been wrapped in custom style",
-                page.head().toString().contains("<custom-style><style include=\"lumo-typography\"></style></custom-style>"));
+                page.body().toString().contains(
+                        "<custom-style><style include=\"lumo-typography\"></style></custom-style>"));
     }
 
     @Test

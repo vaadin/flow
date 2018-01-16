@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
@@ -63,7 +64,7 @@ public class InlineTargets {
                 BootstrapUtils.getDependencyContents(request, inline.value()));
 
         // Add to correct element target
-        if (inline.target() == Inline.TargetElement.BODY) {
+        if (inline.target() == TargetElement.BODY) {
             getInlineBody(inline.position()).add(dependency);
         } else {
             getInlineHead(inline.position()).add(dependency);

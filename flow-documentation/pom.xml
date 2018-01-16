@@ -32,6 +32,11 @@
 			<artifactId>flow-server</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-lumo-theme</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
