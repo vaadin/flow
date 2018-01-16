@@ -72,7 +72,7 @@ public class TranspileProductionFilesMojo extends AbstractMojo {
     @Parameter
     private List<Fragment> fragments;
 
-    @Parameter(property = "bundle", defaultValue = "false", required = true)
+    @Parameter(property = "bundle", defaultValue = "true", required = true)
     private boolean bundle;
 
     @Parameter(property = "bundleConfiguration", defaultValue = "${project.basedir}/bundle-configuration.json")
