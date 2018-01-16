@@ -30,8 +30,10 @@ public interface RouterLayout extends HasElement {
     /**
      * Sets the content of the layout which is the router target component
      * annotated with a {@link Route @Route}.
+     * <p>
      * <strong>Note</strong> implementors should not care about previous content,
      * because {@link Router} automatically removes that content.
+     * </p>
      *
      * @param content the content component or {@code null} if the layout content is to be cleared.
      */
