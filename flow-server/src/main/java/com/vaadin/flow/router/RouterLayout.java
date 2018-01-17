@@ -28,16 +28,17 @@ import java.util.Objects;
 public interface RouterLayout extends HasElement {
 
     /**
-     * Sets the content of the layout which is the router target component
+     * Shows the content of the layout which is the router target component
      * annotated with a {@link Route @Route}.
      * <p>
-     * <strong>Note</strong> implementors should not care about previous content,
-     * because {@link Router} automatically removes that content.
+     * <strong>Note</strong> implementors should not care about old
+     * {@code @Route} content, because {@link Router} automatically removes
+     * it before calling the method.
      * </p>
      *
      * @param content the content component or {@code null} if the layout content is to be cleared.
      */
-    default void setRouterLayoutContent(HasElement content) {
+    default void showRouterLayoutContent(HasElement content) {
         if (content != null) {
             getElement().appendChild(Objects.requireNonNull(content.getElement()));
         }
