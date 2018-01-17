@@ -52,82 +52,82 @@
 
         <!-- webJars -->
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-styles</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-button</artifactId>
             <version>2.0.0</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-input</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-spinner</artifactId>
             <version>2.0.0</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>github-com-polymerelements-paper-card</artifactId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
+            <artifactId>paper-card</artifactId>
             <version>2.0.0</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-progress</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-dialog</artifactId>
             <version>2.0.0</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.web-animations</groupId>
             <artifactId>web-animations-js</artifactId>
             <version>2.2.5</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-swatch-picker</artifactId>
             <version>2.0.1</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>app-layout</artifactId>
             <version>2.0.2</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-item</artifactId>
             <version>2.0.0</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>github-com-polymerelements-paper-ripple</artifactId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
+            <artifactId>paper-ripple</artifactId>
             <version>2.0.1</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>iron-collapse</artifactId>
             <version>2.0.0</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>iron-icons</artifactId>
             <version>2.0.1</version>
         </dependency>
