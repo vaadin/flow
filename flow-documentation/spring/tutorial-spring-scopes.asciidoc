@@ -1,6 +1,6 @@
 ---
 title: Vaadin Spring Scopes
-order: 3
+order: 4
 layout: page
 ---
 
@@ -18,25 +18,21 @@ It means that the same bean instance will be used within the whole Vaadin sessio
 ----
 @Route("")
 public class MainLayout extends Div {
-    public MainLayout(@Autowired Bean bean){
+    public MainLayout(@Autowired SessionService bean){
         setText(bean.getText());
     }
 }
 
 @Route("editor")
 public class Editor extends Div {
-    public Editor(@Autowired Bean bean){
+    public Editor(@Autowired SessionService bean){
         setText(bean.getText());
     }
 }
 
-public interface Bean {
-    String getText();
-}
-
 @Component
 @VaadinSessionScope
-public class SessionBean implements Bean {
+public class SessionService {
     private String uid = UUID.randomUUID().toString();
     
     public String getText(){
@@ -45,20 +41,34 @@ public class SessionBean implements Bean {
 }
 ----
 
-In this example the same instance of `SessionBean` will be used as long as 
-we access the application from the same Vaadin session. E.g. if you open the root target in 
-one tab and the editor target in another tab, then the shown text will be the same for both. 
-It happens because the session is the same even though
-the tabs (and `UI` instances) are different.
+In this example the same instance of `SessionService` will be used as long as 
+we access the application from the same Vaadin session since it's session scoped. 
+E.g. if you open the root target in one tab and the editor target in another tab, 
+then the shown text will be the same for both. It happens because the session 
+is the same even though the tabs (and `UI` instances) are different.
 
 The `@UIScope` manages the Spring beans during the `UI` lifecycle. Similar to the example above
-the `UIBean` will be the same while we are in the same `UI`.
+the `UIService` will be the same while we are in the same `UI` since it's ui scoped now.
 
 [source,java]
 ----
+@Route("")
+public class MainLayout extends Div {
+    public MainLayout(@Autowired UIService bean){
+        setText(bean.getText());
+    }
+}
+
+@Route("editor")
+public class Editor extends Div {
+    public Editor(@Autowired UIService bean){
+        setText(bean.getText());
+    }
+}
+
 @Component
 @UIScope
-public class UIBean implements Bean {
+public class UIService {
     private String uid = UUID.randomUUID().toString();
     
     public String getText(){

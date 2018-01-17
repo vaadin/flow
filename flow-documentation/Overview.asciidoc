@@ -101,6 +101,7 @@ and keep the page state intact. The following tutorials explain how to use the R
 
 == Spring
 * <<spring/tutorial-spring-basic#,Use Flow with Spring>>
+* <<spring/tutorial-spring-basic-mvc#,Use Flow with Spring MVC>>
 * <<spring/tutorial-spring-routing#,Routing with Spring>>
 * <<spring/tutorial-spring-scopes#,Vaadin Spring Scopes>>
 * <<spring/tutorial-spring-configuration#,Vaadin Spring Configuration>>

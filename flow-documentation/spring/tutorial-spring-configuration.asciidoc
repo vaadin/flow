@@ -1,6 +1,6 @@
 ---
 title: Vaadin Spring Configuration
-order: 4
+order: 5
 layout: page
 ---
 

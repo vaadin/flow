@@ -15,6 +15,14 @@ as a Spring Boot application and as a Spring Web application.
 The easiest way to use Spring is the Spring Boot application. 
 To use the add-on, you only need to write one very simple class.
 
+[NOTE]
+Please refer to the https://projects.spring.io/spring-boot/[Spring Boot] 
+project and its https://spring.io/docs[documentation page] for information about Spring Boot.
+
+[NOTE]
+There is another section <<tutorial-spring-basic-mvc#,Use Flow with Spring MVC>> in the tutorial which
+describes how to write pure Spring Web application without Spring Boot.
+
 [[example-servlet]]
 [source,java]
 ----
@@ -23,6 +31,10 @@ public class ExampleServletInitializer extends SpringBootServletInitializer {
 
 }
 ----
+
+[NOTE]
+This code looks like magic and you may wonder why it works. The `@SpringBootApplication` 
+annotation makes all the job for you under the hood.
 
 Thanks to Spring Boot auto-configuration you only need the Spring add-on 
 in your classpath and no Flow classes are needed in the class declaration. 
@@ -99,89 +111,3 @@ Spring Boot will start its embedded web server and everything will work in the s
 [NOTE]
 You should remove exclusion from the `spring-boot-starter-web` dependency in 
 the `pom.xml` snippet above.
-
-== Spring Web application
-
-Another option is to have your Flow application as a pure Spring Web Application.
-You may create your own Spring Web application from scratch. To be able to use Flow in 
-your Spring Web application you should register Vaadin servlet as a dispatcher servlet. 
-
-[source,java]
-----
-public abstract class ExampleWebAppInitializer
-        implements WebApplicationInitializer {
-
-    @Override
-    public void onStartup(ServletContext servletContext)
-            throws ServletException {
-        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        registerConfiguration(context);
-        servletContext.addListener(new ContextLoaderListener(context));
-
-        ServletRegistration.Dynamic registration = servletContext
-                .addServlet("dispatcher", new SpringServlet(context));
-        registration.setLoadOnStartup(1);
-        registration.addMapping("/*");
-    }
-
-    private void registerConfiguration(
-            AnnotationConfigWebApplicationContext context) {
-        // register your configuration classes here
-    }
-}
-----
-
-Again you will need some Flow component annotated with `@Route` and you should register 
-the `VaadinScopesConfig` configuration class to be able to use Spring Vaadin scopes.
-
-[NOTE]
-Alternatively, you may add the `@EnableVaadin` annotation to your configuration class to
-import `VaadinScopesConfig`.
-
-The Spring add-on provides an abstract subclass of `WebApplicationInitializer` class which you 
-may just extend and provide your configuration classes via implementing the `getConfigurationClasses()` method:
-
-[source,java]
-----
-public class SampleWebAppInitializer extends VaadinMVCWebAppInitializer {
-
-    @Override
-    protected Collection<Class<?>> getConfigurationClasses() {
-        return Collections.singletonList(SampleConfiguration.class);
-    }
-}
-
-@Configuration
-@ComponentScan
-public class SampleConfiguration {
-}
-----
-
-[NOTE]
-`VaadinScopesConfig` and `VaadinServletConfiguration` configurations will be registered automatically for you in this case.
-
-To be able to use Spring Web application you should declare dependencies in your `pom.xml` file to
-Flow, Flow Spring add-on and Spring web:
-
-[source,xml]
-----
-<dependencies>
-    <dependency>
-        <groupId>com.vaadin</groupId>
-        <artifactId>flow</artifactId>
-        <version>${flow.version}</version>
-    </dependency>
-
-    <dependency>
-        <groupId>com.vaadin</groupId>
-        <artifactId>flow-spring-addon</artifactId>
-        <version>${flow.version}</version>
-    </dependency>
-
-    <!-- Spring -->
-    <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-web</artifactId>
-        <version>5.0.2.RELEASE</version>
-    </dependency>
-----
