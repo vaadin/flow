@@ -27,6 +27,6 @@ You can also create an `Icon` from other collections, e.g.
 
 [source, java]
 ----
-Icon icon = new Icon("valo", "clock");
+Icon icon = new Icon("lumo", "clock");
 new Button("Clock", icon);
 ----
