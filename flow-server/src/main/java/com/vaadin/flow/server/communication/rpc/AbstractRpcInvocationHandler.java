@@ -44,12 +44,12 @@ public abstract class AbstractRpcInvocationHandler
         if (node == null) {
             getLogger().warn("Got an RPC for non-existent node: {}",
                     getNodeId(invocationJson));
-            return null;
+            return Optional.empty();
         }
         if (!node.isAttached()) {
             getLogger().warn("Got an RPC for detached node: {}",
                     getNodeId(invocationJson));
-            return null;
+            return Optional.empty();
         }
 
         boolean invokeRpc = true;
@@ -62,9 +62,9 @@ public abstract class AbstractRpcInvocationHandler
             // ignore RPC requests from the client side for the nodes that are
             // invisible
             LoggerFactory.getLogger(AbstractRpcInvocationHandler.class).warn(
-                    String.format("RPC request for invocation handler '%s' "
-                            + "is recieved from the client side for concealed node id='%s'",
-                            getClass().getName(), node.getId()));
+                    "RPC request for invocation handler '{}' is recieved from "
+                            + "the client side for concealed node id='{}'",
+                    getClass().getName(), node.getId());
         }
         return Optional.empty();
     }
@@ -77,7 +77,7 @@ public abstract class AbstractRpcInvocationHandler
      *            node to handle invocation with, not {@code null}
      * @param invocationJson
      *            the RPC data to handle, not {@code null}
-     * @return null or a Runnable for delayed execution
+     * @return an optional runnable
      */
     protected abstract Optional<Runnable> handleNode(StateNode node,
             JsonObject invocationJson);
