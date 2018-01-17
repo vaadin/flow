@@ -110,8 +110,8 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
     }
 
     @Override
-    public void setRouterLayoutContent(HasElement content) {
-        RouterLayout.super.setRouterLayoutContent(content);
+    public void showRouterLayoutContent(HasElement content) {
+        RouterLayout.super.showRouterLayoutContent(content);
         Component component = content.getElement().getComponent().get();
         if (DemoView.class.isAssignableFrom(component.getClass())) {
             getModel().setPage(component.getClass()

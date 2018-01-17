@@ -612,13 +612,13 @@ public class UIInternals implements Serializable {
                 HasElement oldChild = oldChildren.get(parent);
                 if (oldChild != root) {
                     removeFromParent(oldChild);
-                    parent.setRouterLayoutContent(root);
+                    parent.showRouterLayoutContent(root);
                 }
             } else if (part instanceof RouterLayout
                     && oldChildren.containsKey(part)) {
                 // Remove old child view from leaf view if it had one
                 removeFromParent(oldChildren.get(part));
-                ((RouterLayout) part).setRouterLayoutContent(null);
+                ((RouterLayout) part).showRouterLayoutContent(null);
             }
             root = part;
         }
