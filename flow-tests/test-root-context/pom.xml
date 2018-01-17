@@ -27,18 +27,18 @@
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymer</groupId>
             <artifactId>polymer</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-input</artifactId>
             <version>2.0.2</version>
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-slider</artifactId>
             <version>2.0.2</version>
         </dependency>
