@@ -61,7 +61,7 @@ public final class RouterUtil {
         if (route.isPresent() && !route.get().layout().equals(UI.class)) {
             return collectRouteParentLayouts(route.get().layout());
         }
-        return new ArrayList<>(0);
+        return Collections.emptyList();
     }
 
     /**
@@ -236,6 +236,12 @@ public final class RouterUtil {
                 Route.class);
         if (route.isPresent() && !route.get().layout().equals(UI.class)) {
             return recuseToTopLayout(route.get().layout());
+        } else {
+            Optional<ParentLayout> parentLayout = AnnotationReader
+                    .getAnnotationFor(component, ParentLayout.class);
+            if (parentLayout.isPresent()) {
+                return recuseToTopLayout(parentLayout.get().value());
+            }
         }
         return null;
     }
