@@ -1,6 +1,6 @@
 ---
 title: Vaadin Spring Scopes
-order: 3
+order: 4
 layout: page
 ---
 

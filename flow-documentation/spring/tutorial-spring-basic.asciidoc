@@ -15,6 +15,10 @@ as a Spring Boot application and as a Spring Web application.
 The easiest way to use Spring is the Spring Boot application. 
 To use the add-on, you only need to write one very simple class.
 
+[NOTE]
+Please refer to the https://projects.spring.io/spring-boot/[Spring Boot] 
+project documentation for information about Spring Boot. 
+
 [[example-servlet]]
 [source,java]
 ----
@@ -23,6 +27,10 @@ public class ExampleServletInitializer extends SpringBootServletInitializer {
 
 }
 ----
+
+[NOTE]
+This code looks like magic and you may wonder why it works. The `@SpringBootApplication` 
+annotation makes all the job for you under the hood.
 
 Thanks to Spring Boot auto-configuration you only need the Spring add-on 
 in your classpath and no Flow classes are needed in the class declaration. 

@@ -1,6 +1,6 @@
 ---
 title: Routing with Spring
-order: 2
+order: 3
 layout: page
 ---
 

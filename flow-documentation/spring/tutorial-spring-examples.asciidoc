@@ -1,6 +1,6 @@
 ---
 title: Getting Started with Spring and Flow
-order: 5
+order: 6
 layout: page
 ---
 
