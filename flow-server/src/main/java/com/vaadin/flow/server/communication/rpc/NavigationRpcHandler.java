@@ -41,7 +41,7 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
     }
 
     @Override
-    public void handle(UI ui, JsonObject invocationJson) {
+    public Runnable handle(UI ui, JsonObject invocationJson) {
         History history = ui.getPage().getHistory();
 
         HistoryStateChangeHandler historyStateChangeHandler = history
@@ -62,6 +62,8 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
                     state, new Location(location), trigger);
             historyStateChangeHandler.onHistoryStateChange(event);
         }
+
+        return null;
     }
 
 }

@@ -47,7 +47,7 @@ public class AttachTemplateChildRpcHandler
     }
 
     @Override
-    protected void handleNode(StateNode node, JsonObject invocationJson) {
+    protected Runnable handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ID);
@@ -81,7 +81,6 @@ public class AttachTemplateChildRpcHandler
                                 + "not found in the parent with id='%d'",
                         tag, id.asString(), parent.getId()));
             }
-
         } else if (requestedId != assignedId) {
             logger.error("Attach existing element has failed because "
                     + "the element has been already attached from the server side");

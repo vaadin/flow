@@ -46,7 +46,7 @@ public class AttachExistingElementRpcHandler
     }
 
     @Override
-    protected void handleNode(StateNode node, JsonObject invocationJson) {
+    protected Runnable handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_TAG_NAME);
@@ -82,6 +82,8 @@ public class AttachExistingElementRpcHandler
             attachElement(feature, element, index,
                     tree.getNodeById(requestedId), requestedId == assignedId);
         }
+
+        return null;
     }
 
     private void attachElement(AttachExistingElementFeature feature,

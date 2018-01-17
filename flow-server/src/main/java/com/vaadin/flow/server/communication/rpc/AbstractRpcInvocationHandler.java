@@ -35,19 +35,19 @@ public abstract class AbstractRpcInvocationHandler
         implements RpcInvocationHandler {
 
     @Override
-    public void handle(UI ui, JsonObject invocationJson) {
+    public Runnable handle(UI ui, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_NODE);
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
         if (node == null) {
             getLogger().warn("Got an RPC for non-existent node: {}",
                     getNodeId(invocationJson));
-            return;
+            return null;
         }
         if (!node.isAttached()) {
             getLogger().warn("Got an RPC for detached node: {}",
                     getNodeId(invocationJson));
-            return;
+            return null;
         }
 
         boolean invokeRpc = true;
@@ -55,7 +55,7 @@ public abstract class AbstractRpcInvocationHandler
             invokeRpc = node.getFeature(VisibilityData.class).isVisible();
         }
         if (invokeRpc) {
-            handleNode(node, invocationJson);
+            return handleNode(node, invocationJson);
         } else {
             // ignore RPC requests from the client side for the nodes that are
             // invisible
@@ -64,9 +64,20 @@ public abstract class AbstractRpcInvocationHandler
                             + "is recieved from the client side for concealed node id='%s'",
                             getClass().getName(), node.getId()));
         }
+        return null;
     }
 
-    protected abstract void handleNode(StateNode node,
+    /**
+     * Handle the RPC data {@code invocationJson} using target {@code node} as a
+     * context.
+     * 
+     * @param node
+     *            node to handle invocation with, not {@code null}
+     * @param invocationJson
+     *            the RPC data to handle, not {@code null}
+     * @return null or a Runnable for delayed execution
+     */
+    protected abstract Runnable handleNode(StateNode node,
             JsonObject invocationJson);
 
     private static Logger getLogger() {

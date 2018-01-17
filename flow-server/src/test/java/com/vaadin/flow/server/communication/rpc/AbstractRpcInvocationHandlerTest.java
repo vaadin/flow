@@ -42,8 +42,9 @@ public class AbstractRpcInvocationHandlerTest {
         }
 
         @Override
-        protected void handleNode(StateNode node, JsonObject invocationJson) {
+        protected Runnable handleNode(StateNode node, JsonObject invocationJson) {
             this.node = node;
+            return null;
         }
     };
 

@@ -114,13 +114,13 @@ public class RpcLoggerServlet extends VaadinServlet {
         }
 
         @Override
-        public void handle(UI ui, JsonObject invocationJson) {
-            delegate.handle(ui, invocationJson);
+        public Runnable handle(UI ui, JsonObject invocationJson) {
+            Runnable runnable = delegate.handle(ui, invocationJson);
             StateNode node = ui.getInternals().getStateTree()
                     .getNodeById(getNodeId(invocationJson));
             Div container = new Div();
             container.addClassName("log");
-            Label nodeLabel = new Label();
+            Label nodeLabel;
             if (node == null) {
                 nodeLabel = new Label("Node is null");
             } else {
@@ -136,6 +136,8 @@ public class RpcLoggerServlet extends VaadinServlet {
             json.addClassName("json");
             container.add(json);
             ui.add(container);
+
+            return runnable;
         }
 
         private static int getNodeId(JsonObject invocationJson) {

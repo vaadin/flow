@@ -45,7 +45,8 @@ public interface RpcInvocationHandler {
      *            the UI to handle against, not {@code null}
      * @param invocationJson
      *            the RPC data to handle, not {@code null}
+     * @return null or a Runnable for delayed execution
      */
-    void handle(UI ui, JsonObject invocationJson);
+    Runnable handle(UI ui, JsonObject invocationJson);
 
 }
