@@ -242,4 +242,108 @@ public class MapPropertyTest {
         Assert.assertNull(propertyChangeEvent.getNewValue());
         Assert.assertTrue(flushListener.get());
     }
+
+    @Test
+    public void setValue_updateFromServerIsNoCompleted_syncToServerDoesntUpdateValue() {
+        TestTree tree = new TestTree();
+        StateNode node = new StateNode(7, tree);
+
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+
+        property.setValue("bar");
+
+        property.syncToServer("baz");
+
+        Assert.assertEquals("bar", property.getValue());
+    }
+
+    @Test
+    public void setValue_updateFromServerIsApplied_syncToServerUpdatesValue() {
+        TestTree tree = new TestTree();
+        StateNode node = new StateNode(7, tree);
+
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+
+        property.setValue("bar");
+
+        Reactive.flush();
+
+        property.syncToServer("baz");
+
+        Assert.assertEquals("baz", property.getValue());
+    }
+
+    @Test
+    public void setValue_updateFromServerIsAppliedViaSyncToServer_syncToServerUpdatesValue() {
+        TestTree tree = new TestTree();
+        StateNode node = new StateNode(7, tree);
+
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+
+        property.setValue("bar");
+
+        property.syncToServer("bar");
+
+        property.syncToServer("baz");
+
+        Assert.assertEquals("baz", property.getValue());
+    }
+
+    @Test
+    public void removeValue_updateFromServerIsNoCompleted_syncToServerDoesntUpdateValue() {
+        TestTree tree = new TestTree();
+        StateNode node = new StateNode(7, tree);
+
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+
+        property.setValue("bar");
+
+        property.removeValue();
+
+        property.syncToServer("baz");
+
+        Assert.assertNull(property.getValue());
+    }
+
+    @Test
+    public void removeValue_updateFromServerIsApplied_syncToServerUpdatesValue() {
+        TestTree tree = new TestTree();
+        StateNode node = new StateNode(7, tree);
+
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+
+        property.setValue("bar");
+
+        property.removeValue();
+
+        Reactive.flush();
+
+        property.syncToServer("baz");
+
+        Assert.assertEquals("baz", property.getValue());
+    }
+
+    @Test
+    public void removeValue_updateFromServerIsAppliedViaSyncToServer_syncToServerUpdatesValue() {
+        TestTree tree = new TestTree();
+        StateNode node = new StateNode(7, tree);
+
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+
+        property.setValue("bar");
+
+        property.removeValue();
+
+        property.syncToServer(null);
+
+        property.syncToServer("baz");
+
+        Assert.assertEquals("baz", property.getValue());
+    }
 }
