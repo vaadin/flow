@@ -25,11 +25,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
@@ -334,10 +335,8 @@ public class ServerRpcHandler implements Serializable {
             assert type != null;
             if (JsonConstants.RPC_TYPE_MAP_SYNC.equals(type)) {
                 // Handle these before any RPC invocations.
-                Runnable handle = mapSyncHandler.handle(ui, invocationJson);
-                if (handle != null) {
-                    pendingChangeEvents.add(handle);
-                }
+                mapSyncHandler.handle(ui, invocationJson)
+                        .ifPresent(pendingChangeEvents::add);
             } else {
                 data.add(invocationJson);
             }
@@ -354,8 +353,10 @@ public class ServerRpcHandler implements Serializable {
             throw new IllegalArgumentException(
                     "Unsupported event type: " + type);
         }
-        Runnable handle = handler.handle(ui, invocationJson);
-        assert handle == null : "All handlers returning Runnable should have been handled already";
+        Optional<Runnable> handle = handler.handle(ui, invocationJson);
+        assert !handle.isPresent() : "RPC handler "
+                + handler.getClass().getName()
+                + " returned a Runnable even though it shouldn't";
     }
 
     protected String getMessage(Reader reader) throws IOException {

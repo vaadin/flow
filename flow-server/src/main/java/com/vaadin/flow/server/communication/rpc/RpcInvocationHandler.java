@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.util.Optional;
+
 import com.vaadin.flow.component.UI;
 
 import elemental.json.JsonObject;
@@ -47,6 +49,6 @@ public interface RpcInvocationHandler {
      *            the RPC data to handle, not {@code null}
      * @return null or a Runnable for delayed execution
      */
-    Runnable handle(UI ui, JsonObject invocationJson);
+    Optional<Runnable> handle(UI ui, JsonObject invocationJson);
 
 }

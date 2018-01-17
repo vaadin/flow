@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -45,7 +46,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     @Override
-    protected Runnable handleNode(StateNode node, JsonObject invocationJson) {
+    protected Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_FEATURE);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY_VALUE);
@@ -64,7 +65,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
         ElementPropertyMap elementPropertyMap = (ElementPropertyMap) node
                 .getFeature(feature);
-        return elementPropertyMap.deferredUpdateFromClient(property, value);
+        return Optional.of(elementPropertyMap.deferredUpdateFromClient(property, value));
     }
 
     private Serializable tryConvert(Serializable value, StateNode context) {

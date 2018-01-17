@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.servlet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.annotation.WebServlet;
 
@@ -114,8 +115,8 @@ public class RpcLoggerServlet extends VaadinServlet {
         }
 
         @Override
-        public Runnable handle(UI ui, JsonObject invocationJson) {
-            Runnable runnable = delegate.handle(ui, invocationJson);
+        public Optional<Runnable> handle(UI ui, JsonObject invocationJson) {
+            Optional<Runnable> runnable = delegate.handle(ui, invocationJson);
             StateNode node = ui.getInternals().getStateTree()
                     .getNodeById(getNodeId(invocationJson));
             Div container = new Div();

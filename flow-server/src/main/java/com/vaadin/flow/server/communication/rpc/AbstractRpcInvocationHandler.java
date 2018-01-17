@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +37,7 @@ public abstract class AbstractRpcInvocationHandler
         implements RpcInvocationHandler {
 
     @Override
-    public Runnable handle(UI ui, JsonObject invocationJson) {
+    public Optional<Runnable> handle(UI ui, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_NODE);
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
@@ -64,7 +66,7 @@ public abstract class AbstractRpcInvocationHandler
                             + "is recieved from the client side for concealed node id='%s'",
                             getClass().getName(), node.getId()));
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -77,7 +79,7 @@ public abstract class AbstractRpcInvocationHandler
      *            the RPC data to handle, not {@code null}
      * @return null or a Runnable for delayed execution
      */
-    protected abstract Runnable handleNode(StateNode node,
+    protected abstract Optional<Runnable> handleNode(StateNode node,
             JsonObject invocationJson);
 
     private static Logger getLogger() {

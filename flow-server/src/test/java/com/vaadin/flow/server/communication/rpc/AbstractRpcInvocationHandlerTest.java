@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.junit.Assert;
@@ -42,9 +43,9 @@ public class AbstractRpcInvocationHandlerTest {
         }
 
         @Override
-        protected Runnable handleNode(StateNode node, JsonObject invocationJson) {
+        protected Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
             this.node = node;
-            return null;
+            return Optional.empty();
         }
     };
 
