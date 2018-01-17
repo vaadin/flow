@@ -79,7 +79,7 @@ custom style to have the correct typography e.g.
 `<custom-style><style include="lumo-typography"></style></custom-style>`
 
 Then you need to create the themed .html files for the elements for an example see:
-https://github.com/vaadin/vaadin-button/blob/master/theme/valo/vaadin-button.html[Themed Vaadin Button]
+https://github.com/vaadin/vaadin-button/blob/master/theme/lumo/vaadin-button.html[Themed Vaadin Button]
 
 [NOTE]
 The themed files should be stored to
