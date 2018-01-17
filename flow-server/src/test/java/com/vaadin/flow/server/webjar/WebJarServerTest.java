@@ -16,10 +16,9 @@ import com.vaadin.flow.server.Constants;
 public class WebJarServerTest {
 
     private static final String GRID_DEPENDENCY = "/frontend/bower_components/vaadin-grid/theme/lumo/vaadin-grid-sorter.html";
-    private static final String GRID_WEBJAR = "/webjars/grid/1.0.2/theme/lumo/vaadin-grid-sorter.html";
+    private static final String GRID_WEBJAR = "/webjars/vaadin-grid/theme/lumo/vaadin-grid-sorter.html";
 
     private WebJarServer webJarServer;
-    private Map<String, WebJarBowerDependency> dependencyMap;
 
     private ServletContext context;
 
@@ -35,18 +34,6 @@ public class WebJarServerTest {
                 .thenReturn(Constants.FRONTEND_URL_DEV_DEFAULT);
 
         webJarServer = new WebJarServer(configuration);
-        Field bowerModuleToDependencyName = WebJarServer.class
-                .getDeclaredField("bowerModuleToDependencyName");
-        bowerModuleToDependencyName.setAccessible(true);
-
-        dependencyMap = (Map<String, WebJarBowerDependency>) bowerModuleToDependencyName
-                .get(webJarServer);
-
-        WebJarBowerDependency gridDependency = new WebJarBowerDependency(
-                "vaadin-grid", "grid", "1.0.2");
-
-        dependencyMap.put("vaadin-grid", gridDependency);
-
         context = Mockito.mock(ServletContext.class);
 
         Mockito.when(context.getResource(GRID_WEBJAR))

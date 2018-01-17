@@ -16,8 +16,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.webjars.bower</groupId>
-            <artifactId>github-com-vaadin-vaadin-lumo-styles</artifactId>
+            <groupId>org.webjars.bowergithub.vaadin</groupId>
+            <artifactId>vaadin-lumo-styles</artifactId>
         </dependency>
     </dependencies>
 </project>
