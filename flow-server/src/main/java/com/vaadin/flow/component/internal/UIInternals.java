@@ -658,6 +658,8 @@ public class UIInternals implements Serializable {
         } else {
             cacheThemeTranslations(theme);
             theme = null;
+            getLogger().warn(
+                    "No @Theme defined for " + target.getClass().getName());
         }
     }
 
@@ -783,17 +785,25 @@ public class UIInternals implements Serializable {
     }
 
     private String getHtmlImportValue(HtmlImport html) {
+        String importValue = html.value();
         if (theme != null) {
-            String translation = urlTranslations.get(html.value());
+            String translation = urlTranslations.get(importValue);
             if (translation != null) {
                 return translation;
             }
-            String translatedUrl = theme.getTranslatedUrl(html.value(),
+            String translatedUrl = theme.getTranslatedUrl(importValue,
                     VaadinServlet.getCurrent().getServletResources().stream());
-            urlTranslations.put(html.value(), translatedUrl);
+            urlTranslations.put(importValue, translatedUrl);
             return translatedUrl;
+        } else if (importValue.contains("/src/vaadin")) {
+            String componentName = importValue.substring(
+                    importValue.indexOf("src/vaadin-") + 11,
+                    importValue.lastIndexOf(".html"));
+            getLogger().warn(
+                    "Missing theme definition. Even though using Vaadin component "
+                            + componentName + ".");
         }
-        return html.value();
+        return importValue;
     }
 
     /**
