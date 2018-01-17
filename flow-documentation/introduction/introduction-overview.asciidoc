@@ -1,10 +1,10 @@
 ---
-title: Overview
+title: Introduction to Vaadin Flow
 order: 1
 layout: page
 ---
 
-= Introduction to Flow
+= Introduction to Vaadin Flow
 
 Flow is piece of Vaadin platform that connects the Java ecosystem with the Web Platform. This chapter gives an overview to Vaadin Flow Architecture and introduces Flow's basic concepts.
 
@@ -49,7 +49,7 @@ textField.addValueChangeListener(event ->
 VerticalLayout layout = new VerticalLayout(textField, greeting);
 ----
 
-To discover the available components, see <<../components/tutorial-flow-components-setup#,Using Vaadin Components in Flow>>.
+To discover the available components, see <<../components/tutorial-flow-components-setup#,Using Vaadin Components>>.
 
 === Composing new Components in 100% Java
 
