@@ -1,14 +1,14 @@
 ---
-title: Vaadin Components
+title: Using Vaadin Components
 order: 1
 layout: page
 ---
 
-= Using Vaadin Components in Flow
+= Using Vaadin Components
 
 There is a set of pre-built server-side components with Java API for https://vaadin.com/elements/browse[Vaadin Web Components],
 such as `Button`, `TextField` and so on. Those components are part of the Vaadin 10 platform,
-and are included as a dependency by default in the platform together with Flow.
+and are included as dependencies in the platform together with Flow.
 
 The platform has the following components with Java API available:
 
@@ -20,7 +20,7 @@ The platform has the following components with Java API available:
 - `FormLayout` - https://vaadin.com/elements/vaadin-form-layout/java-examples[Demos], https://github.com/vaadin/vaadin-form-layout-flow[sources and issue tracking]
 - `Grid` - https://vaadin.com/elements/vaadin-grid/java-examples[Demos], <<tutorial-flow-grid#,Documentation>>, https://github.com/vaadin/vaadin-grid-flow[sources and issue tracking]
 - `Icons` - https://vaadin.com/elements/vaadin-icons/java-examples[Demos], <<tutorial-flow-icon#,Documentation>>, https://github.com/vaadin/vaadin-icons-flow[sources and issue tracking]
-- `IronList` - https://github.com/vaadin/vaadin-iron-list-flow[examples, sources and issue tracking] // NO IDEA WHERE DEMO COULD BE DEPLOYED //
+- `IronList` - https://github.com/vaadin/vaadin-iron-list-flow[examples, sources and issue tracking]
 - `Notification` - https://vaadin.com/elements/vaadin-notification/java-examples[Demos], https://github.com/vaadin/vaadin-notification-flow[sources and issue tracking]
 - `HorizontalLayout` & `VerticalLayout` & `FlexLayout` - https://vaadin.com/elements/vaadin-ordered-layout/java-examples[Demos], https://github.com/vaadin/vaadin-ordered-layout-flow[sources and issue tracking]
 - `ProgressBar` - https://vaadin.com/elements/vaadin-progress-bar/java-examples[Demos], https://github.com/vaadin/vaadin-progress-bar-flow[sources and issue tracking]
