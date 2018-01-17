@@ -9,7 +9,7 @@ Keep in mind that Flow provides a way to deal with most of the webjars' issues w
 described in <<../components/tutorial-flow-components-setup#,Using Vaadin Components with Flow>> document.
 
 It is assumed that the reader is familiar with Maven or any other Java dependency manager.
-For clarity, bower webjars and Maven are considered only, but most of the actions are the same for
+For clarity, Bower webjars and Maven are considered only, but most of the actions are the same for
 any build system of package type chosen.
 
 = Adding a webjar to the project
@@ -20,8 +20,8 @@ Maven example:
 [source,xml]
 ----
 <dependency>
-    <groupId>org.webjars.bower</groupId>
-    <artifactId>github-com-polymerelements-paper-button</artifactId>
+    <groupId>org.webjars.bowergithub.polymerelements</groupId>
+    <artifactId>paper-button</artifactId>
     <version>2.0.0</version>
 </dependency>
 ----
@@ -46,9 +46,9 @@ The website pages contain package github url, name and package version list.
 After that you can try and add
 ----
 <dependency>
-    <groupId>org.webjars.bower</groupId>
+    <groupId>org.webjars.bowergithub.polymerelements</groupId>
     <!-- replace %BOWER_NAME% with bower name of the package selected -->
-    <artifactId>github-com-polymerelements-%BOWER_NAME%</artifactId>
+    <artifactId>%BOWER_NAME%</artifactId>
     <!-- replace %BOWER_VERSION% with the version of the package selected -->
     <version>%BOWER_VERSION%</version>
 </dependency>
@@ -91,25 +91,14 @@ It can be used the following way:
 
 Trick here is how to add it. Let's consider `paper-button` dependency.
 Here's how dependency results look like for it:
+  // FIXME
 image:images/webjars_ui.png[WebJars UI]
-
-You may notice one of the biggest issues with webjars: three different names for same entity.
-More details are in the https://github.com/webjars/webjars/issues/1452[corresponding issue]
 
 In order to add a build with simple name without prefixes (`paper-button` in this case), you should use `+` button.
 Even if you click the different `+` button, the name will be in short form.
 
 If you need to add a long name, use `Add a WebJar` button.
 You will need to specify GitHub url, for paper-button it is `https://github.com/PolymerElements/paper-button`.
-Depending ot the case of the url string the long name would be resolved either into `github-com-PolymerElements-paper-button`
-for the example above or into `github-com-polymerelements-paper-button` for `https://github.com/polymerelements/paper-button`.
-
-It is recommended to publish new artifacts in `github-com-polymerelements-paper-button`-alike form, meaning
-that you should use `Add a WebJar` button with lower cased GitHub url.
-Reasons for this are described in the webjars ticket above.
-
-Some dependencies will require a different name as a transitive dependencies, those should be published via different ways.
-It's relatively fine since they are the same from the binary point of view and the issue will be solved by WebJars' developers.
 
 === Webjar is not in Maven Central
 Easiest way to avoid this is to add extra repository url to the project:
@@ -130,13 +119,8 @@ Alternatively, you can republish missing artifacts.
 == WebJar version conflict
 
 After all of the missing dependencies are resolved, final issue may appear: dependency resolution fails.
-This happens because
-
-* resulting WebJars specify their dependencies in version range
-* some WebJars contain version number prefixed with `v` (https://github.com/webjars/webjars/issues/1656)
-* some WebJars contain incorrect version number (https://github.com/webjars/webjars/issues/1636)
-
-Those issues can be fixed by using Maven `dependencyManagement` mechanism or by excluding some transitive dependencies.
+This happens because resulting WebJars specify their dependencies in version range.
+The issue can be fixed by using Maven `dependencyManagement` mechanism or by excluding some transitive dependencies.
 
 A big help in resolving those kind of issues is a command that prints dependency tree for the project:
 [source,maven]

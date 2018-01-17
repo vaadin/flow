@@ -22,7 +22,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bower</groupId>
+            <groupId>org.webjars.bowergithub.polymer</groupId>
             <artifactId>polymer</artifactId>
             <version>2.1.1</version>
         </dependency>

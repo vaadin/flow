@@ -150,7 +150,7 @@ If webjar dependencies are not needed, they can be excluded from the project usi
         <artifactId>vaadin-button-flow</artifactId>
         <exclusions>
             <exclusion>
-                <groupId>org.webjars.bower</groupId>
+                <groupId>org.webjars.bowergithub</groupId>
                 <artifactId>*</artifactId>
             </exclusion>
         </exclusions>
