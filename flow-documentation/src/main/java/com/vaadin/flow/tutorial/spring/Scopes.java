@@ -29,34 +29,51 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 @CodeFor("spring/tutorial-spring-scopes.asciidoc")
 public class Scopes {
 
-    @Route("")
-    public class MainLayout extends Div {
-        public MainLayout(@Autowired Bean bean) {
-            setText(bean.getText());
+    public static class SessionScoped {
+        @Route("")
+        public class MainLayout extends Div {
+            public MainLayout(@Autowired SessionService bean) {
+                setText(bean.getText());
+            }
+
+            public void edit() {
+                getUI().get().navigateTo("editor");
+            }
         }
 
-        public void edit() {
-            getUI().get().navigateTo("editor");
+        @Route("editor")
+        public class Editor extends Div {
+            public Editor(@Autowired SessionService bean) {
+                setText(bean.getText());
+            }
         }
     }
 
-    @Route("editor")
-    public class Editor extends Div {
-        public Editor(@Autowired Bean bean) {
-            setText(bean.getText());
-        }
-    }
+    public static class UIScoped {
+        @Route("")
+        public class MainLayout extends Div {
+            public MainLayout(@Autowired UIService bean) {
+                setText(bean.getText());
+            }
 
-    public interface Bean {
-        String getText();
+            public void edit() {
+                getUI().get().navigateTo("editor");
+            }
+        }
+
+        @Route("editor")
+        public class Editor extends Div {
+            public Editor(@Autowired UIService bean) {
+                setText(bean.getText());
+            }
+        }
     }
 
     @Component
     @VaadinSessionScope
-    public class SessionBean implements Bean {
+    public class SessionService {
         private String uid = UUID.randomUUID().toString();
 
-        @Override
         public String getText() {
             return "session " + uid;
         }
@@ -64,10 +81,9 @@ public class Scopes {
 
     @Component
     @UIScope
-    public class UIBean implements Bean {
+    public class UIService {
         private String uid = UUID.randomUUID().toString();
 
-        @Override
         public String getText() {
             return "ui " + uid;
         }

@@ -17,7 +17,11 @@ To use the add-on, you only need to write one very simple class.
 
 [NOTE]
 Please refer to the https://projects.spring.io/spring-boot/[Spring Boot] 
-project documentation for information about Spring Boot. 
+project and its https://spring.io/docs[documentation page] for information about Spring Boot.
+
+[NOTE]
+There is another section <<tutorial-spring-basic-mvc#,Use Flow with Spring MVC>> in the tutorial which
+describes how to write pure Spring Web application without Spring Boot.
 
 [[example-servlet]]
 [source,java]
