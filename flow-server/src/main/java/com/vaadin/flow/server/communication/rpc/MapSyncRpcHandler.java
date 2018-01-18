@@ -16,8 +16,7 @@
 package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -41,15 +40,13 @@ import elemental.json.JsonObject;
  */
 public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
-    private List<Runnable> pendingChangeEvents = new ArrayList<>();
-
     @Override
     public String getRpcType() {
         return JsonConstants.RPC_TYPE_MAP_SYNC;
     }
 
     @Override
-    protected void handleNode(StateNode node, JsonObject invocationJson) {
+    protected Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_FEATURE);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY_VALUE);
@@ -68,18 +65,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
         ElementPropertyMap elementPropertyMap = (ElementPropertyMap) node
                 .getFeature(feature);
-        Runnable changeEventRunnable = elementPropertyMap
-                .deferredUpdateFromClient(property, value);
-        pendingChangeEvents.add(changeEventRunnable);
-    }
-
-    /**
-     * Triggers and clears all pending property change events that have been
-     * accumulated during the handling of nodes.
-     */
-    public void flushPendingChangeEvents() {
-        pendingChangeEvents.forEach(Runnable::run);
-        pendingChangeEvents.clear();
+        return Optional.of(elementPropertyMap.deferredUpdateFromClient(property, value));
     }
 
     private Serializable tryConvert(Serializable value, StateNode context) {

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.util.Optional;
+
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
@@ -46,7 +48,7 @@ public class AttachExistingElementRpcHandler
     }
 
     @Override
-    protected void handleNode(StateNode node, JsonObject invocationJson) {
+    protected Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_TAG_NAME);
@@ -82,6 +84,8 @@ public class AttachExistingElementRpcHandler
             attachElement(feature, element, index,
                     tree.getNodeById(requestedId), requestedId == assignedId);
         }
+
+        return Optional.empty();
     }
 
     private void attachElement(AttachExistingElementFeature feature,

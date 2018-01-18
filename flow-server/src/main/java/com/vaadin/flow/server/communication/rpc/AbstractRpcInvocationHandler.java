@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,19 +37,19 @@ public abstract class AbstractRpcInvocationHandler
         implements RpcInvocationHandler {
 
     @Override
-    public void handle(UI ui, JsonObject invocationJson) {
+    public Optional<Runnable> handle(UI ui, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_NODE);
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
         if (node == null) {
             getLogger().warn("Got an RPC for non-existent node: {}",
                     getNodeId(invocationJson));
-            return;
+            return Optional.empty();
         }
         if (!node.isAttached()) {
             getLogger().warn("Got an RPC for detached node: {}",
                     getNodeId(invocationJson));
-            return;
+            return Optional.empty();
         }
 
         boolean invokeRpc = true;
@@ -55,18 +57,29 @@ public abstract class AbstractRpcInvocationHandler
             invokeRpc = node.getFeature(VisibilityData.class).isVisible();
         }
         if (invokeRpc) {
-            handleNode(node, invocationJson);
+            return handleNode(node, invocationJson);
         } else {
             // ignore RPC requests from the client side for the nodes that are
             // invisible
             LoggerFactory.getLogger(AbstractRpcInvocationHandler.class).warn(
-                    String.format("RPC request for invocation handler '%s' "
-                            + "is recieved from the client side for concealed node id='%s'",
-                            getClass().getName(), node.getId()));
+                    "RPC request for invocation handler '{}' is recieved from "
+                            + "the client side for concealed node id='{}'",
+                    getClass().getName(), node.getId());
         }
+        return Optional.empty();
     }
 
-    protected abstract void handleNode(StateNode node,
+    /**
+     * Handle the RPC data {@code invocationJson} using target {@code node} as a
+     * context.
+     * 
+     * @param node
+     *            node to handle invocation with, not {@code null}
+     * @param invocationJson
+     *            the RPC data to handle, not {@code null}
+     * @return an optional runnable
+     */
+    protected abstract Optional<Runnable> handleNode(StateNode node,
             JsonObject invocationJson);
 
     private static Logger getLogger() {

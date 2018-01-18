@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.util.Optional;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
@@ -41,7 +43,7 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
     }
 
     @Override
-    public void handle(UI ui, JsonObject invocationJson) {
+    public Optional<Runnable> handle(UI ui, JsonObject invocationJson) {
         History history = ui.getPage().getHistory();
 
         HistoryStateChangeHandler historyStateChangeHandler = history
@@ -62,6 +64,8 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
                     state, new Location(location), trigger);
             historyStateChangeHandler.onHistoryStateChange(event);
         }
+
+        return Optional.empty();
     }
 
 }

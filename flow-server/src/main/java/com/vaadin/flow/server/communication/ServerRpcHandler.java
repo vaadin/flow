@@ -25,11 +25,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
@@ -284,8 +285,7 @@ public class ServerRpcHandler implements Serializable {
         } else {
             // Message id ok, process RPCs
             ui.getInternals().setLastProcessedClientToServerId(expectedId);
-            handleInvocations(ui, rpcRequest.getSyncId(),
-                    rpcRequest.getRpcInvocationsData());
+            handleInvocations(ui, rpcRequest.getRpcInvocationsData());
         }
 
         if (rpcRequest.isResynchronize()) {
@@ -318,34 +318,31 @@ public class ServerRpcHandler implements Serializable {
      *
      * @param ui
      *            the UI receiving the invocations data
-     * @param lastSyncIdSeenByClient
-     *            the most recent sync id the client has seen at the time the
-     *            request was sent
      * @param invocationsData
      *            JSON containing all information needed to execute all
      *            requested RPC calls.
      */
-    private void handleInvocations(UI ui, int lastSyncIdSeenByClient,
-            JsonArray invocationsData) {
-
+    private void handleInvocations(UI ui, JsonArray invocationsData) {
         List<JsonObject> data = new ArrayList<>(invocationsData.length());
+        List<Runnable> pendingChangeEvents = new ArrayList<>();
+
         RpcInvocationHandler mapSyncHandler = getInvocationHandlers()
                 .get(JsonConstants.RPC_TYPE_MAP_SYNC);
+
         for (int i = 0; i < invocationsData.length(); i++) {
             JsonObject invocationJson = invocationsData.getObject(i);
             String type = invocationJson.getString(JsonConstants.RPC_TYPE);
             assert type != null;
             if (JsonConstants.RPC_TYPE_MAP_SYNC.equals(type)) {
-                // Handle these before any RPC
-                mapSyncHandler.handle(ui, invocationJson);
+                // Handle these before any RPC invocations.
+                mapSyncHandler.handle(ui, invocationJson)
+                        .ifPresent(pendingChangeEvents::add);
             } else {
                 data.add(invocationJson);
             }
         }
 
-        if (mapSyncHandler instanceof MapSyncRpcHandler) {
-            ((MapSyncRpcHandler) mapSyncHandler).flushPendingChangeEvents();
-        }
+        pendingChangeEvents.forEach(Runnable::run);
         data.forEach(json -> handleInvocationData(ui, json));
     }
 
@@ -356,7 +353,10 @@ public class ServerRpcHandler implements Serializable {
             throw new IllegalArgumentException(
                     "Unsupported event type: " + type);
         }
-        handler.handle(ui, invocationJson);
+        Optional<Runnable> handle = handler.handle(ui, invocationJson);
+        assert !handle.isPresent() : "RPC handler "
+                + handler.getClass().getName()
+                + " returned a Runnable even though it shouldn't";
     }
 
     protected String getMessage(Reader reader) throws IOException {

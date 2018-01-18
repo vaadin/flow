@@ -63,7 +63,7 @@ public class PublishedServerEventHandlerRpcHandler
     }
 
     @Override
-    public void handleNode(StateNode node, JsonObject invocationJson) {
+    public Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson
                 .hasKey(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
         String methodName = invocationJson
@@ -93,6 +93,7 @@ public class PublishedServerEventHandlerRpcHandler
         invokeMethod(component.get(), component.get().getClass(), methodName,
                 (JsonArray) args);
 
+        return Optional.empty();
     }
 
     static void invokeMethod(Component instance, Class<?> clazz,
