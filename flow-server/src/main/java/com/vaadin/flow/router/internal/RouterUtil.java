@@ -224,7 +224,7 @@ public final class RouterUtil {
 
     /**
      * Get the top most parent layout for navigation target {@link Route}
-     * annotation.
+     * annotation or a non route target with {@link ParentLayout}.
      *
      * @param component
      *            navigation target to get top most parent for
@@ -248,7 +248,8 @@ public final class RouterUtil {
 
     /**
      * Get the top most parent layout for navigation target according to the
-     * {@link Route} or {@link RouteAlias} annotation.
+     * {@link Route} or {@link RouteAlias} annotation. Also handles non route
+     * targets with {@link ParentLayout}.
      *
      * @param component
      *            navigation target to get top most parent for
