@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,6 +169,9 @@ public class UIInternals implements Serializable {
     private AbstractTheme theme = null;
     private final Map<String, String> urlTranslations = new HashMap<>();
     private final Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations = new HashMap<>();
+
+    private static final Pattern componentSource = Pattern
+            .compile(".*/src/vaadin-([\\w\\-]*).html");
 
     /**
      * Creates a new instance for the given UI.
@@ -658,6 +663,8 @@ public class UIInternals implements Serializable {
         } else {
             cacheThemeTranslations(theme);
             theme = null;
+            getLogger().warn("No @Theme defined for {}",
+                    target.getClass().getName());
         }
     }
 
@@ -783,17 +790,26 @@ public class UIInternals implements Serializable {
     }
 
     private String getHtmlImportValue(HtmlImport html) {
+        String importValue = html.value();
         if (theme != null) {
-            String translation = urlTranslations.get(html.value());
+            String translation = urlTranslations.get(importValue);
             if (translation != null) {
                 return translation;
             }
-            String translatedUrl = theme.getTranslatedUrl(html.value(),
+            String translatedUrl = theme.getTranslatedUrl(importValue,
                     VaadinServlet.getCurrent().getServletResources().stream());
-            urlTranslations.put(html.value(), translatedUrl);
+            urlTranslations.put(importValue, translatedUrl);
             return translatedUrl;
+        } else {
+            Matcher componentMatcher = componentSource.matcher(importValue);
+            if (componentMatcher.matches()) {
+                String componentName = componentMatcher.group(1);
+                getLogger().warn(
+                        "Missing theme definition. Even though using Vaadin component {}.",
+                        componentName);
+            }
         }
-        return html.value();
+        return importValue;
     }
 
     /**
