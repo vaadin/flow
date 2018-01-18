@@ -125,7 +125,7 @@ public class ErrorStateRenderer implements NavigationHandler {
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
 
-        ui.getInternals().showRouteTarget(event.getLocation(),
+        ui.getInternals().showRouteTarget(event.getLocation(), null,
                 componentInstance, routerLayouts);
 
         RouterUtil.updatePageTitle(event, componentInstance);

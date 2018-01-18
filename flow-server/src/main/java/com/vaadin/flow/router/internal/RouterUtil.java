@@ -254,7 +254,7 @@ public final class RouterUtil {
      *            navigation target to get top most parent for
      * @param path
      *            path used to get navigation target so we know which annotation
-     *            to handle
+     *            to handle or null for error views.
      * @return top parent layout for target or null if none found
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
@@ -267,6 +267,12 @@ public final class RouterUtil {
                 && path.equals(getRoutePath(component, route.get()))
                 && !route.get().layout().equals(UI.class)) {
             return recuseToTopLayout(route.get().layout());
+        } else if (path == null) {
+            Optional<ParentLayout> parentLayout = AnnotationReader
+                    .getAnnotationFor(component, ParentLayout.class);
+            if (parentLayout.isPresent()) {
+                return recuseToTopLayout(parentLayout.get().value());
+            }
         } else {
             Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
                     component, path, routeAliases);

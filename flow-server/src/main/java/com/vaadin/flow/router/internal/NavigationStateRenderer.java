@@ -27,10 +27,10 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.ErrorNavigationEvent;
@@ -167,7 +167,8 @@ public class NavigationStateRenderer implements NavigationHandler {
                 .subList(1, chain.size());
 
         ui.getInternals().showRouteTarget(event.getLocation(),
-                componentInstance, routerLayouts);
+                navigationState.getResolvedPath(), componentInstance,
+                routerLayouts);
 
         RouterUtil.updatePageTitle(event, componentInstance);
 
@@ -289,8 +290,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         return TransitionOutcome.FINISHED;
     }
 
-    private int reroute(NavigationEvent event,
-            BeforeEvent beforeNavigation) {
+    private int reroute(NavigationEvent event, BeforeEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getRerouteTarget();
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
