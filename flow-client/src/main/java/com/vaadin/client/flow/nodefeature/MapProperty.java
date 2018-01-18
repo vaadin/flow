@@ -36,6 +36,12 @@ public class MapProperty implements ReactiveValue {
     private final String name;
     private final NodeMap map;
 
+    /**
+     * Indicates that the server update is in progress. While this is true we
+     * don't accept any changes via {@link #syncToServer(Object)} method.
+     */
+    private boolean isServerUpdate;
+
     private final ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent> eventRouter = new ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent>(
             this) {
         @Override
@@ -120,11 +126,12 @@ public class MapProperty implements ReactiveValue {
      *            the new property value
      */
     public void setValue(Object value) {
-        if (hasValue && Objects.equals(value, this.value)) {
-            // Nothing to do
-            return;
-        }
-        updateValue(value, true);
+        // mark as server update is in progress
+        isServerUpdate = true;
+        doSetValue(value);
+        // unmark server update in the end of flush meaning in the end of the
+        // current server request processing
+        Reactive.addPostFlushListener(() -> isServerUpdate = false);
     }
 
     /**
@@ -141,8 +148,21 @@ public class MapProperty implements ReactiveValue {
      */
     public void removeValue() {
         if (hasValue) {
+            // mark as server update is in progress
+            isServerUpdate = true;
             updateValue(null, false);
+            // unmark server update in the end of flush meaning in the end of
+            // the current server request processing
+            Reactive.addPostFlushListener(() -> isServerUpdate = false);
         }
+    }
+
+    private void doSetValue(Object value) {
+        if (hasValue && Objects.equals(value, this.value)) {
+            // Nothing to do
+            return;
+        }
+        updateValue(value, true);
     }
 
     private void updateValue(Object value, boolean hasValue) {
@@ -245,11 +265,19 @@ public class MapProperty implements ReactiveValue {
     public void syncToServer(Object newValue) {
         Object currentValue = hasValue() ? getValue() : null;
 
-        if (!Objects.equals(newValue, currentValue)) {
+        if (Objects.equals(newValue, currentValue)) {
+            // in case we are here with the same value that has been set from
+            // the server then we unlock client side updates already here via
+            // unmarking the server update flag. It allows another client side
+            // potential change for the same property being propagated to the
+            // server once the server value is set successfully (e.g. mutation
+            // the same property from its observer).
+            isServerUpdate = false;
+        } else if (!isServerUpdate) {
             StateNode node = getMap().getNode();
             StateTree tree = node.getTree();
             if (tree.isActive(node)) {
-                setValue(newValue);
+                doSetValue(newValue);
 
                 tree.sendNodePropertySyncToServer(this);
             } else {
