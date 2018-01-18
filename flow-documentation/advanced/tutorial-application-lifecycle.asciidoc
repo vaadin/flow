@@ -74,10 +74,9 @@ overriding the [methodname]#servletInitialized()# method, where the
 ----
 public class MyServlet extends VaadinServlet {
     @Override
-    protected void servletInitialized()
-            throws ServletException {
+    protected void servletInitialized() throws ServletException {
         super.servletInitialized();
-        ...
+        //...
     }
 }
 ----
@@ -284,7 +283,8 @@ public class MainLayout extends Div {
         UI ui = getUI().get(); 
         Button button = new Button("Logout", event -> {
             // Redirect this page immediately
-            ui.getPage().executeJavaScript("window.location.href='logout.html'");
+            ui.getPage().executeJavaScript(
+                        "window.location.href='logout.html'");
 
             // Close the session
             ui.getSession().close();
