@@ -108,6 +108,7 @@ and keep the page state intact. The following tutorials explain how to use the R
 * <<spring/tutorial-spring-examples#,Getting Started with Spring and Flow>>
 
 == Advanced Topics
+* <<advanced/tutorial-application-lifecycle#,Application Lifecycle>>
 * <<advanced/tutorial-i18n-localization#,Application Localization (I18N)>>
 * <<advanced/tutorial-bootstrap#,Modifying the bootstrap page>>
 * <<advanced/tutorial-flow-runtime-configuration#,Flow runtime configuration>>

@@ -8,6 +8,24 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 = Vaadin Spring Scopes
 
+== Contexts and Scopes
+
+__Contexts__ in Spring are services that manage the lifecycle of objects and
+handle their injection. Generally speaking, a context is a situation in which an
+instance is used with a unique identity. Such objects are essentially
+"singletons" in the context. While conventional singletons are application-wide,
+objects managed by a Spring container can be "singletons" in a more narrow
+__scope__: a user session, a particular UI instance associated with the session 
+or even just a single request. Such a context defines the
+lifecycle of the object: its creation, use, and finally its destruction.
+
+== Scopes
+
+As in programming languages, where a variable name refers to a unique object
+within the scope of the variable, an object has unique identity within a scope
+in Spring. However, instead of identifying the objects by variable names, they
+are identified by their type (object class) and any qualifiers they may have.
+
 In addition to standard Spring scope the Spring add-on introduces two new scopes:
 `VaadinSessionScope` and `UIScope`.
 
