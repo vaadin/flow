@@ -301,7 +301,18 @@ public class BootstrapHandlerTest {
     @Tag(Tag.DIV)
     @Theme(MyTheme.class)
     public static class MyThemeTest extends Component {
+    }
 
+    @Tag(Tag.DIV)
+    @Theme(MyTheme.class)
+    public static class MyThemeParent extends Component
+            implements RouterLayout {
+    }
+
+    @Route("")
+    @RouteAlias(value = "alias", layout = MyThemeParent.class)
+    @Tag(Tag.DIV)
+    public static class MyAliasThemeTest extends Component {
     }
 
     private TestUI testUI;
@@ -902,6 +913,55 @@ public class BootstrapHandlerTest {
         Assert.assertTrue("Style should have been wrapped in custom style",
                 page.body().toString().contains(
                         "<custom-style><style include=\"lumo-typography\"></style></custom-style>"));
+    }
+
+    @Test // 3333
+    public void theme_contents_are_appended_to_head_for_alias_route()
+            throws InvalidRouteConfigurationException {
+        HttpServletRequest request = createRequest();
+        Mockito.doAnswer(invocation -> "/alias").when(request).getPathInfo();
+        VaadinServletRequest aliasRequest = new VaadinServletRequest(request,
+                service);
+
+        initUI(testUI, aliasRequest,
+                Collections.singleton(MyAliasThemeTest.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(aliasRequest, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertEquals("Custom style should have been added to head.",
+                "<link rel=\"import\" href=\"frontend://bower_components/vaadin-lumo-styles/color.html\">",
+                allElements.get(allElements.size() - 2).toString());
+        Assert.assertEquals("Custom style should have been added to head.",
+                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">",
+                allElements.get(allElements.size() - 1).toString());
+
+        allElements = page.body().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals("Custom style should have been added to head.",
+                "<custom-style><style include=\"lumo-typography\"></style></custom-style>",
+                allElements.get(2).toString());
+
+        Assert.assertTrue("Style should have been wrapped in custom style",
+                page.body().toString().contains(
+                        "<custom-style><style include=\"lumo-typography\"></style></custom-style>"));
+    }
+
+    @Test // 3333
+    public void theme_contents_are_not_appended_to_head_for_root_route()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyAliasThemeTest.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Assert.assertFalse("Page head should not contain any Lumo imports.",
+                page.head().toString().contains("vaadin-lumo"));
+        Assert.assertFalse("Page body should not have custom styles",
+                page.body().toString().contains("<custom-style>"));
+
     }
 
     @Test
