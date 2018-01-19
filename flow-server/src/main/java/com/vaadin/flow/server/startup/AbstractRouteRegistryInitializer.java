@@ -115,19 +115,21 @@ public abstract class AbstractRouteRegistryInitializer {
     /* Route validator methods for bootstrap implementations */
     private void validateRouteImplementation(Class<?> route,
             Class<?> implementation) {
-        if (!UI.class.equals(route.getAnnotation(Route.class).layout())) {
+        Route annotation = route.getAnnotation(Route.class);
+        if (!UI.class.equals(annotation.layout())) {
             if (implementation.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s needs to be the top parent layout '%s' not '%s'",
                                 implementation.getSimpleName(),
-                                RouterUtil.getTopParentLayout(route).getName(),
+                                RouterUtil.getTopParentLayout(route,
+                                        annotation.value()).getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
-                    .getParentLayouts(route);
+                    .getParentLayouts(route, annotation.value());
             Class<? extends RouterLayout> topParentLayout = RouterUtil
-                    .getTopParentLayout(route);
+                    .getTopParentLayout(route, annotation.value());
 
             validateParentImplementation(parentLayouts, topParentLayout,
                     implementation);
@@ -183,19 +185,21 @@ public abstract class AbstractRouteRegistryInitializer {
     /* Route validator methods for bootstrap annotations */
     private void validateRouteAnnotation(Class<?> route,
             Class<? extends Annotation> annotation) {
-        if (!UI.class.equals(route.getAnnotation(Route.class).layout())) {
+        Route routeAnnotation = route.getAnnotation(Route.class);
+        if (!UI.class.equals(routeAnnotation.layout())) {
             if (route.isAnnotationPresent(annotation)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
                                 annotation.getSimpleName(),
-                                RouterUtil.getTopParentLayout(route).getName(),
+                                RouterUtil.getTopParentLayout(route,
+                                        routeAnnotation.value()).getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
-                    .getParentLayouts(route);
+                    .getParentLayouts(route, routeAnnotation.value());
             Class<? extends RouterLayout> topParentLayout = RouterUtil
-                    .getTopParentLayout(route);
+                    .getTopParentLayout(route, routeAnnotation.value());
 
             validateParentAnnotation(parentLayouts, topParentLayout,
                     annotation);

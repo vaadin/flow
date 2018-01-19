@@ -369,7 +369,7 @@ public class RouterUtilTest {
     @Test
     public void also_non_routes_can_be_used_to_get_top_parent_layout() {
         Class<? extends RouterLayout> topParentLayout = RouterUtil
-                .getTopParentLayout(MiddleParent.class);
+                .getTopParentLayout(MiddleParent.class, null);
         Assert.assertEquals(
                 "Middle parent should have gotten Parent as top parent layout",
                 Parent.class, topParentLayout);

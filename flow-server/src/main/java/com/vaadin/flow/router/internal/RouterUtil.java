@@ -223,30 +223,6 @@ public final class RouterUtil {
     }
 
     /**
-     * Get the top most parent layout for navigation target {@link Route}
-     * annotation or a non route target with {@link ParentLayout}.
-     *
-     * @param component
-     *            navigation target to get top most parent for
-     * @return top parent layout for target or null if none found
-     */
-    public static Class<? extends RouterLayout> getTopParentLayout(
-            Class<?> component) {
-        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
-                Route.class);
-        if (route.isPresent() && !route.get().layout().equals(UI.class)) {
-            return recuseToTopLayout(route.get().layout());
-        } else {
-            Optional<ParentLayout> parentLayout = AnnotationReader
-                    .getAnnotationFor(component, ParentLayout.class);
-            if (parentLayout.isPresent()) {
-                return recuseToTopLayout(parentLayout.get().value());
-            }
-        }
-        return null;
-    }
-
-    /**
      * Get the top most parent layout for navigation target according to the
      * {@link Route} or {@link RouteAlias} annotation. Also handles non route
      * targets with {@link ParentLayout}.
@@ -260,6 +236,16 @@ public final class RouterUtil {
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
             final Class<?> component, final String path) {
+        if (path == null) {
+            Optional<ParentLayout> parentLayout = AnnotationReader
+                    .getAnnotationFor(component, ParentLayout.class);
+            if (parentLayout.isPresent()) {
+                return recuseToTopLayout(parentLayout.get().value());
+            }
+            // No need to check for Route or RouteAlias as the path is null
+            return null;
+        }
+
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
         List<RouteAlias> routeAliases = AnnotationReader
@@ -268,12 +254,6 @@ public final class RouterUtil {
                 && path.equals(getRoutePath(component, route.get()))
                 && !route.get().layout().equals(UI.class)) {
             return recuseToTopLayout(route.get().layout());
-        } else if (path == null) {
-            Optional<ParentLayout> parentLayout = AnnotationReader
-                    .getAnnotationFor(component, ParentLayout.class);
-            if (parentLayout.isPresent()) {
-                return recuseToTopLayout(parentLayout.get().value());
-            }
         } else {
             Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
                     component, path, routeAliases);
