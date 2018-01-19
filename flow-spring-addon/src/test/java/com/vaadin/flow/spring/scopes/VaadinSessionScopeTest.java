@@ -31,9 +31,10 @@ import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.spring.SpringVaadinSession;
-import com.vaadin.flow.spring.scopes.BeanStore;
-import com.vaadin.flow.spring.scopes.VaadinSessionScope;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class VaadinSessionScopeTest extends AbstractScopeTest {
 
     @Before
