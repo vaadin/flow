@@ -1,5 +1,5 @@
 ---
-title: Modifying the bootstrap page
+title: Application Lifecycle
 order: 1
 layout: page
 ---
