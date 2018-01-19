@@ -32,6 +32,11 @@ In addition to standard Spring scope the Spring add-on introduces two new scopes
 `VaadinSessionScope` manages the Spring beans during Vaadin Session lifecycle.
 It means that the same bean instance will be used within the whole Vaadin session.
 
+[NOTE]
+Please refer to <<advanced/tutorial-application-lifecycle#application.lifecycle.session,User Session>> 
+section of <<advanced/tutorial-application-lifecycle#,Application Lifecycle>> tutorial
+for details about the Vaadin Session lifecycle.
+
 [source,java]
 ----
 @Route("")
@@ -67,6 +72,11 @@ is the same even though the tabs (and `UI` instances) are different.
 
 The `@UIScope` manages the Spring beans during the `UI` lifecycle. Similar to the example above
 the `UIService` will be the same while we are in the same `UI` since it's ui scoped now.
+
+[NOTE]
+Please refer to <<advanced/tutorial-application-lifecycle#application.lifecycle.ui,Loading a UI>> 
+section of <<advanced/tutorial-application-lifecycle#,Application Lifecycle>> tutorial
+for details about the `UI` lifecycle.
 
 [source,java]
 ----
