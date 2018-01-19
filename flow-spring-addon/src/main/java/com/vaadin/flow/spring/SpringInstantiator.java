@@ -17,11 +17,13 @@ package com.vaadin.flow.spring;
 
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -68,6 +70,20 @@ public class SpringInstantiator extends DefaultInstantiator {
     @Override
     public <T extends Component> T createComponent(Class<T> componentClass) {
         return getObject(componentClass);
+    }
+
+    @Override
+    public I18NProvider getI18NProvider() {
+        int beansCount = context.getBeanNamesForType(I18NProvider.class).length;
+        if (beansCount == 1) {
+            return context.getBean(I18NProvider.class);
+        } else {
+            LoggerFactory.getLogger(SpringInstantiator.class.getName()).info(
+                    "The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
+                            + "falling back to the default behavior",
+                    I18NProvider.class.getSimpleName(), beansCount);
+            return super.getI18NProvider();
+        }
     }
 
     private <T> T getObject(Class<T> type) {

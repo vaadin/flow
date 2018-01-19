@@ -16,6 +16,8 @@
 package com.vaadin.flow.spring.instantiator;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,6 +43,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletService;
@@ -79,6 +82,27 @@ public class SpringInstantiatorTest {
 
     }
 
+    @Component
+    public static class I18NTestProvider implements I18NProvider {
+
+        @Override
+        public List<Locale> getProvidedLocales() {
+            return null;
+        }
+
+        @Override
+        public String getTranslation(String key, Object... params) {
+            return null;
+        }
+
+        @Override
+        public String getTranslation(String key, Locale locale,
+                Object... params) {
+            return null;
+        }
+
+    }
+
     @Test
     public void createRouteTarget_pojo_instanceIsCreated()
             throws ServletException {
@@ -110,6 +134,16 @@ public class SpringInstantiatorTest {
 
         Assert.assertEquals(singleton,
                 instantiator.createRouteTarget(RouteTarget2.class, null));
+    }
+
+    @Test
+    public void getI18NProvider_i18nProviderIsABean_i18nProviderIsAvailable()
+            throws ServletException {
+        Instantiator instantiator = getInstantiator(context);
+
+        Assert.assertNotNull(instantiator.getI18NProvider());
+        Assert.assertEquals(I18NTestProvider.class,
+                instantiator.getI18NProvider().getClass());
     }
 
     public static VaadinServletService getService(ApplicationContext context,

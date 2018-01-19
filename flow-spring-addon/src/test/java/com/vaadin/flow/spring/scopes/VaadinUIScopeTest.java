@@ -37,8 +37,10 @@ import com.vaadin.flow.router.legacy.ImmutableRouterConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.spring.SpringVaadinSession;
-import com.vaadin.flow.spring.scopes.VaadinUIScope;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class VaadinUIScopeTest extends AbstractScopeTest {
 
     @Before
