@@ -43,7 +43,7 @@ import com.vaadin.flow.server.VaadinServlet;
 @WebListener
 public class ServletDeployer implements ServletContextListener {
 
-    private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because ";
+    private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
