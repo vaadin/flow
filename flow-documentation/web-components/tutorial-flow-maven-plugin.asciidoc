@@ -234,31 +234,35 @@ Each fragment should have its name and at least one file specified.
 
 Same result may be achieved with a custom configuration file instead.
 Fragments are configured by adding a `fragments` object to your bundle configuration file.
-The `fragments` object should be an array of arrays, where each array defines which dependencies
-belong in one particular fragment.
+The `fragments` object should be an array of objects, where each object defines a fragment name and files that belong to the fragment.
 
 ```json
 {
   "fragments": [
-    [
-      "bower_components/vaadin-icons/vaadin-icons.html"
-    ],
-
-    [
-      "bower_components/vaadin-form-layout/vaadin-form-layout.html",
-      "bower_components/vaadin-form-layout/vaadin-form-item.html",
-      "bower_components/vaadin-text-field/vaadin-text-field.html",
-      "bower_components/vaadin-text-field/vaadin-password-field.html",
-      "bower_components/vaadin-combo-box/vaadin-combo-box.html"
-    ],
-
-    [
-      "gridConnector.js",
-      "vaadin-grid-flow-selection-column.html",
-      "bower_components/vaadin-grid/vaadin-grid.html",
-      "bower_components/vaadin-grid/vaadin-grid-column-group.html",
-      "bower_components/vaadin-grid/vaadin-grid-sorter.html"
-    ]
+    {
+      "name": "icons-fragment",
+      "files": ["bower_components/vaadin-icons/vaadin-icons.html"]
+    },
+    {
+      "name": "important-components",
+      "files": [
+         "bower_components/vaadin-form-layout/vaadin-form-layout.html",
+         "bower_components/vaadin-form-layout/vaadin-form-item.html",
+         "bower_components/vaadin-text-field/vaadin-text-field.html",
+         "bower_components/vaadin-text-field/vaadin-password-field.html",
+         "bower_components/vaadin-combo-box/vaadin-combo-box.html"
+       ]
+    },
+    {
+      "name": "grid-fragment",
+      "files": [
+         "gridConnector.js",
+         "vaadin-grid-flow-selection-column.html",
+         "bower_components/vaadin-grid/vaadin-grid.html",
+         "bower_components/vaadin-grid/vaadin-grid-column-group.html",
+         "bower_components/vaadin-grid/vaadin-grid-sorter.html"
+       ]
+    }
   ]
 }
 ```

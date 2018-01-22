@@ -173,9 +173,9 @@ public class FrontendToolsManager {
             throw new IllegalArgumentException(String.format("es6SourceDirectory '%s' is not a directory or does not exist", es6SourceDirectory));
         }
 
-        Set<Set<String>> fragments = userDefinedFragments.isEmpty() ? getFragments() : new HashSet<>(userDefinedFragments.values());
+        Map<String, Set<String>> fragments = userDefinedFragments.isEmpty() ? getFragments() : userDefinedFragments;
         Set<String> fragmentFiles = createFragmentFiles(es6SourceDirectory, fragments);
-        String shellFile = createShellFile(es6SourceDirectory, fragments);
+        String shellFile = createShellFile(es6SourceDirectory, fragments.values());
 
         ImmutableMap.Builder<String, String> gulpFileParameters = new ImmutableMap.Builder<String, String>()
                 .put("{skip_es5}", Boolean.toString(skipEs5))
@@ -202,11 +202,11 @@ public class FrontendToolsManager {
         return transpilationResults;
     }
 
-    private Set<Set<String>> getFragments() {
+    private Map<String, Set<String>> getFragments() {
         if (bundleConfigurationFile != null && bundleConfigurationFile.isFile()) {
             return new BundleConfigurationReader(bundleConfigurationFile).getFragments();
         }
-        return Collections.emptySet();
+        return Collections.emptyMap();
     }
 
     private void addTranspilationResult(Map<String, File> transpilationResults, File outputDirectory, String configurationName) {
@@ -244,7 +244,7 @@ public class FrontendToolsManager {
                 .replace(ApplicationConstants.BASE_PROTOCOL_PREFIX, "");
     }
 
-    private String createShellFile(File es6SourceDirectory, Set<Set<String>> fragments) {
+    private String createShellFile(File es6SourceDirectory, Collection<Set<String>> fragments) {
         Set<String> fragmentImports = fragments.stream().flatMap(Set::stream).collect(Collectors.toSet());
         Path shellFile = workingDirectory.toPath().resolve("vaadin-flow-bundle.html");
         try {
@@ -255,13 +255,14 @@ public class FrontendToolsManager {
         }
     }
 
-    private Set<String> createFragmentFiles(File es6SourceDirectory, Set<Set<String>> fragments) {
-        int fragmentNumber = 0;
+    private Set<String> createFragmentFiles(File es6SourceDirectory, Map<String, Set<String>> fragments) {
         Set<String> createdFragmentFiles = new HashSet<>();
-        for (Set<String> fragment : fragments) {
-            fragmentNumber++;
-            String fragmentFileName = "vaadin-flow-fragment-" + fragmentNumber + ".html";
-            List<String> fragmentImports = fragment.stream()
+
+        for (Map.Entry<String, Set<String>> fragmentData : fragments.entrySet()) {
+            String fragmentName = fragmentData.getKey();
+            Set<String> fragmentPath = fragmentData.getValue();
+            String fragmentFileName = fragmentName + ".html";
+            List<String> fragmentImports = fragmentPath.stream()
                     .map(fragmentImportPath -> getFragmentFile(es6SourceDirectory, fragmentImportPath))
                     .map(this::relativeToWorkingDirectory)
                     .map(this::formatImport)
