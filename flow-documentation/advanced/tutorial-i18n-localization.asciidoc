@@ -62,6 +62,12 @@ Or when using the `web.xml` file:
 </web-app>
 ----
 
+You may provide a `I18NProvider` as a bean in case you are using Spring. All you need in this case
+it's just annotate your implementation with `@Component` so it becomes available as a Spring bean.
+Spring add-on will automatically use it in case if it's available. See the class
+https://github.com/vaadin/flow-spring-tutorial/blob/master/src/main/java/org/vaadin/spring/tutorial/SimpleI18NProvider.java[SimpleI18NProvider.java] 
+implemented in the tutorial project as an example. 
+
 ==== Locale selection for new session
 The initial locale is decided by matching the locales provided by the `I18NProvider`
 against the `Accept-Language` header in the initial response from the client.
