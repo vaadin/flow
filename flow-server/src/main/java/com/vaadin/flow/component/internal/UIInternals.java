@@ -55,8 +55,6 @@ import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.router.legacy.HasChildView;
 import com.vaadin.flow.router.legacy.View;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
@@ -64,6 +62,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.template.angular.TemplateNode;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -664,7 +664,7 @@ public class UIInternals implements Serializable {
         } else {
             cacheThemeTranslations(theme);
             theme = null;
-            getLogger().warn("No @Theme defined for {}",
+            getLogger().warn("No @Theme defined for {}. See 'trace' level logs for exact components missing theming.",
                     target.getClass().getName());
         }
     }
@@ -805,8 +805,8 @@ public class UIInternals implements Serializable {
             Matcher componentMatcher = componentSource.matcher(importValue);
             if (componentMatcher.matches()) {
                 String componentName = componentMatcher.group(1);
-                getLogger().warn(
-                        "Missing theme definition. Even though using Vaadin component {}.",
+                getLogger().trace(
+                        "Vaadin component '{}' is used and missing theme definition.",
                         componentName);
             }
         }
