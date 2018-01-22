@@ -16,6 +16,7 @@
 package com.vaadin.flow.spring;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -40,14 +41,19 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.startup.AbstractAnnotationValidator;
 import com.vaadin.flow.server.startup.AbstractCustomElementRegistryInitializer;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Servlet context initializer for Spring Boot Application.
@@ -97,7 +103,7 @@ public class VaadinServletContextInitializer
             // no need to do anything
         }
 
-    };
+    }
 
     private class CustomElementServletContextListener
             extends AbstractCustomElementRegistryInitializer
@@ -121,7 +127,7 @@ public class VaadinServletContextInitializer
             // no need to do anything
         }
 
-    };
+    }
 
     private class ErrorParameterServletContextListener
             implements ServletContextListener {
@@ -148,7 +154,34 @@ public class VaadinServletContextInitializer
             // no need to do anything
         }
 
-    };
+    }
+
+    private class AnnotationValidatorServletContextListener extends
+            AbstractAnnotationValidator implements ServletContextListener {
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void contextInitialized(ServletContextEvent event) {
+            Stream<Class<? extends Annotation>> annotations = getAnnotations()
+                    .stream()
+                    .map(annotation -> (Class<? extends Annotation>) annotation);
+            validateClasses(
+                    findByAnnotation(getCustomElementPackages(), annotations)
+                            .collect(Collectors.toList()));
+        }
+
+        @Override
+        public void contextDestroyed(ServletContextEvent sce) {
+            // no need to do anything
+        }
+
+        @Override
+        protected List<Class<?>> getAnnotations() {
+            return Arrays.asList(Viewport.class, BodySize.class, Inline.class,
+                    Theme.class);
+        }
+
+    }
 
     /**
      * Creates a new {@link ServletContextInitializer} instance with application
@@ -196,15 +229,23 @@ public class VaadinServletContextInitializer
                     .addListener(new CustomElementServletContextListener());
         }
 
+        servletContext
+                .addListener(new AnnotationValidatorServletContextListener());
     }
 
     @SuppressWarnings("unchecked")
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
             Class<? extends Annotation>... annotations) {
+        return findByAnnotation(packages, Stream.of(annotations));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Stream<Class<?>> findByAnnotation(Collection<String> packages,
+            Stream<Class<? extends Annotation>> annotations) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         scanner.setResourceLoader(appContext);
-        Stream.of(annotations).forEach(annotation -> scanner
+        annotations.forEach(annotation -> scanner
                 .addIncludeFilter(new AnnotationTypeFilter(annotation)));
 
         return packages.stream().map(scanner::findCandidateComponents)
