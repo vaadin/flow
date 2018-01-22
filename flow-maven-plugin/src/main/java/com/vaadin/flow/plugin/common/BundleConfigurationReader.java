@@ -43,6 +43,9 @@ public class BundleConfigurationReader {
      *
      * @param bundleConfigurationFile
      *            the file used to read configuration properties from
+     *
+     * @throws UncheckedIOException if fails to read the json file from the file system
+     * @throws IllegalArgumentException if fails to parse json provided
      */
     public BundleConfigurationReader(File bundleConfigurationFile) {
         Objects.requireNonNull(bundleConfigurationFile, "Bundle configuration file cannot be null.");
@@ -65,6 +68,8 @@ public class BundleConfigurationReader {
      * are to be included in the final produced fragment file.
      *
      * @return the fragments defined in the configuration file
+     *
+     * @throws IllegalStateException if parsed json file does not contain valid fragment data
      */
     public Map<String, Set<String>> getFragments() {
         Map<String, Set<String>> fragments = new HashMap<>();
@@ -77,7 +82,7 @@ public class BundleConfigurationReader {
         try {
             fragmentsArray = bundleConfigurationJSON.getJSONArray("fragments");
         } catch (JSONException e) {
-            throw new IllegalArgumentException("The 'fragments' property of a given bundle configuration should be an array.", e);
+            throw new IllegalStateException("The 'fragments' property of a given bundle configuration should be an array.", e);
         }
 
         for (int i = 0; i < fragmentsArray.length(); ++i) {
@@ -85,7 +90,7 @@ public class BundleConfigurationReader {
             try {
                 fragment = fragmentsArray.getJSONObject(i);
             } catch (JSONException e) {
-                throw new IllegalArgumentException("The 'fragments' array of a given bundle configuration should contain fragment objects only.", e);
+                throw new IllegalStateException("The 'fragments' array of a given bundle configuration should contain fragment objects only.", e);
             }
             String fragmentName = extractFragmentName(fragment);
             fragments.put(fragmentName, extractFragmentFiles(fragment, fragmentName));
@@ -98,10 +103,10 @@ public class BundleConfigurationReader {
         try {
             fragmentName = fragment.getString("name");
         } catch (JSONException e) {
-            throw new IllegalArgumentException("Each fragment object in json configuration should have `name` string field specified", e);
+            throw new IllegalStateException("Each fragment object in json configuration should have `name` string field specified", e);
         }
         if (fragmentName == null || fragmentName.isEmpty()) {
-            throw new IllegalArgumentException("Each fragment object in json configuration should have non empty name");
+            throw new IllegalStateException("Each fragment object in json configuration should have non empty name");
         }
         return fragmentName;
     }
@@ -111,7 +116,7 @@ public class BundleConfigurationReader {
         try {
             fragmentFiles = fragment.getJSONArray("files");
         } catch (JSONException e) {
-            throw new IllegalArgumentException(String.format("Fragment with name '%s' has no `files` array field specified.", fragmentName), e);
+            throw new IllegalStateException(String.format("Fragment with name '%s' has no `files` array field specified.", fragmentName), e);
         }
 
         Set<String> files = Sets.newHashSetWithExpectedSize(fragmentFiles.length());
@@ -119,12 +124,12 @@ public class BundleConfigurationReader {
             try {
                 files.add(fragmentFiles.getString(j));
             } catch (JSONException e) {
-                throw new IllegalArgumentException(String.format("The 'files' array of a fragment with name '%s' should only contain string file paths", fragmentName), e);
+                throw new IllegalStateException(String.format("The 'files' array of a fragment with name '%s' should only contain string file paths", fragmentName), e);
             }
         }
 
         if (files.isEmpty()) {
-            throw new IllegalArgumentException(String.format("Fragment with name '%s' has no files specified, each fragment should have at least one file specified", fragmentName));
+            throw new IllegalStateException(String.format("Fragment with name '%s' has no files specified, each fragment should have at least one file specified", fragmentName));
         }
         return files;
     }

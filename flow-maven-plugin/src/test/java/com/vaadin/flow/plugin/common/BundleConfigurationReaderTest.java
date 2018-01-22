@@ -58,7 +58,7 @@ public class BundleConfigurationReaderTest {
     @Test
     public void non_array_fragments_property_throws() throws IOException {
         Files.write(configFile.toPath(), Collections.singletonList("{'fragments':{}}"), StandardCharsets.UTF_8);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("fragments");
 
         new BundleConfigurationReader(configFile).getFragments();
@@ -67,7 +67,7 @@ public class BundleConfigurationReaderTest {
     @Test
     public void only_arrays_of_objects_allowed_in_the_fragments_array() throws IOException {
         Files.write(configFile.toPath(), Collections.singletonList("{'fragments':['', []]}"), StandardCharsets.UTF_8);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("fragments");
 
         new BundleConfigurationReader(configFile).getFragments();
@@ -90,7 +90,7 @@ public class BundleConfigurationReaderTest {
     @Test
     public void fragments_without_name_throw_exception() throws IOException {
         Files.write(configFile.toPath(), Collections.singletonList("{'fragments':[ {'files': ['one']} ]}"), StandardCharsets.UTF_8);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("name");
 
         new BundleConfigurationReader(configFile).getFragments();
@@ -99,7 +99,7 @@ public class BundleConfigurationReaderTest {
     @Test
     public void fragments_with_name_not_string_throw_exception2() throws IOException {
         Files.write(configFile.toPath(), Collections.singletonList("{'fragments':[ {'name': {}, 'files': ['one']} ]}"), StandardCharsets.UTF_8);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("name");
 
         new BundleConfigurationReader(configFile).getFragments();
@@ -108,7 +108,7 @@ public class BundleConfigurationReaderTest {
     @Test
     public void fragments_with_empty_name_throw_exception() throws IOException {
         Files.write(configFile.toPath(), Collections.singletonList("{'fragments':[ {'name': '', 'files': ['one']} ]}"), StandardCharsets.UTF_8);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("name");
 
         new BundleConfigurationReader(configFile).getFragments();
@@ -118,7 +118,7 @@ public class BundleConfigurationReaderTest {
     public void fragments_without_files_throw_exception() throws IOException {
         String fragmentName = "test";
         Files.write(configFile.toPath(), Collections.singletonList(String.format("{'fragments':[ {'name': '%s'} ]}", fragmentName)), StandardCharsets.UTF_8);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage(fragmentName);
 
         new BundleConfigurationReader(configFile).getFragments();
@@ -128,7 +128,7 @@ public class BundleConfigurationReaderTest {
     public void fragments_with_files_not_array_throw_exception() throws IOException {
         String fragmentName = "test";
         Files.write(configFile.toPath(), Collections.singletonList(String.format("{'fragments':[ {'name': '%s', 'files': {}} ]}", fragmentName)), StandardCharsets.UTF_8);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage(fragmentName);
 
         new BundleConfigurationReader(configFile).getFragments();
@@ -138,7 +138,7 @@ public class BundleConfigurationReaderTest {
     public void fragments_with_file_paths_not_string_throw_exception() throws IOException {
         String fragmentName = "test";
         Files.write(configFile.toPath(), Collections.singletonList(String.format("{'fragments':[ {'name': '%s', 'files': [20]} ]}", fragmentName)), StandardCharsets.UTF_8);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage(fragmentName);
 
         new BundleConfigurationReader(configFile).getFragments();
@@ -148,7 +148,7 @@ public class BundleConfigurationReaderTest {
     public void fragments_with_empty_files_throw_exception() throws IOException {
         String fragmentName = "test";
         Files.write(configFile.toPath(), Collections.singletonList(String.format("{'fragments':[ {'name': '%s', 'files': []} ]}", fragmentName)), StandardCharsets.UTF_8);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage(fragmentName);
 
         new BundleConfigurationReader(configFile).getFragments();
