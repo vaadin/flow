@@ -20,10 +20,12 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +36,6 @@ import org.json.JSONObject;
  * @author Vaadin Ltd.
  */
 public class BundleConfigurationReader {
-    
     private final JSONObject bundleConfigurationJSON;
 
     /**
@@ -51,26 +52,22 @@ public class BundleConfigurationReader {
         } catch (IOException e) {
             throw new UncheckedIOException(String.format("Failed to read specified bundle configuration file %s.", bundleConfigurationFile), e);
         }
+
         try {
             bundleConfigurationJSON = new JSONObject(readFile);
-        } catch (JSONException je) {
-            throw new JSONException(String.format("Specified bundle configuration file %s does not contain valid JSON.", bundleConfigurationFile), je);
+        } catch (JSONException e) {
+            throw new IllegalArgumentException(String.format("Specified bundle configuration file '%s' does not contain valid JSON.", bundleConfigurationFile), e);
         }
     }
-    
+
     /**
-     * Get the set of fragments contained in this bundle configuration. Each
-     * fragment consists of a set of file paths as strings to the resources that
+     * Get the fragments data from the bundle configuration specified: fragment name and a set of file paths as strings to the resources that
      * are to be included in the final produced fragment file.
      *
      * @return the fragments defined in the configuration file
      */
-    public Set<Set<String>> getFragments() {
-        return readFragments();
-    }
-
-    private Set<Set<String>> readFragments() {
-        Set<Set<String>> fragments = new HashSet<>();
+    public Map<String, Set<String>> getFragments() {
+        Map<String, Set<String>> fragments = new HashMap<>();
 
         if (bundleConfigurationJSON == null || !bundleConfigurationJSON.has("fragments")) {
             return fragments;
@@ -79,32 +76,56 @@ public class BundleConfigurationReader {
         JSONArray fragmentsArray;
         try {
             fragmentsArray = bundleConfigurationJSON.getJSONArray("fragments");
-        } catch (JSONException je) {
-            throw new JSONException("The 'fragments' property of a given bundle configuration should be an array.", je);
+        } catch (JSONException e) {
+            throw new IllegalArgumentException("The 'fragments' property of a given bundle configuration should be an array.", e);
         }
 
         for (int i = 0; i < fragmentsArray.length(); ++i) {
+            JSONObject fragment;
             try {
-                JSONArray fragmentFiles = fragmentsArray.getJSONArray(i);
-                fragments.add(readFragment(fragmentFiles));
-            } catch (JSONException je) {
-                throw new JSONException("The 'fragments' array of a given bundle configuration should only contain arrays of fragment file names.", je);
+                fragment = fragmentsArray.getJSONObject(i);
+            } catch (JSONException e) {
+                throw new IllegalArgumentException("The 'fragments' array of a given bundle configuration should contain fragment objects only.", e);
             }
+            String fragmentName = extractFragmentName(fragment);
+            fragments.put(fragmentName, extractFragmentFiles(fragment, fragmentName));
         }
         return fragments;
     }
 
-    private Set<String> readFragment(JSONArray fragmentFiles) {
-        Set<String> fragment = new HashSet<>();
-        for (int j = 0; j < fragmentFiles.length(); ++j) {
-            String fragmentFile;
-            try {
-                fragmentFile = fragmentFiles.getString(j);
-            } catch (JSONException je) {
-                throw new JSONException("The 'fragments' array of a given bundle configuration should only contain string file paths.", je);
-            }
-            fragment.add(fragmentFile);
+    private String extractFragmentName(JSONObject fragment) {
+        String fragmentName;
+        try {
+            fragmentName = fragment.getString("name");
+        } catch (JSONException e) {
+            throw new IllegalArgumentException("Each fragment object in json configuration should have `name` string field specified", e);
         }
-        return fragment;
+        if (fragmentName == null || fragmentName.isEmpty()) {
+            throw new IllegalArgumentException("Each fragment object in json configuration should have non empty name");
+        }
+        return fragmentName;
+    }
+
+    private Set<String> extractFragmentFiles(JSONObject fragment, String fragmentName) {
+        JSONArray fragmentFiles;
+        try {
+            fragmentFiles = fragment.getJSONArray("files");
+        } catch (JSONException e) {
+            throw new IllegalArgumentException(String.format("Fragment with name '%s' has no `files` array field specified.", fragmentName), e);
+        }
+
+        Set<String> files = Sets.newHashSetWithExpectedSize(fragmentFiles.length());
+        for (int j = 0; j < fragmentFiles.length(); ++j) {
+            try {
+                files.add(fragmentFiles.getString(j));
+            } catch (JSONException e) {
+                throw new IllegalArgumentException(String.format("The 'files' array of a fragment with name '%s' should only contain string file paths", fragmentName), e);
+            }
+        }
+
+        if (files.isEmpty()) {
+            throw new IllegalArgumentException(String.format("Fragment with name '%s' has no files specified, each fragment should have at least one file specified", fragmentName));
+        }
+        return files;
     }
 }
