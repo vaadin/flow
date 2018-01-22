@@ -39,7 +39,7 @@ public class ApplicationServiceInitListener
 ----
 
 This listener should be registered as a provider via Java SPI loading facility. To do this you should create
-`META-INF/services` resource directory and a provider configuration file with the name `com.vaadin.server.VaadinServiceInitListener`.
+`META-INF/services` resource directory and a provider configuration file with the name `com.vaadin.flow.server.VaadinServiceInitListener`.
 This is a text file and it should contain the fully qualified name of the `ApplicationServiceInitListener` class on its own line.
 It allows to discover the  `ApplicationServiceInitListener` class, instantiate it and register as a service init listener for the application.
 
