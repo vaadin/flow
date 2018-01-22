@@ -76,7 +76,7 @@ public class FrontendDataProvider {
     }
 
     /**
-     * If bundling is enabled, creates fragment files required for the bundling, if any were configured
+     * If bundling is enabled, creates fragment files required for the bundling, if any were configured.
      *
      * @param targetDirectory the directory to create the files into
      * @return absolute paths of the files created
