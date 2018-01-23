@@ -25,7 +25,7 @@ package com.vaadin.flow.component;
  * @author Vaadin Ltd
  */
 @DomEvent("change")
-public class ChangeEvent extends ComponentEvent<HtmlComponent> {
+public class ChangeEvent extends ComponentEvent<Component> {
     /**
      * Creates a new change event.
      *
@@ -36,7 +36,7 @@ public class ChangeEvent extends ComponentEvent<HtmlComponent> {
      *            client, <code>false</code> if the event originates from
      *            server-side logic
      */
-    public ChangeEvent(HtmlComponent source, boolean fromClient) {
+    public ChangeEvent(Component source, boolean fromClient) {
         super(source, fromClient);
     }
 }

@@ -21,7 +21,7 @@ package com.vaadin.flow.component;
  * @author Vaadin Ltd
  */
 @DomEvent("click")
-public class ClickEvent extends ComponentEvent<HtmlComponent> {
+public class ClickEvent extends ComponentEvent<Component> {
 
     private final int screenX;
     private final int screenY;
@@ -75,7 +75,7 @@ public class ClickEvent extends ComponentEvent<HtmlComponent> {
      *            fired, <code>false</code> otherwise
      *
      */
-    public ClickEvent(HtmlComponent source, boolean fromClient,
+    public ClickEvent(Component source, boolean fromClient,
             @EventData("event.screenX") int screenX,
             @EventData("event.screenY") int screenY,
             @EventData("event.clientX") int clientX,
@@ -105,7 +105,7 @@ public class ClickEvent extends ComponentEvent<HtmlComponent> {
      * @param source
      *            the component that fired the event
      */
-    public ClickEvent(HtmlComponent source) {
+    public ClickEvent(Component source) {
         // source, notClient, 4 coordinates, clickCount, button, 4 modifier keys
         this(source, false, -1, -1, -1, -1, 1, -1, false, false, false, false);
     }
