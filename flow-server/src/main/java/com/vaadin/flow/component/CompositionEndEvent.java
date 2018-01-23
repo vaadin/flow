@@ -40,7 +40,7 @@ public class CompositionEndEvent extends CompositionEvent {
      *            language code for the composition event, if available;
      *            otherwise, the empty string
      */
-    public CompositionEndEvent(HtmlComponent source, boolean fromClient,
+    public CompositionEndEvent(Component source, boolean fromClient,
             @EventData("event.data") String data,
             @EventData("event.locale") String locale) {
         super(source, fromClient, data, locale);
@@ -53,7 +53,7 @@ public class CompositionEndEvent extends CompositionEvent {
      * @param source
      *            the component that fired the event
      */
-    public CompositionEndEvent(HtmlComponent source) {
+    public CompositionEndEvent(Component source) {
         super(source);
     }
 

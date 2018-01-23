@@ -55,7 +55,7 @@ public class KeyDownEvent extends KeyboardEvent {
      *            <code>true</code> if the key event occurred as part of a
      *            composition session
      */
-    public KeyDownEvent(HtmlComponent source, boolean fromClient,
+    public KeyDownEvent(Component source, boolean fromClient,
             @EventData("event.key") String key,
             @EventData("event.location") int location,
             @EventData("event.ctrlKey") boolean ctrlKey,
@@ -76,7 +76,7 @@ public class KeyDownEvent extends KeyboardEvent {
      * @param key
      *            the key for this event
      */
-    public KeyDownEvent(HtmlComponent source, String key) {
+    public KeyDownEvent(Component source, String key) {
         super(source, key);
     }
 
