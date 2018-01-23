@@ -56,5 +56,4 @@ public class CompositionStartEvent extends CompositionEvent {
     public CompositionStartEvent(Component source) {
         super(source);
     }
-
 }

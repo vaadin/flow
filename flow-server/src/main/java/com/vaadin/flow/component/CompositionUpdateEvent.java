@@ -56,5 +56,4 @@ public class CompositionUpdateEvent extends CompositionEvent {
     public CompositionUpdateEvent(Component source) {
         super(source);
     }
-
 }

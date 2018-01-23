@@ -81,5 +81,4 @@ public class KeyUpEvent extends KeyboardEvent {
     public KeyUpEvent(Component source, String key) {
         super(source, key);
     }
-
 }

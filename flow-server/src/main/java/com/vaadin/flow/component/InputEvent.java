@@ -15,18 +15,19 @@
  */
 package com.vaadin.flow.component;
 
-import com.vaadin.flow.component.internal.CompositionEvent;
-
 /**
- * The event when a composition is ended.
+ * Event fired when the component has received any type of input (e.g. click,
+ * key press).
+ * <p>
+ * This event is specifically intended to the used for the <code>input</code>
+ * event in the DOM API.
  *
  * @author Vaadin Ltd
  */
-@DomEvent("compositionend")
-public class CompositionEndEvent extends CompositionEvent {
-
+@DomEvent("input")
+public class InputEvent extends ComponentEvent<Component> {
     /**
-     * Creates a new composition event.
+     * Creates a new input event.
      *
      * @param source
      *            the component that fired the event
@@ -34,26 +35,8 @@ public class CompositionEndEvent extends CompositionEvent {
      *            <code>true</code> if the event was originally fired on the
      *            client, <code>false</code> if the event originates from
      *            server-side logic
-     * @param data
-     *            the string being composed
-     * @param locale
-     *            language code for the composition event, if available;
-     *            otherwise, the empty string
      */
-    public CompositionEndEvent(Component source, boolean fromClient,
-            @EventData("event.data") String data,
-            @EventData("event.locale") String locale) {
-        super(source, fromClient, data, locale);
-    }
-
-    /**
-     * Creates a new server-side composition event with no additional
-     * information.
-     *
-     * @param source
-     *            the component that fired the event
-     */
-    public CompositionEndEvent(Component source) {
-        super(source);
+    public InputEvent(Component source, boolean fromClient) {
+        super(source, fromClient);
     }
 }
