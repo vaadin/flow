@@ -6,7 +6,7 @@ layout: page
 
 = Introduction to Flow
 
-This chapter gives an overview to Vaadin Flow Architecture and introduces Flow's basic concepts.
+Flow is piece of Vaadin platform that connects the Java ecosystem with the Web Platform. This chapter gives an overview to Vaadin Flow Architecture and introduces Flow's basic concepts.
 
 == Architecture
 
