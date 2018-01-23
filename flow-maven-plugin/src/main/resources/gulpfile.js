@@ -1,6 +1,5 @@
 'use strict';
 
-const skipEs5 = {skip_es5};
 const bundle = {bundle};
 const shellFile = "{shell_file}";
 const fragmentFiles = [{fragment_files}];
@@ -26,11 +25,11 @@ const parse5 = require('parse5');
 const cssSlam = require('css-slam');
 const htmlMinifier = require('html-minifier');
 const babelCore = require('babel-core');
-const babelTransform = function(contents, options) {
+const babelTransform = function (contents, options) {
     return babelCore.transform(contents, options).code;
 };
 
-function build() {
+function build(transpileJs, configurationName) {
     const workingDirectory = __dirname;
     const polymerProperties = {
         root: workingDirectory,
@@ -43,12 +42,7 @@ function build() {
     }
     const polymerProject = new polymerBuild.PolymerProject(polymerProperties);
 
-    if (!skipEs5) {
-        buildConfiguration(polymerProject, path.relative(workingDirectory, es6SourceDirectory), path.join(targetDirectory, es5ConfigurationName), true, bundle);
-    } else {
-        console.log('Skipping es5 transpilation');
-    }
-    buildConfiguration(polymerProject, path.relative(workingDirectory, es6SourceDirectory), path.join(targetDirectory, es6ConfigurationName), false, bundle);
+    buildConfiguration(polymerProject, path.relative(workingDirectory, es6SourceDirectory), path.join(targetDirectory, configurationName), transpileJs, bundle);
 }
 
 function buildConfiguration(polymerProject, redundantPathPrefix, configurationTargetDirectory, transpileJs, bundle) {
@@ -165,7 +159,16 @@ class FlowBuildBundler extends polymerBuild.BuildBundler {
     }
 }
 
-gulp.task('build', build);
+gulp.task('build_es6', function () {
+    build(false, es6ConfigurationName)
+});
+
+gulp.task('build_es5', function () {
+    console.log('Starting ES5 transpilation.');
+    build(true, es5ConfigurationName)
+    console.log('ES5 transpilation completed.');
+});
+
 process.on('unhandledRejection', (error, p) => {
     console.error('Failed to process frontend files.');
     console.error(`error: ${error.stack}`);

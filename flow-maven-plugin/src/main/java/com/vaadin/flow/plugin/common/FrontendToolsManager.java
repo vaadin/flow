@@ -156,7 +156,6 @@ public class FrontendToolsManager {
         }
 
         ImmutableMap.Builder<String, String> gulpFileParameters = new ImmutableMap.Builder<String, String>()
-                .put("{skip_es5}", Boolean.toString(skipEs5))
                 .put("{es6_source_directory}", es6SourceDirectory.getAbsolutePath())
                 .put("{target_directory}", outputDirectory.getAbsolutePath())
                 .put("{es5_configuration_name}", es5OutputDirectoryName)
@@ -166,17 +165,19 @@ public class FrontendToolsManager {
                 .put("{fragment_files}", combineFilePathsIntoString(frontendDataProvider.createFragmentFiles(workingDirectory)));
         createFileFromTemplateResource("gulpfile.js", gulpFileParameters.build());
 
+        Map<String, File> transpilationResults = new HashMap<>();
         try {
-            factory.getGulpRunner().execute("build", Collections.emptyMap());
+            factory.getGulpRunner().execute("build_es6", Collections.emptyMap());
+            addTranspilationResult(transpilationResults, outputDirectory, es6OutputDirectoryName);
+
+            if (!skipEs5) {
+                factory.getGulpRunner().execute("build_es5", Collections.emptyMap());
+                addTranspilationResult(transpilationResults, outputDirectory, es5OutputDirectoryName);
+            }
         } catch (TaskRunnerException e) {
             throw new IllegalStateException("Transpilation with gulp has failed", e);
         }
 
-        Map<String, File> transpilationResults = new HashMap<>();
-        addTranspilationResult(transpilationResults, outputDirectory, es6OutputDirectoryName);
-        if (!skipEs5) {
-            addTranspilationResult(transpilationResults, outputDirectory, es5OutputDirectoryName);
-        }
         return transpilationResults;
     }
 
