@@ -13,10 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
+package com.vaadin.flow.component.internal;
 
 import java.util.EnumSet;
 import java.util.Set;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.KeyLocation;
+import com.vaadin.flow.component.KeyModifier;
 
 /**
  * Abstract class for keyboard events.
