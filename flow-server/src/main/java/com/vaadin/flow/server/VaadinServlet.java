@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.VaadinServletConfiguration.InitParameterName;
+import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -77,7 +78,7 @@ public class VaadinServlet extends HttpServlet {
      */
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
-        verifyServletVersion();
+        ServletVerifier.verifyServletVersion();
         CurrentInstance.clearAll();
         super.init(servletConfig);
         try {
@@ -99,21 +100,6 @@ public class VaadinServlet extends HttpServlet {
 
         servletInitialized();
         CurrentInstance.clearAll();
-
-    }
-
-    private static void verifyServletVersion() throws ServletException {
-        try {
-            Method m = HttpServletResponse.class
-                    .getMethod("setContentLengthLong", long.class);
-            if (m != null) {
-                return;
-            }
-
-            throw new ServletException("Servlet 3.1+ is required");
-        } catch (Exception e) {
-            throw new ServletException("Servlet 3.1+ is required", e);
-        }
 
     }
 
