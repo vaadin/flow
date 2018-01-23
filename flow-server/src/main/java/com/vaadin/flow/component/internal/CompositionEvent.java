@@ -18,15 +18,15 @@ package com.vaadin.flow.component.internal;
 import java.util.Locale;
 import java.util.Optional;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.HtmlComponent;
 
 /**
  * Abstract class for composition events.
  *
  * @author Vaadin Ltd
  */
-public abstract class CompositionEvent extends ComponentEvent<HtmlComponent> {
+public abstract class CompositionEvent extends ComponentEvent<Component> {
 
     private final String data;
     private final Locale locale;
@@ -46,7 +46,7 @@ public abstract class CompositionEvent extends ComponentEvent<HtmlComponent> {
      *            language code for the composition event, if available;
      *            otherwise, the empty string
      */
-    public CompositionEvent(HtmlComponent source, boolean fromClient,
+    public CompositionEvent(Component source, boolean fromClient,
             String data, String locale) {
         super(source, fromClient);
         this.data = data;
@@ -60,7 +60,7 @@ public abstract class CompositionEvent extends ComponentEvent<HtmlComponent> {
      * @param source
      *            the component that fired the event
      */
-    public CompositionEvent(HtmlComponent source) {
+    public CompositionEvent(Component source) {
         this(source, false, "", "");
     }
 

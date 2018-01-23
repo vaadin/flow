@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import com.vaadin.flow.component.internal.KeyboardEvent;
+
 /**
  * The event when a key is released.
  *
@@ -55,7 +57,7 @@ public class KeyUpEvent extends KeyboardEvent {
      *            <code>true</code> if the key event occurred as part of a
      *            composition session
      */
-    public KeyUpEvent(HtmlComponent source, boolean fromClient,
+    public KeyUpEvent(Component source, boolean fromClient,
             @EventData("event.key") String key,
             @EventData("event.location") int location,
             @EventData("event.ctrlKey") boolean ctrlKey,
@@ -76,8 +78,7 @@ public class KeyUpEvent extends KeyboardEvent {
      * @param key
      *            the key for this event
      */
-    public KeyUpEvent(HtmlComponent source, String key) {
+    public KeyUpEvent(Component source, String key) {
         super(source, key);
     }
-
 }

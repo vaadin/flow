@@ -13,17 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
+package com.vaadin.flow.component.internal;
 
 import java.util.EnumSet;
 import java.util.Set;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.KeyLocation;
+import com.vaadin.flow.component.KeyModifier;
 
 /**
  * Abstract class for keyboard events.
  *
  * @author Vaadin Ltd
  */
-public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
+public abstract class KeyboardEvent extends ComponentEvent<Component> {
 
     private final String key;
     private final KeyLocation location;
@@ -65,7 +70,7 @@ public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
      *            <code>true</code> if the key event occurred as part of a
      *            composition session
      */
-    public KeyboardEvent(HtmlComponent source, boolean fromClient, String key,
+    public KeyboardEvent(Component source, boolean fromClient, String key,
             int location, boolean ctrlKey, boolean shiftKey, boolean altKey,
             boolean metaKey, boolean repeat, boolean composing) {
         super(source, fromClient);
@@ -96,7 +101,7 @@ public abstract class KeyboardEvent extends ComponentEvent<HtmlComponent> {
      * @param key
      *            the key for this event
      */
-    public KeyboardEvent(HtmlComponent source, String key) {
+    public KeyboardEvent(Component source, String key) {
         this(source, false, key, 0, false, false, false, false, false, false);
     }
 

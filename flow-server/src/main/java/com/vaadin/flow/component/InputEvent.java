@@ -16,18 +16,18 @@
 package com.vaadin.flow.component;
 
 /**
- * Event fired when the value of a component has changed. The new value can be
- * retrieved from the component that fired the event.
+ * Event fired when the component has received any type of input (e.g. click,
+ * key press).
  * <p>
- * This event is specifically intended to the used for the <code>change</code>
+ * This event is specifically intended to the used for the <code>input</code>
  * event in the DOM API.
  *
  * @author Vaadin Ltd
  */
-@DomEvent("change")
-public class ChangeEvent extends ComponentEvent<Component> {
+@DomEvent("input")
+public class InputEvent extends ComponentEvent<Component> {
     /**
-     * Creates a new change event.
+     * Creates a new input event.
      *
      * @param source
      *            the component that fired the event
@@ -36,7 +36,7 @@ public class ChangeEvent extends ComponentEvent<Component> {
      *            client, <code>false</code> if the event originates from
      *            server-side logic
      */
-    public ChangeEvent(Component source, boolean fromClient) {
+    public InputEvent(Component source, boolean fromClient) {
         super(source, fromClient);
     }
 }
