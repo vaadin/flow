@@ -67,7 +67,7 @@ The goal parameters are:
 * copyOutputDirectory `default: ${project.build.directory}/frontend/`
     The directory to copy files to. 
     
-* excludes `default: $$**/LICENSE,**/LICENCE,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md$$`
+* excludes `default: $$**/LICENSE*,**/LICENCE*,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md,**/bower.json,**/package.json,**/package-lock.json$$`
     File globs to specify files that should not be copied to copyOutputDirectory, set in regular Maven fashion: single string, comma-separated values.
     
 * frontendWorkingDirectory `default: ${project.basedir}/src/main/webapp/frontend/`

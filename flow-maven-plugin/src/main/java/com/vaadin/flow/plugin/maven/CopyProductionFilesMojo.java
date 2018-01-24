@@ -42,7 +42,7 @@ public class CopyProductionFilesMojo extends AbstractMojo {
     @Parameter(name = "copyOutputDirectory", defaultValue = "${project.build.directory}/frontend/", required = true)
     private File copyOutputDirectory;
 
-    @Parameter(name = "excludes", defaultValue = "**/LICENSE,**/LICENCE,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md", required = true)
+    @Parameter(name = "excludes", defaultValue = "**/LICENSE*,**/LICENCE*,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md,**/bower.json,**/package.json,**/package-lock.json", required = true)
     private String excludes;
 
     @Parameter(name = "frontendWorkingDirectory", property = "frontend.working.directory", defaultValue = "${project.basedir}/src/main/webapp/frontend/", required = true)
