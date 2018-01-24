@@ -65,7 +65,7 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                     .pipe(htmlSplitter.rejoin())
                     .pipe(bundle ? buildBundler : gulpIgnore.exclude(file => { return file.path === shellFile } ));
 
-                const nonSourceUserFilesStream = gulp.src([`${es6SourceDirectory}/**/*`, `!${es6SourceDirectory}/bower_components/**/*`, `!${es6SourceDirectory}/**/*.{html,css,js}`]);
+                const nonSourceUserFilesStream = gulp.src([`${es6SourceDirectory}/**/*`, `!${es6SourceDirectory}/**/*.{html,css,js}`]);
                 const buildStream = mergeStream(processedStream, nonSourceUserFilesStream)
                     .pipe(gulpRename(path => { path.dirname = path.dirname.replace(redundantPathPrefix, "") }))
                     .pipe(gulp.dest(configurationTargetDirectory));

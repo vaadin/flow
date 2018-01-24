@@ -67,7 +67,7 @@ The goal parameters are:
 * copyOutputDirectory `default: ${project.build.directory}/frontend/`
     The directory to copy files to. 
     
-* excludes `default: **/LICENSE*,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md`
+* excludes `default: \*\*/LICENSE,\*\*/LICENCE,\*\*/demo/\*\*,\*\*/docs/\*\*,\*\*/test\*/\*\*,\*\*/.\*,\*\*/\*.md`
     File globs to specify files that should not be copied to copyOutputDirectory, set in regular Maven fashion: single string, comma-separated values.
     
 * frontendWorkingDirectory `default: ${project.basedir}/src/main/webapp/frontend/`
@@ -138,9 +138,9 @@ The goal parameters are:
 After the goal is complete, the files from `transpileEs6SourceDirectory` are processed. 
 It results in:
 * `transpileOutputDirectory/es6OutputDirectoryName` with all files from `transpileEs6SourceDirectory` copied into it 
-and with all `*.css`, `*.js` and `*.html` additionally optimized for production usage.
+and with all `\*.css`, `\*.js` and `\*.html` additionally optimized for production usage.
 * If not configured to be skipped, `transpileOutputDirectory/es5OutputDirectoryName` with all files from `transpileEs6SourceDirectory` copied into it 
-and with all `*.css`, `*.js` and `*.html` additionally optimized for production usage AND transpiled into ES5 so that old browsers are able to use the application still
+and with all `\*.css`, `\*.js` and `\*.html` additionally optimized for production usage AND transpiled into ES5 so that old browsers are able to use the application still
 * `transpileWorkingDirectory` with all frontend tools and additional files created for the tools, can be ignored after the process
 
 ## Bundle Configuration
