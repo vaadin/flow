@@ -64,7 +64,7 @@ module.exports = class ElementFilter {
    * @returns true if the file should be analyzed, false otherwise
    */
   acceptPath(filePath) {
-	const folders = path.dirname(filePath.replace('/', path.sep)).split(path.sep);
+    const folders = path.dirname(filePath.replace('/', path.sep)).split(path.sep);
     // we'll only analyze files the root or inside /src
     let folderName = folders.pop();
     if (folderName.indexOf('src') === 0) {
