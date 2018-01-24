@@ -53,6 +53,7 @@ import com.vaadin.flow.server.startup.AbstractCustomElementRegistryInitializer;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -197,6 +198,8 @@ public class VaadinServletContextInitializer
     @Override
     public void onStartup(ServletContext servletContext)
             throws ServletException {
+        // Verify servlet version also for SpringBoot.
+        ServletVerifier.verifyServletVersion();
 
         RouteRegistry registry = RouteRegistry.getInstance(servletContext);
         // If the registry is already initialized then RouteRegistryInitializer

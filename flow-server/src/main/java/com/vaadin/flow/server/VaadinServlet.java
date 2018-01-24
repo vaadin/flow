@@ -77,7 +77,6 @@ public class VaadinServlet extends HttpServlet {
      */
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
-        verifyServletVersion();
         CurrentInstance.clearAll();
         super.init(servletConfig);
         try {
@@ -99,21 +98,6 @@ public class VaadinServlet extends HttpServlet {
 
         servletInitialized();
         CurrentInstance.clearAll();
-
-    }
-
-    private static void verifyServletVersion() throws ServletException {
-        try {
-            Method m = HttpServletResponse.class
-                    .getMethod("setContentLengthLong", long.class);
-            if (m != null) {
-                return;
-            }
-
-            throw new ServletException("Servlet 3.1+ is required");
-        } catch (Exception e) {
-            throw new ServletException("Servlet 3.1+ is required", e);
-        }
 
     }
 
