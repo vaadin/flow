@@ -34,6 +34,12 @@ public class ServletVerifier implements ServletContainerInitializer {
         verifyServletVersion();
     }
 
+    /**
+     * Verify that the used servlet version is not too old.
+     * 
+     * @throws ServletException
+     *             thrown if the servlet version is not compatible
+     */
     public static void verifyServletVersion() throws ServletException {
         try {
             Method m = HttpServletResponse.class

@@ -41,7 +41,6 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.VaadinServletConfiguration.InitParameterName;
-import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -78,7 +77,6 @@ public class VaadinServlet extends HttpServlet {
      */
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
-        ServletVerifier.verifyServletVersion();
         CurrentInstance.clearAll();
         super.init(servletConfig);
         try {
