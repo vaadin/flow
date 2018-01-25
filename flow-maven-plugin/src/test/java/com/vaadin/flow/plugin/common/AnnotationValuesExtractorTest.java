@@ -28,8 +28,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.maven.plugins.annotations.Mojo;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -48,6 +51,9 @@ public class AnnotationValuesExtractorTest {
                     "annotation-extractor-test/vaadin-grid-flow.jar"),
             TestUtils.getTestResource(
                     "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     @Test(expected = IllegalArgumentException.class)
     public void extractAnnotationValues_incorrectMethod() {
@@ -108,6 +114,13 @@ public class AnnotationValuesExtractorTest {
 
     @Test
     public void collectThemedHtmlImports_twoThemesDirectlyOnComponents_throw() {
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers
+                        .containsString("Multiple themes are not supported"),
+                CoreMatchers.containsString(
+                        "Theme 'class com.example.CustomTheme2' is discovered for classes: com.example.ThemedComponent2"),
+                CoreMatchers.containsString(
+                        "Theme 'class com.example.CustomTheme1' is discovered for classes: com.example.ThemedComponent1")));
         AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
                 TestUtils.getTestResource(
                         "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
@@ -121,6 +134,13 @@ public class AnnotationValuesExtractorTest {
 
     @Test
     public void collectThemedHtmlImports_twoThemes_themeIsDiscoveredViaParentLayout_throw() {
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers
+                        .containsString("Multiple themes are not supported"),
+                CoreMatchers.containsString(
+                        "Theme 'class com.example.CustomTheme2' is discovered for classes: com.example.Component2"),
+                CoreMatchers.containsString(
+                        "Theme 'class com.example.CustomTheme1' is discovered for classes: com.example.ThemedComponent1")));
         AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
                 TestUtils.getTestResource(
                         "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
@@ -134,6 +154,14 @@ public class AnnotationValuesExtractorTest {
 
     @Test
     public void collectThemedHtmlImports_twoThemesDiscoveredViaRoute_throw() {
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers
+                        .containsString("Multiple themes are not supported"),
+                CoreMatchers.containsString(
+                        "Theme 'class com.example.CustomTheme2' is discovered for classes: com.example.ThemedComponent1"),
+                CoreMatchers.containsString(
+                        "Theme 'class com.example.CustomTheme1' is discovered for classes: com.example.ThemedComponent2")));
+
         AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
                 TestUtils.getTestResource(
                         "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
@@ -147,6 +175,13 @@ public class AnnotationValuesExtractorTest {
 
     @Test
     public void collectThemedHtmlImports_twoThemesDiscoveredViaRouteAlias_throw() {
+        exception.expectMessage(CoreMatchers.allOf(CoreMatchers.containsString(
+                "Class 'com.example.ThemedComponent1' has several different themes used in @Theme annotation"),
+                CoreMatchers.containsString(
+                        "Theme 'class com.example.CustomTheme2' is discovered for classes: com.example.ParentComponent1"),
+                CoreMatchers.containsString(
+                        "Theme 'class com.example.CustomTheme1' is discovered for classes: com.example.ParentComponent2")));
+
         AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
                 TestUtils.getTestResource(
                         "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
@@ -160,6 +195,14 @@ public class AnnotationValuesExtractorTest {
 
     @Test
     public void collectThemedHtmlImports_themeAndNoTheme_themeIsDiscoveredViaRouteAlias_throw() {
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers
+                        .containsString("Multiple themes are not supported"),
+                CoreMatchers.containsString(
+                        "No theme  is discovered for classes: com.example.ThemedComponent2"),
+                CoreMatchers.containsString(
+                        "Theme 'class com.example.CustomTheme1' is discovered for classes: com.example.ThemedComponent1")));
+
         AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
                 TestUtils.getTestResource(
                         "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
