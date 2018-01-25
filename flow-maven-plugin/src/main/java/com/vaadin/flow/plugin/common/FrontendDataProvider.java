@@ -47,7 +47,6 @@ import com.vaadin.flow.theme.AbstractTheme;
  * @author Vaadin Ltd.
  */
 public class FrontendDataProvider {
-    private static final String VALUE_GETTER_METHOD_NAME = "value";
 
     private final boolean shouldBundle;
     private final Map<String, Set<File>> fragments;
@@ -86,14 +85,14 @@ public class FrontendDataProvider {
                     warn(String.format("The theme '%s' gives '%s' as a "
                             + "translation for url '%s' but the file is not found on the filesystem",
                             themeClass.getSimpleName(), translatedUrl, url));
-                    resultingUrls.add(translatedUrl);
+                    resultingUrls.add(url);
                 }
             }
         }
 
         private boolean sourceDirectoryHasFile(String url) {
             String path = removeFlowPrefixes(url);
-            File file = getFileFromSourceDirectory(es6SourceDirectory, path);
+            File file = new File(es6SourceDirectory, path);
             if (!file.exists()) {
                 warn(String.format(
                         "The translated URL '%s' has no corresponding "
@@ -117,11 +116,11 @@ public class FrontendDataProvider {
         }
 
         private void warn(String msg) {
-
+            // TODO : wait for logger
         }
 
         private void debug(String msg) {
-
+            // TODO : wait for logger
         }
 
     }
@@ -256,8 +255,8 @@ public class FrontendDataProvider {
             Set<File> fragmentFiles) {
         Map<Class<? extends Annotation>, Set<String>> annotationValues = annotationValuesExtractor
                 .extractAnnotationValues(ImmutableMap.of(StyleSheet.class,
-                        VALUE_GETTER_METHOD_NAME, JavaScript.class,
-                        VALUE_GETTER_METHOD_NAME));
+                        AnnotationValuesExtractor.VALUE, JavaScript.class,
+                        AnnotationValuesExtractor.VALUE));
         ThemedHtmlImportsTranslator translator = new ThemedHtmlImportsTranslator(
                 es6SourceDirectory);
         annotationValuesExtractor.collectThemedHtmlImports(translator);
