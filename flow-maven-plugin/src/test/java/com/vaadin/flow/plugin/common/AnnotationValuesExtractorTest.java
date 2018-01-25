@@ -25,14 +25,17 @@ import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.maven.plugins.annotations.Mojo;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * @author Vaadin Ltd.
@@ -153,5 +156,76 @@ public class AnnotationValuesExtractorTest {
                         "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
         extractor.collectThemedHtmlImports((theme, set) -> {
         });
+    }
+
+    @Test
+    public void collectThemedHtmlImports_themeAndNoTheme_themeIsDiscoveredViaRouteAlias_throw() {
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/themes-collision-no-theme.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+        extractor.collectThemedHtmlImports((theme, set) -> {
+        });
+    }
+
+    @Test
+    public void collectThemedHtmlImports_themeIsDiscoveredViaAliasAndParentLayout() {
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/theme-positive-detection.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+        AtomicReference<Class<? extends AbstractTheme>> themeCapture = new AtomicReference<>();
+        AtomicReference<Set<String>> importsCapture = new AtomicReference<>();
+        extractor.collectThemedHtmlImports((theme, set) -> {
+            themeCapture.set(theme);
+            importsCapture.set(set);
+        });
+        Assert.assertEquals(
+                "Unexpected theme name is discovered in the claspath of theme-positive-detection.jar",
+                "com.example.CustomTheme1", themeCapture.get().getName());
+        Assert.assertEquals(1, importsCapture.get().size());
+        Assert.assertEquals(
+                "Unexpected html import URL is discovered in the claspath of theme-positive-detection.jar",
+                "frontend://component1",
+                importsCapture.get().iterator().next());
+    }
+
+    /**
+     * In this test there are two themes in the jar. Both of them are used :
+     * there are components annotated with {@code @Theme(....)}. But the
+     * component annotated with the second theme has no {@link HtmlImport}
+     * annotation so it's fine and we should not fail/discover the second theme.
+     */
+    @Test
+    public void collectThemedHtmlImports_themeIsDiscoveredViaRouteAndParentLayout_secondThemeIsIgnoredSinceNoHtmlImport() {
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/themes-ignore-theme-without-import.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+        AtomicReference<Class<? extends AbstractTheme>> themeCapture = new AtomicReference<>();
+        AtomicReference<Set<String>> importsCapture = new AtomicReference<>();
+        extractor.collectThemedHtmlImports((theme, set) -> {
+            Assert.assertNull(themeCapture.get());
+            Assert.assertNull(importsCapture.get());
+            themeCapture.set(theme);
+            importsCapture.set(set);
+        });
+        Assert.assertEquals(
+                "Unexpected theme name is discovered in the claspath of themes-ignore-theme-without-import.jar",
+                "com.example.CustomTheme1", themeCapture.get().getName());
+        Assert.assertEquals(1, importsCapture.get().size());
+        Assert.assertEquals(
+                "Unexpected html import URL is discovered in the claspath of themes-ignore-theme-without-import.jar",
+                "frontend://component1",
+                importsCapture.get().iterator().next());
     }
 }
