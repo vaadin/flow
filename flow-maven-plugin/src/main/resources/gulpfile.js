@@ -15,6 +15,7 @@ const gulp = require('gulp');
 const gulpIf = require('gulp-if');
 const gulpRename = require('gulp-rename');
 const gulpIgnore = require('gulp-ignore');
+const gulpReplace = require('gulp-string-replace');
 const polymerBuild = require('polymer-build');
 const mergeStream = require('merge-stream');
 const Transform = require('stream').Transform;
@@ -68,6 +69,7 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                 const nonSourceUserFilesStream = gulp.src([`${es6SourceDirectory}/**/*`, `!${es6SourceDirectory}/**/*.{html,css,js}`]);
                 const buildStream = mergeStream(processedStream, nonSourceUserFilesStream)
                     .pipe(gulpRename(path => { path.dirname = path.dirname.replace(redundantPathPrefix, "") }))
+                    .pipe(gulpReplace('assetpath="'+redundantPathPrefix+'/', 'assetpath="',{ logs: { enabled: false } }))
                     .pipe(gulp.dest(configurationTargetDirectory));
 
                 return new Promise((resolve, reject) => {
