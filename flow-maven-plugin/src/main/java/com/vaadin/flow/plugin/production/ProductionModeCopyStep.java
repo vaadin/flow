@@ -31,6 +31,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.plugin.common.JarContentsManager;
@@ -44,6 +46,7 @@ import com.vaadin.flow.plugin.common.WebJarData;
  * @author Vaadin Ltd.
  */
 public class ProductionModeCopyStep {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductionModeCopyStep.class);
     private static final String NON_WEB_JAR_RESOURCE_PATH = "META-INF/resources/frontend";
     private static final String BOWER_JSON_FILE_NAME = "bower.json";
     private static final String BOWER_COMPONENTS_DIRECTORY_NAME = "bower_components";
@@ -107,6 +110,7 @@ public class ProductionModeCopyStep {
      * @throws UncheckedIOException  if any {@link IOException} occurs during other file operations
      */
     public void copyWebApplicationFiles(File outputDirectory, File frontendWorkingDirectory, String commaSeparatedWildcardPathExclusions) {
+        LOGGER.info("Copying web application files to '{}'", outputDirectory);
         FlowPluginFileUtils.forceMkdir(outputDirectory);
 
         String[] wildcardExclusions = getWildcardExclusions(commaSeparatedWildcardPathExclusions);
