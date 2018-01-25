@@ -149,8 +149,6 @@ public interface HasValue<C extends Component, V>
      */
     default Registration addValueChangeListener(
             ValueChangeListener<C, V> listener) {
-        get().getElement().synchronizeProperty(getClientValuePropertyName(),
-                getClientPropertyChangeEventName());
         return get().getElement().addPropertyChangeListener(
                 getClientValuePropertyName(),
                 event -> listener.onComponentEvent(new ValueChangeEvent<>(get(),
