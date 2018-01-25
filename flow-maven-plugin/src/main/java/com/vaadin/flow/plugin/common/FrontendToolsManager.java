@@ -37,6 +37,8 @@ import com.github.eirslett.maven.plugins.frontend.lib.YarnInstaller;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Entity to operate frontend tools to transpile files.
@@ -52,6 +54,8 @@ import org.apache.commons.io.IOUtils;
  * @author Vaadin Ltd.
  */
 public class FrontendToolsManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FrontendToolsManager.class);
+
     private final FrontendPluginFactory factory;
     private final File workingDirectory;
     private final String es5OutputDirectoryName;
@@ -92,6 +96,7 @@ public class FrontendToolsManager {
      * @throws UncheckedIOException  if supplementary file creation fails
      */
     public void installFrontendTools(ProxyConfig proxyConfig, String nodeVersion, String yarnVersion) {
+        LOGGER.info("Installing required frontend tools to '{}'", workingDirectory);
         Objects.requireNonNull(proxyConfig);
         Objects.requireNonNull(nodeVersion);
         Objects.requireNonNull(yarnVersion);
@@ -145,6 +150,7 @@ public class FrontendToolsManager {
      * @throws UncheckedIOException     if output directory creation fails or other {@link IOException} occurs
      */
     public Map<String, File> transpileFiles(File es6SourceDirectory, File outputDirectory, boolean skipEs5) {
+        LOGGER.info("Processing frontend files from '{}'", es6SourceDirectory);
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(outputDirectory));
         } catch (IOException e) {
