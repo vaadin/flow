@@ -67,14 +67,9 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                     .pipe(bundle ? buildBundler : gulpIgnore.exclude(file => { return file.path === shellFile } ));
 
                 const nonSourceUserFilesStream = gulp.src([`${es6SourceDirectory}/**/*`, `!${es6SourceDirectory}/**/*.{html,css,js}`]);
-                var options = {
-                    logs: {
-                        enabled: false
-                    }
-                };
                 const buildStream = mergeStream(processedStream, nonSourceUserFilesStream)
                     .pipe(gulpRename(path => { path.dirname = path.dirname.replace(redundantPathPrefix, "") }))
-                    .pipe(gulpReplace('assetpath="'+redundantPathPrefix+'/', 'assetpath="', options))
+                    .pipe(gulpReplace('assetpath="'+redundantPathPrefix+'/', 'assetpath="',{ logs: { enabled: false } }))
                     .pipe(gulp.dest(configurationTargetDirectory));
 
                 return new Promise((resolve, reject) => {
