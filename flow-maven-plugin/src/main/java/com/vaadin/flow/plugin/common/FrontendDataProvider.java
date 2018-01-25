@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,17 +29,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
-
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.theme.AbstractTheme;
 
 /**
- * Provides necessary data for {@link FrontendToolsManager} to process project frontend files.
+ * Provides necessary data for {@link FrontendToolsManager} to process project
+ * frontend files.
  *
  * @author Vaadin Ltd.
  */
@@ -49,79 +53,189 @@ public class FrontendDataProvider {
     private final Map<String, Set<File>> fragments;
     private final Set<File> shellFileImports;
 
-    /**
-     * Creates the data provider.
-     *
-     * @param shouldBundle whether bundling data should be prepared
-     * @param es6SourceDirectory   the directory with original ES6 files, not {@code null}
-     * @param annotationValuesExtractor extractor for getting all required values from project to prepare its resources properly, not {@code null}
-     * @param fragmentConfigurationFile path to external configuration file with fragments, may be {@code null}
-     * @param userDefinedFragments another list of fragments, if user preferred to specify them without external configuration file, not {@code null}
-     */
-    public FrontendDataProvider(boolean shouldBundle, File es6SourceDirectory, AnnotationValuesExtractor annotationValuesExtractor, File fragmentConfigurationFile, Map<String, Set<String>> userDefinedFragments) {
-        this.shouldBundle = shouldBundle;
-        fragments = shouldBundle
-                ? resolveFragmentFiles(es6SourceDirectory, fragmentConfigurationFile, userDefinedFragments)
-                : Collections.emptyMap();
-        shellFileImports = resolveShellFileImports(es6SourceDirectory, annotationValuesExtractor, fragments.values().stream().flatMap(Set::stream).collect(Collectors.toSet()));
+    private class ThemedHtmlImportsTranslator
+            implements BiConsumer<Class<? extends AbstractTheme>, Set<String>> {
+
+        private Set<String> resultingUrls = new HashSet<>();
+
+        private final File es6SourceDirectory;
+
+        ThemedHtmlImportsTranslator(File es6SourceDirectory) {
+            this.es6SourceDirectory = es6SourceDirectory;
+        }
+
+        @Override
+        public void accept(Class<? extends AbstractTheme> themeClass,
+                Set<String> urls) {
+            resultingUrls.clear();
+            if (themeClass == null) {
+                resultingUrls.addAll(urls);
+                return;
+            }
+
+            AbstractTheme theme = ReflectTools.createInstance(themeClass);
+            for (String url : urls) {
+                String translatedUrl = theme.translateUrl(url);
+                if (sourceDirectoryHasFile(translatedUrl)) {
+                    debug(String.format(
+                            "The URL '%s' has been translated "
+                                    + "to the url '%s' using theme '%s'",
+                            url, translatedUrl, themeClass.getSimpleName()));
+                    resultingUrls.add(translatedUrl);
+                } else {
+                    warn(String.format("The theme '%s' gives '%s' as a "
+                            + "translation for url '%s' but the file is not found on the filesystem",
+                            themeClass.getSimpleName(), translatedUrl, url));
+                    resultingUrls.add(translatedUrl);
+                }
+            }
+        }
+
+        private boolean sourceDirectoryHasFile(String url) {
+            String path = removeFlowPrefixes(url);
+            File file = getFileFromSourceDirectory(es6SourceDirectory, path);
+            if (!file.exists()) {
+                warn(String.format(
+                        "The translated URL '%s' has no corresponding "
+                                + "file on the filesystem,"
+                                + " the file is addressed by path='%s'",
+                        url, path));
+                return false;
+            }
+            if (!file.isFile()) {
+                warn(String.format(
+                        "The translated URL '%s' corresponding "
+                                + "path '%s' on the filesystem is not a file",
+                        url, path));
+                return false;
+            }
+            return true;
+        }
+
+        Set<String> getHtmlImportUrls() {
+            return resultingUrls;
+        }
+
+        private void warn(String msg) {
+
+        }
+
+        private void debug(String msg) {
+
+        }
+
     }
 
     /**
-     * Gets the information whether should the plugin bundle the frontend files or not.
+     * Creates the data provider.
      *
-     * @return {@code true} if bundling should be performed, {@code false} otherwise
+     * @param shouldBundle
+     *            whether bundling data should be prepared
+     * @param es6SourceDirectory
+     *            the directory with original ES6 files, not {@code null}
+     * @param annotationValuesExtractor
+     *            extractor for getting all required values from project to
+     *            prepare its resources properly, not {@code null}
+     * @param fragmentConfigurationFile
+     *            path to external configuration file with fragments, may be
+     *            {@code null}
+     * @param userDefinedFragments
+     *            another list of fragments, if user preferred to specify them
+     *            without external configuration file, not {@code null}
+     */
+    public FrontendDataProvider(boolean shouldBundle, File es6SourceDirectory,
+            AnnotationValuesExtractor annotationValuesExtractor,
+            File fragmentConfigurationFile,
+            Map<String, Set<String>> userDefinedFragments) {
+        this.shouldBundle = shouldBundle;
+        fragments = shouldBundle
+                ? resolveFragmentFiles(es6SourceDirectory,
+                        fragmentConfigurationFile, userDefinedFragments)
+                : Collections.emptyMap();
+        shellFileImports = resolveShellFileImports(es6SourceDirectory,
+                annotationValuesExtractor, fragments.values().stream()
+                        .flatMap(Set::stream).collect(Collectors.toSet()));
+    }
+
+    /**
+     * Gets the information whether should the plugin bundle the frontend files
+     * or not.
+     *
+     * @return {@code true} if bundling should be performed, {@code false}
+     *         otherwise
      */
     public boolean shouldBundle() {
         return shouldBundle;
     }
 
     /**
-     * If bundling is enabled, creates fragment files required for the bundling, if any were configured.
+     * If bundling is enabled, creates fragment files required for the bundling,
+     * if any were configured.
      *
-     * @param targetDirectory the directory to create the files into
+     * @param targetDirectory
+     *            the directory to create the files into
      * @return absolute paths of the files created
      */
     public Set<String> createFragmentFiles(File targetDirectory) {
         return fragments.entrySet().stream()
-                .map(entry -> createFragmentFile(targetDirectory, entry.getKey(), entry.getValue()))
+                .map(entry -> createFragmentFile(targetDirectory,
+                        entry.getKey(), entry.getValue()))
                 .collect(Collectors.toSet());
     }
 
     /**
-     * Creates a shell file that contains all application imports excluding the ones included into fragments (if any).
-     * Used by the {@link FrontendToolsManager} to process the application files
+     * Creates a shell file that contains all application imports excluding the
+     * ones included into fragments (if any). Used by the
+     * {@link FrontendToolsManager} to process the application files
      *
-     * @param targetDirectory the directory to create the file into
+     * @param targetDirectory
+     *            the directory to create the file into
      * @return an absolute path to the file created
      */
     public String createShellFile(File targetDirectory) {
-        Path shellFile = targetDirectory.toPath().resolve("vaadin-flow-bundle.html");
+        Path shellFile = targetDirectory.toPath()
+                .resolve("vaadin-flow-bundle.html");
         try {
-            Files.write(shellFile, getShellFileImports(targetDirectory), StandardCharsets.UTF_8);
+            Files.write(shellFile, getShellFileImports(targetDirectory),
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format("Failed to create shell file '%s'", shellFile), e);
+            throw new UncheckedIOException(String
+                    .format("Failed to create shell file '%s'", shellFile), e);
         }
         return shellFile.toAbsolutePath().toString();
     }
 
-
-    private Map<String, Set<File>> resolveFragmentFiles(File es6SourceDirectory, File fragmentConfigurationFile, Map<String, Set<String>> userFragments) {
+    private Map<String, Set<File>> resolveFragmentFiles(File es6SourceDirectory,
+            File fragmentConfigurationFile,
+            Map<String, Set<String>> userFragments) {
         Map<String, Set<File>> result = new HashMap<>();
-        if (fragmentConfigurationFile != null && fragmentConfigurationFile.isFile()) {
-            new BundleConfigurationReader(fragmentConfigurationFile).getFragments()
-                    .forEach((fragmentName, fragmentPaths) -> result.merge(fragmentName, findInSourceDirectory(es6SourceDirectory, fragmentPaths), this::mergeSets));
+        if (fragmentConfigurationFile != null
+                && fragmentConfigurationFile.isFile()) {
+            new BundleConfigurationReader(fragmentConfigurationFile)
+                    .getFragments()
+                    .forEach((fragmentName, fragmentPaths) -> result.merge(
+                            fragmentName,
+                            findInSourceDirectory(es6SourceDirectory,
+                                    fragmentPaths),
+                            this::mergeSets));
         }
-        userFragments.forEach((fragmentName, fragmentPaths) -> result.merge(fragmentName, findInSourceDirectory(es6SourceDirectory, fragmentPaths), this::mergeSets));
+        userFragments.forEach((fragmentName, fragmentPaths) -> result.merge(
+                fragmentName,
+                findInSourceDirectory(es6SourceDirectory, fragmentPaths),
+                this::mergeSets));
         return result;
     }
 
-    private Set<File> findInSourceDirectory(File es6SourceDirectory, Set<String> fragmentPaths) {
+    private Set<File> findInSourceDirectory(File es6SourceDirectory,
+            Set<String> fragmentPaths) {
         return fragmentPaths.stream()
-                .map(fragmentPath -> getFileFromSourceDirectory(es6SourceDirectory, fragmentPath))
+                .map(fragmentPath -> getFileFromSourceDirectory(
+                        es6SourceDirectory, fragmentPath))
                 .collect(Collectors.toSet());
     }
 
-    private File getFileFromSourceDirectory(File es6SourceDirectory, String fragmentImportPath) {
+    private File getFileFromSourceDirectory(File es6SourceDirectory,
+            String fragmentImportPath) {
         File fragmentFile = new File(es6SourceDirectory, fragmentImportPath);
         if (!fragmentFile.isFile()) {
             throw new IllegalArgumentException(String.format(
@@ -137,61 +251,77 @@ public class FrontendDataProvider {
         return result;
     }
 
-    private Set<File> resolveShellFileImports(File es6SourceDirectory, AnnotationValuesExtractor annotationValuesExtractor, Set<File> fragmentFiles) {
-        return annotationValuesExtractor.extractAnnotationValues(ImmutableMap.of(
-                HtmlImport.class, VALUE_GETTER_METHOD_NAME,
-                StyleSheet.class, VALUE_GETTER_METHOD_NAME,
-                JavaScript.class, VALUE_GETTER_METHOD_NAME
-        )).values().stream()
-                .flatMap(Collection::stream)
+    private Set<File> resolveShellFileImports(File es6SourceDirectory,
+            AnnotationValuesExtractor annotationValuesExtractor,
+            Set<File> fragmentFiles) {
+        Map<Class<? extends Annotation>, Set<String>> annotationValues = annotationValuesExtractor
+                .extractAnnotationValues(ImmutableMap.of(StyleSheet.class,
+                        VALUE_GETTER_METHOD_NAME, JavaScript.class,
+                        VALUE_GETTER_METHOD_NAME));
+        ThemedHtmlImportsTranslator translator = new ThemedHtmlImportsTranslator(
+                es6SourceDirectory);
+        annotationValuesExtractor.collectThemedHtmlImports(translator);
+        annotationValues.put(HtmlImport.class, translator.getHtmlImportUrls());
+        return annotationValues.values().stream().flatMap(Collection::stream)
                 .map(this::removeFlowPrefixes)
-                .map(annotationImport -> getFileFromSourceDirectory(es6SourceDirectory, annotationImport))
-                .filter(fileInSourceDirectory -> !fragmentFiles.contains(fileInSourceDirectory))
+                .map(annotationImport -> getFileFromSourceDirectory(
+                        es6SourceDirectory, annotationImport))
+                .filter(fileInSourceDirectory -> !fragmentFiles
+                        .contains(fileInSourceDirectory))
                 .collect(Collectors.toSet());
     }
 
     private String removeFlowPrefixes(String url) {
-        return url
-                .replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "")
+        return url.replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "")
                 .replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX, "")
                 .replace(ApplicationConstants.BASE_PROTOCOL_PREFIX, "");
     }
 
-    private String createFragmentFile(File targetDirectory, String fragmentName, Set<File> filesFromFragment) {
+    private String createFragmentFile(File targetDirectory, String fragmentName,
+            Set<File> filesFromFragment) {
         List<String> fragmentImports = filesFromFragment.stream()
-                .map(fileFromFragment -> relativeToTargetDirectory(targetDirectory, fileFromFragment))
-                .map(this::toFrontendImport)
-                .collect(Collectors.toList());
+                .map(fileFromFragment -> relativeToTargetDirectory(
+                        targetDirectory, fileFromFragment))
+                .map(this::toFrontendImport).collect(Collectors.toList());
 
-        String fragmentFileName = fragmentName.endsWith(".html") ? fragmentName : fragmentName + ".html";
+        String fragmentFileName = fragmentName.endsWith(".html") ? fragmentName
+                : fragmentName + ".html";
         Path fragmentFile = targetDirectory.toPath().resolve(fragmentFileName);
         try {
             Files.write(fragmentFile, fragmentImports, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format("Failed to create fragment file '%s'", fragmentFile), e);
+            throw new UncheckedIOException(String.format(
+                    "Failed to create fragment file '%s'", fragmentFile), e);
         }
         return fragmentFile.toString();
     }
 
     private List<String> getShellFileImports(File targetDirectory) {
         return shellFileImports.stream()
-                .map(fileNotInFragments -> relativeToTargetDirectory(targetDirectory, fileNotInFragments))
-                .map(this::toFrontendImport)
-                .collect(Collectors.toList());
+                .map(fileNotInFragments -> relativeToTargetDirectory(
+                        targetDirectory, fileNotInFragments))
+                .map(this::toFrontendImport).collect(Collectors.toList());
     }
 
-    private String relativeToTargetDirectory(File targetDirectory, File fragmentFilePath) {
-        return targetDirectory.toPath().relativize(fragmentFilePath.toPath()).toString();
+    private String relativeToTargetDirectory(File targetDirectory,
+            File fragmentFilePath) {
+        return targetDirectory.toPath().relativize(fragmentFilePath.toPath())
+                .toString();
     }
 
     private String toFrontendImport(String importToFormat) {
-        String importWithReplacedBackslashes = importToFormat.replace("\\", "/");
+        String importWithReplacedBackslashes = importToFormat.replace("\\",
+                "/");
         if (importToFormat.endsWith(".js")) {
-            return String.format("<script type='text/javascript' src='%s'></script>", importWithReplacedBackslashes);
+            return String.format(
+                    "<script type='text/javascript' src='%s'></script>",
+                    importWithReplacedBackslashes);
         }
         if (importToFormat.endsWith(".css")) {
-            return String.format("<link rel='stylesheet' href='%s'>", importWithReplacedBackslashes);
+            return String.format("<link rel='stylesheet' href='%s'>",
+                    importWithReplacedBackslashes);
         }
-        return String.format("<link rel='import' href='%s'>", importWithReplacedBackslashes);
+        return String.format("<link rel='import' href='%s'>",
+                importWithReplacedBackslashes);
     }
 }
