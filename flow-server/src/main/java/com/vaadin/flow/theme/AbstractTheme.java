@@ -42,7 +42,7 @@ public interface AbstractTheme extends Serializable {
      * The url for the components themed version implementation.
      * <p>
      * e.g. theme/lumo/
-     * 
+     *
      * @return the themed component path
      */
     String getThemeUrl();
@@ -71,8 +71,7 @@ public interface AbstractTheme extends Serializable {
      * @return list of string content to inline or empty list if nothing to
      *         inline
      */
-    default List<String> getHeadInlineContents(
-            VaadinUriResolver resolver) {
+    default List<String> getHeadInlineContents(VaadinUriResolver resolver) {
         return Collections.emptyList();
     }
 
@@ -99,7 +98,7 @@ public interface AbstractTheme extends Serializable {
      * <p>
      * Translation will check if a file is found from the list of available
      * resources for the translated path and return the original url if not.
-     * 
+     *
      * @param url
      *            url to translate
      * @param availableHtmlResources
@@ -108,6 +107,22 @@ public interface AbstractTheme extends Serializable {
      */
     default String getTranslatedUrl(String url,
             Stream<String> availableHtmlResources) {
+        String translatedUrl = translateUrl(url);
+        if (translatedUrl.equals(url)) {
+            return url;
+        }
+        String substring = translatedUrl
+                .substring(translatedUrl.indexOf(getThemeUrl()));
+
+        if (!url.equals(translatedUrl) && availableHtmlResources
+                .filter(resource -> resource.endsWith(substring)).findFirst()
+                .isPresent()) {
+            return translatedUrl;
+        }
+        return url;
+    }
+
+    default String translateUrl(String url) {
         if (url.contains(getBaseUrl())) {
 
             String baseUrl = getBaseUrl();
@@ -117,15 +132,7 @@ public interface AbstractTheme extends Serializable {
             } else if (!baseUrl.endsWith("/") && themeUrl.endsWith("/")) {
                 themeUrl = themeUrl.substring(0, themeUrl.length() - 1);
             }
-            String translation = url.replace(baseUrl, themeUrl);
-            String substring = translation
-                    .substring(translation.indexOf(getThemeUrl()));
-
-            if (!url.equals(translation)
-                    && availableHtmlResources.filter(s -> s.endsWith(substring))
-                            .findFirst().isPresent()) {
-                return translation;
-            }
+            return url.replace(baseUrl, themeUrl);
         }
         return url;
     }

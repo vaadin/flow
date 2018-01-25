@@ -39,48 +39,80 @@ import com.vaadin.flow.plugin.TestUtils;
  */
 public class AnnotationValuesExtractorTest {
     private final AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
-            TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
-            TestUtils.getTestResource("annotation-extractor-test/vaadin-grid-flow.jar"),
-            TestUtils.getTestResource("annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar")
-    );
+            TestUtils.getTestResource(
+                    "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+            TestUtils.getTestResource(
+                    "annotation-extractor-test/vaadin-grid-flow.jar"),
+            TestUtils.getTestResource(
+                    "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
 
     @Test(expected = IllegalArgumentException.class)
     public void extractAnnotationValues_incorrectMethod() {
-        extractor.extractAnnotationValues(Collections.singletonMap(HtmlImport.class, "doomed to fail"));
+        extractor.extractAnnotationValues(
+                Collections.singletonMap(HtmlImport.class, "doomed to fail"));
     }
 
     @Test(expected = IllegalStateException.class)
     public void extractAnnotationValues_annotationNotInClassLoader() {
-        extractor.extractAnnotationValues(Collections.singletonMap(Mojo.class, "whatever"));
+        extractor.extractAnnotationValues(
+                Collections.singletonMap(Mojo.class, "whatever"));
     }
 
     @Test
     public void extractAnnotationValues_missingAnnotation() {
-        Map<Class<? extends Annotation>, String> input = Collections.singletonMap(StyleSheet.class, "whatever");
+        Map<Class<? extends Annotation>, String> input = Collections
+                .singletonMap(StyleSheet.class, "whatever");
 
-        Map<Class<? extends Annotation>, Set<String>> result = extractor.extractAnnotationValues(input);
+        Map<Class<? extends Annotation>, Set<String>> result = extractor
+                .extractAnnotationValues(input);
 
-        assertEquals("Keys in input and result should always match", input.keySet(), result.keySet());
-        assertTrue("Test jar should not contain annotations from input hence nothing should be extracted", result.get(input.keySet().iterator().next()).isEmpty());
+        assertEquals("Keys in input and result should always match",
+                input.keySet(), result.keySet());
+        assertTrue(
+                "Test jar should not contain annotations from input hence nothing should be extracted",
+                result.get(input.keySet().iterator().next()).isEmpty());
     }
 
     @Test
     public void extractAnnotationValues_singleAnnotation() {
-        Map<Class<? extends Annotation>, String> input = Collections.singletonMap(JavaScript.class, "value");
+        Map<Class<? extends Annotation>, String> input = Collections
+                .singletonMap(JavaScript.class, "value");
 
-        Map<Class<? extends Annotation>, Set<String>> result = extractor.extractAnnotationValues(input);
+        Map<Class<? extends Annotation>, Set<String>> result = extractor
+                .extractAnnotationValues(input);
 
-        assertEquals("Keys in input and result should always match", input.keySet(), result.keySet());
-        assertThat("Test jar should contain single JavaScript annotations from input and it should be extracted", result.get(input.keySet().iterator().next()).size(), is(1));
+        assertEquals("Keys in input and result should always match",
+                input.keySet(), result.keySet());
+        assertThat(
+                "Test jar should contain single JavaScript annotations from input and it should be extracted",
+                result.get(input.keySet().iterator().next()).size(), is(1));
     }
 
     @Test
     public void extractAnnotationValues_repeatedAnnotation() {
-        Map<Class<? extends Annotation>, String> input = Collections.singletonMap(HtmlImport.class, "value");
+        Map<Class<? extends Annotation>, String> input = Collections
+                .singletonMap(HtmlImport.class, "value");
 
-        Map<Class<? extends Annotation>, Set<String>> result = extractor.extractAnnotationValues(input);
+        Map<Class<? extends Annotation>, Set<String>> result = extractor
+                .extractAnnotationValues(input);
 
-        assertEquals("Keys in input and result should always match", input.keySet(), result.keySet());
-        assertTrue("Test jar should contain repeated annotations from input and they should be extracted", result.get(input.keySet().iterator().next()).size() > 1);
+        assertEquals("Keys in input and result should always match",
+                input.keySet(), result.keySet());
+        assertTrue(
+                "Test jar should contain repeated annotations from input and they should be extracted",
+                result.get(input.keySet().iterator().next()).size() > 1);
+    }
+
+    @Test
+    public void a() {
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/themes-collision-two-componnets.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+        extractor.collectThemedHtmlImports((theme, set) -> {
+        });
     }
 }
