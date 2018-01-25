@@ -104,12 +104,51 @@ public class AnnotationValuesExtractorTest {
     }
 
     @Test
-    public void a() {
+    public void collectThemedHtmlImports_twoThemesDirectlyOnComponents_throw() {
         AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
                 TestUtils.getTestResource(
                         "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
                 TestUtils.getTestResource(
                         "annotation-extractor-test/themes-collision-two-componnets.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+        extractor.collectThemedHtmlImports((theme, set) -> {
+        });
+    }
+
+    @Test
+    public void collectThemedHtmlImports_twoThemes_themeIsDiscoveredViaParentLayout_throw() {
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/themes-collision-via-parent-layout.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+        extractor.collectThemedHtmlImports((theme, set) -> {
+        });
+    }
+
+    @Test
+    public void collectThemedHtmlImports_twoThemesDiscoveredViaRoute_throw() {
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/themes-collision-via-route.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+        extractor.collectThemedHtmlImports((theme, set) -> {
+        });
+    }
+
+    @Test
+    public void collectThemedHtmlImports_twoThemesDiscoveredViaRouteAlias_throw() {
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/themes-collision-via-alias.jar"),
                 TestUtils.getTestResource(
                         "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
         extractor.collectThemedHtmlImports((theme, set) -> {

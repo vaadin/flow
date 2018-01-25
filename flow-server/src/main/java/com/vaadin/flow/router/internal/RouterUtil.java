@@ -265,39 +265,6 @@ public final class RouterUtil {
         return null;
     }
 
-    /**
-     * Get the list of all possible top most parent layouts for navigation
-     * target according to the {@link Route} or {@link RouteAlias} annotation.
-     * Also handles non route targets with {@link ParentLayout}.
-     *
-     * @param component
-     *            navigation target to get top most parent for
-     * @return top parent layouts list for the target
-     */
-    public static List<Class<? extends RouterLayout>> getTopParentLayouts(
-            Class<?> component) {
-        List<Class<? extends RouterLayout>> accumulator = new ArrayList<>();
-        Optional<ParentLayout> parentLayout = AnnotationReader
-                .getAnnotationFor(component, ParentLayout.class);
-        if (parentLayout.isPresent()) {
-            accumulator.add(recuseToTopLayout(parentLayout.get().value()));
-        }
-        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
-                Route.class);
-        if (route.isPresent()) {
-            Class<? extends RouterLayout> layout = recuseToTopLayout(
-                    route.get().layout());
-            if (!UI.class.equals(layout)) {
-                accumulator.add(layout);
-            }
-        }
-        AnnotationReader.getAnnotationsFor(component, RouteAlias.class).stream()
-                .map(RouteAlias::layout).map(RouterUtil::recuseToTopLayout)
-                .filter(routeLayout -> !UI.class.equals(routeLayout))
-                .forEach(accumulator::add);
-        return accumulator;
-    }
-
     private static Class<? extends RouterLayout> recuseToTopLayout(
             Class<? extends RouterLayout> layout) {
         Optional<ParentLayout> parentLayout = AnnotationReader

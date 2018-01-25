@@ -131,12 +131,13 @@ public class AnnotationValuesExtractor {
                 themedClasses.computeIfAbsent(theme, value -> new ArrayList<>())
                         .add(component);
             }
-            themedClasses.entrySet().stream()
+            String themesList = themedClasses.entrySet().stream()
                     .map(this::printThemeAnnotatedClasses)
                     .collect(Collectors.joining(",\n"));
             throw new IllegalStateException(String.format(
-                    "Class '%s' has several different themes used in @%s annotation: ",
-                    component.getName(), Theme.class.getSimpleName()));
+                    "Class '%s' has several different themes used in @%s annotation: %s",
+                    component.getName(), Theme.class.getSimpleName(),
+                    themesList));
         }
         return themes.stream().findFirst().orElse(null);
     }
@@ -260,7 +261,7 @@ public class AnnotationValuesExtractor {
 
         Class<? extends Annotation> parentLayoutAnnotation = loadClassInProjectClassLoader(
                 ParentLayout.class.getName());
-        Annotation parentLayout = component.getClass()
+        Annotation parentLayout = component
                 .getAnnotation(parentLayoutAnnotation);
         if (parentLayout != null) {
             Class<? extends RouterLayout> routerLayout = (Class<? extends RouterLayout>) doInvokeAnnotationMethod(
@@ -270,7 +271,7 @@ public class AnnotationValuesExtractor {
 
         Class<? extends Annotation> routeAnnotation = loadClassInProjectClassLoader(
                 Route.class.getName());
-        Annotation route = component.getClass().getAnnotation(routeAnnotation);
+        Annotation route = component.getAnnotation(routeAnnotation);
         if (route != null) {
             Class<? extends RouterLayout> routerLayout = (Class<? extends RouterLayout>) doInvokeAnnotationMethod(
                     route, "layout");
