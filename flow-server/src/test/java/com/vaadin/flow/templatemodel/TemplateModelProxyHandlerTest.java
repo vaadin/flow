@@ -8,11 +8,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.templatemodel.BeanModelType;
-import com.vaadin.flow.templatemodel.ModelDescriptor;
-import com.vaadin.flow.templatemodel.PropertyFilter;
-import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.templatemodel.TemplateModelProxyHandler;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModelTemplate;
 
@@ -136,8 +131,8 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
         TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(),
-                new BeanModelType<>(BadModel.class, PropertyFilter.ACCEPT_ALL));
+                template.getElement().getNode(), new BeanModelType<>(
+                        BadModel.class, PropertyFilter.ACCEPT_ALL, false));
     }
 
     // https://github.com/vaadin/flow/issues/1205
@@ -149,8 +144,9 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
         TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(), new BeanModelType<>(
-                        NotStaticModel.class, PropertyFilter.ACCEPT_ALL));
+                template.getElement().getNode(),
+                new BeanModelType<>(NotStaticModel.class,
+                        PropertyFilter.ACCEPT_ALL, false));
     }
 
     @Test
@@ -164,6 +160,6 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
 
     @Test(expected = IllegalArgumentException.class)
     public void beanHasNoProperties_throwsException() {
-        new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL);
+        new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL, false);
     }
 }

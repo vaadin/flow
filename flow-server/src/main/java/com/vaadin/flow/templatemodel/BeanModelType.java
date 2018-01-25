@@ -63,23 +63,6 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      * @param properties
      *            a map of properties of this type. The contents of the map will
      *            be copied. Not <code>null</code>.
-     * @throws IllegalStateException
-     *             if {@code properties} is an empty map
-     */
-    public BeanModelType(Class<T> proxyType,
-            Map<String, ModelType> properties) {
-        this(proxyType, properties, false);
-    }
-
-    /**
-     * Creates a new bean model type from the given class and properties.
-     *
-     * @param proxyType
-     *            the class to use for proxies of this type, not
-     *            <code>null</code>
-     * @param properties
-     *            a map of properties of this type. The contents of the map will
-     *            be copied. Not <code>null</code>.
      * @param allowEmptyProperties
      *            if {@code false} then empty properties value is not accepted
      *
@@ -107,22 +90,6 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         this.properties = new HashMap<>(properties);
 
         initBeanPropertyCache();
-    }
-
-    /**
-     * Creates a new bean model type with the bean properties of the provided
-     * class that passes the provided property filter.
-     *
-     * @param javaType
-     *            the java type of this bean type
-     * @param propertyFilter
-     *            the filter that determines which bean properties to include in
-     *            this model type
-     * @throws IllegalStateException
-     *             if {@code propertyFilter} resolves empty properties
-     */
-    public BeanModelType(Class<T> javaType, PropertyFilter propertyFilter) {
-        this(javaType, propertyFilter, ModelConverterProvider.EMPTY_PROVIDER);
     }
 
     private BeanModelType(Class<T> javaType, PropertyFilter propertyFilter,
