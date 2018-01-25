@@ -93,9 +93,9 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     }
 
     private BeanModelType(Class<T> javaType, PropertyFilter propertyFilter,
-            ModelConverterProvider converterProvider) {
+            PathLookup<ModelConverter<?, ?>> converterLookup) {
         this(javaType, new PropertyMapBuilder(javaType, propertyFilter,
-                converterProvider).getProperties(), false);
+                converterLookup).getProperties(), false);
     }
 
     /**
@@ -117,18 +117,19 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             boolean allowEmptyProperties) {
         this(javaType,
                 new PropertyMapBuilder(javaType, propertyFilter,
-                        ModelConverterProvider.EMPTY_PROVIDER).getProperties(),
+                        PathLookup.empty()).getProperties(),
                 allowEmptyProperties);
     }
 
     static ModelType getModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
-            Class<?> declaringClass, ModelConverterProvider converterProvider) {
+            Class<?> declaringClass,
+            PathLookup<ModelConverter<?, ?>> converterLookup) {
         if (propertyType instanceof Class<?>) {
             Class<?> propertyTypeClass = (Class<?>) propertyType;
             if (isBean(propertyTypeClass)) {
                 return new BeanModelType<>(propertyTypeClass, propertyFilter,
-                        converterProvider);
+                        converterLookup);
             } else {
                 Optional<ModelType> maybeBasicModelType = BasicModelType
                         .get(propertyTypeClass);
@@ -138,7 +139,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             }
         } else if (ListModelType.isList(propertyType)) {
             return getListModelType(propertyType, propertyFilter, propertyName,
-                    declaringClass, converterProvider);
+                    declaringClass, converterLookup);
         }
 
         throw new InvalidTemplateModelException(String.format(
@@ -150,7 +151,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
     static ModelType getConvertedModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
-            Class<?> declaringClass, ModelConverterProvider converterProvider) {
+            Class<?> declaringClass,
+            PathLookup<ModelConverter<?, ?>> converterLookup) {
 
         if (!(propertyType instanceof Class<?>)) {
             throw new UnsupportedOperationException(String.format(
@@ -159,8 +161,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                     declaringClass.getSimpleName(), propertyName));
         }
 
-        Optional<ModelConverter<?, ?>> converterOptional = converterProvider
-                .apply(propertyFilter);
+        Optional<ModelConverter<?, ?>> converterOptional = converterLookup
+                .getItem(propertyFilter.getPrefix());
         if (!converterOptional.isPresent()) {
             throw new IllegalStateException(
                     "The ModelConverterProvider passed to "
@@ -179,7 +181,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         if (isBean(converter.getPresentationType())) {
             return new ConvertedModelType<>(
                     new BeanModelType<>(converter.getPresentationType(),
-                            propertyFilter, converterProvider),
+                            propertyFilter, converterLookup),
                     converter);
         } else {
             Optional<ModelType> maybeBasicModelType = BasicModelType
@@ -199,7 +201,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
     private static ModelType getListModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
-            Class<?> declaringClass, ModelConverterProvider converterProvider) {
+            Class<?> declaringClass,
+            PathLookup<ModelConverter<?, ?>> converterLookup) {
         assert ListModelType.isList(propertyType);
         ParameterizedType pt = (ParameterizedType) propertyType;
 
@@ -207,14 +210,14 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         if (itemType instanceof ParameterizedType) {
             return new ListModelType<>(
                     (ComplexModelType<?>) getModelType(itemType, propertyFilter,
-                            propertyName, declaringClass, converterProvider));
+                            propertyName, declaringClass, converterLookup));
         } else if (BasicComplexModelType.isBasicType(itemType)) {
             return new ListModelType<>(
                     BasicComplexModelType.get((Class<?>) itemType).get());
         } else if (isBean(itemType)) {
             Class<?> beansListItemType = (Class<?>) itemType;
             return new ListModelType<>(new BeanModelType<>(beansListItemType,
-                    propertyFilter, converterProvider));
+                    propertyFilter, converterLookup));
         } else {
             throw new InvalidTemplateModelException(String.format(
                     "Element type '%s' is not a valid Bean type. "
