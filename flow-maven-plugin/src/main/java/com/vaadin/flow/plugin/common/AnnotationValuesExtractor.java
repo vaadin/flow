@@ -51,6 +51,9 @@ import com.vaadin.flow.theme.Theme;
  * @author Vaadin Ltd.
  */
 public class AnnotationValuesExtractor {
+    private static final String LAYOUT = "layout";
+    static final String VALUE = "value";
+
     private final ClassLoader projectClassLoader;
     private final Reflections reflections;
 
@@ -90,6 +93,21 @@ public class AnnotationValuesExtractor {
                                 entry.getValue())));
     }
 
+    /**
+     * Collect {@link HtmlImport} annotation values and find the theme used by
+     * the components with the introspected {@link HtmlImport} annotations.
+     * <p>
+     * There is only one (or no theme) is allowed in the application. So this
+     * method throws {@link IllegalStateException} if there are more than one
+     * theme (or some components has no theme declared but other has a theme).
+     *
+     * @see #extractAnnotationValues(Map)
+     *
+     * @param htmlImportsUrlConsumer
+     *            the consumer which receives the discovered theme in the
+     *            application (or {@code null} if there is no theme) and
+     *            HtmlImport URL values
+     */
     public void collectThemedHtmlImports(
             BiConsumer<Class<? extends AbstractTheme>, Set<String>> htmlImportsUrlConsumer) {
         Class<? extends Annotation> annotationInProjectContext = loadClassInProjectClassLoader(
@@ -108,7 +126,7 @@ public class AnnotationValuesExtractor {
                                     .collect(Collectors.joining(",\n")));
         }
         htmlImportsUrlConsumer.accept(themedClasses.keySet().iterator().next(),
-                getProjectAnnotationValues(HtmlImport.class, "value"));
+                getProjectAnnotationValues(HtmlImport.class, VALUE));
     }
 
     private Class<? extends AbstractTheme> findTheme(Class<?> component) {
@@ -150,7 +168,7 @@ public class AnnotationValuesExtractor {
             return null;
         }
         return (Class<? extends AbstractTheme>) doInvokeAnnotationMethod(
-                annotation, "value");
+                annotation, VALUE);
     }
 
     private String printThemeAnnotatedClasses(
@@ -265,7 +283,7 @@ public class AnnotationValuesExtractor {
                 .getAnnotation(parentLayoutAnnotation);
         if (parentLayout != null) {
             Class<? extends RouterLayout> routerLayout = (Class<? extends RouterLayout>) doInvokeAnnotationMethod(
-                    parentLayout, "value");
+                    parentLayout, VALUE);
             accumulator.add(recuseToTopLayout(routerLayout));
         }
 
@@ -274,7 +292,7 @@ public class AnnotationValuesExtractor {
         Annotation route = component.getAnnotation(routeAnnotation);
         if (route != null) {
             Class<? extends RouterLayout> routerLayout = (Class<? extends RouterLayout>) doInvokeAnnotationMethod(
-                    route, "layout");
+                    route, LAYOUT);
             Class<? extends RouterLayout> layout = recuseToTopLayout(
                     routerLayout);
             if (!UI.class.getName().equals(layout.getName())) {
@@ -285,7 +303,7 @@ public class AnnotationValuesExtractor {
         Class<? extends Annotation> routeAliasAnnotation = loadClassInProjectClassLoader(
                 RouteAlias.class.getName());
         Stream.of(component.getAnnotationsByType(routeAliasAnnotation))
-                .map(alias -> doInvokeAnnotationMethod(alias, "layout"))
+                .map(alias -> doInvokeAnnotationMethod(alias, LAYOUT))
                 .map(clazz -> (Class<? extends RouterLayout>) clazz)
                 .map(this::recuseToTopLayout)
                 .filter(routeLayout -> !UI.class.getName()
@@ -304,7 +322,7 @@ public class AnnotationValuesExtractor {
         if (parentLayout != null) {
             return recuseToTopLayout(
                     (Class<? extends RouterLayout>) doInvokeAnnotationMethod(
-                            parentLayout, "value"));
+                            parentLayout, VALUE));
         }
         return layout;
     }

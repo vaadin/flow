@@ -38,7 +38,10 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,6 +51,7 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableSet;
+import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * @author Vaadin Ltd.
@@ -64,6 +68,20 @@ public class FrontendDataProviderTest {
     private File jsFile;
     private File cssFile;
     private File htmlFile;
+
+    public static class TestTheme implements AbstractTheme {
+
+        @Override
+        public String getBaseUrl() {
+            return "src/";
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return "theme/myTheme/";
+        }
+
+    }
 
     @Before
     public void createFrontendSources() throws IOException {
@@ -144,7 +162,51 @@ public class FrontendDataProviderTest {
         verify(annotationValuesExtractorMock).extractAnnotationValues(anyMap());
         verify(annotationValuesExtractorMock)
                 .collectThemedHtmlImports(Matchers.any());
+    }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    public void themedHtmlImports_existingThemedImportIsConverted_nonExistentIsPreserved()
+            throws IOException {
+        File src = new File(sourceDirectory, "src");
+        src.mkdir();
+        createFile(src, "component1.html");
+        createFile(src, "component2.html");
+
+        File theme = new File(sourceDirectory, "theme");
+        theme.mkdir();
+        theme = new File(theme, "myTheme");
+        theme.mkdir();
+        createFile(theme, "component1.html");
+
+        AnnotationValuesExtractor annotationValuesExtractorMock = mock(
+                AnnotationValuesExtractor.class);
+        Mockito.doAnswer(invocation -> {
+            BiConsumer consumer = invocation.getArgumentAt(0, BiConsumer.class);
+            consumer.accept(TestTheme.class,
+                    Stream.of("src/component1.html", "src/component2.html")
+                            .collect(Collectors.toSet()));
+            return null;
+        }).when(annotationValuesExtractorMock)
+                .collectThemedHtmlImports(Matchers.any());
+
+        FrontendDataProvider provider = new FrontendDataProvider(true,
+                sourceDirectory, annotationValuesExtractorMock, null,
+                Collections.emptyMap());
+
+        provider.createShellFile(targetDirectory);
+        File bundle = new File(targetDirectory, "vaadin-flow-bundle.html");
+        List<String> lines = Files.readAllLines(bundle.toPath(),
+                StandardCharsets.UTF_8);
+        String content = lines.stream().collect(Collectors.joining(""));
+        Assert.assertThat(content, CoreMatchers
+                .containsString("es6Source/theme/myTheme/component1.html"));
+        Assert.assertThat(content,
+                CoreMatchers.containsString("es6Source/src/component2.html"));
+
+        verify(annotationValuesExtractorMock).extractAnnotationValues(anyMap());
+        verify(annotationValuesExtractorMock)
+                .collectThemedHtmlImports(Matchers.any());
     }
 
     @Test
