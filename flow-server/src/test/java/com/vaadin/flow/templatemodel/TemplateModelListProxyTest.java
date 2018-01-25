@@ -7,9 +7,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ModelList;
-import com.vaadin.flow.templatemodel.BeanModelType;
-import com.vaadin.flow.templatemodel.PropertyFilter;
-import com.vaadin.flow.templatemodel.TemplateModelListProxy;
 
 public class TemplateModelListProxyTest {
 
@@ -77,6 +74,7 @@ public class TemplateModelListProxyTest {
     private static <T> TemplateModelListProxy<T> createModelListProxy(
             Class<T> proxyClass) {
         return new TemplateModelListProxy<>(new StateNode(ModelList.class),
-                new BeanModelType<>(proxyClass, PropertyFilter.ACCEPT_ALL));
+                new BeanModelType<>(proxyClass, PropertyFilter.ACCEPT_ALL,
+                        false));
     }
 }
