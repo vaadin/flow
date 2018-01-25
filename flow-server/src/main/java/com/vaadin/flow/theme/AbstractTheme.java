@@ -122,6 +122,17 @@ public interface AbstractTheme extends Serializable {
         return url;
     }
 
+    /**
+     * Translates the given {@code url} using the result of the
+     * {@link #getThemeUrl()} theme method.
+     * <p>
+     * If translation is possible then translated URL is returned. Otherwise the
+     * {@code url} is returned.
+     *
+     * @param url
+     *            the URL to translate using the theme
+     * @return translated URL if possible or the same given {@code url} if not.
+     */
     default String translateUrl(String url) {
         if (url.contains(getBaseUrl())) {
 
