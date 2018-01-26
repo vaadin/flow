@@ -32,6 +32,9 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.ImmutableMap;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -47,6 +50,9 @@ import com.vaadin.flow.theme.AbstractTheme;
  * @author Vaadin Ltd.
  */
 public class FrontendDataProvider {
+
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(FrontendDataProvider.class);
 
     private final boolean shouldBundle;
     private final Map<String, Set<File>> fragments;
@@ -76,15 +82,15 @@ public class FrontendDataProvider {
             for (String url : urls) {
                 String translatedUrl = theme.translateUrl(url);
                 if (sourceDirectoryHasFile(translatedUrl)) {
-                    debug(String.format(
-                            "The URL '%s' has been translated "
-                                    + "to the url '%s' using theme '%s'",
-                            url, translatedUrl, themeClass.getSimpleName()));
+                    LOGGER.info(
+                            "The URL '{}' has been translated "
+                                    + "to the url '{}' using theme '{}'",
+                            url, translatedUrl, themeClass.getSimpleName());
                     resultingUrls.add(translatedUrl);
                 } else {
-                    warn(String.format("The theme '%s' gives '%s' as a "
-                            + "translation for url '%s' but the file is not found on the filesystem",
-                            themeClass.getSimpleName(), translatedUrl, url));
+                    LOGGER.warn("The theme '{}' gives '{}' as a "
+                            + "translation for url '{}' but the file is not found on the filesystem",
+                            themeClass.getSimpleName(), translatedUrl, url);
                     resultingUrls.add(url);
                 }
             }
@@ -94,18 +100,18 @@ public class FrontendDataProvider {
             String path = removeFlowPrefixes(url);
             File file = new File(es6SourceDirectory, path);
             if (!file.exists()) {
-                warn(String.format(
-                        "The translated URL '%s' has no corresponding "
+                LOGGER.warn(
+                        "The translated URL '{}' has no corresponding "
                                 + "file on the filesystem,"
-                                + " the file is addressed by path='%s'",
-                        url, path));
+                                + " the file is addressed by path='{}'",
+                        url, path);
                 return false;
             }
             if (!file.isFile()) {
-                warn(String.format(
-                        "The translated URL '%s' corresponding "
-                                + "path '%s' on the filesystem is not a file",
-                        url, path));
+                LOGGER.warn(
+                        "The translated URL '{}' corresponding "
+                                + "path '{}' on the filesystem is not a file",
+                        url, path);
                 return false;
             }
             return true;
