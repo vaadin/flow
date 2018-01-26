@@ -15,18 +15,14 @@
  */
 package com.vaadin.flow.spring;
 
-import java.util.stream.Stream;
-
+import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
-import com.vaadin.flow.di.DefaultInstantiator;
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceInitListener;
+import java.util.stream.Stream;
 
 /**
  * Default Spring instantiator that is used if no other instantiator has been
@@ -62,34 +58,23 @@ public class SpringInstantiator extends DefaultInstantiator {
     }
 
     @Override
-    public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
-        return getObject(routeTargetType);
-    }
+    public <T> T getOrCreate(Class<T> type) {
 
-    @Override
-    public <T extends Component> T createComponent(Class<T> componentClass) {
-        return getObject(componentClass);
-    }
+        int numberOfBeans = context.getBeanNamesForType(type).length;
 
-    @Override
-    public I18NProvider getI18NProvider() {
-        int beansCount = context.getBeanNamesForType(I18NProvider.class).length;
-        if (beansCount == 1) {
-            return context.getBean(I18NProvider.class);
-        } else {
+        if (numberOfBeans == 1) {
+            return context.getBean(type);
+        }
+
+        if (I18NProvider.class.equals(type)) {
             LoggerFactory.getLogger(SpringInstantiator.class.getName()).info(
                     "The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
                             + "falling back to the default behavior",
-                    I18NProvider.class.getSimpleName(), beansCount);
-            return super.getI18NProvider();
-        }
-    }
+                    I18NProvider.class.getSimpleName(), numberOfBeans);
 
-    private <T> T getObject(Class<T> type) {
-        if (context.getBeanNamesForType(type).length == 1) {
-            return context.getBean(type);
+            return super.getOrCreate(type);
         }
+
         return context.getAutowireCapableBeanFactory().createBean(type);
     }
 

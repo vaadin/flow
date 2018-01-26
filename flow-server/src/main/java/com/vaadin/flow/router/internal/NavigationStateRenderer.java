@@ -15,37 +15,15 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Optional;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.BeforeLeaveEvent;
-import com.vaadin.flow.router.BeforeLeaveObserver;
-import com.vaadin.flow.router.ErrorNavigationEvent;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.EventUtil;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationHandler;
-import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 /**
  * Handles navigation events by rendering a contained NavigationState in the
@@ -100,7 +78,7 @@ public class NavigationStateRenderer implements NavigationHandler {
                         .equals(routeTargetType))
                 .findAny();
         return (T) currentInstance.orElseGet(() -> Instantiator.get(ui)
-                .createRouteTarget(routeTargetType, event));
+                .getOrCreate(routeTargetType));
     }
 
     @Override

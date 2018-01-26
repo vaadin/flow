@@ -15,39 +15,26 @@
  */
 package com.vaadin.flow.router.internal;
 
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.NavigationStateBuilder;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.ParentLayout;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.tests.util.MockUI;
-
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.List;
 
 @NotThreadSafe
 public class NavigationStateRendererTest {
 
     @Test
-    public void getRouterLayoutForSingle() throws Exception {
+    public void getRouterLayoutForSingle() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(RouteParentLayout.class));
 
@@ -60,7 +47,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForSingleParent() throws Exception {
+    public void getRouterLayoutForSingleParent() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(SingleView.class));
 
@@ -74,7 +61,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForMulipleLayers() throws Exception {
+    public void getRouterLayoutForMulipleLayers() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
 
@@ -90,13 +77,12 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void instantiatorUse() throws ServiceException {
+    public void instantiatorUse() {
 
         MockVaadinServletService service = new MockVaadinServletService();
         service.init(new MockInstantiator() {
             @Override
-            public <T extends HasElement> T createRouteTarget(
-                    Class<T> routeTargetType, NavigationEvent event) {
+            public <T> T getOrCreate(Class<T> routeTargetType) {
                 Assert.assertEquals(Component.class, routeTargetType);
                 return (T) new Text("foo");
             }

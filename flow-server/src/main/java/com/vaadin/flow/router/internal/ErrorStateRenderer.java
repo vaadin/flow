@@ -15,25 +15,17 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.ErrorNavigationEvent;
-import com.vaadin.flow.router.EventUtil;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationHandler;
-import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Handles error navigation rendering in the target UI.
@@ -82,7 +74,7 @@ public class ErrorStateRenderer implements NavigationHandler {
                         .equals(routeTargetType))
                 .findAny();
         return (T) currentInstance.orElseGet(() -> Instantiator.get(ui)
-                .createRouteTarget(routeTargetType, event));
+                .getOrCreate(routeTargetType));
     }
 
     @Override
