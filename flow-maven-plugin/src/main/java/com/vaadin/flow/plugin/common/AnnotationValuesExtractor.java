@@ -114,10 +114,9 @@ public class AnnotationValuesExtractor {
                 HtmlImport.class.getName());
         Stream<Class<?>> annotatedClasses = getAnnotatedClasses(
                 annotationInProjectContext);
-        HashMap<Class<? extends AbstractTheme>, List<Class<?>>> themedClasses = annotatedClasses
-                .collect(Collectors.toMap(clazz -> findTheme(clazz),
-                        Collections::singletonList, this::mergeLists,
-                        HashMap::new));
+        Map<Class<? extends AbstractTheme>, List<Class<?>>> themedClasses = annotatedClasses
+                .collect(Collectors.toMap(this::findTheme,
+                        Collections::singletonList, this::mergeLists));
         if (themedClasses.size() > 1) {
             throw new IllegalStateException(
                     "Multiple themes are not supported, "
@@ -181,7 +180,7 @@ public class AnnotationValuesExtractor {
             builder.append(entry.getKey()).append("'");
         }
         builder.append(" is discovered for classes: ");
-        builder.append(entry.getValue().stream().map(clazz -> clazz.getName())
+        builder.append(entry.getValue().stream().map(Class::getName)
                 .collect(Collectors.joining(", ")));
         return builder.toString();
     }
@@ -284,7 +283,7 @@ public class AnnotationValuesExtractor {
         if (parentLayout != null) {
             Class<? extends RouterLayout> routerLayout = (Class<? extends RouterLayout>) doInvokeAnnotationMethod(
                     parentLayout, VALUE);
-            accumulator.add(recuseToTopLayout(routerLayout));
+            accumulator.add(recurseToTopLayout(routerLayout));
         }
 
         Class<? extends Annotation> routeAnnotation = loadClassInProjectClassLoader(
@@ -293,7 +292,7 @@ public class AnnotationValuesExtractor {
         if (route != null) {
             Class<? extends RouterLayout> routerLayout = (Class<? extends RouterLayout>) doInvokeAnnotationMethod(
                     route, LAYOUT);
-            Class<? extends RouterLayout> layout = recuseToTopLayout(
+            Class<? extends RouterLayout> layout = recurseToTopLayout(
                     routerLayout);
             if (!UI.class.getName().equals(layout.getName())) {
                 accumulator.add(layout);
@@ -305,7 +304,7 @@ public class AnnotationValuesExtractor {
         Stream.of(component.getAnnotationsByType(routeAliasAnnotation))
                 .map(alias -> doInvokeAnnotationMethod(alias, LAYOUT))
                 .map(clazz -> (Class<? extends RouterLayout>) clazz)
-                .map(this::recuseToTopLayout)
+                .map(this::recurseToTopLayout)
                 .filter(routeLayout -> !UI.class.getName()
                         .equals(routeLayout.getName()))
                 .forEach(accumulator::add);
@@ -313,18 +312,20 @@ public class AnnotationValuesExtractor {
     }
 
     @SuppressWarnings("unchecked")
-    private Class<? extends RouterLayout> recuseToTopLayout(
+    private Class<? extends RouterLayout> recurseToTopLayout(
             Class<? extends RouterLayout> layout) {
+        Class<? extends RouterLayout> current = layout;
         Class<? extends Annotation> parentLayoutClass = loadClassInProjectClassLoader(
                 ParentLayout.class.getName());
-        Annotation parentLayout = layout.getAnnotation(parentLayoutClass);
-
-        if (parentLayout != null) {
-            return recuseToTopLayout(
-                    (Class<? extends RouterLayout>) doInvokeAnnotationMethod(
-                            parentLayout, VALUE));
-        }
-        return layout;
+        do {
+            Annotation parentLayout = current.getAnnotation(parentLayoutClass);
+            if (parentLayout == null) {
+                return current;
+            } else {
+                current = (Class<? extends RouterLayout>) doInvokeAnnotationMethod(
+                        parentLayout, VALUE);
+            }
+        } while (true);
     }
 
 }
