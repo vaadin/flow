@@ -24,14 +24,16 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.uitest.ui.webcomponent.PaperSlider;
 
 @Route(value = "com.vaadin.flow.uitest.ui.CompositeView", layout = ViewTestLayout.class)
 public class CompositeView extends AbstractDivView {
 
     public static final String SERVER_INPUT_ID = "serverInput";
     public static final String SERVER_INPUT_BUTTON_ID = "serverInputButton";
+    public static final String COMPOSITE_PAPER_SLIDER = "compositePaperSlider";
 
     public static class NameField extends Composite<Input> {
 
@@ -70,6 +72,9 @@ public class CompositeView extends AbstractDivView {
         }
     }
 
+    public static class PaperSliderComposite extends Composite<PaperSlider> {
+    }
+
     public CompositeView() {
         Div name = new Div();
         name.setText("Name on server: ");
@@ -101,5 +106,11 @@ public class CompositeView extends AbstractDivView {
         serverInputButton.setId(SERVER_INPUT_BUTTON_ID);
         add(new Text("Enter a value to set the name on the server"),
                 serverInput, serverInputButton);
+
+        add(new Hr());
+
+        PaperSliderComposite paperSliderComposite = new PaperSliderComposite();
+        paperSliderComposite.setId(COMPOSITE_PAPER_SLIDER);
+        add(paperSliderComposite);
     }
 }
