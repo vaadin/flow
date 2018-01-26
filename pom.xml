@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.vaadin</groupId>
@@ -90,7 +89,8 @@
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
-        <!-- Jetty 9.3.8/9.3.9 causes the build to fail with 'address already in use' -->
+        <!-- Jetty 9.3.8/9.3.9 causes the build to fail with 'address already 
+            in use' -->
         <jetty.version>9.3.7.v20160115</jetty.version>
 
         <!-- Frontend -->
@@ -522,7 +522,8 @@
                             </goals>
                             <configuration>
                                 <rules>
-                                    <restrictImports implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                                    <restrictImports
+                                        implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
                                         <reason>Use SLF4j for logging</reason>
                                         <bannedImport>java.util.logging.**</bannedImport>
                                     </restrictImports>
@@ -562,7 +563,7 @@
                         <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse
+                <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
@@ -633,41 +634,41 @@
             </properties>
         </profile>
         <profile>
-          <id>prerelease</id>
-          <modules>
-              <module>flow</module>
-              <module>flow-server</module>
-              <module>flow-push</module>
-              <module>flow-data</module>
-              <module>flow-client</module>
-              <module>flow-html-components</module>
-              <module>flow-spring-addon</module>
-              <module>flow-spring-boot-starter</module>
-              <module>flow-documentation</module>
-              <module>flow-test-util</module>
-              <module>flow-tests</module>
-              <module>flow-server-production-mode</module>
-              <module>flow-components-parent</module>
-              <module>build-tools</module>
-          </modules>
-          <properties>
-              <staging.server.id>vaadin-prerelease-staging</staging.server.id>
-              <!-- staging.server.url is set by the build environment profile -->
-          </properties>
-          <build>
-              <plugins>
-              <plugin>
-                  <groupId>org.sonatype.plugins</groupId>
-                  <artifactId>nexus-staging-maven-plugin</artifactId>
-                  <version>1.6.8</version>
-                  <extensions>true</extensions>
-                  <configuration>
-                      <nexusUrl>${staging.server.url}</nexusUrl>
-                      <serverId>${staging.server.id}</serverId>
-                  </configuration>
-              </plugin>
-              </plugins>
-          </build>
+            <id>prerelease</id>
+            <modules>
+                <module>flow</module>
+                <module>flow-server</module>
+                <module>flow-push</module>
+                <module>flow-data</module>
+                <module>flow-client</module>
+                <module>flow-html-components</module>
+                <module>flow-spring-addon</module>
+                <module>flow-spring-boot-starter</module>
+                <module>flow-documentation</module>
+                <module>flow-test-util</module>
+                <module>flow-tests</module>
+                <module>flow-server-production-mode</module>
+                <module>flow-components-parent</module>
+                <module>build-tools</module>
+            </modules>
+            <properties>
+                <staging.server.id>vaadin-prerelease-staging</staging.server.id>
+                <!-- staging.server.url is set by the build environment profile -->
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <nexusUrl>${staging.server.url}</nexusUrl>
+                            <serverId>${staging.server.id}</serverId>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
