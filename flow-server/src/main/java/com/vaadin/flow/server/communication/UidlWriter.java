@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -351,6 +352,10 @@ public class UidlWriter implements Serializable {
                 newClass -> newClass.<Component> asSubclass(Component.class))
                 .forEach(hierarchyStorage::add);
         hierarchyStorage.add(component.getClass());
+        if (component instanceof Composite) {
+            addComponentHierarchy(ui, hierarchyStorage,
+                    ((Composite) component).getContent());
+        }
     }
 
     private List<Class<? extends HasChildView>> getParentViews(UI ui,
