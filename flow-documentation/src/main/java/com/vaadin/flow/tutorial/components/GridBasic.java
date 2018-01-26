@@ -178,11 +178,11 @@ public class GridBasic {
         nameColumn.setHeader("Name");
         // Sets a header containing a custom template,
         // in this case simply bolding the caption "Name"
-        nameColumn.setHeader(TemplateRenderer.<Person> of("<b>Name</b>"));
+        nameColumn.setHeader("<b>Name</b>");
 
         // Similarly for the footer
         nameColumn.setFooter("Name");
-        nameColumn.setFooter(TemplateRenderer.<Person> of("<b>Name</b>"));
+        nameColumn.setFooter("<b>Name</b>");
     }
 
     public void gridSorting() {
