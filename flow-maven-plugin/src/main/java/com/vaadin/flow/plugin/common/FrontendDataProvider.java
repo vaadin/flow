@@ -121,14 +121,6 @@ public class FrontendDataProvider {
             return resultingUrls;
         }
 
-        private void warn(String msg) {
-            // TODO : wait for logger
-        }
-
-        private void debug(String msg) {
-            // TODO : wait for logger
-        }
-
     }
 
     /**

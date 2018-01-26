@@ -114,9 +114,8 @@ public interface AbstractTheme extends Serializable {
         String substring = translatedUrl
                 .substring(translatedUrl.indexOf(getThemeUrl()));
 
-        if (!url.equals(translatedUrl) && availableHtmlResources
-                .filter(resource -> resource.endsWith(substring)).findFirst()
-                .isPresent()) {
+        if (availableHtmlResources
+                .anyMatch(resource -> resource.endsWith(substring))) {
             return translatedUrl;
         }
         return url;
