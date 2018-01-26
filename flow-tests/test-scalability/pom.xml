@@ -1,100 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.vaadin</groupId>
-		<artifactId>flow-tests</artifactId>
-		<version>1.0-SNAPSHOT</version>
-	</parent>
-	<artifactId>flow-test-scalability</artifactId>
-	<name>Flow scalability tests</name>
-	<packaging>war</packaging>
-	<properties>
-		<maven.deploy.skip>true</maven.deploy.skip>
-		<!-- Skip scalability tests by default, explicitly enabled on build server -->
-		<gatling.skip>true</gatling.skip>
-		<gatling.version>2.2.1</gatling.version>
-	</properties>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-tests</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-test-scalability</artifactId>
+    <name>Flow scalability tests</name>
+    <packaging>war</packaging>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <!-- Skip scalability tests by default, explicitly enabled on build 
+            server -->
+        <gatling.skip>true</gatling.skip>
+        <gatling.version>2.2.1</gatling.version>
+    </properties>
 
-	<!-- uses default ports 8888 and 8889 -->
-	<dependencies>
-		<dependency>
-			<groupId>io.gatling.highcharts</groupId>
-			<artifactId>gatling-charts-highcharts</artifactId>
-			<version>${gatling.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>flow-test-resources</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.lightbody.bmp</groupId>
-			<artifactId>browsermob-core-littleproxy</artifactId>
-			<version>2.1.0-beta-6</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <!-- uses default ports 8888 and 8889 -->
+    <dependencies>
+        <dependency>
+            <groupId>io.gatling.highcharts</groupId>
+            <artifactId>gatling-charts-highcharts</artifactId>
+            <version>${gatling.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.lightbody.bmp</groupId>
+            <artifactId>browsermob-core-littleproxy</artifactId>
+            <version>2.1.0-beta-6</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<plugins>
-			<!-- This module is mapped to default web context -->
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<version>${jetty.version}</version>
-				<executions>
-					<!-- start and stop jetty (running our app) when running integration
-						tests -->
-					<execution>
-						<id>start-jetty</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>start</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>stop-jetty</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>io.gatling</groupId>
-				<artifactId>gatling-maven-plugin</artifactId>
-				<version>2.2.0</version>
-				<executions>
-					<!-- Warmup for Jetty -->
-					<execution>
-						<id>warmup</id>
-						<configuration>
-							<simulationClass>com.vaadin.flow.test.scalability.WarmupFlow</simulationClass>
-						</configuration>
-						<goals>
-							<goal>execute</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>helloworld-test</id>
-						<configuration>
-							<simulationClass>com.vaadin.flow.test.scalability.HelloWorld</simulationClass>
-							<jvmArgs>
-								<jvmArg>-Dgatling.charting.indicators.lowerBound=100</jvmArg>
-								<jvmArg>-Dgatling.charting.indicators.higherBound=500</jvmArg>
-							</jvmArgs>
-						</configuration>
-						<goals>
-							<goal>execute</goal>
-						</goals>
-					</execution>
-				</executions>
+    <build>
+        <plugins>
+            <!-- This module is mapped to default web context -->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <executions>
+                    <!-- start and stop jetty (running our app) when running 
+                        integration tests -->
+                    <execution>
+                        <id>start-jetty</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop-jetty</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.gatling</groupId>
+                <artifactId>gatling-maven-plugin</artifactId>
+                <version>2.2.0</version>
+                <executions>
+                    <!-- Warmup for Jetty -->
+                    <execution>
+                        <id>warmup</id>
+                        <configuration>
+                            <simulationClass>com.vaadin.flow.test.scalability.WarmupFlow</simulationClass>
+                        </configuration>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>helloworld-test</id>
+                        <configuration>
+                            <simulationClass>com.vaadin.flow.test.scalability.HelloWorld</simulationClass>
+                            <jvmArgs>
+                                <jvmArg>-Dgatling.charting.indicators.lowerBound=100</jvmArg>
+                                <jvmArg>-Dgatling.charting.indicators.higherBound=500</jvmArg>
+                            </jvmArgs>
+                        </configuration>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                    </execution>
+                </executions>
 
-			</plugin>
-		</plugins>
-	</build>
+            </plugin>
+        </plugins>
+    </build>
 </project>

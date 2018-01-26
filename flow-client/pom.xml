@@ -1,185 +1,185 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.vaadin</groupId>
-		<artifactId>flow-project</artifactId>
-		<version>1.0-SNAPSHOT</version>
-	</parent>
-	<artifactId>flow-client</artifactId>
-	<name>Flow Client</name>
-	<packaging>jar</packaging>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-project</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-client</artifactId>
+    <name>Flow Client</name>
+    <packaging>jar</packaging>
 
-	<properties>
-		<gwt.module>com.vaadin.ClientEngine</gwt.module>
-		<gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
-		<gwt.module.style>OBF</gwt.module.style>
-		<gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
-	</properties>
+    <properties>
+        <gwt.module>com.vaadin.ClientEngine</gwt.module>
+        <gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
+        <gwt.module.style>OBF</gwt.module.style>
+        <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
+    </properties>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>com.google.gwt</groupId>
-				<artifactId>gwt</artifactId>
-				<version>${gwt.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-	<dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt</artifactId>
+                <version>${gwt.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
 
-		<!-- Project dependencies -->
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>flow-server</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>gwt-user</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>gwt-dev</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>gwt-elemental</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.ow2.asm</groupId>
-			<artifactId>asm</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.core.resources</artifactId>
-			<version>3.12.0</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <!-- Project dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-user</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-dev</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-elemental</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.resources</artifactId>
+            <version>3.12.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>../flow-server/src/main/java</directory>
-			</resource>
-		</resources>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../flow-server/src/main/java</directory>
+            </resource>
+        </resources>
 
-		<!-- Output classes directly into the webapp, so that IDEs and "mvn process-classes" 
-			update them in DevMode -->
-		<!-- <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory> -->
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<!-- Exclude all source files and classes so only the compile result 
-						ends up in the JAR -->
-					<excludes>
-						<exclude>com/**</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven.surefire.plugin.version}</version>
-				<configuration>
-					<excludes>
-						<exclude>**/Gwt*.java</exclude>
-					</excludes>
-					<enableAssertions>true</enableAssertions>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+        <!-- Output classes directly into the webapp, so that IDEs and "mvn 
+            process-classes" update them in DevMode -->
+        <!-- <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory> -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <!-- Exclude all source files and classes so only the 
+                        compile result ends up in the JAR -->
+                    <excludes>
+                        <exclude>com/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/Gwt*.java</exclude>
+                    </excludes>
+                    <enableAssertions>true</enableAssertions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-			<!-- GWT Maven Plugin -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>gwt-maven-plugin</artifactId>
-				<version>${gwt.version}</version>
+            <!-- GWT Maven Plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+                <version>${gwt.version}</version>
 
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>test</goal>
-							<goal>generateAsync</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<!-- Assertions should be disabled once we introduce a separate production 
-						build -->
-					<enableAssertions>true</enableAssertions>
-					<failOnError>true</failOnError>
-					<gwtSdkFirstInClasspath></gwtSdkFirstInClasspath>
-					<persistentunitcache>false</persistentunitcache>
-					<webappDirectory>${gwt.module.output}</webappDirectory>
-					<launcherDir>${gwt.module.output}</launcherDir>
-					<compileReport>true</compileReport>
-					<bindAddress>${gwt.sdm.bindAddress}</bindAddress>
-					<modules>
-						<module>${gwt.module}</module>
-					</modules>
-					<webMode>true</webMode>
-					<style>${gwt.module.style}</style>
-					<htmlunit>FF38</htmlunit>
-					<testTimeOut>300</testTimeOut>
-				</configuration>
-			</plugin>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>test</goal>
+                            <goal>generateAsync</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- Assertions should be disabled once we introduce 
+                        a separate production build -->
+                    <enableAssertions>true</enableAssertions>
+                    <failOnError>true</failOnError>
+                    <gwtSdkFirstInClasspath></gwtSdkFirstInClasspath>
+                    <persistentunitcache>false</persistentunitcache>
+                    <webappDirectory>${gwt.module.output}</webappDirectory>
+                    <launcherDir>${gwt.module.output}</launcherDir>
+                    <compileReport>true</compileReport>
+                    <bindAddress>${gwt.sdm.bindAddress}</bindAddress>
+                    <modules>
+                        <module>${gwt.module}</module>
+                    </modules>
+                    <webMode>true</webMode>
+                    <style>${gwt.module.style}</style>
+                    <htmlunit>FF38</htmlunit>
+                    <testTimeOut>300</testTimeOut>
+                </configuration>
+            </plugin>
 
-			<!-- Include separate source dir for GWT tests -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.10</version>
-				<executions>
-					<execution>
-						<id>add-gwt-test-sources-as-test-sources</id>
-						<phase>generate-test-sources</phase>
-						<goals>
-							<goal>add-test-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>src/test-gwt/java</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
+            <!-- Include separate source dir for GWT tests -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.10</version>
+                <executions>
+                    <execution>
+                        <id>add-gwt-test-sources-as-test-sources</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/test-gwt/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
 
-	</build>
-	<profiles>
-		<profile>
-			<id>sdm</id>
-			<properties>
-				<gwt.module>com.vaadin.ClientEngineXSI</gwt.module>
-			</properties>
-		</profile>
-	</profiles>
+    </build>
+    <profiles>
+        <profile>
+            <id>sdm</id>
+            <properties>
+                <gwt.module>com.vaadin.ClientEngineXSI</gwt.module>
+            </properties>
+        </profile>
+    </profiles>
 </project>
