@@ -235,8 +235,8 @@
                         <version>${driver.binary.downloader.maven.plugin.version}</version>
                         <configuration>
                             <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
-                            <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
-                            <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
+                            <rootStandaloneServerDirectory>${java.io.tmpdir}/webdriver</rootStandaloneServerDirectory>
+                            <downloadedZipFileDirectory>${java.io.tmpdir}/webdriver_zips</downloadedZipFileDirectory>
                             <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
                         </configuration>
                         <executions>
