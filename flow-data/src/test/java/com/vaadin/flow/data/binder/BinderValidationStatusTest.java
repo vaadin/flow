@@ -26,14 +26,9 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
-import com.vaadin.flow.data.binder.BinderValidationStatus;
-import com.vaadin.flow.data.binder.BindingValidationStatus;
 import com.vaadin.flow.data.binder.BindingValidationStatus.Status;
-import com.vaadin.flow.data.binder.BindingValidationStatusHandler;
-import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.tests.data.bean.Person;
 
 public class BinderValidationStatusTest

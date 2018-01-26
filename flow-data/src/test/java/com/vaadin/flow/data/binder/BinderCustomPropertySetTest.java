@@ -24,11 +24,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.PropertyDefinition;
-import com.vaadin.flow.data.binder.PropertySet;
-import com.vaadin.flow.data.binder.Setter;
+import com.vaadin.flow.data.binder.testcomponents.TextField;
 import com.vaadin.flow.function.ValueProvider;
 
 public class BinderCustomPropertySetTest {

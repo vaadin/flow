@@ -29,9 +29,7 @@ import org.junit.Before;
 
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.binder.testcomponents.TextField;
 import com.vaadin.flow.data.converter.Converter;
 
 /**

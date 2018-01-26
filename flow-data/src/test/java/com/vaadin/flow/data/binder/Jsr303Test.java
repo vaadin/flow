@@ -29,7 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.testcomponents.TextField;
 import com.vaadin.flow.internal.BeanUtil;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;

@@ -26,8 +26,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.testcomponents.TextField;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
 
 /**
