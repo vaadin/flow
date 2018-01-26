@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.flow.binding;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -269,18 +268,18 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         // property
         String[] subProperties = fullPropertyName.split("\\.");
         StateNode model = node;
-        NodeMap elementProperties = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-        HashSet<String> synchronizedProperties = getSynchronizedPropertiesNames(
-                model.getList(NodeFeatures.SYNCHRONIZED_PROPERTIES));
         MapProperty mapProperty = null;
         for (String subProperty : subProperties) {
+            NodeMap elementProperties = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
             if (!elementProperties.hasPropertyValue(subProperty)) {
                 Console.debug("Ignoring property change for property '"
                         + fullPropertyName
                         + "' which isn't defined from server");
                 return;
             }
-            if (synchronizedProperties.contains(subProperty)) {
+            if (containsProperty(
+                    model.getList(NodeFeatures.SYNCHRONIZED_PROPERTIES),
+                    subProperty)) {
                 Console.debug("Ignoring property change for property '"
                         + fullPropertyName
                         + "' which is intended to be synchronized separately");
@@ -305,12 +304,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         mapProperty.syncToServer(valueProvider.get());
     }
 
-    private HashSet<String> getSynchronizedPropertiesNames(NodeList synchronizedProperties) {
-        HashSet<String> names = new HashSet<>(synchronizedProperties.length());
+    private boolean containsProperty(NodeList synchronizedProperties,
+            String property) {
         for (int i = 0; i < synchronizedProperties.length(); i++) {
-            names.add(synchronizedProperties.get(i).toString());
+            if (Objects.equals(synchronizedProperties.get(i).toString(),
+                    property)) {
+                return true;
+            }
         }
-        return names;
+        return false;
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {
