@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
@@ -10,7 +10,7 @@
     <artifactId>flow-components-test</artifactId>
     <name>Flow component API integration test module</name>
     <packaging>war</packaging>
-    
+
     <properties>
         <!-- Don't care about coding style or licenses for tests -->
         <sonar.skip>true</sonar.skip>
@@ -44,63 +44,6 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-data</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <!-- Component dependencies -->
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-button-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-checkbox-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-combo-box-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-date-picker-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-dialog-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-form-layout-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-grid-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-icons-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-ordered-layout-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-text-field-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-split-layout-flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <!-- webJars -->
@@ -219,8 +162,8 @@
                     </webAppConfig>
                 </configuration>
                 <executions>
-                    <!-- start and stop jetty (running our app) when running integration
-                        tests -->
+                    <!-- start and stop jetty (running our app) when running 
+                        integration tests -->
                     <execution>
                         <id>start-jetty</id>
                         <phase>pre-integration-test</phase>
@@ -280,7 +223,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>eclipse</id>
             <build>
@@ -292,18 +235,18 @@
                         <configuration>
                             <webAppConfig>
                                 <webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
-                                <!-- Configure all project META-INF/resources
-                                    directories for Jetty as resource folders as Jetty inside Eclipse is run
-                                    with "Resolve workspace artifacts" and this does not create any JARs. Jetty
+                                <!-- Configure all project META-INF/resources 
+                                    directories for Jetty as resource folders as Jetty inside Eclipse is run 
+                                    with "Resolve workspace artifacts" and this does not create any JARs. Jetty 
                                     only scans JARs for META-INF/resources folders -->
                                 <resourceBases>
-                                    <!-- these paths are relative to the
+                                    <!-- these paths are relative to the 
                                         project where the profile is triggered -->
                                     <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-push/src/main/resources/META-INF/resources</resourceBase>
                                 </resourceBases>
                             </webAppConfig>
-                            <!-- force default ports so that running IT tests
+                            <!-- force default ports so that running IT tests 
                                 from IDE work -->
                             <httpConnector>
                                 <port>8080</port>
@@ -313,7 +256,7 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>        
+        </profile>
 
     </profiles>
 </project>

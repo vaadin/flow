@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <!-- Inheriting parent so we can get configuration properties and organization,
+    <!-- Inheriting parent so we can get configuration properties and organization, 
         license etc. information from it. Drawback is some not needed dependencies. -->
     <parent>
         <groupId>com.vaadin</groupId>
@@ -14,12 +14,13 @@
     </description>
     <!-- Versioning doesn't follow Flow Core. -->
     <version>0.0.1-SNAPSHOT</version>
-    
-     <dependencyManagement>
+
+    <dependencyManagement>
         <dependencies>
-            <!-- vaadin-webjars-bom is actually not used by the project, but since it doesn't
-                follow the Flow core versioning, an explicity import needs to be made - otherwise
-                the build would break with a broken dependency vaadin-webjars-bom:0.0.1-SNAPSHOT -->
+            <!-- vaadin-webjars-bom is actually not used by the project, 
+                but since it doesn't follow the Flow core versioning, an explicity import 
+                needs to be made - otherwise the build would break with a broken dependency 
+                vaadin-webjars-bom:0.0.1-SNAPSHOT -->
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-webjars-bom</artifactId>
@@ -60,12 +61,12 @@
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <configuration>
-                                    <!-- TODO #1805 need to figure out how to pass command line parameters
-                                     from maven calls to this, such as what packages to create
-                                     and what should be the output folder. flow-webcomponent-api-analyzer.js
-                                     for current defaults. -->
-                                    <!-- This argument matches to the "scripts" defined
-                                     in package.json file. -->
+                                    <!-- TODO #1805 need to figure out how 
+                                        to pass command line parameters from maven calls to this, such as what packages 
+                                        to create and what should be the output folder. flow-webcomponent-api-analyzer.js 
+                                        for current defaults. -->
+                                    <!-- This argument matches to the "scripts" 
+                                        defined in package.json file. -->
                                     <arguments>run-script
                                         flow-components
                                     </arguments>
@@ -93,8 +94,9 @@
                                     <directory>bower_components</directory>
                                 </fileset>
 
-                                <!-- Since this module is responsible for generating the json_metadata
-                                    directory, it is also responsible for cleaning it out -->
+                                <!-- Since this module is responsible for 
+                                    generating the json_metadata directory, it is also responsible for cleaning 
+                                    it out -->
                                 <fileset>
                                     <directory>../flow-generated-components/json_metadata</directory>
                                 </fileset>

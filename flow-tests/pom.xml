@@ -24,7 +24,6 @@
         <module>test-spring-war</module>
         <module>test-spring</module>
         <module>test-spring-common</module>
-        <module>test-components</module>
     </modules>
 
     <repositories>
@@ -55,13 +54,13 @@
         <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
 
         <maven.deploy.skip>true</maven.deploy.skip>
-        <!-- Used in the tests, should be overridden for each module to support
+        <!-- Used in the tests, should be overridden for each module to support 
             concurrent running of test modules. -->
         <server.port>8888</server.port>
         <server.stop.port>8889</server.stop.port>
         <spring-boot.version>2.0.0.M7</spring-boot.version>
     </properties>
-    
+
     <dependencies>
         <!-- Project dependencies -->
         <dependency>
@@ -108,7 +107,7 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
-                <!-- Jetty execution is mapped in those modules that actually
+                <!-- Jetty execution is mapped in those modules that actually 
                     use Jetty -->
                 <configuration>
                     <webAppConfig>
@@ -126,7 +125,7 @@
         </plugins>
         <pluginManagement>
             <plugins>
-                <!--This plugin's configuration is used to store Eclipse
+                <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
@@ -173,12 +172,12 @@
                         <version>${jetty.version}</version>
                         <configuration>
                             <webAppConfig>
-                                <!-- Configure all project META-INF/resources
-                                    directories for Jetty as resource folders as Jetty inside Eclipse is run
-                                    with "Resolve workspace artifacts" and this does not create any JARs. Jetty
+                                <!-- Configure all project META-INF/resources 
+                                    directories for Jetty as resource folders as Jetty inside Eclipse is run 
+                                    with "Resolve workspace artifacts" and this does not create any JARs. Jetty 
                                     only scans JARs for META-INF/resources folders -->
                                 <resourceBases>
-                                    <!-- these paths are relative to the
+                                    <!-- these paths are relative to the 
                                         project where the profile is triggered -->
                                     <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
@@ -186,7 +185,7 @@
                                     <resourceBase>${project.basedir}/../test-resources/src/main/resources/META-INF/resources</resourceBase>
                                 </resourceBases>
                             </webAppConfig>
-                            <!-- force default ports so that running IT tests
+                            <!-- force default ports so that running IT tests 
                                 from IDE work -->
                             <httpConnector>
                                 <port>8888</port>
