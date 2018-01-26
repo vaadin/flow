@@ -13,14 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data.provider;
+package com.vaadin.flow.data.provider;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.data.provider.BackendDataProviderTest.StrBeanBackEndDataProvider;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.provider.BackendDataProviderTest.StrBeanBackEndDataProvider;
 import com.vaadin.flow.function.SerializablePredicate;
 
 public class ConfigurableFilterDataProviderWrapperTest {
