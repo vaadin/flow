@@ -50,7 +50,7 @@ public class SplitPackagesTest {
         String errors = collectErrors(packageToModules);
 
         if (!errors.isEmpty()) {
-            Assert.fail(errors.toString());
+            Assert.fail(errors);
         }
     }
 

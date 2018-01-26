@@ -303,7 +303,7 @@ public class StateTree implements NodeOwner {
      * executed if able.
      */
     public void runExecutionsBeforeClientResponse() {
-        boolean newTasksPossiblyAddedOrNodesAttached = false;
+        boolean newTasksPossiblyAddedOrNodesAttached;
         do {
             newTasksPossiblyAddedOrNodesAttached = false;
             for (StateNodeOnBeforeClientResponse reference : flushCallbacks()) {

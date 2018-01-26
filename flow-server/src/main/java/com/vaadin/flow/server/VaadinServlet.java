@@ -369,12 +369,9 @@ public class VaadinServlet extends HttpServlet {
             staticFileServer.serveStaticResource(request, response);
             return true;
         }
-        if (webJarServer != null
-                && webJarServer.tryServeWebJarResource(request, response)) {
-            return true;
-        }
-
-        return false;
+        
+        return webJarServer != null && webJarServer
+                .tryServeWebJarResource(request, response);
     }
 
     /**

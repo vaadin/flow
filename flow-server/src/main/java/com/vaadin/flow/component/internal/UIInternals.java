@@ -92,9 +92,7 @@ public class UIInternals implements Serializable {
         public JavaScriptInvocation(String expression,
                 Serializable... parameters) {
             this.expression = expression;
-            for (Serializable parameter : parameters) {
-                this.parameters.add(parameter);
-            }
+            Collections.addAll(this.parameters, parameters);
         }
 
         /**

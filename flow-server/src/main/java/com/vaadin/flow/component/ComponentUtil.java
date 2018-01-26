@@ -30,7 +30,6 @@ import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.SynchronizedPropertyInfo;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
@@ -63,7 +62,7 @@ public class ComponentUtil {
         assert element != null;
         assert componentConsumer != null;
 
-        Optional<Component> maybeComponent = ElementUtil.getComponent(element);
+        Optional<Component> maybeComponent = element.getComponent();
 
         if (maybeComponent.isPresent()) {
             Component component = maybeComponent.get();
@@ -71,10 +70,8 @@ public class ComponentUtil {
             return;
         }
 
-        for (int i = 0; i < element.getChildCount(); i++) {
-            Element childElement = element.getChild(i);
-            findComponents(childElement, componentConsumer);
-        }
+        element.getChildren().forEach(childElement -> ComponentUtil
+                .findComponents(childElement, componentConsumer));
     }
 
     /**
@@ -159,7 +156,7 @@ public class ComponentUtil {
     public static Optional<Component> findParentComponent(Element element) {
         Element mappedElement = element;
         while (mappedElement != null
-                && !ElementUtil.getComponent(mappedElement).isPresent()) {
+                && !mappedElement.getComponent().isPresent()) {
             mappedElement = mappedElement.getParent();
         }
         if (mappedElement == null) {
@@ -172,9 +169,9 @@ public class ComponentUtil {
     /**
      * Gets the innermost mapped component for the element.
      * <p>
-     * This returns {@link ElementUtil#getComponent(Element)} if something else
-     * than a {@link Composite} is mapped to the element. If a {@link Composite}
-     * is mapped to the element, finds the innermost content of the
+     * This returns {@link Element#getComponent()} if something else than a
+     * {@link Composite} is mapped to the element. If a {@link Composite} is
+     * mapped to the element, finds the innermost content of the
      * {@link Composite} chain.
      *
      * @param element
@@ -182,15 +179,15 @@ public class ComponentUtil {
      * @return the innermost component mapped to the element
      */
     public static Component getInnermostComponent(Element element) {
-        assert ElementUtil.getComponent(element).isPresent();
+        assert element.getComponent().isPresent();
 
-        Component component = ElementUtil.getComponent(element).get();
+        Component component = element.getComponent().get();
         if (component instanceof Composite) {
             return ComponentUtil
                     .getInnermostComponent((Composite<?>) component);
-        } else {
-            return component;
         }
+
+        return component;
     }
 
     /**
