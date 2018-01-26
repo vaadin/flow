@@ -23,16 +23,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.binder.testcomponents.TestDatePicker;
+import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.server.VaadinRequest;
 
 public class ValueContextTest extends UI {
 
     private static final Locale UI_LOCALE = Locale.GERMAN;
     private static final Locale COMPONENT_LOCALE = Locale.FRENCH;
-    private TextField textField;
+    private TestTextField textField;
 
     @Test
     public void locale_from_component() {
@@ -73,7 +72,7 @@ public class ValueContextTest extends UI {
     @Test
     public void testHasValue2() {
         setLocale(Locale.getDefault());
-        ValueContext fromComponent = new ValueContext(new DatePicker(),
+        ValueContext fromComponent = new ValueContext(new TestDatePicker(),
                 textField);
         Assert.assertEquals(textField, fromComponent.getHasValue().get());
     }
@@ -81,7 +80,7 @@ public class ValueContextTest extends UI {
     @Test
     public void testHasValue3() {
         setLocale(Locale.getDefault());
-        ValueContext fromComponent = new ValueContext(new DatePicker(),
+        ValueContext fromComponent = new ValueContext(new TestDatePicker(),
                 textField, Locale.CANADA);
         Assert.assertEquals(textField, fromComponent.getHasValue().get());
         Assert.assertEquals(Locale.CANADA, fromComponent.getLocale().get());
@@ -91,7 +90,7 @@ public class ValueContextTest extends UI {
     public void setUp() {
         setLocale(UI_LOCALE);
         UI.setCurrent(this);
-        textField = new TextField();
+        textField = new TestTextField();
         add(textField);
     }
 

@@ -21,12 +21,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
-import com.vaadin.flow.data.binder.StatusChangeEvent;
-import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.tests.data.bean.Person;
 

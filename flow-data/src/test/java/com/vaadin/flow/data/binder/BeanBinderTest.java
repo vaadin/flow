@@ -33,13 +33,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.BinderValidationStatus;
-import com.vaadin.flow.data.binder.BindingValidationStatus;
 import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubConstraint;
 import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubSubConstraint;
+import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
 
@@ -50,7 +46,7 @@ public class BeanBinderTest
     }
 
     private class TestClass {
-        private TextField number = new TextField();
+        private TestTextField number = new TestTextField();
     }
 
     private class TestClassWithoutFields {
@@ -179,7 +175,7 @@ public class BeanBinderTest
     }
 
     public static class PersonForm {
-        private TextField mydate = new TextField();
+        private TestTextField mydate = new TestTextField();
     }
 
     @Before
@@ -394,7 +390,7 @@ public class BeanBinderTest
                 RequiredConstraints.class);
         RequiredConstraints bean = new RequiredConstraints();
 
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
         binder.bind(field, "firstname");
         binder.setBean(bean);
 
@@ -408,7 +404,7 @@ public class BeanBinderTest
                 RequiredConstraints.class);
         RequiredConstraints bean = new RequiredConstraints();
 
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
         binder.bind(field, "age");
         binder.setBean(bean);
 
@@ -422,7 +418,7 @@ public class BeanBinderTest
                 RequiredConstraints.class);
         RequiredConstraints bean = new RequiredConstraints();
 
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
         binder.bind(field, "lastname");
         binder.setBean(bean);
 
@@ -437,7 +433,7 @@ public class BeanBinderTest
         RequiredConstraints bean = new RequiredConstraints();
         bean.setSubfield(new RequiredConstraints.SubConstraint());
 
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
         binder.bind(field, "subfield.name");
         binder.setBean(bean);
 
@@ -454,7 +450,7 @@ public class BeanBinderTest
         subfield.setSubsub(new SubSubConstraint());
         bean.setSubfield(subfield);
 
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
         binder.bind(field, "subfield.subsub.value");
         binder.setBean(bean);
 
@@ -466,7 +462,7 @@ public class BeanBinderTest
     public void subfield_name_valueCanBeValidated() {
         BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
                 RequiredConstraints.class);
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
 
         binder.bind(field, "subfield.name");
         RequiredConstraints bean = new RequiredConstraints();
@@ -481,7 +477,7 @@ public class BeanBinderTest
     public void subSubfield_name_valueCanBeValidated() {
         BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
                 RequiredConstraints.class);
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
 
         binder.bind(field, "subfield.subsub.value");
         RequiredConstraints bean = new RequiredConstraints();
@@ -495,7 +491,7 @@ public class BeanBinderTest
         Assert.assertTrue(binder.validate().isOk());
     }
 
-    private void assertInvalid(TextField field, String message) {
+    private void assertInvalid(TestTextField field, String message) {
         BinderValidationStatus<?> status = binder.validate();
         List<BindingValidationStatus<?>> errors = status
                 .getFieldValidationErrors();

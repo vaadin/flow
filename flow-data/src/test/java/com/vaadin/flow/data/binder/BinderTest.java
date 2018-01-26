@@ -39,17 +39,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
-import com.vaadin.flow.data.binder.BinderValidationStatus;
-import com.vaadin.flow.data.binder.BindingValidationStatus;
-import com.vaadin.flow.data.binder.BindingValidationStatusHandler;
-import com.vaadin.flow.data.binder.ErrorLevel;
-import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.binder.ValidationResult;
-import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
@@ -360,7 +352,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void binding_with_default_null_representation() {
-        TextField nullTextField = new TextField() {
+        TestTextField nullTextField = new TestTextField() {
             @Override
             public String getEmptyValue() {
                 return "null";
@@ -467,7 +459,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void setRequired_withErrorMessage_fieldGetsRequiredIndicatorAndValidator() {
-        TextField textField = new TextField();
+        TestTextField textField = new TestTextField();
         assertFalse(textField.isRequiredIndicatorVisible());
 
         BindingBuilder<Person, String> binding = binder.forField(textField);
@@ -490,7 +482,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void readNullBeanRemovesError() {
-        TextField textField = new TextField();
+        TestTextField textField = new TestTextField();
         binder.forField(textField).asRequired("foobar")
                 .bind(Person::getFirstName, Person::setFirstName);
         Assert.assertTrue(textField.isRequiredIndicatorVisible());
@@ -510,7 +502,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void setRequired_withErrorMessageProvider_fieldGetsRequiredIndicatorAndValidator() {
-        TextField textField = new TextField();
+        TestTextField textField = new TestTextField();
         assertFalse(textField.isRequiredIndicatorVisible());
 
         BindingBuilder<Person, String> binding = binder.forField(textField);
@@ -540,8 +532,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void validationStatusHandler_onlyRunForChangedField() {
-        TextField firstNameField = new TextField();
-        TextField lastNameField = new TextField();
+        TestTextField firstNameField = new TestTextField();
+        TestTextField lastNameField = new TestTextField();
 
         AtomicInteger invokes = new AtomicInteger();
 
@@ -581,7 +573,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test(expected = IllegalStateException.class)
     public void noArgsConstructor_stringBind_throws() {
-        binder.bind(new TextField(), "firstName");
+        binder.bind(new TestTextField(), "firstName");
     }
 
     @Test
@@ -902,7 +894,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void beanvalidation_two_fields_not_equal() {
-        TextField lastNameField = new TextField();
+        TestTextField lastNameField = new TestTextField();
         setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
 
         item.setLastName("Valid");
@@ -945,7 +937,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void beanvalidation_initially_broken_bean() {
-        TextField lastNameField = new TextField();
+        TestTextField lastNameField = new TestTextField();
         setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
 
         item.setLastName(item.getFirstName());
@@ -957,7 +949,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test(expected = IllegalStateException.class)
     public void beanvalidation_isValid_throws_with_readBean() {
-        TextField lastNameField = new TextField();
+        TestTextField lastNameField = new TestTextField();
         setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
 
         binder.readBean(item);
@@ -967,7 +959,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test(expected = IllegalStateException.class)
     public void beanvalidation_validate_throws_with_readBean() {
-        TextField lastNameField = new TextField();
+        TestTextField lastNameField = new TestTextField();
         setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
 
         binder.readBean(item);
@@ -976,7 +968,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     protected void setBeanValidationFirstNameNotEqualsLastName(
-            TextField firstNameField, TextField lastNameField) {
+            TestTextField firstNameField, TestTextField lastNameField) {
         binder.bind(firstNameField, Person::getFirstName, Person::setFirstName);
         binder.forField(lastNameField)
                 .withValidator(t -> !"foo".equals(t),
