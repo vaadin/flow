@@ -15,8 +15,11 @@
  */
 package com.vaadin.client.flow.binding;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.function.Supplier;
+
+import jsinterop.annotations.JsFunction;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Command;
@@ -54,7 +57,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -261,26 +263,31 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void handlePropertyChange(String property,
-            Supplier<Object> valueProvider, StateNode node) {
+    private void handlePropertyChange(String fullPropertyName,
+                                      Supplier<Object> valueProvider, StateNode node) {
         // This is not the property value itself, its a parent node of the
         // property
-        String[] properties = property.split("\\.");
+        String[] subProperties = fullPropertyName.split("\\.");
         StateNode model = node;
+        NodeMap elementProperties = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        HashSet<String> synchronizedProperties = getSynchronizedPropertiesNames(
+                model.getList(NodeFeatures.SYNCHRONIZED_PROPERTIES));
         MapProperty mapProperty = null;
-        for (String prop : properties) {
-            NodeMap map = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-            if (!map.hasPropertyValue(prop)) {
+        for (String subProperty : subProperties) {
+            if (!elementProperties.hasPropertyValue(subProperty)) {
                 Console.debug("Ignoring property change for property '"
-                        + property + "' which isn't defined from the server");
-                /*
-                 * Ignore instead of throwing since this is also invoked for
-                 * third party polymer components that don't need to have
-                 * property changes sent to the server.
-                 */
+                        + fullPropertyName
+                        + "' which isn't defined from server");
                 return;
             }
-            mapProperty = map.getProperty(prop);
+            if (synchronizedProperties.contains(subProperty)) {
+                Console.debug("Ignoring property change for property '"
+                        + fullPropertyName
+                        + "' which is intended to be synchronized separately");
+                return;
+            }
+
+            mapProperty = elementProperties.getProperty(subProperty);
             if (mapProperty.getValue() instanceof StateNode) {
                 model = (StateNode) mapProperty.getValue();
             }
@@ -296,6 +303,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         mapProperty.syncToServer(valueProvider.get());
+    }
+
+    private HashSet<String> getSynchronizedPropertiesNames(NodeList synchronizedProperties) {
+        HashSet<String> names = new HashSet<>(synchronizedProperties.length());
+        for (int i = 0; i < synchronizedProperties.length(); i++) {
+            names.add(synchronizedProperties.get(i).toString());
+        }
+        return names;
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {
