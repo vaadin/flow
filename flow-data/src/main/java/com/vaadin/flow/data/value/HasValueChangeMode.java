@@ -50,10 +50,6 @@ public interface HasValueChangeMode<C extends Component, V>
     default void setValueChangeMode(ValueChangeMode valueChangeMode) {
         Objects.requireNonNull(valueChangeMode,
                 "New valueChangeMode should not be null");
-        if (valueChangeMode == getValueChangeMode()) {
-            return;
-        }
-
         Element element = get().getElement();
         switch (valueChangeMode) {
         case EAGER:
