@@ -20,7 +20,6 @@
         <module>flow-theme-integrations</module>
         <module>flow-spring-addon</module>
         <module>flow-spring-boot-starter</module>
-        <module>flow-documentation</module>
         <module>flow-test-util</module>
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
@@ -644,7 +643,6 @@
                 <module>flow-html-components</module>
                 <module>flow-spring-addon</module>
                 <module>flow-spring-boot-starter</module>
-                <module>flow-documentation</module>
                 <module>flow-test-util</module>
                 <module>flow-tests</module>
                 <module>flow-server-production-mode</module>
