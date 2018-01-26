@@ -40,7 +40,7 @@ public class FutureAccess extends FutureTask<Void> {
      *            the command to run when this task is purged from the queue
      */
     public FutureAccess(VaadinSession session, Command command) {
-        super(() -> command.execute(), null);
+        super(command::execute, null);
         this.session = session;
         this.command = command;
     }

@@ -16,6 +16,7 @@
 package com.vaadin.flow.template.angular.model;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -136,9 +137,7 @@ public class TemplateModelUtil {
         Set<String> toInclude = new HashSet<>();
 
         if (exclude != null) {
-            for (String excludeProperty : exclude.value()) {
-                toExclude.add(excludeProperty);
-            }
+            Collections.addAll(toExclude, exclude.value());
         }
 
         if (include != null) {

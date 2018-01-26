@@ -536,7 +536,7 @@ public class VaadinServlet extends HttpServlet {
                                 && request.getServerPort() == 80) ? ""
                                         : ":" + request.getServerPort())
                 + request.getRequestURI());
-        String servletPath = "";
+        String servletPath;
         if (request
                 .getAttribute("javax.servlet.include.servlet_path") != null) {
             // this is an include request

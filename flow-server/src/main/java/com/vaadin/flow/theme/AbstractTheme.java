@@ -122,8 +122,7 @@ public interface AbstractTheme extends Serializable {
                     .substring(translation.indexOf(getThemeUrl()));
 
             if (!url.equals(translation)
-                    && availableHtmlResources.filter(s -> s.endsWith(substring))
-                            .findFirst().isPresent()) {
+                    && availableHtmlResources.anyMatch(s -> s.endsWith(substring))) {
                 return translation;
             }
         }

@@ -1002,7 +1002,7 @@ public class Element extends Node<Element> {
      * @return the text content of this element
      */
     public String getText() {
-        return getTextContent(e -> e.isTextNode());
+        return getTextContent(Element::isTextNode);
     }
 
     /**
@@ -1379,7 +1379,7 @@ public class Element extends Node<Element> {
                     .collect(Collectors.joining(","));
             Serializable[] jsParameters = Stream
                     .concat(Stream.of(this), Stream.of(arguments))
-                    .toArray(size -> new Serializable[size]);
+                    .toArray(Serializable[]::new);
 
             ui.getPage().executeJavaScript(
                     "$0." + functionName + "(" + paramPlaceholderString + ")",

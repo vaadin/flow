@@ -158,8 +158,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
-        for (int i = 0; i < children.length; i++) {
-            Element child = children[i];
+        for (Element child : children) {
             if (child == null) {
                 throw new IllegalArgumentException(
                         "Element to insert must not be null");

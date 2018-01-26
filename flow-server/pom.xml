@@ -145,7 +145,6 @@
 
                 <executions>
                     <execution>
-                        <id></id>
                         <goals>
                             <!-- Output -tests.jar so other modules can depend on the test classes -->
                             <goal>test-jar</goal>

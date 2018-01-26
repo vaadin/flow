@@ -311,7 +311,7 @@ public class PushHandler {
         }
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
                 resource.getRequest(), service);
-        VaadinSession session = null;
+        VaadinSession session;
 
         try {
             session = service.findVaadinSession(vaadinRequest);
@@ -330,7 +330,7 @@ public class PushHandler {
             return;
         }
 
-        UI ui = null;
+        UI ui;
         session.lock();
         try {
             VaadinSession.setCurrent(session);

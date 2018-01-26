@@ -371,7 +371,7 @@ public class StreamReceiverHandler implements Serializable {
 
             final byte[] buffer = new byte[MAX_UPLOAD_BUFFER_SIZE];
             long lastStreamingEvent = 0;
-            int bytesReadToBuffer = 0;
+            int bytesReadToBuffer;
             do {
                 bytesReadToBuffer = in.read(buffer);
                 if (bytesReadToBuffer > 0) {

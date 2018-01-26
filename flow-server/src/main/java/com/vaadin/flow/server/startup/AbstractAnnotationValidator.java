@@ -18,7 +18,6 @@ package com.vaadin.flow.server.startup;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -76,9 +75,7 @@ public abstract class AbstractAnnotationValidator {
             Collection<Class<?>> classSet) {
         List<String> offendingAnnotations = new ArrayList<>();
 
-        Iterator<Class<?>> iterator = classSet.iterator();
-        while (iterator.hasNext()) {
-            Class<?> clazz = iterator.next();
+        for (Class<?> clazz : classSet) {
             Route route = clazz.getAnnotation(Route.class);
             if (route != null) {
                 if (!UI.class.equals(route.layout())) {

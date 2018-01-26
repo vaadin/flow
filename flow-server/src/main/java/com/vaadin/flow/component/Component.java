@@ -233,7 +233,7 @@ public abstract class Component
             throw new IllegalStateException(
                     "You cannot use getParent() on a wrapped component. Use Component.wrapAndMap to include the component in the hierarchy");
         }
-        if (isInsideComposite(mappedComponent)) {
+        if (isInsideComposite(mappedComponent.get())) {
             Component parent = ComponentUtil.getParentUsingComposite(
                     (Composite<?>) mappedComponent.get(), this);
             return Optional.of(parent);
@@ -244,13 +244,8 @@ public abstract class Component
         return ComponentUtil.findParentComponent(getElement().getParent());
     }
 
-    private boolean isInsideComposite(Optional<Component> mappedComponent) {
-        if (!mappedComponent.isPresent()) {
-            return false;
-        }
-
-        Component component = mappedComponent.get();
-        return component instanceof Composite && component != this;
+    private boolean isInsideComposite(Component mappedComponent) {
+        return mappedComponent instanceof Composite && mappedComponent != this;
     }
 
     /**

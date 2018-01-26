@@ -120,7 +120,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
 
     @Override
     public void forEachChild(Consumer<StateNode> action) {
-        callbacks.keySet().stream().forEach(action::accept);
+        callbacks.keySet().forEach(action::accept);
     }
 
 }

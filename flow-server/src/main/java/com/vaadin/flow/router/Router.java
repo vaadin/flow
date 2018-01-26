@@ -256,7 +256,8 @@ public class Router implements RouterInterface {
         return routeString;
     }
 
-    private boolean isAnnotatedParameter(
+    @SafeVarargs
+    private final boolean isAnnotatedParameter(
             Class<? extends Component> navigationTarget,
             Class<? extends Annotation>... parameterAnnotations) {
         for (Class<? extends Annotation> annotation : parameterAnnotations) {
