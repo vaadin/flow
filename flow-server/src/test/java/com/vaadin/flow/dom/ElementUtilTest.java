@@ -48,7 +48,7 @@ public class ElementUtilTest {
     @Test
     public void componentNotInitiallyAttached() {
         Element e = ElementFactory.createDiv();
-        Assert.assertFalse(ElementUtil.getComponent(e).isPresent());
+        Assert.assertFalse(e.getComponent().isPresent());
     }
 
     @Test
@@ -56,7 +56,7 @@ public class ElementUtilTest {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
-        Assert.assertEquals(c, ElementUtil.getComponent(e).get());
+        Assert.assertEquals(c, e.getComponent().get());
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ElementUtilTest {
         Element e = Element.createText("Text text");
         Component c = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
-        Assert.assertEquals(c, ElementUtil.getComponent(e).get());
+        Assert.assertEquals(c, e.getComponent().get());
     }
 
     @Test(expected = IllegalStateException.class)

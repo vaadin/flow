@@ -130,7 +130,7 @@ public abstract class Composite<T extends Component> extends Component {
      *            the content for the composite
      */
     private void setContent(T content) {
-        assert ElementUtil.getComponent(content.getElement())
+        assert content.getElement().getComponent()
                 .isPresent() : "Composite should never be attached to an element which is not attached to a component";
         assert this.content == null : "Content has already been initialized";
         this.content = content;
