@@ -27,9 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.plugins.annotations.Mojo;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -47,9 +45,6 @@ public class AnnotationValuesExtractorTest {
                     "annotation-extractor-test/vaadin-grid-flow.jar"),
             TestUtils.getTestResource(
                     "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @Test(expected = IllegalArgumentException.class)
     public void extractAnnotationValues_incorrectMethod() {
