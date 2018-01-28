@@ -15,21 +15,19 @@
  */
 package com.vaadin.flow.di;
 
-import java.util.ServiceLoader;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidI18NConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+
+import java.util.Objects;
+import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Default instantiator that is used if no other instantiator has been
@@ -77,22 +75,17 @@ public class DefaultInstantiator implements Instantiator {
     }
 
     @Override
-    public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
-        return ReflectTools.createInstance(routeTargetType);
-    }
+    public <T> T getOrCreate(Class<T> objectClass) {
+        Objects.requireNonNull(objectClass, "objectClass must not be null");
 
-    @Override
-    public <T extends Component> T createComponent(Class<T> componentClass) {
-        return ReflectTools.createInstance(componentClass);
-    }
-
-    @Override
-    public I18NProvider getI18NProvider() {
-        if (i18nProvider.get() == null) {
-            i18nProvider.compareAndSet(null, getI18NProviderInstance());
+        if(I18NProvider.class.equals(objectClass)){
+            if (i18nProvider.get() == null) {
+                i18nProvider.compareAndSet(null, getI18NProviderInstance());
+            }
+            return (T)i18nProvider.get();
         }
-        return i18nProvider.get();
+
+        return ReflectTools.createInstance(objectClass);
     }
 
     private I18NProvider getI18NProviderInstance() {

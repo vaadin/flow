@@ -15,34 +15,21 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.Locale;
-import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.shared.ApplicationConstants;
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.SessionExpiredException;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WrappedHttpSession;
-import com.vaadin.flow.server.WrappedSession;
-import com.vaadin.flow.shared.ApplicationConstants;
-
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
 
 @NotThreadSafe
 public class I18NProviderTest {
@@ -66,7 +53,7 @@ public class I18NProviderTest {
         initServletAndService(initParams);
 
         Assert.assertEquals("Found wrong registry", TestProvider.class,
-                VaadinService.getCurrent().getInstantiator().getI18NProvider()
+                VaadinService.getCurrent().getInstantiator().getOrCreate(I18NProvider.class)
                         .getClass());
     }
 
@@ -80,7 +67,7 @@ public class I18NProviderTest {
         initServletAndService(initParams);
 
         I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator()
-                .getI18NProvider();
+                .getOrCreate(I18NProvider.class);
         Assert.assertNotNull("No provider for ", i18NProvider);
 
         Assert.assertEquals("Locale was not the defined locale",

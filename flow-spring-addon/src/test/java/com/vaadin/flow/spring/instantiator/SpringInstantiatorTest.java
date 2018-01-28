@@ -15,17 +15,14 @@
  */
 package com.vaadin.flow.spring.instantiator;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.spring.SpringServlet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,14 +37,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.server.ServiceInitEvent;
-import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.spring.SpringServlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RunWith(SpringRunner.class)
 @Import(SpringInstantiatorTest.TestConfiguration.class)
@@ -109,7 +103,7 @@ public class SpringInstantiatorTest {
         Instantiator instantiator = getInstantiator(context);
 
         RouteTarget1 target1 = instantiator
-                .createRouteTarget(RouteTarget1.class, null);
+                .getOrCreate(RouteTarget1.class);
         Assert.assertNotNull(target1);
     }
 
@@ -133,7 +127,7 @@ public class SpringInstantiatorTest {
         RouteTarget2 singleton = context.getBean(RouteTarget2.class);
 
         Assert.assertEquals(singleton,
-                instantiator.createRouteTarget(RouteTarget2.class, null));
+                instantiator.getOrCreate(RouteTarget2.class));
     }
 
     @Test
@@ -141,9 +135,9 @@ public class SpringInstantiatorTest {
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
-        Assert.assertNotNull(instantiator.getI18NProvider());
+        Assert.assertNotNull(instantiator.getOrCreate(I18NProvider.class));
         Assert.assertEquals(I18NTestProvider.class,
-                instantiator.getI18NProvider().getClass());
+                instantiator.getOrCreate(I18NProvider.class).getClass());
     }
 
     public static VaadinServletService getService(ApplicationContext context,

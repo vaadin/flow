@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.Optional;
-import java.util.stream.Stream;
-import java.util.stream.Stream.Builder;
-
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
@@ -26,6 +22,10 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
+
+import java.util.Optional;
+import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -470,7 +470,10 @@ public abstract class Component
      * @return I18N provider
      */
     public I18NProvider getI18NProvider() {
-        return VaadinService.getCurrent().getInstantiator().getI18NProvider();
+        return VaadinService
+                .getCurrent()
+                .getInstantiator()
+                .getOrCreate(I18NProvider.class);
     }
 
     /**

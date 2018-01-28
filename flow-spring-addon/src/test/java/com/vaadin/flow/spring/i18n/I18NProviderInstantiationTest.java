@@ -15,12 +15,10 @@
  */
 package com.vaadin.flow.spring.i18n;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-
-import javax.servlet.ServletException;
-
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,10 +30,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
+import javax.servlet.ServletException;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 
 @RunWith(SpringRunner.class)
 @Import(I18NProviderInstantiationTest.I18NTestConfig.class)
@@ -85,9 +83,9 @@ public class I18NProviderInstantiationTest {
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
-        Assert.assertNotNull(instantiator.getI18NProvider());
+        Assert.assertNotNull(instantiator.getOrCreate(I18NProvider.class));
         Assert.assertEquals(DefaultI18NTestProvider.class,
-                instantiator.getI18NProvider().getClass());
+                instantiator.getOrCreate(I18NProvider.class).getClass());
     }
 
     public static Instantiator getInstantiator(ApplicationContext context)

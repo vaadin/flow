@@ -15,11 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
 import com.vaadin.flow.component.Component.MapToExistingElement;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -34,6 +29,11 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
+
+import java.util.Collection;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Utility methods for {@link Component}.
@@ -285,7 +285,7 @@ public class ComponentUtil {
                         + "It looks like you are trying to execute UI code outside the UI/Servlet dispatching thread");
             }
             Instantiator instantiator = Instantiator.get(ui);
-            return instantiator.createComponent(componentType);
+            return instantiator.getOrCreate(componentType);
         } finally {
             // This should always be cleared, normally it's cleared in Component
             // but in case of exception it might be not cleared
