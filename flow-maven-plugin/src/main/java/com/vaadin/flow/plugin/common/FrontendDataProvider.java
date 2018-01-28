@@ -29,19 +29,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Provides necessary data for {@link FrontendToolsManager} to process project
@@ -51,77 +45,9 @@ import com.vaadin.flow.theme.AbstractTheme;
  */
 public class FrontendDataProvider {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(FrontendDataProvider.class);
-
     private final boolean shouldBundle;
     private final Map<String, Set<File>> fragments;
     private final Set<File> shellFileImports;
-
-    private class ThemedHtmlImportsTranslator
-            implements BiConsumer<Class<? extends AbstractTheme>, Set<String>> {
-
-        private Set<String> resultingUrls = new HashSet<>();
-
-        private final File es6SourceDirectory;
-
-        ThemedHtmlImportsTranslator(File es6SourceDirectory) {
-            this.es6SourceDirectory = es6SourceDirectory;
-        }
-
-        @Override
-        public void accept(Class<? extends AbstractTheme> themeClass,
-                Set<String> urls) {
-            resultingUrls.clear();
-            if (themeClass == null) {
-                resultingUrls.addAll(urls);
-                return;
-            }
-
-            AbstractTheme theme = ReflectTools.createInstance(themeClass);
-            for (String url : urls) {
-                String translatedUrl = theme.translateUrl(url);
-                if (sourceDirectoryHasFile(translatedUrl)) {
-                    LOGGER.info(
-                            "The URL '{}' has been translated "
-                                    + "to the url '{}' using theme '{}'",
-                            url, translatedUrl, themeClass.getSimpleName());
-                    resultingUrls.add(translatedUrl);
-                } else {
-                    LOGGER.warn("The theme '{}' gives '{}' as a "
-                            + "translation for url '{}' but the file is not found on the filesystem",
-                            themeClass.getSimpleName(), translatedUrl, url);
-                    resultingUrls.add(url);
-                }
-            }
-        }
-
-        private boolean sourceDirectoryHasFile(String url) {
-            String path = removeFlowPrefixes(url);
-            File file = new File(es6SourceDirectory, path);
-            if (!file.exists()) {
-                LOGGER.warn(
-                        "The translated URL '{}' has no corresponding "
-                                + "file on the filesystem,"
-                                + " the file is addressed by path='{}'",
-                        url, path);
-                return false;
-            }
-            if (!file.isFile()) {
-                LOGGER.warn(
-                        "The translated URL '{}' corresponding "
-                                + "path '{}' on the filesystem is not a file",
-                        url, path);
-                return false;
-            }
-            return true;
-        }
-
-        Set<String> getHtmlImportUrls() {
-            return resultingUrls;
-        }
-
-    }
 
     /**
      * Creates the data provider.
@@ -202,6 +128,24 @@ public class FrontendDataProvider {
         return shellFile.toAbsolutePath().toString();
     }
 
+    /**
+     * Gets the URL translator to rewrite URL using the theme in declared in the
+     * application.
+     *
+     * @param es6SourceDirectory
+     *            the directory with original ES6 files, not {@code null}
+     * @param introspector
+     *            the introspector whose classpath will be used for returned
+     *            translator
+     * @return
+     */
+    protected ThemedURLTranslator getTranslator(File es6SourceDirectory,
+            ClassPathIntrospector introspector) {
+        return new ThemedURLTranslator(
+                url -> new File(es6SourceDirectory, removeFlowPrefixes(url)),
+                introspector);
+    }
+
     private Map<String, Set<File>> resolveFragmentFiles(File es6SourceDirectory,
             File fragmentConfigurationFile,
             Map<String, Set<String>> userFragments) {
@@ -220,7 +164,7 @@ public class FrontendDataProvider {
                 fragmentName,
                 findInSourceDirectory(es6SourceDirectory, fragmentPaths),
                 this::mergeSets));
-        return result;
+        return Collections.unmodifiableMap(result);
     }
 
     private Set<File> findInSourceDirectory(File es6SourceDirectory,
@@ -253,12 +197,21 @@ public class FrontendDataProvider {
             Set<File> fragmentFiles) {
         Map<Class<? extends Annotation>, Set<String>> annotationValues = annotationValuesExtractor
                 .extractAnnotationValues(ImmutableMap.of(StyleSheet.class,
-                        AnnotationValuesExtractor.VALUE, JavaScript.class,
-                        AnnotationValuesExtractor.VALUE));
-        ThemedHtmlImportsTranslator translator = new ThemedHtmlImportsTranslator(
-                es6SourceDirectory);
-        annotationValuesExtractor.collectThemedHtmlImports(translator);
-        annotationValues.put(HtmlImport.class, translator.getHtmlImportUrls());
+                        ThemedURLTranslator.VALUE, JavaScript.class,
+                        ThemedURLTranslator.VALUE));
+
+        Collection<Set<String>> htmlImports = annotationValuesExtractor
+                .extractAnnotationValues(Collections.singletonMap(
+                        HtmlImport.class, ThemedURLTranslator.VALUE))
+                .values();
+        Set<String> htmlImportUrls = htmlImports.isEmpty()
+                ? Collections.emptySet()
+                : htmlImports.iterator().next();
+
+        annotationValues.put(HtmlImport.class,
+                getTranslator(es6SourceDirectory, annotationValuesExtractor)
+                        .applyTheme(htmlImportUrls));
+
         return annotationValues.values().stream().flatMap(Collection::stream)
                 .map(this::removeFlowPrefixes)
                 .map(annotationImport -> getFileFromSourceDirectory(

@@ -34,11 +34,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -51,6 +50,7 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableSet;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.theme.AbstractTheme;
 
 /**
@@ -68,6 +68,28 @@ public class FrontendDataProviderTest {
     private File jsFile;
     private File cssFile;
     private File htmlFile;
+
+    private ThemedURLTranslator translator = Mockito
+            .mock(ThemedURLTranslator.class);
+
+    public class TestFrontendDataProvider extends FrontendDataProvider {
+
+        public TestFrontendDataProvider(boolean shouldBundle,
+                File es6SourceDirectory,
+                AnnotationValuesExtractor annotationValuesExtractor,
+                File fragmentConfigurationFile,
+                Map<String, Set<String>> userDefinedFragments) {
+            super(shouldBundle, es6SourceDirectory, annotationValuesExtractor,
+                    fragmentConfigurationFile, userDefinedFragments);
+        }
+
+        @Override
+        protected ThemedURLTranslator getTranslator(File es6SourceDirectory,
+                ClassPathIntrospector introspector) {
+            return translator;
+        }
+
+    }
 
     public static class TestTheme implements AbstractTheme {
 
@@ -90,6 +112,10 @@ public class FrontendDataProviderTest {
         jsFile = createFile(sourceDirectory, "test.js");
         cssFile = createFile(sourceDirectory, "test.css");
         htmlFile = createFile(sourceDirectory, "test.html");
+
+        Mockito.doAnswer(invocation -> {
+            return invocation.getArgumentAt(0, Set.class);
+        }).when(translator).applyTheme(Matchers.any());
     }
 
     private File createFile(File directory, String fileName)
@@ -111,7 +137,7 @@ public class FrontendDataProviderTest {
                 new File(sourceDirectory, nonExistentFragmentFile)
                         .getAbsolutePath());
 
-        new FrontendDataProvider(true, sourceDirectory,
+        new TestFrontendDataProvider(true, sourceDirectory,
                 mock(AnnotationValuesExtractor.class), null,
                 Collections.singletonMap("fragmentName",
                         Collections.singleton(nonExistentFragmentFile)));
@@ -123,23 +149,20 @@ public class FrontendDataProviderTest {
         String nonExistentImport = "nonExistentImport";
         AnnotationValuesExtractor annotationValuesExtractorMock = mock(
                 AnnotationValuesExtractor.class);
-        Mockito.doAnswer(invocation -> {
-            BiConsumer consumer = invocation.getArgumentAt(0, BiConsumer.class);
-            consumer.accept(null, Collections.singleton(nonExistentImport));
-            return null;
-        }).when(annotationValuesExtractorMock)
-                .collectThemedHtmlImports(Matchers.any());
+        Map<Class<HtmlImport>, Set<String>> map = Collections.singletonMap(
+                HtmlImport.class, Collections.singleton(nonExistentImport));
+        when(annotationValuesExtractorMock.extractAnnotationValues(anyMap()))
+                .thenReturn(new HashMap<>(map));
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(
                 new File(sourceDirectory, nonExistentImport).getAbsolutePath());
 
-        new FrontendDataProvider(true, sourceDirectory,
+        new TestFrontendDataProvider(true, sourceDirectory,
                 annotationValuesExtractorMock, null, Collections.emptyMap());
 
-        verify(annotationValuesExtractorMock).extractAnnotationValues(anyMap());
-        verify(annotationValuesExtractorMock)
-                .collectThemedHtmlImports(Matchers.any());
+        verify(annotationValuesExtractorMock, Mockito.times(2))
+                .extractAnnotationValues(anyMap());
     }
 
     @Test
@@ -150,7 +173,7 @@ public class FrontendDataProviderTest {
         when(annotationValuesExtractorMock.extractAnnotationValues(anyMap()))
                 .thenReturn(new HashMap<>());
 
-        FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
+        FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
                 shouldBundle, sourceDirectory, annotationValuesExtractorMock,
                 null, Collections.emptyMap());
 
@@ -159,9 +182,8 @@ public class FrontendDataProviderTest {
                 "Expect to have the same value for 'shouldBundle' variable as passed into a constructor",
                 shouldBundle, actualShouldBundle);
 
-        verify(annotationValuesExtractorMock).extractAnnotationValues(anyMap());
-        verify(annotationValuesExtractorMock)
-                .collectThemedHtmlImports(Matchers.any());
+        verify(annotationValuesExtractorMock, Mockito.times(2))
+                .extractAnnotationValues(anyMap());
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -171,7 +193,7 @@ public class FrontendDataProviderTest {
         File src = new File(sourceDirectory, "src");
         src.mkdir();
         createFile(src, "component1.html");
-        createFile(src, "component2.html");
+        File a = createFile(src, "component2.html");
 
         File theme = new File(sourceDirectory, "theme");
         theme.mkdir();
@@ -181,16 +203,19 @@ public class FrontendDataProviderTest {
 
         AnnotationValuesExtractor annotationValuesExtractorMock = mock(
                 AnnotationValuesExtractor.class);
-        Mockito.doAnswer(invocation -> {
-            BiConsumer consumer = invocation.getArgumentAt(0, BiConsumer.class);
-            consumer.accept(TestTheme.class,
-                    Stream.of("src/component1.html", "src/component2.html")
-                            .collect(Collectors.toSet()));
-            return null;
-        }).when(annotationValuesExtractorMock)
-                .collectThemedHtmlImports(Matchers.any());
 
-        FrontendDataProvider provider = new FrontendDataProvider(true,
+        when(annotationValuesExtractorMock.extractAnnotationValues(anyMap()))
+                .thenReturn(
+                        new HashMap<>(Collections.singletonMap(HtmlImport.class,
+                                new HashSet<>(
+                                        Arrays.asList("src/component1.html",
+                                                "src/component2.html")))));
+
+        Mockito.when(translator.applyTheme(Mockito.anySet())).thenReturn(
+                new HashSet<>(Arrays.asList("theme/myTheme/component1.html",
+                        "src/component2.html")));
+
+        FrontendDataProvider provider = new TestFrontendDataProvider(true,
                 sourceDirectory, annotationValuesExtractorMock, null,
                 Collections.emptyMap());
 
@@ -204,9 +229,8 @@ public class FrontendDataProviderTest {
         Assert.assertThat(content,
                 CoreMatchers.containsString("es6Source/src/component2.html"));
 
-        verify(annotationValuesExtractorMock).extractAnnotationValues(anyMap());
-        verify(annotationValuesExtractorMock)
-                .collectThemedHtmlImports(Matchers.any());
+        verify(annotationValuesExtractorMock, Mockito.times(2))
+                .extractAnnotationValues(anyMap());
     }
 
     @Test
@@ -216,7 +240,7 @@ public class FrontendDataProviderTest {
         when(annotationValuesExtractorMock.extractAnnotationValues(anyMap()))
                 .thenReturn(new HashMap<>());
 
-        FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
+        FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
                 false, sourceDirectory, annotationValuesExtractorMock, null,
                 Collections.singletonMap("whatever",
                         Collections.singleton("doesNotMatter")));
@@ -228,9 +252,8 @@ public class FrontendDataProviderTest {
                 fragmentFiles.isEmpty());
         assertTrue("There should be no files created in the target directory",
                 targetDirectory.listFiles().length == 0);
-        verify(annotationValuesExtractorMock).extractAnnotationValues(anyMap());
-        verify(annotationValuesExtractorMock)
-                .collectThemedHtmlImports(Matchers.any());
+        verify(annotationValuesExtractorMock, Mockito.times(2))
+                .extractAnnotationValues(anyMap());
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -247,14 +270,11 @@ public class FrontendDataProviderTest {
 
         AnnotationValuesExtractor annotationValuesExtractorMock = mock(
                 AnnotationValuesExtractor.class);
-        Mockito.doAnswer(invocation -> {
-            BiConsumer consumer = invocation.getArgumentAt(0, BiConsumer.class);
-            consumer.accept(null, allImports);
-            return null;
-        }).when(annotationValuesExtractorMock)
-                .collectThemedHtmlImports(Matchers.any());
+        when(annotationValuesExtractorMock.extractAnnotationValues(anyMap()))
+                .thenReturn(new HashMap<>(Collections
+                        .singletonMap(HtmlImport.class, allImports)));
 
-        FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
+        FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
                 true, sourceDirectory, annotationValuesExtractorMock, null,
                 Collections.singletonMap(fragmentName, fragmentImports));
 
@@ -269,9 +289,8 @@ public class FrontendDataProviderTest {
                 .createShellFile(targetDirectory);
         verifyFileWithImports(shellFile, shellImports);
 
-        verify(annotationValuesExtractorMock).extractAnnotationValues(anyMap());
-        verify(annotationValuesExtractorMock)
-                .collectThemedHtmlImports(Matchers.any());
+        verify(annotationValuesExtractorMock, Mockito.times(2))
+                .extractAnnotationValues(anyMap());
     }
 
     @Test
@@ -297,7 +316,7 @@ public class FrontendDataProviderTest {
                         secondFragment, secondFragmentImport)),
                 StandardCharsets.UTF_8);
 
-        FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
+        FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
                 true, sourceDirectory, annotationValuesExtractorMock,
                 configurationFile, Collections.singletonMap(firstFragment,
                         Collections.singleton(firstFragmentImport)));
@@ -316,9 +335,8 @@ public class FrontendDataProviderTest {
                 .createShellFile(targetDirectory);
         verifyFileWithImports(shellFile, Collections.emptySet());
 
-        verify(annotationValuesExtractorMock).extractAnnotationValues(anyMap());
-        verify(annotationValuesExtractorMock)
-                .collectThemedHtmlImports(Matchers.any());
+        verify(annotationValuesExtractorMock, Mockito.times(2))
+                .extractAnnotationValues(anyMap());
     }
 
     private void findAndVerifyFragment(Collection<String> outputFragmentNames,
