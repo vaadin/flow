@@ -21,6 +21,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class CompositeIT extends ChromeBrowserTest {
 
@@ -44,6 +45,15 @@ public class CompositeIT extends ChromeBrowserTest {
         serverValueButton.click();
 
         Assert.assertEquals("Name on server: server value", name.getText());
+
+    }
+
+    @Test
+    public void htmlImportOfContentLoaded() {
+        open();
+        TestBenchElement paperSlider = (TestBenchElement) findElement(
+                By.id(CompositeView.COMPOSITE_PAPER_SLIDER));
+        Assert.assertEquals("100", paperSlider.getPropertyString("max"));
 
     }
 }
