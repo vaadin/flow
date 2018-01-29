@@ -33,7 +33,7 @@ import com.vaadin.flow.dom.Element;
         "WebComponent: paper-input-container#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input-container")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-container.html")
-public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer<R>>
+public abstract class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -50,7 +50,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @return the {@code noLabelFloat} property from the webcomponent
      */
-    public boolean isNoLabelFloat() {
+    protected boolean isNoLabelFloatBoolean() {
         return getElement().getProperty("noLabelFloat", false);
     }
 
@@ -66,7 +66,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @param noLabelFloat
      *            the boolean value to set
      */
-    public void setNoLabelFloat(boolean noLabelFloat) {
+    protected void setNoLabelFloat(boolean noLabelFloat) {
         getElement().setProperty("noLabelFloat", noLabelFloat);
     }
 
@@ -83,7 +83,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @return the {@code alwaysFloatLabel} property from the webcomponent
      */
-    public boolean isAlwaysFloatLabel() {
+    protected boolean isAlwaysFloatLabelBoolean() {
         return getElement().getProperty("alwaysFloatLabel", false);
     }
 
@@ -98,7 +98,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @param alwaysFloatLabel
      *            the boolean value to set
      */
-    public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+    protected void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
         getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
     }
 
@@ -115,7 +115,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @return the {@code attrForValue} property from the webcomponent
      */
-    public String getAttrForValue() {
+    protected String getAttrForValueString() {
         return getElement().getProperty("attrForValue");
     }
 
@@ -130,7 +130,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @param attrForValue
      *            the String value to set
      */
-    public void setAttrForValue(String attrForValue) {
+    protected void setAttrForValue(String attrForValue) {
         getElement().setProperty("attrForValue",
                 attrForValue == null ? "" : attrForValue);
     }
@@ -148,7 +148,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @return the {@code autoValidate} property from the webcomponent
      */
-    public boolean isAutoValidate() {
+    protected boolean isAutoValidateBoolean() {
         return getElement().getProperty("autoValidate", false);
     }
 
@@ -163,7 +163,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @param autoValidate
      *            the boolean value to set
      */
-    public void setAutoValidate(boolean autoValidate) {
+    protected void setAutoValidate(boolean autoValidate) {
         getElement().setProperty("autoValidate", autoValidate);
     }
 
@@ -182,7 +182,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * 
      * @return the {@code invalid} property from the webcomponent
      */
-    public boolean isInvalid() {
+    protected boolean isInvalidBoolean() {
         return getElement().getProperty("invalid", false);
     }
 
@@ -199,7 +199,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @param invalid
      *            the boolean value to set
      */
-    public void setInvalid(boolean invalid) {
+    protected void setInvalid(boolean invalid) {
         getElement().setProperty("invalid", invalid);
     }
 
@@ -217,7 +217,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
-    public boolean isFocused() {
+    protected boolean isFocusedBoolean() {
         return getElement().getProperty("focused", false);
     }
 
@@ -253,7 +253,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFocusedChangeListener(
+    protected Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -273,7 +273,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrefix(Component... components) {
+    protected R addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
@@ -295,7 +295,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToLabel(Component... components) {
+    protected R addToLabel(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "label");
             getElement().appendChild(component.getElement());
@@ -317,7 +317,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToInput(Component... components) {
+    protected R addToInput(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "input");
             getElement().appendChild(component.getElement());
@@ -339,7 +339,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSuffix(Component... components) {
+    protected R addToSuffix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "suffix");
             getElement().appendChild(component.getElement());
@@ -361,7 +361,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToAddOn(Component... components) {
+    protected R addToAddOn(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "add-on");
             getElement().appendChild(component.getElement());
@@ -377,7 +377,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(Component... components) {
+    protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -394,7 +394,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
      * text content as well as child elements that have been added directly to
      * this component using the {@link Element} API.
      */
-    public void removeAll() {
+    protected void removeAll() {
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();

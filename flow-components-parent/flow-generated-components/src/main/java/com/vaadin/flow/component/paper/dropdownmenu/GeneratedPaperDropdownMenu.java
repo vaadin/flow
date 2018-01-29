@@ -34,7 +34,7 @@ import com.vaadin.flow.dom.Element;
         "WebComponent: paper-dropdown-menu#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-dropdown-menu")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu.html")
-public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
+public abstract class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -51,7 +51,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code keyEventTarget} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyEventTarget() {
+    protected JsonObject getKeyEventTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
     }
 
@@ -86,7 +86,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
-    public boolean isStopKeyboardEventPropagation() {
+    protected boolean isStopKeyboardEventPropagationBoolean() {
         return getElement().getProperty("stopKeyboardEventPropagation", false);
     }
 
@@ -102,7 +102,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
-    public void setStopKeyboardEventPropagation(
+    protected void setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
@@ -114,7 +114,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code keyBindings} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyBindings() {
+    protected JsonObject getKeyBindingsJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyBindings");
     }
 
@@ -139,7 +139,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code pressed} property from the webcomponent
      */
-    public boolean isPressed() {
+    protected boolean isPressedBoolean() {
         return getElement().getProperty("pressed", false);
     }
 
@@ -157,7 +157,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code toggles} property from the webcomponent
      */
-    public boolean isToggles() {
+    protected boolean isTogglesBoolean() {
         return getElement().getProperty("toggles", false);
     }
 
@@ -173,7 +173,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param toggles
      *            the boolean value to set
      */
-    public void setToggles(boolean toggles) {
+    protected void setToggles(boolean toggles) {
         getElement().setProperty("toggles", toggles);
     }
 
@@ -191,7 +191,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return the {@code active} property from the webcomponent
      */
     @Synchronize(property = "active", value = "active-changed")
-    public boolean isActive() {
+    protected boolean isActiveBoolean() {
         return getElement().getProperty("active", false);
     }
 
@@ -206,7 +206,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param active
      *            the boolean value to set
      */
-    public void setActive(boolean active) {
+    protected void setActive(boolean active) {
         getElement().setProperty("active", active);
     }
 
@@ -225,7 +225,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code pointerDown} property from the webcomponent
      */
-    public boolean isPointerDown() {
+    protected boolean isPointerDownBoolean() {
         return getElement().getProperty("pointerDown", false);
     }
 
@@ -244,7 +244,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return the {@code receivedFocusFromKeyboard} property from the
      *         webcomponent
      */
-    public boolean isReceivedFocusFromKeyboard() {
+    protected boolean isReceivedFocusFromKeyboardBoolean() {
         return getElement().getProperty("receivedFocusFromKeyboard", false);
     }
 
@@ -262,7 +262,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code ariaActiveAttribute} property from the webcomponent
      */
-    public String getAriaActiveAttribute() {
+    protected String getAriaActiveAttributeString() {
         return getElement().getProperty("ariaActiveAttribute");
     }
 
@@ -278,7 +278,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param ariaActiveAttribute
      *            the String value to set
      */
-    public void setAriaActiveAttribute(String ariaActiveAttribute) {
+    protected void setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
     }
@@ -297,7 +297,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
-    public boolean isFocused() {
+    protected boolean isFocusedBoolean() {
         return getElement().getProperty("focused", false);
     }
 
@@ -315,7 +315,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return the {@code disabled} property from the webcomponent
      */
     @Synchronize(property = "disabled", value = "disabled-changed")
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -330,7 +330,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
@@ -347,7 +347,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code name} property from the webcomponent
      */
-    public String getName() {
+    protected String getNameString() {
         return getElement().getProperty("name");
     }
 
@@ -362,7 +362,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(String name) {
+    protected void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -382,7 +382,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return the {@code value} property from the webcomponent
      */
     @Synchronize(property = "value", value = "value-changed")
-    public String getValue() {
+    protected String getValueString() {
         return getElement().getProperty("value");
     }
 
@@ -404,7 +404,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code required} property from the webcomponent
      */
-    public boolean isRequired() {
+    protected boolean isRequiredBoolean() {
         return getElement().getProperty("required", false);
     }
 
@@ -424,7 +424,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param required
      *            the boolean value to set
      */
-    public void setRequired(boolean required) {
+    protected void setRequired(boolean required) {
         getElement().setProperty("required", required);
     }
 
@@ -441,7 +441,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code validator} property from the webcomponent
      */
-    public String getValidator() {
+    protected String getValidatorString() {
         return getElement().getProperty("validator");
     }
 
@@ -456,7 +456,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param validator
      *            the String value to set
      */
-    public void setValidator(String validator) {
+    protected void setValidator(String validator) {
         getElement().setProperty("validator",
                 validator == null ? "" : validator);
     }
@@ -475,7 +475,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return the {@code invalid} property from the webcomponent
      */
     @Synchronize(property = "invalid", value = "invalid-changed")
-    public boolean isInvalid() {
+    protected boolean isInvalidBoolean() {
         return getElement().getProperty("invalid", false);
     }
 
@@ -490,7 +490,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param invalid
      *            the boolean value to set
      */
-    public void setInvalid(boolean invalid) {
+    protected void setInvalid(boolean invalid) {
         getElement().setProperty("invalid", invalid);
     }
 
@@ -509,7 +509,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code selectedItemLabel} property from the webcomponent
      */
-    public String getSelectedItemLabel() {
+    protected String getSelectedItemLabelString() {
         return getElement().getProperty("selectedItemLabel");
     }
 
@@ -529,7 +529,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code selectedItem} property from the webcomponent
      */
-    protected JsonObject protectedGetSelectedItem() {
+    protected JsonObject getSelectedItemJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("selectedItem");
     }
 
@@ -546,7 +546,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code label} property from the webcomponent
      */
-    public String getLabel() {
+    protected String getLabelString() {
         return getElement().getProperty("label");
     }
 
@@ -561,7 +561,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(String label) {
+    protected void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -578,7 +578,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code placeholder} property from the webcomponent
      */
-    public String getPlaceholder() {
+    protected String getPlaceholderString() {
         return getElement().getProperty("placeholder");
     }
 
@@ -593,7 +593,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(String placeholder) {
+    protected void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -611,7 +611,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code errorMessage} property from the webcomponent
      */
-    public String getErrorMessage() {
+    protected String getErrorMessageString() {
         return getElement().getProperty("errorMessage");
     }
 
@@ -626,7 +626,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param errorMessage
      *            the String value to set
      */
-    public void setErrorMessage(String errorMessage) {
+    protected void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
     }
@@ -645,7 +645,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -660,7 +660,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -679,7 +679,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code allowOutsideScroll} property from the webcomponent
      */
-    public boolean isAllowOutsideScroll() {
+    protected boolean isAllowOutsideScrollBoolean() {
         return getElement().getProperty("allowOutsideScroll", false);
     }
 
@@ -696,7 +696,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param allowOutsideScroll
      *            the boolean value to set
      */
-    public void setAllowOutsideScroll(boolean allowOutsideScroll) {
+    protected void setAllowOutsideScroll(boolean allowOutsideScroll) {
         getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
     }
 
@@ -714,7 +714,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code noLabelFloat} property from the webcomponent
      */
-    public boolean isNoLabelFloat() {
+    protected boolean isNoLabelFloatBoolean() {
         return getElement().getProperty("noLabelFloat", false);
     }
 
@@ -730,7 +730,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param noLabelFloat
      *            the boolean value to set
      */
-    public void setNoLabelFloat(boolean noLabelFloat) {
+    protected void setNoLabelFloat(boolean noLabelFloat) {
         getElement().setProperty("noLabelFloat", noLabelFloat);
     }
 
@@ -748,7 +748,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code alwaysFloatLabel} property from the webcomponent
      */
-    public boolean isAlwaysFloatLabel() {
+    protected boolean isAlwaysFloatLabelBoolean() {
         return getElement().getProperty("alwaysFloatLabel", false);
     }
 
@@ -764,7 +764,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param alwaysFloatLabel
      *            the boolean value to set
      */
-    public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+    protected void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
         getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
     }
 
@@ -781,7 +781,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code noAnimations} property from the webcomponent
      */
-    public boolean isNoAnimations() {
+    protected boolean isNoAnimationsBoolean() {
         return getElement().getProperty("noAnimations", false);
     }
 
@@ -796,7 +796,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param noAnimations
      *            the boolean value to set
      */
-    public void setNoAnimations(boolean noAnimations) {
+    protected void setNoAnimations(boolean noAnimations) {
         getElement().setProperty("noAnimations", noAnimations);
     }
 
@@ -814,7 +814,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code horizontalAlign} property from the webcomponent
      */
-    public String getHorizontalAlign() {
+    protected String getHorizontalAlignString() {
         return getElement().getProperty("horizontalAlign");
     }
 
@@ -830,7 +830,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(String horizontalAlign) {
+    protected void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -849,7 +849,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code verticalAlign} property from the webcomponent
      */
-    public String getVerticalAlign() {
+    protected String getVerticalAlignString() {
         return getElement().getProperty("verticalAlign");
     }
 
@@ -865,7 +865,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(String verticalAlign) {
+    protected void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -886,7 +886,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code dynamicAlign} property from the webcomponent
      */
-    public boolean isDynamicAlign() {
+    protected boolean isDynamicAlignBoolean() {
         return getElement().getProperty("dynamicAlign", false);
     }
 
@@ -904,7 +904,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param dynamicAlign
      *            the boolean value to set
      */
-    public void setDynamicAlign(boolean dynamicAlign) {
+    protected void setDynamicAlign(boolean dynamicAlign) {
         getElement().setProperty("dynamicAlign", dynamicAlign);
     }
 
@@ -921,7 +921,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code restoreFocusOnClose} property from the webcomponent
      */
-    public boolean isRestoreFocusOnClose() {
+    protected boolean isRestoreFocusOnCloseBoolean() {
         return getElement().getProperty("restoreFocusOnClose", false);
     }
 
@@ -936,7 +936,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param restoreFocusOnClose
      *            the boolean value to set
      */
-    public void setRestoreFocusOnClose(boolean restoreFocusOnClose) {
+    protected void setRestoreFocusOnClose(boolean restoreFocusOnClose) {
         getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
     }
 
@@ -953,7 +953,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * 
      * @return the {@code contentElement} property from the webcomponent
      */
-    protected JsonObject protectedGetContentElement() {
+    protected JsonObject getContentElementJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("contentElement");
     }
 
@@ -987,7 +987,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(String eventString, String handlerName) {
+    protected void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -999,7 +999,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * When called, will remove all imperatively-added key bindings.
      * </p>
      */
-    public void removeOwnKeyBindings() {
+    protected void removeOwnKeyBindings() {
         getElement().callFunction("removeOwnKeyBindings");
     }
 
@@ -1067,7 +1067,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * Show the dropdown content.
      * </p>
      */
-    public void open() {
+    protected void open() {
         getElement().callFunction("open");
     }
 
@@ -1079,7 +1079,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * Hide the dropdown content.
      * </p>
      */
-    public void close() {
+    protected void close() {
         getElement().callFunction("close");
     }
 
@@ -1100,7 +1100,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addActiveChangeListener(
+    protected Registration addActiveChangeListener(
             ComponentEventListener<ActiveChangeEvent<R>> listener) {
         return addListener(ActiveChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1123,7 +1123,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFocusedChangeListener(
+    protected Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1146,7 +1146,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addDisabledChangeListener(
+    protected Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1169,7 +1169,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronFormElementRegisterListener(
+    protected Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
                 (ComponentEventListener) listener);
@@ -1192,7 +1192,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronFormElementUnregisterListener(
+    protected Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
                 (ComponentEventListener) listener);
@@ -1215,7 +1215,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addValueChangeListener(
+    protected Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return addListener(ValueChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1238,7 +1238,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addInvalidChangeListener(
+    protected Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1261,7 +1261,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedItemLabelChangeListener(
+    protected Registration addSelectedItemLabelChangeListener(
             ComponentEventListener<SelectedItemLabelChangeEvent<R>> listener) {
         return addListener(SelectedItemLabelChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1284,7 +1284,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedItemChangeListener(
+    protected Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1307,7 +1307,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addOpenedChangeListener(
+    protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1327,7 +1327,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropdownContent(Component... components) {
+    protected R addToDropdownContent(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "dropdown-content");
             getElement().appendChild(component.getElement());
@@ -1343,7 +1343,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(Component... components) {
+    protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -1360,7 +1360,7 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
      * text content as well as child elements that have been added directly to
      * this component using the {@link Element} API.
      */
-    public void removeAll() {
+    protected void removeAll() {
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();

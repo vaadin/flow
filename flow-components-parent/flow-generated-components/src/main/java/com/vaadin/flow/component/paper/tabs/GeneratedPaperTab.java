@@ -28,14 +28,13 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.HasComponents;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-tab#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-tab")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tab.html")
-public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
-        implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -51,7 +50,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
-    public boolean isFocused() {
+    protected boolean isFocusedBoolean() {
         return getElement().getProperty("focused", false);
     }
 
@@ -69,7 +68,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @return the {@code disabled} property from the webcomponent
      */
     @Synchronize(property = "disabled", value = "disabled-changed")
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -84,7 +83,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
@@ -102,7 +101,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @return the {@code keyEventTarget} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyEventTarget() {
+    protected JsonObject getKeyEventTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
     }
 
@@ -137,7 +136,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
-    public boolean isStopKeyboardEventPropagation() {
+    protected boolean isStopKeyboardEventPropagationBoolean() {
         return getElement().getProperty("stopKeyboardEventPropagation", false);
     }
 
@@ -153,7 +152,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
-    public void setStopKeyboardEventPropagation(
+    protected void setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
@@ -165,7 +164,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @return the {@code keyBindings} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyBindings() {
+    protected JsonObject getKeyBindingsJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyBindings");
     }
 
@@ -190,7 +189,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @return the {@code pressed} property from the webcomponent
      */
-    public boolean isPressed() {
+    protected boolean isPressedBoolean() {
         return getElement().getProperty("pressed", false);
     }
 
@@ -208,7 +207,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @return the {@code toggles} property from the webcomponent
      */
-    public boolean isToggles() {
+    protected boolean isTogglesBoolean() {
         return getElement().getProperty("toggles", false);
     }
 
@@ -224,7 +223,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param toggles
      *            the boolean value to set
      */
-    public void setToggles(boolean toggles) {
+    protected void setToggles(boolean toggles) {
         getElement().setProperty("toggles", toggles);
     }
 
@@ -242,7 +241,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @return the {@code active} property from the webcomponent
      */
     @Synchronize(property = "active", value = "active-changed")
-    public boolean isActive() {
+    protected boolean isActiveBoolean() {
         return getElement().getProperty("active", false);
     }
 
@@ -257,7 +256,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param active
      *            the boolean value to set
      */
-    public void setActive(boolean active) {
+    protected void setActive(boolean active) {
         getElement().setProperty("active", active);
     }
 
@@ -276,7 +275,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @return the {@code pointerDown} property from the webcomponent
      */
-    public boolean isPointerDown() {
+    protected boolean isPointerDownBoolean() {
         return getElement().getProperty("pointerDown", false);
     }
 
@@ -295,7 +294,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @return the {@code receivedFocusFromKeyboard} property from the
      *         webcomponent
      */
-    public boolean isReceivedFocusFromKeyboard() {
+    protected boolean isReceivedFocusFromKeyboardBoolean() {
         return getElement().getProperty("receivedFocusFromKeyboard", false);
     }
 
@@ -313,7 +312,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @return the {@code ariaActiveAttribute} property from the webcomponent
      */
-    public String getAriaActiveAttribute() {
+    protected String getAriaActiveAttributeString() {
         return getElement().getProperty("ariaActiveAttribute");
     }
 
@@ -329,7 +328,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param ariaActiveAttribute
      *            the String value to set
      */
-    public void setAriaActiveAttribute(String ariaActiveAttribute) {
+    protected void setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
     }
@@ -348,7 +347,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @return the {@code noink} property from the webcomponent
      */
-    public boolean isNoink() {
+    protected boolean isNoinkBoolean() {
         return getElement().getProperty("noink", false);
     }
 
@@ -364,7 +363,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param noink
      *            the boolean value to set
      */
-    public void setNoink(boolean noink) {
+    protected void setNoink(boolean noink) {
         getElement().setProperty("noink", noink);
     }
 
@@ -382,7 +381,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * 
      * @return the {@code link} property from the webcomponent
      */
-    public boolean isLink() {
+    protected boolean isLinkBoolean() {
         return getElement().getProperty("link", false);
     }
 
@@ -398,7 +397,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param link
      *            the boolean value to set
      */
-    public void setLink(boolean link) {
+    protected void setLink(boolean link) {
         getElement().setProperty("link", link);
     }
 
@@ -417,7 +416,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(String eventString, String handlerName) {
+    protected void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -429,7 +428,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * When called, will remove all imperatively-added key bindings.
      * </p>
      */
-    public void removeOwnKeyBindings() {
+    protected void removeOwnKeyBindings() {
         getElement().callFunction("removeOwnKeyBindings");
     }
 
@@ -481,7 +480,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * necessary, and calling this method will force the ripple to be created.
      * </p>
      */
-    public void getRipple() {
+    protected void getRipple() {
         getElement().callFunction("getRipple");
     }
 
@@ -518,7 +517,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFocusedChangeListener(
+    protected Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -541,7 +540,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addDisabledChangeListener(
+    protected Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -564,26 +563,9 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>> extends Component
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addActiveChangeListener(
+    protected Registration addActiveChangeListener(
             ComponentEventListener<ActiveChangeEvent<R>> listener) {
         return addListener(ActiveChangeEvent.class,
                 (ComponentEventListener) listener);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedPaperTab(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedPaperTab() {
     }
 }

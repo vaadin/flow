@@ -33,7 +33,7 @@ import com.vaadin.flow.shared.Registration;
         "WebComponent: paper-icon-button#2.0.1", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-icon-button")
 @HtmlImport("frontend://bower_components/paper-icon-button/paper-icon-button.html")
-public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
+public abstract class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -50,7 +50,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @return the {@code keyEventTarget} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyEventTarget() {
+    protected JsonObject getKeyEventTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
     }
 
@@ -85,7 +85,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
-    public boolean isStopKeyboardEventPropagation() {
+    protected boolean isStopKeyboardEventPropagationBoolean() {
         return getElement().getProperty("stopKeyboardEventPropagation", false);
     }
 
@@ -101,7 +101,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
-    public void setStopKeyboardEventPropagation(
+    protected void setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
@@ -113,7 +113,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @return the {@code keyBindings} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyBindings() {
+    protected JsonObject getKeyBindingsJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyBindings");
     }
 
@@ -138,7 +138,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @return the {@code pressed} property from the webcomponent
      */
-    public boolean isPressed() {
+    protected boolean isPressedBoolean() {
         return getElement().getProperty("pressed", false);
     }
 
@@ -156,7 +156,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @return the {@code toggles} property from the webcomponent
      */
-    public boolean isToggles() {
+    protected boolean isTogglesBoolean() {
         return getElement().getProperty("toggles", false);
     }
 
@@ -172,7 +172,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param toggles
      *            the boolean value to set
      */
-    public void setToggles(boolean toggles) {
+    protected void setToggles(boolean toggles) {
         getElement().setProperty("toggles", toggles);
     }
 
@@ -190,7 +190,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @return the {@code active} property from the webcomponent
      */
     @Synchronize(property = "active", value = "active-changed")
-    public boolean isActive() {
+    protected boolean isActiveBoolean() {
         return getElement().getProperty("active", false);
     }
 
@@ -205,7 +205,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param active
      *            the boolean value to set
      */
-    public void setActive(boolean active) {
+    protected void setActive(boolean active) {
         getElement().setProperty("active", active);
     }
 
@@ -224,7 +224,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @return the {@code pointerDown} property from the webcomponent
      */
-    public boolean isPointerDown() {
+    protected boolean isPointerDownBoolean() {
         return getElement().getProperty("pointerDown", false);
     }
 
@@ -243,7 +243,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @return the {@code receivedFocusFromKeyboard} property from the
      *         webcomponent
      */
-    public boolean isReceivedFocusFromKeyboard() {
+    protected boolean isReceivedFocusFromKeyboardBoolean() {
         return getElement().getProperty("receivedFocusFromKeyboard", false);
     }
 
@@ -261,7 +261,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @return the {@code ariaActiveAttribute} property from the webcomponent
      */
-    public String getAriaActiveAttribute() {
+    protected String getAriaActiveAttributeString() {
         return getElement().getProperty("ariaActiveAttribute");
     }
 
@@ -277,7 +277,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param ariaActiveAttribute
      *            the String value to set
      */
-    public void setAriaActiveAttribute(String ariaActiveAttribute) {
+    protected void setAriaActiveAttribute(String ariaActiveAttribute) {
         getElement().setProperty("ariaActiveAttribute",
                 ariaActiveAttribute == null ? "" : ariaActiveAttribute);
     }
@@ -296,7 +296,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
-    public boolean isFocused() {
+    protected boolean isFocusedBoolean() {
         return getElement().getProperty("focused", false);
     }
 
@@ -314,7 +314,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @return the {@code disabled} property from the webcomponent
      */
     @Synchronize(property = "disabled", value = "disabled-changed")
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -329,7 +329,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
@@ -347,7 +347,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @return the {@code noink} property from the webcomponent
      */
-    public boolean isNoink() {
+    protected boolean isNoinkBoolean() {
         return getElement().getProperty("noink", false);
     }
 
@@ -363,7 +363,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param noink
      *            the boolean value to set
      */
-    public void setNoink(boolean noink) {
+    protected void setNoink(boolean noink) {
         getElement().setProperty("noink", noink);
     }
 
@@ -381,7 +381,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @return the {@code src} property from the webcomponent
      */
-    public String getSrc() {
+    protected String getSrcString() {
         return getElement().getProperty("src");
     }
 
@@ -397,7 +397,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param src
      *            the String value to set
      */
-    public void setSrc(String src) {
+    protected void setSrc(String src) {
         getElement().setProperty("src", src == null ? "" : src);
     }
 
@@ -416,7 +416,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @return the {@code icon} property from the webcomponent
      */
-    public String getIcon() {
+    protected String getIconString() {
         return getElement().getProperty("icon");
     }
 
@@ -433,7 +433,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param icon
      *            the String value to set
      */
-    public void setIcon(String icon) {
+    protected void setIcon(String icon) {
         getElement().setProperty("icon", icon == null ? "" : icon);
     }
 
@@ -450,7 +450,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * 
      * @return the {@code alt} property from the webcomponent
      */
-    public String getAlt() {
+    protected String getAltString() {
         return getElement().getProperty("alt");
     }
 
@@ -465,7 +465,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param alt
      *            the String value to set
      */
-    public void setAlt(String alt) {
+    protected void setAlt(String alt) {
         getElement().setProperty("alt", alt == null ? "" : alt);
     }
 
@@ -484,7 +484,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(String eventString, String handlerName) {
+    protected void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -496,7 +496,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * When called, will remove all imperatively-added key bindings.
      * </p>
      */
-    public void removeOwnKeyBindings() {
+    protected void removeOwnKeyBindings() {
         getElement().callFunction("removeOwnKeyBindings");
     }
 
@@ -548,7 +548,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * necessary, and calling this method will force the ripple to be created.
      * </p>
      */
-    public void getRipple() {
+    protected void getRipple() {
         getElement().callFunction("getRipple");
     }
 
@@ -585,7 +585,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addActiveChangeListener(
+    protected Registration addActiveChangeListener(
             ComponentEventListener<ActiveChangeEvent<R>> listener) {
         return addListener(ActiveChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -608,7 +608,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFocusedChangeListener(
+    protected Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -631,7 +631,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addDisabledChangeListener(
+    protected Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
                 (ComponentEventListener) listener);

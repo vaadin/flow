@@ -17,12 +17,11 @@ package com.vaadin.flow.component.paper.progress;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.HasValue;
-import java.util.Objects;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -32,8 +31,8 @@ import com.vaadin.flow.shared.Registration;
         "WebComponent: paper-progress#2.0.1", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-progress")
 @HtmlImport("frontend://bower_components/paper-progress/paper-progress.html")
-public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
-        extends Component implements HasStyle, HasValue<R, Double> {
+public abstract class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -49,8 +48,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @return the {@code value} property from the webcomponent
      */
     @Synchronize(property = "value", value = "value-changed")
-    @Override
-    public Double getValue() {
+    protected double getValueDouble() {
         return getElement().getProperty("value", 0.0);
     }
 
@@ -65,33 +63,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param value
      *            the double value to set
      */
-    @Override
-    public void setValue(Double value) {
-        Objects.requireNonNull(value,
-                "GeneratedPaperProgress value must not be null");
-        if (!Objects.equals(value, getValue())) {
-            getElement().setProperty("value", value);
-        }
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The number that represents the current value.
-     * </p>
-     * 
-     * @param value
-     *            the Number value to set
-     * @see #setValue(Double)
-     */
-    public void setValue(Number value) {
-        Objects.requireNonNull(value,
-                "GeneratedPaperProgress value must not be null");
-        if (!Objects.equals(value, getValue())) {
-            setValue(value.doubleValue());
-        }
+    protected void setValue(double value) {
+        getElement().setProperty("value", value);
     }
 
     /**
@@ -108,7 +81,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @return the {@code min} property from the webcomponent
      */
     @Synchronize(property = "min", value = "min-changed")
-    public double getMin() {
+    protected double getMinDouble() {
         return getElement().getProperty("min", 0.0);
     }
 
@@ -123,7 +96,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param min
      *            the double value to set
      */
-    public void setMin(double min) {
+    protected void setMin(double min) {
         getElement().setProperty("min", min);
     }
 
@@ -141,7 +114,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @return the {@code max} property from the webcomponent
      */
     @Synchronize(property = "max", value = "max-changed")
-    public double getMax() {
+    protected double getMaxDouble() {
         return getElement().getProperty("max", 0.0);
     }
 
@@ -156,7 +129,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param max
      *            the double value to set
      */
-    public void setMax(double max) {
+    protected void setMax(double max) {
         getElement().setProperty("max", max);
     }
 
@@ -174,7 +147,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @return the {@code step} property from the webcomponent
      */
     @Synchronize(property = "step", value = "step-changed")
-    public double getStep() {
+    protected double getStepDouble() {
         return getElement().getProperty("step", 0.0);
     }
 
@@ -189,7 +162,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param step
      *            the double value to set
      */
-    public void setStep(double step) {
+    protected void setStep(double step) {
         getElement().setProperty("step", step);
     }
 
@@ -207,7 +180,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @return the {@code ratio} property from the webcomponent
      */
     @Synchronize(property = "ratio", value = "ratio-changed")
-    public double getRatio() {
+    protected double getRatioDouble() {
         return getElement().getProperty("ratio", 0.0);
     }
 
@@ -224,7 +197,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @return the {@code secondaryProgress} property from the webcomponent
      */
-    public double getSecondaryProgress() {
+    protected double getSecondaryProgressDouble() {
         return getElement().getProperty("secondaryProgress", 0.0);
     }
 
@@ -239,7 +212,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param secondaryProgress
      *            the double value to set
      */
-    public void setSecondaryProgress(double secondaryProgress) {
+    protected void setSecondaryProgress(double secondaryProgress) {
         getElement().setProperty("secondaryProgress", secondaryProgress);
     }
 
@@ -256,7 +229,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @return the {@code secondaryRatio} property from the webcomponent
      */
-    public double getSecondaryRatio() {
+    protected double getSecondaryRatioDouble() {
         return getElement().getProperty("secondaryRatio", 0.0);
     }
 
@@ -273,7 +246,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @return the {@code indeterminate} property from the webcomponent
      */
-    public boolean isIndeterminate() {
+    protected boolean isIndeterminateBoolean() {
         return getElement().getProperty("indeterminate", false);
     }
 
@@ -288,7 +261,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param indeterminate
      *            the boolean value to set
      */
-    public void setIndeterminate(boolean indeterminate) {
+    protected void setIndeterminate(boolean indeterminate) {
         getElement().setProperty("indeterminate", indeterminate);
     }
 
@@ -305,7 +278,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * 
      * @return the {@code disabled} property from the webcomponent
      */
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -320,8 +293,31 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+    }
+
+    @DomEvent("value-changed")
+    public static class ValueChangeEvent<R extends GeneratedPaperProgress<R>>
+            extends ComponentEvent<R> {
+        public ValueChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code value-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Registration addValueChangeListener(
+            ComponentEventListener<ValueChangeEvent<R>> listener) {
+        return addListener(ValueChangeEvent.class,
+                (ComponentEventListener) listener);
     }
 
     @DomEvent("min-changed")
@@ -340,7 +336,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addMinChangeListener(
+    protected Registration addMinChangeListener(
             ComponentEventListener<MinChangeEvent<R>> listener) {
         return addListener(MinChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -362,7 +358,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addMaxChangeListener(
+    protected Registration addMaxChangeListener(
             ComponentEventListener<MaxChangeEvent<R>> listener) {
         return addListener(MaxChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -385,7 +381,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addStepChangeListener(
+    protected Registration addStepChangeListener(
             ComponentEventListener<StepChangeEvent<R>> listener) {
         return addListener(StepChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -408,7 +404,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addRatioChangeListener(
+    protected Registration addRatioChangeListener(
             ComponentEventListener<RatioChangeEvent<R>> listener) {
         return addListener(RatioChangeEvent.class,
                 (ComponentEventListener) listener);

@@ -28,7 +28,7 @@ import com.vaadin.flow.component.NotSupported;
         "WebComponent: paper-badge#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-badge")
 @HtmlImport("frontend://bower_components/paper-badge/paper-badge.html")
-public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
+public abstract class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -45,7 +45,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * 
      * @return the {@code for} property from the webcomponent
      */
-    public String getFor() {
+    protected String getForString() {
         return getElement().getProperty("for");
     }
 
@@ -61,7 +61,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param _for
      *            the String value to set
      */
-    public void setFor(String _for) {
+    protected void setFor(String _for) {
         getElement().setProperty("for", _for == null ? "" : _for);
     }
 
@@ -79,7 +79,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * 
      * @return the {@code label} property from the webcomponent
      */
-    public String getLabel() {
+    protected String getLabelString() {
         return getElement().getProperty("label");
     }
 
@@ -95,7 +95,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(String label) {
+    protected void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -115,7 +115,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * 
      * @return the {@code icon} property from the webcomponent
      */
-    public String getIcon() {
+    protected String getIconString() {
         return getElement().getProperty("icon");
     }
 
@@ -133,7 +133,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * @param icon
      *            the String value to set
      */
-    public void setIcon(String icon) {
+    protected void setIcon(String icon) {
         getElement().setProperty("icon", icon == null ? "" : icon);
     }
 
@@ -152,7 +152,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * 
      * @return the {@code target} property from the webcomponent
      */
-    protected JsonObject protectedGetTarget() {
+    protected JsonObject getTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("target");
     }
 
@@ -182,7 +182,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * resizables of a resize change.
      * </p>
      */
-    public void notifyResize() {
+    protected void notifyResize() {
         getElement().callFunction("notifyResize");
     }
 
@@ -256,7 +256,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
      * manually done a page re-layout).
      * </p>
      */
-    public void updatePosition() {
+    protected void updatePosition() {
         getElement().callFunction("updatePosition");
     }
 }

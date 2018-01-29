@@ -17,13 +17,12 @@ package com.vaadin.flow.component.paper.input;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonObject;
-import com.vaadin.flow.component.HasValue;
-import java.util.Objects;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
@@ -35,8 +34,8 @@ import com.vaadin.flow.dom.Element;
         "WebComponent: paper-input#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input")
 @HtmlImport("frontend://bower_components/paper-input/paper-input.html")
-public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
-        extends Component implements HasStyle, HasValue<R, String> {
+public abstract class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -52,7 +51,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
-    public boolean isFocused() {
+    protected boolean isFocusedBoolean() {
         return getElement().getProperty("focused", false);
     }
 
@@ -73,7 +72,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return the {@code disabled} property from the webcomponent
      */
     @Synchronize(property = "disabled", value = "disabled-changed")
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -91,7 +90,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
@@ -109,7 +108,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code keyEventTarget} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyEventTarget() {
+    protected JsonObject getKeyEventTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
     }
 
@@ -144,7 +143,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
-    public boolean isStopKeyboardEventPropagation() {
+    protected boolean isStopKeyboardEventPropagationBoolean() {
         return getElement().getProperty("stopKeyboardEventPropagation", false);
     }
 
@@ -160,7 +159,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
-    public void setStopKeyboardEventPropagation(
+    protected void setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
@@ -172,7 +171,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code keyBindings} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyBindings() {
+    protected JsonObject getKeyBindingsJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyBindings");
     }
 
@@ -201,7 +200,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code label} property from the webcomponent
      */
-    public String getLabel() {
+    protected String getLabelString() {
         return getElement().getProperty("label");
     }
 
@@ -220,7 +219,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(String label) {
+    protected void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -238,15 +237,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return the {@code value} property from the webcomponent
      */
     @Synchronize(property = "value", value = "value-changed")
-    @Override
-    public String getValue() {
-        String value = getElement().getProperty("value");
-        return value == null ? getEmptyValue() : value;
-    }
-
-    @Override
-    public String getEmptyValue() {
-        return "";
+    protected String getValueString() {
+        return getElement().getProperty("value");
     }
 
     /**
@@ -260,12 +252,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param value
      *            the String value to set
      */
-    @Override
-    public void setValue(String value) {
-        Objects.requireNonNull(value, "value cannot be null");
-        if (!Objects.equals(value, getValue())) {
-            getElement().setProperty("value", value);
-        }
+    protected void setValue(String value) {
+        getElement().setProperty("value", value == null ? "" : value);
     }
 
     /**
@@ -289,7 +277,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return the {@code invalid} property from the webcomponent
      */
     @Synchronize(property = "invalid", value = "invalid-changed")
-    public boolean isInvalid() {
+    protected boolean isInvalidBoolean() {
         return getElement().getProperty("invalid", false);
     }
 
@@ -311,7 +299,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param invalid
      *            the boolean value to set
      */
-    public void setInvalid(boolean invalid) {
+    protected void setInvalid(boolean invalid) {
         getElement().setProperty("invalid", invalid);
     }
 
@@ -331,7 +319,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code allowedPattern} property from the webcomponent
      */
-    public String getAllowedPattern() {
+    protected String getAllowedPatternString() {
         return getElement().getProperty("allowedPattern");
     }
 
@@ -349,7 +337,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param allowedPattern
      *            the String value to set
      */
-    public void setAllowedPattern(String allowedPattern) {
+    protected void setAllowedPattern(String allowedPattern) {
         getElement().setProperty("allowedPattern",
                 allowedPattern == null ? "" : allowedPattern);
     }
@@ -372,7 +360,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code type} property from the webcomponent
      */
-    public String getType() {
+    protected String getTypeString() {
         return getElement().getProperty("type");
     }
 
@@ -392,7 +380,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param type
      *            the String value to set
      */
-    public void setType(String type) {
+    protected void setType(String type) {
         getElement().setProperty("type", type == null ? "" : type);
     }
 
@@ -412,7 +400,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code list} property from the webcomponent
      */
-    public String getList() {
+    protected String getListString() {
         return getElement().getProperty("list");
     }
 
@@ -430,7 +418,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param list
      *            the String value to set
      */
-    public void setList(String list) {
+    protected void setList(String list) {
         getElement().setProperty("list", list == null ? "" : list);
     }
 
@@ -449,7 +437,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code pattern} property from the webcomponent
      */
-    public String getPattern() {
+    protected String getPatternString() {
         return getElement().getProperty("pattern");
     }
 
@@ -466,7 +454,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param pattern
      *            the String value to set
      */
-    public void setPattern(String pattern) {
+    protected void setPattern(String pattern) {
         getElement().setProperty("pattern", pattern == null ? "" : pattern);
     }
 
@@ -488,7 +476,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code required} property from the webcomponent
      */
-    public boolean isRequired() {
+    protected boolean isRequiredBoolean() {
         return getElement().getProperty("required", false);
     }
 
@@ -508,7 +496,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param required
      *            the boolean value to set
      */
-    public void setRequired(boolean required) {
+    protected void setRequired(boolean required) {
         getElement().setProperty("required", required);
     }
 
@@ -527,7 +515,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code errorMessage} property from the webcomponent
      */
-    public String getErrorMessage() {
+    protected String getErrorMessageString() {
         return getElement().getProperty("errorMessage");
     }
 
@@ -544,7 +532,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param errorMessage
      *            the String value to set
      */
-    public void setErrorMessage(String errorMessage) {
+    protected void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
     }
@@ -562,7 +550,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code charCounter} property from the webcomponent
      */
-    public boolean isCharCounter() {
+    protected boolean isCharCounterBoolean() {
         return getElement().getProperty("charCounter", false);
     }
 
@@ -577,7 +565,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param charCounter
      *            the boolean value to set
      */
-    public void setCharCounter(boolean charCounter) {
+    protected void setCharCounter(boolean charCounter) {
         getElement().setProperty("charCounter", charCounter);
     }
 
@@ -597,7 +585,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code noLabelFloat} property from the webcomponent
      */
-    public boolean isNoLabelFloat() {
+    protected boolean isNoLabelFloatBoolean() {
         return getElement().getProperty("noLabelFloat", false);
     }
 
@@ -615,7 +603,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param noLabelFloat
      *            the boolean value to set
      */
-    public void setNoLabelFloat(boolean noLabelFloat) {
+    protected void setNoLabelFloat(boolean noLabelFloat) {
         getElement().setProperty("noLabelFloat", noLabelFloat);
     }
 
@@ -634,7 +622,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code alwaysFloatLabel} property from the webcomponent
      */
-    public boolean isAlwaysFloatLabel() {
+    protected boolean isAlwaysFloatLabelBoolean() {
         return getElement().getProperty("alwaysFloatLabel", false);
     }
 
@@ -651,7 +639,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param alwaysFloatLabel
      *            the boolean value to set
      */
-    public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+    protected void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
         getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
     }
 
@@ -671,7 +659,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code autoValidate} property from the webcomponent
      */
-    public boolean isAutoValidate() {
+    protected boolean isAutoValidateBoolean() {
         return getElement().getProperty("autoValidate", false);
     }
 
@@ -689,7 +677,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param autoValidate
      *            the boolean value to set
      */
-    public void setAutoValidate(boolean autoValidate) {
+    protected void setAutoValidate(boolean autoValidate) {
         getElement().setProperty("autoValidate", autoValidate);
     }
 
@@ -708,7 +696,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code validator} property from the webcomponent
      */
-    public String getValidator() {
+    protected String getValidatorString() {
         return getElement().getProperty("validator");
     }
 
@@ -725,7 +713,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param validator
      *            the String value to set
      */
-    public void setValidator(String validator) {
+    protected void setValidator(String validator) {
         getElement().setProperty("validator",
                 validator == null ? "" : validator);
     }
@@ -745,7 +733,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code autocomplete} property from the webcomponent
      */
-    public String getAutocomplete() {
+    protected String getAutocompleteString() {
         return getElement().getProperty("autocomplete");
     }
 
@@ -762,7 +750,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param autocomplete
      *            the String value to set
      */
-    public void setAutocomplete(String autocomplete) {
+    protected void setAutocomplete(String autocomplete) {
         getElement().setProperty("autocomplete",
                 autocomplete == null ? "" : autocomplete);
     }
@@ -782,7 +770,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code autofocus} property from the webcomponent
      */
-    public boolean isAutofocus() {
+    protected boolean isAutofocusBoolean() {
         return getElement().getProperty("autofocus", false);
     }
 
@@ -799,7 +787,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param autofocus
      *            the boolean value to set
      */
-    public void setAutofocus(boolean autofocus) {
+    protected void setAutofocus(boolean autofocus) {
         getElement().setProperty("autofocus", autofocus);
     }
 
@@ -818,7 +806,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code inputmode} property from the webcomponent
      */
-    public String getInputmode() {
+    protected String getInputmodeString() {
         return getElement().getProperty("inputmode");
     }
 
@@ -835,7 +823,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param inputmode
      *            the String value to set
      */
-    public void setInputmode(String inputmode) {
+    protected void setInputmode(String inputmode) {
         getElement().setProperty("inputmode",
                 inputmode == null ? "" : inputmode);
     }
@@ -855,7 +843,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code minlength} property from the webcomponent
      */
-    public double getMinlength() {
+    protected double getMinlengthDouble() {
         return getElement().getProperty("minlength", 0.0);
     }
 
@@ -872,7 +860,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param minlength
      *            the double value to set
      */
-    public void setMinlength(double minlength) {
+    protected void setMinlength(double minlength) {
         getElement().setProperty("minlength", minlength);
     }
 
@@ -891,7 +879,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code maxlength} property from the webcomponent
      */
-    public double getMaxlength() {
+    protected double getMaxlengthDouble() {
         return getElement().getProperty("maxlength", 0.0);
     }
 
@@ -908,7 +896,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param maxlength
      *            the double value to set
      */
-    public void setMaxlength(double maxlength) {
+    protected void setMaxlength(double maxlength) {
         getElement().setProperty("maxlength", maxlength);
     }
 
@@ -927,7 +915,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code min} property from the webcomponent
      */
-    public String getMin() {
+    protected String getMinString() {
         return getElement().getProperty("min");
     }
 
@@ -944,7 +932,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param min
      *            the String value to set
      */
-    public void setMin(String min) {
+    protected void setMin(String min) {
         getElement().setProperty("min", min == null ? "" : min);
     }
 
@@ -964,7 +952,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code max} property from the webcomponent
      */
-    public String getMax() {
+    protected String getMaxString() {
         return getElement().getProperty("max");
     }
 
@@ -982,7 +970,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param max
      *            the String value to set
      */
-    public void setMax(String max) {
+    protected void setMax(String max) {
         getElement().setProperty("max", max == null ? "" : max);
     }
 
@@ -1001,7 +989,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code step} property from the webcomponent
      */
-    public String getStep() {
+    protected String getStepString() {
         return getElement().getProperty("step");
     }
 
@@ -1018,7 +1006,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param step
      *            the String value to set
      */
-    public void setStep(String step) {
+    protected void setStep(String step) {
         getElement().setProperty("step", step == null ? "" : step);
     }
 
@@ -1035,7 +1023,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code name} property from the webcomponent
      */
-    public String getName() {
+    protected String getNameString() {
         return getElement().getProperty("name");
     }
 
@@ -1050,7 +1038,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(String name) {
+    protected void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -1068,7 +1056,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code placeholder} property from the webcomponent
      */
-    public String getPlaceholder() {
+    protected String getPlaceholderString() {
         return getElement().getProperty("placeholder");
     }
 
@@ -1084,7 +1072,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(String placeholder) {
+    protected void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -1104,7 +1092,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code readonly} property from the webcomponent
      */
-    public boolean isReadonly() {
+    protected boolean isReadonlyBoolean() {
         return getElement().getProperty("readonly", false);
     }
 
@@ -1121,7 +1109,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param readonly
      *            the boolean value to set
      */
-    public void setReadonly(boolean readonly) {
+    protected void setReadonly(boolean readonly) {
         getElement().setProperty("readonly", readonly);
     }
 
@@ -1140,7 +1128,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code size} property from the webcomponent
      */
-    public double getSize() {
+    protected double getSizeDouble() {
         return getElement().getProperty("size", 0.0);
     }
 
@@ -1157,7 +1145,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param size
      *            the double value to set
      */
-    public void setSize(double size) {
+    protected void setSize(double size) {
         getElement().setProperty("size", size);
     }
 
@@ -1176,7 +1164,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code autocapitalize} property from the webcomponent
      */
-    public String getAutocapitalize() {
+    protected String getAutocapitalizeString() {
         return getElement().getProperty("autocapitalize");
     }
 
@@ -1193,7 +1181,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param autocapitalize
      *            the String value to set
      */
-    public void setAutocapitalize(String autocapitalize) {
+    protected void setAutocapitalize(String autocapitalize) {
         getElement().setProperty("autocapitalize",
                 autocapitalize == null ? "" : autocapitalize);
     }
@@ -1213,7 +1201,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code autocorrect} property from the webcomponent
      */
-    public String getAutocorrect() {
+    protected String getAutocorrectString() {
         return getElement().getProperty("autocorrect");
     }
 
@@ -1230,7 +1218,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param autocorrect
      *            the String value to set
      */
-    public void setAutocorrect(String autocorrect) {
+    protected void setAutocorrect(String autocorrect) {
         getElement().setProperty("autocorrect",
                 autocorrect == null ? "" : autocorrect);
     }
@@ -1250,7 +1238,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code autosave} property from the webcomponent
      */
-    public String getAutosave() {
+    protected String getAutosaveString() {
         return getElement().getProperty("autosave");
     }
 
@@ -1267,7 +1255,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param autosave
      *            the String value to set
      */
-    public void setAutosave(String autosave) {
+    protected void setAutosave(String autosave) {
         getElement().setProperty("autosave", autosave == null ? "" : autosave);
     }
 
@@ -1286,7 +1274,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code results} property from the webcomponent
      */
-    public double getResults() {
+    protected double getResultsDouble() {
         return getElement().getProperty("results", 0.0);
     }
 
@@ -1303,7 +1291,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param results
      *            the double value to set
      */
-    public void setResults(double results) {
+    protected void setResults(double results) {
         getElement().setProperty("results", results);
     }
 
@@ -1322,7 +1310,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code accept} property from the webcomponent
      */
-    public String getAccept() {
+    protected String getAcceptString() {
         return getElement().getProperty("accept");
     }
 
@@ -1339,7 +1327,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param accept
      *            the String value to set
      */
-    public void setAccept(String accept) {
+    protected void setAccept(String accept) {
         getElement().setProperty("accept", accept == null ? "" : accept);
     }
 
@@ -1358,7 +1346,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * 
      * @return the {@code multiple} property from the webcomponent
      */
-    public boolean isMultiple() {
+    protected boolean isMultipleBoolean() {
         return getElement().getProperty("multiple", false);
     }
 
@@ -1375,7 +1363,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param multiple
      *            the boolean value to set
      */
-    public void setMultiple(boolean multiple) {
+    protected void setMultiple(boolean multiple) {
         getElement().setProperty("multiple", multiple);
     }
 
@@ -1394,7 +1382,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(String eventString, String handlerName) {
+    protected void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -1406,7 +1394,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * When called, will remove all imperatively-added key bindings.
      * </p>
      */
-    public void removeOwnKeyBindings() {
+    protected void removeOwnKeyBindings() {
         getElement().callFunction("removeOwnKeyBindings");
     }
 
@@ -1440,7 +1428,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * Returns a reference to the input element.
      * </p>
      */
-    public void inputElement() {
+    protected void inputElement() {
         getElement().callFunction("inputElement");
     }
 
@@ -1471,7 +1459,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @param newValue
      *            The value that should be saved.
      */
-    public void updateValueAndPreserveCaret(String newValue) {
+    protected void updateValueAndPreserveCaret(String newValue) {
         getElement().callFunction("updateValueAndPreserveCaret", newValue);
     }
 
@@ -1492,7 +1480,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFocusedChangeListener(
+    protected Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1515,7 +1503,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addDisabledChangeListener(
+    protected Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1537,9 +1525,32 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addChangeListener(
+    protected Registration addChangeListener(
             ComponentEventListener<ChangeEvent<R>> listener) {
         return addListener(ChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("value-changed")
+    public static class ValueChangeEvent<R extends GeneratedPaperInput<R>>
+            extends ComponentEvent<R> {
+        public ValueChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code value-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Registration addValueChangeListener(
+            ComponentEventListener<ValueChangeEvent<R>> listener) {
+        return addListener(ValueChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 
@@ -1560,7 +1571,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addInvalidChangeListener(
+    protected Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1583,7 +1594,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronFormElementRegisterListener(
+    protected Registration addIronFormElementRegisterListener(
             ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
         return addListener(IronFormElementRegisterEvent.class,
                 (ComponentEventListener) listener);
@@ -1606,7 +1617,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronFormElementUnregisterListener(
+    protected Registration addIronFormElementUnregisterListener(
             ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
         return addListener(IronFormElementUnregisterEvent.class,
                 (ComponentEventListener) listener);
@@ -1626,7 +1637,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrefix(Component... components) {
+    protected R addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
@@ -1648,7 +1659,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSuffix(Component... components) {
+    protected R addToSuffix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "suffix");
             getElement().appendChild(component.getElement());
@@ -1664,7 +1675,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(Component... components) {
+    protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -1681,7 +1692,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
      * text content as well as child elements that have been added directly to
      * this component using the {@link Element} API.
      */
-    public void removeAll() {
+    protected void removeAll() {
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();

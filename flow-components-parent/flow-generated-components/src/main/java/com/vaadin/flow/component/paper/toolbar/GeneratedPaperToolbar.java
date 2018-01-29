@@ -27,7 +27,7 @@ import com.vaadin.flow.dom.Element;
         "WebComponent: paper-toolbar#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-toolbar")
 @HtmlImport("frontend://bower_components/paper-toolbar/paper-toolbar.html")
-public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
+public abstract class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -45,7 +45,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * 
      * @return the {@code bottomJustify} property from the webcomponent
      */
-    public String getBottomJustify() {
+    protected String getBottomJustifyString() {
         return getElement().getProperty("bottomJustify");
     }
 
@@ -62,7 +62,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * @param bottomJustify
      *            the String value to set
      */
-    public void setBottomJustify(String bottomJustify) {
+    protected void setBottomJustify(String bottomJustify) {
         getElement().setProperty("bottomJustify",
                 bottomJustify == null ? "" : bottomJustify);
     }
@@ -82,7 +82,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * 
      * @return the {@code justify} property from the webcomponent
      */
-    public String getJustify() {
+    protected String getJustifyString() {
         return getElement().getProperty("justify");
     }
 
@@ -99,7 +99,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * @param justify
      *            the String value to set
      */
-    public void setJustify(String justify) {
+    protected void setJustify(String justify) {
         getElement().setProperty("justify", justify == null ? "" : justify);
     }
 
@@ -118,7 +118,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * 
      * @return the {@code middleJustify} property from the webcomponent
      */
-    public String getMiddleJustify() {
+    protected String getMiddleJustifyString() {
         return getElement().getProperty("middleJustify");
     }
 
@@ -135,7 +135,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * @param middleJustify
      *            the String value to set
      */
-    public void setMiddleJustify(String middleJustify) {
+    protected void setMiddleJustify(String middleJustify) {
         getElement().setProperty("middleJustify",
                 middleJustify == null ? "" : middleJustify);
     }
@@ -154,7 +154,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToTop(Component... components) {
+    protected R addToTop(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top");
             getElement().appendChild(component.getElement());
@@ -176,7 +176,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToMiddle(Component... components) {
+    protected R addToMiddle(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "middle");
             getElement().appendChild(component.getElement());
@@ -198,7 +198,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToBottom(Component... components) {
+    protected R addToBottom(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom");
             getElement().appendChild(component.getElement());
@@ -214,7 +214,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(Component... components) {
+    protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -231,7 +231,7 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
      * text content as well as child elements that have been added directly to
      * this component using the {@link Element} API.
      */
-    public void removeAll() {
+    protected void removeAll() {
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();

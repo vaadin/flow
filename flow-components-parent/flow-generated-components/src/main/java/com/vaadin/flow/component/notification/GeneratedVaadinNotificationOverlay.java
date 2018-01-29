@@ -36,7 +36,7 @@ import com.vaadin.flow.dom.Element;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-notification-overlay")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
-public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotificationOverlay<R>>
+public abstract class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotificationOverlay<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -52,7 +52,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      * 
      * @return the {@code opened} property from the webcomponent
      */
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -67,7 +67,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -85,7 +85,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToTopStretch(Component... components) {
+    protected R addToTopStretch(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top-stretch");
             getElement().appendChild(component.getElement());
@@ -107,7 +107,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToTopStart(Component... components) {
+    protected R addToTopStart(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top-start");
             getElement().appendChild(component.getElement());
@@ -129,7 +129,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToTopCenter(Component... components) {
+    protected R addToTopCenter(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top-center");
             getElement().appendChild(component.getElement());
@@ -151,7 +151,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToTopEnd(Component... components) {
+    protected R addToTopEnd(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top-end");
             getElement().appendChild(component.getElement());
@@ -173,7 +173,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToMiddle(Component... components) {
+    protected R addToMiddle(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "middle");
             getElement().appendChild(component.getElement());
@@ -195,7 +195,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToBottomStart(Component... components) {
+    protected R addToBottomStart(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom-start");
             getElement().appendChild(component.getElement());
@@ -217,7 +217,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToBottomCenter(Component... components) {
+    protected R addToBottomCenter(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom-center");
             getElement().appendChild(component.getElement());
@@ -239,7 +239,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToBottomEnd(Component... components) {
+    protected R addToBottomEnd(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom-end");
             getElement().appendChild(component.getElement());
@@ -261,7 +261,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToBottomStretch(Component... components) {
+    protected R addToBottomStretch(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom-stretch");
             getElement().appendChild(component.getElement());
@@ -277,7 +277,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(Component... components) {
+    protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -294,7 +294,7 @@ public class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotific
      * text content as well as child elements that have been added directly to
      * this component using the {@link Element} API.
      */
-    public void removeAll() {
+    protected void removeAll() {
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();

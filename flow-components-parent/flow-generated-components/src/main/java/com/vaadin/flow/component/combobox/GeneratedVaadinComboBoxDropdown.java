@@ -27,7 +27,6 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.HasComponents;
 
 /**
  * <p>
@@ -41,9 +40,8 @@ import com.vaadin.flow.component.HasComponents;
         "WebComponent: Vaadin.DropdownElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-dropdown")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-dropdown.html")
-public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDropdown<R>>
-        extends Component
-        implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDropdown<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * This property is synchronized automatically from client side when a
@@ -52,7 +50,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -60,7 +58,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -71,7 +69,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @return the {@code template} property from the webcomponent
      */
     @Synchronize(property = "template", value = "template-changed")
-    protected JsonObject protectedGetTemplate() {
+    protected JsonObject getTemplateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("template");
     }
 
@@ -96,7 +94,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @return the {@code touchDevice} property from the webcomponent
      */
-    public boolean isTouchDevice() {
+    protected boolean isTouchDeviceBoolean() {
         return getElement().getProperty("touchDevice", false);
     }
 
@@ -111,7 +109,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @param touchDevice
      *            the boolean value to set
      */
-    public void setTouchDevice(boolean touchDevice) {
+    protected void setTouchDevice(boolean touchDevice) {
         getElement().setProperty("touchDevice", touchDevice);
     }
 
@@ -128,7 +126,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @return the {@code positionTarget} property from the webcomponent
      */
-    protected JsonObject protectedGetPositionTarget() {
+    protected JsonObject getPositionTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("positionTarget");
     }
 
@@ -160,7 +158,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * 
      * @return the {@code alignedAbove} property from the webcomponent
      */
-    public boolean isAlignedAbove() {
+    protected boolean isAlignedAboveBoolean() {
         return getElement().getProperty("alignedAbove", false);
     }
 
@@ -175,11 +173,11 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @param alignedAbove
      *            the boolean value to set
      */
-    public void setAlignedAbove(boolean alignedAbove) {
+    protected void setAlignedAbove(boolean alignedAbove) {
         getElement().setProperty("alignedAbove", alignedAbove);
     }
 
-    public void notifyResize() {
+    protected void notifyResize() {
         getElement().callFunction("notifyResize");
     }
 
@@ -200,7 +198,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinComboBoxDropdownClosedListener(
+    protected Registration addVaadinComboBoxDropdownClosedListener(
             ComponentEventListener<VaadinComboBoxDropdownClosedEvent<R>> listener) {
         return addListener(VaadinComboBoxDropdownClosedEvent.class,
                 (ComponentEventListener) listener);
@@ -223,7 +221,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinComboBoxDropdownOpenedListener(
+    protected Registration addVaadinComboBoxDropdownOpenedListener(
             ComponentEventListener<VaadinComboBoxDropdownOpenedEvent<R>> listener) {
         return addListener(VaadinComboBoxDropdownOpenedEvent.class,
                 (ComponentEventListener) listener);
@@ -246,7 +244,7 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addOpenedChangeListener(
+    protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -269,26 +267,9 @@ public class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDr
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addTemplateChangeListener(
+    protected Registration addTemplateChangeListener(
             ComponentEventListener<TemplateChangeEvent<R>> listener) {
         return addListener(TemplateChangeEvent.class,
                 (ComponentEventListener) listener);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinComboBoxDropdown(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinComboBoxDropdown() {
     }
 }

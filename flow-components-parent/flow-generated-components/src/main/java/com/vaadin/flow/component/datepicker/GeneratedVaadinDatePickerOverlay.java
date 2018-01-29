@@ -53,7 +53,7 @@ import com.vaadin.flow.shared.Registration;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker-overlay")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-overlay.html")
-public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePickerOverlay<R>>
+public abstract class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePickerOverlay<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -63,7 +63,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -71,7 +71,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -82,7 +82,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return the {@code template} property from the webcomponent
      */
     @Synchronize(property = "template", value = "template-changed")
-    protected JsonObject protectedGetTemplate() {
+    protected JsonObject getTemplateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("template");
     }
 
@@ -101,7 +101,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return the {@code content} property from the webcomponent
      */
     @Synchronize(property = "content", value = "content-changed")
-    protected JsonObject protectedGetContent() {
+    protected JsonObject getContentJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("content");
     }
 
@@ -119,7 +119,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @return the {@code withBackdrop} property from the webcomponent
      */
-    public boolean isWithBackdrop() {
+    protected boolean isWithBackdropBoolean() {
         return getElement().getProperty("withBackdrop", false);
     }
 
@@ -127,7 +127,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param withBackdrop
      *            the boolean value to set
      */
-    public void setWithBackdrop(boolean withBackdrop) {
+    protected void setWithBackdrop(boolean withBackdrop) {
         getElement().setProperty("withBackdrop", withBackdrop);
     }
 
@@ -145,7 +145,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @return the {@code modeless} property from the webcomponent
      */
-    public boolean isModeless() {
+    protected boolean isModelessBoolean() {
         return getElement().getProperty("modeless", false);
     }
 
@@ -161,7 +161,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param modeless
      *            the boolean value to set
      */
-    public void setModeless(boolean modeless) {
+    protected void setModeless(boolean modeless) {
         getElement().setProperty("modeless", modeless);
     }
 
@@ -179,7 +179,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * 
      * @return the {@code focusTrap} property from the webcomponent
      */
-    public boolean isFocusTrap() {
+    protected boolean isFocusTrapBoolean() {
         return getElement().getProperty("focusTrap", false);
     }
 
@@ -195,7 +195,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @param focusTrap
      *            the boolean value to set
      */
-    public void setFocusTrap(boolean focusTrap) {
+    protected void setFocusTrap(boolean focusTrap) {
         getElement().setProperty("focusTrap", focusTrap);
     }
 
@@ -224,7 +224,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayCloseListener(
+    protected Registration addVaadinOverlayCloseListener(
             ComponentEventListener<VaadinOverlayCloseEvent<R>> listener) {
         return addListener(VaadinOverlayCloseEvent.class,
                 (ComponentEventListener) listener);
@@ -247,7 +247,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayEscapePressListener(
+    protected Registration addVaadinOverlayEscapePressListener(
             ComponentEventListener<VaadinOverlayEscapePressEvent<R>> listener) {
         return addListener(VaadinOverlayEscapePressEvent.class,
                 (ComponentEventListener) listener);
@@ -270,7 +270,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayOpenListener(
+    protected Registration addVaadinOverlayOpenListener(
             ComponentEventListener<VaadinOverlayOpenEvent<R>> listener) {
         return addListener(VaadinOverlayOpenEvent.class,
                 (ComponentEventListener) listener);
@@ -293,7 +293,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayOutsideClickListener(
+    protected Registration addVaadinOverlayOutsideClickListener(
             ComponentEventListener<VaadinOverlayOutsideClickEvent<R>> listener) {
         return addListener(VaadinOverlayOutsideClickEvent.class,
                 (ComponentEventListener) listener);
@@ -316,7 +316,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addOpenedChangeListener(
+    protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -339,7 +339,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addTemplateChangeListener(
+    protected Registration addTemplateChangeListener(
             ComponentEventListener<TemplateChangeEvent<R>> listener) {
         return addListener(TemplateChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -362,7 +362,7 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addContentChangeListener(
+    protected Registration addContentChangeListener(
             ComponentEventListener<ContentChangeEvent<R>> listener) {
         return addListener(ContentChangeEvent.class,
                 (ComponentEventListener) listener);

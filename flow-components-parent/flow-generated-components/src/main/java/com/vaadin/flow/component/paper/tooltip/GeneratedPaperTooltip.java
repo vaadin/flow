@@ -22,14 +22,13 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.flow.component.HasComponents;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-tooltip#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-tooltip")
 @HtmlImport("frontend://bower_components/paper-tooltip/paper-tooltip.html")
-public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
-        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -46,7 +45,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code animationConfig} property from the webcomponent
      */
-    protected JsonObject protectedGetAnimationConfig() {
+    protected JsonObject getAnimationConfigJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("animationConfig");
     }
 
@@ -82,7 +81,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code entryAnimation} property from the webcomponent
      */
-    public String getEntryAnimation() {
+    protected String getEntryAnimationString() {
         return getElement().getProperty("entryAnimation");
     }
 
@@ -99,7 +98,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param entryAnimation
      *            the String value to set
      */
-    public void setEntryAnimation(String entryAnimation) {
+    protected void setEntryAnimation(String entryAnimation) {
         getElement().setProperty("entryAnimation",
                 entryAnimation == null ? "" : entryAnimation);
     }
@@ -119,7 +118,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code exitAnimation} property from the webcomponent
      */
-    public String getExitAnimation() {
+    protected String getExitAnimationString() {
         return getElement().getProperty("exitAnimation");
     }
 
@@ -136,7 +135,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param exitAnimation
      *            the String value to set
      */
-    public void setExitAnimation(String exitAnimation) {
+    protected void setExitAnimation(String exitAnimation) {
         getElement().setProperty("exitAnimation",
                 exitAnimation == null ? "" : exitAnimation);
     }
@@ -155,7 +154,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code for} property from the webcomponent
      */
-    public String getFor() {
+    protected String getForString() {
         return getElement().getProperty("for");
     }
 
@@ -171,7 +170,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param _for
      *            the String value to set
      */
-    public void setFor(String _for) {
+    protected void setFor(String _for) {
         getElement().setProperty("for", _for == null ? "" : _for);
     }
 
@@ -189,7 +188,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code manualMode} property from the webcomponent
      */
-    public boolean isManualMode() {
+    protected boolean isManualModeBoolean() {
         return getElement().getProperty("manualMode", false);
     }
 
@@ -205,7 +204,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param manualMode
      *            the boolean value to set
      */
-    public void setManualMode(boolean manualMode) {
+    protected void setManualMode(boolean manualMode) {
         getElement().setProperty("manualMode", manualMode);
     }
 
@@ -222,7 +221,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code position} property from the webcomponent
      */
-    public String getPosition() {
+    protected String getPositionString() {
         return getElement().getProperty("position");
     }
 
@@ -237,7 +236,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param position
      *            the String value to set
      */
-    public void setPosition(String position) {
+    protected void setPosition(String position) {
         getElement().setProperty("position", position == null ? "" : position);
     }
 
@@ -254,7 +253,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code fitToVisibleBounds} property from the webcomponent
      */
-    public boolean isFitToVisibleBounds() {
+    protected boolean isFitToVisibleBoundsBoolean() {
         return getElement().getProperty("fitToVisibleBounds", false);
     }
 
@@ -269,7 +268,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param fitToVisibleBounds
      *            the boolean value to set
      */
-    public void setFitToVisibleBounds(boolean fitToVisibleBounds) {
+    protected void setFitToVisibleBounds(boolean fitToVisibleBounds) {
         getElement().setProperty("fitToVisibleBounds", fitToVisibleBounds);
     }
 
@@ -287,7 +286,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code offset} property from the webcomponent
      */
-    public double getOffset() {
+    protected double getOffsetDouble() {
         return getElement().getProperty("offset", 0.0);
     }
 
@@ -303,7 +302,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param offset
      *            the double value to set
      */
-    public void setOffset(double offset) {
+    protected void setOffset(double offset) {
         getElement().setProperty("offset", offset);
     }
 
@@ -322,7 +321,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code marginTop} property from the webcomponent
      */
-    public double getMarginTop() {
+    protected double getMarginTopDouble() {
         return getElement().getProperty("marginTop", 0.0);
     }
 
@@ -339,7 +338,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param marginTop
      *            the double value to set
      */
-    public void setMarginTop(double marginTop) {
+    protected void setMarginTop(double marginTop) {
         getElement().setProperty("marginTop", marginTop);
     }
 
@@ -357,7 +356,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code animationDelay} property from the webcomponent
      */
-    public double getAnimationDelay() {
+    protected double getAnimationDelayDouble() {
         return getElement().getProperty("animationDelay", 0.0);
     }
 
@@ -373,7 +372,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * @param animationDelay
      *            the double value to set
      */
-    public void setAnimationDelay(double animationDelay) {
+    protected void setAnimationDelay(double animationDelay) {
         getElement().setProperty("animationDelay", animationDelay);
     }
 
@@ -392,7 +391,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * 
      * @return the {@code target} property from the webcomponent
      */
-    protected JsonObject protectedGetTarget() {
+    protected JsonObject getTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("target");
     }
 
@@ -457,36 +456,19 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>> extends
      * Cancels the currently running animations.
      * </p>
      */
-    public void cancelAnimation() {
+    protected void cancelAnimation() {
         getElement().callFunction("cancelAnimation");
     }
 
-    public void show() {
+    protected void show() {
         getElement().callFunction("show");
     }
 
-    public void hide() {
+    protected void hide() {
         getElement().callFunction("hide");
     }
 
-    public void updatePosition() {
+    protected void updatePosition() {
         getElement().callFunction("updatePosition");
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedPaperTooltip(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedPaperTooltip() {
     }
 }

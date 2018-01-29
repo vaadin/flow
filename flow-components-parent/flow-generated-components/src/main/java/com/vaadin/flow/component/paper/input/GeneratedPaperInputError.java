@@ -23,15 +23,13 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.flow.component.JsonSerializable;
-import com.vaadin.flow.component.HasComponents;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-input-error#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
-public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
-        extends Component
-        implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -46,7 +44,7 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
      * 
      * @return the {@code invalid} property from the webcomponent
      */
-    public boolean isInvalid() {
+    protected boolean isInvalidBoolean() {
         return getElement().getProperty("invalid", false);
     }
 
@@ -63,7 +61,7 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
      *            inputElement: The input element. value: The input value.
      *            invalid: True if the input value is invalid.
      */
-    public void update(UpdateState state) {
+    protected void update(UpdateState state) {
         getElement().callFunction("update", state.toJson());
     }
 
@@ -108,22 +106,5 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
             internalObject = value;
             return this;
         }
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedPaperInputError(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedPaperInputError() {
     }
 }

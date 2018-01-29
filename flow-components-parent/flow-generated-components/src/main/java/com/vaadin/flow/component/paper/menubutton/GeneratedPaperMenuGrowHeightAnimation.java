@@ -28,7 +28,7 @@ import elemental.json.JsonObject;
         "Flow#1.0-SNAPSHOT" })
 @Tag("paper-menu-grow-height-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
-public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuGrowHeightAnimation<R>>
+public abstract class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuGrowHeightAnimation<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -44,7 +44,7 @@ public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuG
      * 
      * @return the {@code animationTiming} property from the webcomponent
      */
-    protected JsonObject protectedGetAnimationTiming() {
+    protected JsonObject getAnimationTimingJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("animationTiming");
     }
 
@@ -76,7 +76,7 @@ public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuG
      * 
      * @return the {@code isNeonAnimation} property from the webcomponent
      */
-    public boolean isNeonAnimation() {
+    protected boolean isNeonAnimationBoolean() {
         return getElement().getProperty("isNeonAnimation", false);
     }
 
@@ -91,7 +91,7 @@ public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuG
      * @param isNeonAnimation
      *            the boolean value to set
      */
-    public void setIsNeonAnimation(boolean isNeonAnimation) {
+    protected void setIsNeonAnimation(boolean isNeonAnimation) {
         getElement().setProperty("isNeonAnimation", isNeonAnimation);
     }
 
@@ -140,7 +140,7 @@ public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuG
      * Called when the animation finishes.
      * </p>
      */
-    public void complete() {
+    protected void complete() {
         getElement().callFunction("complete");
     }
 }

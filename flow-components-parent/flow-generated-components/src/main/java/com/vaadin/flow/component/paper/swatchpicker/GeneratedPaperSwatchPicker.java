@@ -32,7 +32,7 @@ import com.vaadin.flow.shared.Registration;
         "WebComponent: paper-swatch-picker#2.0.1", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-swatch-picker")
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
-public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
+public abstract class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -49,7 +49,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @return the {@code color} property from the webcomponent
      */
     @Synchronize(property = "color", value = "color-changed")
-    public String getColor() {
+    protected String getColorString() {
         return getElement().getProperty("color");
     }
 
@@ -64,7 +64,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param color
      *            the String value to set
      */
-    public void setColor(String color) {
+    protected void setColor(String color) {
         getElement().setProperty("color", color == null ? "" : color);
     }
 
@@ -85,7 +85,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @return the {@code colorList} property from the webcomponent
      */
-    protected JsonArray protectedGetColorList() {
+    protected JsonArray getColorListJsonArray() {
         return (JsonArray) getElement().getPropertyRaw("colorList");
     }
 
@@ -124,7 +124,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @return the {@code columnCount} property from the webcomponent
      */
-    public double getColumnCount() {
+    protected double getColumnCountDouble() {
         return getElement().getProperty("columnCount", 0.0);
     }
 
@@ -142,7 +142,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param columnCount
      *            the double value to set
      */
-    public void setColumnCount(double columnCount) {
+    protected void setColumnCount(double columnCount) {
         getElement().setProperty("columnCount", columnCount);
     }
 
@@ -160,7 +160,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @return the {@code horizontalAlign} property from the webcomponent
      */
-    public String getHorizontalAlign() {
+    protected String getHorizontalAlignString() {
         return getElement().getProperty("horizontalAlign");
     }
 
@@ -176,7 +176,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(String horizontalAlign) {
+    protected void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -195,7 +195,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @return the {@code verticalAlign} property from the webcomponent
      */
-    public String getVerticalAlign() {
+    protected String getVerticalAlignString() {
         return getElement().getProperty("verticalAlign");
     }
 
@@ -211,7 +211,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(String verticalAlign) {
+    protected void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -230,7 +230,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * 
      * @return the {@code noink} property from the webcomponent
      */
-    public boolean isNoink() {
+    protected boolean isNoinkBoolean() {
         return getElement().getProperty("noink", false);
     }
 
@@ -246,7 +246,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @param noink
      *            the boolean value to set
      */
-    public void setNoink(boolean noink) {
+    protected void setNoink(boolean noink) {
         getElement().setProperty("noink", noink);
     }
 
@@ -267,7 +267,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addColorPickerSelectedListener(
+    protected Registration addColorPickerSelectedListener(
             ComponentEventListener<ColorPickerSelectedEvent<R>> listener) {
         return addListener(ColorPickerSelectedEvent.class,
                 (ComponentEventListener) listener);
@@ -290,7 +290,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addColorChangeListener(
+    protected Registration addColorChangeListener(
             ComponentEventListener<ColorChangeEvent<R>> listener) {
         return addListener(ColorChangeEvent.class,
                 (ComponentEventListener) listener);
