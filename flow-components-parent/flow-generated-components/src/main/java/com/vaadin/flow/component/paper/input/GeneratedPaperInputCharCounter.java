@@ -28,7 +28,7 @@ import com.vaadin.flow.component.JsonSerializable;
         "WebComponent: paper-input-char-counter#2.0.2", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-input-char-counter")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-char-counter.html")
-public class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCounter<R>>
+public abstract class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCounter<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -44,7 +44,7 @@ public class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCou
      *            inputElement: The input element. value: The input value.
      *            invalid: True if the input value is invalid.
      */
-    public void update(UpdateState state) {
+    protected void update(UpdateState state) {
         getElement().callFunction("update", state.toJson());
     }
 

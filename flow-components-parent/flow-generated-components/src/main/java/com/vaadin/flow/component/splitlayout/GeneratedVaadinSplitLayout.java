@@ -190,7 +190,7 @@ import com.vaadin.flow.dom.Element;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-split-layout")
 @HtmlImport("frontend://bower_components/vaadin-split-layout/src/vaadin-split-layout.html")
-public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
+public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
         extends Component
         implements HasStyle, HasClickListeners<R>, ComponentSupplier<R> {
 
@@ -208,7 +208,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * 
      * @return the {@code orientation} property from the webcomponent
      */
-    public String getOrientation() {
+    protected String getOrientationString() {
         return getElement().getProperty("orientation");
     }
 
@@ -224,7 +224,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * @param orientation
      *            the String value to set
      */
-    public void setOrientation(String orientation) {
+    protected void setOrientation(String orientation) {
         getElement().setProperty("orientation",
                 orientation == null ? "" : orientation);
     }
@@ -245,7 +245,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronResizeListener(
+    protected Registration addIronResizeListener(
             ComponentEventListener<IronResizeEvent<R>> listener) {
         return addListener(IronResizeEvent.class,
                 (ComponentEventListener) listener);
@@ -265,7 +265,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrimary(Component... components) {
+    protected R addToPrimary(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "primary");
             getElement().appendChild(component.getElement());
@@ -287,7 +287,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSecondary(Component... components) {
+    protected R addToSecondary(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "secondary");
             getElement().appendChild(component.getElement());
@@ -303,7 +303,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(Component... components) {
+    protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -320,7 +320,7 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
      * text content as well as child elements that have been added directly to
      * this component using the {@link Element} API.
      */
-    public void removeAll() {
+    protected void removeAll() {
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();

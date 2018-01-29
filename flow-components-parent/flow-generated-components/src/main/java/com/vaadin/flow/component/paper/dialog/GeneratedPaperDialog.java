@@ -28,14 +28,13 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.HasComponents;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-dialog#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-dialog")
 @HtmlImport("frontend://bower_components/paper-dialog/paper-dialog.html")
-public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
-        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -53,7 +52,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code sizingTarget} property from the webcomponent
      */
-    protected JsonObject protectedGetSizingTarget() {
+    protected JsonObject getSizingTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("sizingTarget");
     }
 
@@ -88,7 +87,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code fitInto} property from the webcomponent
      */
-    protected JsonObject protectedGetFitInto() {
+    protected JsonObject getFitIntoJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("fitInto");
     }
 
@@ -121,7 +120,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code noOverlap} property from the webcomponent
      */
-    public boolean isNoOverlap() {
+    protected boolean isNoOverlapBoolean() {
         return getElement().getProperty("noOverlap", false);
     }
 
@@ -137,7 +136,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param noOverlap
      *            the boolean value to set
      */
-    public void setNoOverlap(boolean noOverlap) {
+    protected void setNoOverlap(boolean noOverlap) {
         getElement().setProperty("noOverlap", noOverlap);
     }
 
@@ -155,7 +154,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code positionTarget} property from the webcomponent
      */
-    protected JsonObject protectedGetPositionTarget() {
+    protected JsonObject getPositionTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("positionTarget");
     }
 
@@ -190,7 +189,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code horizontalAlign} property from the webcomponent
      */
-    public String getHorizontalAlign() {
+    protected String getHorizontalAlignString() {
         return getElement().getProperty("horizontalAlign");
     }
 
@@ -207,7 +206,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(String horizontalAlign) {
+    protected void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -227,7 +226,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code verticalAlign} property from the webcomponent
      */
-    public String getVerticalAlign() {
+    protected String getVerticalAlignString() {
         return getElement().getProperty("verticalAlign");
     }
 
@@ -244,7 +243,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(String verticalAlign) {
+    protected void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -264,7 +263,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code dynamicAlign} property from the webcomponent
      */
-    public boolean isDynamicAlign() {
+    protected boolean isDynamicAlignBoolean() {
         return getElement().getProperty("dynamicAlign", false);
     }
 
@@ -281,7 +280,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param dynamicAlign
      *            the boolean value to set
      */
-    public void setDynamicAlign(boolean dynamicAlign) {
+    protected void setDynamicAlign(boolean dynamicAlign) {
         getElement().setProperty("dynamicAlign", dynamicAlign);
     }
 
@@ -313,7 +312,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code horizontalOffset} property from the webcomponent
      */
-    public double getHorizontalOffset() {
+    protected double getHorizontalOffsetDouble() {
         return getElement().getProperty("horizontalOffset", 0.0);
     }
 
@@ -343,7 +342,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param horizontalOffset
      *            the double value to set
      */
-    public void setHorizontalOffset(double horizontalOffset) {
+    protected void setHorizontalOffset(double horizontalOffset) {
         getElement().setProperty("horizontalOffset", horizontalOffset);
     }
 
@@ -375,7 +374,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code verticalOffset} property from the webcomponent
      */
-    public double getVerticalOffset() {
+    protected double getVerticalOffsetDouble() {
         return getElement().getProperty("verticalOffset", 0.0);
     }
 
@@ -405,7 +404,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param verticalOffset
      *            the double value to set
      */
-    public void setVerticalOffset(double verticalOffset) {
+    protected void setVerticalOffset(double verticalOffset) {
         getElement().setProperty("verticalOffset", verticalOffset);
     }
 
@@ -422,7 +421,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code autoFitOnAttach} property from the webcomponent
      */
-    public boolean isAutoFitOnAttach() {
+    protected boolean isAutoFitOnAttachBoolean() {
         return getElement().getProperty("autoFitOnAttach", false);
     }
 
@@ -437,7 +436,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param autoFitOnAttach
      *            the boolean value to set
      */
-    public void setAutoFitOnAttach(boolean autoFitOnAttach) {
+    protected void setAutoFitOnAttach(boolean autoFitOnAttach) {
         getElement().setProperty("autoFitOnAttach", autoFitOnAttach);
     }
 
@@ -455,7 +454,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -470,7 +469,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -487,7 +486,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code canceled} property from the webcomponent
      */
-    public boolean isCanceled() {
+    protected boolean isCanceledBoolean() {
         return getElement().getProperty("canceled", false);
     }
 
@@ -505,7 +504,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code withBackdrop} property from the webcomponent
      */
-    public boolean isWithBackdrop() {
+    protected boolean isWithBackdropBoolean() {
         return getElement().getProperty("withBackdrop", false);
     }
 
@@ -521,7 +520,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param withBackdrop
      *            the boolean value to set
      */
-    public void setWithBackdrop(boolean withBackdrop) {
+    protected void setWithBackdrop(boolean withBackdrop) {
         getElement().setProperty("withBackdrop", withBackdrop);
     }
 
@@ -539,7 +538,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code noAutoFocus} property from the webcomponent
      */
-    public boolean isNoAutoFocus() {
+    protected boolean isNoAutoFocusBoolean() {
         return getElement().getProperty("noAutoFocus", false);
     }
 
@@ -555,7 +554,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param noAutoFocus
      *            the boolean value to set
      */
-    public void setNoAutoFocus(boolean noAutoFocus) {
+    protected void setNoAutoFocus(boolean noAutoFocus) {
         getElement().setProperty("noAutoFocus", noAutoFocus);
     }
 
@@ -572,7 +571,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code noCancelOnEscKey} property from the webcomponent
      */
-    public boolean isNoCancelOnEscKey() {
+    protected boolean isNoCancelOnEscKeyBoolean() {
         return getElement().getProperty("noCancelOnEscKey", false);
     }
 
@@ -587,7 +586,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param noCancelOnEscKey
      *            the boolean value to set
      */
-    public void setNoCancelOnEscKey(boolean noCancelOnEscKey) {
+    protected void setNoCancelOnEscKey(boolean noCancelOnEscKey) {
         getElement().setProperty("noCancelOnEscKey", noCancelOnEscKey);
     }
 
@@ -604,7 +603,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code noCancelOnOutsideClick} property from the webcomponent
      */
-    public boolean isNoCancelOnOutsideClick() {
+    protected boolean isNoCancelOnOutsideClickBoolean() {
         return getElement().getProperty("noCancelOnOutsideClick", false);
     }
 
@@ -619,7 +618,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param noCancelOnOutsideClick
      *            the boolean value to set
      */
-    public void setNoCancelOnOutsideClick(boolean noCancelOnOutsideClick) {
+    protected void setNoCancelOnOutsideClick(boolean noCancelOnOutsideClick) {
         getElement().setProperty("noCancelOnOutsideClick",
                 noCancelOnOutsideClick);
     }
@@ -640,7 +639,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code closingReason} property from the webcomponent
      */
-    protected JsonObject protectedGetClosingReason() {
+    protected JsonObject getClosingReasonJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("closingReason");
     }
 
@@ -675,7 +674,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code restoreFocusOnClose} property from the webcomponent
      */
-    public boolean isRestoreFocusOnClose() {
+    protected boolean isRestoreFocusOnCloseBoolean() {
         return getElement().getProperty("restoreFocusOnClose", false);
     }
 
@@ -690,7 +689,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param restoreFocusOnClose
      *            the boolean value to set
      */
-    public void setRestoreFocusOnClose(boolean restoreFocusOnClose) {
+    protected void setRestoreFocusOnClose(boolean restoreFocusOnClose) {
         getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
     }
 
@@ -708,7 +707,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code allowClickThrough} property from the webcomponent
      */
-    public boolean isAllowClickThrough() {
+    protected boolean isAllowClickThroughBoolean() {
         return getElement().getProperty("allowClickThrough", false);
     }
 
@@ -724,7 +723,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param allowClickThrough
      *            the boolean value to set
      */
-    public void setAllowClickThrough(boolean allowClickThrough) {
+    protected void setAllowClickThrough(boolean allowClickThrough) {
         getElement().setProperty("allowClickThrough", allowClickThrough);
     }
 
@@ -741,7 +740,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code alwaysOnTop} property from the webcomponent
      */
-    public boolean isAlwaysOnTop() {
+    protected boolean isAlwaysOnTopBoolean() {
         return getElement().getProperty("alwaysOnTop", false);
     }
 
@@ -756,7 +755,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param alwaysOnTop
      *            the boolean value to set
      */
-    public void setAlwaysOnTop(boolean alwaysOnTop) {
+    protected void setAlwaysOnTop(boolean alwaysOnTop) {
         getElement().setProperty("alwaysOnTop", alwaysOnTop);
     }
 
@@ -776,7 +775,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code scrollAction} property from the webcomponent
      */
-    public String getScrollAction() {
+    protected String getScrollActionString() {
         return getElement().getProperty("scrollAction");
     }
 
@@ -794,7 +793,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param scrollAction
      *            the String value to set
      */
-    public void setScrollAction(String scrollAction) {
+    protected void setScrollAction(String scrollAction) {
         getElement().setProperty("scrollAction",
                 scrollAction == null ? "" : scrollAction);
     }
@@ -812,7 +811,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code modal} property from the webcomponent
      */
-    public boolean isModal() {
+    protected boolean isModalBoolean() {
         return getElement().getProperty("modal", false);
     }
 
@@ -827,7 +826,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param modal
      *            the boolean value to set
      */
-    public void setModal(boolean modal) {
+    protected void setModal(boolean modal) {
         getElement().setProperty("modal", modal);
     }
 
@@ -844,7 +843,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code animationConfig} property from the webcomponent
      */
-    protected JsonObject protectedGetAnimationConfig() {
+    protected JsonObject getAnimationConfigJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("animationConfig");
     }
 
@@ -878,7 +877,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code entryAnimation} property from the webcomponent
      */
-    public String getEntryAnimation() {
+    protected String getEntryAnimationString() {
         return getElement().getProperty("entryAnimation");
     }
 
@@ -895,7 +894,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param entryAnimation
      *            the String value to set
      */
-    public void setEntryAnimation(String entryAnimation) {
+    protected void setEntryAnimation(String entryAnimation) {
         getElement().setProperty("entryAnimation",
                 entryAnimation == null ? "" : entryAnimation);
     }
@@ -915,7 +914,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * 
      * @return the {@code exitAnimation} property from the webcomponent
      */
-    public String getExitAnimation() {
+    protected String getExitAnimationString() {
         return getElement().getProperty("exitAnimation");
     }
 
@@ -932,7 +931,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @param exitAnimation
      *            the String value to set
      */
-    public void setExitAnimation(String exitAnimation) {
+    protected void setExitAnimation(String exitAnimation) {
         getElement().setProperty("exitAnimation",
                 exitAnimation == null ? "" : exitAnimation);
     }
@@ -945,7 +944,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * Positions and fits the element into the {@code fitInto} element.
      * </p>
      */
-    public void fit() {
+    protected void fit() {
         getElement().callFunction("fit");
     }
 
@@ -958,7 +957,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * memoized data.
      * </p>
      */
-    public void resetFit() {
+    protected void resetFit() {
         getElement().callFunction("resetFit");
     }
 
@@ -974,7 +973,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * scroll position of the sizingTarget.
      * </p>
      */
-    public void refit() {
+    protected void refit() {
         getElement().callFunction("refit");
     }
 
@@ -987,7 +986,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * .
      * </p>
      */
-    public void position() {
+    protected void position() {
         getElement().callFunction("position");
     }
 
@@ -1000,7 +999,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * {@code max-height} and/or {@code max-width}.
      * </p>
      */
-    public void constrain() {
+    protected void constrain() {
         getElement().callFunction("constrain");
     }
 
@@ -1013,7 +1012,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * sets {@code position:fixed}.
      * </p>
      */
-    public void center() {
+    protected void center() {
         getElement().callFunction("center");
     }
 
@@ -1026,7 +1025,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * resizables of a resize change.
      * </p>
      */
-    public void notifyResize() {
+    protected void notifyResize() {
         getElement().callFunction("notifyResize");
     }
 
@@ -1092,7 +1091,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * The backdrop element.
      * </p>
      */
-    public void backdropElement() {
+    protected void backdropElement() {
         getElement().callFunction("backdropElement");
     }
 
@@ -1104,7 +1103,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * Toggle the opened state of the overlay.
      * </p>
      */
-    public void toggle() {
+    protected void toggle() {
         getElement().callFunction("toggle");
     }
 
@@ -1116,7 +1115,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * Open the overlay.
      * </p>
      */
-    public void open() {
+    protected void open() {
         getElement().callFunction("open");
     }
 
@@ -1128,7 +1127,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * Close the overlay.
      * </p>
      */
-    public void close() {
+    protected void close() {
         getElement().callFunction("close");
     }
 
@@ -1156,7 +1155,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * focusable content changes (e.g. a button is disabled).
      * </p>
      */
-    public void invalidateTabbables() {
+    protected void invalidateTabbables() {
         getElement().callFunction("invalidateTabbables");
     }
 
@@ -1204,7 +1203,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * Cancels the currently running animations.
      * </p>
      */
-    public void cancelAnimation() {
+    protected void cancelAnimation() {
         getElement().callFunction("cancelAnimation");
     }
 
@@ -1225,7 +1224,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addHorizontalOffsetChangeListener(
+    protected Registration addHorizontalOffsetChangeListener(
             ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
         return addListener(HorizontalOffsetChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1248,7 +1247,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVerticalOffsetChangeListener(
+    protected Registration addVerticalOffsetChangeListener(
             ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
         return addListener(VerticalOffsetChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1271,7 +1270,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addOpenedChangeListener(
+    protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1294,7 +1293,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronOverlayCanceledListener(
+    protected Registration addIronOverlayCanceledListener(
             ComponentEventListener<IronOverlayCanceledEvent<R>> listener) {
         return addListener(IronOverlayCanceledEvent.class,
                 (ComponentEventListener) listener);
@@ -1317,7 +1316,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronOverlayClosedListener(
+    protected Registration addIronOverlayClosedListener(
             ComponentEventListener<IronOverlayClosedEvent<R>> listener) {
         return addListener(IronOverlayClosedEvent.class,
                 (ComponentEventListener) listener);
@@ -1340,26 +1339,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronOverlayOpenedListener(
+    protected Registration addIronOverlayOpenedListener(
             ComponentEventListener<IronOverlayOpenedEvent<R>> listener) {
         return addListener(IronOverlayOpenedEvent.class,
                 (ComponentEventListener) listener);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedPaperDialog(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedPaperDialog() {
     }
 }

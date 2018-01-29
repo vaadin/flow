@@ -34,7 +34,7 @@ import com.vaadin.flow.dom.Element;
         "WebComponent: PaperMenuButton#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-menu-button")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button.html")
-public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
+public abstract class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -51,7 +51,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code keyEventTarget} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyEventTarget() {
+    protected JsonObject getKeyEventTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
     }
 
@@ -86,7 +86,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
-    public boolean isStopKeyboardEventPropagation() {
+    protected boolean isStopKeyboardEventPropagationBoolean() {
         return getElement().getProperty("stopKeyboardEventPropagation", false);
     }
 
@@ -102,7 +102,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
-    public void setStopKeyboardEventPropagation(
+    protected void setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
@@ -122,7 +122,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code keyBindings} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyBindings() {
+    protected JsonObject getKeyBindingsJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyBindings");
     }
 
@@ -156,7 +156,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return the {@code focused} property from the webcomponent
      */
     @Synchronize(property = "focused", value = "focused-changed")
-    public boolean isFocused() {
+    protected boolean isFocusedBoolean() {
         return getElement().getProperty("focused", false);
     }
 
@@ -174,7 +174,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return the {@code disabled} property from the webcomponent
      */
     @Synchronize(property = "disabled", value = "disabled-changed")
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -189,7 +189,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
@@ -207,7 +207,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -222,7 +222,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -240,7 +240,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code horizontalAlign} property from the webcomponent
      */
-    public String getHorizontalAlign() {
+    protected String getHorizontalAlignString() {
         return getElement().getProperty("horizontalAlign");
     }
 
@@ -256,7 +256,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param horizontalAlign
      *            the String value to set
      */
-    public void setHorizontalAlign(String horizontalAlign) {
+    protected void setHorizontalAlign(String horizontalAlign) {
         getElement().setProperty("horizontalAlign",
                 horizontalAlign == null ? "" : horizontalAlign);
     }
@@ -275,7 +275,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code verticalAlign} property from the webcomponent
      */
-    public String getVerticalAlign() {
+    protected String getVerticalAlignString() {
         return getElement().getProperty("verticalAlign");
     }
 
@@ -291,7 +291,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param verticalAlign
      *            the String value to set
      */
-    public void setVerticalAlign(String verticalAlign) {
+    protected void setVerticalAlign(String verticalAlign) {
         getElement().setProperty("verticalAlign",
                 verticalAlign == null ? "" : verticalAlign);
     }
@@ -312,7 +312,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code dynamicAlign} property from the webcomponent
      */
-    public boolean isDynamicAlign() {
+    protected boolean isDynamicAlignBoolean() {
         return getElement().getProperty("dynamicAlign", false);
     }
 
@@ -330,7 +330,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param dynamicAlign
      *            the boolean value to set
      */
-    public void setDynamicAlign(boolean dynamicAlign) {
+    protected void setDynamicAlign(boolean dynamicAlign) {
         getElement().setProperty("dynamicAlign", dynamicAlign);
     }
 
@@ -349,7 +349,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code horizontalOffset} property from the webcomponent
      */
-    public double getHorizontalOffset() {
+    protected double getHorizontalOffsetDouble() {
         return getElement().getProperty("horizontalOffset", 0.0);
     }
 
@@ -366,7 +366,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param horizontalOffset
      *            the double value to set
      */
-    public void setHorizontalOffset(double horizontalOffset) {
+    protected void setHorizontalOffset(double horizontalOffset) {
         getElement().setProperty("horizontalOffset", horizontalOffset);
     }
 
@@ -385,7 +385,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code verticalOffset} property from the webcomponent
      */
-    public double getVerticalOffset() {
+    protected double getVerticalOffsetDouble() {
         return getElement().getProperty("verticalOffset", 0.0);
     }
 
@@ -402,7 +402,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param verticalOffset
      *            the double value to set
      */
-    public void setVerticalOffset(double verticalOffset) {
+    protected void setVerticalOffset(double verticalOffset) {
         getElement().setProperty("verticalOffset", verticalOffset);
     }
 
@@ -420,7 +420,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code noOverlap} property from the webcomponent
      */
-    public boolean isNoOverlap() {
+    protected boolean isNoOverlapBoolean() {
         return getElement().getProperty("noOverlap", false);
     }
 
@@ -436,7 +436,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param noOverlap
      *            the boolean value to set
      */
-    public void setNoOverlap(boolean noOverlap) {
+    protected void setNoOverlap(boolean noOverlap) {
         getElement().setProperty("noOverlap", noOverlap);
     }
 
@@ -453,7 +453,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code noAnimations} property from the webcomponent
      */
-    public boolean isNoAnimations() {
+    protected boolean isNoAnimationsBoolean() {
         return getElement().getProperty("noAnimations", false);
     }
 
@@ -468,7 +468,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param noAnimations
      *            the boolean value to set
      */
-    public void setNoAnimations(boolean noAnimations) {
+    protected void setNoAnimations(boolean noAnimations) {
         getElement().setProperty("noAnimations", noAnimations);
     }
 
@@ -486,7 +486,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code ignoreSelect} property from the webcomponent
      */
-    public boolean isIgnoreSelect() {
+    protected boolean isIgnoreSelectBoolean() {
         return getElement().getProperty("ignoreSelect", false);
     }
 
@@ -502,7 +502,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param ignoreSelect
      *            the boolean value to set
      */
-    public void setIgnoreSelect(boolean ignoreSelect) {
+    protected void setIgnoreSelect(boolean ignoreSelect) {
         getElement().setProperty("ignoreSelect", ignoreSelect);
     }
 
@@ -520,7 +520,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code closeOnActivate} property from the webcomponent
      */
-    public boolean isCloseOnActivate() {
+    protected boolean isCloseOnActivateBoolean() {
         return getElement().getProperty("closeOnActivate", false);
     }
 
@@ -536,7 +536,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param closeOnActivate
      *            the boolean value to set
      */
-    public void setCloseOnActivate(boolean closeOnActivate) {
+    protected void setCloseOnActivate(boolean closeOnActivate) {
         getElement().setProperty("closeOnActivate", closeOnActivate);
     }
 
@@ -554,7 +554,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code openAnimationConfig} property from the webcomponent
      */
-    protected JsonObject protectedGetOpenAnimationConfig() {
+    protected JsonObject getOpenAnimationConfigJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("openAnimationConfig");
     }
 
@@ -589,7 +589,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code closeAnimationConfig} property from the webcomponent
      */
-    protected JsonObject protectedGetCloseAnimationConfig() {
+    protected JsonObject getCloseAnimationConfigJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("closeAnimationConfig");
     }
 
@@ -625,7 +625,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code allowOutsideScroll} property from the webcomponent
      */
-    public boolean isAllowOutsideScroll() {
+    protected boolean isAllowOutsideScrollBoolean() {
         return getElement().getProperty("allowOutsideScroll", false);
     }
 
@@ -642,7 +642,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param allowOutsideScroll
      *            the boolean value to set
      */
-    public void setAllowOutsideScroll(boolean allowOutsideScroll) {
+    protected void setAllowOutsideScroll(boolean allowOutsideScroll) {
         getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
     }
 
@@ -659,7 +659,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code restoreFocusOnClose} property from the webcomponent
      */
-    public boolean isRestoreFocusOnClose() {
+    protected boolean isRestoreFocusOnCloseBoolean() {
         return getElement().getProperty("restoreFocusOnClose", false);
     }
 
@@ -674,7 +674,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param restoreFocusOnClose
      *            the boolean value to set
      */
-    public void setRestoreFocusOnClose(boolean restoreFocusOnClose) {
+    protected void setRestoreFocusOnClose(boolean restoreFocusOnClose) {
         getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
     }
 
@@ -691,7 +691,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * 
      * @return the {@code contentElement} property from the webcomponent
      */
-    protected JsonObject protectedGetContentElement() {
+    protected JsonObject getContentElementJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("contentElement");
     }
 
@@ -725,7 +725,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(String eventString, String handlerName) {
+    protected void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -737,7 +737,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * When called, will remove all imperatively-added key bindings.
      * </p>
      */
-    public void removeOwnKeyBindings() {
+    protected void removeOwnKeyBindings() {
         getElement().callFunction("removeOwnKeyBindings");
     }
 
@@ -771,7 +771,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * Toggles the drowpdown content between opened and closed.
      * </p>
      */
-    public void toggle() {
+    protected void toggle() {
         getElement().callFunction("toggle");
     }
 
@@ -784,7 +784,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * dropdown trigger.
      * </p>
      */
-    public void open() {
+    protected void open() {
         getElement().callFunction("open");
     }
 
@@ -796,7 +796,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * Hide the dropdown content.
      * </p>
      */
-    public void close() {
+    protected void close() {
         getElement().callFunction("close");
     }
 
@@ -817,7 +817,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFocusedChangeListener(
+    protected Registration addFocusedChangeListener(
             ComponentEventListener<FocusedChangeEvent<R>> listener) {
         return addListener(FocusedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -840,7 +840,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addDisabledChangeListener(
+    protected Registration addDisabledChangeListener(
             ComponentEventListener<DisabledChangeEvent<R>> listener) {
         return addListener(DisabledChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -863,7 +863,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addPaperDropdownCloseListener(
+    protected Registration addPaperDropdownCloseListener(
             ComponentEventListener<PaperDropdownCloseEvent<R>> listener) {
         return addListener(PaperDropdownCloseEvent.class,
                 (ComponentEventListener) listener);
@@ -886,7 +886,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addPaperDropdownOpenListener(
+    protected Registration addPaperDropdownOpenListener(
             ComponentEventListener<PaperDropdownOpenEvent<R>> listener) {
         return addListener(PaperDropdownOpenEvent.class,
                 (ComponentEventListener) listener);
@@ -909,7 +909,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addOpenedChangeListener(
+    protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -932,7 +932,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addHorizontalOffsetChangeListener(
+    protected Registration addHorizontalOffsetChangeListener(
             ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
         return addListener(HorizontalOffsetChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -955,7 +955,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVerticalOffsetChangeListener(
+    protected Registration addVerticalOffsetChangeListener(
             ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
         return addListener(VerticalOffsetChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -975,7 +975,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropdownTrigger(Component... components) {
+    protected R addToDropdownTrigger(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "dropdown-trigger");
             getElement().appendChild(component.getElement());
@@ -997,7 +997,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToDropdownContent(Component... components) {
+    protected R addToDropdownContent(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "dropdown-content");
             getElement().appendChild(component.getElement());
@@ -1013,7 +1013,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(Component... components) {
+    protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -1030,7 +1030,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
      * text content as well as child elements that have been added directly to
      * this component using the {@link Element} API.
      */
-    public void removeAll() {
+    protected void removeAll() {
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();
