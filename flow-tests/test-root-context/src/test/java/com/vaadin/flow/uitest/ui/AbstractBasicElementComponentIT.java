@@ -5,12 +5,14 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public abstract class AbstractBasicElementComponentIT extends ChromeBrowserTest {
+public abstract class AbstractBasicElementComponentIT
+        extends ChromeBrowserTest {
 
     @Test
     public void ensureDomUpdatesAndEventsDoSomething() {
@@ -18,7 +20,7 @@ public abstract class AbstractBasicElementComponentIT extends ChromeBrowserTest 
 
         Assert.assertEquals(0, getThankYouCount());
 
-        findElement(By.tagName(Tag.INPUT)).sendKeys("abc");
+        findElement(By.tagName(Tag.INPUT)).sendKeys("abc" + Keys.TAB);
         findElement(By.tagName(Tag.BUTTON)).click();
 
         Assert.assertEquals(1, getThankYouCount());

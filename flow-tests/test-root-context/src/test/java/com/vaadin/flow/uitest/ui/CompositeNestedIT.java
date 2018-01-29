@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -31,7 +32,7 @@ public class CompositeNestedIT extends ChromeBrowserTest {
         WebElement input = findElement(
                 By.id(CompositeNestedView.NAME_FIELD_ID));
         Assert.assertEquals("Name on server:", name.getText());
-        input.sendKeys("123");
+        input.sendKeys("123" + Keys.TAB);
         findElement(By.xpath("//body")).click(); // Make change event happen
         Assert.assertEquals("Name on server: 123", name.getText());
     }

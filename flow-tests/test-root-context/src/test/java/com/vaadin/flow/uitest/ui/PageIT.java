@@ -3,6 +3,7 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -28,7 +29,7 @@ public class PageIT extends ChromeBrowserTest {
         updateTitle("Page title 1");
         verifyTitle("Page title 1");
 
-        findElement(By.id("input")).sendKeys("title 2");
+        findElement(By.id("input")).sendKeys("title 2" + Keys.TAB);
         findElement(By.id("override")).click();
 
         verifyTitle("OVERRIDDEN");
@@ -52,7 +53,7 @@ public class PageIT extends ChromeBrowserTest {
 
     private void updateTitle(String title) {
         findElement(By.id("input")).clear();
-        findElement(By.id("input")).sendKeys(title);
+        findElement(By.id("input")).sendKeys(title + Keys.TAB);
         findElement(By.id("button")).click();
     }
 

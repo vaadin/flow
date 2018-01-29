@@ -48,7 +48,7 @@ public class TemplateComponentMappingIT extends ChromeBrowserTest {
         WebElement input = findElement(
                 By.id(TemplateComponentMappingView.INPUT_ID));
         input.sendKeys(Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE,
-                "Hello");
+                "Hello" + Keys.TAB);
         blurInput();
         Assert.assertEquals("client: input was changed to Hello\n" //
                 + "server: input value changed to Hello", getLog());

@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -44,8 +45,8 @@ public class HistoryIT extends ChromeBrowserTest {
         WebElement forwardButton = findElement(By.id("forward"));
         WebElement clearButton = findElement(By.id("clear"));
 
-        stateField.sendKeys("{'foo':true}");
-        locationField.sendKeys("asdf");
+        stateField.sendKeys("{'foo':true}" + Keys.TAB);
+        locationField.sendKeys("asdf" + Keys.TAB);
         pushButton.click();
 
         Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
@@ -62,7 +63,7 @@ public class HistoryIT extends ChromeBrowserTest {
 
         stateField.clear();
         locationField.clear();
-        locationField.sendKeys("qwerty");
+        locationField.sendKeys("qwerty"+Keys.TAB);
         replaceButton.click();
 
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());

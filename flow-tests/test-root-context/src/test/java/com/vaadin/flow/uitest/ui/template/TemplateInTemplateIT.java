@@ -21,6 +21,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class TemplateInTemplateIT extends ChromeBrowserTest {
 
@@ -29,9 +30,11 @@ public class TemplateInTemplateIT extends ChromeBrowserTest {
         open();
 
         WebElement template = findElement(By.id("template"));
-        WebElement child = getInShadowRoot(template, By.id("child"));
+        TestBenchElement child = (TestBenchElement) getInShadowRoot(template,
+                By.id("child"));
 
-        child.click();
+        child.getPropertyElement("shadowRoot", "firstElementChild").click();
+
         Assert.assertTrue(isElementPresent(By.id("click-handler")));
 
         WebElement text = getInShadowRoot(child, By.id("text"));
