@@ -70,14 +70,6 @@ In this case we would have a `MainLayout` that always encapsulates `MenuBar` whi
 
 In this sample we have 2 parent layers, but there is no restriction in the amount of nested layouts.
 
-[NOTE]
-A layout that is a RouterLayout could have an @Route with a layout and would then have
-its own navigation target, but would also be able to function as a middle layout
-bringing in the parent layout without having an extra `@ParentLayout` annotation.
-
-[NOTE]
-Having `@Route` and `@ParentLayout` defined on the same class will throw on startup.
-
 [#route-prefix]
 == ParentLayout route control using @RoutePrefix
 
