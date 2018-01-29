@@ -18,8 +18,6 @@ package com.vaadin.client.flow.binding;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
@@ -56,6 +54,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -234,7 +233,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -244,7 +243,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-    
+
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -270,7 +269,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         StateNode model = node;
         MapProperty mapProperty = null;
         for (String subProperty : subProperties) {
-            NodeMap elementProperties = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+            NodeMap elementProperties = model
+                    .getMap(NodeFeatures.ELEMENT_PROPERTIES);
             if (!elementProperties.hasPropertyValue(subProperty)) {
                 Console.debug("Ignoring property change for property '"
                         + fullPropertyName
@@ -467,8 +467,19 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BindingContext context,
             JsArray<JsMap<String, Computation>> computationsCollection,
             BinderContext nodeFactory) {
-        context.node.getMap(NodeFeatures.VISIBILITY_DATA)
-                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+        assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
+                + context.node.getId() + " is not an Element";
+        Element element = (Element) context.htmlNode;
+
+        NodeMap visibilityData = context.node
+                .getMap(NodeFeatures.VISIBILITY_DATA);
+        // Store the current "hidden" value to restore it when the element
+        // becomes visible
+
+        visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
+                .setValue(element.getAttribute("hidden"));
+
+        visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(isVisible(context.node));
         updateVisibility(listeners, context, computationsCollection,
                 nodeFactory);
@@ -489,17 +500,26 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
                 + context.node.getId() + " is not an Element";
 
+        NodeMap visibilityData = context.node
+                .getMap(NodeFeatures.VISIBILITY_DATA);
+
         Element element = (Element) context.htmlNode;
 
         if (needsRebind(context.node) && isVisible(context.node)) {
             remove(listeners, context, computationsCollection);
             Reactive.addFlushListener(() -> doBind(context.node, nodeFactory));
         } else if (isVisible(context.node)) {
-            context.node.getMap(NodeFeatures.VISIBILITY_DATA)
-                    .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+            visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                     .setValue(true);
-            WidgetUtil.updateAttribute(element, "hidden", null);
+
+            // restore the previous value
+            WidgetUtil.updateAttribute(element, "hidden", visibilityData
+                    .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY));
         } else {
+            visibilityData
+                    .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
+                    .setValue(element.getAttribute("hidden"));
+
             WidgetUtil.updateAttribute(element, "hidden",
                     Boolean.TRUE.toString());
         }
