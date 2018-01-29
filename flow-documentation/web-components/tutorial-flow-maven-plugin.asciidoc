@@ -26,7 +26,7 @@ mvn jetty:run -Dvaadin.productionMode
 
 The `flow-maven-plugin` plugin has two goals:
 * `copy-production-files` goal. Copies web files to the target directory that is used by Flow in production mode.
-* `transpile-production-files` goal. Transpile and optimize web files.
+* `package-for-production` goal. Transpile, minify and bundle web files.
 
 Usage example: 
 
@@ -47,7 +47,7 @@ Usage example:
             <goals>
                 <!-- specify goals required here -->
                 <goal>copy-production-files</goal>
-                <goal>transpile-production-files</goal>
+                <goal>package-for-production</goal>
             </goals>
         </execution>
     </executions>
@@ -82,9 +82,9 @@ Files are copied from:
 
 All files are filtered so that no file is copied if it matches any glob pattern from `excludes`.
 
-### transpile-production-files
+### package-for-production
 
-The intention of the goal is to process application web files in order to optimize them for production usage: minify them, transpile to ES5, if required.
+The intention of the goal is to process application web files in order to optimize them for production usage: minify them, transpile to ES5 and bundle them (squash all frontend files into bigger files to reduce the amount of server round-trips).
 In order to process the files, special frontend tools are downloaded. The tools are: `node`, `yarn`, `gulp` and a set of libraries required by `gulp` that are installed with `yarn`.
 If any error occurs during the actual processing, it is logged, but the processing does not stop.
 The goal produces two sets of files:
@@ -192,7 +192,7 @@ Each fragment should have its name and at least one file specified.
     <executions>
         <execution>
             <goals>
-                <goal>transpile-production-files</goal>
+                <goal>package-for-production</goal>
             </goals>
             <configuration>
                 <bundle>true</bundle>
@@ -277,7 +277,7 @@ You still have to configure Maven plugin if the json file is not in the default 
     <executions>
         <execution>
             <goals>
-                <goal>transpile-production-files</goal>
+                <goal>package-for-production</goal>
             </goals>
             <configuration>
                 <bundle>true</bundle>
