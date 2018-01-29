@@ -20,6 +20,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.components.it.TestView;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.value.ValueChangeMode;
 
 /**
  * @author Vaadin Ltd.
@@ -56,6 +57,7 @@ public class BinderComponentsValidationView extends TestView {
     public BinderComponentsValidationView() {
         Binder<TestBean> binder = new Binder<>(TestBean.class);
         TextField field = new TextField();
+        field.setValueChangeMode(ValueChangeMode.EAGER);
         field.setId(TEXT_FIELD_ID);
 
         binder.forField(field)
