@@ -80,11 +80,6 @@ public abstract class AbstractRouteRegistryInitializer {
 
         }
 
-        if (route.isAnnotationPresent(ParentLayout.class)) {
-            throw new InvalidRouteLayoutConfigurationException(route
-                    .getCanonicalName()
-                    + " contains both @Route and @ParentLayout annotation. Only use @Route with Route.layout.");
-        }
         if (route.isAnnotationPresent(PageTitle.class)
                 && HasDynamicTitle.class.isAssignableFrom(route)) {
             throw new DuplicateNavigationTitleException(String.format(
