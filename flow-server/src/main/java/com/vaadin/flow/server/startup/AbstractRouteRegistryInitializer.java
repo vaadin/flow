@@ -29,7 +29,6 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
