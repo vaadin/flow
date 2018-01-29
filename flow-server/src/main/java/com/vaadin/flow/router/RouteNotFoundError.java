@@ -19,11 +19,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.theme.NoTheme;
 
 /**
  * This is a basic default error view shown on routing exceptions.
  */
 @Tag(Tag.DIV)
+@NoTheme
 public class RouteNotFoundError extends Component
         implements HasErrorParameter<NotFoundException> {
 

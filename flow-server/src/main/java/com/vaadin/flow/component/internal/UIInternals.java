@@ -63,6 +63,7 @@ import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -574,7 +575,9 @@ public class UIInternals implements Serializable {
      * @param viewLocation
      *            the location of the route target relative to the servlet
      *            serving the UI, not <code>null</code>
-     *            @param path the resolved route path so we can determine what the rendered target is for
+     * @param path
+     *            the resolved route path so we can determine what the rendered
+     *            target is for
      * @param target
      *            the component to show, not <code>null</code>
      * @param layouts
@@ -664,8 +667,11 @@ public class UIInternals implements Serializable {
         } else {
             cacheThemeTranslations(theme);
             theme = null;
-            getLogger().warn("No @Theme defined for {}. See 'trace' level logs for exact components missing theming.",
-                    target.getClass().getName());
+            if (target.getClass().getAnnotation(NoTheme.class) == null) {
+                getLogger().warn(
+                        "No @Theme defined for {}. See 'trace' level logs for exact components missing theming.",
+                        target.getClass().getName());
+            }
         }
     }
 
