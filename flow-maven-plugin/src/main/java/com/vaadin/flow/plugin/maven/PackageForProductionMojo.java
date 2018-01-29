@@ -47,11 +47,11 @@ import com.vaadin.flow.plugin.production.TranspilationStep;
 
 /**
  * Goal that prepares all web files from
- * {@link PackageFormProductionMojo#transpileEs6SourceDirectory} for production
+ * {@link PackageForProductionMojo#transpileEs6SourceDirectory} for production
  * mode: minifies, transpiles and bundles them.
  */
 @Mojo(name = "package-for-production", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
-public class PackageFormProductionMojo extends AbstractMojo {
+public class PackageForProductionMojo extends AbstractMojo {
     @Parameter(name = "transpileEs6SourceDirectory", defaultValue = "${project.build.directory}/frontend/", required = true)
     private File transpileEs6SourceDirectory;
 

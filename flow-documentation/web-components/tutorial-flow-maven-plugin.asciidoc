@@ -84,7 +84,7 @@ All files are filtered so that no file is copied if it matches any glob pattern 
 
 ### package-for-production
 
-The intention of the goal is to process application web files in order to optimize them for production usage: minify them, transpile to ES5, if required and bunbdle them (squash all frontend files into bigger files to improve their loading time).
+The intention of the goal is to process application web files in order to optimize them for production usage: minify them, transpile to ES5 and bundle them (squash all frontend files into bigger files to reduce the amount of server round-trips).
 In order to process the files, special frontend tools are downloaded. The tools are: `node`, `yarn`, `gulp` and a set of libraries required by `gulp` that are installed with `yarn`.
 If any error occurs during the actual processing, it is logged, but the processing does not stop.
 The goal produces two sets of files:
