@@ -137,7 +137,7 @@ public class FrontendDataProvider {
      * @param introspector
      *            the introspector whose classpath will be used for returned
      *            translator
-     * @return
+     * @return the translator which rewrites URLs using the application theme
      */
     protected ThemedURLTranslator getTranslator(File es6SourceDirectory,
             ClassPathIntrospector introspector) {

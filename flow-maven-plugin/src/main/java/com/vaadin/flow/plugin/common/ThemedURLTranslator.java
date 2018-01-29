@@ -169,11 +169,11 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
     }
 
     private Class<? extends AbstractTheme> findTheme() {
-        Class<? extends Annotation> themeClass = loadClassInProjectClassLoader(
+        Class<? extends Annotation> theme = loadClassInProjectClassLoader(
                 Theme.class.getName());
         Map<Class<? extends AbstractTheme>, List<Class<?>>> themedComponents = getAnnotatedClasses(
-                themeClass).filter(this::isNavigationTarget).collect(
-                        Collectors.toMap(clazz -> getTheme(clazz, themeClass),
+                theme).filter(this::isNavigationTarget).collect(
+                        Collectors.toMap(clazz -> getTheme(clazz, theme),
                                 Collections::singletonList, this::mergeLists));
         if (themedComponents.size() > 1) {
             throw new IllegalStateException(

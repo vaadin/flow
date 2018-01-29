@@ -51,7 +51,6 @@ import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableSet;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * @author Vaadin Ltd.
@@ -87,20 +86,6 @@ public class FrontendDataProviderTest {
         protected ThemedURLTranslator getTranslator(File es6SourceDirectory,
                 ClassPathIntrospector introspector) {
             return translator;
-        }
-
-    }
-
-    public static class TestTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return "src/";
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return "theme/myTheme/";
         }
 
     }
@@ -193,7 +178,7 @@ public class FrontendDataProviderTest {
         File src = new File(sourceDirectory, "src");
         src.mkdir();
         createFile(src, "component1.html");
-        File a = createFile(src, "component2.html");
+        createFile(src, "component2.html");
 
         File theme = new File(sourceDirectory, "theme");
         theme.mkdir();

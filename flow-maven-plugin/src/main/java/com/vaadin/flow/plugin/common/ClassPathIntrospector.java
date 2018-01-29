@@ -57,12 +57,12 @@ public abstract class ClassPathIntrospector {
      * Creates a new instance of class path introspector using the
      * {@code otherIntrpespector}'s reflection tools.
      *
-     * @param otherIntrpespector
+     * @param otherIntrospector
      *            the introspector whose reflection tools will be reused
      */
-    protected ClassPathIntrospector(ClassPathIntrospector otherIntrpespector) {
-        projectClassLoader = otherIntrpespector.projectClassLoader;
-        reflections = otherIntrpespector.reflections;
+    protected ClassPathIntrospector(ClassPathIntrospector otherIntrospector) {
+        projectClassLoader = otherIntrospector.projectClassLoader;
+        reflections = otherIntrospector.reflections;
     }
 
     /**
@@ -91,7 +91,8 @@ public abstract class ClassPathIntrospector {
      *
      * @param className
      *            the FQN of the class to load
-     * @return
+     * @return the class with the given {@code className} loaded by the project
+     *         class loader
      */
     @SuppressWarnings("unchecked")
     protected <T> Class<T> loadClassInProjectClassLoader(String className) {

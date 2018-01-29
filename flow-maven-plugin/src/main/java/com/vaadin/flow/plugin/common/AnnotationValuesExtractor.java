@@ -29,7 +29,6 @@ import java.util.stream.Stream;
  * @author Vaadin Ltd.
  */
 public class AnnotationValuesExtractor extends ClassPathIntrospector {
-    private static final String LAYOUT = "layout";
 
     /**
      * Prepares the class to extract annotations from the project classes
