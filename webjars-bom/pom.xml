@@ -376,11 +376,6 @@
                 <artifactId>vaadin-lumo-styles</artifactId>
                 <version>1.0.0-alpha3</version>
             </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-vaadin-vaadin-lumo-styles</artifactId>
-                <version>v1.0.0-alpha3</version>
-            </dependency>
             <!-- dependency for paper Elements. -->
             <dependency>
                 <groupId>org.webjars.bower</groupId>
