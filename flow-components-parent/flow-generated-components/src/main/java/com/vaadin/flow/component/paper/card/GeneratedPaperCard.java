@@ -21,14 +21,13 @@ import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasComponents;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-card#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-card")
 @HtmlImport("frontend://bower_components/paper-card/paper-card.html")
-public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
-        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -43,7 +42,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @return the {@code heading} property from the webcomponent
      */
-    public String getHeading() {
+    protected String getHeadingString() {
         return getElement().getProperty("heading");
     }
 
@@ -58,7 +57,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param heading
      *            the String value to set
      */
-    public void setHeading(String heading) {
+    protected void setHeading(String heading) {
         getElement().setProperty("heading", heading == null ? "" : heading);
     }
 
@@ -75,7 +74,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @return the {@code image} property from the webcomponent
      */
-    public String getImage() {
+    protected String getImageString() {
         return getElement().getProperty("image");
     }
 
@@ -90,7 +89,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param image
      *            the String value to set
      */
-    public void setImage(String image) {
+    protected void setImage(String image) {
         getElement().setProperty("image", image == null ? "" : image);
     }
 
@@ -107,7 +106,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @return the {@code alt} property from the webcomponent
      */
-    public String getAlt() {
+    protected String getAltString() {
         return getElement().getProperty("alt");
     }
 
@@ -122,7 +121,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param alt
      *            the String value to set
      */
-    public void setAlt(String alt) {
+    protected void setAlt(String alt) {
         getElement().setProperty("alt", alt == null ? "" : alt);
     }
 
@@ -140,7 +139,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @return the {@code preloadImage} property from the webcomponent
      */
-    public boolean isPreloadImage() {
+    protected boolean isPreloadImageBoolean() {
         return getElement().getProperty("preloadImage", false);
     }
 
@@ -156,7 +155,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param preloadImage
      *            the boolean value to set
      */
-    public void setPreloadImage(boolean preloadImage) {
+    protected void setPreloadImage(boolean preloadImage) {
         getElement().setProperty("preloadImage", preloadImage);
     }
 
@@ -174,7 +173,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @return the {@code fadeImage} property from the webcomponent
      */
-    public boolean isFadeImage() {
+    protected boolean isFadeImageBoolean() {
         return getElement().getProperty("fadeImage", false);
     }
 
@@ -190,7 +189,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param fadeImage
      *            the boolean value to set
      */
-    public void setFadeImage(boolean fadeImage) {
+    protected void setFadeImage(boolean fadeImage) {
         getElement().setProperty("fadeImage", fadeImage);
     }
 
@@ -209,7 +208,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @return the {@code placeholderImage} property from the webcomponent
      */
-    public String getPlaceholderImage() {
+    protected String getPlaceholderImageString() {
         return getElement().getProperty("placeholderImage");
     }
 
@@ -226,7 +225,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param placeholderImage
      *            the String value to set
      */
-    public void setPlaceholderImage(String placeholderImage) {
+    protected void setPlaceholderImage(String placeholderImage) {
         getElement().setProperty("placeholderImage",
                 placeholderImage == null ? "" : placeholderImage);
     }
@@ -244,7 +243,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @return the {@code elevation} property from the webcomponent
      */
-    public double getElevation() {
+    protected double getElevationDouble() {
         return getElement().getProperty("elevation", 0.0);
     }
 
@@ -259,7 +258,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param elevation
      *            the double value to set
      */
-    public void setElevation(double elevation) {
+    protected void setElevation(double elevation) {
         getElement().setProperty("elevation", elevation);
     }
 
@@ -277,7 +276,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @return the {@code animatedShadow} property from the webcomponent
      */
-    public boolean isAnimatedShadow() {
+    protected boolean isAnimatedShadowBoolean() {
         return getElement().getProperty("animatedShadow", false);
     }
 
@@ -293,7 +292,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * @param animatedShadow
      *            the boolean value to set
      */
-    public void setAnimatedShadow(boolean animatedShadow) {
+    protected void setAnimatedShadow(boolean animatedShadow) {
         getElement().setProperty("animatedShadow", animatedShadow);
     }
 
@@ -311,24 +310,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>> extends
      * 
      * @return the {@code animated} property from the webcomponent
      */
-    public boolean isAnimated() {
+    protected boolean isAnimatedBoolean() {
         return getElement().getProperty("animated", false);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedPaperCard(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedPaperCard() {
     }
 }

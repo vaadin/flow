@@ -31,7 +31,7 @@ import com.vaadin.flow.shared.Registration;
         "WebComponent: MonthCalendarElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-month-calendar")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-month-calendar.html")
-public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar<R>>
+public abstract class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -48,7 +48,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @return the {@code month} property from the webcomponent
      */
-    protected JsonObject protectedGetMonth() {
+    protected JsonObject getMonthJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("month");
     }
 
@@ -81,7 +81,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @return the {@code selectedDate} property from the webcomponent
      */
-    protected JsonObject protectedGetSelectedDate() {
+    protected JsonObject getSelectedDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("selectedDate");
     }
 
@@ -113,7 +113,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @return the {@code focusedDate} property from the webcomponent
      */
-    protected JsonObject protectedGetFocusedDate() {
+    protected JsonObject getFocusedDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("focusedDate");
     }
 
@@ -138,7 +138,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @return the {@code showWeekNumbers} property from the webcomponent
      */
-    public boolean isShowWeekNumbers() {
+    protected boolean isShowWeekNumbersBoolean() {
         return getElement().getProperty("showWeekNumbers", false);
     }
 
@@ -146,7 +146,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * @param showWeekNumbers
      *            the boolean value to set
      */
-    public void setShowWeekNumbers(boolean showWeekNumbers) {
+    protected void setShowWeekNumbers(boolean showWeekNumbers) {
         getElement().setProperty("showWeekNumbers", showWeekNumbers);
     }
 
@@ -156,7 +156,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @return the {@code i18n} property from the webcomponent
      */
-    protected JsonObject protectedGetI18n() {
+    protected JsonObject getI18nJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("i18n");
     }
 
@@ -181,7 +181,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @return the {@code ignoreTaps} property from the webcomponent
      */
-    public boolean isIgnoreTaps() {
+    protected boolean isIgnoreTapsBoolean() {
         return getElement().getProperty("ignoreTaps", false);
     }
 
@@ -196,7 +196,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * @param ignoreTaps
      *            the boolean value to set
      */
-    public void setIgnoreTaps(boolean ignoreTaps) {
+    protected void setIgnoreTaps(boolean ignoreTaps) {
         getElement().setProperty("ignoreTaps", ignoreTaps);
     }
 
@@ -214,7 +214,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @return the {@code minDate} property from the webcomponent
      */
-    protected JsonObject protectedGetMinDate() {
+    protected JsonObject getMinDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("minDate");
     }
 
@@ -247,7 +247,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @return the {@code maxDate} property from the webcomponent
      */
-    protected JsonObject protectedGetMaxDate() {
+    protected JsonObject getMaxDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("maxDate");
     }
 
@@ -272,7 +272,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * 
      * @return the {@code disabled} property from the webcomponent
      */
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -293,7 +293,7 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedDateChangeListener(
+    protected Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
         return addListener(SelectedDateChangeEvent.class,
                 (ComponentEventListener) listener);

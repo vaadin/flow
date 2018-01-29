@@ -33,7 +33,7 @@ import com.vaadin.flow.shared.Registration;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker-overlay-content")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-overlay-content.html")
-public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDatePickerOverlayContent<R>>
+public abstract class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDatePickerOverlayContent<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -49,7 +49,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * 
      * @return the {@code selectedDate} property from the webcomponent
      */
-    protected JsonObject protectedGetSelectedDate() {
+    protected JsonObject getSelectedDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("selectedDate");
     }
 
@@ -81,7 +81,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * 
      * @return the {@code focusedDate} property from the webcomponent
      */
-    protected JsonObject protectedGetFocusedDate() {
+    protected JsonObject getFocusedDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("focusedDate");
     }
 
@@ -113,7 +113,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * 
      * @return the {@code initialPosition} property from the webcomponent
      */
-    protected JsonObject protectedGetInitialPosition() {
+    protected JsonObject getInitialPositionJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("initialPosition");
     }
 
@@ -138,7 +138,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * 
      * @return the {@code i18n} property from the webcomponent
      */
-    protected JsonObject protectedGetI18n() {
+    protected JsonObject getI18nJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("i18n");
     }
 
@@ -156,7 +156,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * 
      * @return the {@code showWeekNumbers} property from the webcomponent
      */
-    public boolean isShowWeekNumbers() {
+    protected boolean isShowWeekNumbersBoolean() {
         return getElement().getProperty("showWeekNumbers", false);
     }
 
@@ -164,7 +164,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * @param showWeekNumbers
      *            the boolean value to set
      */
-    public void setShowWeekNumbers(boolean showWeekNumbers) {
+    protected void setShowWeekNumbers(boolean showWeekNumbers) {
         getElement().setProperty("showWeekNumbers", showWeekNumbers);
     }
 
@@ -182,7 +182,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * 
      * @return the {@code minDate} property from the webcomponent
      */
-    protected JsonObject protectedGetMinDate() {
+    protected JsonObject getMinDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("minDate");
     }
 
@@ -215,7 +215,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * 
      * @return the {@code maxDate} property from the webcomponent
      */
-    protected JsonObject protectedGetMaxDate() {
+    protected JsonObject getMaxDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("maxDate");
     }
 
@@ -247,7 +247,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * 
      * @return the {@code label} property from the webcomponent
      */
-    public String getLabel() {
+    protected String getLabelString() {
         return getElement().getProperty("label");
     }
 
@@ -262,11 +262,11 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * @param label
      *            the String value to set
      */
-    public void setLabel(String label) {
+    protected void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
-    public void announceFocusedDate() {
+    protected void announceFocusedDate() {
         getElement().callFunction("announceFocusedDate");
     }
 
@@ -278,7 +278,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * Focuses the cancel button
      * </p>
      */
-    public void focusCancel() {
+    protected void focusCancel() {
         getElement().callFunction("focusCancel");
     }
 
@@ -346,7 +346,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addScrollAnimationFinishedListener(
+    protected Registration addScrollAnimationFinishedListener(
             ComponentEventListener<ScrollAnimationFinishedEvent<R>> listener) {
         return addListener(ScrollAnimationFinishedEvent.class,
                 (ComponentEventListener) listener);
@@ -369,7 +369,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedDateChangeListener(
+    protected Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
         return addListener(SelectedDateChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -392,7 +392,7 @@ public class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDa
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFocusedDateChangeListener(
+    protected Registration addFocusedDateChangeListener(
             ComponentEventListener<FocusedDateChangeEvent<R>> listener) {
         return addListener(FocusedDateChangeEvent.class,
                 (ComponentEventListener) listener);

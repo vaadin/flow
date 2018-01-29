@@ -26,7 +26,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
         "WebComponent: paper-spinner-lite#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-spinner-lite")
 @HtmlImport("frontend://bower_components/paper-spinner/paper-spinner-lite.html")
-public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
+public abstract class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -42,7 +42,7 @@ public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
      * 
      * @return the {@code active} property from the webcomponent
      */
-    public boolean isActive() {
+    protected boolean isActiveBoolean() {
         return getElement().getProperty("active", false);
     }
 
@@ -57,7 +57,7 @@ public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
      * @param active
      *            the boolean value to set
      */
-    public void setActive(boolean active) {
+    protected void setActive(boolean active) {
         getElement().setProperty("active", active);
     }
 
@@ -76,7 +76,7 @@ public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
      * 
      * @return the {@code alt} property from the webcomponent
      */
-    public String getAlt() {
+    protected String getAltString() {
         return getElement().getProperty("alt");
     }
 
@@ -93,7 +93,7 @@ public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
      * @param alt
      *            the String value to set
      */
-    public void setAlt(String alt) {
+    protected void setAlt(String alt) {
         getElement().setProperty("alt", alt == null ? "" : alt);
     }
 }

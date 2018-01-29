@@ -22,8 +22,6 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.HasValue;
-import java.util.Objects;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.DomEvent;
@@ -127,9 +125,8 @@ import com.vaadin.flow.dom.Element;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-text-area")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-area.html")
-public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
-        extends Component
-        implements HasStyle, Focusable<R>, HasValue<R, String> {
+public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
+        extends Component implements HasStyle, Focusable<R> {
 
     /**
      * <p>
@@ -144,7 +141,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code autofocus} property from the webcomponent
      */
-    public boolean isAutofocus() {
+    protected boolean isAutofocusBoolean() {
         return getElement().getProperty("autofocus", false);
     }
 
@@ -159,7 +156,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param autofocus
      *            the boolean value to set
      */
-    public void setAutofocus(boolean autofocus) {
+    protected void setAutofocus(boolean autofocus) {
         getElement().setProperty("autofocus", autofocus);
     }
 
@@ -176,7 +173,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code disabled} property from the webcomponent
      */
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -191,7 +188,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
@@ -211,7 +208,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code autocomplete} property from the webcomponent
      */
-    public String getAutocomplete() {
+    protected String getAutocompleteString() {
         return getElement().getProperty("autocomplete");
     }
 
@@ -229,7 +226,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param autocomplete
      *            the String value to set
      */
-    public void setAutocomplete(String autocomplete) {
+    protected void setAutocomplete(String autocomplete) {
         getElement().setProperty("autocomplete",
                 autocomplete == null ? "" : autocomplete);
     }
@@ -247,7 +244,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code errorMessage} property from the webcomponent
      */
-    public String getErrorMessage() {
+    protected String getErrorMessageString() {
         return getElement().getProperty("errorMessage");
     }
 
@@ -262,7 +259,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param errorMessage
      *            the String value to set
      */
-    public void setErrorMessage(String errorMessage) {
+    protected void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
     }
@@ -280,7 +277,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code label} property from the webcomponent
      */
-    public String getLabel() {
+    protected String getLabelString() {
         return getElement().getProperty("label");
     }
 
@@ -295,7 +292,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param label
      *            the String value to set
      */
-    public void setLabel(String label) {
+    protected void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -313,7 +310,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code maxlength} property from the webcomponent
      */
-    public double getMaxlength() {
+    protected double getMaxlengthDouble() {
         return getElement().getProperty("maxlength", 0.0);
     }
 
@@ -329,7 +326,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param maxlength
      *            the double value to set
      */
-    public void setMaxlength(double maxlength) {
+    protected void setMaxlength(double maxlength) {
         getElement().setProperty("maxlength", maxlength);
     }
 
@@ -347,7 +344,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code minlength} property from the webcomponent
      */
-    public double getMinlength() {
+    protected double getMinlengthDouble() {
         return getElement().getProperty("minlength", 0.0);
     }
 
@@ -363,7 +360,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param minlength
      *            the double value to set
      */
-    public void setMinlength(double minlength) {
+    protected void setMinlength(double minlength) {
         getElement().setProperty("minlength", minlength);
     }
 
@@ -380,7 +377,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code name} property from the webcomponent
      */
-    public String getName() {
+    protected String getNameString() {
         return getElement().getProperty("name");
     }
 
@@ -395,7 +392,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(String name) {
+    protected void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -412,7 +409,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code placeholder} property from the webcomponent
      */
-    public String getPlaceholder() {
+    protected String getPlaceholderString() {
         return getElement().getProperty("placeholder");
     }
 
@@ -427,7 +424,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param placeholder
      *            the String value to set
      */
-    public void setPlaceholder(String placeholder) {
+    protected void setPlaceholder(String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -446,7 +443,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code readonly} property from the webcomponent
      */
-    public boolean isReadonly() {
+    protected boolean isReadonlyBoolean() {
         return getElement().getProperty("readonly", false);
     }
 
@@ -462,7 +459,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param readonly
      *            the boolean value to set
      */
-    public void setReadonly(boolean readonly) {
+    protected void setReadonly(boolean readonly) {
         getElement().setProperty("readonly", readonly);
     }
 
@@ -479,7 +476,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code required} property from the webcomponent
      */
-    public boolean isRequired() {
+    protected boolean isRequiredBoolean() {
         return getElement().getProperty("required", false);
     }
 
@@ -494,7 +491,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param required
      *            the boolean value to set
      */
-    public void setRequired(boolean required) {
+    protected void setRequired(boolean required) {
         getElement().setProperty("required", required);
     }
 
@@ -513,15 +510,8 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @return the {@code value} property from the webcomponent
      */
     @Synchronize(property = "value", value = "value-changed")
-    @Override
-    public String getValue() {
-        String value = getElement().getProperty("value");
-        return value == null ? getEmptyValue() : value;
-    }
-
-    @Override
-    public String getEmptyValue() {
-        return "";
+    protected String getValueString() {
+        return getElement().getProperty("value");
     }
 
     /**
@@ -536,12 +526,8 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param value
      *            the String value to set
      */
-    @Override
-    public void setValue(String value) {
-        Objects.requireNonNull(value, "value cannot be null");
-        if (!Objects.equals(value, getValue())) {
-            getElement().setProperty("value", value);
-        }
+    protected void setValue(String value) {
+        getElement().setProperty("value", value == null ? "" : value);
     }
 
     /**
@@ -558,7 +544,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @return the {@code invalid} property from the webcomponent
      */
     @Synchronize(property = "invalid", value = "invalid-changed")
-    public boolean isInvalid() {
+    protected boolean isInvalidBoolean() {
         return getElement().getProperty("invalid", false);
     }
 
@@ -573,7 +559,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param invalid
      *            the boolean value to set
      */
-    public void setInvalid(boolean invalid) {
+    protected void setInvalid(boolean invalid) {
         getElement().setProperty("invalid", invalid);
     }
 
@@ -591,7 +577,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * 
      * @return the {@code preventInvalidInput} property from the webcomponent
      */
-    public boolean isPreventInvalidInput() {
+    protected boolean isPreventInvalidInputBoolean() {
         return getElement().getProperty("preventInvalidInput", false);
     }
 
@@ -607,7 +593,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @param preventInvalidInput
      *            the boolean value to set
      */
-    public void setPreventInvalidInput(boolean preventInvalidInput) {
+    protected void setPreventInvalidInput(boolean preventInvalidInput) {
         getElement().setProperty("preventInvalidInput", preventInvalidInput);
     }
 
@@ -645,6 +631,37 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
     protected void validate() {
     }
 
+    @DomEvent("value-changed")
+    public static class ValueChangeEvent<R extends GeneratedVaadinTextArea<R>>
+            extends ComponentEvent<R> {
+        private final String value;
+
+        public ValueChangeEvent(R source, boolean fromClient,
+                @EventData("event.value") String value) {
+            super(source, fromClient);
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code value-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Registration addValueChangeListener(
+            ComponentEventListener<ValueChangeEvent<R>> listener) {
+        return addListener(ValueChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
     @DomEvent("invalid-changed")
     public static class InvalidChangeEvent<R extends GeneratedVaadinTextArea<R>>
             extends ComponentEvent<R> {
@@ -670,7 +687,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addInvalidChangeListener(
+    protected Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
         return addListener(InvalidChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -690,7 +707,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrefix(Component... components) {
+    protected R addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
@@ -712,7 +729,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSuffix(Component... components) {
+    protected R addToSuffix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "suffix");
             getElement().appendChild(component.getElement());
@@ -728,7 +745,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * @throws IllegalArgumentException
      *             if any of the components is not a child of this component.
      */
-    public void remove(Component... components) {
+    protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -745,7 +762,7 @@ public class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
      * text content as well as child elements that have been added directly to
      * this component using the {@link Element} API.
      */
-    public void removeAll() {
+    protected void removeAll() {
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();

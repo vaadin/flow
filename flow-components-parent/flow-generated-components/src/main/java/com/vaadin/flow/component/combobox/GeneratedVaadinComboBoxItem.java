@@ -65,7 +65,7 @@ import elemental.json.JsonObject;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-item.html")
-public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R>>
+public abstract class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -81,7 +81,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code index} property from the webcomponent
      */
-    public double getIndex() {
+    protected double getIndexDouble() {
         return getElement().getProperty("index", 0.0);
     }
 
@@ -96,7 +96,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param index
      *            the double value to set
      */
-    public void setIndex(double index) {
+    protected void setIndex(double index) {
         getElement().setProperty("index", index);
     }
 
@@ -113,7 +113,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code item} property from the webcomponent
      */
-    public String getItemString() {
+    protected String getItemStringString() {
         return getElement().getProperty("item");
     }
 
@@ -130,7 +130,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code item} property from the webcomponent
      */
-    protected JsonObject protectedGetItemObject() {
+    protected JsonObject getItemObjectJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("item");
     }
 
@@ -145,7 +145,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param item
      *            the String value to set
      */
-    public void setItem(String item) {
+    protected void setItem(String item) {
         getElement().setProperty("item", item == null ? "" : item);
     }
 
@@ -177,7 +177,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code label} property from the webcomponent
      */
-    public String getLabel() {
+    protected String getLabelString() {
         return getElement().getProperty("label");
     }
 
@@ -192,7 +192,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param label
      *            the String value to set
      */
-    public void setLabel(String label) {
+    protected void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -209,7 +209,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code selected} property from the webcomponent
      */
-    public boolean isSelected() {
+    protected boolean isSelectedBoolean() {
         return getElement().getProperty("selected", false);
     }
 
@@ -224,7 +224,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param selected
      *            the boolean value to set
      */
-    public void setSelected(boolean selected) {
+    protected void setSelected(boolean selected) {
         getElement().setProperty("selected", selected);
     }
 
@@ -241,7 +241,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * 
      * @return the {@code focused} property from the webcomponent
      */
-    public boolean isFocused() {
+    protected boolean isFocusedBoolean() {
         return getElement().getProperty("focused", false);
     }
 
@@ -256,7 +256,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
      * @param focused
      *            the boolean value to set
      */
-    public void setFocused(boolean focused) {
+    protected void setFocused(boolean focused) {
         getElement().setProperty("focused", focused);
     }
 }

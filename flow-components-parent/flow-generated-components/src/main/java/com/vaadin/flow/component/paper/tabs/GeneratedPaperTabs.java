@@ -29,14 +29,13 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.HasComponents;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: paper-tabs#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("paper-tabs")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tabs.html")
-public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
-        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -58,7 +57,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code attrForSelected} property from the webcomponent
      */
-    public String getAttrForSelected() {
+    protected String getAttrForSelectedString() {
         return getElement().getProperty("attrForSelected");
     }
 
@@ -80,7 +79,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param attrForSelected
      *            the String value to set
      */
-    public void setAttrForSelected(String attrForSelected) {
+    protected void setAttrForSelected(String attrForSelected) {
         getElement().setProperty("attrForSelected",
                 attrForSelected == null ? "" : attrForSelected);
     }
@@ -100,7 +99,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return the {@code selected} property from the webcomponent
      */
     @Synchronize(property = "selected", value = "selected-changed")
-    public double getSelectedNumber() {
+    protected double getSelectedNumberDouble() {
         return getElement().getProperty("selected", 0.0);
     }
 
@@ -119,7 +118,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return the {@code selected} property from the webcomponent
      */
     @Synchronize(property = "selected", value = "selected-changed")
-    public String getSelectedString() {
+    protected String getSelectedStringString() {
         return getElement().getProperty("selected");
     }
 
@@ -135,7 +134,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selected
      *            the double value to set
      */
-    public void setSelected(double selected) {
+    protected void setSelected(double selected) {
         getElement().setProperty("selected", selected);
     }
 
@@ -151,7 +150,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selected
      *            the String value to set
      */
-    public void setSelected(String selected) {
+    protected void setSelected(String selected) {
         getElement().setProperty("selected", selected == null ? "" : selected);
     }
 
@@ -168,7 +167,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code selectedItem} property from the webcomponent
      */
-    protected JsonObject protectedGetSelectedItem() {
+    protected JsonObject getSelectedItemJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("selectedItem");
     }
 
@@ -187,7 +186,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code activateEvent} property from the webcomponent
      */
-    public String getActivateEvent() {
+    protected String getActivateEventString() {
         return getElement().getProperty("activateEvent");
     }
 
@@ -204,7 +203,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param activateEvent
      *            the String value to set
      */
-    public void setActivateEvent(String activateEvent) {
+    protected void setActivateEvent(String activateEvent) {
         getElement().setProperty("activateEvent",
                 activateEvent == null ? "" : activateEvent);
     }
@@ -215,7 +214,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code selectable} property from the webcomponent
      */
-    public String getSelectable() {
+    protected String getSelectableString() {
         return getElement().getProperty("selectable");
     }
 
@@ -223,7 +222,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectable
      *            the String value to set
      */
-    public void setSelectable(String selectable) {
+    protected void setSelectable(String selectable) {
         getElement().setProperty("selectable",
                 selectable == null ? "" : selectable);
     }
@@ -241,7 +240,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code selectedClass} property from the webcomponent
      */
-    public String getSelectedClass() {
+    protected String getSelectedClassString() {
         return getElement().getProperty("selectedClass");
     }
 
@@ -256,7 +255,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectedClass
      *            the String value to set
      */
-    public void setSelectedClass(String selectedClass) {
+    protected void setSelectedClass(String selectedClass) {
         getElement().setProperty("selectedClass",
                 selectedClass == null ? "" : selectedClass);
     }
@@ -274,7 +273,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code selectedAttribute} property from the webcomponent
      */
-    public String getSelectedAttribute() {
+    protected String getSelectedAttributeString() {
         return getElement().getProperty("selectedAttribute");
     }
 
@@ -289,7 +288,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param selectedAttribute
      *            the String value to set
      */
-    public void setSelectedAttribute(String selectedAttribute) {
+    protected void setSelectedAttribute(String selectedAttribute) {
         getElement().setProperty("selectedAttribute",
                 selectedAttribute == null ? "" : selectedAttribute);
     }
@@ -308,7 +307,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code fallbackSelection} property from the webcomponent
      */
-    public String getFallbackSelection() {
+    protected String getFallbackSelectionString() {
         return getElement().getProperty("fallbackSelection");
     }
 
@@ -324,7 +323,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param fallbackSelection
      *            the String value to set
      */
-    public void setFallbackSelection(String fallbackSelection) {
+    protected void setFallbackSelection(String fallbackSelection) {
         getElement().setProperty("fallbackSelection",
                 fallbackSelection == null ? "" : fallbackSelection);
     }
@@ -343,7 +342,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return the {@code items} property from the webcomponent
      */
     @Synchronize(property = "items", value = "items-changed")
-    protected JsonArray protectedGetItems() {
+    protected JsonArray getItemsJsonArray() {
         return (JsonArray) getElement().getPropertyRaw("items");
     }
 
@@ -360,7 +359,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code multi} property from the webcomponent
      */
-    public boolean isMulti() {
+    protected boolean isMultiBoolean() {
         return getElement().getProperty("multi", false);
     }
 
@@ -375,7 +374,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param multi
      *            the boolean value to set
      */
-    public void setMulti(boolean multi) {
+    protected void setMulti(boolean multi) {
         getElement().setProperty("multi", multi);
     }
 
@@ -393,7 +392,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code selectedValues} property from the webcomponent
      */
-    protected JsonArray protectedGetSelectedValues() {
+    protected JsonArray getSelectedValuesJsonArray() {
         return (JsonArray) getElement().getPropertyRaw("selectedValues");
     }
 
@@ -426,7 +425,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code selectedItems} property from the webcomponent
      */
-    protected JsonArray protectedGetSelectedItems() {
+    protected JsonArray getSelectedItemsJsonArray() {
         return (JsonArray) getElement().getPropertyRaw("selectedItems");
     }
 
@@ -444,7 +443,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code keyEventTarget} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyEventTarget() {
+    protected JsonObject getKeyEventTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
     }
 
@@ -479,7 +478,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return the {@code stopKeyboardEventPropagation} property from the
      *         webcomponent
      */
-    public boolean isStopKeyboardEventPropagation() {
+    protected boolean isStopKeyboardEventPropagationBoolean() {
         return getElement().getProperty("stopKeyboardEventPropagation", false);
     }
 
@@ -495,7 +494,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param stopKeyboardEventPropagation
      *            the boolean value to set
      */
-    public void setStopKeyboardEventPropagation(
+    protected void setStopKeyboardEventPropagation(
             boolean stopKeyboardEventPropagation) {
         getElement().setProperty("stopKeyboardEventPropagation",
                 stopKeyboardEventPropagation);
@@ -507,7 +506,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code keyBindings} property from the webcomponent
      */
-    protected JsonObject protectedGetKeyBindings() {
+    protected JsonObject getKeyBindingsJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("keyBindings");
     }
 
@@ -532,7 +531,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code focusedItem} property from the webcomponent
      */
-    protected JsonObject protectedGetFocusedItem() {
+    protected JsonObject getFocusedItemJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("focusedItem");
     }
 
@@ -551,7 +550,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code attrForItemTitle} property from the webcomponent
      */
-    public String getAttrForItemTitle() {
+    protected String getAttrForItemTitleString() {
         return getElement().getProperty("attrForItemTitle");
     }
 
@@ -568,7 +567,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param attrForItemTitle
      *            the String value to set
      */
-    public void setAttrForItemTitle(String attrForItemTitle) {
+    protected void setAttrForItemTitle(String attrForItemTitle) {
         getElement().setProperty("attrForItemTitle",
                 attrForItemTitle == null ? "" : attrForItemTitle);
     }
@@ -579,7 +578,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code disabled} property from the webcomponent
      */
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -587,7 +586,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
@@ -606,7 +605,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code noink} property from the webcomponent
      */
-    public boolean isNoink() {
+    protected boolean isNoinkBoolean() {
         return getElement().getProperty("noink", false);
     }
 
@@ -623,7 +622,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param noink
      *            the boolean value to set
      */
-    public void setNoink(boolean noink) {
+    protected void setNoink(boolean noink) {
         getElement().setProperty("noink", noink);
     }
 
@@ -640,7 +639,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code noBar} property from the webcomponent
      */
-    public boolean isNoBar() {
+    protected boolean isNoBarBoolean() {
         return getElement().getProperty("noBar", false);
     }
 
@@ -655,7 +654,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param noBar
      *            the boolean value to set
      */
-    public void setNoBar(boolean noBar) {
+    protected void setNoBar(boolean noBar) {
         getElement().setProperty("noBar", noBar);
     }
 
@@ -672,7 +671,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code noSlide} property from the webcomponent
      */
-    public boolean isNoSlide() {
+    protected boolean isNoSlideBoolean() {
         return getElement().getProperty("noSlide", false);
     }
 
@@ -687,7 +686,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param noSlide
      *            the boolean value to set
      */
-    public void setNoSlide(boolean noSlide) {
+    protected void setNoSlide(boolean noSlide) {
         getElement().setProperty("noSlide", noSlide);
     }
 
@@ -705,7 +704,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code scrollable} property from the webcomponent
      */
-    public boolean isScrollable() {
+    protected boolean isScrollableBoolean() {
         return getElement().getProperty("scrollable", false);
     }
 
@@ -721,7 +720,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param scrollable
      *            the boolean value to set
      */
-    public void setScrollable(boolean scrollable) {
+    protected void setScrollable(boolean scrollable) {
         getElement().setProperty("scrollable", scrollable);
     }
 
@@ -739,7 +738,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code fitContainer} property from the webcomponent
      */
-    public boolean isFitContainer() {
+    protected boolean isFitContainerBoolean() {
         return getElement().getProperty("fitContainer", false);
     }
 
@@ -755,7 +754,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param fitContainer
      *            the boolean value to set
      */
-    public void setFitContainer(boolean fitContainer) {
+    protected void setFitContainer(boolean fitContainer) {
         getElement().setProperty("fitContainer", fitContainer);
     }
 
@@ -772,7 +771,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code disableDrag} property from the webcomponent
      */
-    public boolean isDisableDrag() {
+    protected boolean isDisableDragBoolean() {
         return getElement().getProperty("disableDrag", false);
     }
 
@@ -787,7 +786,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param disableDrag
      *            the boolean value to set
      */
-    public void setDisableDrag(boolean disableDrag) {
+    protected void setDisableDrag(boolean disableDrag) {
         getElement().setProperty("disableDrag", disableDrag);
     }
 
@@ -805,7 +804,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code hideScrollButtons} property from the webcomponent
      */
-    public boolean isHideScrollButtons() {
+    protected boolean isHideScrollButtonsBoolean() {
         return getElement().getProperty("hideScrollButtons", false);
     }
 
@@ -821,7 +820,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param hideScrollButtons
      *            the boolean value to set
      */
-    public void setHideScrollButtons(boolean hideScrollButtons) {
+    protected void setHideScrollButtons(boolean hideScrollButtons) {
         getElement().setProperty("hideScrollButtons", hideScrollButtons);
     }
 
@@ -839,7 +838,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code alignBottom} property from the webcomponent
      */
-    public boolean isAlignBottom() {
+    protected boolean isAlignBottomBoolean() {
         return getElement().getProperty("alignBottom", false);
     }
 
@@ -855,7 +854,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param alignBottom
      *            the boolean value to set
      */
-    public void setAlignBottom(boolean alignBottom) {
+    protected void setAlignBottom(boolean alignBottom) {
         getElement().setProperty("alignBottom", alignBottom);
     }
 
@@ -872,7 +871,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code autoselect} property from the webcomponent
      */
-    public boolean isAutoselect() {
+    protected boolean isAutoselectBoolean() {
         return getElement().getProperty("autoselect", false);
     }
 
@@ -887,7 +886,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param autoselect
      *            the boolean value to set
      */
-    public void setAutoselect(boolean autoselect) {
+    protected void setAutoselect(boolean autoselect) {
         getElement().setProperty("autoselect", autoselect);
     }
 
@@ -906,7 +905,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * 
      * @return the {@code autoselectDelay} property from the webcomponent
      */
-    public double getAutoselectDelay() {
+    protected double getAutoselectDelayDouble() {
         return getElement().getProperty("autoselectDelay", 0.0);
     }
 
@@ -923,7 +922,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param autoselectDelay
      *            the double value to set
      */
-    public void setAutoselectDelay(double autoselectDelay) {
+    protected void setAutoselectDelay(double autoselectDelay) {
         getElement().setProperty("autoselectDelay", autoselectDelay);
     }
 
@@ -936,7 +935,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * resizables of a resize change.
      * </p>
      */
-    public void notifyResize() {
+    protected void notifyResize() {
         getElement().callFunction("notifyResize");
     }
 
@@ -1026,7 +1025,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(double value) {
+    protected void select(String value) {
         getElement().callFunction("select", value);
     }
 
@@ -1043,7 +1042,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param value
      *            the value to select.
      */
-    public void select(String value) {
+    protected void select(double value) {
         getElement().callFunction("select", value);
     }
 
@@ -1055,7 +1054,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * Selects the previous item.
      * </p>
      */
-    public void selectPrevious() {
+    protected void selectPrevious() {
         getElement().callFunction("selectPrevious");
     }
 
@@ -1067,7 +1066,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * Selects the next item.
      * </p>
      */
-    public void selectNext() {
+    protected void selectNext() {
         getElement().callFunction("selectNext");
     }
 
@@ -1105,7 +1104,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * on its own to reflect selectable items in the DOM.
      * </p>
      */
-    public void forceSynchronousItemUpdate() {
+    protected void forceSynchronousItemUpdate() {
         getElement().callFunction("forceSynchronousItemUpdate");
     }
 
@@ -1132,7 +1131,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @param handlerName
      *            Missing documentation!
      */
-    public void addOwnKeyBinding(String eventString, String handlerName) {
+    protected void addOwnKeyBinding(String eventString, String handlerName) {
         getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
     }
 
@@ -1144,7 +1143,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * When called, will remove all imperatively-added key bindings.
      * </p>
      */
-    public void removeOwnKeyBindings() {
+    protected void removeOwnKeyBindings() {
         getElement().callFunction("removeOwnKeyBindings");
     }
 
@@ -1187,7 +1186,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronActivateListener(
+    protected Registration addIronActivateListener(
             ComponentEventListener<IronActivateEvent<R>> listener) {
         return addListener(IronActivateEvent.class,
                 (ComponentEventListener) listener);
@@ -1210,7 +1209,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronDeselectListener(
+    protected Registration addIronDeselectListener(
             ComponentEventListener<IronDeselectEvent<R>> listener) {
         return addListener(IronDeselectEvent.class,
                 (ComponentEventListener) listener);
@@ -1233,7 +1232,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronItemsChangeListener(
+    protected Registration addIronItemsChangeListener(
             ComponentEventListener<IronItemsChangeEvent<R>> listener) {
         return addListener(IronItemsChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1255,7 +1254,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addIronSelectListener(
+    protected Registration addIronSelectListener(
             ComponentEventListener<IronSelectEvent<R>> listener) {
         return addListener(IronSelectEvent.class,
                 (ComponentEventListener) listener);
@@ -1278,7 +1277,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedChangeListener(
+    protected Registration addSelectedChangeListener(
             ComponentEventListener<SelectedChangeEvent<R>> listener) {
         return addListener(SelectedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1301,7 +1300,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedItemChangeListener(
+    protected Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return addListener(SelectedItemChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1324,7 +1323,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addItemsChangeListener(
+    protected Registration addItemsChangeListener(
             ComponentEventListener<ItemsChangeEvent<R>> listener) {
         return addListener(ItemsChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1347,7 +1346,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedValuesChangeListener(
+    protected Registration addSelectedValuesChangeListener(
             ComponentEventListener<SelectedValuesChangeEvent<R>> listener) {
         return addListener(SelectedValuesChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -1370,26 +1369,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addSelectedItemsChangeListener(
+    protected Registration addSelectedItemsChangeListener(
             ComponentEventListener<SelectedItemsChangeEvent<R>> listener) {
         return addListener(SelectedItemsChangeEvent.class,
                 (ComponentEventListener) listener);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedPaperTabs(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedPaperTabs() {
     }
 }
