@@ -1,10 +1,10 @@
 ---
-title: Flow Component Basic Features
-order: 1
+title: Component Basic Features
+order: 2
 layout: page
 ---
 
-= Flow Component Basic Features
+= Component Basic Features
 
 All classes that extend `com.vaadin.flow.component.Component` have common features that can be used regardless of the component.
 

@@ -19,10 +19,10 @@ The Power of Vaadin Flow comes from the following concepts:
 * Data Binding API for connecting the UI components to any backend using type safe Java
 * Router API for easily creating hierarchical page structures for the user to navigate
 
-This is the documentation for Flow. It is divided into the following subsections in recommended reading order :
+This is the documentation for Vaadin Flow. It is divided into the following subsections in recommended reading order:
 
 == Introduction and Getting Started
-** <<introduction/introduction-overview#,Introduction to Flow>>
+** <<introduction/introduction-overview#,Introduction to Vaadin Flow>>
 ** <<introduction/tutorial-hello-world#,Building a Hello World Application>>
 ** <<introduction/tutorial-get-started#,Getting Started>>
 
@@ -42,12 +42,12 @@ and keep the page state intact. The following tutorials explain how to use the R
 * <<routing/tutorial-routing-get-registered-routes#,Getting Registered Routes>>
 
 == Using Vaadin Components
+* <<components/tutorial-flow-components-setup#,Using Vaadin Components>>
 * <<components/tutorial-component-basic-features#,Component Basic Features>>
-* <<components/tutorial-flow-components-setup#,Using Vaadin Components in Flow>>
 * <<components/tutorial-flow-grid#,Grid>>
 * <<components/tutorial-flow-icon#,Using Icons>>
 
-== Binding Components to Data
+== Binding Data to Components
 * <<binding-data/tutorial-flow-components-binder#,Binder overview>>
 * <<binding-data/tutorial-flow-components-binder-validation#,Validating and Converting User Input>>
 * <<binding-data/tutorial-flow-components-binder-load#,Loading from and Saving to Business Objects>>
@@ -59,7 +59,7 @@ and keep the page state intact. The following tutorials explain how to use the R
 * <<importing-dependencies/tutorial-importing#,Importing html/javascript>>
 * <<importing-dependencies/tutorial-ways-of-importing#,Ways of importing the dependencies>>
 
-== Theming Flow Applications
+== Theming Applications
 * <<theme/tutorial-built-in-themes#,Component themes>>
 
 == Creating Components
@@ -71,7 +71,7 @@ and keep the page state intact. The following tutorials explain how to use the R
 * <<creating-components/tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
 * <<creating-components/tutorial-component-lifecycle-callbacks#,Component Lifecycle Callbacks>>
 
-== Manipulating the DOM with Element API
+== Manipulating DOM with Element API
 * <<element-api/tutorial-properties-attributes#,Element Properties and Attributes>>
 * <<element-api/tutorial-event-listener#,Listening to User Events>>
 * <<element-api/tutorial-user-input#,Retrieving User Input>>
@@ -87,7 +87,7 @@ and keep the page state intact. The following tutorials explain how to use the R
 * <<web-components/tutorial-how-to-use-webjars#,How to use Webjars>>
 * <<web-components/tutorial-flow-maven-plugin#,Taking your app into production>>
 
-== Polymer template
+== Creating Polymer Templates
 * <<polymer-templates/tutorial-template-basic#,Creating A Simple Component Using the Template API>>
 * <<polymer-templates/tutorial-template-components#,Binding Components from PolymerTemplate>>
 * <<polymer-templates/tutorial-template-subtemplate#,Using sub-template from PolymerTemplate>>
@@ -99,13 +99,13 @@ and keep the page state intact. The following tutorials explain how to use the R
 * <<polymer-templates/tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>
 * <<polymer-templates/tutorial-template-model-converters#,Using Model Converters with a PolymerTemplate Model>>
 
-== Spring
-* <<spring/tutorial-spring-basic#,Use Flow with Spring>>
-* <<spring/tutorial-spring-basic-mvc#,Use Flow with Spring MVC>>
+== Using Vaadin with Spring
+* <<spring/tutorial-spring-basic#,Use Vaadin with Spring>>
+* <<spring/tutorial-spring-basic-mvc#,Use Vaadin with Spring MVC>>
 * <<spring/tutorial-spring-routing#,Routing with Spring>>
 * <<spring/tutorial-spring-scopes#,Vaadin Spring Scopes>>
 * <<spring/tutorial-spring-configuration#,Vaadin Spring Configuration>>
-* <<spring/tutorial-spring-examples#,Getting Started with Spring and Flow>>
+* <<spring/tutorial-spring-examples#,Getting Started with Spring and Vaadin>>
 
 == Advanced Topics
 * <<advanced/tutorial-application-lifecycle#,Application Lifecycle>>
