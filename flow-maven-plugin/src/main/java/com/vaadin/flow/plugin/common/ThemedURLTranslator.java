@@ -98,6 +98,13 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
         return themeClass;
     }
 
+    /**
+     * Applies theme to the {@code urls} collection.
+     *
+     * @param urls
+     *            a set of URLs
+     * @return the URLs rewritten using theme
+     */
     public Set<String> applyTheme(Set<String> urls) {
         if (themeClass == null) {
             return urls;
