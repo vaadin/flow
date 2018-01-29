@@ -93,6 +93,8 @@ public interface HasValue<C extends Component, V>
     /**
      * A listener for value change events.
      *
+     * @param <C>
+     *            the component type
      * @param <V>
      *            the value type
      *
@@ -149,8 +151,6 @@ public interface HasValue<C extends Component, V>
      */
     default Registration addValueChangeListener(
             ValueChangeListener<C, V> listener) {
-        get().getElement().synchronizeProperty(getClientValuePropertyName(),
-                getClientPropertyChangeEventName());
         return get().getElement().addPropertyChangeListener(
                 getClientValuePropertyName(),
                 event -> listener.onComponentEvent(new ValueChangeEvent<>(get(),

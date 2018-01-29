@@ -18,6 +18,8 @@ package com.vaadin.client.flow.binding;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
@@ -54,7 +56,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -261,26 +262,31 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void handlePropertyChange(String property,
+    private void handlePropertyChange(String fullPropertyName,
             Supplier<Object> valueProvider, StateNode node) {
         // This is not the property value itself, its a parent node of the
         // property
-        String[] properties = property.split("\\.");
+        String[] subProperties = fullPropertyName.split("\\.");
         StateNode model = node;
         MapProperty mapProperty = null;
-        for (String prop : properties) {
-            NodeMap map = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-            if (!map.hasPropertyValue(prop)) {
+        for (String subProperty : subProperties) {
+            NodeMap elementProperties = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+            if (!elementProperties.hasPropertyValue(subProperty)) {
                 Console.debug("Ignoring property change for property '"
-                        + property + "' which isn't defined from the server");
-                /*
-                 * Ignore instead of throwing since this is also invoked for
-                 * third party polymer components that don't need to have
-                 * property changes sent to the server.
-                 */
+                        + fullPropertyName
+                        + "' which isn't defined from server");
                 return;
             }
-            mapProperty = map.getProperty(prop);
+            if (containsProperty(
+                    model.getList(NodeFeatures.SYNCHRONIZED_PROPERTIES),
+                    subProperty)) {
+                Console.debug("Ignoring property change for property '"
+                        + fullPropertyName
+                        + "' which is intended to be synchronized separately");
+                return;
+            }
+
+            mapProperty = elementProperties.getProperty(subProperty);
             if (mapProperty.getValue() instanceof StateNode) {
                 model = (StateNode) mapProperty.getValue();
             }
@@ -296,6 +302,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         mapProperty.syncToServer(valueProvider.get());
+    }
+
+    private boolean containsProperty(NodeList synchronizedProperties,
+            String property) {
+        for (int i = 0; i < synchronizedProperties.length(); i++) {
+            if (Objects.equals(synchronizedProperties.get(i).toString(),
+                    property)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {

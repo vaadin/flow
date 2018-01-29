@@ -263,6 +263,31 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                 1.0, WidgetUtil.getJsProperty(element, "callbackCallCount"));
     }
 
+    public void testPropertiesWithSpecificSyncAreNotUpdated() {
+        emulatePolymerNotLoaded();
+        addMockMethods(element);
+
+        String propertyName = "black";
+        String propertyValue = "coffee";
+
+        NodeList synchronizedProperties = node.getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
+        synchronizedProperties.add(synchronizedProperties.length(), propertyName);
+        setModelProperty(node, propertyName, propertyValue);
+
+        Binder.bind(node, element);
+        Reactive.flush();
+        assertEquals(
+                "Expected to have property with name " + propertyName
+                        + " defined after initial binding",
+                propertyValue, WidgetUtil.getJsProperty(element, propertyName));
+
+        emulatePolymerPropertyChange(element, propertyName, "doesNotMatter");
+        Reactive.flush();
+        assertEquals("Expected the property with name " + propertyName
+                + " not to be updated since it's contained in NodeFeatures.SYNCHRONIZED_PROPERTIES",
+                propertyValue, WidgetUtil.getJsProperty(element, propertyName));
+    }
+
     ////////////////////////
     private native void addMockMethods(Element element)
     /*-{
