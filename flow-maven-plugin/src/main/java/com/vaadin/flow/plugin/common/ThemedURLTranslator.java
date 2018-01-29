@@ -87,18 +87,6 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
     }
 
     /**
-     * Returns the theme discovered in the project.
-     * <p>
-     * The theme may be {@code null} if there are no theme used in the project.
-     *
-     * @return the theme used in the project or {@code null} if there is no any
-     *         theme
-     */
-    public Class<? extends AbstractTheme> getTheme() {
-        return themeClass;
-    }
-
-    /**
      * Applies theme to the {@code urls} collection.
      *
      * @param urls
