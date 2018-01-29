@@ -19,10 +19,11 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
 
 public class PolymerModelPropertiesIT extends ChromeBrowserTest {
 
@@ -37,7 +38,7 @@ public class PolymerModelPropertiesIT extends ChromeBrowserTest {
         WebElement template = findElement(By.id("template"));
         WebElement input = getInShadowRoot(template, By.id("input"));
         input.clear();
-        input.sendKeys("x");
+        input.sendKeys("x" + Keys.TAB);
 
         // property update event comes immediately
         List<WebElement> propertyUpdates = findElements(
