@@ -19,7 +19,7 @@ The Power of Vaadin Flow comes from the following concepts:
 * Data Binding API for connecting the UI components to any backend using type safe Java
 * Router API for easily creating hierarchical page structures for the user to navigate
 
-This is the documentation for Flow. It is divided into the following subsections in recommended reading order :
+This is the documentation for Vaadin Flow. It is divided into the following subsections in recommended reading order:
 
 == Introduction and Getting Started
 ** <<introduction/introduction-overview#,Introduction to Vaadin Flow>>

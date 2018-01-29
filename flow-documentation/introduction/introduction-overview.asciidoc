@@ -44,7 +44,7 @@ TextField textField = new TextField();
 Label greeting = new Label("Hello stranger");
 
 textField.addValueChangeListener(event ->
-	greeting.setText("Hello " + event.getValue()));
+      greeting.setText("Hello " + event.getValue()));
 
 VerticalLayout layout = new VerticalLayout(textField, greeting);
 ----
@@ -61,19 +61,19 @@ and leveraging Flow's automated communication layer between the browser and the 
 [source,java]
 ----
 @Tag("my-label")
-	public class MyLabel extends Component {
-	    public void setText(String text) {
-		    getElement().setText(text);
-	    }
+    public class MyLabel extends Component {
+        public void setText(String text) {
+            getElement().setText(text);
+        }
 
-	    public String getText() {
-	        return getElement().getText();
-	    }
-	}
+        public String getText() {
+            return getElement().getText();
+        }
+    }
 ----
 
 The <<../creating-components/tutorial-component-basic#,Creating Components>> tutorials explain how to easily build components with reusable API,
-and the <<../element-api/tutorial-event-listener#,Element API>> tutorials show easy it is to access and customize the DOM from the server side.
+and the <<../element-api/tutorial-event-listener#,Element API>> tutorials show how easy it is to access and customize the DOM from the server side.
 
 === Integrating a Web Component
 
@@ -152,7 +152,7 @@ public class MainLayout extends Div implements RouterLayout {
 
 See the <<../routing/tutorial-routing-annotation#,Routing and Navigation>> tutorials for more info.
 
-// TODO could highlight the data binding API here with e.g. bean grid example //
+
 
 == How Flow Components Work
 
