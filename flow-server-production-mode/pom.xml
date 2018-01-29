@@ -10,7 +10,7 @@
     <artifactId>flow-server-production-mode</artifactId>
     <name>Flow Server Production Mode</name>
     <packaging>jar</packaging>
-    
+
     <description>
     This is a wrapper project for the web-fragment.xml file that sets productionMode=true. When this jar is 
     added to the classpath of a web application, it will run in production mode automatically. This is better 

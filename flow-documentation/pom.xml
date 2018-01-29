@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.vaadin</groupId>
-		<artifactId>flow-project</artifactId>
-		<version>1.0-SNAPSHOT</version>
-	</parent>
-	<artifactId>flow-documentation</artifactId>
-	<name>Tutorials' code</name>
-	<description>Module containing tutorials' code</description>
-	<packaging>jar</packaging>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-project</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-documentation</artifactId>
+    <name>Tutorials' code</name>
+    <description>Module containing tutorials' code</description>
+    <packaging>jar</packaging>
 
-	<properties>
-		<!-- Coding style checks do not make sense for out-of-context chunks of 
-			tutorial code -->
-		<sonar.skip>true</sonar.skip>
-		<maven.deploy.skip>true</maven.deploy.skip>
-	</properties>
+    <properties>
+        <!-- Coding style checks do not make sense for out-of-context chunks 
+            of tutorial code -->
+        <sonar.skip>true</sonar.skip>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <repositories>
         <repository>
@@ -26,17 +26,17 @@
         </repository>
     </repositories>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>flow-server</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-lumo-theme</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-lumo-theme</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -44,178 +44,178 @@
             <version>${project.parent.version}</version>
         </dependency>
 
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>flow-generated-components</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-generated-components</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
+        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-spring-addon</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>23.0</version>
         </dependency>
 
-		<!-- Component dependencies -->
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-button-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-checkbox-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-combo-box-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-date-picker-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-dialog-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-form-layout-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-grid-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-icons-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-ordered-layout-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-text-field-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-split-layout-flow</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
+        <!-- Component dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-button-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-checkbox-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-combo-box-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-date-picker-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dialog-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-form-layout-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-grid-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-icons-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-ordered-layout-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-text-field-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-split-layout-flow</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
 
-		<!-- webJars -->
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>paper-styles</artifactId>
-		</dependency>
+        <!-- webJars -->
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>paper-styles</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>paper-button</artifactId>
-			<version>2.0.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>paper-button</artifactId>
+            <version>2.0.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>paper-input</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>paper-input</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>paper-spinner</artifactId>
-			<version>2.0.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>paper-spinner</artifactId>
+            <version>2.0.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>github-com-polymerelements-paper-card</artifactId>
-			<version>2.0.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>github-com-polymerelements-paper-card</artifactId>
+            <version>2.0.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>paper-progress</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>paper-progress</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>paper-dialog</artifactId>
-			<version>2.0.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>paper-dialog</artifactId>
+            <version>2.0.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>web-animations-js</artifactId>
-			<version>2.2.5</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>web-animations-js</artifactId>
+            <version>2.2.5</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>paper-swatch-picker</artifactId>
-			<version>2.0.1</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>paper-swatch-picker</artifactId>
+            <version>2.0.1</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>app-layout</artifactId>
-			<version>2.0.2</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>app-layout</artifactId>
+            <version>2.0.2</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>paper-item</artifactId>
-			<version>2.0.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>paper-item</artifactId>
+            <version>2.0.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>github-com-polymerelements-paper-ripple</artifactId>
-			<version>2.0.1</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>github-com-polymerelements-paper-ripple</artifactId>
+            <version>2.0.1</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>iron-collapse</artifactId>
-			<version>2.0.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>iron-collapse</artifactId>
+            <version>2.0.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>iron-icons</artifactId>
-			<version>2.0.1</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>iron-icons</artifactId>
+            <version>2.0.1</version>
+        </dependency>
     </dependencies>
 
-	<build></build>
+    <build></build>
 </project>
