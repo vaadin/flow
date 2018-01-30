@@ -37,16 +37,9 @@ import org.junit.Test;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
-import com.vaadin.flow.data.binder.BinderValidationStatus;
-import com.vaadin.flow.data.binder.BindingValidationStatus;
-import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.binder.ValidationResult;
-import com.vaadin.flow.data.binder.Validator;
-import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -144,7 +137,7 @@ public class BinderConverterValidatorTest
         // Validates that a validator for a super type can be used, e.g.
         // validator for Number can be used on a Double
 
-        TextField salaryField = new TextField();
+        TestTextField salaryField = new TestTextField();
         Validator<Number> positiveNumberValidator = (value, context) -> {
             if (value.doubleValue() >= 0) {
                 return ValidationResult.ok();
@@ -236,7 +229,7 @@ public class BinderConverterValidatorTest
 
     @Test(expected = IllegalArgumentException.class)
     public void convertInvalidDataToField() {
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
         StatusBean bean = new StatusBean();
         bean.setStatus("1");
         Binder<StatusBean> binder = new Binder<>();
@@ -646,7 +639,7 @@ public class BinderConverterValidatorTest
         Assert.assertFalse(componentErrors.containsKey(nameField));
 
         // bind a new field that has invalid value in bean
-        TextField lastNameField = new TextField();
+        TestTextField lastNameField = new TestTextField();
 
         // The test starts with a valid value as the last name of the person,
         // since the binder assumes any non-changed values to be valid.
@@ -693,7 +686,7 @@ public class BinderConverterValidatorTest
 
     @Test
     public void binderLoad_withCrossFieldValidation_clearsErrors() {
-        TextField lastNameField = new TextField();
+        TestTextField lastNameField = new TestTextField();
         final SerializablePredicate<String> lengthPredicate = v -> v
                 .length() > 2;
 

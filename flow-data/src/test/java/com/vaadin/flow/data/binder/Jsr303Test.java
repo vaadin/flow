@@ -29,7 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.internal.BeanUtil;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
@@ -80,7 +80,7 @@ public class Jsr303Test {
 
     public static class Jsr303UnitTest implements UnitTest {
 
-        private final TextField nameField = new TextField();
+        private final TestTextField nameField = new TestTextField();
 
         @Override
         public void execute() {

@@ -25,13 +25,9 @@ import org.junit.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanPropertySet;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.PropertyFilterDefinition;
-import com.vaadin.flow.data.binder.PropertyId;
+import com.vaadin.flow.data.binder.testcomponents.TestDatePicker;
+import com.vaadin.flow.data.binder.testcomponents.TestFormLayout;
+import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.tests.data.bean.Address;
@@ -39,85 +35,85 @@ import com.vaadin.flow.tests.data.bean.Person;
 
 public class BinderInstanceFieldTest {
 
-    public static class BindAllFields extends FormLayout {
-        private TextField firstName;
-        private DatePicker birthDate;
+    public static class BindAllFields extends TestFormLayout {
+        private TestTextField firstName;
+        private TestDatePicker birthDate;
     }
 
-    public static class BindFieldsUsingAnnotation extends FormLayout {
+    public static class BindFieldsUsingAnnotation extends TestFormLayout {
         @PropertyId("firstName")
-        private TextField nameField;
+        private TestTextField nameField;
 
         @PropertyId("birthDate")
-        private DatePicker birthDateField;
+        private TestDatePicker birthDateField;
     }
 
-    public static class BindNestedFieldsUsingAnnotation extends FormLayout {
+    public static class BindNestedFieldsUsingAnnotation extends TestFormLayout {
         @PropertyId("address.streetAddress")
-        private TextField streetAddressField;
+        private TestTextField streetAddressField;
     }
 
-    public static class BindDeepNestedFieldsUsingAnnotation extends FormLayout {
+    public static class BindDeepNestedFieldsUsingAnnotation extends TestFormLayout {
         @PropertyId("first.address.streetAddress")
-        private TextField firstStreetField;
+        private TestTextField firstStreetField;
 
         @PropertyId("second.address.streetAddress")
-        private TextField secondStreetField;
+        private TestTextField secondStreetField;
     }
 
     public static class BindDeepNestingFieldsWithCircularStructure
-            extends FormLayout {
+            extends TestFormLayout {
         @PropertyId("child.name")
-        private TextField childName;
+        private TestTextField childName;
 
         @PropertyId("child.child.name")
-        private TextField grandchildName;
+        private TestTextField grandchildName;
 
         @PropertyId("child.child.child.child.child.child.child.child.name")
-        private TextField eighthLevelGrandchildName;
+        private TestTextField eighthLevelGrandchildName;
 
         @PropertyId("child.child.child.child.child.child.child.child.child.child.child.child.child.name")
-        private TextField distantGreatGrandchildName;
+        private TestTextField distantGreatGrandchildName;
     }
 
-    public static class BindOnlyOneField extends FormLayout {
-        private TextField firstName;
-        private TextField noFieldInPerson;
+    public static class BindOnlyOneField extends TestFormLayout {
+        private TestTextField firstName;
+        private TestTextField noFieldInPerson;
     }
 
-    public static class BindWithNoFieldInPerson extends FormLayout {
-        private TextField firstName;
-        private DatePicker birthDate;
-        private TextField noFieldInPerson;
+    public static class BindWithNoFieldInPerson extends TestFormLayout {
+        private TestTextField firstName;
+        private TestDatePicker birthDate;
+        private TestTextField noFieldInPerson;
     }
 
-    public static class BindFieldHasWrongType extends FormLayout {
+    public static class BindFieldHasWrongType extends TestFormLayout {
         private String firstName;
-        private DatePicker birthDate;
+        private TestDatePicker birthDate;
     }
 
-    public static class BindGenericField extends FormLayout {
+    public static class BindGenericField extends TestFormLayout {
         private CustomField<String> firstName;
     }
 
-    public static class BindGenericWrongTypeParameterField extends FormLayout {
+    public static class BindGenericWrongTypeParameterField extends TestFormLayout {
         private CustomField<Boolean> firstName;
     }
 
-    public static class BindWrongTypeParameterField extends FormLayout {
+    public static class BindWrongTypeParameterField extends TestFormLayout {
         private IntegerTextField firstName;
     }
 
-    public static class BindOneFieldRequiresConverter extends FormLayout {
-        private TextField firstName;
-        private TextField age;
+    public static class BindOneFieldRequiresConverter extends TestFormLayout {
+        private TestTextField firstName;
+        private TestTextField age;
     }
 
-    public static class BindGeneric<T> extends FormLayout {
+    public static class BindGeneric<T> extends TestFormLayout {
         private CustomField<T> firstName;
     }
 
-    public static class BindRaw extends FormLayout {
+    public static class BindRaw extends TestFormLayout {
         private CustomField firstName;
     }
 
@@ -126,19 +122,19 @@ public class BinderInstanceFieldTest {
 
     }
 
-    public static class BindAbstract extends FormLayout {
+    public static class BindAbstract extends TestFormLayout {
         private AbstractTextField firstName;
     }
 
-    public static class BindNonInstantiatableType extends FormLayout {
+    public static class BindNonInstantiatableType extends TestFormLayout {
         private NoDefaultCtor firstName;
     }
 
-    public static class BindComplextHierarchyGenericType extends FormLayout {
+    public static class BindComplextHierarchyGenericType extends TestFormLayout {
         private ComplexHierarchy firstName;
     }
 
-    public static class NoDefaultCtor extends TextField {
+    public static class NoDefaultCtor extends TestTextField {
         public NoDefaultCtor(int arg) {
         }
     }
@@ -531,7 +527,7 @@ public class BinderInstanceFieldTest {
         BindAllFields form = new BindAllFields();
         Binder<Person> binder = new Binder<>(Person.class);
 
-        TextField name = new TextField();
+        TestTextField name = new TestTextField();
         form.firstName = name;
         binder.forField(form.firstName)
                 .withValidator(
@@ -568,13 +564,13 @@ public class BinderInstanceFieldTest {
         BindWithNoFieldInPerson form = new BindWithNoFieldInPerson();
         Binder<Person> binder = new Binder<>(Person.class);
 
-        TextField name = new TextField();
+        TestTextField name = new TestTextField();
         form.firstName = name;
         binder.forField(form.firstName)
                 .withValidator(
                         new StringLengthValidator("Name is invalid", 3, 10))
                 .bind("firstName");
-        TextField ageField = new TextField();
+        TestTextField ageField = new TestTextField();
         form.noFieldInPerson = ageField;
         binder.forField(form.noFieldInPerson)
                 .withConverter(new StringToIntegerConverter(""))
@@ -613,8 +609,8 @@ public class BinderInstanceFieldTest {
     @Test
     public void bindInstanceFields_preconfiguredFieldNotBoundToPropertyPreserved() {
         BindOneFieldRequiresConverter form = new BindOneFieldRequiresConverter();
-        form.age = new TextField();
-        form.firstName = new TextField();
+        form.age = new TestTextField();
+        form.firstName = new TestTextField();
         Binder<Person> binder = new Binder<>(Person.class);
         binder.forField(form.age)
                 .withConverter(str -> Integer.parseInt(str) / 2,
@@ -633,7 +629,7 @@ public class BinderInstanceFieldTest {
         BindOnlyOneField form = new BindOnlyOneField();
         Binder<Person> binder = new Binder<>(Person.class);
 
-        binder.forField(new TextField()).bind("firstName");
+        binder.forField(new TestTextField()).bind("firstName");
 
         binder.bindInstanceFields(form);
     }
@@ -643,7 +639,7 @@ public class BinderInstanceFieldTest {
         BindOnlyOneField form = new BindOnlyOneField();
         Binder<Person> binder = new Binder<>(Person.class);
 
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
         form.firstName = field;
 
         // This is an incomplete binding which is supposed to be configured

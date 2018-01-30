@@ -25,10 +25,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
-import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.tests.data.bean.Person;
@@ -131,7 +129,7 @@ public class BinderValueChangeTest
 
     @Test
     public void userOriginatedUpdate_unbound_singleEventOnSetValue() {
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
 
         binder.forField(field).bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)

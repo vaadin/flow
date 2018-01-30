@@ -29,9 +29,7 @@ import org.junit.Before;
 
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.Converter;
 
 /**
@@ -53,8 +51,8 @@ public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
 
     protected ITEM item;
 
-    protected TextField nameField;
-    protected TextField ageField;
+    protected TestTextField nameField;
+    protected TestTextField ageField;
 
     protected Validator<String> notEmpty = Validator.from(val -> !val.isEmpty(),
             EMPTY_ERROR_MESSAGE);
@@ -94,8 +92,8 @@ public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
             }
 
         };
-        nameField = new TextField();
-        ageField = new TextField();
+        nameField = new TestTextField();
+        ageField = new TestTextField();
         ui.add(nameField, ageField);
     }
 

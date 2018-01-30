@@ -24,11 +24,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.PropertyDefinition;
-import com.vaadin.flow.data.binder.PropertySet;
-import com.vaadin.flow.data.binder.Setter;
+import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.function.ValueProvider;
 
 public class BinderCustomPropertySetTest {
@@ -111,13 +107,13 @@ public class BinderCustomPropertySetTest {
     }
 
     public static class InstanceFields {
-        private TextField one;
-        private TextField another;
+        private TestTextField one;
+        private TestTextField another;
     }
 
     @Test
     public void testBindByString() {
-        TextField field = new TextField();
+        TestTextField field = new TestTextField();
         Map<String, String> map = new HashMap<>();
         Binder<Map<String, String>> binder = Binder
                 .withPropertySet(new MapPropertySet());
