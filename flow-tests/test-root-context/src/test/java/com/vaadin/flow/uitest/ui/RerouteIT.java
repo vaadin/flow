@@ -33,8 +33,8 @@ public class RerouteIT extends ChromeBrowserTest {
 
         findElement(By.id("navigate")).click();
 
-        Assert.assertNotNull("Could not find error page text", findElement(
-                By.xpath("//div[contains(.,'This is the error view.')]")));
+        Assert.assertTrue(getDriver().getPageSource()
+                .contains("Could not navigate to "));
     }
 
     @Test

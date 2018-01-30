@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.http.HttpServletResponse;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,10 +27,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,6 +43,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -45,6 +52,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -55,10 +63,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -541,7 +546,7 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             eventCollector.add("Redirected to error view, showing message: "
-                    + getElement().getText());
+                    + ((Html) getChildren().findFirst().get()).getInnerHtml());
         }
     }
 
@@ -861,6 +866,8 @@ public class RouterTest extends RoutingTestBase {
         super.init();
         ui = new RouterTestUI(router);
         eventCollector.clear();
+        ui.getSession().lock();
+        ui.getSession().setConfiguration(configuration);
 
         VaadinService.setCurrent(service);
 
@@ -1652,10 +1659,14 @@ public class RouterTest extends RoutingTestBase {
         String message = String.format(
                 "Invalid wildcard parameter in class %s. Only String is supported for wildcard parameters.",
                 UnsupportedWildParameter.class.getName());
-        String exceptionText = String.format("Could not navigate to '%s'. Reason: Failed to parse url parameter, exception: %s",
-                locationString, new UnsupportedOperationException(message));
+        String exceptionText1 = String.format("Could not navigate to '%s'",
+                locationString);
+        String exceptionText2 = String.format(
+                "Reason: Failed to parse url parameter, exception: %s",
+                new UnsupportedOperationException(message));
 
-        assertExceptionComponent(exceptionText, RouteNotFoundError.class);
+        assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
+                exceptionText2);
     }
 
     @Test
@@ -1671,12 +1682,15 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Non existent route should have returned.",
                 HttpServletResponse.SC_NOT_FOUND, result);
 
-        String exceptionText = String.format(
-                "Could not navigate to '%s'. Reason: Failed to parse url parameter, exception: %s",
-                locationString, new NumberFormatException(
+        String exceptionText1 = String.format("Could not navigate to '%s'",
+                locationString);
+        String exceptionText2 = String.format(
+                "Reason: Failed to parse url parameter, exception: %s",
+                new NumberFormatException(
                         "For input string: \"unsupportedParam\""));
 
-        assertExceptionComponent(exceptionText, RouteNotFoundError.class);
+        assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
+                exceptionText2);
     }
 
     @Test
@@ -1695,12 +1709,12 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("",
-                String.format(
-                        "Redirected to error view, showing message: Could not navigate to 'error'. Reason: %s",
-                        String.format("Couldn't find route for '%s'",
-                                locationString)),
-                eventCollector.get(0));
+
+        String errorMessage = eventCollector.get(0);
+        Assert.assertTrue(errorMessage.contains(
+                String.format("Could not navigate to '%s'", locationString)));
+        Assert.assertTrue(errorMessage.contains(
+                String.format("Couldn't find route for '%s'", locationString)));
     }
 
     @Test
@@ -1763,8 +1777,8 @@ public class RouterTest extends RoutingTestBase {
                 "Expected the extending class to be used instead of the super class",
                 NonExtendingNotFoundTarget.class, getUIComponent());
 
-        assertExceptionComponent(EXCEPTION_TEXT,
-                NonExtendingNotFoundTarget.class);
+        assertExceptionComponent(NonExtendingNotFoundTarget.class,
+                EXCEPTION_TEXT);
     }
 
     @Test
@@ -1782,7 +1796,7 @@ public class RouterTest extends RoutingTestBase {
                 "Expected the extending class to be used instead of the super class",
                 CustomNotFoundTarget.class, getUIComponent());
 
-        assertExceptionComponent(EXCEPTION_TEXT, CustomNotFoundTarget.class);
+        assertExceptionComponent(CustomNotFoundTarget.class, EXCEPTION_TEXT);
     }
 
     @Test
@@ -1900,7 +1914,7 @@ public class RouterTest extends RoutingTestBase {
                 "There was an exception while trying to navigate to '%s' with the exception message '%s'",
                 location, validationMessage);
 
-        assertExceptionComponent(errorMessage, InternalServerError.class);
+        assertExceptionComponent(InternalServerError.class, errorMessage);
     }
 
     @Test
@@ -1949,7 +1963,12 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(PostponingAndResumingNavigationTarget.class,
                 getUIComponent());
 
+        // Must unlock here so the proceed thread started in the second
+        // navigation has a chance to perform its operation while this thread is
+        // sleeping
+        ui.getSession().unlock();
         Thread.sleep(200);
+        ui.getSession().lock();
 
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 2,
@@ -2052,7 +2071,12 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(PostponingAndResumingCompoundNavigationTarget.class,
                 getUIComponent());
 
+        // Must unlock here so the proceed thread started in the second
+        // navigation has a chance to perform its operation while this thread is
+        // sleeping
+        ui.getSession().unlock();
         Thread.sleep(200);
+        ui.getSession().lock();
 
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 4,
@@ -2206,19 +2230,34 @@ public class RouterTest extends RoutingTestBase {
     }
 
     private void assertExceptionComponent(String exceptionText) {
-        assertExceptionComponent(exceptionText, InternalServerError.class);
+        assertExceptionComponent(InternalServerError.class, exceptionText);
     }
 
-    private void assertExceptionComponent(String exceptionText,
-            Class<?> errorClass) {
+    private void assertExceptionComponent(Class<?> errorClass,
+            String... exceptionTexts) {
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
 
         Assert.assertTrue("No navigation component visible",
                 visibleComponent.isPresent());
 
-        Assert.assertEquals(errorClass, visibleComponent.get().getClass());
-        Assert.assertEquals(exceptionText,
-                visibleComponent.get().getElement().getText());
+        Component routeNotFoundError = visibleComponent.get();
+        Assert.assertEquals(errorClass, routeNotFoundError.getClass());
+        String errorText = getErrorText(routeNotFoundError);
+        for (String exceptionText : exceptionTexts) {
+            Assert.assertTrue("Expected the error text to contain '"
+                    + exceptionText + "'", errorText.contains(exceptionText));
+        }
+    }
+
+    private String getErrorText(Component routeNotFoundError) {
+        if (routeNotFoundError.getClass() == RouteNotFoundError.class) {
+            Component errorContent = routeNotFoundError.getChildren()
+                    .findFirst().get();
+            Assert.assertEquals(Html.class, errorContent.getClass());
+            return ((Html) errorContent).getInnerHtml().toString();
+        } else {
+            return routeNotFoundError.getElement().getText();
+        }
     }
 }
