@@ -18,14 +18,12 @@ public class ErrorPageIT extends ChromeBrowserTest {
     public void testErrorViewOpened() {
         open();
 
-        WebElement element = findElement(By.id("error-path"));
-        Assert.assertNotNull(element);
-        Assert.assertEquals("abcd", element.getText());
+        Assert.assertTrue(getDriver().getPageSource()
+                .contains("Could not navigate to 'abcd'"));
 
         getDriver().get(getTestURL() + "/foobar");
 
-        element = findElement(By.id("error-path"));
-        Assert.assertNotNull(element);
-        Assert.assertEquals("abcd/foobar", element.getText());
+        Assert.assertTrue(getDriver().getPageSource()
+                .contains("Could not navigate to 'abcd/foobar'"));
     }
 }
