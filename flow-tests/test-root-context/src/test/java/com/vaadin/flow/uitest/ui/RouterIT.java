@@ -86,9 +86,8 @@ public class RouterIT extends ChromeBrowserTest {
     public void faultyRouteShowsExpectedErrorScreen() {
         openRouteUrl("exception");
 
-        WebElement element = findElement(By.id("error-path"));
-        Assert.assertNotNull(element);
-        Assert.assertEquals("exception", element.getText());
+        Assert.assertTrue(getDriver().getPageSource()
+                .contains("Could not navigate to 'exception'"));
     }
 
     @Test
