@@ -21,15 +21,16 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jsoup.Jsoup;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.polymertemplate.Id;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.component.polymertemplate.TemplateInitializer;
-import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.HasCurrentService;
@@ -89,13 +90,16 @@ public class TemplateInitializerTest extends HasCurrentService {
         String outsideTemplateElementId = OutsideTemplateClass.class
                 .getField("element").getAnnotation(Id.class).value();
 
-        templateParser = (clazz, tag) -> Jsoup.parse(String.format(
-                "<dom-module id='%s'><template>"
-                        + "    <template><div id='%s'>Test</div></template>"
-                        + "    <div id='%s'></div>"
-                        + "</template></dom-module>",
-                parentTemplateId, inTemplateElementId,
-                outsideTemplateElementId));
+        templateParser = (clazz,
+                tag) -> Jsoup.parse(String.format(
+                        "<dom-module id='%s'><template>"
+                                + "    <template><div id='%s'>Test</div></template>"
+                                + "    <div id='%s'></div>"
+                                + "    <div a='{{twoWay}}' b='{{invalid}} syntax' c='{{two.way}}'"
+                                + "        d='{{invalidSyntax' e='{{withEvent::eventName}}' f='[[oneWay]]'></div>"
+                                + "</template></dom-module>",
+                        parentTemplateId, inTemplateElementId,
+                        outsideTemplateElementId));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -108,6 +112,17 @@ public class TemplateInitializerTest extends HasCurrentService {
     public void outsideTemplateShouldNotThrowAnException() {
         new TemplateInitializer(new OutsideTemplateClass(), templateParser)
                 .initChildElements();
+    }
+
+    @Test
+    public void twoWayBindingPaths() {
+        Set<String> twoWayBindingPaths = new TemplateInitializer(
+                new OutsideTemplateClass(), templateParser)
+                        .getTwoWayBindingPaths();
+
+        Assert.assertEquals(
+                new HashSet<>(Arrays.asList("twoWay", "two.way", "withEvent")),
+                twoWayBindingPaths);
     }
 
 }

@@ -18,6 +18,7 @@ package com.vaadin.flow.component.polymertemplate;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,9 +26,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
+import org.jsoup.select.NodeVisitor;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -52,6 +58,10 @@ import elemental.json.JsonArray;
  *
  */
 public class TemplateInitializer {
+    // {{propertyName}} or {{propertyName::event}}
+    private static final Pattern TWO_WAY_BINDING_PATTERN = Pattern
+            .compile("\\s*\\{\\{([^}:]*)(::[^}]*)?\\}\\}\\s*");
+
     private static final ReflectionCache<PolymerTemplate<?>, ParserData> CACHE = new ReflectionCache<>(
             clazz -> new ParserData());
 
@@ -81,6 +91,7 @@ public class TemplateInitializer {
             implements Function<String, Optional<String>> {
         private final Map<String, String> tagById = new HashMap<>();
         private final Collection<SubTemplateData> subTemplates = new ArrayList<>();
+        private final Set<String> twoWayBindingPaths = new HashSet<>();
 
         @Override
         public Optional<String> apply(String id) {
@@ -134,6 +145,15 @@ public class TemplateInitializer {
         createSubTemplates();
     }
 
+    /**
+     * Gets a set of two way binding paths encountered in the template.
+     *
+     * @return an unmodifiable collection of two way binding paths
+     */
+    public Set<String> getTwoWayBindingPaths() {
+        return Collections.unmodifiableSet(parserData.twoWayBindingPaths);
+    }
+
     private void inspectCustomElements(org.jsoup.nodes.Element childElement,
             org.jsoup.nodes.Element templateRoot) {
         if (isInsideTemplate(childElement, templateRoot)) {
@@ -159,8 +179,33 @@ public class TemplateInitializer {
             org.jsoup.nodes.Element parent = element.parent();
             if (parent != null && getElement().getTag().equals(parent.id())) {
                 inspectCustomElements(element, element);
+
+                inspectTwoWayBindings(element);
             }
         }
+    }
+
+    private void inspectTwoWayBindings(org.jsoup.nodes.Element element) {
+        Matcher matcher = TWO_WAY_BINDING_PATTERN.matcher("");
+        element.traverse(new NodeVisitor() {
+            @Override
+            public void head(Node node, int depth) {
+                // Two way bindings should only be in property bindings, not
+                // inside text content.
+                for (Attribute attribute : node.attributes()) {
+                    matcher.reset(attribute.getValue());
+                    if (matcher.matches()) {
+                        String path = matcher.group(1);
+                        parserData.twoWayBindingPaths.add(path);
+                    }
+                }
+            }
+
+            @Override
+            public void tail(Node node, int depth) {
+                // Nop
+            }
+        });
     }
 
     private boolean isInsideTemplate(org.jsoup.nodes.Element element,

@@ -17,12 +17,15 @@ package com.vaadin.flow.component.polymertemplate;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.templatemodel.BeanModelType;
 import com.vaadin.flow.templatemodel.ListModelType;
 import com.vaadin.flow.templatemodel.ModelDescriptor;
 import com.vaadin.flow.templatemodel.ModelType;
@@ -59,9 +62,14 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      *            a template parser
      */
     public PolymerTemplate(TemplateParser parser) {
-        new TemplateInitializer(this, parser).initChildElements();
+        TemplateInitializer templateInitializer = new TemplateInitializer(this,
+                parser);
+        templateInitializer.initChildElements();
 
-        initModelProperties();
+        Set<String> twoWayBindingPaths = templateInitializer
+                .getTwoWayBindingPaths();
+
+        initModel(twoWayBindingPaths);
     }
 
     /**
@@ -187,9 +195,17 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         return array;
     }
 
-    private void initModelProperties() {
-        // initialize model: fill all model properties with their initial value
+    private void initModel(Set<String> twoWayBindingPaths) {
+        // Find metadata, fill initial values and create a proxy
         getModel();
+
+        BeanModelType<?> modelType = TemplateModelProxyHandler
+                .getModelTypeForProxy(model);
+
+        SerializablePredicate<String> updateFilter = modelType
+                .createUpdateFromClientFilter(twoWayBindingPaths);
+        ElementPropertyMap.getModel(getStateNode())
+                .setUpdateFromClientFilter(updateFilter);
 
         // remove properties whose values are not StateNode from the property
         // map and return their names as a list

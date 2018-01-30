@@ -20,15 +20,14 @@ import java.io.Serializable;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.ComponentTest.TestComponent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
-import com.vaadin.flow.server.communication.rpc.MapSyncRpcHandler;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
@@ -45,6 +44,9 @@ public class MapSyncRpcHandlerTest {
     public void testSynchronizeProperty() throws Exception {
         TestComponent c = new TestComponent();
         Element element = c.getElement();
+        ElementPropertyMap.getModel(element.getNode())
+                .setUpdateFromClientFilter(name -> true);
+
         UI ui = new UI();
         ui.add(c);
         Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
@@ -68,6 +70,7 @@ public class MapSyncRpcHandlerTest {
         // Set model value directly via ElementPropertyMap
         ElementPropertyMap propertyMap = node
                 .getFeature(ElementPropertyMap.class);
+        propertyMap.setUpdateFromClientFilter(name -> true);
         ModelList modelList = propertyMap.resolveModelList("foo");
         // fake StateNode has been created for the model
         StateNode item = new StateNode(ElementPropertyMap.class);
@@ -109,6 +112,8 @@ public class MapSyncRpcHandlerTest {
         // Set model value directly via ElementPropertyMap
         ElementPropertyMap propertyMap = node
                 .getFeature(ElementPropertyMap.class);
+        propertyMap.setUpdateFromClientFilter(name -> true);
+
         ElementPropertyMap modelMap = propertyMap.resolveModelMap("foo");
         // fake StateNode has been created for the model
         StateNode model = modelMap.getNode();
@@ -143,6 +148,9 @@ public class MapSyncRpcHandlerTest {
 
         TestComponent anotherComonent = new TestComponent();
         StateNode anotherNode = anotherComonent.getElement().getNode();
+
+        ElementPropertyMap.getModel(node)
+                .setUpdateFromClientFilter(name -> true);
 
         // Use the model node id for JSON object which represents a value to
         // update

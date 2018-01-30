@@ -67,7 +67,7 @@ public abstract class NodeMap extends NodeFeature {
      *            the value to store
      */
     protected void put(String key, Serializable value) {
-        doPut(key, value, true);
+        put(key, value, true);
     }
 
     private void ensureValues() {
@@ -86,15 +86,14 @@ public abstract class NodeMap extends NodeFeature {
      *            the value to store
      * @param emitChange
      *            true to create a change event for the client side
+     * @return the previous value, or <code>null</code> if there was no previous
+     *         value
      */
-    protected void put(String key, Serializable value, boolean emitChange) {
-        doPut(key, value, emitChange);
-    }
-
-    // Internal method to avoid exposing non-serializable setter
-    private void doPut(String key, Serializable value, boolean emitChange) {
-        if (contains(key) && Objects.equals(get(key), value)) {
-            return;
+    protected Serializable put(String key, Serializable value,
+            boolean emitChange) {
+        Serializable oldValue = get(key);
+        if (contains(key) && Objects.equals(oldValue, value)) {
+            return oldValue;
         }
         if (emitChange) {
             setChanged(key);
@@ -102,11 +101,13 @@ public abstract class NodeMap extends NodeFeature {
             setUnChanged(key);
         }
         ensureValues();
-        Serializable oldValue = values.put(key, value);
+        values.put(key, value);
 
         detatchPotentialChild(oldValue);
 
         attachPotentialChild(value);
+
+        return oldValue;
     }
 
     /**
@@ -230,17 +231,19 @@ public abstract class NodeMap extends NodeFeature {
      *
      * @param key
      *            the key for which to remove the value
+     * @return the removed value, <code>null</code> if no value was removed
      */
-    protected void remove(String key) {
+    protected Object remove(String key) {
         setChanged(key);
         if (values == null) {
-            return;
+            return null;
         }
         Object oldValue = values.remove(key);
         detatchPotentialChild(oldValue);
         if (values.isEmpty()) {
             values = null;
         }
+        return oldValue;
     }
 
     /**
