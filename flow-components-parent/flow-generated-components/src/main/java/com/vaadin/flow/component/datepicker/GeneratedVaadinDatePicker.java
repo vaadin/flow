@@ -71,14 +71,9 @@ import com.vaadin.flow.dom.Element;
  * <td>vaadin-date-picker</td>
  * </tr>
  * <tr>
- * <td>{@code overlay}</td>
+ * <td>{@code overlay-content}</td>
  * <td>The overlay element</td>
  * <td>vaadin-date-picker</td>
- * </tr>
- * <tr>
- * <td>{@code overlay}</td>
- * <td>The overlay element</td>
- * <td>vaadin-date-picker-light</td>
  * </tr>
  * <tr>
  * <td>{@code overlay-header}</td>
@@ -208,6 +203,31 @@ import com.vaadin.flow.dom.Element;
  * <td>Set when the element is readonly</td>
  * <td>:host</td>
  * </tr>
+ * <tr>
+ * <td>{@code disabled}</td>
+ * <td>Set when the element is disabled</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code today}</td>
+ * <td>Set on the date corresponding to the current day</td>
+ * <td>date</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focused}</td>
+ * <td>Set on the focused date</td>
+ * <td>date</td>
+ * </tr>
+ * <tr>
+ * <td>{@code disabled}</td>
+ * <td>Set on the date out of the allowed range</td>
+ * <td>date</td>
+ * </tr>
+ * <tr>
+ * <td>{@code selected}</td>
+ * <td>Set on the selected date</td>
+ * <td>date</td>
+ * </tr>
  * </tbody>
  * </table>
  * <p>
@@ -217,7 +237,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.DatePickerElement#3.0.0-alpha5",
+        "WebComponent: Vaadin.DatePickerElement#3.0.0-alpha6",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")

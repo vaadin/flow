@@ -135,7 +135,7 @@ import elemental.json.JsonObject;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.FormLayoutElement#2.0.0-alpha3",
+        "WebComponent: Vaadin.FormLayoutElement#2.0.0-alpha5",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-form-layout")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-layout.html")

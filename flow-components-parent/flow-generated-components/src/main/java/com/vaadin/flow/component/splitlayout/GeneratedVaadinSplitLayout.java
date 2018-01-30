@@ -186,7 +186,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.SplitLayoutElement#4.0.0-alpha4",
+        "WebComponent: Vaadin.SplitLayoutElement#4.0.0-alpha5",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-split-layout")
 @HtmlImport("frontend://bower_components/vaadin-split-layout/src/vaadin-split-layout.html")
@@ -248,6 +248,29 @@ public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitL
     protected Registration addIronResizeListener(
             ComponentEventListener<IronResizeEvent<R>> listener) {
         return addListener(IronResizeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("splitter-dragend")
+    public static class SplitterDragendEvent<R extends GeneratedVaadinSplitLayout<R>>
+            extends ComponentEvent<R> {
+        public SplitterDragendEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code splitter-dragend} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Registration addSplitterDragendListener(
+            ComponentEventListener<SplitterDragendEvent<R>> listener) {
+        return addListener(SplitterDragendEvent.class,
                 (ComponentEventListener) listener);
     }
 

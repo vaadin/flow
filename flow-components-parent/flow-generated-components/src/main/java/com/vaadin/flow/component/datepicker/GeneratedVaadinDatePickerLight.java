@@ -60,9 +60,33 @@ import com.vaadin.flow.shared.Registration;
  * &lt;paper-input label=&quot;Birthday&quot;&gt; &lt;/paper-input&gt;
  * &lt;/vaadin-date-picker-light&gt;
  * </p>
+ * <h3>Styling</h3>
+ * <p>
+ * The following shadow DOM parts are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * <th>Theme for Element</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code overlay-content}</td>
+ * <td>The overlay element</td>
+ * <td>vaadin-date-picker-light</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.DatePickerLightElement#3.0.0-alpha5",
+        "WebComponent: Vaadin.DatePickerLightElement#3.0.0-alpha6",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-light.html")

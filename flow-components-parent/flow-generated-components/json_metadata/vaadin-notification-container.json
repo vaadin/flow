@@ -1,6 +1,6 @@
 {
-  "name": "Vaadin.VaadinNotificationOverlay",
-  "tag": "vaadin-notification-overlay",
+  "name": "Vaadin.VaadinNotificationContainer",
+  "tag": "vaadin-notification-container",
   "baseUrl": "vaadin-notification/src/vaadin-notification.html",
   "version": "UNKNOWN",
   "properties": [
@@ -10,7 +10,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True when the overlay is opened\n             "
+      "description": "True when the container is opened\n             "
     }
   ],
   "methods": [],
@@ -28,5 +28,5 @@
   ],
   "behaviors": [],
   "mixins": [],
-  "description": "The notification overlay element."
+  "description": "The container element for all notifications."
 }

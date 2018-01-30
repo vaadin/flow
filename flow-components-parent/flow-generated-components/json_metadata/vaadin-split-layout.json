@@ -2,7 +2,7 @@
   "name": "Vaadin.SplitLayoutElement",
   "tag": "vaadin-split-layout",
   "baseUrl": "vaadin-split-layout/src/vaadin-split-layout.html",
-  "version": "4.0.0-alpha4",
+  "version": "4.0.0-alpha5",
   "properties": [
     {
       "name": "orientation",
@@ -18,6 +18,11 @@
     {
       "name": "iron-resize",
       "description": "iron-resize",
+      "properties": []
+    },
+    {
+      "name": "splitter-dragend",
+      "description": "splitter-dragend",
       "properties": []
     }
   ],

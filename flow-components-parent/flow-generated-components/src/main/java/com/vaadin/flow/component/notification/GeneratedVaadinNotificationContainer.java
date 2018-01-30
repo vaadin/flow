@@ -28,15 +28,15 @@ import com.vaadin.flow.dom.Element;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * The notification overlay element.
+ * The container element for all notifications.
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.VaadinNotificationOverlay#UNKNOWN",
+        "WebComponent: Vaadin.VaadinNotificationContainer#UNKNOWN",
         "Flow#1.0-SNAPSHOT" })
-@Tag("vaadin-notification-overlay")
+@Tag("vaadin-notification-container")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
-public abstract class GeneratedVaadinNotificationOverlay<R extends GeneratedVaadinNotificationOverlay<R>>
+public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVaadinNotificationContainer<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -44,7 +44,7 @@ public abstract class GeneratedVaadinNotificationOverlay<R extends GeneratedVaad
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * True when the overlay is opened
+     * True when the container is opened
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
@@ -61,7 +61,7 @@ public abstract class GeneratedVaadinNotificationOverlay<R extends GeneratedVaad
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * True when the overlay is opened
+     * True when the container is opened
      * </p>
      * 
      * @param opened

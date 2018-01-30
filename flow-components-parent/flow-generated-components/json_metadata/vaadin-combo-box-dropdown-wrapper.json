@@ -74,7 +74,7 @@
   "methods": [
     {
       "name": "attributeChangedCallback",
-      "description": "Provides a default implementation of the standard Custom Elements\n`attributeChangedCallback`.\n\nBy default, attributes declared in `properties` metadata are\ndeserialized using their `type` information to properties of the\nsame name.  \"Dash-cased\" attributes are deserialized to \"camelCase\"\nproperties.",
+      "description": "Implements native Custom Elements `attributeChangedCallback` to\nset an attribute value to a property via `_attributeToProperty`.",
       "parameters": [
         {
           "name": "name",
@@ -82,7 +82,7 @@
             "STRING"
           ],
           "objectType": [],
-          "description": "Name of attribute."
+          "description": "Name of attribute that changed"
         },
         {
           "name": "old",
@@ -90,7 +90,7 @@
             "OBJECT"
           ],
           "objectType": [],
-          "description": "Old value of attribute."
+          "description": "Old attribute value"
         },
         {
           "name": "value",
@@ -98,10 +98,10 @@
             "OBJECT"
           ],
           "objectType": [],
-          "description": "Current value of attribute."
+          "description": "New attribute value"
         }
       ],
-      "returns": "UNDEFINED"
+      "returns": "OBJECT"
     },
     {
       "name": "setProperties",
@@ -403,13 +403,13 @@
       "name": "connectedCallback",
       "description": "Provides a default implementation of the standard Custom Elements\n`connectedCallback`.\n\nThe default implementation enables the property effects system and\nflushes any pending properties, and updates shimmed CSS properties\nwhen using the ShadyCSS scoping/custom properties polyfill.",
       "parameters": [],
-      "returns": "UNDEFINED"
+      "returns": "OBJECT"
     },
     {
       "name": "disconnectedCallback",
-      "description": "Provides a default implementation of the standard Custom Elements\n`disconnectedCallback`.\n       ",
+      "description": "Called when the element is removed from a document",
       "parameters": [],
-      "returns": "UNDEFINED"
+      "returns": "OBJECT"
     },
     {
       "name": "updateStyles",
