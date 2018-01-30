@@ -64,6 +64,8 @@ import jsinterop.annotations.JsFunction;
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
+    private static final String HIDDEN_ATTRIBUTE = "hidden";
+
     private static final String ELEMENT_ATTACH_ERROR_PREFIX = "Element addressed by the ";
 
     @FunctionalInterface
@@ -233,7 +235,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -243,7 +245,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-
+    
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -477,7 +479,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         // becomes visible
 
         visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
-                .setValue(element.getAttribute("hidden"));
+                .setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
 
         visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(isVisible(context.node));
@@ -518,16 +520,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         } else {
             visibilityData
                     .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
-                    .setValue(element.getAttribute("hidden"));
+                    .setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
 
-            WidgetUtil.updateAttribute(element, "hidden",
+            WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
                     Boolean.TRUE.toString());
         }
     }
 
     private void restoreInitialHiddenAttribute(Element element,
             NodeMap visibilityData) {
-        WidgetUtil.updateAttribute(element, "hidden",
+        WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
                 visibilityData
                         .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
                         .getValue());
