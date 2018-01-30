@@ -1464,7 +1464,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertNull(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
 
         setVisible(true);
 
