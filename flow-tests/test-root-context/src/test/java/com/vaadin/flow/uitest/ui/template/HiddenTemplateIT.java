@@ -28,7 +28,7 @@ public class HiddenTemplateIT extends ChromeBrowserTest {
     public void initiallyHiddenElementStaysHidden() {
         open();
 
-        WebElement template = findElement(By.tagName("hidden-template"));
+        WebElement template = findElement(By.id("template"));
         WebElement child = getInShadowRoot(template, By.id("child"));
         Assert.assertNotNull(child.getAttribute("hidden"));
 
@@ -44,7 +44,7 @@ public class HiddenTemplateIT extends ChromeBrowserTest {
     public void initiallyNotHiddenElementChangesItsVisibility() {
         open();
 
-        WebElement template = findElement(By.tagName("hidden-template"));
+        WebElement template = findElement(By.id("template"));
 
         WebElement hidden = getInShadowRoot(template, By.id("hidden"));
         hidden.click();

@@ -33,6 +33,10 @@ public class HiddenTemplateView extends PolymerTemplate<TemplateModel> {
     @Id("child")
     private Div div;
 
+    public HiddenTemplateView() {
+        setId("template");
+    }
+
     @EventHandler
     private void updateVisibility() {
         div.setVisible(!div.isVisible());
