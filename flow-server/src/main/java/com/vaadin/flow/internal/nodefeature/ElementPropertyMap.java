@@ -24,14 +24,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.templatemodel.AllowClientUpdates;
 
 /**
  * Map for element property values.
@@ -45,6 +51,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             .collect(Collectors.toSet());
 
     private Map<String, List<PropertyChangeListener>> listeners;
+
+    private Predicate<String> updateFromClientFilter = null;
 
     /**
      * Creates a new element property map for the given node.
@@ -68,8 +76,26 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      */
     public Runnable deferredUpdateFromClient(String key, Serializable value) {
         if (!mayUpdateFromClient(key, value)) {
+            /*
+             * Ignore updates for properties that are rejected because of model
+             * type definitions. Such changes should preferably not be sent by
+             * the client at all, but additional bookkeeping would be needed to
+             * allow the client to know which properties are actually allowed.
+             */
+            if (updateFromClientFilter != null
+                    && !updateFromClientFilter.test(key)) {
+                getLogger().warn(
+                        "Ignoring model update for {}. "
+                                + "For security reasons, the property must have a two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
+                        key, AllowClientUpdates.class.getSimpleName());
+                return () -> {
+                    // nop
+                };
+            }
+
             throw new IllegalArgumentException(String.format(
-                    "Feature '%s' doesn't allow the client to update '%s'",
+                    "Feature '%s' doesn't allow the client to update '%s'. "
+                            + "For security reasons, the property must be defined as synchronized through the Element's API.",
                     getClass().getName(), key));
         }
 
@@ -122,28 +148,117 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     @Override
-    protected void put(String key, Serializable value, boolean emitChange) {
-        putWithDeferredChangeEvent(key, value, emitChange).run();
+    protected Serializable put(String key, Serializable value,
+            boolean emitChange) {
+        PutResult result = putWithDeferredChangeEvent(key, value, emitChange);
+
+        // Fire event right away (if applicable)
+        result.run();
+
+        return result.oldValue;
     }
 
-    private Runnable putWithDeferredChangeEvent(String key, Serializable value,
-            boolean emitChange) {
-        Serializable oldValue = get(key);
-        super.put(key, value, emitChange);
+    private class PutResult implements Runnable {
+        private final Serializable oldValue;
+        private final PropertyChangeEvent eventToFire;
 
-        if (hasElement() && !Objects.equals(oldValue, value)) {
-            PropertyChangeEvent event = new PropertyChangeEvent(
-                    Element.get(getNode()), key, oldValue, !emitChange);
-            return () -> fireEvent(event);
+        public PutResult(Serializable oldValue,
+                PropertyChangeEvent eventToFire) {
+            this.oldValue = oldValue;
+            this.eventToFire = eventToFire;
         }
-        return () -> {
-            // NO-OP
+
+        @Override
+        public void run() {
+            if (eventToFire != null) {
+                fireEvent(eventToFire);
+            }
+        }
+    }
+
+    private PutResult putWithDeferredChangeEvent(String key, Serializable value,
+            boolean emitChange) {
+        Serializable oldValue = super.put(key, value, emitChange);
+        boolean valueChanged = !Objects.equals(oldValue, value);
+
+        if (valueChanged) {
+            setFilterIfMapNode(oldValue, () -> null);
+            setFilterIfMapNode(value, () -> createChildFilter(key));
+        }
+
+        PropertyChangeEvent event;
+        if (hasElement() && valueChanged) {
+            event = new PropertyChangeEvent(Element.get(getNode()), key,
+                    oldValue, !emitChange);
+        } else {
+            event = null;
+        }
+
+        return new PutResult(oldValue, event);
+    }
+
+    @Override
+    protected Object remove(String key) {
+        Object oldValue = super.remove(key);
+
+        setFilterIfMapNode(oldValue, () -> null);
+
+        return oldValue;
+    }
+
+    private Predicate<String> createChildFilter(String prefix) {
+        return name -> {
+            if (updateFromClientFilter == null) {
+                return false;
+            } else {
+                return updateFromClientFilter.test(prefix + "." + name);
+            }
         };
+    }
+
+    private static void setFilterIfMapNode(Object maybeNode,
+            Supplier<Predicate<String>> filterFactory) {
+        if (maybeNode instanceof StateNode) {
+            StateNode node = (StateNode) maybeNode;
+            if (node.hasFeature(ElementPropertyMap.class)) {
+                ElementPropertyMap.getModel(node)
+                        .setUpdateFromClientFilter(filterFactory.get());
+            }
+        }
     }
 
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
-        return !forbiddenProperties.contains(key);
+        if (forbiddenProperties.contains(key)) {
+            return false;
+        }
+
+        if (getNode().hasFeature(SynchronizedPropertiesList.class)) {
+            if (getNode().getFeature(SynchronizedPropertiesList.class)
+                    .getSynchronizedProperties().contains(key)) {
+                return true;
+            }
+        }
+
+        if (updateFromClientFilter != null) {
+            return updateFromClientFilter.test(key);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Sets a filter that will be used by for determining whether a property
+     * maybe updated from the client. The filter is recursively inherited to
+     * child model properties.
+     *
+     * @param updateFromClientFilter
+     *            the filter to set, or <code>null</code> to remove the current
+     *            filter
+     */
+    public void setUpdateFromClientFilter(
+            Predicate<String> updateFromClientFilter) {
+        this.updateFromClientFilter = updateFromClientFilter;
     }
 
     /**
@@ -292,5 +407,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     private boolean hasElement() {
         return getNode().hasFeature(ElementData.class);
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ElementPropertyMap.class);
     }
 }
