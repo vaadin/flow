@@ -30,11 +30,13 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.theme.NoTheme;
 
 /**
  * This is a basic default error view shown on exceptions during navigation.
  */
 @Tag(Tag.DIV)
+@NoTheme
 public class InternalServerError extends Component
         implements HasErrorParameter<Exception> {
 

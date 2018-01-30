@@ -204,7 +204,7 @@ public final class RouterUtil {
      * Collect possible route parent layouts for a navigation target that is not
      * annotated with {@link Route} nor {@link RouteAlias}, but may still
      * contain {@link ParentLayout}. Mainly error navigation targets.
-     * 
+     *
      * @param navigationTarget
      *            route to check parent layouts for
      * @return list of parent layouts

@@ -52,25 +52,36 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
         const buildBundler = new FlowBuildBundler(polymerProject.config, polymerProject.analyzer);
         del([configurationTargetDirectory])
             .then(() => {
+                console.log('Starting to process frontend files.');
                 const htmlSplitter = new polymerBuild.HtmlSplitter();
 
                 let initialStream = mergeStream(polymerProject.sources(), polymerProject.dependencies()).pipe(htmlSplitter.split());
                 if (transpileJs) {
+                    console.log('Will transpile frontend files.');
                     initialStream = initialStream.pipe(gulpIf(/\.js$/, new SafeTransform('babel', babelTransform, {plugins: ['babel-plugin-external-helpers'], presets: ['babel-preset-es2015']})));
                 }
 
-                const processedStream = initialStream
+                console.log('Will minify frontend files.');
+                const streamWithMinification = initialStream
                     .pipe(gulpIf(/\.js$/, new SafeTransform('babel', babelTransform, {minified: true, presets: ['babel-preset-minify']})))
                     .pipe(gulpIf(/\.html$/, new SafeTransform('html-minify', htmlMinifier.minify, {collapseWhitespace: true, removeComments: true, minifyCSS: true})))
                     .pipe(gulpIf(/\.css$/, new SafeTransform('css-slam', cssSlam.css)))
-                    .pipe(htmlSplitter.rejoin())
-                    .pipe(bundle ? buildBundler : gulpIgnore.exclude(file => { return file.path === shellFile } ));
+                    .pipe(htmlSplitter.rejoin());
+
+                let processedStream = streamWithMinification.pipe(gulpIgnore.exclude(file => { return file.path === shellFile } ));
+                if (bundle) {
+                    console.log('Will bundle frontend files.');
+                    processedStream = streamWithMinification.pipe(buildBundler);
+                }
 
                 const nonSourceUserFilesStream = gulp.src([`${es6SourceDirectory}/**/*`, `!${es6SourceDirectory}/**/*.{html,css,js}`]);
                 const buildStream = mergeStream(processedStream, nonSourceUserFilesStream)
                     .pipe(gulpRename(path => { path.dirname = path.dirname.replace(redundantPathPrefix, "") }))
-                    .pipe(gulpReplace('assetpath="'+redundantPathPrefix+'/', 'assetpath="',{ logs: { enabled: false } }))
+                    .pipe(gulpIf(/\.html$/, gulpReplace(`assetpath="${redundantPathPrefix}/`, 'assetpath="', { logs: { enabled: false } })))
                     .pipe(gulp.dest(configurationTargetDirectory));
+
+                console.log(`Will copy files to target directory '${configurationTargetDirectory}'.`);
+                console.log("Starting operations stated above, this might take a while.");
 
                 return new Promise((resolve, reject) => {
                     buildStream.on('end', resolve);
@@ -79,7 +90,9 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
             })
             .then(() => {
                 if (bundle) {
-                    writeBundleInformation(buildBundler, redundantPathPrefix, path.join(configurationTargetDirectory, 'vaadin-flow-bundle-manifest.json'));
+                    const bundleManifestFile = path.join(configurationTargetDirectory, 'vaadin-flow-bundle-manifest.json');
+                    console.log(`Writing bundle manifest to '${bundleManifestFile}'`);
+                    writeBundleInformation(buildBundler, redundantPathPrefix, bundleManifestFile);
                 }
             })
             .then(() => {

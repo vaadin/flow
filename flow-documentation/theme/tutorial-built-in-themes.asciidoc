@@ -101,3 +101,8 @@ public List<String> getHeadInlineContents(VaadinUriResolver resolver) {
     return contents;
 }
 ----
+
+[NOTE]
+In the case where an exception navigation chain doesn't get the used `Theme` the
+exception navigation target can be annotated with `@NoTheme` so that
+a warning is not logged for missing theme.
