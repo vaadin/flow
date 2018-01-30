@@ -29,7 +29,7 @@ import elemental.json.JsonArray;
         "WebComponent: InfiniteScrollerElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-infinite-scroller")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-infinite-scroller.html")
-public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteScroller<R>>
+public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteScroller<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -38,7 +38,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @return the {@code rootPath} property from the webcomponent
      */
-    public String getRootPath() {
+    protected String getRootPathString() {
         return getElement().getProperty("rootPath");
     }
 
@@ -46,7 +46,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param rootPath
      *            the String value to set
      */
-    public void setRootPath(String rootPath) {
+    protected void setRootPath(String rootPath) {
         getElement().setProperty("rootPath", rootPath == null ? "" : rootPath);
     }
 
@@ -56,7 +56,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @return the {@code importPath} property from the webcomponent
      */
-    public String getImportPath() {
+    protected String getImportPathString() {
         return getElement().getProperty("importPath");
     }
 
@@ -64,7 +64,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param importPath
      *            the String value to set
      */
-    public void setImportPath(String importPath) {
+    protected void setImportPath(String importPath) {
         getElement().setProperty("importPath",
                 importPath == null ? "" : importPath);
     }
@@ -75,7 +75,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @return the {@code root} property from the webcomponent
      */
-    protected JsonObject protectedGetRoot() {
+    protected JsonObject getRootJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("root");
     }
 
@@ -93,7 +93,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @return the {@code $} property from the webcomponent
      */
-    protected JsonObject protectedGet$() {
+    protected JsonObject get$JsonObject() {
         return (JsonObject) getElement().getPropertyRaw("$");
     }
 
@@ -120,7 +120,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @return the {@code bufferSize} property from the webcomponent
      */
-    public double getBufferSize() {
+    protected double getBufferSizeDouble() {
         return getElement().getProperty("bufferSize", 0.0);
     }
 
@@ -137,7 +137,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param bufferSize
      *            the double value to set
      */
-    public void setBufferSize(double bufferSize) {
+    protected void setBufferSize(double bufferSize) {
         getElement().setProperty("bufferSize", bufferSize);
     }
 
@@ -147,7 +147,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * 
      * @return the {@code active} property from the webcomponent
      */
-    public boolean isActive() {
+    protected boolean isActiveBoolean() {
         return getElement().getProperty("active", false);
     }
 
@@ -155,7 +155,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
      * @param active
      *            the boolean value to set
      */
-    public void setActive(boolean active) {
+    protected void setActive(boolean active) {
         getElement().setProperty("active", active);
     }
 

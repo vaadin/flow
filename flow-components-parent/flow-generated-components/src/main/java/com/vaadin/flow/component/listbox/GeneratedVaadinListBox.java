@@ -28,7 +28,6 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.HasComponents;
 
 /**
  * <p>
@@ -70,12 +69,12 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ListBoxElement#1.0.0-alpha8",
+        "WebComponent: Vaadin.ListBoxElement#1.0.0-alpha9",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-list-box")
 @HtmlImport("frontend://bower_components/vaadin-list-box/src/vaadin-list-box.html")
-public class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>> extends
-        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -91,11 +90,11 @@ public class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>> extends
      * @return the {@code items} property from the webcomponent
      */
     @Synchronize(property = "items", value = "items-changed")
-    protected JsonArray protectedGetItems() {
+    protected JsonArray getItemsJsonArray() {
         return (JsonArray) getElement().getPropertyRaw("items");
     }
 
-    public void focus() {
+    protected void focus() {
         getElement().callFunction("focus");
     }
 
@@ -124,26 +123,9 @@ public class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addItemsChangeListener(
+    protected Registration addItemsChangeListener(
             ComponentEventListener<ItemsChangeEvent<R>> listener) {
         return addListener(ItemsChangeEvent.class,
                 (ComponentEventListener) listener);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinListBox(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinListBox() {
     }
 }

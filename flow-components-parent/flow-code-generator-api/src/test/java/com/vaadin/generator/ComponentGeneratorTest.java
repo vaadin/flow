@@ -1034,20 +1034,20 @@ public class ComponentGeneratorTest {
         generatedClass = ComponentGeneratorTestUtils
                 .removeIndentation(generatedClass);
 
-        Assert.assertTrue(generatedClass
-                .contains("protected JsonObject protectedGetObjectProperty()"));
-        Assert.assertTrue(generatedClass.contains(
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "protected JsonObject getObjectPropertyJsonObject()"));
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "protected void setObjectProperty(JsonObject objectProperty)"));
-        Assert.assertTrue(generatedClass
-                .contains("protected JsonArray protectedGetArrayProperty()"));
-        Assert.assertTrue(generatedClass.contains(
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "protected JsonArray getArrayPropertyJsonArray()"));
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "protected void setArrayProperty(JsonArray arrayProperty)"));
-        Assert.assertTrue(generatedClass.contains(
-                "protected JsonValue protectedGetUndefinedProperty()"));
-        Assert.assertTrue(generatedClass.contains(
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "protected JsonValue getUndefinedPropertyJsonValue()"));
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "protected void setUndefinedProperty(JsonValue undefinedProperty)"));
 
-        Assert.assertTrue(generatedClass.contains(
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "protected void callSomething(JsonObject objectParam)"));
     }
 
@@ -1163,6 +1163,71 @@ public class ComponentGeneratorTest {
                 generatedClass.contains("label=&quot;myLabel&quot;&gt;"));
         Assert.assertFalse("JavaDoc must not have @code",
                 generatedClass.contains("@code"));
+    }
+
+    @Test
+    public void withAbstractClass() {
+        generator.withAbstractClass(true);
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertThat(generatedClass, CoreMatchers
+                .containsString("public abstract class MyComponent"));
+    }
+
+    @Test
+    public void withProtectedMethods() {
+        generator.withProtectedMethods(true);
+
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("something");
+        property.setType(Collections.singleton(ComponentBasicType.STRING));
+        property.setNotify(true);
+
+        ComponentPropertyData value = new ComponentPropertyData();
+        value.setName("value");
+        value.setType(Collections.singleton(ComponentBasicType.NUMBER));
+        value.setNotify(true);
+        componentMetadata.setProperties(Arrays.asList(property, value));
+
+        ComponentFunctionData function = new ComponentFunctionData();
+        function.setName("function");
+        componentMetadata.setMethods(Collections.singletonList(function));
+
+        componentMetadata.setSlots(Arrays.asList("", "named"));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertThat(generatedClass,
+                CoreMatchers.not(CoreMatchers.containsString("HasComponents")));
+        Assert.assertThat(generatedClass,
+                CoreMatchers.not(CoreMatchers.containsString("HasValue")));
+
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "protected void setSomething(String something)"));
+        Assert.assertThat(generatedClass, CoreMatchers
+                .containsString("protected String getSomethingString()"));
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "protected Registration addSomethingChangeListener("));
+
+        Assert.assertThat(generatedClass, CoreMatchers
+                .containsString("protected double getValueDouble()"));
+        Assert.assertThat(generatedClass, CoreMatchers
+                .containsString("protected void setValue(double value)"));
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "protected Registration addValueChangeListener("));
+
+        Assert.assertThat(generatedClass,
+                CoreMatchers.containsString("protected void function()"));
+
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "protected R addToNamed(Component... components)"));
+        Assert.assertThat(generatedClass, CoreMatchers.containsString(
+                "protected void remove(Component... components)"));
+        Assert.assertThat(generatedClass,
+                CoreMatchers.containsString("protected void removeAll()"));
     }
 
 }
