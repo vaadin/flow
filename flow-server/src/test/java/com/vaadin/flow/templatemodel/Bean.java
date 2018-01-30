@@ -22,6 +22,7 @@ public class Bean {
         string = String.valueOf(value);
     }
 
+    @AllowClientUpdates(ClientUpdateMode.ALLOW)
     public String getString() {
         return string;
     }
@@ -30,6 +31,7 @@ public class Bean {
         this.string = string;
     }
 
+    @AllowClientUpdates(ClientUpdateMode.DENY)
     public boolean isBooleanValue() {
         return booleanValue;
     }

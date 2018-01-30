@@ -215,6 +215,35 @@ public class BeanModelTypeTest {
         Assert.assertEquals("3", model.getProperty("string"));
     }
 
+    @Test
+    public void clientUpdateModes() {
+        BeanModelType<BeanContainingBeans> beanType = new BeanModelType<>(
+                BeanContainingBeans.class, PropertyFilter.ACCEPT_ALL, false);
+
+        BeanModelType<?> bean1Type = (BeanModelType<?>) beanType
+                .getPropertyType("bean1");
+        BeanModelType<?> bean2Type = (BeanModelType<?>) beanType
+                .getPropertyType("bean2");
+
+        Assert.assertEquals(ClientUpdateMode.ALLOW,
+                bean1Type.getClientUpdateMode("string").get());
+        Assert.assertEquals(ClientUpdateMode.DENY,
+                bean1Type.getClientUpdateMode("booleanValue").get());
+        Assert.assertEquals(ClientUpdateMode.ALLOW,
+                bean1Type.getClientUpdateMode("booleanObject").get());
+        Assert.assertFalse(
+                bean1Type.getClientUpdateMode("intValue").isPresent());
+
+        Assert.assertEquals(ClientUpdateMode.ALLOW,
+                bean2Type.getClientUpdateMode("string").get());
+        Assert.assertEquals(ClientUpdateMode.DENY,
+                bean2Type.getClientUpdateMode("booleanValue").get());
+        Assert.assertFalse(
+                bean2Type.getClientUpdateMode("booleanObject").isPresent());
+        Assert.assertEquals(ClientUpdateMode.ALLOW,
+                bean2Type.getClientUpdateMode("intValue").get());
+    }
+
     private static ElementPropertyMap createEmptyModel() {
         StateNode node = new StateNode(ElementPropertyMap.class);
         return ElementPropertyMap.getModel(node);

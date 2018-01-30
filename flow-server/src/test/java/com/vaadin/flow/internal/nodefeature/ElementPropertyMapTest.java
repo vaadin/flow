@@ -16,6 +16,8 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -27,8 +29,6 @@ import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.shared.Registration;
 
 public class ElementPropertyMapTest {
@@ -45,8 +45,7 @@ public class ElementPropertyMapTest {
 
     @Test
     public void removePropertyChangeListener_fireEvent_listenerIsNotNotified() {
-        StateNode node = BasicElementStateProvider.createStateNode("div");
-        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
+        ElementPropertyMap map = createSimplePropertyMap();
         PropertyChangeListener listener = ev -> {
             Assert.fail();
         };
@@ -60,8 +59,7 @@ public class ElementPropertyMapTest {
 
     @Test
     public void addSeveralPropertyChangeListeners_fireEvent_listenersAreNotified() {
-        StateNode node = BasicElementStateProvider.createStateNode("div");
-        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
+        ElementPropertyMap map = createSimplePropertyMap();
         AtomicBoolean first = new AtomicBoolean();
         AtomicBoolean second = new AtomicBoolean();
         PropertyChangeListener listener1 = ev -> first.set(!first.get());
@@ -77,8 +75,7 @@ public class ElementPropertyMapTest {
 
     @Test
     public void resolveModelList_modelListStateNodeHasReportedFeature() {
-        StateNode node = BasicElementStateProvider.createStateNode("div");
-        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
+        ElementPropertyMap map = createSimplePropertyMap();
         map.resolveModelList("foo");
 
         StateNode stateNode = (StateNode) map.get("foo");
@@ -87,8 +84,7 @@ public class ElementPropertyMapTest {
 
     @Test
     public void resolveModelMap_modelMapStateNodeHasReportedFeature() {
-        StateNode node = BasicElementStateProvider.createStateNode("div");
-        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
+        ElementPropertyMap map = createSimplePropertyMap();
         map.resolveModelMap("foo");
 
         StateNode stateNode = (StateNode) map.get("foo");
@@ -98,8 +94,7 @@ public class ElementPropertyMapTest {
 
     @Test
     public void put_ignoreSameValue() {
-        StateNode node = BasicElementStateProvider.createStateNode("div");
-        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
+        ElementPropertyMap map = createSimplePropertyMap();
 
         AtomicReference<Serializable> value = new AtomicReference<>();
         map.addPropertyChangeListener("foo", event -> {
@@ -114,9 +109,111 @@ public class ElementPropertyMapTest {
         map.setProperty("foo", "bar");
     }
 
+    @Test
+    public void basicUpdateFromClientFilter() {
+        ElementPropertyMap map = createSimplePropertyMap();
+
+        Set<String> clientFilterQueries = new HashSet<>();
+        // Allow updating the same property only once
+        map.setUpdateFromClientFilter(name -> clientFilterQueries.add(name));
+
+        Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
+        Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
+    }
+
+    @Test
+    public void updateSynchronizedPropertyDespiteFilter() {
+        ElementPropertyMap map = createSimplePropertyMap();
+
+        map.setUpdateFromClientFilter(name -> false);
+        Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
+
+        Element.get(map.getNode()).synchronizeProperty("foo", "event");
+        Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
+
+        Element.get(map.getNode()).removeSynchronizedProperty("foo");
+        Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
+    }
+
+    @Test
+    public void childPropertyUpdateFilter_replaceFilter() {
+        ElementPropertyMap map = createSimplePropertyMap();
+
+        map.setUpdateFromClientFilter("foo"::equals);
+
+        Assert.assertTrue(map.mayUpdateFromClient("foo", "a"));
+        Assert.assertFalse(map.mayUpdateFromClient("bar", "a"));
+
+        map.setUpdateFromClientFilter("bar"::equals);
+
+        Assert.assertFalse(map.mayUpdateFromClient("foo", "a"));
+        Assert.assertTrue(map.mayUpdateFromClient("bar", "a"));
+    }
+
+    @Test
+    public void childPropertyUpdateFilter_setFilterBeforeChild() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        StateNode child = new StateNode(ElementPropertyMap.class);
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+
+        map.setUpdateFromClientFilter("foo.bar"::equals);
+        map.put("foo", child);
+
+        Assert.assertTrue(childModel.mayUpdateFromClient("bar", "a"));
+        Assert.assertFalse(childModel.mayUpdateFromClient("baz", "a"));
+    }
+
+    @Test
+    public void childPropertyUpdateFilter_setFilterAfterChild() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        StateNode child = new StateNode(ElementPropertyMap.class);
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+
+        map.put("foo", child);
+        map.setUpdateFromClientFilter("foo.bar"::equals);
+
+        Assert.assertTrue(childModel.mayUpdateFromClient("bar", "a"));
+        Assert.assertFalse(childModel.mayUpdateFromClient("baz", "a"));
+    }
+
+    @Test
+    public void childPropertyUpdateFilter_renameProperty() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        StateNode child = new StateNode(ElementPropertyMap.class);
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+
+        map.put("foo", child);
+        map.setUpdateFromClientFilter("foo.bar"::equals);
+
+        Assert.assertTrue(childModel.mayUpdateFromClient("bar", "a"));
+
+        map.remove("foo");
+        Assert.assertFalse(childModel.mayUpdateFromClient("bar", "a"));
+
+        map.put("bar", child);
+        Assert.assertFalse(childModel.mayUpdateFromClient("bar", "a"));
+    }
+
+    @Test
+    public void childPropertyUpdateFilter_deepNesting() {
+        ElementPropertyMap map = createSimplePropertyMap();
+
+        map.setUpdateFromClientFilter("a.b.c.d.e.f.g.h.i.j.property"::equals);
+
+        for (int i = 0; i < 10; i++) {
+            StateNode child = new StateNode(ElementPropertyMap.class);
+            map.setProperty(Character.toString((char) ('a' + i)), child);
+
+            map = ElementPropertyMap.getModel(child);
+        }
+
+        Assert.assertTrue(map.mayUpdateFromClient("property", "foo"));
+    }
+
     private void listenerIsNotified(boolean clientEvent) {
-        StateNode node = BasicElementStateProvider.createStateNode("div");
-        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
+        ElementPropertyMap map = createSimplePropertyMap();
+        StateNode node = map.getNode();
+
         AtomicReference<PropertyChangeEvent> event = new AtomicReference<>();
         PropertyChangeListener listener = ev -> {
             Assert.assertNull(event.get());
@@ -135,4 +232,8 @@ public class ElementPropertyMapTest {
         map.setProperty("bar", "foo");
     }
 
+    private static ElementPropertyMap createSimplePropertyMap() {
+        return BasicElementStateProvider.createStateNode("div")
+                .getFeature(ElementPropertyMap.class);
+    }
 }
