@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.theme;
 
+import javax.servlet.ServletContext;
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.shared.VaadinUriResolver;
 
@@ -89,36 +91,6 @@ public interface AbstractTheme extends Serializable {
      */
     default List<String> getBodyInlineContents() {
         return Collections.emptyList();
-    }
-
-    /**
-     * Get the translated theme path for the given url. If the url beginning
-     * doesn't match the string from {@link #getBaseUrl()} the url will be
-     * returned.
-     * <p>
-     * Translation will check if a file is found from the list of available
-     * resources for the translated path and return the original url if not.
-     *
-     * @param url
-     *            url to translate
-     * @param availableHtmlResources
-     *            .html resources available for this servlet context
-     * @return translated url path
-     */
-    default String getTranslatedUrl(String url,
-            Stream<String> availableHtmlResources) {
-        String translatedUrl = translateUrl(url);
-        if (translatedUrl.equals(url)) {
-            return url;
-        }
-        String substring = translatedUrl
-                .substring(translatedUrl.indexOf(getThemeUrl()));
-
-        if (availableHtmlResources
-                .anyMatch(resource -> resource.endsWith(substring))) {
-            return translatedUrl;
-        }
-        return url;
     }
 
     /**

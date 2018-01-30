@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.webjar;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
@@ -101,8 +102,9 @@ public class WebJarServer implements Serializable {
             WebJarBowerDependency newDependency) {
         int comparison = oldDependency.compareVersions(newDependency);
         if (comparison == 0) {
-            LoggerFactory.getLogger(getClass().getName())
-                    .trace("Have found multiple webJars with name and version: '{}'", oldDependency);
+            LoggerFactory.getLogger(getClass().getName()).trace(
+                    "Have found multiple webJars with name and version: '{}'",
+                    oldDependency);
             return oldDependency;
         } else if (comparison > 0) {
             return oldDependency;
@@ -158,6 +160,21 @@ public class WebJarServer implements Serializable {
 
         responseWriter.writeResponseContents(webJarPath, resourceUrl, request,
                 response);
+        return true;
+    }
+
+    public boolean hasWebJarResource(String filePathInContext,
+            ServletContext servletContext) throws IOException {
+        String webJarPath = getWebJarPath(filePathInContext);
+        if (webJarPath == null) {
+            return false;
+        }
+
+        URL resourceUrl = servletContext.getResource(webJarPath);
+        if (resourceUrl == null) {
+            return false;
+        }
+
         return true;
     }
 
