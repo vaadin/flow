@@ -20,7 +20,7 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-grid</artifactId>
-                <version>5.0.0-alpha6</version>
+                <version>5.0.0-alpha7</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
