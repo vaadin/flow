@@ -102,6 +102,18 @@ public class RouterUtilTest {
     public static class NonRouteTargetWithParents extends Component {
     }
 
+    @Route(value = "", layout = Parent.class)
+    @RouteAlias(value = "alias", layout = MiddleParent.class)
+    @Tag(Tag.DIV)
+    @ParentLayout(RoutePrefixParent.class)
+    public static class MultiTarget extends Component implements RouterLayout {
+    }
+
+    @Route(value = "sub", layout = MultiTarget.class)
+    @Tag(Tag.DIV)
+    public static class SubLayout extends Component {
+    }
+
     @Test
     public void route_path_should_contain_parent_prefix() {
         String routePath = RouterUtil.getRoutePath(
@@ -318,7 +330,7 @@ public class RouterUtilTest {
     }
 
     @Test
-    public void abolute_route_gets_expected_parent_layouts() {
+    public void absolute_route_gets_expected_parent_layouts() {
         List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
                 .getParentLayouts(AbsoluteRoute.class);
 
@@ -373,5 +385,56 @@ public class RouterUtilTest {
         Assert.assertEquals(
                 "Middle parent should have gotten Parent as top parent layout",
                 Parent.class, topParentLayout);
+    }
+
+    @Test // 3424
+    public void top_layout_resolves_correctly_for_route_parent() {
+        Class<? extends RouterLayout> topParentLayout = RouterUtil
+                .getTopParentLayout(MultiTarget.class, "");
+        Assert.assertEquals(
+                "@Route path should have gotten Parent as top parent layout",
+                Parent.class, topParentLayout);
+
+        topParentLayout = RouterUtil
+                .getTopParentLayout(MultiTarget.class, "alias");
+        Assert.assertEquals(
+                "@RouteAlias path should have gotten Parent as top parent layout",
+                Parent.class, topParentLayout);
+
+        topParentLayout = RouterUtil
+                .getTopParentLayout(SubLayout.class, "parent/sub");
+        Assert.assertEquals(
+                "SubLayout using MultiTarget as parent should have gotten RoutePrefixParent as top parent layout",
+                RoutePrefixParent.class, topParentLayout);
+
+    }
+
+    @Test // 3424
+    public void parent_layouts_resolve_correctly_for_route_parent() {
+        List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+                .getParentLayouts(MultiTarget.class, "");
+
+        Assert.assertThat(
+                "Get parent layouts for route \"\" gave wrong result.",
+                parentLayouts, IsIterableContainingInOrder
+                        .contains(new Class[] { Parent.class }));
+
+        parentLayouts = RouterUtil.getParentLayouts(MultiTarget.class,
+                "alias");
+
+        Assert.assertThat(
+                "Get parent layouts for routeAlias \"alias\" gave wrong result.",
+                parentLayouts,
+                IsIterableContainingInOrder.contains(new Class[] {
+                        MiddleParent.class, Parent.class }));
+
+        parentLayouts = RouterUtil.getParentLayouts(SubLayout.class,
+                "parent/sub");
+
+        Assert.assertThat(
+                "Get parent layouts for route \"parent/sub\" with parent Route + ParentLayout gave wrong result.",
+                parentLayouts,
+                IsIterableContainingInOrder.contains(new Class[] {
+                        MultiTarget.class, RoutePrefixParent.class }));
     }
 }
