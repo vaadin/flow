@@ -21,6 +21,7 @@ import java.util.List;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
@@ -68,11 +69,11 @@ public class RouteTarget implements Serializable {
             validateNormalTarget(target);
             normal = target;
         } else {
-            if (HasUrlParameter.isAnnotatedParameter(target,
+            if (ParameterDeserializer.isAnnotatedParameter(target,
                     OptionalParameter.class)) {
                 validateOptionalParameter(target);
                 optionalParameter = target;
-            } else if (HasUrlParameter.isAnnotatedParameter(target,
+            } else if (ParameterDeserializer.isAnnotatedParameter(target,
                     WildcardParameter.class)) {
                 validateWildcard(target);
                 wildCardParameter = target;
@@ -150,9 +151,9 @@ public class RouteTarget implements Serializable {
     }
 
     private boolean isAnnotatedParameter(Class<?> target) {
-        return HasUrlParameter.isAnnotatedParameter(target,
+        return ParameterDeserializer.isAnnotatedParameter(target,
                 OptionalParameter.class)
-                || HasUrlParameter.isAnnotatedParameter(target,
+                || ParameterDeserializer.isAnnotatedParameter(target,
                         WildcardParameter.class);
     }
 }
