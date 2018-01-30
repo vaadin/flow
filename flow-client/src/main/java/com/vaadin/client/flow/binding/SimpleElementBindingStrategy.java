@@ -507,14 +507,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         if (needsRebind(context.node) && isVisible(context.node)) {
             remove(listeners, context, computationsCollection);
-            Reactive.addFlushListener(() -> doBind(context.node, nodeFactory));
+            Reactive.addFlushListener(() -> {
+                restoreInitialHiddenAttribute(element, visibilityData);
+                doBind(context.node, nodeFactory);
+            });
         } else if (isVisible(context.node)) {
             visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                     .setValue(true);
-
-            // restore the previous value
-            WidgetUtil.updateAttribute(element, "hidden", visibilityData
-                    .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY));
+            restoreInitialHiddenAttribute(element, visibilityData);
         } else {
             visibilityData
                     .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
@@ -523,6 +523,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             WidgetUtil.updateAttribute(element, "hidden",
                     Boolean.TRUE.toString());
         }
+    }
+
+    private void restoreInitialHiddenAttribute(Element element,
+            NodeMap visibilityData) {
+        WidgetUtil.updateAttribute(element, "hidden",
+                visibilityData
+                        .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
+                        .getValue());
     }
 
     private void doBind(StateNode node, BinderContext nodeFactory) {

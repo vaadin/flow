@@ -1400,6 +1400,146 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertNull(element.getAttribute("hidden"));
     }
 
+    /**
+     * The StateNode is visible (the visibility is true).
+     *
+     * The HTML element has "hidden" attribute.
+     *
+     * After binding the element should stay hidden
+     */
+    public void testBindHiddenElement_stateNodeIsVisible_elementStaysHidden() {
+        element.setAttribute("hidden", Boolean.TRUE.toString());
+        Binder.bind(node, element);
+
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+    }
+
+    /**
+     * The StateNode is visible (the visibility is true).
+     *
+     * The HTML element has "hidden" attribute.
+     *
+     * Element changes its visibility. The "hidden" attribute should keep its
+     * value.
+     *
+     */
+    public void testBindHiddenElement_stateNodeChangesVisibility_elementStaysHidden() {
+        element.setAttribute("hidden", Boolean.TRUE.toString());
+
+        setTag();
+
+        node.setDomNode(element);
+
+        Binder.bind(node, element);
+
+        setVisible(false);
+
+        Reactive.flush();
+
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+
+        setVisible(true);
+
+        Reactive.flush();
+
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+    }
+
+    /**
+     * The StateNode is visible (the visibility is true).
+     *
+     * The HTML element has no "hidden" attribute.
+     *
+     * Element changes its visibility. The "hidden" attribute should keep its
+     * value.
+     */
+    public void testBindNotHiddenElement_stateNodeChangesVisibility_elementIsNotHidden() {
+        setTag();
+
+        node.setDomNode(element);
+
+        Binder.bind(node, element);
+
+        setVisible(false);
+
+        Reactive.flush();
+
+        assertNull(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+
+        setVisible(true);
+
+        Reactive.flush();
+
+        assertNull(element.getAttribute("hidden"));
+    }
+
+    /**
+     * The StateNode is visible (the visibility is true).
+     *
+     * The HTML element has no "hidden" attribute.
+     *
+     * Element changes its visibility. The "hidden" attribute should keep its
+     * value.
+     */
+    public void testBindNotHiddenElement_stateNodeChangesVisibilityAndElementChangesHiddenValue_elementKeepsHiddenValue() {
+        setTag();
+
+        node.setDomNode(element);
+
+        Binder.bind(node, element);
+
+        // make it invisible, make it visible, change "hidden" attribute value
+
+        setVisible(false);
+
+        Reactive.flush();
+
+        setVisible(true);
+
+        Reactive.flush();
+
+        element.setAttribute("hidden", Boolean.TRUE.toString());
+
+        // hide/unhide again
+        setVisible(false);
+
+        Reactive.flush();
+
+        setVisible(true);
+
+        Reactive.flush();
+
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+    }
+
+    /**
+     * The StateNode is initially invisible (the visibility is false).
+     *
+     * The HTML element has "hidden" attribute.
+     *
+     * After binding the element should stay hidden
+     */
+    public void testBindHiddenElement_stateNodeIsInvisible_elementStaysHidden() {
+        setVisible(false);
+        element.setAttribute("hidden", Boolean.TRUE.toString());
+
+        setTag();
+
+        node.setDomNode(element);
+
+        // Now the node is partially bound (it has "visibility" listener)
+        Binder.bind(node, element);
+
+        Reactive.flush();
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+
+        setVisible(true);
+
+        Reactive.flush();
+
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+    }
+
     public void testSimpleElementBindingStrategy_regularElement_needsBind() {
         assertFalse(SimpleElementBindingStrategy.needsRebind(node));
 
@@ -1564,8 +1704,16 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         };
         $wnd.Polymer.Element = {};
         element.__proto__ = $wnd.Polymer.Element;
-        element.removeAttribute = function(){
-        };
+        if( !element.removeAttribute ) {
+            element.removeAttribute = function(attribute){
+                element[attribute] = null;
+            };
+        }
+        if ( !element.getAttribute ){
+            element.getAttribute = function( attribute ){
+                return element[attribute];
+            };
+        }
     }-*/;
 
 }
