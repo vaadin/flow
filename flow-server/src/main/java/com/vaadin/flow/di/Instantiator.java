@@ -15,22 +15,17 @@
  */
 package com.vaadin.flow.di;
 
-import java.io.Serializable;
-import java.util.ServiceLoader;
-import java.util.stream.Stream;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.server.BootstrapListener;
-import com.vaadin.flow.server.BootstrapPageResponse;
-import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.*;
 import com.vaadin.flow.server.communication.UidlWriter;
+
+import java.io.Serializable;
+import java.util.ServiceLoader;
+import java.util.stream.Stream;
 
 /**
  * Delegate for discovering, creating and managing instances of various types
@@ -122,6 +117,14 @@ public interface Instantiator extends Serializable {
     }
 
     /**
+     * provides an instance of any given type, this is an abstraction
+     * that allows to make use of DI-frameworks from AddOns
+     *
+     * @return an instance of the given type
+     */
+    <T> T getOrCreate(Class<T> type);
+
+    /**
      * Creates an instance of a navigation target or router layout. This method
      * is not called in cases when a component instance is reused when
      * navigating.
@@ -133,8 +136,10 @@ public interface Instantiator extends Serializable {
      *            <code>null</code>
      * @return the created instance, not <code>null</code>
      */
-    <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event);
+    default <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
+            NavigationEvent event){
+        return getOrCreate(routeTargetType);
+    }
 
     /**
      * Creates an instance of a component by its {@code componentClass}.
@@ -143,7 +148,9 @@ public interface Instantiator extends Serializable {
      *            the instance type to create, not <code>null</code>
      * @return the created instance, not <code>null</code>
      */
-    <T extends Component> T createComponent(Class<T> componentClass);
+    default <T extends Component> T createComponent(Class<T> componentClass){
+        return getOrCreate(componentClass);
+    }
 
     /**
      * Gets the instantiator to use for the given UI.
@@ -163,9 +170,11 @@ public interface Instantiator extends Serializable {
     }
 
     /**
-     * Get the I18NProvider if on has been defined.
+     * Get the I18NProvider if one has been defined.
      *
      * @return I18NProvier instance
      */
-    I18NProvider getI18NProvider();
+    default I18NProvider getI18NProvider(){
+        return getOrCreate(I18NProvider.class);
+    }
 }

@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.spring.service;
 
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import javax.servlet.ServletException;
-
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,13 +30,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.vaadin.flow.component.HasElement;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
+import javax.servlet.ServletException;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 @RunWith(SpringRunner.class)
 @Import(SpringVaadinServletServiceTest.TestServletConfiguration.class)
@@ -72,22 +67,9 @@ public class SpringVaadinServletServiceTest {
         }
 
         @Override
-        public <T extends HasElement> T createRouteTarget(
-                Class<T> routeTargetType, NavigationEvent event) {
+        public <T> T getOrCreate(Class<T> type) {
             return null;
         }
-
-        @Override
-        public <T extends com.vaadin.flow.component.Component> T createComponent(
-                Class<T> componentClass) {
-            return null;
-        }
-
-        @Override
-        public I18NProvider getI18NProvider() {
-            return null;
-        }
-
     }
 
     @Component

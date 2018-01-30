@@ -15,21 +15,18 @@
  */
 package com.vaadin.flow.di;
 
-import java.util.ServiceLoader;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidI18NConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+
+import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Default instantiator that is used if no other instantiator has been
@@ -62,6 +59,11 @@ public class DefaultInstantiator implements Instantiator {
         return getServiceLoaderListeners(service.getClassLoader());
     }
 
+    @Override
+    public <T> T getOrCreate(Class<T> type) {
+        return ReflectTools.createInstance(type);
+    }
+
     /**
      * Helper for finding service init listeners using {@link ServiceLoader}.
      *
@@ -74,17 +76,6 @@ public class DefaultInstantiator implements Instantiator {
         ServiceLoader<VaadinServiceInitListener> loader = ServiceLoader
                 .load(VaadinServiceInitListener.class, classloader);
         return StreamSupport.stream(loader.spliterator(), false);
-    }
-
-    @Override
-    public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
-        return ReflectTools.createInstance(routeTargetType);
-    }
-
-    @Override
-    public <T extends Component> T createComponent(Class<T> componentClass) {
-        return ReflectTools.createInstance(componentClass);
     }
 
     @Override
