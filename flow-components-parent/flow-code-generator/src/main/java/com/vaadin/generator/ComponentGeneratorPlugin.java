@@ -15,8 +15,6 @@
  */
 package com.vaadin.generator;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,6 +25,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Maven plugin for the Java code generation based on JSON metadata extracted
@@ -77,8 +77,27 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
     @Parameter(property = "generate.class.name.prefix", defaultValue = "", required = false)
     private String classNamePrefix;
 
+    /**
+     * Sets the frontend directory from where the files will be served. It is
+     * used primarily to set the contents of the <code>@HtmlImport</code>
+     * annotation. The default is <code>bower_components</code>.
+     */
     @Parameter(property = "generate.dependencies.working.directory", defaultValue = "bower_components")
     private String dependenciesWorkingDirectory;
+
+    /**
+     * When <code>true</code>, all methods, getters, setters and events are
+     * generated as protected. The default is <code>false</code>.
+     */
+    @Parameter(property = "generate.protected.methods", defaultValue = "false")
+    private boolean protectedMethods;
+
+    /**
+     * When <code>true</code>, the classes are generated as abstract. The
+     * default is <code>false</code>.
+     */
+    @Parameter(property = "generate.abstract.classes", defaultValue = "false")
+    private boolean abstractClasses;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -116,7 +135,9 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
 
         generator.withTargetPath(targetDir).withBasePackage(basePackage)
                 .withFrontendDirectory(dependenciesWorkingDirectory)
-                .withClassNamePrefix(classNamePrefix);
+                .withClassNamePrefix(classNamePrefix)
+                .withProtectedMethods(protectedMethods)
+                .withAbstractClass(abstractClasses);
 
         for (File file : files) {
             getLog().info("Generating class for " + file.getName() + "...");

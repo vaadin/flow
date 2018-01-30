@@ -22,7 +22,7 @@ import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.dom.Element;
 
 /**
  * <p>
@@ -165,13 +165,13 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.FormItemElement#2.0.0-alpha3",
+        "WebComponent: Vaadin.FormItemElement#2.0.0-alpha5",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-form-item")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-item.html")
-public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
-        extends Component implements HasStyle, HasClickListeners<R>,
-        ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
+        extends Component
+        implements HasStyle, HasClickListeners<R>, ComponentSupplier<R> {
 
     /**
      * Adds the given components as children of this component at the slot
@@ -187,7 +187,7 @@ public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToLabel(Component... components) {
+    protected R addToLabel(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "label");
             getElement().appendChild(component.getElement());
@@ -195,8 +195,15 @@ public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
         return get();
     }
 
-    @Override
-    public void remove(Component... components) {
+    /**
+     * Removes the given child components from this component.
+     * 
+     * @param components
+     *            The components to remove.
+     * @throws IllegalArgumentException
+     *             if any of the components is not a child of this component.
+     */
+    protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -208,27 +215,14 @@ public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
         }
     }
 
-    @Override
-    public void removeAll() {
+    /**
+     * Removes all contents from this component, this includes child components,
+     * text content as well as child elements that have been added directly to
+     * this component using the {@link Element} API.
+     */
+    protected void removeAll() {
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinFormItem(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinFormItem() {
     }
 }

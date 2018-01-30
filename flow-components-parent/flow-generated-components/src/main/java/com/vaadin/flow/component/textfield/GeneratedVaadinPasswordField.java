@@ -78,11 +78,11 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.PasswordFieldElement#2.0.0-alpha7",
+        "WebComponent: Vaadin.PasswordFieldElement#2.0.0-alpha10",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-password-field.html")
-public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R>>
+public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R>>
         extends GeneratedVaadinTextField<R> {
 
     /**
@@ -98,7 +98,7 @@ public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField
      * 
      * @return the {@code revealButtonHidden} property from the webcomponent
      */
-    public boolean isRevealButtonHidden() {
+    protected boolean isRevealButtonHiddenBoolean() {
         return getElement().getProperty("revealButtonHidden", false);
     }
 
@@ -113,7 +113,7 @@ public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField
      * @param revealButtonHidden
      *            the boolean value to set
      */
-    public void setRevealButtonHidden(boolean revealButtonHidden) {
+    protected void setRevealButtonHidden(boolean revealButtonHidden) {
         getElement().setProperty("revealButtonHidden", revealButtonHidden);
     }
 
@@ -130,7 +130,7 @@ public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField
      * 
      * @return the {@code passwordVisible} property from the webcomponent
      */
-    public boolean isPasswordVisible() {
+    protected boolean isPasswordVisibleBoolean() {
         return getElement().getProperty("passwordVisible", false);
     }
 }

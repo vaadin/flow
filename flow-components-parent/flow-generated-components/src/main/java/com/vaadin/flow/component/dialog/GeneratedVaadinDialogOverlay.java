@@ -38,8 +38,8 @@ import com.vaadin.flow.shared.Registration;
  * <h3>Styling</h3>
  * <p>
  * See <a href=
- * "https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html">
- * {@code <vaadin-overlay>} documentation</a> for
+ * "https://github.com/vaadin/vaadin-overlay/blob/master/src/vaadin-overlay.html"
+ * >{@code <vaadin-overlay>} documentation</a> for
  * {@code <vaadin-dialog-overlay>} parts.
  * </p>
  */
@@ -48,7 +48,7 @@ import com.vaadin.flow.shared.Registration;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-dialog-overlay")
 @HtmlImport("frontend://bower_components/vaadin-dialog/src/vaadin-dialog.html")
-public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay<R>>
+public abstract class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -58,7 +58,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -66,7 +66,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -77,7 +77,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @return the {@code template} property from the webcomponent
      */
     @Synchronize(property = "template", value = "template-changed")
-    protected JsonObject protectedGetTemplate() {
+    protected JsonObject getTemplateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("template");
     }
 
@@ -96,7 +96,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @return the {@code content} property from the webcomponent
      */
     @Synchronize(property = "content", value = "content-changed")
-    protected JsonObject protectedGetContent() {
+    protected JsonObject getContentJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("content");
     }
 
@@ -114,7 +114,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * 
      * @return the {@code withBackdrop} property from the webcomponent
      */
-    public boolean isWithBackdrop() {
+    protected boolean isWithBackdropBoolean() {
         return getElement().getProperty("withBackdrop", false);
     }
 
@@ -122,7 +122,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param withBackdrop
      *            the boolean value to set
      */
-    public void setWithBackdrop(boolean withBackdrop) {
+    protected void setWithBackdrop(boolean withBackdrop) {
         getElement().setProperty("withBackdrop", withBackdrop);
     }
 
@@ -140,7 +140,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * 
      * @return the {@code modeless} property from the webcomponent
      */
-    public boolean isModeless() {
+    protected boolean isModelessBoolean() {
         return getElement().getProperty("modeless", false);
     }
 
@@ -156,7 +156,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param modeless
      *            the boolean value to set
      */
-    public void setModeless(boolean modeless) {
+    protected void setModeless(boolean modeless) {
         getElement().setProperty("modeless", modeless);
     }
 
@@ -174,7 +174,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * 
      * @return the {@code focusTrap} property from the webcomponent
      */
-    public boolean isFocusTrap() {
+    protected boolean isFocusTrapBoolean() {
         return getElement().getProperty("focusTrap", false);
     }
 
@@ -190,7 +190,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @param focusTrap
      *            the boolean value to set
      */
-    public void setFocusTrap(boolean focusTrap) {
+    protected void setFocusTrap(boolean focusTrap) {
         getElement().setProperty("focusTrap", focusTrap);
     }
 
@@ -219,7 +219,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayCloseListener(
+    protected Registration addVaadinOverlayCloseListener(
             ComponentEventListener<VaadinOverlayCloseEvent<R>> listener) {
         return addListener(VaadinOverlayCloseEvent.class,
                 (ComponentEventListener) listener);
@@ -242,7 +242,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayEscapePressListener(
+    protected Registration addVaadinOverlayEscapePressListener(
             ComponentEventListener<VaadinOverlayEscapePressEvent<R>> listener) {
         return addListener(VaadinOverlayEscapePressEvent.class,
                 (ComponentEventListener) listener);
@@ -265,7 +265,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayOpenListener(
+    protected Registration addVaadinOverlayOpenListener(
             ComponentEventListener<VaadinOverlayOpenEvent<R>> listener) {
         return addListener(VaadinOverlayOpenEvent.class,
                 (ComponentEventListener) listener);
@@ -288,7 +288,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addVaadinOverlayOutsideClickListener(
+    protected Registration addVaadinOverlayOutsideClickListener(
             ComponentEventListener<VaadinOverlayOutsideClickEvent<R>> listener) {
         return addListener(VaadinOverlayOutsideClickEvent.class,
                 (ComponentEventListener) listener);
@@ -311,7 +311,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addOpenedChangeListener(
+    protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -334,7 +334,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addTemplateChangeListener(
+    protected Registration addTemplateChangeListener(
             ComponentEventListener<TemplateChangeEvent<R>> listener) {
         return addListener(TemplateChangeEvent.class,
                 (ComponentEventListener) listener);
@@ -357,7 +357,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addContentChangeListener(
+    protected Registration addContentChangeListener(
             ComponentEventListener<ContentChangeEvent<R>> listener) {
         return addListener(ContentChangeEvent.class,
                 (ComponentEventListener) listener);

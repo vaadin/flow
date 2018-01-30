@@ -2,7 +2,7 @@
   "name": "Vaadin.DatePickerLightElement",
   "tag": "vaadin-date-picker-light",
   "baseUrl": "vaadin-date-picker/src/vaadin-date-picker-light.html",
-  "version": "3.0.0-alpha5",
+  "version": "3.0.0-alpha6",
   "properties": [
     {
       "name": "value",
@@ -97,18 +97,6 @@
   ],
   "methods": [
     {
-      "name": "connectedCallback",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "disconnectedCallback",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
       "name": "open",
       "description": "Opens the dropdown.\n     ",
       "parameters": [],
@@ -160,5 +148,5 @@
     "Vaadin.ThemableMixin",
     "Vaadin.DatePickerMixin"
   ],
-  "description": "`<vaadin-date-picker-light>` is a customizable version of the `<vaadin-date-picker>` providing\nonly the scrollable month calendar view and leaving the input field definition to the user.\n\nTo create a custom input field, you need to add a child element which has a two-way\ndata-bindable property representing the input value. The property name is expected\nto be `bindValue` by default. See the example below for a simplest possible example\nusing an `<input>` element extended with `iron-input`.\n\n```html\n<vaadin-date-picker-light>\n  <iron-input>\n    <input/>\n  </iron-input>\n</vaadin-date-picker-light>\n```\n\nIf you are using other custom input fields like `<paper-input>`, you\nneed to define the name of value property using the `attrForValue` property.\n\n```html\n<vaadin-date-picker-light attr-for-value=\"value\">\n  <paper-input label=\"Birthday\">\n  </paper-input>\n</vaadin-date-picker-light>\n```"
+  "description": "`<vaadin-date-picker-light>` is a customizable version of the `<vaadin-date-picker>` providing\nonly the scrollable month calendar view and leaving the input field definition to the user.\n\nTo create a custom input field, you need to add a child element which has a two-way\ndata-bindable property representing the input value. The property name is expected\nto be `bindValue` by default. See the example below for a simplest possible example\nusing an `<input>` element extended with `iron-input`.\n\n```html\n<vaadin-date-picker-light>\n  <iron-input>\n    <input/>\n  </iron-input>\n</vaadin-date-picker-light>\n```\n\nIf you are using other custom input fields like `<paper-input>`, you\nneed to define the name of value property using the `attrForValue` property.\n\n```html\n<vaadin-date-picker-light attr-for-value=\"value\">\n  <paper-input label=\"Birthday\">\n  </paper-input>\n</vaadin-date-picker-light>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description | Theme for Element\n----------------|----------------|----------------\n`overlay-content` | The overlay element | vaadin-date-picker-light\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

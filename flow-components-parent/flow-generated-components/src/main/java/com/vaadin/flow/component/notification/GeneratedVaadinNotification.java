@@ -45,11 +45,11 @@ Your work has been saved
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.NotificationElement#1.0.0-alpha6",
+        "WebComponent: Vaadin.NotificationElement#1.0.0-alpha7",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-notification")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
-public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R>>
+public abstract class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -66,7 +66,7 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * 
      * @return the {@code duration} property from the webcomponent
      */
-    public double getDuration() {
+    protected double getDurationDouble() {
         return getElement().getProperty("duration", 0.0);
     }
 
@@ -82,7 +82,7 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * @param duration
      *            the double value to set
      */
-    public void setDuration(double duration) {
+    protected void setDuration(double duration) {
         getElement().setProperty("duration", duration);
     }
 
@@ -100,7 +100,7 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -115,7 +115,7 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -133,7 +133,7 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * 
      * @return the {@code position} property from the webcomponent
      */
-    public String getPosition() {
+    protected String getPositionString() {
         return getElement().getProperty("position");
     }
 
@@ -149,7 +149,7 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * @param position
      *            the String value to set
      */
-    public void setPosition(String position) {
+    protected void setPosition(String position) {
         getElement().setProperty("position", position == null ? "" : position);
     }
 
@@ -161,7 +161,7 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * Opens the notification.
      * </p>
      */
-    public void open() {
+    protected void open() {
         getElement().callFunction("open");
     }
 
@@ -173,7 +173,7 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * Closes the notification.
      * </p>
      */
-    public void close() {
+    protected void close() {
         getElement().callFunction("close");
     }
 
@@ -194,7 +194,7 @@ public class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addOpenedChangeListener(
+    protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
                 (ComponentEventListener) listener);
