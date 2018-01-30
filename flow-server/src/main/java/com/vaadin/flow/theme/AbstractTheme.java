@@ -15,10 +15,7 @@
  */
 package com.vaadin.flow.theme;
 
-import javax.servlet.ServletContext;
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 

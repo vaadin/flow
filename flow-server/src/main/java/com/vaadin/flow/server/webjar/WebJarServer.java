@@ -163,6 +163,17 @@ public class WebJarServer implements Serializable {
         return true;
     }
 
+    /**
+     * Check if a file is existent in a WebJar.
+     * 
+     * @param filePathInContext
+     *            servlet context path for file
+     * @param servletContext
+     *            servlet context
+     * @return true if file is found else false
+     * @throws IOException
+     *             if response population fails
+     */
     public boolean hasWebJarResource(String filePathInContext,
             ServletContext servletContext) throws IOException {
         String webJarPath = getWebJarPath(filePathInContext);
@@ -171,11 +182,8 @@ public class WebJarServer implements Serializable {
         }
 
         URL resourceUrl = servletContext.getResource(webJarPath);
-        if (resourceUrl == null) {
-            return false;
-        }
 
-        return true;
+        return resourceUrl != null;
     }
 
     private String getWebJarPath(String path) {

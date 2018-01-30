@@ -35,6 +35,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
@@ -64,7 +66,7 @@ public class VaadinServlet extends HttpServlet {
     private StaticFileServer staticFileServer;
     private WebJarServer webJarServer;
 
-    private Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations = new HashMap<>();
+    private final Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations = new HashMap<>();
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -658,6 +660,8 @@ public class VaadinServlet extends HttpServlet {
                 return urlToTranslate;
             }
         } catch (IOException e) {
+            LoggerFactory.getLogger(VaadinServlet.class)
+                    .trace("Failed to parse url.", e);
             // Url could not be translated, add given url to cache.
             addUrlTranslation(theme, urlToTranslate, urlToTranslate);
             return urlToTranslate;
