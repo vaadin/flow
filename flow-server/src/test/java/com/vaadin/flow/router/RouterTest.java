@@ -91,6 +91,7 @@ public class RouterTest extends RoutingTestBase {
             eventCollector.add("FooBar ACTIVATING");
         }
 
+        @Override
         public void beforeLeave(BeforeLeaveEvent event) {
             eventCollector.add("FooBar DEACTIVATING");
         }
@@ -148,6 +149,7 @@ public class RouterTest extends RoutingTestBase {
                         "BeforeNavigation got event with state ACTIVATING");
             }
 
+            @Override
             public void beforeLeave(BeforeLeaveEvent event) {
                 eventCollector.add(
                         "BeforeNavigation got event with state DEACTIVATING");
@@ -247,25 +249,6 @@ public class RouterTest extends RoutingTestBase {
         public void setParameter(BeforeEvent event,
                 @WildcardParameter Integer parameter) {
             eventCollector.add("With parameter: " + parameter);
-        }
-    }
-
-    @Route("fixed/wildcard")
-    @Tag(Tag.DIV)
-    public static class FixedWildParameter extends Component
-            implements HasUrlParameter<Integer> {
-
-        @Override
-        public void setParameter(BeforeEvent event,
-                @WildcardParameter Integer parameter) {
-            eventCollector.add("With parameter: " + parameter);
-        }
-
-        @Override
-        public Integer deserializeUrlParameters(List<String> urlParameters) {
-            Integer value = urlParameters.stream().map(Integer::valueOf)
-                    .reduce(Integer::sum).orElse(0);
-            return value;
         }
     }
 
@@ -653,7 +636,7 @@ public class RouterTest extends RoutingTestBase {
 
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
-            this.message = parameter;
+            message = parameter;
         }
     }
 
@@ -1620,7 +1603,7 @@ public class RouterTest extends RoutingTestBase {
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
         String message = String.format(
-                "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class %s",
+                "Invalid wildcard parameter in class %s. Only String is supported for wildcard parameters.",
                 UnsupportedWildParameter.class.getName());
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -1629,41 +1612,10 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void overridden_deserializer_wildcard_support_for_custom_type()
-            throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(Stream
-                .of(FixedWildParameter.class).collect(Collectors.toSet()));
-
-        router.navigate(ui, new Location("fixed/wildcard/3/4/1"),
-                NavigationTrigger.PROGRAMMATIC);
-
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "With parameter: 8",
-                eventCollector.get(0));
-
-        Assert.assertEquals("fixed/wildcard/5/5/3", router
-                .getUrl(FixedWildParameter.class, Arrays.asList(5, 5, 3)));
-    }
-
-    @Test
-    public void custom_serializer_gives_expected_result()
-            throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(Stream
-                .of(FixedWildParameter.class).collect(Collectors.toSet()));
-
-        Assert.assertEquals("fixed/wildcard/sum/13",
-                router.getUrl(FixedWildParameter.class, Arrays.asList(5, 5, 3),
-                        urlParameters -> Arrays.asList("sum",
-                                urlParameters.stream().reduce(Integer::sum)
-                                        .orElse(0).toString())));
-    }
-
-    @Test
     public void redirect_to_routeNotFound_error_view_when_no_route_found()
             throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(Stream
-                .of(FixedWildParameter.class).collect(Collectors.toSet()));
+                .of(FooNavigationTarget.class).collect(Collectors.toSet()));
         router.getRegistry().setErrorNavigationTargets(
                 Collections.singleton(ErrorTarget.class));
 
@@ -1997,8 +1949,9 @@ public class RouterTest extends RoutingTestBase {
     public void postpone_then_resume_with_multiple_listeners()
             throws InvalidRouteConfigurationException, InterruptedException {
         router.getRegistry()
-                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        PostponingAndResumingCompoundNavigationTarget.class)
+                .setNavigationTargets(Stream
+                        .of(RootNavigationTarget.class,
+                                PostponingAndResumingCompoundNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
         int status1 = router.navigate(ui, new Location("postpone"),
