@@ -23,11 +23,11 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.NotSupported;
-import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -111,6 +111,11 @@ import com.vaadin.flow.dom.Element;
  * <td>:host</td>
  * </tr>
  * <tr>
+ * <td>{@code has-label}</td>
+ * <td>Set when the element has a label</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
  * <td>{@code invalid}</td>
  * <td>Set when the element is invalid</td>
  * <td>:host</td>
@@ -139,7 +144,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#2.0.0-alpha7",
+        "WebComponent: Vaadin.TextFieldElement#2.0.0-alpha10",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-field.html")
@@ -247,6 +252,86 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
     protected void setAutocomplete(String autocomplete) {
         getElement().setProperty("autocomplete",
                 autocomplete == null ? "" : autocomplete);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * This is a property supported by Safari that is used to control whether
+     * autocorrection should be enabled when the user is entering/editing the
+     * text. Possible values are: on: Enable autocorrection. off: Disable
+     * autocorrection.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code autocorrect} property from the webcomponent
+     */
+    protected String getAutocorrectString() {
+        return getElement().getProperty("autocorrect");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * This is a property supported by Safari that is used to control whether
+     * autocorrection should be enabled when the user is entering/editing the
+     * text. Possible values are: on: Enable autocorrection. off: Disable
+     * autocorrection.
+     * </p>
+     * 
+     * @param autocorrect
+     *            the String value to set
+     */
+    protected void setAutocorrect(String autocorrect) {
+        getElement().setProperty("autocorrect",
+                autocorrect == null ? "" : autocorrect);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * This is a property supported by Safari and Chrome that is used to control
+     * whether autocapitalization should be enabled when the user is
+     * entering/editing the text. Possible values are: characters: Characters
+     * capitalization. words: Words capitalization. sentences: Sentences
+     * capitalization. none: No capitalization.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code autocapitalize} property from the webcomponent
+     */
+    protected String getAutocapitalizeString() {
+        return getElement().getProperty("autocapitalize");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * This is a property supported by Safari and Chrome that is used to control
+     * whether autocapitalization should be enabled when the user is
+     * entering/editing the text. Possible values are: characters: Characters
+     * capitalization. words: Words capitalization. sentences: Sentences
+     * capitalization. none: No capitalization.
+     * </p>
+     * 
+     * @param autocapitalize
+     *            the String value to set
+     */
+    protected void setAutocapitalize(String autocapitalize) {
+        getElement().setProperty("autocapitalize",
+                autocapitalize == null ? "" : autocapitalize);
     }
 
     /**
@@ -620,45 +705,6 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * This is a property supported by Safari that is used to control whether
-     * autocorrection should be enabled when the user is entering/editing the
-     * text. Possible values are: on: Enable autocorrection. off: Disable
-     * autocorrection.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code autocorrect} property from the webcomponent
-     */
-    protected String getAutocorrectString() {
-        return getElement().getProperty("autocorrect");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * This is a property supported by Safari that is used to control whether
-     * autocorrection should be enabled when the user is entering/editing the
-     * text. Possible values are: on: Enable autocorrection. off: Disable
-     * autocorrection.
-     * </p>
-     * 
-     * @param autocorrect
-     *            the String value to set
-     */
-    protected void setAutocorrect(String autocorrect) {
-        getElement().setProperty("autocorrect",
-                autocorrect == null ? "" : autocorrect);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Identifies a list of pre-defined options to suggest to the user. The
      * value must be the id of a <datalist> element in the same document.
      * <p>
@@ -786,6 +832,28 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
      */
     @NotSupported
     protected void validate() {
+    }
+
+    @DomEvent("change")
+    public static class ChangeEvent<R extends GeneratedVaadinTextField<R>>
+            extends ComponentEvent<R> {
+        public ChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code change} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Registration addChangeListener(
+            ComponentEventListener<ChangeEvent<R>> listener) {
+        return addListener(ChangeEvent.class,
+                (ComponentEventListener) listener);
     }
 
     @DomEvent("value-changed")

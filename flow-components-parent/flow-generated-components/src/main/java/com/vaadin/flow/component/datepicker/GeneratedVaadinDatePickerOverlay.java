@@ -38,8 +38,8 @@ import com.vaadin.flow.shared.Registration;
  * <h3>Styling</h3>
  * <p>
  * See <a href=
- * "https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html">
- * {@code <vaadin-overlay>} documentation</a> for
+ * "https://github.com/vaadin/vaadin-overlay/blob/master/src/vaadin-overlay.html"
+ * >{@code <vaadin-overlay>} documentation</a> for
  * {@code <vaadin-date-picker-overlay>} parts.
  * </p>
  * <p>

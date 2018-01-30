@@ -2,7 +2,7 @@
   "name": "Vaadin.TextAreaElement",
   "tag": "vaadin-text-area",
   "baseUrl": "vaadin-text-field/src/vaadin-text-area.html",
-  "version": "2.0.0-alpha7",
+  "version": "2.0.0-alpha10",
   "properties": [
     {
       "name": "autofocus",
@@ -26,7 +26,23 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete\n           "
+      "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete\n         "
+    },
+    {
+      "name": "autocorrect",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "This is a property supported by Safari that is used to control whether\nautocorrection should be enabled when the user is entering/editing the text.\nPossible values are:\non: Enable autocorrection.\noff: Disable autocorrection.\n         "
+    },
+    {
+      "name": "autocapitalize",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "This is a property supported by Safari and Chrome that is used to control whether\nautocapitalization should be enabled when the user is entering/editing the text.\nPossible values are:\ncharacters: Characters capitalization.\nwords: Words capitalization.\nsentences: Sentences capitalization.\nnone: No capitalization.\n         "
     },
     {
       "name": "errorMessage",
@@ -34,7 +50,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "Error to show when the input value is invalid.\n           "
+      "description": "Error to show when the input value is invalid.\n         "
     },
     {
       "name": "label",
@@ -42,7 +58,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "String used for the label element.\n           "
+      "description": "String used for the label element.\n         "
     },
     {
       "name": "maxlength",
@@ -50,7 +66,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "Maximum number of characters (in Unicode code points) that the user can enter.\n           "
+      "description": "Maximum number of characters (in Unicode code points) that the user can enter.\n         "
     },
     {
       "name": "minlength",
@@ -58,7 +74,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "Minimum number of characters (in Unicode code points) that the user can enter.\n           "
+      "description": "Minimum number of characters (in Unicode code points) that the user can enter.\n         "
     },
     {
       "name": "name",
@@ -66,7 +82,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The name of the control, which is submitted with the form data.\n           "
+      "description": "The name of the control, which is submitted with the form data.\n         "
     },
     {
       "name": "placeholder",
@@ -74,7 +90,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "A hint to the user of what can be entered in the control.\n           "
+      "description": "A hint to the user of what can be entered in the control.\n         "
     },
     {
       "name": "readonly",
@@ -82,7 +98,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "This attribute indicates that the user cannot modify the value of the control.\n           "
+      "description": "This attribute indicates that the user cannot modify the value of the control.\n         "
     },
     {
       "name": "required",
@@ -90,7 +106,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Specifies that the user must fill in a value.\n           "
+      "description": "Specifies that the user must fill in a value.\n         "
     },
     {
       "name": "value",
@@ -98,7 +114,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The initial value of the control.\nIt can be used for two-way data binding.\n           ",
+      "description": "The initial value of the control.\nIt can be used for two-way data binding.\n         ",
       "notify": true
     },
     {
@@ -107,7 +123,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "This property is set to true when the control value is invalid.\n           ",
+      "description": "This property is set to true when the control value is invalid.\n         ",
       "notify": true
     },
     {
@@ -116,7 +132,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "When set to true, user is prevented from typing a value that\nconflicts with the given `pattern`.\n           "
+      "description": "When set to true, user is prevented from typing a value that\nconflicts with the given `pattern`.\n         "
     }
   ],
   "methods": [
@@ -133,7 +149,13 @@
       "returns": "BOOLEAN"
     }
   ],
-  "events": [],
+  "events": [
+    {
+      "name": "change",
+      "description": "change",
+      "properties": []
+    }
+  ],
   "slots": [
     "prefix",
     "suffix"
@@ -144,5 +166,5 @@
     "Vaadin.ThemableMixin",
     "Vaadin.ControlStateMixin"
   ],
-  "description": "`<vaadin-text-area>` is a Polymer 2 element for text area control in forms.\n\n```html\n<vaadin-text-area label=\"Add description\">\n</vaadin-text-area>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`input-field` | The element that wraps prefix, value and suffix\n`value` | The text value element inside the `input-field` element\n`error-message` | The error message element\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`readonly` | Set to a readonly text field | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+  "description": "`<vaadin-text-area>` is a Polymer 2 element for text area control in forms.\n\n```html\n<vaadin-text-area label=\"Add description\">\n</vaadin-text-area>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`input-field` | The element that wraps prefix, value and suffix\n`value` | The text value element inside the `input-field` element\n`error-message` | The error message element\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`has-label` | Set when the element has a label | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`readonly` | Set to a readonly text field | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

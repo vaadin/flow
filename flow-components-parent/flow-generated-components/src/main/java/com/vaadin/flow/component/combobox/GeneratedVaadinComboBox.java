@@ -152,8 +152,8 @@ import com.vaadin.flow.dom.Element;
  * </table>
  * <p>
  * See <a href=
- * "https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html">
- * {@code <vaadin-overlay>} documentation</a> for
+ * "https://github.com/vaadin/vaadin-overlay/blob/master/src/vaadin-overlay.html"
+ * >{@code <vaadin-overlay>} documentation</a> for
  * {@code <vaadin-combo-box-overlay>} parts.
  * </p>
  * <p>
@@ -221,7 +221,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxElement#4.0.0-alpha5",
+        "WebComponent: Vaadin.ComboBoxElement#4.0.0-alpha6",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box.html")

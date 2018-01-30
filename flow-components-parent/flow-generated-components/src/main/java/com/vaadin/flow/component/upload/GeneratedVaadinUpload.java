@@ -114,7 +114,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.UploadElement#4.0.0-alpha3",
+        "WebComponent: Vaadin.UploadElement#4.0.0-alpha4",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-upload")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload.html")
@@ -632,12 +632,12 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      * <pre>
      * <code>        {
      * 	          dropFiles: {
-     * 	          one: 'Drop file here...',
-     * 	          many: 'Drop files here...'
+     * 	          one: 'Drop file here
+     * 	          many: 'Drop files here
      * 	          },
      * 	          addFiles: {
-     * 	          one: 'Select File',
-     * 	          many: 'Upload Files'
+     * 	          one: 'Select File...',
+     * 	          many: 'Upload Files...'
      * 	          },
      * 	          cancel: 'Cancel',
      * 	          error: {
@@ -697,12 +697,12 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      * <pre>
      * <code>        {
      * 	          dropFiles: {
-     * 	          one: 'Drop file here...',
-     * 	          many: 'Drop files here...'
+     * 	          one: 'Drop file here
+     * 	          many: 'Drop files here
      * 	          },
      * 	          addFiles: {
-     * 	          one: 'Select File',
-     * 	          many: 'Upload Files'
+     * 	          one: 'Select File...',
+     * 	          many: 'Upload Files...'
      * 	          },
      * 	          cancel: 'Cancel',
      * 	          error: {

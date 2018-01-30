@@ -52,9 +52,7 @@
     "vaadin-tabs": "2.0.0-alpha7",
     "vaadin-radio-button": "1.0.0-alpha12",
     "vaadin-notification": "1.0.0-alpha7",
-    "vaadin-list-box": "1.0.0-alpha9",
-    "vaadin-ordered-layout": "1.0.0-alpha8",
-    "vaadin-grid": "5.0.0-alpha6"
+    "vaadin-list-box": "1.0.0-alpha9"
   },
   "resolutions": {
     "vaadin-progress-bar": "1.0.0-alpha12"

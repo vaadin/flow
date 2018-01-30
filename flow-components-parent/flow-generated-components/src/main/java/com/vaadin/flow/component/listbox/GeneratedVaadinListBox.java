@@ -69,7 +69,7 @@ import com.vaadin.flow.shared.Registration;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ListBoxElement#1.0.0-alpha8",
+        "WebComponent: Vaadin.ListBoxElement#1.0.0-alpha9",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-list-box")
 @HtmlImport("frontend://bower_components/vaadin-list-box/src/vaadin-list-box.html")
