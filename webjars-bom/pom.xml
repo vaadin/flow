@@ -20,7 +20,7 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-grid</artifactId>
-                <version>5.0.0-alpha5</version>
+                <version>5.0.0-alpha6</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
@@ -30,121 +30,121 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-text-field</artifactId>
-                <version>2.0.0-alpha7</version>
+                <version>2.0.0-alpha10</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-date-picker</artifactId>
-                <version>3.0.0-alpha5</version>
+                <version>3.0.0-alpha6</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-button</artifactId>
-                <version>2.0.0-alpha5</version>
+                <version>2.0.0-alpha6</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-dialog</artifactId>
-                <version>2.0.0-alpha3</version>
+                <version>2.0.0-alpha5</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-combo-box</artifactId>
-                <version>4.0.0-alpha5</version>
+                <version>4.0.0-alpha6</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-form-layout</artifactId>
-                <version>2.0.0-alpha3</version>
+                <version>2.0.0-alpha5</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-checkbox</artifactId>
-                <version>2.0.0-alpha6</version>
+                <version>2.0.0-alpha7</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-split-layout</artifactId>
-                <version>4.0.0-alpha4</version>
+                <version>4.0.0-alpha5</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-ordered-layout</artifactId>
-                <version>1.0.0-alpha7</version>
+                <version>1.0.0-alpha8</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-upload</artifactId>
-                <version>4.0.0-alpha3</version>
+                <version>4.0.0-alpha4</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-progress-bar</artifactId>
-                <version>1.0.0-alpha11</version>
+                <version>1.0.0-alpha12</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-tabs</artifactId>
-                <version>2.0.0-alpha6</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>vaadin-item</artifactId>
-                <version>2.0.0-alpha4</version>
+                <version>2.0.0-alpha7</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-radio-button</artifactId>
-                <version>1.0.0-alpha11</version>
+                <version>1.0.0-alpha12</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-notification</artifactId>
-                <version>1.0.0-alpha6</version>
+                <version>1.0.0-alpha7</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>vaadin-list-box</artifactId>
-                <version>1.0.0-alpha8</version>
+                <version>1.0.0-alpha9</version>
             </dependency>
 
             <!-- WebJars' transitive dependencies resolutions -->
             <dependency>
                 <groupId>org.webjars.bower</groupId>
+                <artifactId>vaadin-item</artifactId>
+                <version>2.0.0-alpha5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
                 <artifactId>polymer</artifactId>
-                <version>2.3.1</version>
+                <version>2.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-polymer-polymer</artifactId>
-                <version>v2.3.1</version>
+                <version>2.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-Polymer-polymer</artifactId>
-                <version>v2.3.1</version>
+                <version>2.4.0</version>
             </dependency>
-
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-webcomponents-shadycss</artifactId>
-                <version>v1.1.0</version>
+                <version>1.1.1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>shadycss</artifactId>
-                <version>1.1.0</version>
+                <version>1.1.1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>webcomponentsjs</artifactId>
-                <version>1.0.22</version>
+                <version>1.1.0</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-webcomponents-webcomponentsjs</artifactId>
-                <version>v1.0.22</version>
+                <version>1.1.0</version>
             </dependency>
+
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-vaadin-vaadin-element-mixin</artifactId>
@@ -188,8 +188,9 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-vaadin-vaadin-usage-statistics</artifactId>
-                <version>v1.0.4</version>
+                <version>v1.0.5</version>
             </dependency>
+
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-vaadin-vaadin-development-mode-detector</artifactId>
@@ -288,12 +289,12 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-polymerelements-iron-meta</artifactId>
-                <version>2.0.4</version>
+                <version>2.0.5</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-PolymerElements-iron-meta</artifactId>
-                <version>2.0.4</version>
+                <version>2.0.5</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
@@ -373,7 +374,7 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-vaadin-vaadin-lumo-styles</artifactId>
-                <version>v1.0.0-alpha2</version>
+                <version>1.0.0-alpha3</version>
             </dependency>
             <!-- dependency for paper Elements. -->
             <dependency>
