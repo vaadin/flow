@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,8 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletResponse;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,7 +50,10 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -804,6 +802,21 @@ public class RouterTest extends RoutingTestBase {
             eventCollector.add("Received locale change event for locale: "
                     + event.getLocale().getDisplayName());
         }
+    }
+
+    @Tag(Tag.DIV)
+    public static class MainLayout extends Component implements RouterLayout {
+    }
+
+    @Route(value = "base", layout = MainLayout.class)
+    @ParentLayout(MainLayout.class)
+    @Tag(Tag.DIV)
+    public static class BaseLayout extends Component implements RouterLayout {
+    }
+
+    @Route(value = "sub", layout = BaseLayout.class)
+    @Tag(Tag.DIV)
+    public static class SubLayout extends Component {
     }
 
     @Override
@@ -2013,6 +2026,44 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Recorded event amount should have stayed the same",
                 1, eventCollector.size());
+    }
+
+    @Test // 3424
+    public void route_as_parent_layout_handles_as_expected()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(BaseLayout.class, SubLayout.class)
+                        .collect(Collectors.toSet()));
+
+        ui.navigateTo("base");
+        Assert.assertEquals(MainLayout.class, getUIComponent());
+
+        List<Component> children = ui.getChildren()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(MainLayout.class, children.get(0).getClass());
+        children = children.get(0).getChildren().collect(Collectors.toList());
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(BaseLayout.class, children.get(0).getClass());
+        children = children.get(0).getChildren().collect(Collectors.toList());
+        Assert.assertTrue(children.isEmpty());
+
+        ui.navigateTo("sub");
+        Assert.assertEquals(MainLayout.class, getUIComponent());
+
+        children = ui.getChildren()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(MainLayout.class, children.get(0).getClass());
+        children = children.get(0).getChildren().collect(Collectors.toList());
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(BaseLayout.class, children.get(0).getClass());
+        children = children.get(0).getChildren().collect(Collectors.toList());
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(SubLayout.class, children.get(0).getClass());
+        children = children.get(0).getChildren().collect(Collectors.toList());
+        Assert.assertTrue(children.isEmpty());
+
     }
 
     private Class<? extends Component> getUIComponent() {

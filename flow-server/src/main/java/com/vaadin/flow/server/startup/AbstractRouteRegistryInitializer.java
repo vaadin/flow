@@ -29,7 +29,6 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
@@ -80,11 +79,6 @@ public abstract class AbstractRouteRegistryInitializer {
 
         }
 
-        if (route.isAnnotationPresent(ParentLayout.class)) {
-            throw new InvalidRouteLayoutConfigurationException(route
-                    .getCanonicalName()
-                    + " contains both @Route and @ParentLayout annotation. Only use @Route with Route.layout.");
-        }
         if (route.isAnnotationPresent(PageTitle.class)
                 && HasDynamicTitle.class.isAssignableFrom(route)) {
             throw new DuplicateNavigationTitleException(String.format(

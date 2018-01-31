@@ -115,13 +115,13 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
         for (String url : urls) {
             String translatedUrl = translateUrl(url);
             if (sourceDirectoryHasFile(translatedUrl)) {
-                LOGGER.info(
+                LOGGER.debug(
                         "The URL '{}' has been translated "
                                 + "to the url '{}' using theme '{}'",
                         url, translatedUrl, themeClass.getSimpleName());
                 resultingUrls.add(translatedUrl);
             } else {
-                LOGGER.warn("The theme '{}' gives '{}' as a "
+                LOGGER.debug("The theme '{}' gives '{}' as a "
                         + "translation for url '{}' but the file is not found on the filesystem",
                         themeClass.getSimpleName(), translatedUrl, url);
                 resultingUrls.add(url);
