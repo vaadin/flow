@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -24,14 +22,17 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
@@ -49,10 +50,30 @@ import elemental.json.JsonValue;
  *            the proxy type used by this bean type
  */
 public class BeanModelType<T> implements ComplexModelType<T> {
-    private final Map<String, ModelType> properties;
+    static class BeanModelTypeProperty implements Serializable {
+        private final ModelType propretyType;
+        private final ClientUpdateMode clientUpdateMode;
+
+        public BeanModelTypeProperty(ModelType propretyType,
+                ClientUpdateMode clientUpdateMode) {
+            this.propretyType = propretyType;
+            this.clientUpdateMode = clientUpdateMode;
+        }
+
+        public ModelType getType() {
+            return propretyType;
+        }
+
+        public ClientUpdateMode getClientUpdateMode() {
+            return clientUpdateMode;
+        }
+    }
+
+    private final HashMap<String, BeanModelTypeProperty> properties;
     private final Class<T> proxyType;
 
-    private transient ReflectionCache<Object, Map<String, Method>> beanPropertyCache;
+    private static final ReflectionCache<Object, Map<String, Method>> beanPropertyCache = new ReflectionCache<>(
+            BeanModelType::findBeanGetters);
 
     /**
      * Creates a new bean model type from the given class and properties.
@@ -71,7 +92,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      *             {@code properties} is an empty map
      */
     protected BeanModelType(Class<T> proxyType,
-            Map<String, ModelType> properties, boolean allowEmptyProperties) {
+            Map<String, BeanModelTypeProperty> properties,
+            boolean allowEmptyProperties) {
         assert proxyType != null;
         assert properties != null;
         if (!allowEmptyProperties && properties.isEmpty()) {
@@ -88,14 +110,15 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         this.proxyType = proxyType;
 
         this.properties = new HashMap<>(properties);
-
-        initBeanPropertyCache();
     }
 
     private BeanModelType(Class<T> javaType, PropertyFilter propertyFilter,
-            ModelConverterProvider converterProvider) {
-        this(javaType, new PropertyMapBuilder(javaType, propertyFilter,
-                converterProvider).getProperties(), false);
+            PathLookup<ModelConverter<?, ?>> converterLookup,
+            PathLookup<ClientUpdateMode> clientUpdateLookup) {
+        this(javaType,
+                new PropertyMapBuilder(javaType, propertyFilter,
+                        converterLookup, clientUpdateLookup).getProperties(),
+                false);
     }
 
     /**
@@ -117,18 +140,20 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             boolean allowEmptyProperties) {
         this(javaType,
                 new PropertyMapBuilder(javaType, propertyFilter,
-                        ModelConverterProvider.EMPTY_PROVIDER).getProperties(),
+                        PathLookup.empty(), PathLookup.empty()).getProperties(),
                 allowEmptyProperties);
     }
 
     static ModelType getModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
-            Class<?> declaringClass, ModelConverterProvider converterProvider) {
+            Class<?> declaringClass,
+            PathLookup<ModelConverter<?, ?>> converterLookup,
+            PathLookup<ClientUpdateMode> clientUpdateLookup) {
         if (propertyType instanceof Class<?>) {
             Class<?> propertyTypeClass = (Class<?>) propertyType;
             if (isBean(propertyTypeClass)) {
                 return new BeanModelType<>(propertyTypeClass, propertyFilter,
-                        converterProvider);
+                        converterLookup, clientUpdateLookup);
             } else {
                 Optional<ModelType> maybeBasicModelType = BasicModelType
                         .get(propertyTypeClass);
@@ -138,7 +163,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             }
         } else if (ListModelType.isList(propertyType)) {
             return getListModelType(propertyType, propertyFilter, propertyName,
-                    declaringClass, converterProvider);
+                    declaringClass, converterLookup, clientUpdateLookup);
         }
 
         throw new InvalidTemplateModelException(String.format(
@@ -150,7 +175,9 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
     static ModelType getConvertedModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
-            Class<?> declaringClass, ModelConverterProvider converterProvider) {
+            Class<?> declaringClass,
+            PathLookup<ModelConverter<?, ?>> converterLookup,
+            PathLookup<ClientUpdateMode> clientUpdateLookup) {
 
         if (!(propertyType instanceof Class<?>)) {
             throw new UnsupportedOperationException(String.format(
@@ -159,8 +186,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                     declaringClass.getSimpleName(), propertyName));
         }
 
-        Optional<ModelConverter<?, ?>> converterOptional = converterProvider
-                .apply(propertyFilter);
+        Optional<ModelConverter<?, ?>> converterOptional = converterLookup
+                .getItem(propertyFilter.getPrefix());
         if (!converterOptional.isPresent()) {
             throw new IllegalStateException(
                     "The ModelConverterProvider passed to "
@@ -177,10 +204,9 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         }
 
         if (isBean(converter.getPresentationType())) {
-            return new ConvertedModelType<>(
-                    new BeanModelType<>(converter.getPresentationType(),
-                            propertyFilter, converterProvider),
-                    converter);
+            return new ConvertedModelType<>(new BeanModelType<>(
+                    converter.getPresentationType(), propertyFilter,
+                    converterLookup, clientUpdateLookup), converter);
         } else {
             Optional<ModelType> maybeBasicModelType = BasicModelType
                     .get(converter.getPresentationType());
@@ -199,22 +225,24 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
     private static ModelType getListModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
-            Class<?> declaringClass, ModelConverterProvider converterProvider) {
+            Class<?> declaringClass,
+            PathLookup<ModelConverter<?, ?>> converterLookup,
+            PathLookup<ClientUpdateMode> clientUpdateLookup) {
         assert ListModelType.isList(propertyType);
         ParameterizedType pt = (ParameterizedType) propertyType;
 
         Type itemType = pt.getActualTypeArguments()[0];
         if (itemType instanceof ParameterizedType) {
-            return new ListModelType<>(
-                    (ComplexModelType<?>) getModelType(itemType, propertyFilter,
-                            propertyName, declaringClass, converterProvider));
+            return new ListModelType<>((ComplexModelType<?>) getModelType(
+                    itemType, propertyFilter, propertyName, declaringClass,
+                    converterLookup, clientUpdateLookup));
         } else if (BasicComplexModelType.isBasicType(itemType)) {
             return new ListModelType<>(
                     BasicComplexModelType.get((Class<?>) itemType).get());
         } else if (isBean(itemType)) {
             Class<?> beansListItemType = (Class<?>) itemType;
             return new ListModelType<>(new BeanModelType<>(beansListItemType,
-                    propertyFilter, converterProvider));
+                    propertyFilter, converterLookup, clientUpdateLookup));
         } else {
             throw new InvalidTemplateModelException(String.format(
                     "Element type '%s' is not a valid Bean type. "
@@ -271,6 +299,31 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      * @return the model type
      */
     public ModelType getPropertyType(String propertyName) {
+        return getExistingProperty(propertyName).getType();
+    }
+
+    /**
+     * Gets the client update mode for a property.
+     *
+     * @param propertyName
+     *            the name of the property for which to find the client update
+     *            mode
+     * @return the client update mode, or IF_TWO_WAY_BINDING if no mode has been
+     *         explicitly configured
+     *
+     * @see AllowClientUpdates
+     */
+    public ClientUpdateMode getClientUpdateMode(String propertyName) {
+        ClientUpdateMode clientUpdateMode = getExistingProperty(propertyName)
+                .getClientUpdateMode();
+        if (clientUpdateMode == null) {
+            return ClientUpdateMode.IF_TWO_WAY_BINDING;
+        } else {
+            return clientUpdateMode;
+        }
+    }
+
+    private BeanModelTypeProperty getExistingProperty(String propertyName) {
         assert hasProperty(propertyName);
 
         return properties.get(propertyName);
@@ -356,8 +409,18 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         Map<String, Object> values = new HashMap<>();
 
         beanPropertyCache.get(beanClass).forEach((propertyName, getter) -> {
-            if (!propertyFilter.test(propertyName)) {
+            if (!hasProperty(propertyName)
+                    || !propertyFilter.test(propertyName)) {
                 return;
+            }
+
+            Type getterType = getter.getGenericReturnType();
+            ModelType propertyType = getPropertyType(propertyName);
+            if (!propertyType.accepts(getterType)) {
+                throw new IllegalArgumentException(String.format(
+                        "Expected type '%s' for property '%s' but imported type is '%s'",
+                        propertyType.getJavaType().getTypeName(), propertyName,
+                        getterType.getTypeName()));
             }
 
             try {
@@ -449,7 +512,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     public JsonValue toJson() {
         JsonObject json = Json.createObject();
 
-        properties.forEach((name, type) -> json.put(name, type.toJson()));
+        properties.forEach((name, property) -> json.put(name,
+                property.getType().toJson()));
 
         return json;
     }
@@ -472,13 +536,16 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     public void createInitialValues(StateNode node) {
         Predicate<Entry<String, Method>> isFinal = entry -> Modifier
                 .isFinal(entry.getValue().getModifiers());
+        Predicate<Entry<String, Method>> isProperty = entry -> hasProperty(
+                entry.getKey());
+
         StringBuilder builder = new StringBuilder();
         findBeanGetters(getProxyType()).entrySet().stream().filter(isFinal)
-                .forEach(entry -> writeInvalidAccessor(entry, builder,
-                        "getter"));
+                .filter(isProperty).forEach(entry -> writeInvalidAccessor(entry,
+                        builder, "getter"));
         findBeanSetters(getProxyType()).entrySet().stream().filter(isFinal)
-                .forEach(entry -> writeInvalidAccessor(entry, builder,
-                        "setter"));
+                .filter(isProperty).forEach(entry -> writeInvalidAccessor(entry,
+                        builder, "setter"));
         if (builder.length() > 0) {
             builder.insert(0, "Bean type '" + getProxyType()
                     + "' cannot be used in "
@@ -489,8 +556,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                             + "that all properties with final accessors are excluded from the model");
             throw new IllegalStateException(builder.toString());
         }
-        properties.forEach(
-                (property, type) -> type.createInitialValue(node, property));
+        properties.forEach((name, property) -> property.getType()
+                .createInitialValue(node, name));
     }
 
     private void writeInvalidAccessor(Entry<String, Method> entry,
@@ -500,46 +567,74 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                 .append(entry.getValue().getName()).append("'\n");
     }
 
-    private void initBeanPropertyCache() {
-        beanPropertyCache = new ReflectionCache<>(this::findBeanGetters);
-    }
-
-    private Map<String, Method> findBeanGetters(Class<?> beanType) {
-        Map<String, Method> getters = new HashMap<>();
-        ReflectTools.getGetterMethods(beanType).forEach(getter -> {
-            String propertyName = ReflectTools.getPropertyName(getter);
-            if (!properties.containsKey(propertyName)) {
-                return;
-            }
-
-            Type getterType = getter.getGenericReturnType();
-            ModelType propertyType = getPropertyType(propertyName);
-            if (!propertyType.accepts(getterType)) {
-                throw new IllegalArgumentException(String.format(
-                        "Expected type %s for property %s but imported type is %s",
-                        propertyType.getJavaType().getTypeName(), propertyName,
-                        getterType.getTypeName()));
-            }
-
-            getters.put(propertyName, getter);
-        });
-
-        return getters;
-    }
-
-    private Map<String, Method> findBeanSetters(Class<?> beanType) {
-        return ReflectTools.getSetterMethods(beanType)
-                .filter(setter -> properties
-                        .containsKey(ReflectTools.getPropertyName(setter)))
+    private static Map<String, Method> findBeanGetters(Class<?> beanType) {
+        return ReflectTools.getGetterMethods(beanType)
                 .collect(Collectors.toMap(ReflectTools::getPropertyName,
-                        Function.identity()));
-
+                        Function.identity(), (getter1, getter2) -> {
+                            // For the weird case with both isXyz and getXyz,
+                            // just use either
+                            return getter1;
+                        }));
     }
 
-    private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        initBeanPropertyCache();
+    private static Map<String, Method> findBeanSetters(Class<?> beanType) {
+        return ReflectTools.getSetterMethods(beanType).collect(Collectors
+                .toMap(ReflectTools::getPropertyName, Function.identity()));
     }
 
+    /**
+     * Creates a client update filter for this bean model type and all children.
+     * The filter logic is based on {@link ClientUpdateMode} annotations with
+     * the default setting allowing updates for properties for which there is a
+     * two-way binding in the template.
+     *
+     * @param twoWayBindingPaths
+     *            a set of path names for which two way bindings are define in
+     *            the template
+     * @return a predicate that accepts or rejects client-side updates to
+     *         properties.
+     *
+     * @see ElementPropertyMap#setUpdateFromClientFilter(SerializablePredicate)
+     */
+    public SerializablePredicate<String> createUpdateFromClientFilter(
+            Set<String> twoWayBindingPaths) {
+        Set<String> allowedProperties = new HashSet<>();
+
+        // Recurse through all properties
+        collectAllowedProperties("", allowedProperties,
+                Collections.unmodifiableSet(twoWayBindingPaths));
+
+        return allowedProperties::contains;
+    }
+
+    private void collectAllowedProperties(String prefix,
+            Set<String> allowedProperties, Set<String> twoWayBindingPaths) {
+        properties.forEach((name, property) -> {
+            String fullName = prefix + name;
+
+            // Mark as allowed if appropriate
+            ClientUpdateMode clientUpdateMode = getClientUpdateMode(name);
+            if (clientUpdateMode == ClientUpdateMode.ALLOW
+                    || (clientUpdateMode == ClientUpdateMode.IF_TWO_WAY_BINDING
+                            && twoWayBindingPaths.contains(fullName))) {
+                allowedProperties.add(fullName);
+            }
+
+            // Recurse if it's a bean
+            ModelType propertyType = unwrapTypes(property.getType());
+            if (propertyType instanceof BeanModelType) {
+                ((BeanModelType<?>) propertyType).collectAllowedProperties(
+                        fullName + ".", allowedProperties, twoWayBindingPaths);
+            }
+        });
+    }
+
+    private static ModelType unwrapTypes(ModelType type) {
+        if (type instanceof ConvertedModelType<?, ?>) {
+            return unwrapTypes(
+                    ((ConvertedModelType<?, ?>) type).getWrappedModelType());
+        } else {
+            return type;
+        }
+    }
 }

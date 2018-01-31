@@ -28,7 +28,6 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.HasComponents;
 
 /**
  * <p>
@@ -103,11 +102,11 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TabsElement#2.0.0-alpha6", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.TabsElement#2.0.0-alpha7", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-tabs")
 @HtmlImport("frontend://bower_components/vaadin-tabs/src/vaadin-tabs.html")
-public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
-        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -123,11 +122,11 @@ public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
      * @return the {@code items} property from the webcomponent
      */
     @Synchronize(property = "items", value = "items-changed")
-    protected JsonArray protectedGetItems() {
+    protected JsonArray getItemsJsonArray() {
         return (JsonArray) getElement().getPropertyRaw("items");
     }
 
-    public void focus() {
+    protected void focus() {
         getElement().callFunction("focus");
     }
 
@@ -156,26 +155,9 @@ public class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>> extends
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addItemsChangeListener(
+    protected Registration addItemsChangeListener(
             ComponentEventListener<ItemsChangeEvent<R>> listener) {
         return addListener(ItemsChangeEvent.class,
                 (ComponentEventListener) listener);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinTabs(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinTabs() {
     }
 }

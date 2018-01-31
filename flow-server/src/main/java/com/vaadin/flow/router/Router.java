@@ -261,7 +261,7 @@ public class Router implements RouterInterface {
             Class<? extends Component> navigationTarget,
             Class<? extends Annotation>... parameterAnnotations) {
         for (Class<? extends Annotation> annotation : parameterAnnotations) {
-            if (HasUrlParameter.isAnnotatedParameter(navigationTarget,
+            if (ParameterDeserializer.isAnnotatedParameter(navigationTarget,
                     annotation)) {
                 return true;
             }
@@ -307,31 +307,8 @@ public class Router implements RouterInterface {
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
             Class<? extends C> navigationTarget, List<T> parameters) {
-        return getUrl(navigationTarget, Objects.requireNonNull(parameters),
-                this::serializeUrlParameters);
-    }
-
-    /**
-     * Get the url string for given navigation target with the parameters in the
-     * url that are serialized using the given parameter serializer.
-     * <p>
-     * Note! Given parameter is checked for correct class type. This means that
-     * if the navigation target defined parameter is of type {@code Boolean}
-     * then calling getUrl with a {@code String} will fail.
-     *
-     * @param navigationTarget
-     *            navigation target to get url for
-     * @param parameters
-     *            parameters to embed into the generated url, not null
-     * @param serializer
-     *            parameter serializer to use for serializing parameters list
-     * @return url for the navigation target with parameter
-     */
-    public <T, C extends Component & HasUrlParameter<T>> String getUrl(
-            Class<? extends C> navigationTarget, List<T> parameters,
-            ParameterSerializer<T> serializer) {
-        List<String> serializedParameters = serializer
-                .serializeUrlParameters(Objects.requireNonNull(parameters));
+        List<String> serializedParameters = serializeUrlParameters(
+                Objects.requireNonNull(parameters));
 
         String routeString = getUrlForTarget(navigationTarget);
 
@@ -340,9 +317,9 @@ public class Router implements RouterInterface {
                     "{" + parameters.get(0).getClass().getSimpleName() + "}",
                     serializedParameters.stream()
                             .collect(Collectors.joining("/")));
-        } else if (HasUrlParameter.isAnnotatedParameter(navigationTarget,
+        } else if (ParameterDeserializer.isAnnotatedParameter(navigationTarget,
                 OptionalParameter.class)
-                || HasUrlParameter.isAnnotatedParameter(navigationTarget,
+                || ParameterDeserializer.isAnnotatedParameter(navigationTarget,
                         WildcardParameter.class)) {
             routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
         } else {

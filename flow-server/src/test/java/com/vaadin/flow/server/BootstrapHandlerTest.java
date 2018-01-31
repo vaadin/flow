@@ -265,6 +265,7 @@ public class BootstrapHandlerTest {
     public static class ForcedWrapping extends Component {
     }
 
+    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
     public static class MyTheme implements AbstractTheme {
 
         @Override
@@ -275,19 +276,6 @@ public class BootstrapHandlerTest {
         @Override
         public String getThemeUrl() {
             return null;
-        }
-
-        @Override
-        public List<String> getHeadInlineContents() {
-            return Arrays.asList(
-                    "<link rel=\"import\" href=\"frontend://bower_components/vaadin-lumo-styles/color.html\">");
-        }
-
-        @Override
-        public List<String> getHeadInlineContents(VaadinUriResolver resolver) {
-            String url = resolver.resolveVaadinUri(
-                    "frontend://bower_components/vaadin-lumo-styles/color.html");
-            return Arrays.asList("<link rel=\"import\" href=\"" + url + "\">");
         }
 
         @Override
@@ -897,12 +885,10 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, testUI));
 
         Elements allElements = page.head().getAllElements();
-        Assert.assertEquals("Custom style should have been added to head.",
-                "<link rel=\"import\" href=\"frontend://bower_components/vaadin-lumo-styles/color.html\">",
-                allElements.get(allElements.size() - 2).toString());
-        Assert.assertEquals("Custom style should have been added to head.",
-                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">",
-                allElements.get(allElements.size() - 1).toString());
+        Assert.assertTrue("Custom style should have been added to head.",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.equals(
+                                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
 
         allElements = page.body().getAllElements();
         // Note element 0 is the full head element.
@@ -930,13 +916,10 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(aliasRequest, null, session, testUI));
 
         Elements allElements = page.head().getAllElements();
-        Assert.assertEquals("Custom style should have been added to head.",
-                "<link rel=\"import\" href=\"frontend://bower_components/vaadin-lumo-styles/color.html\">",
-                allElements.get(allElements.size() - 2).toString());
-        Assert.assertEquals("Custom style should have been added to head.",
-                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">",
-                allElements.get(allElements.size() - 1).toString());
-
+        Assert.assertTrue("Custom style should have been added to head.",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.equals(
+                                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
         allElements = page.body().getAllElements();
         // Note element 0 is the full head element.
         Assert.assertEquals("Custom style should have been added to head.",

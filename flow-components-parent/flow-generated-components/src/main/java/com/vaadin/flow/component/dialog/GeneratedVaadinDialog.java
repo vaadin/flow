@@ -41,8 +41,8 @@ import com.vaadin.flow.shared.Registration;
  * <h3>Styling</h3>
  * <p>
  * See <a href=
- * "https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html">
- * {@code <vaadin-overlay>} documentation</a> for
+ * "https://github.com/vaadin/vaadin-overlay/blob/master/src/vaadin-overlay.html"
+ * >{@code <vaadin-overlay>} documentation</a> for
  * {@code <vaadin-dialog-overlay>} parts.
  * </p>
  * <p>
@@ -55,7 +55,7 @@ import com.vaadin.flow.shared.Registration;
         "WebComponent: Vaadin.VaadinDialog#null", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-dialog")
 @HtmlImport("frontend://bower_components/vaadin-dialog/src/vaadin-dialog.html")
-public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
+public abstract class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -72,7 +72,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -87,7 +87,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -108,7 +108,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addOpenedChangeListener(
+    protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
                 (ComponentEventListener) listener);

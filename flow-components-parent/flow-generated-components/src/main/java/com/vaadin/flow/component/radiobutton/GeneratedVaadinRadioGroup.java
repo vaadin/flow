@@ -21,7 +21,10 @@ import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * <p>
@@ -66,13 +69,12 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.RadioGroupElement#1.0.0-alpha11",
+        "WebComponent: Vaadin.RadioGroupElement#1.0.0-alpha12",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-radio-group")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-group.html")
-public class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
-        extends Component
-        implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -88,7 +90,7 @@ public class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
      * 
      * @return the {@code disabled} property from the webcomponent
      */
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -104,24 +106,30 @@ public class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinRadioGroup(Component... components) {
-        add(components);
+    @DomEvent("value-changed")
+    public static class ValueChangeEvent<R extends GeneratedVaadinRadioGroup<R>>
+            extends ComponentEvent<R> {
+        public ValueChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
     }
 
     /**
-     * Default constructor.
+     * Adds a listener for {@code value-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
      */
-    public GeneratedVaadinRadioGroup() {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Registration addValueChangeListener(
+            ComponentEventListener<ValueChangeEvent<R>> listener) {
+        return addListener(ValueChangeEvent.class,
+                (ComponentEventListener) listener);
     }
 }

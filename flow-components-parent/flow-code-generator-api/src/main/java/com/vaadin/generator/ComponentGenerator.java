@@ -16,6 +16,7 @@
 package com.vaadin.generator;
 
 import javax.annotation.Generated;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +36,16 @@ import java.util.TreeSet;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.Visibility;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaDocSource;
+import org.jboss.forge.roaster.model.source.MethodSource;
+import org.jboss.forge.roaster.model.source.ParameterSource;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -64,16 +75,8 @@ import com.vaadin.generator.metadata.ComponentType;
 import com.vaadin.generator.registry.BehaviorRegistry;
 import com.vaadin.generator.registry.ExclusionRegistry;
 import com.vaadin.generator.registry.PropertyNameRemapRegistry;
+
 import elemental.json.JsonObject;
-import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.model.Visibility;
-import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.jboss.forge.roaster.model.source.JavaDocSource;
-import org.jboss.forge.roaster.model.source.MethodSource;
-import org.jboss.forge.roaster.model.source.ParameterSource;
-import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -105,6 +108,9 @@ public class ComponentGenerator {
     private String frontendDirectory = "bower_components/";
     // https://github.com/vaadin/flow/issues/2370
     private boolean fluentSetters;
+
+    private boolean protectedMethods;
+    private boolean abstractClass;
 
     private final JavaDocFormatter javaDocFormatter = new JavaDocFormatter();
 
@@ -223,6 +229,36 @@ public class ComponentGenerator {
     }
 
     /**
+     * When set to <code>true</code>, all generated methods will be protected.
+     * Use this flag to create classes that will be extended afterwards. The
+     * default is <code>false</code>.
+     * 
+     * @param protectedMethods
+     *            <code>true</code> to make all methods protected,
+     *            <code>false</code> to allow public methods in the generated
+     *            code.
+     * @return this
+     */
+    public ComponentGenerator withProtectedMethods(boolean protectedMethods) {
+        this.protectedMethods = protectedMethods;
+        return this;
+    }
+
+    /**
+     * When set to <code>true</code>, the generated class will be marked as
+     * abstract.
+     * 
+     * @param abstractClass
+     *            <code>true</code> to make the generated class abstract,
+     *            <code>false</code> to make it concrete.
+     * @return this
+     */
+    public ComponentGenerator withAbstractClass(boolean abstractClass) {
+        this.abstractClass = abstractClass;
+        return this;
+    }
+
+    /**
      * Set a prefix for the name of all generated classes. e.g. "Generated"
      *
      * @param classNamePrefix
@@ -324,10 +360,11 @@ public class ComponentGenerator {
         String targetPackage = basePackage;
         String baseUrl = metadata.getBaseUrl();
         if (StringUtils.isNotBlank(baseUrl)) {
-            // all analyzed Vaadin Elements are inside <element-name>/src/ folder,
+            // all analyzed Vaadin Elements are inside <element-name>/src/
+            // folder,
             // this is a fugly way to remove that
             if (baseUrl.contains("/src/")) {
-                baseUrl = baseUrl.replace("/src/","/");
+                baseUrl = baseUrl.replace("/src/", "/");
             }
             String subPackage = ComponentGeneratorUtils
                     .convertFilePathToPackage(baseUrl);
@@ -349,6 +386,7 @@ public class ComponentGenerator {
 
         JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(targetPackage).setPublic()
+                .setAbstract(abstractClass)
                 .setName(getGeneratedClassName(metadata.getTag()));
 
         if (metadata.getParentTagName() != null) {
@@ -540,20 +578,26 @@ public class ComponentGenerator {
             }
         }
 
-        if (hasDefaultSlot) {
+        boolean shouldImplementHasComponents = hasDefaultSlot
+                && !protectedMethods;
+
+        if (shouldImplementHasComponents) {
             javaClass.addInterface(HasComponents.class);
         }
 
         if (hasNamedSlot) {
-            generateRemovers(javaClass, hasDefaultSlot);
+            generateRemovers(javaClass, shouldImplementHasComponents);
         }
     }
 
     private void generateAdder(String slot, JavaClassSource javaClass) {
         String methodName = ComponentGeneratorUtils
                 .generateMethodNameForProperty("addTo", slot);
-        MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
+        MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName(methodName);
+
+        setMethodVisibility(method);
+
         ComponentGeneratorUtils.addMethodParameter(javaClass, method,
                 Component.class, "components").setVarArgs(true);
         method.setBody(String.format(
@@ -575,7 +619,10 @@ public class ComponentGenerator {
             boolean useOverrideAnnotation) {
 
         MethodSource<JavaClassSource> removeMethod = javaClass.addMethod()
-                .setPublic().setReturnTypeVoid().setName("remove");
+                .setReturnTypeVoid().setName("remove");
+
+        setMethodVisibility(removeMethod);
+
         ComponentGeneratorUtils.addMethodParameter(javaClass, removeMethod,
                 Component.class, "components").setVarArgs(true);
         removeMethod.setBody(
@@ -599,7 +646,10 @@ public class ComponentGenerator {
         }
 
         MethodSource<JavaClassSource> removeAllMethod = javaClass.addMethod()
-                .setPublic().setReturnTypeVoid().setName("removeAll");
+                .setReturnTypeVoid().setName("removeAll");
+
+        setMethodVisibility(removeAllMethod);
+
         removeAllMethod.setBody(String.format(
                 "getElement().getChildren().forEach(child -> child.removeAttribute(\"slot\"));%n"
                         + "getElement().removeAllChildren();"));
@@ -722,12 +772,20 @@ public class ComponentGenerator {
                             property.getName(), javaClass.getName()));
 
             MethodSource<JavaClassSource> method = javaClass.addMethod()
-                    .setPublic().setReturnType(nestedClass);
+                    .setReturnType(nestedClass);
+
+            setMethodVisibility(method, property.getObjectType());
+
             method.setName(ComponentGeneratorUtils
                     .generateMethodNameForProperty("get", propertyJavaName));
             method.setBody(String.format(
                     "return new %s().readJson((JsonObject) getElement().getPropertyRaw(\"%s\"));",
                     nestedClass.getName(), property.getName()));
+
+            if (method.getVisibility() == Visibility.PROTECTED) {
+                method.setName(method.getName()
+                        + StringUtils.capitalize(nestedClass.getName()));
+            }
 
             addSynchronizeAnnotationAndJavadocToGetter(method, property,
                     events);
@@ -785,8 +843,8 @@ public class ComponentGenerator {
                 }
 
                 if (method.getVisibility() == Visibility.PROTECTED) {
-                    method.setName("protected"
-                            + StringUtils.capitalize(method.getName()));
+                    method.setName(method.getName()
+                            + StringUtils.capitalize(javaType.getSimpleName()));
                 }
 
                 addSynchronizeAnnotationAndJavadocToGetter(method, property,
@@ -859,9 +917,24 @@ public class ComponentGenerator {
             Collection<? extends ComponentType> types) {
 
         if (types.stream().allMatch(this::isSupportedObjectType)) {
-            method.setPublic();
+            setMethodVisibility(method);
         } else {
             method.setProtected();
+        }
+    }
+
+    /**
+     * Sets the method visibility according to the {@link #protectedMethods}
+     * flag.
+     * 
+     * @param method
+     *            the method which visibility should be set.
+     */
+    private void setMethodVisibility(MethodSource<JavaClassSource> method) {
+        if (protectedMethods) {
+            method.setProtected();
+        } else {
+            method.setPublic();
         }
     }
 
@@ -937,7 +1010,8 @@ public class ComponentGenerator {
      * The "value" also cannot be multi-typed.
      */
     private boolean shouldImplementHasValue(ComponentMetadata metadata) {
-        if (metadata.getProperties() == null || metadata.getEvents() == null) {
+        if (protectedMethods || metadata.getProperties() == null
+                || metadata.getEvents() == null) {
             return false;
         }
 
@@ -968,6 +1042,7 @@ public class ComponentGenerator {
         String propertyJavaName = getJavaNameForProperty(metadata,
                 property.getName());
 
+        boolean isValue = "value".equals(propertyJavaName);
         if (containsObjectType(property)) {
             // the getter already created the nested pojo, so here we just need
             // to get the name
@@ -977,8 +1052,9 @@ public class ComponentGenerator {
             MethodSource<JavaClassSource> method = javaClass.addMethod()
                     .setName(ComponentGeneratorUtils
                             .generateMethodNameForProperty("set",
-                                    propertyJavaName))
-                    .setPublic();
+                                    propertyJavaName));
+
+            setMethodVisibility(method, property.getObjectType());
 
             method.addParameter(nestedClassName, "property");
 
@@ -998,8 +1074,7 @@ public class ComponentGenerator {
                 addFluentReturnToMethod(method);
             }
 
-            if ("value".equals(propertyJavaName)
-                    && shouldImplementHasValue(metadata)) {
+            if (isValue && shouldImplementHasValue(metadata)) {
                 method.addAnnotation(Override.class);
                 preventSettingTheSameValue(javaClass, "property", method);
             }
@@ -1022,7 +1097,7 @@ public class ComponentGenerator {
                 ComponentGeneratorUtils.addMethodParameter(javaClass, method,
                         setterType, parameterName);
 
-                boolean nullable = !"value".equals(propertyJavaName)
+                boolean nullable = !isValue
                         || !shouldImplementHasValue(metadata)
                         || String.class != setterType;
 
@@ -1042,9 +1117,8 @@ public class ComponentGenerator {
                 if (fluentSetters) {
                     addFluentReturnToMethod(method);
                 }
-                if ("value".equals(propertyJavaName)
-                        && shouldImplementHasValue(metadata)) {
 
+                if (isValue && shouldImplementHasValue(metadata)) {
                     method.addAnnotation(Override.class);
                     preventSettingTheSameValue(javaClass, parameterName,
                             method);
@@ -1269,7 +1343,10 @@ public class ComponentGenerator {
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName("add"
                         + StringUtils.capitalize(eventJavaApiName + "Listener"))
-                .setPublic().setReturnType(Registration.class);
+                .setReturnType(Registration.class);
+
+        setMethodVisibility(method);
+
         method.addParameter("ComponentEventListener<" + eventListener.getName()
                 + GENERIC_TYPE_DECLARATION + ">", "listener");
 

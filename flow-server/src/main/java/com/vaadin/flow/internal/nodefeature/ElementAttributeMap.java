@@ -84,9 +84,9 @@ public class ElementAttributeMap extends NodeMap {
      *            the name of the attribute to remove
      */
     @Override
-    public void remove(String attribute) {
+    public Object remove(String attribute) {
         unregisterResource(attribute);
-        super.remove(attribute);
+        return super.remove(attribute);
     }
 
     /**

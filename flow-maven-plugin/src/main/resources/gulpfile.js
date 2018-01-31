@@ -68,10 +68,12 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                     .pipe(gulpIf(/\.css$/, new SafeTransform('css-slam', cssSlam.css)))
                     .pipe(htmlSplitter.rejoin());
 
-                let processedStream = streamWithMinification.pipe(gulpIgnore.exclude(file => { return file.path === shellFile } ));
+                let processedStream;
                 if (bundle) {
                     console.log('Will bundle frontend files.');
                     processedStream = streamWithMinification.pipe(buildBundler);
+                } else {
+                    processedStream = streamWithMinification.pipe(gulpIgnore.exclude(file => { return file.path === shellFile } ));
                 }
 
                 const nonSourceUserFilesStream = gulp.src([`${es6SourceDirectory}/**/*`, `!${es6SourceDirectory}/**/*.{html,css,js}`]);

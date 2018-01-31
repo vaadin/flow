@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
 
 /**
@@ -50,10 +51,12 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            the new location, not {@code null}
      * @param navigationTarget
      *            navigation target class
+     * @param ui
+     *            the UI related to the navigation
      */
     public BeforeLeaveEvent(RouterInterface router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget) {
-        super(router, trigger, location, navigationTarget);
+            Location location, Class<?> navigationTarget, UI ui) {
+        super(router, trigger, location, navigationTarget, ui);
     }
 
     /**

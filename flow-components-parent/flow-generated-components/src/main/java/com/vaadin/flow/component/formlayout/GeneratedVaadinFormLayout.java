@@ -22,7 +22,6 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.flow.component.HasComponents;
 
 /**
  * <p>
@@ -136,13 +135,12 @@ import com.vaadin.flow.component.HasComponents;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.FormLayoutElement#2.0.0-alpha3",
+        "WebComponent: Vaadin.FormLayoutElement#2.0.0-alpha5",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-form-layout")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-layout.html")
-public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
-        extends Component
-        implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -187,7 +185,7 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
      * 
      * @return the {@code responsiveSteps} property from the webcomponent
      */
-    protected JsonObject protectedGetResponsiveSteps() {
+    protected JsonObject getResponsiveStepsJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("responsiveSteps");
     }
 
@@ -249,22 +247,5 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
      */
     protected void updateStyles(JsonObject _Args) {
         getElement().callFunction("updateStyles", _Args);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinFormLayout(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinFormLayout() {
     }
 }

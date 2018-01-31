@@ -28,11 +28,14 @@ import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -43,6 +46,7 @@ import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.VaadinServletConfiguration.InitParameterName;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * The main servlet, which handles all incoming requests to the application.
@@ -62,7 +66,7 @@ public class VaadinServlet extends HttpServlet {
     private StaticFileServer staticFileServer;
     private WebJarServer webJarServer;
 
-    private Set<String> resourcePaths;
+    private Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -94,7 +98,6 @@ public class VaadinServlet extends HttpServlet {
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
-        resourcePaths = traverseResourcePaths("/");
 
         servletInitialized();
         CurrentInstance.clearAll();
@@ -608,24 +611,72 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Get all servlet resources.
-     * 
-     * @return servlet resources as a set
+     * Get the validated theme url for given string import. Result will be
+     * cached for future use.
+     * <p>
+     * Note! For concurrency there is a slight chance that multiple calls will
+     * resolve the same url for the same theme, but this is fine as the end
+     * result is always the same for the running servlet context.
+     *
+     * @param theme
+     *            Theme to resolve url translation for
+     * @param urlToTranslate
+     *            url value to translate
+     * @return translated url path
      */
-    public Set<String> getServletResources() {
-        return resourcePaths;
+    public String getUrlTranslation(AbstractTheme theme,
+            String urlToTranslate) {
+        String translation = getThemeTranslations()
+                .getOrDefault(theme, new HashMap<>()).get(urlToTranslate);
+        if (translation != null) {
+            return translation;
+        }
+
+        VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
+                .getAttribute(VaadinUriResolverFactory.class);
+
+        String translatedUrl = theme.translateUrl(urlToTranslate);
+        if (translatedUrl.equals(urlToTranslate)) {
+            addUrlTranslation(theme, urlToTranslate, urlToTranslate);
+            return urlToTranslate;
+        }
+
+        try {
+            // Resolve the translated url for use with servlet context path
+            String resolvedUrl = uriResolverFactory.toServletContextPath(
+                    VaadinRequest.getCurrent(), translatedUrl);
+            URL resource = getServletContext().getResource(resolvedUrl);
+            if (resource != null) {
+                addUrlTranslation(theme, urlToTranslate, translatedUrl);
+            } else if (webJarServer != null && webJarServer
+                    .hasWebJarResource(resolvedUrl, getServletContext())) {
+                addUrlTranslation(theme, urlToTranslate, translatedUrl);
+            } else {
+                // Url could not be translated, add given url to cache.
+                addUrlTranslation(theme, urlToTranslate, urlToTranslate);
+                return urlToTranslate;
+            }
+        } catch (IOException e) {
+            LoggerFactory.getLogger(VaadinServlet.class)
+                    .trace("Failed to parse url.", e);
+            // Url could not be translated, add given url to cache.
+            addUrlTranslation(theme, urlToTranslate, urlToTranslate);
+            return urlToTranslate;
+        }
+
+        return translatedUrl;
     }
 
-    private Set<String> traverseResourcePaths(String path) {
-        Set<String> resources = new HashSet<>();
-        Set<String> servletResourcePaths = getServletContext()
-                .getResourcePaths(path);
-        if (servletResourcePaths != null) {
-            resources.addAll(servletResourcePaths);
-            servletResourcePaths.stream().filter(resourcePath -> resourcePath.endsWith("/"))
-                    .forEach(resourcePath -> resources
-                            .addAll(traverseResourcePaths(resourcePath)));
+    private Map<Class<? extends AbstractTheme>, Map<String, String>> getThemeTranslations() {
+        if (themeTranslations == null) {
+            themeTranslations = new HashMap<>();
         }
-        return resources;
+        return themeTranslations;
+    }
+
+    private void addUrlTranslation(AbstractTheme theme, String importValue,
+            String translation) {
+        getThemeTranslations().getOrDefault(theme, new HashMap<>())
+                .put(importValue, translation);
     }
 }

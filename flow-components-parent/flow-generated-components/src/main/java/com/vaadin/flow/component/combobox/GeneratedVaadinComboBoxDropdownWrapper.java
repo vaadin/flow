@@ -38,7 +38,7 @@ import elemental.json.JsonArray;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-dropdown-wrapper")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-dropdown-wrapper.html")
-public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinComboBoxDropdownWrapper<R>>
+public abstract class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinComboBoxDropdownWrapper<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -47,7 +47,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @return the {@code rootPath} property from the webcomponent
      */
-    public String getRootPath() {
+    protected String getRootPathString() {
         return getElement().getProperty("rootPath");
     }
 
@@ -55,7 +55,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param rootPath
      *            the String value to set
      */
-    public void setRootPath(String rootPath) {
+    protected void setRootPath(String rootPath) {
         getElement().setProperty("rootPath", rootPath == null ? "" : rootPath);
     }
 
@@ -65,7 +65,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @return the {@code importPath} property from the webcomponent
      */
-    public String getImportPath() {
+    protected String getImportPathString() {
         return getElement().getProperty("importPath");
     }
 
@@ -73,7 +73,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param importPath
      *            the String value to set
      */
-    public void setImportPath(String importPath) {
+    protected void setImportPath(String importPath) {
         getElement().setProperty("importPath",
                 importPath == null ? "" : importPath);
     }
@@ -84,7 +84,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @return the {@code root} property from the webcomponent
      */
-    protected JsonObject protectedGetRoot() {
+    protected JsonObject getRootJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("root");
     }
 
@@ -102,7 +102,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @return the {@code $} property from the webcomponent
      */
-    protected JsonObject protectedGet$() {
+    protected JsonObject get$JsonObject() {
         return (JsonObject) getElement().getPropertyRaw("$");
     }
 
@@ -127,7 +127,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @return the {@code touchDevice} property from the webcomponent
      */
-    public boolean isTouchDevice() {
+    protected boolean isTouchDeviceBoolean() {
         return getElement().getProperty("touchDevice", false);
     }
 
@@ -142,7 +142,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param touchDevice
      *            the boolean value to set
      */
-    public void setTouchDevice(boolean touchDevice) {
+    protected void setTouchDevice(boolean touchDevice) {
         getElement().setProperty("touchDevice", touchDevice);
     }
 
@@ -152,7 +152,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @return the {@code opened} property from the webcomponent
      */
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -160,7 +160,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -177,7 +177,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @return the {@code positionTarget} property from the webcomponent
      */
-    protected JsonObject protectedGetPositionTarget() {
+    protected JsonObject getPositionTargetJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("positionTarget");
     }
 
@@ -209,7 +209,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * 
      * @return the {@code loading} property from the webcomponent
      */
-    public boolean isLoading() {
+    protected boolean isLoadingBoolean() {
         return getElement().getProperty("loading", false);
     }
 
@@ -224,7 +224,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
      * @param loading
      *            the boolean value to set
      */
-    public void setLoading(boolean loading) {
+    protected void setLoading(boolean loading) {
         getElement().setProperty("loading", loading);
     }
 
@@ -992,15 +992,15 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
     protected void getItemLabel(JsonObject item) {
     }
 
-    public void ensureItemsRendered() {
+    protected void ensureItemsRendered() {
         getElement().callFunction("ensureItemsRendered");
     }
 
-    public void adjustScrollPosition() {
+    protected void adjustScrollPosition() {
         getElement().callFunction("adjustScrollPosition");
     }
 
-    public void updateViewportBoundaries() {
+    protected void updateViewportBoundaries() {
         getElement().callFunction("updateViewportBoundaries");
     }
 }

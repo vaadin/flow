@@ -144,7 +144,7 @@ import com.vaadin.flow.shared.Registration;
         "WebComponent: Vaadin.UploadFileElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-upload-file")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload-file.html")
-public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
+public abstract class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
@@ -153,7 +153,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * 
      * @return the {@code file} property from the webcomponent
      */
-    protected JsonObject protectedGetFile() {
+    protected JsonObject getFileJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("file");
     }
 
@@ -196,7 +196,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFileAbortListener(
+    protected Registration addFileAbortListener(
             ComponentEventListener<FileAbortEvent<R>> listener) {
         return addListener(FileAbortEvent.class,
                 (ComponentEventListener) listener);
@@ -233,7 +233,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFileRemoveListener(
+    protected Registration addFileRemoveListener(
             ComponentEventListener<FileRemoveEvent<R>> listener) {
         return addListener(FileRemoveEvent.class,
                 (ComponentEventListener) listener);
@@ -270,7 +270,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFileRetryListener(
+    protected Registration addFileRetryListener(
             ComponentEventListener<FileRetryEvent<R>> listener) {
         return addListener(FileRetryEvent.class,
                 (ComponentEventListener) listener);
@@ -307,7 +307,7 @@ public class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addFileStartListener(
+    protected Registration addFileStartListener(
             ComponentEventListener<FileStartEvent<R>> listener) {
         return addListener(FileStartEvent.class,
                 (ComponentEventListener) listener);

@@ -270,8 +270,10 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         String propertyName = "black";
         String propertyValue = "coffee";
 
-        NodeList synchronizedProperties = node.getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        synchronizedProperties.add(synchronizedProperties.length(), propertyName);
+        NodeList synchronizedProperties = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
+        synchronizedProperties.add(synchronizedProperties.length(),
+                propertyName);
         setModelProperty(node, propertyName, propertyValue);
 
         Binder.bind(node, element);
@@ -295,7 +297,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         element._propertiesChanged = function() {
             element.propertiesChangedCallCount += 1;
         };
-    
+
         element.callbackCallCount = 0;
         $wnd.customElements = {
             whenDefined: function() {
@@ -307,6 +309,21 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                 }
             }
         };
+        if( !element.removeAttribute ) {
+            element.removeAttribute = function(attribute){
+                element[attribute] = null;
+            };
+        }
+        if ( !element.getAttribute ){
+            element.getAttribute = function( attribute ){
+                return element[attribute];
+            };
+        }
+        if ( !element.setAttribute ){
+            element.setAttribute = function( attribute, value ){
+                element[attribute] = value;
+            };
+        }
     }-*/;
 
     private native void emulatePolymerNotLoaded()
@@ -379,6 +396,10 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         setupSetMethod(element, PROPERTY_PREFIX);
         setupMockSpliceMethod(element);
         WidgetUtil.setJsProperty(element, "removeAttribute",
+                new NativeFunction(""));
+        WidgetUtil.setJsProperty(element, "getAttribute",
+                new NativeFunction("return false;"));
+        WidgetUtil.setJsProperty(element, "setAttribute",
                 new NativeFunction(""));
         return element;
     }

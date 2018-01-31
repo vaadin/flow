@@ -27,7 +27,6 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.HasComponents;
 
 /**
  * <p>
@@ -101,13 +100,13 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.RadioButtonElement#1.0.0-alpha11",
+        "WebComponent: Vaadin.RadioButtonElement#1.0.0-alpha12",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-radio-button")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-button.html")
-public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
+public abstract class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
         extends Component
-        implements HasStyle, Focusable<R>, HasClickListeners<R>, HasComponents {
+        implements HasStyle, Focusable<R>, HasClickListeners<R> {
 
     /**
      * <p>
@@ -122,7 +121,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * 
      * @return the {@code autofocus} property from the webcomponent
      */
-    public boolean isAutofocus() {
+    protected boolean isAutofocusBoolean() {
         return getElement().getProperty("autofocus", false);
     }
 
@@ -137,7 +136,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @param autofocus
      *            the boolean value to set
      */
-    public void setAutofocus(boolean autofocus) {
+    protected void setAutofocus(boolean autofocus) {
         getElement().setProperty("autofocus", autofocus);
     }
 
@@ -154,7 +153,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * 
      * @return the {@code disabled} property from the webcomponent
      */
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -169,7 +168,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
@@ -179,7 +178,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * 
      * @return the {@code name} property from the webcomponent
      */
-    public String getName() {
+    protected String getNameString() {
         return getElement().getProperty("name");
     }
 
@@ -187,7 +186,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @param name
      *            the String value to set
      */
-    public void setName(String name) {
+    protected void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -205,7 +204,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @return the {@code checked} property from the webcomponent
      */
     @Synchronize(property = "checked", value = "checked-changed")
-    public boolean isChecked() {
+    protected boolean isCheckedBoolean() {
         return getElement().getProperty("checked", false);
     }
 
@@ -220,7 +219,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @param checked
      *            the boolean value to set
      */
-    public void setChecked(boolean checked) {
+    protected void setChecked(boolean checked) {
         getElement().setProperty("checked", checked);
     }
 
@@ -237,7 +236,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * 
      * @return the {@code value} property from the webcomponent
      */
-    public String getValue() {
+    protected String getValueString() {
         return getElement().getProperty("value");
     }
 
@@ -252,7 +251,7 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @param value
      *            the String value to set
      */
-    public void setValue(String value) {
+    protected void setValue(String value) {
         getElement().setProperty("value", value == null ? "" : value);
     }
 
@@ -273,26 +272,9 @@ public class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addCheckedChangeListener(
+    protected Registration addCheckedChangeListener(
             ComponentEventListener<CheckedChangeEvent<R>> listener) {
         return addListener(CheckedChangeEvent.class,
                 (ComponentEventListener) listener);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinRadioButton(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinRadioButton() {
     }
 }
