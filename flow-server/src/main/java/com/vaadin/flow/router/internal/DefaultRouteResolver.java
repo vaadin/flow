@@ -29,6 +29,7 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.RouteResolver;
 import com.vaadin.flow.server.startup.RouteRegistry;
 
@@ -61,7 +62,7 @@ public class DefaultRouteResolver implements RouteResolver {
             if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
                 List<String> pathParameters = getPathParameters(
                         request.getLocation().getPath(), path.path);
-                if (!HasUrlParameter.verifyParameters(navigationTarget,
+                if (!ParameterDeserializer.verifyParameters(navigationTarget,
                         pathParameters)) {
                     return null;
                 }
