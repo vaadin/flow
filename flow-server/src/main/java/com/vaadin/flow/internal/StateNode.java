@@ -375,7 +375,7 @@ public class StateNode implements Serializable {
             changes.remove(feature.getClass());
         });
         isInitialChanges = false;
-        if (changes.isEmpty()) {
+        if (changes != null && changes.isEmpty()) {
             changes = null;
         }
     }
