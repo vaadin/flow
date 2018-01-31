@@ -1,10 +1,10 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vaadin-flow/Lobby#?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Flow
+Vaadin Flow
 ======
-*[Flow](https://vaadin.com) is a Java framework for building modern web sites that look great, perform well and make you and your users happy.*
+*[Vaadin Flow](https://vaadin.com/flow) is the Java framework of Vaadin Platform for building modern web sites that look great, perform well and make you and your users happy.*
 
-For instructions about _using_ Flow to develop applications, please refer to [the documentation](https://github.com/vaadin/flow/tree/master/flow-documentation).
+**For instructions about developing web applications with Vaadin Flow**, please refer to [the starter packs for Vaadin 10 with Flow](https://vaadin.com/start) or [the documentation](https://vaadin.com/docs/v10/flow/Overview.html).
 
 To contribute, first refer to [Contribution Guide](/CONTRIBUTING.md)
 for general instructions and requirements for contributing code to Flow.
@@ -12,17 +12,6 @@ for general instructions and requirements for contributing code to Flow.
 Flow EAP discussion in Gitter IM at https://gitter.im/vaadin-flow/Lobby
 
 Instructions on how to set up a working environment for developing the Flow project follow below.
-
-Quick Setup
-======
-To create your own application using Flow, use https://github.com/vaadin/skeleton-starter-flow as a starting point.
-
-To quickly get started with contributing, follow these simple steps.
-1. <code>git clone https://github.com/vaadin/flow.git</code>
-1. make sure you have a TestBench license (get it otherwise on https://vaadin.com/pro/licenses)
-1. <code>mvn install</code>
-
-For more details, see below
 
 Setting up Eclipse to Develop Flow
 =========
