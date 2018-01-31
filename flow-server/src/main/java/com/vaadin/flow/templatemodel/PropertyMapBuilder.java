@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.templatemodel;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.templatemodel.BeanModelType.BeanModelTypeProperty;
 
 /**
  * Creates a property map builder that extracts all the properties' data from
@@ -35,7 +37,7 @@ import com.vaadin.flow.internal.ReflectTools;
  * @author Vaadin Ltd.
  */
 class PropertyMapBuilder {
-    private final Map<String, ModelType> properties;
+    private final Map<String, BeanModelTypeProperty> properties;
 
     private static class PropertyData {
         private final String propertyName;
@@ -58,35 +60,65 @@ class PropertyMapBuilder {
             return this;
         }
 
-        private ModelType getModelPropertyType(PropertyFilter propertyFilter,
-                PathLookup<ModelConverter<?, ?>> outerConverters) {
+        private BeanModelTypeProperty buildProperty(
+                PropertyFilter propertyFilter,
+                PathLookup<ModelConverter<?, ?>> outerConverters,
+                PathLookup<ClientUpdateMode> outerClientModes) {
+
             PropertyFilter innerFilter = new PropertyFilter(propertyFilter,
                     propertyName, getExcludeFieldsFilter());
-            PathLookup<ModelConverter<?, ?>> innerConverters = outerConverters
-                    .compose(getModelConverters(), innerFilter.getPrefix());
+            String prefix = innerFilter.getPrefix();
 
+            PathLookup<ModelConverter<?, ?>> innerConverters = outerConverters
+                    .compose(getModelConverters(), prefix);
+            PathLookup<ClientUpdateMode> innerUpdateModes = outerClientModes
+                    .compose(getClientUpdateModes(), prefix);
+
+            return new BeanModelTypeProperty(
+                    createModelType(innerFilter, innerConverters,
+                            innerUpdateModes),
+                    innerUpdateModes.getItem(prefix).orElse(null));
+
+        }
+
+        private ModelType createModelType(PropertyFilter innerFilter,
+                PathLookup<ModelConverter<?, ?>> innerConverters,
+                PathLookup<ClientUpdateMode> innerUpdateModes) {
             if (innerConverters.getItem(innerFilter.getPrefix()).isPresent()) {
                 return BeanModelType.getConvertedModelType(propertyType,
                         innerFilter, propertyName, declaringClass,
-                        innerConverters);
+                        innerConverters, innerUpdateModes);
             } else {
                 return BeanModelType.getModelType(propertyType, innerFilter,
-                        propertyName, declaringClass, innerConverters);
+                        propertyName, declaringClass, innerConverters,
+                        innerUpdateModes);
             }
         }
 
         private Map<String, ModelConverter<?, ?>> getModelConverters() {
+            return collectAnnotationsByPath(Convert.class, Convert::path,
+                    convert -> ReflectTools.createInstance(convert.value()),
+                    "converters");
+        }
+
+        private Map<String, ClientUpdateMode> getClientUpdateModes() {
+            return collectAnnotationsByPath(AllowClientUpdates.class,
+                    AllowClientUpdates::path, AllowClientUpdates::value,
+                    "client update modes");
+        }
+
+        private <T, A extends Annotation> Map<String, T> collectAnnotationsByPath(
+                Class<A> annotationType, Function<A, String> pathExtractor,
+                Function<A, T> valueExtractor, String conflictMessageToken) {
             return accessors.stream()
-                    .map(method -> method.getAnnotationsByType(Convert.class))
-                    .flatMap(Stream::of)
-                    .collect(Collectors.toMap(Convert::path,
-                            convert -> ReflectTools
-                                    .createInstance(convert.value()),
-                            (u, v) -> {
+                    .map(method -> method.getAnnotationsByType(annotationType))
+                    .flatMap(Stream::of).collect(Collectors.toMap(pathExtractor,
+                            valueExtractor, (u, v) -> {
                                 throw new InvalidTemplateModelException(
                                         "A template model method cannot have multiple "
-                                                + "converters with the same path. Affected methods: "
-                                                + accessors + ".");
+                                                + conflictMessageToken
+                                                + " with the same path. Affected methods: "
+                                                + u + ", " + v + ".");
                             }));
         }
 
@@ -114,7 +146,8 @@ class PropertyMapBuilder {
      *            special converters
      */
     PropertyMapBuilder(Class<?> javaType, PropertyFilter propertyFilter,
-            PathLookup<ModelConverter<?, ?>> converterLookup) {
+            PathLookup<ModelConverter<?, ?>> converterLookup,
+            PathLookup<ClientUpdateMode> updateModeLookup) {
         assert javaType != null;
         assert propertyFilter != null;
 
@@ -127,8 +160,8 @@ class PropertyMapBuilder {
                         Function.identity(), PropertyData::merge))
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> entry.getValue().getModelPropertyType(
-                                propertyFilter, converterLookup)));
+                        entry -> entry.getValue().buildProperty(propertyFilter,
+                                converterLookup, updateModeLookup)));
     }
 
     /**
@@ -136,7 +169,7 @@ class PropertyMapBuilder {
      *
      * @return the extracted properties
      */
-    Map<String, ModelType> getProperties() {
+    Map<String, BeanModelTypeProperty> getProperties() {
         return properties;
     }
 

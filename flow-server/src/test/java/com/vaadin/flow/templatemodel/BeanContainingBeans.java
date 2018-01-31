@@ -12,6 +12,7 @@ public class BeanContainingBeans {
         this.bean2 = bean2;
     }
 
+    @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "booleanObject")
     public Bean getBean1() {
         return bean1;
     }
@@ -20,6 +21,7 @@ public class BeanContainingBeans {
         this.bean1 = bean1;
     }
 
+    @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "intValue")
     public Bean getBean2() {
         return bean2;
     }
