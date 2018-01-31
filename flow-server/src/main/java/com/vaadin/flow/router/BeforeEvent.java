@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
@@ -34,6 +35,7 @@ import com.vaadin.flow.router.internal.NavigationStateRenderer;
 public abstract class BeforeEvent extends EventObject {
     private final Location location;
     private final NavigationTrigger trigger;
+    private final UI ui;
 
     private NavigationHandler rerouteTarget;
 
@@ -51,7 +53,7 @@ public abstract class BeforeEvent extends EventObject {
      */
     public BeforeEvent(NavigationEvent event, Class<?> navigationTarget) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
-                navigationTarget);
+                navigationTarget, event.getUI());
     }
 
     /**
@@ -66,18 +68,22 @@ public abstract class BeforeEvent extends EventObject {
      *            the new location, not {@code null}
      * @param navigationTarget
      *            navigation target class
+     * @param ui
+     *            the UI related to the navigation
      */
     public BeforeEvent(RouterInterface router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget) {
+            Location location, Class<?> navigationTarget, UI ui) {
         super(router);
 
         assert trigger != null;
         assert location != null;
         assert navigationTarget != null;
+        assert ui != null;
 
         this.trigger = trigger;
         this.location = location;
         this.navigationTarget = navigationTarget;
+        this.ui = ui;
     }
 
     /**
@@ -320,5 +326,14 @@ public abstract class BeforeEvent extends EventObject {
      */
     public ErrorParameter<?> getErrorParameter() {
         return errorParameter;
+    }
+
+    /**
+     * Gets the UI this navigation takes place inside.
+     * 
+     * @return the related UI instance
+     */
+    public UI getUI() {
+        return ui;
     }
 }
