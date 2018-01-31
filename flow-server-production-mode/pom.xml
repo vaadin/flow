@@ -15,9 +15,9 @@
     This is a wrapper project for the web-fragment.xml file that sets productionMode=true. When this jar is 
     added to the classpath of a web application, it will run in production mode automatically. This is better 
     used in conjunction with the compilation and minification of resources for production deployment. See 
-    the documentation about ES5 compilation and resource minification at 
-    https://github.com/vaadin/flow/blob/master/flow-documentation/tutorial-webcomponents-es5.asciidoc for more 
-    information about it.
+    the documentation about ES5 compilation and resource minification at
+    https://vaadin.com/docs/v10/flow/web-components/tutorial-webcomponents-es5.html for more
+    information.
     </description>
 
 </project>
