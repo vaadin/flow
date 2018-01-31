@@ -66,7 +66,7 @@ public class VaadinServlet extends HttpServlet {
     private StaticFileServer staticFileServer;
     private WebJarServer webJarServer;
 
-    private final Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations = new HashMap<>();
+    private static Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -629,7 +629,7 @@ public class VaadinServlet extends HttpServlet {
      */
     public String getUrlTranslation(AbstractTheme theme,
             String urlToTranslate) {
-        String translation = themeTranslations
+        String translation = getThemeTranslations()
                 .getOrDefault(theme, new HashMap<>()).get(urlToTranslate);
         if (translation != null) {
             return translation;
@@ -670,9 +670,16 @@ public class VaadinServlet extends HttpServlet {
         return translatedUrl;
     }
 
+    private Map<Class<? extends AbstractTheme>, Map<String, String>> getThemeTranslations() {
+        if (themeTranslations == null) {
+            themeTranslations = new HashMap<>();
+        }
+        return themeTranslations;
+    }
+
     private void addUrlTranslation(AbstractTheme theme, String importValue,
             String translation) {
-        themeTranslations.getOrDefault(theme, new HashMap<>()).put(importValue,
-                translation);
+        getThemeTranslations().getOrDefault(theme, new HashMap<>())
+                .put(importValue, translation);
     }
 }
