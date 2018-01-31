@@ -66,7 +66,7 @@ public class VaadinServlet extends HttpServlet {
     private StaticFileServer staticFileServer;
     private WebJarServer webJarServer;
 
-    private static Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations;
+    private Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
