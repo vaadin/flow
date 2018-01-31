@@ -122,6 +122,18 @@ public interface Instantiator extends Serializable {
     }
 
     /**
+     * Provides an instance of any given type, this is an abstraction
+     * that allows to make use of DI-frameworks from add-ons.
+     *
+     * How the object is created an whether it is being cached or not
+     * is up to the implementation.
+     * @param type
+     *            the instance type to create, not <code>null</code>
+     * @return an instance of the given type
+     */
+    <T> T getOrCreate(Class<T> type);
+
+    /**
      * Creates an instance of a navigation target or router layout. This method
      * is not called in cases when a component instance is reused when
      * navigating.
@@ -133,8 +145,10 @@ public interface Instantiator extends Serializable {
      *            <code>null</code>
      * @return the created instance, not <code>null</code>
      */
-    <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event);
+    default <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
+            NavigationEvent event){
+        return getOrCreate(routeTargetType);
+    }
 
     /**
      * Creates an instance of a component by its {@code componentClass}.
@@ -143,7 +157,9 @@ public interface Instantiator extends Serializable {
      *            the instance type to create, not <code>null</code>
      * @return the created instance, not <code>null</code>
      */
-    <T extends Component> T createComponent(Class<T> componentClass);
+    default <T extends Component> T createComponent(Class<T> componentClass){
+        return getOrCreate(componentClass);
+    }
 
     /**
      * Gets the instantiator to use for the given UI.
@@ -163,9 +179,11 @@ public interface Instantiator extends Serializable {
     }
 
     /**
-     * Get the I18NProvider if on has been defined.
+     * Get the I18NProvider if one has been defined.
      *
      * @return I18NProvier instance
      */
-    I18NProvider getI18NProvider();
+    default I18NProvider getI18NProvider(){
+        return getOrCreate(I18NProvider.class);
+    }
 }

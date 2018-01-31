@@ -20,11 +20,8 @@ import java.util.stream.Stream;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
@@ -62,17 +59,6 @@ public class SpringInstantiator extends DefaultInstantiator {
     }
 
     @Override
-    public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
-        return getObject(routeTargetType);
-    }
-
-    @Override
-    public <T extends Component> T createComponent(Class<T> componentClass) {
-        return getObject(componentClass);
-    }
-
-    @Override
     public I18NProvider getI18NProvider() {
         int beansCount = context.getBeanNamesForType(I18NProvider.class).length;
         if (beansCount == 1) {
@@ -86,11 +72,12 @@ public class SpringInstantiator extends DefaultInstantiator {
         }
     }
 
-    private <T> T getObject(Class<T> type) {
+    @Override
+    public <T> T getOrCreate(Class<T> type) {
         if (context.getBeanNamesForType(type).length == 1) {
             return context.getBean(type);
         }
+
         return context.getAutowireCapableBeanFactory().createBean(type);
     }
-
 }
