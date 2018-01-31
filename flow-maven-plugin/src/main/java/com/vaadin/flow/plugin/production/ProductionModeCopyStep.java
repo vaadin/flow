@@ -26,17 +26,19 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.common.WebJarData;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Copies specified artifacts' contents to the output folder.
@@ -92,8 +94,8 @@ public class ProductionModeCopyStep {
         } catch (IOException e) {
             throw new UncheckedIOException(String.format("Unable to read file '%s' from webJar '%s'", nameSourceJarPath, webJar.getJarFile()), e);
         }
-        JSONObject jsonObject = new JSONObject(fileContents);
-        if (jsonObject.has("name")) {
+        JsonObject jsonObject = Json.parse(fileContents);
+        if (jsonObject.hasKey("name")) {
             return jsonObject.getString("name");
         } else {
             throw new IllegalStateException(String.format("Incorrect WebJar '%s': file '%s' inside it has no 'name' field", webJar, nameSourceJarPath));
