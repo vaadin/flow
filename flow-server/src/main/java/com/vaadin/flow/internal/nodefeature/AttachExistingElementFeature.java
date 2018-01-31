@@ -30,15 +30,15 @@ import com.vaadin.flow.internal.StateNode;
  * <p>
  * The data is going to be destroyed once the response from the client side is
  * received.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
 public class AttachExistingElementFeature extends ServerSideFeature {
 
-    private Map<StateNode, ChildElementConsumer> callbacks = new HashMap<>();
-    private Map<StateNode, Node<?>> parentNodes = new HashMap<>();
-    private Map<StateNode, Element> siblings = new HashMap<>();
+    private Map<StateNode, ChildElementConsumer> callbacks;
+    private Map<StateNode, Node<?>> parentNodes;
+    private Map<StateNode, Element> siblings;
 
     /**
      * Creates a new instance for the given node.
@@ -53,7 +53,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
     /**
      * Registers the data for the {@code child} node requested as being attached
      * to an existing element.
-     * 
+     *
      * @param parent
      *            parent node of the {@code child}
      * @param previousSibling
@@ -66,6 +66,15 @@ public class AttachExistingElementFeature extends ServerSideFeature {
      */
     public void register(Node<?> parent, Element previousSibling,
             StateNode child, ChildElementConsumer callback) {
+        if (callbacks == null) {
+            callbacks = new HashMap<>();
+        }
+        if (parentNodes == null) {
+            parentNodes = new HashMap<>();
+        }
+        if (siblings == null) {
+            siblings = new HashMap<>();
+        }
         callbacks.put(child, callback);
         parentNodes.put(child, parent);
         siblings.put(child, previousSibling);
@@ -74,7 +83,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
 
     /**
      * Gets callback of the registered {@code node}.
-     * 
+     *
      * @param node
      *            the registered state node
      * @return the registered callback for the {@code node}
@@ -85,7 +94,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
 
     /**
      * Gets parent {@link Node} of the registered {@code node}.
-     * 
+     *
      * @param node
      *            the registered state node
      * @return the registered parent for the {@code node}
@@ -96,7 +105,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
 
     /**
      * Gets previous sibling of the registered {@code node}.
-     * 
+     *
      * @param node
      *            the registered state node
      * @return the registered previous sibling for the {@code node}
@@ -107,7 +116,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
 
     /**
      * Unregister the {@code node} and clean up all associated data.
-     * 
+     *
      * @param node
      *            the registered state node
      */
@@ -120,7 +129,9 @@ public class AttachExistingElementFeature extends ServerSideFeature {
 
     @Override
     public void forEachChild(Consumer<StateNode> action) {
-        callbacks.keySet().stream().forEach(action::accept);
+        if (callbacks != null) {
+            callbacks.keySet().stream().forEach(action::accept);
+        }
     }
 
 }

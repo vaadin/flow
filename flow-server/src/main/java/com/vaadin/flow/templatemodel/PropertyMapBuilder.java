@@ -58,29 +58,31 @@ class PropertyMapBuilder {
             return this;
         }
 
-        private ModelType getModelPropertyType(String propertyName,
-                PropertyFilter propertyFilter,
-                ModelConverterProvider converterProvider) {
+        private ModelType getModelPropertyType(PropertyFilter propertyFilter,
+                PathLookup<ModelConverter<?, ?>> outerConverters) {
             PropertyFilter innerFilter = new PropertyFilter(propertyFilter,
                     propertyName, getExcludeFieldsFilter());
-            ModelConverterProvider newConverterProvider = new ModelConverterProvider(
-                    converterProvider, getModelConverters(), innerFilter);
+            PathLookup<ModelConverter<?, ?>> innerConverters = outerConverters
+                    .compose(getModelConverters(), innerFilter.getPrefix());
 
-            if (newConverterProvider.apply(innerFilter).isPresent()) {
+            if (innerConverters.getItem(innerFilter.getPrefix()).isPresent()) {
                 return BeanModelType.getConvertedModelType(propertyType,
                         innerFilter, propertyName, declaringClass,
-                        newConverterProvider);
+                        innerConverters);
             } else {
                 return BeanModelType.getModelType(propertyType, innerFilter,
-                        propertyName, declaringClass, newConverterProvider);
+                        propertyName, declaringClass, innerConverters);
             }
         }
 
-        private Map<String, Class<? extends ModelConverter<?, ?>>> getModelConverters() {
+        private Map<String, ModelConverter<?, ?>> getModelConverters() {
             return accessors.stream()
                     .map(method -> method.getAnnotationsByType(Convert.class))
-                    .flatMap(Stream::of).collect(Collectors.toMap(Convert::path,
-                            Convert::value, (u, v) -> {
+                    .flatMap(Stream::of)
+                    .collect(Collectors.toMap(Convert::path,
+                            convert -> ReflectTools
+                                    .createInstance(convert.value()),
+                            (u, v) -> {
                                 throw new InvalidTemplateModelException(
                                         "A template model method cannot have multiple "
                                                 + "converters with the same path. Affected methods: "
@@ -107,12 +109,12 @@ class PropertyMapBuilder {
      *            the java type of the bean to extract properties' data from
      * @param propertyFilter
      *            the filter that allows to skip some properties by their name
-     * @param converterProvider
+     * @param converterLookup
      *            the provided that allows converting model properties with
      *            special converters
      */
     PropertyMapBuilder(Class<?> javaType, PropertyFilter propertyFilter,
-            ModelConverterProvider converterProvider) {
+            PathLookup<ModelConverter<?, ?>> converterLookup) {
         assert javaType != null;
         assert propertyFilter != null;
 
@@ -126,8 +128,7 @@ class PropertyMapBuilder {
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         entry -> entry.getValue().getModelPropertyType(
-                                entry.getKey(), propertyFilter,
-                                converterProvider)));
+                                propertyFilter, converterLookup)));
     }
 
     /**

@@ -3,8 +3,10 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -28,7 +30,7 @@ public class PageIT extends ChromeBrowserTest {
         updateTitle("Page title 1");
         verifyTitle("Page title 1");
 
-        findElement(By.id("input")).sendKeys("title 2");
+        findElement(By.id("input")).sendKeys("title 2" + Keys.TAB);
         findElement(By.id("override")).click();
 
         verifyTitle("OVERRIDDEN");
@@ -51,8 +53,7 @@ public class PageIT extends ChromeBrowserTest {
     }
 
     private void updateTitle(String title) {
-        findElement(By.id("input")).clear();
-        findElement(By.id("input")).sendKeys(title);
+        $(InputTextElement.class).id("input").setValue(title);
         findElement(By.id("button")).click();
     }
 
@@ -60,11 +61,11 @@ public class PageIT extends ChromeBrowserTest {
     public void testReload() {
         open();
 
-        TestBenchElement input = (TestBenchElement) findElement(By.id("input"));
-        input.sendKeys("foo");
+        InputTextElement input = $(InputTextElement.class).id("input");
+        input.setValue("foo");
         Assert.assertEquals("foo", input.getPropertyString("value"));
         findElement(By.id("reload")).click();
-        input = (TestBenchElement) findElement(By.id("input"));
-        Assert.assertEquals("", input.getPropertyString("value"));
+        input = $(InputTextElement.class).id("input");
+        Assert.assertEquals("", input.getValue());
     }
 }

@@ -23,7 +23,7 @@ import com.vaadin.flow.component.Focusable;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.dom.Element;
 
 /**
  * <p>
@@ -97,13 +97,13 @@ import com.vaadin.flow.component.HasComponents;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ButtonElement#2.0.0-alpha5",
+        "WebComponent: Vaadin.ButtonElement#2.0.0-alpha6",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/src/vaadin-button.html")
-public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
-        extends Component implements HasStyle, HasClickListeners<R>, HasText,
-        Focusable<R>, HasComponents {
+public abstract class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
+        extends Component
+        implements HasStyle, HasClickListeners<R>, HasText, Focusable<R> {
 
     /**
      * <p>
@@ -118,7 +118,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      * 
      * @return the {@code autofocus} property from the webcomponent
      */
-    public boolean isAutofocus() {
+    protected boolean isAutofocusBoolean() {
         return getElement().getProperty("autofocus", false);
     }
 
@@ -133,7 +133,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      * @param autofocus
      *            the boolean value to set
      */
-    public void setAutofocus(boolean autofocus) {
+    protected void setAutofocus(boolean autofocus) {
         getElement().setProperty("autofocus", autofocus);
     }
 
@@ -150,7 +150,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      * 
      * @return the {@code disabled} property from the webcomponent
      */
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -165,7 +165,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
@@ -183,7 +183,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToPrefix(Component... components) {
+    protected R addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
@@ -205,7 +205,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      *      website about slots</a>
      * @return this instance, for method chaining
      */
-    public R addToSuffix(Component... components) {
+    protected R addToSuffix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "suffix");
             getElement().appendChild(component.getElement());
@@ -213,8 +213,15 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
         return get();
     }
 
-    @Override
-    public void remove(Component... components) {
+    /**
+     * Removes the given child components from this component.
+     * 
+     * @param components
+     *            The components to remove.
+     * @throws IllegalArgumentException
+     *             if any of the components is not a child of this component.
+     */
+    protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
                 component.getElement().removeAttribute("slot");
@@ -226,8 +233,12 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
         }
     }
 
-    @Override
-    public void removeAll() {
+    /**
+     * Removes all contents from this component, this includes child components,
+     * text content as well as child elements that have been added directly to
+     * this component using the {@link Element} API.
+     */
+    protected void removeAll() {
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();

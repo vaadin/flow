@@ -278,8 +278,21 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
         };
         $wnd.Polymer.Element = {};
         element.__proto__ = $wnd.Polymer.Element;
-        element.removeAttribute = function(){
-        };
+        if( !element.removeAttribute ) {
+            element.removeAttribute = function(attribute){
+                element[attribute] = null;
+            };
+        }
+        if ( !element.getAttribute ){
+            element.getAttribute = function( attribute ){
+                return element[attribute];
+            };
+        }
+        if ( !element.setAttribute ){
+            element.setAttribute = function( attribute , value){
+                element[attribute] = value;
+            };
+        }
     }-*/;
 
 }

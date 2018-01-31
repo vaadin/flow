@@ -2,7 +2,7 @@
   "name": "Vaadin.RadioGroupElement",
   "tag": "vaadin-radio-group",
   "baseUrl": "vaadin-radio-button/src/vaadin-radio-group.html",
-  "version": "1.0.0-alpha11",
+  "version": "1.0.0-alpha12",
   "properties": [
     {
       "name": "disabled",

@@ -18,8 +18,10 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -29,19 +31,18 @@ public class CompositeIT extends ChromeBrowserTest {
     public void changeOnClient() {
         open();
         WebElement name = findElement(By.id(CompositeNestedView.NAME_ID));
-        WebElement input = findElement(
-                By.id(CompositeNestedView.NAME_FIELD_ID));
+        InputTextElement input = $(InputTextElement.class)
+                .id(CompositeNestedView.NAME_FIELD_ID);
         Assert.assertEquals("Name on server:", name.getText());
-        input.sendKeys("123");
-        findElement(By.xpath("//body")).click(); // Make change event happen
+        input.setValue("123");
         Assert.assertEquals("Name on server: 123", name.getText());
 
-        WebElement serverValueInput = findElement(
-                By.id(CompositeView.SERVER_INPUT_ID));
+        InputTextElement serverValueInput = $(InputTextElement.class)
+                .id(CompositeView.SERVER_INPUT_ID);
         WebElement serverValueButton = findElement(
                 By.id(CompositeView.SERVER_INPUT_BUTTON_ID));
 
-        serverValueInput.sendKeys("server value");
+        serverValueInput.setValue("server value");
         serverValueButton.click();
 
         Assert.assertEquals("Name on server: server value", name.getText());

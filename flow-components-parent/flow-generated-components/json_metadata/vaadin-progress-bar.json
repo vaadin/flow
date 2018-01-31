@@ -2,7 +2,7 @@
   "name": "Vaadin.ProgressBarElement",
   "tag": "vaadin-progress-bar",
   "baseUrl": "vaadin-progress-bar/src/vaadin-progress-bar.html",
-  "version": "1.0.0-alpha11",
+  "version": "1.0.0-alpha12",
   "properties": [
     {
       "name": "value",

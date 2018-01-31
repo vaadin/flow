@@ -44,7 +44,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             .of("textContent", "classList", "className")
             .collect(Collectors.toSet());
 
-    private final Map<String, List<PropertyChangeListener>> listeners = new HashMap<>();
+    private Map<String, List<PropertyChangeListener>> listeners;
 
     /**
      * Creates a new element property map for the given node.
@@ -112,6 +112,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             PropertyChangeListener listener) {
         assert hasElement();
 
+        if (listeners == null) {
+            listeners = new HashMap<>();
+        }
         List<PropertyChangeListener> propertyListeners = listeners
                 .computeIfAbsent(name, key -> new ArrayList<>());
         propertyListeners.add(listener);
@@ -276,6 +279,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     private void fireEvent(PropertyChangeEvent event) {
+        if (listeners == null) {
+            return;
+        }
         List<PropertyChangeListener> propertyListeners = listeners
                 .get(event.getPropertyName());
         if (propertyListeners != null && !propertyListeners.isEmpty()) {

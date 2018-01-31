@@ -63,6 +63,7 @@ import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -167,9 +168,6 @@ public class UIInternals implements Serializable {
     private final ConstantPool constantPool = new ConstantPool();
 
     private AbstractTheme theme = null;
-    private final Map<String, String> urlTranslations = new HashMap<>();
-    private final Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations = new HashMap<>();
-
     private static final Pattern componentSource = Pattern
             .compile(".*/src/vaadin-([\\w\\-]*).html");
 
@@ -574,14 +572,16 @@ public class UIInternals implements Serializable {
      * @param viewLocation
      *            the location of the route target relative to the servlet
      *            serving the UI, not <code>null</code>
-     *            @param path the resolved route path so we can determine what the rendered target is for
+     * @param path
+     *            the resolved route path so we can determine what the rendered
+     *            target is for
      * @param target
      *            the component to show, not <code>null</code>
      * @param layouts
      *            the parent layouts
      */
-    public void showRouteTarget(Location viewLocation, String path, Component target,
-            List<RouterLayout> layouts) {
+    public void showRouteTarget(Location viewLocation, String path,
+            Component target, List<RouterLayout> layouts) {
         assert target != null;
         assert viewLocation != null;
 
@@ -655,23 +655,15 @@ public class UIInternals implements Serializable {
         if (themeAnnotation != null) {
             if (theme == null
                     || !theme.getClass().equals(themeAnnotation.value())) {
-                cacheThemeTranslations(theme);
                 theme = ReflectTools.createInstance(themeAnnotation.value());
-                urlTranslations.clear();
-                urlTranslations.putAll(themeTranslations.computeIfAbsent(
-                        theme.getClass(), themeClass -> new HashMap<>()));
             }
         } else {
-            cacheThemeTranslations(theme);
             theme = null;
-            getLogger().warn("No @Theme defined for {}. See 'trace' level logs for exact components missing theming.",
-                    target.getClass().getName());
-        }
-    }
-
-    private void cacheThemeTranslations(AbstractTheme theme) {
-        if (theme != null) {
-            themeTranslations.put(theme.getClass(), urlTranslations);
+            if (target.getClass().getAnnotation(NoTheme.class) == null) {
+                getLogger().warn(
+                        "No @Theme defined for {}. See 'trace' level logs for exact components missing theming.",
+                        target.getClass().getName());
+            }
         }
     }
 
@@ -793,14 +785,8 @@ public class UIInternals implements Serializable {
     private String getHtmlImportValue(HtmlImport html) {
         String importValue = html.value();
         if (theme != null) {
-            String translation = urlTranslations.get(importValue);
-            if (translation != null) {
-                return translation;
-            }
-            String translatedUrl = theme.getTranslatedUrl(importValue,
-                    VaadinServlet.getCurrent().getServletResources().stream());
-            urlTranslations.put(importValue, translatedUrl);
-            return translatedUrl;
+            return VaadinServlet.getCurrent().getUrlTranslation(theme,
+                    importValue);
         } else {
             Matcher componentMatcher = componentSource.matcher(importValue);
             if (componentMatcher.matches()) {

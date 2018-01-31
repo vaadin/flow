@@ -64,6 +64,8 @@ import jsinterop.annotations.JsFunction;
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
+    private static final String HIDDEN_ATTRIBUTE = "hidden";
+
     private static final String ELEMENT_ATTACH_ERROR_PREFIX = "Element addressed by the ";
 
     @FunctionalInterface
@@ -261,26 +263,32 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void handlePropertyChange(String property,
+    private void handlePropertyChange(String fullPropertyName,
             Supplier<Object> valueProvider, StateNode node) {
         // This is not the property value itself, its a parent node of the
         // property
-        String[] properties = property.split("\\.");
+        String[] subProperties = fullPropertyName.split("\\.");
         StateNode model = node;
         MapProperty mapProperty = null;
-        for (String prop : properties) {
-            NodeMap map = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-            if (!map.hasPropertyValue(prop)) {
+        for (String subProperty : subProperties) {
+            NodeMap elementProperties = model
+                    .getMap(NodeFeatures.ELEMENT_PROPERTIES);
+            if (!elementProperties.hasPropertyValue(subProperty)) {
                 Console.debug("Ignoring property change for property '"
-                        + property + "' which isn't defined from the server");
-                /*
-                 * Ignore instead of throwing since this is also invoked for
-                 * third party polymer components that don't need to have
-                 * property changes sent to the server.
-                 */
+                        + fullPropertyName
+                        + "' which isn't defined from server");
                 return;
             }
-            mapProperty = map.getProperty(prop);
+            if (containsProperty(
+                    model.getList(NodeFeatures.SYNCHRONIZED_PROPERTIES),
+                    subProperty)) {
+                Console.debug("Ignoring property change for property '"
+                        + fullPropertyName
+                        + "' which is intended to be synchronized separately");
+                return;
+            }
+
+            mapProperty = elementProperties.getProperty(subProperty);
             if (mapProperty.getValue() instanceof StateNode) {
                 model = (StateNode) mapProperty.getValue();
             }
@@ -296,6 +304,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         mapProperty.syncToServer(valueProvider.get());
+    }
+
+    private boolean containsProperty(NodeList synchronizedProperties,
+            String property) {
+        for (int i = 0; i < synchronizedProperties.length(); i++) {
+            if (Objects.equals(synchronizedProperties.get(i).toString(),
+                    property)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {
@@ -450,8 +469,19 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BindingContext context,
             JsArray<JsMap<String, Computation>> computationsCollection,
             BinderContext nodeFactory) {
-        context.node.getMap(NodeFeatures.VISIBILITY_DATA)
-                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+        assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
+                + context.node.getId() + " is not an Element";
+        Element element = (Element) context.htmlNode;
+
+        NodeMap visibilityData = context.node
+                .getMap(NodeFeatures.VISIBILITY_DATA);
+        // Store the current "hidden" value to restore it when the element
+        // becomes visible
+
+        visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
+                .setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
+
+        visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(isVisible(context.node));
         updateVisibility(listeners, context, computationsCollection,
                 nodeFactory);
@@ -472,20 +502,37 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
                 + context.node.getId() + " is not an Element";
 
+        NodeMap visibilityData = context.node
+                .getMap(NodeFeatures.VISIBILITY_DATA);
+
         Element element = (Element) context.htmlNode;
 
         if (needsRebind(context.node) && isVisible(context.node)) {
             remove(listeners, context, computationsCollection);
-            Reactive.addFlushListener(() -> doBind(context.node, nodeFactory));
+            Reactive.addFlushListener(() -> {
+                restoreInitialHiddenAttribute(element, visibilityData);
+                doBind(context.node, nodeFactory);
+            });
         } else if (isVisible(context.node)) {
-            context.node.getMap(NodeFeatures.VISIBILITY_DATA)
-                    .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
+            visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                     .setValue(true);
-            WidgetUtil.updateAttribute(element, "hidden", null);
+            restoreInitialHiddenAttribute(element, visibilityData);
         } else {
-            WidgetUtil.updateAttribute(element, "hidden",
+            visibilityData
+                    .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
+                    .setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
+
+            WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
                     Boolean.TRUE.toString());
         }
+    }
+
+    private void restoreInitialHiddenAttribute(Element element,
+            NodeMap visibilityData) {
+        WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
+                visibilityData
+                        .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
+                        .getValue());
     }
 
     private void doBind(StateNode node, BinderContext nodeFactory) {

@@ -72,6 +72,8 @@
                                     <basePackage>com.vaadin.flow.component</basePackage>
                                     <classNamePrefix>Generated</classNamePrefix>
                                     <licenseFile>license_header</licenseFile>
+                                    <protectedMethods>true</protectedMethods>
+                                    <abstractClasses>true</abstractClasses>
                                 </configuration>
                             </execution>
                         </executions>

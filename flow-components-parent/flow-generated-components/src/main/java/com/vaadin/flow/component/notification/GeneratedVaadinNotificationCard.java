@@ -21,7 +21,6 @@ import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasComponents;
 
 /**
  * <p>
@@ -62,24 +61,6 @@ import com.vaadin.flow.component.HasComponents;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-notification-card")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
-public class GeneratedVaadinNotificationCard<R extends GeneratedVaadinNotificationCard<R>>
-        extends Component
-        implements HasStyle, ComponentSupplier<R>, HasComponents {
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinNotificationCard(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinNotificationCard() {
-    }
+public abstract class GeneratedVaadinNotificationCard<R extends GeneratedVaadinNotificationCard<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 }

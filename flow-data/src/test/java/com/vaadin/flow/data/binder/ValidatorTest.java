@@ -21,9 +21,6 @@ import java.util.Objects;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.data.binder.ValidationResult;
-import com.vaadin.flow.data.binder.Validator;
-import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.validator.ValidatorTestBase;
 
 /**
