@@ -144,7 +144,7 @@ public class StateNode implements Serializable {
      *            is not attached to another node
      */
     public void setParent(StateNode parent) {
-        if(hasDetached()) {
+        if (hasDetached()) {
             return;
         }
         boolean attachedBefore = isAttached();
@@ -375,6 +375,9 @@ public class StateNode implements Serializable {
             changes.remove(feature.getClass());
         });
         isInitialChanges = false;
+        if (changes != null && changes.isEmpty()) {
+            changes = null;
+        }
     }
 
     private boolean hasChangeTracker(NodeFeature nodeFeature) {
