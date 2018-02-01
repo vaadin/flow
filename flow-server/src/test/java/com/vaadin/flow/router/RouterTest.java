@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,16 +39,21 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
+import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -819,6 +825,36 @@ public class RouterTest extends RoutingTestBase {
     public static class SubLayout extends Component {
     }
 
+    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
+    public static class MyTheme implements AbstractTheme {
+
+        @Override
+        public String getBaseUrl() {
+            return null;
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+
+        @Override
+        public List<String> getBodyInlineContents() {
+            return Arrays.asList(
+                    "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
+        }
+    }
+
+    @Theme(MyTheme.class)
+    @Tag(Tag.DIV)
+    public static abstract class AbstractMain extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class ExtendingView extends
+            AbstractMain {
+    }
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -1956,6 +1992,22 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Not postponing anymore", eventCollector.get(1));
         Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(2));
         Assert.assertEquals("Resuming", eventCollector.get(3));
+    }
+
+    @Test //3384
+    public void theme_is_gotten_from_the_super_class()
+            throws InvalidRouteConfigurationException, Exception {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(ExtendingView.class));
+
+        router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Field theme = UIInternals.class.getDeclaredField("theme");
+        theme.setAccessible(true);
+        Object themeObject = theme.get(ui.getInternals());
+
+        Assert.assertEquals(MyTheme.class, themeObject.getClass());
     }
 
     @Test

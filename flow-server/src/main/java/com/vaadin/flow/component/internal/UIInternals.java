@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,6 +42,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateTree;
@@ -646,20 +648,25 @@ public class UIInternals implements Serializable {
     private void updateTheme(Component target, String path) {
         Class<? extends RouterLayout> topParentLayout = RouterUtil
                 .getTopParentLayout(target.getClass(), path);
-        Theme themeAnnotation;
+        Optional<Theme> themeAnnotation;
         if (topParentLayout != null) {
-            themeAnnotation = topParentLayout.getAnnotation(Theme.class);
+            themeAnnotation = AnnotationReader.getAnnotationFor(topParentLayout,
+                    Theme.class);
         } else {
-            themeAnnotation = target.getClass().getAnnotation(Theme.class);
+            themeAnnotation = AnnotationReader
+                    .getAnnotationFor(target.getClass(), Theme.class);
         }
-        if (themeAnnotation != null) {
-            if (theme == null
-                    || !theme.getClass().equals(themeAnnotation.value())) {
-                theme = ReflectTools.createInstance(themeAnnotation.value());
+        if (themeAnnotation.isPresent()) {
+            if (theme == null || !theme.getClass()
+                    .equals(themeAnnotation.get().value())) {
+                theme = ReflectTools
+                        .createInstance(themeAnnotation.get().value());
             }
         } else {
             theme = null;
-            if (target.getClass().getAnnotation(NoTheme.class) == null) {
+            if (AnnotationReader
+                    .getAnnotationFor(target.getClass(), NoTheme.class)
+                    .isPresent()) {
                 getLogger().warn(
                         "No @Theme defined for {}. See 'trace' level logs for exact components missing theming.",
                         target.getClass().getName());
