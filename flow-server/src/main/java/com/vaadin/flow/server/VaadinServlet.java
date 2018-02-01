@@ -648,6 +648,9 @@ public class VaadinServlet extends HttpServlet {
             // Resolve the translated url for use with servlet context path
             String resolvedUrl = uriResolverFactory.toServletContextPath(
                     VaadinRequest.getCurrent(), translatedUrl);
+            if(resolvedUrl.startsWith("/./")) {
+                resolvedUrl = resolvedUrl.substring(2);
+            }
             URL resource = getServletContext().getResource(resolvedUrl);
             if (resource != null) {
                 addUrlTranslation(theme, urlToTranslate, translatedUrl);
