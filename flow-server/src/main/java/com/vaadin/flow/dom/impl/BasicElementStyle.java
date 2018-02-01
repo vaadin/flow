@@ -45,8 +45,7 @@ public class BasicElementStyle implements Style {
     public Style set(String name, String value) {
         ElementUtil.validateStylePropertyName(name);
         if (value == null) {
-            throw new IllegalArgumentException(
-                    ElementUtil.A_STYLE_VALUE_CANNOT_BE_NULL);
+            return this.remove(name);
         }
         String trimmedValue = value.trim();
         ElementUtil.validateStylePropertyValue(trimmedValue);

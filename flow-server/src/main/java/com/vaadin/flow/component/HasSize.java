@@ -41,11 +41,7 @@ public interface HasSize extends HasElement {
      *            the width to set, may be {@code null}
      */
     default void setWidth(String width) {
-        if (width == null) {
-            getElement().getStyle().remove(ElementConstants.STYLE_WIDTH);
-        } else {
-            getElement().getStyle().set(ElementConstants.STYLE_WIDTH, width);
-        }
+        getElement().getStyle().set(ElementConstants.STYLE_WIDTH, width);
     }
 
     /**
@@ -74,11 +70,7 @@ public interface HasSize extends HasElement {
      *            the height to set, may be {@code null}
      */
     default void setHeight(String height) {
-        if (height == null) {
-            getElement().getStyle().remove(ElementConstants.STYLE_HEIGHT);
-        } else {
-            getElement().getStyle().set(ElementConstants.STYLE_HEIGHT, height);
-        }
+        getElement().getStyle().set(ElementConstants.STYLE_HEIGHT, height);
     }
 
     /**

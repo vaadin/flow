@@ -1149,12 +1149,15 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertTrue(styles.contains("borderFoo"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void nullStyleValue() {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
+        style.set("borderColor", "blue");
         style.set("borderColor", null);
+        List<String> styles = style.getNames().collect(Collectors.toList());
+        Assert.assertFalse(styles.contains("borderColor"));
     }
 
     @Test
