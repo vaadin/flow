@@ -83,6 +83,13 @@ public class ComponentMetaDataTest {
         }
     }
 
+    public static class HasFooPackagePrivate extends Component {
+        @Synchronize(value = "bar", property = "baz")
+        String getFoo() {
+            return null;
+        }
+    }
+
     public static class HasFooPrivate extends Component {
         @Synchronize(value = "bar", property = "baz")
         private String getFoo() {
@@ -101,12 +108,17 @@ public class ComponentMetaDataTest {
     }
 
     @Test
-    public void synchronizedProperties_privateMethod() {
+    public void synchronizedProperties_protectedMethod() {
         assertFooProperty(HasFooProtected.class);
     }
 
     @Test
-    public void synchronizedProperties_protectedMethod() {
+    public void synchronizedProperties_packagePrivateMethod() {
+        assertFooProperty(HasFooPackagePrivate.class);
+    }
+
+    @Test
+    public void synchronizedProperties_privateMethod() {
         assertFooProperty(HasFooPrivate.class);
     }
 
