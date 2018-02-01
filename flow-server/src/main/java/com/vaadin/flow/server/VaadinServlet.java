@@ -28,11 +28,10 @@ import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.slf4j.LoggerFactory;
@@ -41,6 +40,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.VaadinServletConfiguration.InitParameterName;
@@ -66,7 +66,8 @@ public class VaadinServlet extends HttpServlet {
     private StaticFileServer staticFileServer;
     private WebJarServer webJarServer;
 
-    private Map<Class<? extends AbstractTheme>, Map<String, String>> themeTranslations;
+    private final ReflectionCache<AbstractTheme, ConcurrentHashMap<String, String>> themeTranslations = new ReflectionCache<>(
+            type -> new ConcurrentHashMap<>());
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -615,11 +616,7 @@ public class VaadinServlet extends HttpServlet {
 
     /**
      * Get the validated theme url for given string import. Result will be
-     * cached for future use.
-     * <p>
-     * Note! For concurrency there is a slight chance that multiple calls will
-     * resolve the same url for the same theme, but this is fine as the end
-     * result is always the same for the running servlet context.
+     * cached for future use if production mode is enabled.
      *
      * @param theme
      *            Theme to resolve url translation for
@@ -629,60 +626,47 @@ public class VaadinServlet extends HttpServlet {
      */
     public String getUrlTranslation(AbstractTheme theme,
             String urlToTranslate) {
-        String translation = getThemeTranslations()
-                .getOrDefault(theme, new HashMap<>()).get(urlToTranslate);
-        if (translation != null) {
-            return translation;
+        if (getService().getDeploymentConfiguration().isProductionMode()) {
+            return themeTranslations.get(theme.getClass()).computeIfAbsent(
+                    urlToTranslate, key -> computeUrlTranslation(theme, key));
+        } else {
+            return computeUrlTranslation(theme, urlToTranslate);
         }
+    }
 
-        VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
-                .getAttribute(VaadinUriResolverFactory.class);
-
+    private final String computeUrlTranslation(AbstractTheme theme,
+            String urlToTranslate) {
         String translatedUrl = theme.translateUrl(urlToTranslate);
-        if (translatedUrl.equals(urlToTranslate)) {
-            addUrlTranslation(theme, urlToTranslate, urlToTranslate);
+        if (translatedUrl.equals(urlToTranslate)
+                || resourceIsFound(translatedUrl)) {
+            return translatedUrl;
+        } else {
             return urlToTranslate;
         }
+    }
+
+    private boolean resourceIsFound(String url) {
+        VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
+                .getAttribute(VaadinUriResolverFactory.class);
+        String resolvedUrl = uriResolverFactory
+                .toServletContextPath(VaadinRequest.getCurrent(), url);
 
         try {
-            // Resolve the translated url for use with servlet context path
-            String resolvedUrl = uriResolverFactory.toServletContextPath(
-                    VaadinRequest.getCurrent(), translatedUrl);
-            if(resolvedUrl.startsWith("/./")) {
-                resolvedUrl = resolvedUrl.substring(2);
-            }
-            URL resource = getServletContext().getResource(resolvedUrl);
-            if (resource != null) {
-                addUrlTranslation(theme, urlToTranslate, translatedUrl);
-            } else if (webJarServer != null && webJarServer
-                    .hasWebJarResource(resolvedUrl, getServletContext())) {
-                addUrlTranslation(theme, urlToTranslate, translatedUrl);
-            } else {
-                // Url could not be translated, add given url to cache.
-                addUrlTranslation(theme, urlToTranslate, urlToTranslate);
-                return urlToTranslate;
-            }
+            return inServletContext(resolvedUrl) || inWebJar(resolvedUrl);
         } catch (IOException e) {
             LoggerFactory.getLogger(VaadinServlet.class)
                     .trace("Failed to parse url.", e);
-            // Url could not be translated, add given url to cache.
-            addUrlTranslation(theme, urlToTranslate, urlToTranslate);
-            return urlToTranslate;
+            return false;
         }
-
-        return translatedUrl;
     }
 
-    private Map<Class<? extends AbstractTheme>, Map<String, String>> getThemeTranslations() {
-        if (themeTranslations == null) {
-            themeTranslations = new HashMap<>();
-        }
-        return themeTranslations;
+    private boolean inServletContext(String resolvedUrl)
+            throws MalformedURLException {
+        return getServletContext().getResource(resolvedUrl) != null;
     }
 
-    private void addUrlTranslation(AbstractTheme theme, String importValue,
-            String translation) {
-        getThemeTranslations().getOrDefault(theme, new HashMap<>())
-                .put(importValue, translation);
+    private boolean inWebJar(String resolvedUrl) throws IOException {
+        return webJarServer != null && webJarServer
+                .hasWebJarResource(resolvedUrl, getServletContext());
     }
 }

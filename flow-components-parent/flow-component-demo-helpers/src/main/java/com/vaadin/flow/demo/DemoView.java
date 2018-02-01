@@ -33,6 +33,8 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 /**
  * Base class for all the Views that demo some component.
@@ -40,6 +42,7 @@ import com.vaadin.flow.router.Route;
  * @author Vaadin Ltd
  */
 @Tag(Tag.DIV)
+@Theme(Lumo.class)
 @StyleSheet("src/css/demo.css")
 @StyleSheet("src/css/prism.css")
 @JavaScript("src/script/prism.js")

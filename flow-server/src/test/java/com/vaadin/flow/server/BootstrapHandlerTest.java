@@ -303,6 +303,16 @@ public class BootstrapHandlerTest {
     public static class MyAliasThemeTest extends Component {
     }
 
+    @Theme(MyTheme.class)
+    @Tag(Tag.DIV)
+    public static abstract class AbstractMain extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class ExtendingView extends AbstractMain {
+    }
+
     private TestUI testUI;
     private BootstrapContext context;
     private VaadinRequest request;
@@ -944,7 +954,33 @@ public class BootstrapHandlerTest {
                 page.head().toString().contains("vaadin-lumo"));
         Assert.assertFalse("Page body should not have custom styles",
                 page.body().toString().contains("<custom-style>"));
+    }
 
+    @Test // 3384
+    public void theme_contents_added_also_when_theme_in_super_class()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(ExtendingView.class));
+
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertTrue("Custom style should have been added to head.",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.equals(
+                                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
+
+        allElements = page.body().getAllElements();
+        // Note element 0 is the full head element.
+        Assert.assertEquals("Custom style should have been added to head.",
+                "<custom-style><style include=\"lumo-typography\"></style></custom-style>",
+                allElements.get(2).toString());
+
+        Assert.assertTrue("Style should have been wrapped in custom style",
+                page.body().toString().contains(
+                        "<custom-style><style include=\"lumo-typography\"></style></custom-style>"));
     }
 
     @Test

@@ -34,6 +34,7 @@ public class ExclusionRegistry {
     private static final Map<String, Set<String>> PROPERTY_EXCLUSION_REGISTRY = new HashMap<>();
     private static final Map<String, Set<String>> EVENT_EXCLUSION_REGISTRY = new HashMap<>();
     private static final Map<String, Set<String>> METHOD_EXCLUSION_REGISTRY = new HashMap<>();
+    private static final Map<String, Set<String>> BEHAVIOR_EXCLUSION_REGISTRY = new HashMap<>();
 
     static {
         excludeProperty("vaadin-combo-box", "value");
@@ -50,6 +51,8 @@ public class ExclusionRegistry {
         excludeProperty("vaadin-list-box", "selected");
         excludeEvent("vaadin-combo-box", "selected-item-changed");
         excludeEvent("vaadin-combo-box", "change");
+        excludeBehaviorOrMixin("vaadin-date-picker",
+                "Polymer.GestureEventListeners");
 
         // Polymer lifecycle callbacks
         excludeMethod(null, "connectedCallback");
@@ -114,6 +117,22 @@ public class ExclusionRegistry {
         put(elementTag, methodName, METHOD_EXCLUSION_REGISTRY);
     }
 
+    /**
+     * Excludes a behavior or mixin from being evaluated for a specific element
+     * denoted by its tag.
+     * 
+     * @param elementTag
+     *            the tag of the element which the behavior should be excluded
+     *            from generation. Setting <code>null</code> makes the exclusion
+     *            apply to all elements
+     * @param behaviorName
+     *            the name of the behavior or mixin to be excluded
+     */
+    public static void excludeBehaviorOrMixin(String elementTag,
+            String behaviorName) {
+        put(elementTag, behaviorName, BEHAVIOR_EXCLUSION_REGISTRY);
+    }
+
     private static boolean isExcluded(String elementTag, String name,
             Map<String, Set<String>> map) {
         if (map.getOrDefault(null, Collections.emptySet()).contains(name)) {
@@ -166,5 +185,22 @@ public class ExclusionRegistry {
     public static boolean isMethodExcluded(String elementTag,
             String methodName) {
         return isExcluded(elementTag, methodName, METHOD_EXCLUSION_REGISTRY);
+    }
+
+    /**
+     * Gets whether a behavior or mixin should be excluded or not from the
+     * generation.
+     * 
+     * @param elementTag
+     *            the tag of the element
+     * @param behaviorName
+     *            the name of the behavior or mixin
+     * @return <code>true</code> if the behavior should be excluded,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isBehaviorOrMixinExcluded(String elementTag,
+            String behaviorName) {
+        return isExcluded(elementTag, behaviorName,
+                BEHAVIOR_EXCLUSION_REGISTRY);
     }
 }
