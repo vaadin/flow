@@ -27,6 +27,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
@@ -176,7 +178,12 @@ public class WebJarServer implements Serializable {
      */
     public boolean hasWebJarResource(String filePathInContext,
             ServletContext servletContext) throws IOException {
-        String webJarPath = getWebJarPath(filePathInContext);
+        String webJarPath = null;
+
+        Matcher matcher = Pattern.compile("([/.]?[/..]*)" + prefix).matcher(filePathInContext);
+        if(matcher.find()) {
+            webJarPath = getWebJarPath(filePathInContext.replace(matcher.group(1), ""));
+        }
         if (webJarPath == null) {
             return false;
         }
