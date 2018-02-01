@@ -42,7 +42,7 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow</artifactId>
+            <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
