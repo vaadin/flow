@@ -17,10 +17,10 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
 
 public class SynchronizedPropertyIT extends ChromeBrowserTest {
 
@@ -36,11 +36,6 @@ public class SynchronizedPropertyIT extends ChromeBrowserTest {
         blur();
         Assert.assertEquals("Server value: 123456",
                 labelSyncOnChange.getText());
-    }
-
-    private void blur() {
-        executeScript(
-                "!!document.activeElement ? document.activeElement.blur() : 0");
     }
 
     @Test

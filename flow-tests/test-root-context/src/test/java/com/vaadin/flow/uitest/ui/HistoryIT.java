@@ -24,8 +24,10 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class HistoryIT extends ChromeBrowserTest {
@@ -36,16 +38,17 @@ public class HistoryIT extends ChromeBrowserTest {
 
         URI baseUrl = getCurrentUrl();
 
-        WebElement stateField = findElement(By.id("state"));
-        WebElement locationField = findElement(By.id("location"));
+        InputTextElement stateField = $(InputTextElement.class).id("state");
+        InputTextElement locationField = $(InputTextElement.class)
+                .id("location");
         WebElement pushButton = findElement(By.id("pushState"));
         WebElement replaceButton = findElement(By.id("replaceState"));
         WebElement backButton = findElement(By.id("back"));
         WebElement forwardButton = findElement(By.id("forward"));
         WebElement clearButton = findElement(By.id("clear"));
 
-        stateField.sendKeys("{'foo':true}");
-        locationField.sendKeys("asdf");
+        stateField.setValue("{'foo':true}");
+        locationField.setValue("asdf");
         pushButton.click();
 
         Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
@@ -62,7 +65,7 @@ public class HistoryIT extends ChromeBrowserTest {
 
         stateField.clear();
         locationField.clear();
-        locationField.sendKeys("qwerty");
+        locationField.setValue("qwerty");
         replaceButton.click();
 
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());

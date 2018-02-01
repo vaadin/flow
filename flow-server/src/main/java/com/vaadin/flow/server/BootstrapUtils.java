@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.TargetElement;
@@ -48,6 +49,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
+import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -308,16 +310,18 @@ class BootstrapUtils {
             Map<TargetElement, List<JsonObject>> themeContents = new EnumMap<>(
                     TargetElement.class);
 
-            AbstractTheme theme = ReflectTools
-                    .createInstance(themeAnnotation.get().value());
-            Stream<String> headImports = Stream.concat(
-                    theme.getHeadInlineContents().stream(),
-                    theme.getHeadInlineContents(context.getUriResolver())
-                            .stream());
-            List<JsonObject> head = headImports
-                    .map(BootstrapUtils::createInlineDependencyObject)
-                    .collect(Collectors.toList());
-            themeContents.put(TargetElement.HEAD, head);
+            Class<? extends AbstractTheme> themeClass = themeAnnotation.get().value();
+            AbstractTheme theme = ReflectTools.createInstance(themeClass);
+
+            if (!context.isProductionMode()) {
+                List<JsonObject> head = Stream
+                        .of(themeClass.getAnnotationsByType(HtmlImport.class))
+                        .map(HtmlImport::value)
+                        .map(url -> createImportLink(context.getUriResolver(), url))
+                        .map(BootstrapUtils::createInlineDependencyObject)
+                        .collect(Collectors.toList());
+                themeContents.put(TargetElement.HEAD, head);
+            }
 
             List<JsonObject> body = theme.getBodyInlineContents().stream()
                     .map(BootstrapUtils::createInlineDependencyObject)
@@ -329,11 +333,17 @@ class BootstrapUtils {
         return Collections.emptyMap();
     }
 
+    private static String createImportLink(VaadinUriResolver resolver,
+                                           String href) {
+        String resolvedLink = resolver.resolveVaadinUri(href);
+        return "<link rel=\"import\" href=\"" + resolvedLink + "\">";
+
+    }
+
     private static JsonObject createInlineDependencyObject(String content) {
         JsonObject dependency = Json.createObject();
         dependency.put(Dependency.KEY_TYPE, "none");
         dependency.put("LoadMode", LoadMode.INLINE.toString());
-
         dependency.put(Dependency.KEY_CONTENTS, content);
         return dependency;
     }

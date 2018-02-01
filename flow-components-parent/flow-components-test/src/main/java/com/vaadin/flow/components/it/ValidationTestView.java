@@ -17,7 +17,7 @@ package com.vaadin.flow.components.it;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValidation;
-import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.NativeButton;
 
 /**
  * Abstract view class for testing validation with components that implement
@@ -36,7 +36,7 @@ public abstract class ValidationTestView extends TestView {
         ((Component) field).setId("field");
         add(((Component) field));
 
-        Button button = new Button("Make the input invalid");
+        NativeButton button = new NativeButton("Make the input invalid");
         button.setId("invalidate");
         button.addClickListener(event -> {
             field.setErrorMessage("Invalidated from server");
@@ -44,7 +44,7 @@ public abstract class ValidationTestView extends TestView {
         });
         add(button);
 
-        button = new Button("Make the input valid");
+        button = new NativeButton("Make the input valid");
         button.setId("validate");
         button.addClickListener(event -> {
             field.setErrorMessage(null);

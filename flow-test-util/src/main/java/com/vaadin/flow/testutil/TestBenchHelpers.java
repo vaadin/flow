@@ -345,4 +345,13 @@ public class TestBenchHelpers extends ParallelTest {
                 shadowRoot);
         return shadowRoot;
     }
+
+    /**
+     * Calls the {@code blur()} function on the current active element of the
+     * page, if any.
+     */
+    public void blur() {
+        executeScript(
+                "!!document.activeElement ? document.activeElement.blur() : 0");
+    }
 }

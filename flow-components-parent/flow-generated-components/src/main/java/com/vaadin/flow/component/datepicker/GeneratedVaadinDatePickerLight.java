@@ -17,12 +17,11 @@ package com.vaadin.flow.component.datepicker;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.HasValue;
-import java.util.Objects;
 import elemental.json.JsonObject;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.EventData;
@@ -30,7 +29,6 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.HasComponents;
 
 /**
  * <p>
@@ -62,15 +60,38 @@ import com.vaadin.flow.component.HasComponents;
  * &lt;paper-input label=&quot;Birthday&quot;&gt; &lt;/paper-input&gt;
  * &lt;/vaadin-date-picker-light&gt;
  * </p>
+ * <h3>Styling</h3>
+ * <p>
+ * The following shadow DOM parts are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * <th>Theme for Element</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code overlay-content}</td>
+ * <td>The overlay element</td>
+ * <td>vaadin-date-picker-light</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.DatePickerLightElement#3.0.0-alpha5",
+        "WebComponent: Vaadin.DatePickerLightElement#3.0.0-alpha6",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-light.html")
-public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R>>
-        extends Component
-        implements HasStyle, HasValue<R, String>, HasComponents {
+public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -94,15 +115,8 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @return the {@code value} property from the webcomponent
      */
     @Synchronize(property = "value", value = "value-changed")
-    @Override
-    public String getValue() {
-        String value = getElement().getProperty("value");
-        return value == null ? getEmptyValue() : value;
-    }
-
-    @Override
-    public String getEmptyValue() {
-        return "";
+    protected String getValueString() {
+        return getElement().getProperty("value");
     }
 
     /**
@@ -124,12 +138,8 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param value
      *            the String value to set
      */
-    @Override
-    public void setValue(String value) {
-        Objects.requireNonNull(value, "value cannot be null");
-        if (!Objects.equals(value, getValue())) {
-            getElement().setProperty("value", value);
-        }
+    protected void setValue(String value) {
+        getElement().setProperty("value", value == null ? "" : value);
     }
 
     /**
@@ -145,7 +155,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 
      * @return the {@code required} property from the webcomponent
      */
-    public boolean isRequired() {
+    protected boolean isRequiredBoolean() {
         return getElement().getProperty("required", false);
     }
 
@@ -160,7 +170,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param required
      *            the boolean value to set
      */
-    public void setRequired(boolean required) {
+    protected void setRequired(boolean required) {
         getElement().setProperty("required", required);
     }
 
@@ -177,7 +187,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 
      * @return the {@code name} property from the webcomponent
      */
-    public String getName() {
+    protected String getNameString() {
         return getElement().getProperty("name");
     }
 
@@ -192,7 +202,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param name
      *            the String value to set
      */
-    public void setName(String name) {
+    protected void setName(String name) {
         getElement().setProperty("name", name == null ? "" : name);
     }
 
@@ -212,7 +222,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 
      * @return the {@code initialPosition} property from the webcomponent
      */
-    public String getInitialPosition() {
+    protected String getInitialPositionString() {
         return getElement().getProperty("initialPosition");
     }
 
@@ -230,7 +240,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param initialPosition
      *            the String value to set
      */
-    public void setInitialPosition(String initialPosition) {
+    protected void setInitialPosition(String initialPosition) {
         getElement().setProperty("initialPosition",
                 initialPosition == null ? "" : initialPosition);
     }
@@ -248,7 +258,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 
      * @return the {@code label} property from the webcomponent
      */
-    public String getLabel() {
+    protected String getLabelString() {
         return getElement().getProperty("label");
     }
 
@@ -263,7 +273,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param label
      *            the String value to set
      */
-    public void setLabel(String label) {
+    protected void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
     }
 
@@ -281,7 +291,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @return the {@code opened} property from the webcomponent
      */
     @Synchronize(property = "opened", value = "opened-changed")
-    public boolean isOpened() {
+    protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
 
@@ -296,7 +306,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param opened
      *            the boolean value to set
      */
-    public void setOpened(boolean opened) {
+    protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
     }
 
@@ -315,7 +325,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 
      * @return the {@code showWeekNumbers} property from the webcomponent
      */
-    public boolean isShowWeekNumbers() {
+    protected boolean isShowWeekNumbersBoolean() {
         return getElement().getProperty("showWeekNumbers", false);
     }
 
@@ -332,7 +342,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param showWeekNumbers
      *            the boolean value to set
      */
-    public void setShowWeekNumbers(boolean showWeekNumbers) {
+    protected void setShowWeekNumbers(boolean showWeekNumbers) {
         getElement().setProperty("showWeekNumbers", showWeekNumbers);
     }
 
@@ -420,7 +430,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 
      * @return the {@code i18n} property from the webcomponent
      */
-    protected JsonObject protectedGetI18n() {
+    protected JsonObject getI18nJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("i18n");
     }
 
@@ -535,7 +545,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 
      * @return the {@code min} property from the webcomponent
      */
-    public String getMin() {
+    protected String getMinString() {
         return getElement().getProperty("min");
     }
 
@@ -559,7 +569,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param min
      *            the String value to set
      */
-    public void setMin(String min) {
+    protected void setMin(String min) {
         getElement().setProperty("min", min == null ? "" : min);
     }
 
@@ -584,7 +594,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 
      * @return the {@code max} property from the webcomponent
      */
-    public String getMax() {
+    protected String getMaxString() {
         return getElement().getProperty("max");
     }
 
@@ -607,7 +617,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param max
      *            the String value to set
      */
-    public void setMax(String max) {
+    protected void setMax(String max) {
         getElement().setProperty("max", max == null ? "" : max);
     }
 
@@ -625,7 +635,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * 
      * @return the {@code attrForValue} property from the webcomponent
      */
-    public String getAttrForValue() {
+    protected String getAttrForValueString() {
         return getElement().getProperty("attrForValue");
     }
 
@@ -641,7 +651,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @param attrForValue
      *            the String value to set
      */
-    public void setAttrForValue(String attrForValue) {
+    protected void setAttrForValue(String attrForValue) {
         getElement().setProperty("attrForValue",
                 attrForValue == null ? "" : attrForValue);
     }
@@ -654,7 +664,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * Opens the dropdown.
      * </p>
      */
-    public void open() {
+    protected void open() {
         getElement().callFunction("open");
     }
 
@@ -666,7 +676,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * Closes the dropdown.
      * </p>
      */
-    public void close() {
+    protected void close() {
         getElement().callFunction("close");
     }
 
@@ -713,6 +723,37 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
     protected void checkValidity(String value) {
     }
 
+    @DomEvent("value-changed")
+    public static class ValueChangeEvent<R extends GeneratedVaadinDatePickerLight<R>>
+            extends ComponentEvent<R> {
+        private final String value;
+
+        public ValueChangeEvent(R source, boolean fromClient,
+                @EventData("event.value") String value) {
+            super(source, fromClient);
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code value-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Registration addValueChangeListener(
+            ComponentEventListener<ValueChangeEvent<R>> listener) {
+        return addListener(ValueChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
     @DomEvent("opened-changed")
     public static class OpenedChangeEvent<R extends GeneratedVaadinDatePickerLight<R>>
             extends ComponentEvent<R> {
@@ -738,26 +779,9 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Registration addOpenedChangeListener(
+    protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
         return addListener(OpenedChangeEvent.class,
                 (ComponentEventListener) listener);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinDatePickerLight(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinDatePickerLight() {
     }
 }

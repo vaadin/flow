@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -43,6 +44,7 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
@@ -147,8 +149,10 @@ public class NavigationStateRenderer implements NavigationHandler {
 
         navigationState.getUrlParameters().ifPresent(urlParameters -> {
             HasUrlParameter hasUrlParameter = (HasUrlParameter) componentInstance;
+            Object deserializedParameter = ParameterDeserializer
+                    .deserializeUrlParameters(routeTargetType, urlParameters);
             hasUrlParameter.setParameter(beforeNavigationActivating,
-                    hasUrlParameter.deserializeUrlParameters(urlParameters));
+                    deserializedParameter);
         });
 
         if (beforeNavigationActivating.hasRerouteTarget()) {

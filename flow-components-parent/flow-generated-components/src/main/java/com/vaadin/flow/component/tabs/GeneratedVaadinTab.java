@@ -21,7 +21,6 @@ import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasComponents;
 
 /**
  * <p>
@@ -88,11 +87,11 @@ Tab 1
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TabElement#2.0.0-alpha6", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.TabElement#2.0.0-alpha7", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-tab")
 @HtmlImport("frontend://bower_components/vaadin-tabs/src/vaadin-tab.html")
-public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>> extends
-        Component implements HasStyle, ComponentSupplier<R>, HasComponents {
+public abstract class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
+        extends Component implements HasStyle, ComponentSupplier<R> {
 
     /**
      * <p>
@@ -108,7 +107,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>> extends
      * 
      * @return the {@code value} property from the webcomponent
      */
-    public String getValue() {
+    protected String getValueString() {
         return getElement().getProperty("value");
     }
 
@@ -124,7 +123,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>> extends
      * @param value
      *            the String value to set
      */
-    public void setValue(String value) {
+    protected void setValue(String value) {
         getElement().setProperty("value", value == null ? "" : value);
     }
 
@@ -141,7 +140,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>> extends
      * 
      * @return the {@code disabled} property from the webcomponent
      */
-    public boolean isDisabled() {
+    protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
@@ -156,7 +155,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>> extends
      * @param disabled
      *            the boolean value to set
      */
-    public void setDisabled(boolean disabled) {
+    protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
     }
 
@@ -173,7 +172,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>> extends
      * 
      * @return the {@code selected} property from the webcomponent
      */
-    public boolean isSelected() {
+    protected boolean isSelectedBoolean() {
         return getElement().getProperty("selected", false);
     }
 
@@ -188,24 +187,7 @@ public class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>> extends
      * @param selected
      *            the boolean value to set
      */
-    public void setSelected(boolean selected) {
+    protected void setSelected(boolean selected) {
         getElement().setProperty("selected", selected);
-    }
-
-    /**
-     * Adds the given components as children of this component.
-     * 
-     * @param components
-     *            the components to add
-     * @see HasComponents#add(Component...)
-     */
-    public GeneratedVaadinTab(Component... components) {
-        add(components);
-    }
-
-    /**
-     * Default constructor.
-     */
-    public GeneratedVaadinTab() {
     }
 }

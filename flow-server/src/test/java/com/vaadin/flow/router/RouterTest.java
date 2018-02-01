@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,8 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletResponse;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,7 +50,10 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -91,6 +89,7 @@ public class RouterTest extends RoutingTestBase {
             eventCollector.add("FooBar ACTIVATING");
         }
 
+        @Override
         public void beforeLeave(BeforeLeaveEvent event) {
             eventCollector.add("FooBar DEACTIVATING");
         }
@@ -148,6 +147,7 @@ public class RouterTest extends RoutingTestBase {
                         "BeforeNavigation got event with state ACTIVATING");
             }
 
+            @Override
             public void beforeLeave(BeforeLeaveEvent event) {
                 eventCollector.add(
                         "BeforeNavigation got event with state DEACTIVATING");
@@ -247,25 +247,6 @@ public class RouterTest extends RoutingTestBase {
         public void setParameter(BeforeEvent event,
                 @WildcardParameter Integer parameter) {
             eventCollector.add("With parameter: " + parameter);
-        }
-    }
-
-    @Route("fixed/wildcard")
-    @Tag(Tag.DIV)
-    public static class FixedWildParameter extends Component
-            implements HasUrlParameter<Integer> {
-
-        @Override
-        public void setParameter(BeforeEvent event,
-                @WildcardParameter Integer parameter) {
-            eventCollector.add("With parameter: " + parameter);
-        }
-
-        @Override
-        public Integer deserializeUrlParameters(List<String> urlParameters) {
-            Integer value = urlParameters.stream().map(Integer::valueOf)
-                    .reduce(Integer::sum).orElse(0);
-            return value;
         }
     }
 
@@ -653,7 +634,7 @@ public class RouterTest extends RoutingTestBase {
 
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
-            this.message = parameter;
+            message = parameter;
         }
     }
 
@@ -821,6 +802,21 @@ public class RouterTest extends RoutingTestBase {
             eventCollector.add("Received locale change event for locale: "
                     + event.getLocale().getDisplayName());
         }
+    }
+
+    @Tag(Tag.DIV)
+    public static class MainLayout extends Component implements RouterLayout {
+    }
+
+    @Route(value = "base", layout = MainLayout.class)
+    @ParentLayout(MainLayout.class)
+    @Tag(Tag.DIV)
+    public static class BaseLayout extends Component implements RouterLayout {
+    }
+
+    @Route(value = "sub", layout = BaseLayout.class)
+    @Tag(Tag.DIV)
+    public static class SubLayout extends Component {
     }
 
     @Override
@@ -1620,7 +1616,7 @@ public class RouterTest extends RoutingTestBase {
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
 
         String message = String.format(
-                "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class %s",
+                "Invalid wildcard parameter in class %s. Only String is supported for wildcard parameters.",
                 UnsupportedWildParameter.class.getName());
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -1629,41 +1625,10 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void overridden_deserializer_wildcard_support_for_custom_type()
-            throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(Stream
-                .of(FixedWildParameter.class).collect(Collectors.toSet()));
-
-        router.navigate(ui, new Location("fixed/wildcard/3/4/1"),
-                NavigationTrigger.PROGRAMMATIC);
-
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "With parameter: 8",
-                eventCollector.get(0));
-
-        Assert.assertEquals("fixed/wildcard/5/5/3", router
-                .getUrl(FixedWildParameter.class, Arrays.asList(5, 5, 3)));
-    }
-
-    @Test
-    public void custom_serializer_gives_expected_result()
-            throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(Stream
-                .of(FixedWildParameter.class).collect(Collectors.toSet()));
-
-        Assert.assertEquals("fixed/wildcard/sum/13",
-                router.getUrl(FixedWildParameter.class, Arrays.asList(5, 5, 3),
-                        urlParameters -> Arrays.asList("sum",
-                                urlParameters.stream().reduce(Integer::sum)
-                                        .orElse(0).toString())));
-    }
-
-    @Test
     public void redirect_to_routeNotFound_error_view_when_no_route_found()
             throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(Stream
-                .of(FixedWildParameter.class).collect(Collectors.toSet()));
+                .of(FooNavigationTarget.class).collect(Collectors.toSet()));
         router.getRegistry().setErrorNavigationTargets(
                 Collections.singleton(ErrorTarget.class));
 
@@ -1997,8 +1962,9 @@ public class RouterTest extends RoutingTestBase {
     public void postpone_then_resume_with_multiple_listeners()
             throws InvalidRouteConfigurationException, InterruptedException {
         router.getRegistry()
-                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        PostponingAndResumingCompoundNavigationTarget.class)
+                .setNavigationTargets(Stream
+                        .of(RootNavigationTarget.class,
+                                PostponingAndResumingCompoundNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
         int status1 = router.navigate(ui, new Location("postpone"),
@@ -2060,6 +2026,44 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Recorded event amount should have stayed the same",
                 1, eventCollector.size());
+    }
+
+    @Test // 3424
+    public void route_as_parent_layout_handles_as_expected()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(BaseLayout.class, SubLayout.class)
+                        .collect(Collectors.toSet()));
+
+        ui.navigateTo("base");
+        Assert.assertEquals(MainLayout.class, getUIComponent());
+
+        List<Component> children = ui.getChildren()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(MainLayout.class, children.get(0).getClass());
+        children = children.get(0).getChildren().collect(Collectors.toList());
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(BaseLayout.class, children.get(0).getClass());
+        children = children.get(0).getChildren().collect(Collectors.toList());
+        Assert.assertTrue(children.isEmpty());
+
+        ui.navigateTo("sub");
+        Assert.assertEquals(MainLayout.class, getUIComponent());
+
+        children = ui.getChildren()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(MainLayout.class, children.get(0).getClass());
+        children = children.get(0).getChildren().collect(Collectors.toList());
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(BaseLayout.class, children.get(0).getClass());
+        children = children.get(0).getChildren().collect(Collectors.toList());
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(SubLayout.class, children.get(0).getClass());
+        children = children.get(0).getChildren().collect(Collectors.toList());
+        Assert.assertTrue(children.isEmpty());
+
     }
 
     private Class<? extends Component> getUIComponent() {

@@ -36,26 +36,6 @@ public class AbstractThemeTest {
     }
 
     @Test
-    public void default_url_translation_returns_given_url_if_translated_not_in_resources() {
-        AbstractTheme theme = new AbstractTheme() {
-            @Override
-            public String getBaseUrl() {
-                return "src/";
-            }
-
-            @Override
-            public String getThemeUrl() {
-                return "theme/custom/";
-            }
-        };
-
-        assertEquals("Got wrong url when expected untranslated to be returned",
-                "button/src/Button-mixin.html",
-                theme.getTranslatedUrl("button/src/Button-mixin.html",
-                        defaultResources.get()));
-    }
-
-    @Test
     public void default_url_translation_returns_correct_result_for_wrong_end_in_base_url() {
         AbstractTheme theme = new AbstractTheme() {
             @Override
@@ -90,16 +70,15 @@ public class AbstractThemeTest {
     }
 
     private void assertUrlTranslations(AbstractTheme theme) {
-        assertEquals("button/theme/custom/Button.html", theme.getTranslatedUrl(
-                "button/src/Button.html", defaultResources.get()));
+        assertEquals("button/theme/custom/Button.html", theme.translateUrl(
+                "button/src/Button.html"));
 
         assertEquals("Non base url should return as was", "button/Button.html",
-                theme.getTranslatedUrl("button/Button.html",
-                        defaultResources.get()));
+                theme.translateUrl("button/Button.html"));
 
         assertEquals("Non base url should return as was",
-                "button/custom/Button.html", theme.getTranslatedUrl(
-                        "button/custom/Button.html", defaultResources.get()));
+                "button/custom/Button.html", theme.translateUrl(
+                        "button/custom/Button.html"));
     }
 
 }

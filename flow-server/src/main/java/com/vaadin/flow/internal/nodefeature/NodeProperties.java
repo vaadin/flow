@@ -88,6 +88,12 @@ public final class NodeProperties {
      */
     public static final String VISIBILITY_BOUND_PROPERTY = "bound";
 
+    /**
+     * The property used on the client side only in addition to
+     * {@link #VISIBLE}. Stores the client side value of "hidden" property.
+     */
+    public static final String VISIBILITY_HIDDEN_PROPERTY = "hidden";
+
     private NodeProperties() {
     }
 }

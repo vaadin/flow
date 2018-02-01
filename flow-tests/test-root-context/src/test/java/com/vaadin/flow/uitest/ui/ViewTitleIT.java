@@ -2,8 +2,8 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 
+import com.vaadin.flow.component.html.testbench.SelectElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ViewTitleIT extends ChromeBrowserTest {
@@ -38,8 +38,8 @@ public class ViewTitleIT extends ChromeBrowserTest {
     }
 
     private void openView(String viewName) {
-        findElement(By.tagName("select")).click();
-        findElement(By.id(viewName)).click();
+        SelectElement input = $(SelectElement.class).first();
+        input.selectByText(viewName);
     }
 
     private void verifyTitle(String title) {

@@ -125,5 +125,5 @@
   "slots": [],
   "behaviors": [],
   "mixins": [],
-  "description": "The overlay element.\n\n### Styling\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html)\nfor `<vaadin-dialog-overlay>` parts."
+  "description": "The overlay element.\n\n### Styling\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/src/vaadin-overlay.html)\nfor `<vaadin-dialog-overlay>` parts."
 }

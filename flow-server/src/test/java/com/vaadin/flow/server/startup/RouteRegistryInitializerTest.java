@@ -134,13 +134,20 @@ public class RouteRegistryInitializerTest {
         registry.setNavigationTargets(new HashSet<>());
     }
 
-    @Test(expected = InvalidRouteLayoutConfigurationException.class)
-    public void routeRegistry_fails_on_faulty_configuration()
+    @Test
+    public void routeRegistry_registers_correctly_route_with_parentLayout()
             throws ServletException {
         routeRegistryInitializer.onStartup(
                 Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
-                        FaultyConfiguration.class).collect(Collectors.toSet()),
+                        MiddleParentWithRoute.class).collect(Collectors.toSet()),
                 servletContext);
+
+        Optional<Class<? extends Component>> navigationTarget = registry
+                .getNavigationTarget("middle_parent");
+
+
+        Assert.assertTrue("Couldn't find navigation target for `middle_parent`",
+                navigationTarget.isPresent());
     }
 
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
@@ -367,8 +374,8 @@ public class RouteRegistryInitializerTest {
     }
 
     @ParentLayout(RouteParentLayout.class)
-    @Route(value = "wrong")
-    private static class FaultyConfiguration extends Component {
+    @Route(value = "middle_parent")
+    private static class MiddleParentWithRoute extends Component {
     }
 
     @RouteAlias(value = "wrong")

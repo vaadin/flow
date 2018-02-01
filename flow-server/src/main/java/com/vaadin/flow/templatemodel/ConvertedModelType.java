@@ -93,4 +93,13 @@ public class ConvertedModelType<A, M extends Serializable>
     public void createInitialValue(StateNode node, String property) {
         wrappedModelType.createInitialValue(node, property);
     }
+
+    /**
+     * Gets the model type describing the data actually stored in the model.
+     * 
+     * @return the wrapped model type
+     */
+    public ModelType getWrappedModelType() {
+        return wrappedModelType;
+    }
 }

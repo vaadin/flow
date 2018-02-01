@@ -7,19 +7,20 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.html.testbench.ButtonElement;
+import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public abstract class AbstractBasicElementComponentIT extends ChromeBrowserTest {
+public abstract class AbstractBasicElementComponentIT
+        extends ChromeBrowserTest {
 
     @Test
     public void ensureDomUpdatesAndEventsDoSomething() {
         open();
 
         Assert.assertEquals(0, getThankYouCount());
-
-        findElement(By.tagName(Tag.INPUT)).sendKeys("abc");
-        findElement(By.tagName(Tag.BUTTON)).click();
+        $(InputTextElement.class).first().setValue("abc");
+        $(ButtonElement.class).first().click();
 
         Assert.assertEquals(1, getThankYouCount());
 
