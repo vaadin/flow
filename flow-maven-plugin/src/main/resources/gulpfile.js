@@ -30,6 +30,15 @@ const babelTransform = function (contents, options) {
     return babelCore.transform(contents, options).code;
 };
 
+const es2015preset = require('babel-preset-es2015');
+const commonjsPlugin = require('babel-plugin-transform-es2015-modules-commonjs');
+
+es2015preset.plugins.forEach(function(plugin) {
+    if (plugin.length && plugin[0] === commonjsPlugin) {
+        plugin[1].strict = false;
+    }
+});
+
 function build(transpileJs, configurationName) {
     const workingDirectory = __dirname;
     const polymerProperties = {
@@ -58,7 +67,7 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                 let initialStream = mergeStream(polymerProject.sources(), polymerProject.dependencies()).pipe(htmlSplitter.split());
                 if (transpileJs) {
                     console.log('Will transpile frontend files.');
-                    initialStream = initialStream.pipe(gulpIf(/\.js$/, new SafeTransform('babel', babelTransform, {plugins: ['babel-plugin-external-helpers'], presets: ['babel-preset-es2015']})));
+                    initialStream = initialStream.pipe(gulpIf(/\.js$/, new SafeTransform('babel', babelTransform, {plugins: ['babel-plugin-external-helpers'], presets: [es2015preset]})));
                 }
 
                 console.log('Will minify frontend files.');
