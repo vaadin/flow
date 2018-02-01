@@ -188,13 +188,13 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-vaadin-vaadin-usage-statistics</artifactId>
-                <version>v1.0.5</version>
+                <version>v1.0.6</version>
             </dependency>
 
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-vaadin-vaadin-development-mode-detector</artifactId>
-                <version>v1.0.2</version>
+                <version>v1.0.3</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
