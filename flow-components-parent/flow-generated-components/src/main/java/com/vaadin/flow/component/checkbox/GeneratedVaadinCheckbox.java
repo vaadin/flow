@@ -207,7 +207,7 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      * @return the {@code checked} property from the webcomponent
      */
     @Synchronize(property = "checked", value = "checked-changed")
-    protected boolean isValueBoolean() {
+    protected boolean isCheckedBoolean() {
         return getElement().getProperty("checked", false);
     }
 
@@ -219,11 +219,11 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      * True if the checkbox is checked.
      * </p>
      * 
-     * @param value
+     * @param checked
      *            the boolean value to set
      */
-    protected void setValue(boolean value) {
-        getElement().setProperty("checked", value);
+    protected void setChecked(boolean checked) {
+        getElement().setProperty("checked", checked);
     }
 
     /**
@@ -300,9 +300,9 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
     }
 
     @DomEvent("checked-changed")
-    public static class ValueChangeEvent<R extends GeneratedVaadinCheckbox<R>>
+    public static class CheckedChangeEvent<R extends GeneratedVaadinCheckbox<R>>
             extends ComponentEvent<R> {
-        public ValueChangeEvent(R source, boolean fromClient) {
+        public CheckedChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
         }
     }
@@ -316,9 +316,9 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      * @return a {@link Registration} for removing the event listener
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Registration addValueChangeListener(
-            ComponentEventListener<ValueChangeEvent<R>> listener) {
-        return addListener(ValueChangeEvent.class,
+    protected Registration addCheckedChangeListener(
+            ComponentEventListener<CheckedChangeEvent<R>> listener) {
+        return addListener(CheckedChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 

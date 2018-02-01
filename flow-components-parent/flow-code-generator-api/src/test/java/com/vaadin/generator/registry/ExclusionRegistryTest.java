@@ -29,6 +29,10 @@ public class ExclusionRegistryTest {
                 ExclusionRegistry.isMethodExcluded("some-tag", "someEvent"));
         Assert.assertFalse(ExclusionRegistry.isMethodExcluded("some-tag",
                 "someOtherEvent"));
+        Assert.assertFalse(ExclusionRegistry
+                .isBehaviorOrMixinExcluded("some-tag", "someEvent"));
+        Assert.assertFalse(ExclusionRegistry
+                .isBehaviorOrMixinExcluded("some-tag", "someOtherEvent"));
     }
 
     @Test
@@ -51,6 +55,10 @@ public class ExclusionRegistryTest {
                 ExclusionRegistry.isMethodExcluded("some-tag", "someProperty"));
         Assert.assertFalse(ExclusionRegistry.isMethodExcluded("some-tag",
                 "someOtherProperty"));
+        Assert.assertFalse(ExclusionRegistry
+                .isBehaviorOrMixinExcluded("some-tag", "someProperty"));
+        Assert.assertFalse(ExclusionRegistry
+                .isBehaviorOrMixinExcluded("some-tag", "someOtherProperty"));
     }
 
     @Test
@@ -67,12 +75,43 @@ public class ExclusionRegistryTest {
 
         Assert.assertFalse(
                 ExclusionRegistry.isEventExcluded("some-tag", "someMethod"));
+        Assert.assertFalse(ExclusionRegistry.isEventExcluded("some-tag",
+                "someOtherMethod"));
         Assert.assertFalse(
-                ExclusionRegistry.isEventExcluded("some-tag", "someMethod"));
+                ExclusionRegistry.isPropertyExcluded("some-tag", "someMethod"));
         Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
                 "someOtherMethod"));
+        Assert.assertFalse(ExclusionRegistry
+                .isBehaviorOrMixinExcluded("some-tag", "someMethod"));
+        Assert.assertFalse(ExclusionRegistry
+                .isBehaviorOrMixinExcluded("some-tag", "someOtherMethod"));
+    }
+
+    @Test
+    public void excludeBehaviors() {
+        ExclusionRegistry.excludeBehaviorOrMixin("some-tag", "someBehavior");
+        ExclusionRegistry.excludeBehaviorOrMixin(null, "someOtherBehavior");
+
+        Assert.assertTrue(ExclusionRegistry
+                .isBehaviorOrMixinExcluded("some-tag", "someBehavior"));
+        Assert.assertTrue(ExclusionRegistry
+                .isBehaviorOrMixinExcluded("some-tag", "someOtherBehavior"));
+        Assert.assertTrue(ExclusionRegistry.isBehaviorOrMixinExcluded(
+                "some-other-tag", "someOtherBehavior"));
+
+        Assert.assertFalse(
+                ExclusionRegistry.isEventExcluded("some-tag", "someBehavior"));
+        Assert.assertFalse(ExclusionRegistry.isEventExcluded("some-tag",
+                "someOtherBehavior"));
+        Assert.assertFalse(
+                ExclusionRegistry.isMethodExcluded("some-tag", "someBehavior"));
+        Assert.assertFalse(ExclusionRegistry.isMethodExcluded("some-tag",
+                "someOtherBehavior"));
         Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
-                "someOtherMethod"));
+                "someBehavior"));
+        Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
+                "someOtherBehavior"));
+
     }
 
 }
