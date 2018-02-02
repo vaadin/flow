@@ -52,7 +52,7 @@ public class StateNode {
     private final JsSet<Function<StateNode, Boolean>> domNodeSetListeners = JsCollections
             .set();
 
-    private final JsMap<Class<?>, Object> cookies = JsCollections.map();
+    private final JsMap<Class<?>, Object> nodeData = JsCollections.map();
 
     private Node domNode;
 
@@ -290,21 +290,21 @@ public class StateNode {
      * Stores the {@code object} in the {@link StateNode} instance.
      * <p>
      * The {@code object} may represent any kind of data. This data can be
-     * retrieved later on via the {@link #getCookie(Class)} providing the class
-     * of the object. So make sure you are using some custom type for your data
-     * to avoid clash with other types.
+     * retrieved later on via the {@link #getNodeData(Class)} providing the
+     * class of the object. So make sure you are using some custom type for your
+     * data to avoid clash with other types.
      *
-     * @see #getCookie(Class)
+     * @see #getNodeData(Class)
      *
      * @param object
      *            the object to store
      */
-    public <T> void setCookie(T object) {
-        cookies.set(object.getClass(), object);
+    public <T> void setNodeData(T object) {
+        nodeData.set(object.getClass(), object);
     }
 
     /**
-     * Gets the object previously stored by the {@link #setCookie(Object)} by
+     * Gets the object previously stored by the {@link #setNodeData(Object)} by
      * its type.
      * <p>
      * If there is no stored object with the given type then the method returns
@@ -314,7 +314,7 @@ public class StateNode {
      *            the type of the object to get
      * @return the object by its {@code clazz}
      */
-    public <T> T getCookie(Class<T> clazz) {
-        return (T) cookies.get(clazz);
+    public <T> T getNodeData(Class<T> clazz) {
+        return (T) nodeData.get(clazz);
     }
 }
