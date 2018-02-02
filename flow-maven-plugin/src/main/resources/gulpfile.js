@@ -177,17 +177,17 @@ class FlowBuildBundler extends polymerBuild.BuildBundler {
 }
 
 gulp.task('build_es6', function () {
-    build(false, es6ConfigurationName)
+    build(false, es6ConfigurationName);
 });
 
 gulp.task('build_es5', function () {
     console.log('Starting ES5 transpilation.');
-    build(true, es5ConfigurationName)
+    build(true, es5ConfigurationName);
     console.log('ES5 transpilation completed.');
 });
 
 process.on('unhandledRejection', (error, p) => {
     console.error('Failed to process frontend files.');
     console.error(`error: ${error.stack}`);
-    process.exit(1)
+    process.exit(1);
 });

@@ -58,12 +58,14 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(ThemedURLTranslator.class);
 
+    private static final String ABSENT_METHOD_ERROR = String.format(
+            "There is no method '%s' in the class '%s', consider updating flow-server dependency",
+            TRANSLATE_URL_METHOD, AbstractTheme.class.getName());
+
     static {
         assert Stream.of(AbstractTheme.class.getMethods()).map(Method::getName)
                 .anyMatch(name -> name
-                        .equals(TRANSLATE_URL_METHOD)) : "There is no method '"
-                                + TRANSLATE_URL_METHOD + "' in the class "
-                                + AbstractTheme.class.getName();
+                        .equals(TRANSLATE_URL_METHOD)) : ABSENT_METHOD_ERROR;
     }
 
     /**
@@ -84,18 +86,6 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
 
         themeClass = findTheme();
         this.fileFactory = fileFactory;
-    }
-
-    /**
-     * Returns the theme discovered in the project.
-     * <p>
-     * The theme may be {@code null} if there are no theme used in the project.
-     *
-     * @return the theme used in the project or {@code null} if there is no any
-     *         theme
-     */
-    public Class<? extends AbstractTheme> getTheme() {
-        return themeClass;
     }
 
     /**
@@ -136,7 +126,8 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
         Object theme = ReflectTools.createInstance(themeClass);
         Method translateMethod = Stream.of(themeClass.getMethods())
                 .filter(method -> method.getName().equals(TRANSLATE_URL_METHOD))
-                .findFirst().get();
+                .findFirst().orElseThrow(
+                        () -> new IllegalStateException(ABSENT_METHOD_ERROR));
         try {
             return (String) translateMethod.invoke(theme, url);
         } catch (IllegalAccessException | IllegalArgumentException
