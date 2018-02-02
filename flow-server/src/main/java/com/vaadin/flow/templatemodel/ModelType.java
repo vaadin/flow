@@ -106,7 +106,7 @@ public interface ModelType extends Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("Supported types are: ");
         BasicModelType.TYPES.keySet()
-        .forEach(type -> sb.append(type.getSimpleName() + ", "));
+        .forEach(type -> sb.append(type.getSimpleName()).append(", "));
         sb.append("Beans and Lists of Beans.");
         return sb.toString();
     }

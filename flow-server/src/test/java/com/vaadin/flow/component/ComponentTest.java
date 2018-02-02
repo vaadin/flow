@@ -404,7 +404,7 @@ public class ComponentTest {
         };
         Element element = ElementFactory.createDiv();
         Component.setElement(c, element);
-        Assert.assertEquals(c, ElementUtil.getComponent(element).get());
+        Assert.assertEquals(c, element.getComponent().get());
         Assert.assertEquals(element, c.getElement());
     }
 

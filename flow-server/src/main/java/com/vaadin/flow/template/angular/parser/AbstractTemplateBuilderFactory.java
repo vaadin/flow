@@ -81,10 +81,10 @@ public abstract class AbstractTemplateBuilderFactory<T extends Node>
         String forLoopVariable = insideFor.get();
         if (forLoopVariable != null) {
             if (!modelKey.startsWith(forLoopVariable + ".")) {
-                StringBuilder msg = new StringBuilder(
+                String msg =
                         "Property binding inside a for loop must currently bind to the loop variable, i.e. start with '"
-                                + forLoopVariable + ".'");
-                throw new TemplateParseException(msg.toString());
+                                + forLoopVariable + ".'";
+                throw new TemplateParseException(msg);
             } else {
                 return modelKey.substring(forLoopVariable.length() + 1);
             }

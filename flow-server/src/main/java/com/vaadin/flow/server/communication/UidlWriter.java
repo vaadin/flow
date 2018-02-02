@@ -289,7 +289,7 @@ public class UidlWriter implements Serializable {
     /**
      * Encodes the state tree changes of the given UI. The runnables registered
      * at
-     * {@link StateTree#beforeClientResponse(com.vaadin.flow.StateNode, Runnable)}
+     * {@link StateTree#beforeClientResponse(com.vaadin.flow.internal.StateNode, Runnable)}
      * at evaluated before the changes are encoded.
      *
      * @param ui

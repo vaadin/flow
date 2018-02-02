@@ -17,7 +17,6 @@ package com.vaadin.flow.router;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -257,7 +256,8 @@ public class Router implements RouterInterface {
         return routeString;
     }
 
-    private boolean isAnnotatedParameter(
+    @SafeVarargs
+    private final boolean isAnnotatedParameter(
             Class<? extends Component> navigationTarget,
             Class<? extends Annotation>... parameterAnnotations) {
         for (Class<? extends Annotation> annotation : parameterAnnotations) {
@@ -288,7 +288,7 @@ public class Router implements RouterInterface {
         if (parameter == null) {
             return getUrl(navigationTarget);
         }
-        return getUrl(navigationTarget, Arrays.asList(parameter));
+        return getUrl(navigationTarget, Collections.singletonList(parameter));
     }
 
     /**

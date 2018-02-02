@@ -228,13 +228,12 @@ public abstract class Component
 
         // If "this" is a component inside a Composite, iterate from the
         // Composite downwards
-        Optional<Component> mappedComponent = ElementUtil
-                .getComponent(getElement());
+        Optional<Component> mappedComponent = getElement().getComponent();
         if (!mappedComponent.isPresent()) {
             throw new IllegalStateException(
                     "You cannot use getParent() on a wrapped component. Use Component.wrapAndMap to include the component in the hierarchy");
         }
-        if (isInsideComposite(mappedComponent)) {
+        if (isInsideComposite(mappedComponent.get())) {
             Component parent = ComponentUtil.getParentUsingComposite(
                     (Composite<?>) mappedComponent.get(), this);
             return Optional.of(parent);
@@ -245,13 +244,8 @@ public abstract class Component
         return ComponentUtil.findParentComponent(getElement().getParent());
     }
 
-    private boolean isInsideComposite(Optional<Component> mappedComponent) {
-        if (!mappedComponent.isPresent()) {
-            return false;
-        }
-
-        Component component = mappedComponent.get();
-        return component instanceof Composite && component != this;
+    private boolean isInsideComposite(Component mappedComponent) {
+        return mappedComponent instanceof Composite && mappedComponent != this;
     }
 
     /**
@@ -267,17 +261,14 @@ public abstract class Component
         // wrong results
         assert !(this instanceof Composite);
 
-        if (!ElementUtil.getComponent(getElement()).isPresent()) {
+        if (!getElement().getComponent().isPresent()) {
             throw new IllegalStateException(
                     "You cannot use getChildren() on a wrapped component. Use Component.wrapAndMap to include the component in the hierarchy");
         }
 
         Builder<Component> childComponents = Stream.builder();
-        getElement().getChildren().forEach(childElement -> {
-            ComponentUtil.findComponents(childElement, component -> {
-                childComponents.add(component);
-            });
-        });
+        getElement().getChildren().forEach(childElement -> ComponentUtil
+                .findComponents(childElement, childComponents::add));
         return childComponents.build();
     }
 
@@ -335,10 +326,11 @@ public abstract class Component
      *         is not attached to a UI
      */
     public Optional<UI> getUI() {
-        if (getParent().isPresent()) {
-            return getParent().flatMap(Component::getUI);
+        Optional<Component> parent = getParent();
+        if (parent.isPresent()) {
+            return parent.flatMap(Component::getUI);
         } else if (getElement().getParentNode() instanceof ShadowRoot) {
-            Optional<Component> parent = ComponentUtil.findParentComponent(
+            parent = ComponentUtil.findParentComponent(
                     ((ShadowRoot) getElement().getParentNode()).getHost());
             return parent.flatMap(Component::getUI);
         }

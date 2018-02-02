@@ -182,7 +182,7 @@ public class ElementUtil {
             throw new IllegalArgumentException("Component must not be null");
         }
 
-        Optional<Component> currentComponent = getComponent(element);
+        Optional<Component> currentComponent = element.getComponent();
         if (currentComponent.isPresent()) {
             // Composite can replace its content
             boolean isCompositeReplacingItsContent = component instanceof Composite
@@ -195,21 +195,6 @@ public class ElementUtil {
             }
         }
         element.getStateProvider().setComponent(element.getNode(), component);
-    }
-
-    /**
-     * Gets the component the element has been mapped to, if any.
-     * <p>
-     * If the element is mapped to a {@link Composite} or a {@link Composite}
-     * chain, this will always return the outermost {@link Composite}.
-     *
-     * @param element
-     *            the element to retrieve the component for
-     * @return an optional component, or an empty optional if no component has
-     *         been mapped to this element
-     */
-    public static Optional<Component> getComponent(Element element) {
-        return element.getStateProvider().getComponent(element.getNode());
     }
 
     /**

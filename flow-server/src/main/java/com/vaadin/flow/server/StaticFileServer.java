@@ -145,7 +145,7 @@ public class StaticFileServer implements Serializable {
     protected long writeModificationTimestamp(URL resourceUrl,
             HttpServletRequest request, HttpServletResponse response) {
         // Find the modification timestamp
-        long lastModifiedTime = -1;
+        long lastModifiedTime;
         URLConnection connection = null;
         try {
             connection = resourceUrl.openConnection();

@@ -155,7 +155,7 @@ public class StateTree implements NodeOwner {
         int id = node.getId();
 
         int nodeId;
-        if (id > 0 && !idToNode.containsKey(Integer.valueOf(id))) {
+        if (id > 0 && !idToNode.containsKey(id)) {
             // Node already had an id, continue using it
 
             // Don't accept an id that we haven't yet handed out
@@ -166,7 +166,7 @@ public class StateTree implements NodeOwner {
             nodeId = nextId++;
         }
 
-        idToNode.put(Integer.valueOf(nodeId), node);
+        idToNode.put(nodeId, node);
         return nodeId;
     }
 
@@ -174,7 +174,7 @@ public class StateTree implements NodeOwner {
     public void unregister(StateNode node) {
         assert node.getOwner() == this;
 
-        Integer id = Integer.valueOf(node.getId());
+        Integer id = node.getId();
 
         StateNode removedNode = idToNode.remove(id);
 
@@ -182,7 +182,7 @@ public class StateTree implements NodeOwner {
             // Remove by id didn't remove the expected node
             if (removedNode != null) {
                 // Put the old node back
-                idToNode.put(Integer.valueOf(removedNode.getId()), removedNode);
+                idToNode.put(removedNode.getId(), removedNode);
             }
             throw new IllegalStateException(
                     "Unregistered node was not found based on its id. The tree is most likely corrupted.");
@@ -205,7 +205,7 @@ public class StateTree implements NodeOwner {
      *         registered with this tree
      */
     public StateNode getNodeById(int id) {
-        return idToNode.get(Integer.valueOf(id));
+        return idToNode.get(id);
     }
 
     /**
@@ -303,7 +303,7 @@ public class StateTree implements NodeOwner {
      * executed if able.
      */
     public void runExecutionsBeforeClientResponse() {
-        boolean newTasksPossiblyAddedOrNodesAttached = false;
+        boolean newTasksPossiblyAddedOrNodesAttached;
         do {
             newTasksPossiblyAddedOrNodesAttached = false;
             for (StateNodeOnBeforeClientResponse reference : flushCallbacks()) {

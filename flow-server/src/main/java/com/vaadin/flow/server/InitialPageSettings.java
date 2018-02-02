@@ -270,8 +270,7 @@ public class InitialPageSettings {
     public void addLink(Position position, String href,
             Map<String, String> attributes) {
         Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
-        attributes.entrySet()
-                .forEach(entry -> link.attr(entry.getKey(), entry.getValue()));
+        attributes.forEach((key, value) -> link.attr(key, value));
         getElement(position).add(link);
     }
 

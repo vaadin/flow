@@ -373,12 +373,9 @@ public class VaadinServlet extends HttpServlet {
             staticFileServer.serveStaticResource(request, response);
             return true;
         }
-        if (webJarServer != null
-                && webJarServer.tryServeWebJarResource(request, response)) {
-            return true;
-        }
-
-        return false;
+        
+        return webJarServer != null && webJarServer
+                .tryServeWebJarResource(request, response);
     }
 
     /**
@@ -543,7 +540,7 @@ public class VaadinServlet extends HttpServlet {
                                 && request.getServerPort() == 80) ? ""
                                         : ":" + request.getServerPort())
                 + request.getRequestURI());
-        String servletPath = "";
+        String servletPath;
         if (request
                 .getAttribute("javax.servlet.include.servlet_path") != null) {
             // this is an include request
