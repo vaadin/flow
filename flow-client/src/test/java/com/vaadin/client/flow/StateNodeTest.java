@@ -34,6 +34,10 @@ public class StateNodeTest {
         node.forEachFeature((ns, id) -> Assert.fail());
     }
 
+    private static class TestData {
+
+    }
+
     @Test
     public void testGetListFeature() {
         NodeList list = node.getList(1);
@@ -69,5 +73,12 @@ public class StateNodeTest {
         NodeMap anotherMap = node.getMap(1);
 
         Assert.assertSame(anotherMap, map);
+    }
+
+    @Test
+    public void setCookie_getCookie_retrievedInstanceIsTheSame() {
+        TestData data = new TestData();
+        node.setNodeData(data);
+        Assert.assertEquals(data, node.getNodeData(TestData.class));
     }
 }

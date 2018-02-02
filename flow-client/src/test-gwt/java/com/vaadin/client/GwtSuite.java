@@ -7,6 +7,7 @@ import com.vaadin.client.flow.GwtEventHandlerTest;
 import com.vaadin.client.flow.GwtMultipleBindingTest;
 import com.vaadin.client.flow.GwtPolymerModelTest;
 import com.vaadin.client.flow.GwtRouterLinkHandlerTest;
+import com.vaadin.client.flow.GwtStateNodeTest;
 import com.vaadin.client.flow.GwtStateTreeTest;
 import com.vaadin.client.flow.GwtTreeChangeProcessorTest;
 import com.vaadin.client.flow.collection.GwtJsArrayTest;
@@ -41,6 +42,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtRouterLinkHandlerTest.class);
         suite.addTestSuite(GwtDefaultReconnectDialogTest.class);
         suite.addTestSuite(GwtTemplateBinderTest.class);
+        suite.addTestSuite(GwtStateNodeTest.class);
         suite.addTestSuite(GwtStateTreeTest.class);
         suite.addTestSuite(GwtDomApiTest.class);
         suite.addTestSuite(GwtPolymerApiImplTest.class);
