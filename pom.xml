@@ -90,7 +90,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <testbench.version>6.0.0.alpha8</testbench.version>
-        <!-- Jetty 9.3.8/9.3.9 causes the build to fail with 'address already 
+        <!-- Jetty 9.3.8/9.3.9 causes the build to fail with 'address already
             in use' -->
         <jetty.version>9.3.7.v20160115</jetty.version>
 
@@ -187,135 +187,6 @@
                 <groupId>javax.portlet</groupId>
                 <artifactId>portlet-api</artifactId>
                 <version>2.0</version>
-            </dependency>
-
-            <!-- webjars that do not belong to flow-components -->
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>paper-styles</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-styles</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-font-roboto</artifactId>
-                <version>1.0.3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-autogrow-textarea</artifactId>
-                <version>2.1.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-validatable-behavior</artifactId>
-                <version>1.1.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-input</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-form-element-behavior</artifactId>
-                <version>1.0.6</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>paper-input</artifactId>
-                <version>2.0.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-input</artifactId>
-                <version>2.0.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>paper-progress</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-progress</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-range-behavior</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-behaviors</artifactId>
-                <version>1.0.10</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-checked-element-behavior</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-image</artifactId>
-                <version>2.1.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-dialog-behavior</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>paper-item</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-item</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-icon-button</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-listbox</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-menu-behavior</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-menu-button</artifactId>
-                <version>2.0.0</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -564,7 +435,7 @@
                         <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse 
+                <!--This plugin's configuration is used to store Eclipse
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
