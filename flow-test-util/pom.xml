@@ -29,7 +29,7 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-testbench</artifactId>
+            <artifactId>vaadin-testbench-core</artifactId>
             <version>${testbench.version}</version>
         </dependency>
         <!-- override scope for junit -->
