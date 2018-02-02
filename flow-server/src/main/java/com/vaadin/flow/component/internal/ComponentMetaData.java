@@ -199,7 +199,7 @@ public class ComponentMetaData {
 
     private static void doCollectSynchronizedProperties(Class<?> clazz,
             Map<String, SynchronizedPropertyInfo> infos) {
-        for (Method method : clazz.getMethods()) {
+        for (Method method : clazz.getDeclaredMethods()) {
             Synchronize annotation = method.getAnnotation(Synchronize.class);
             if (annotation == null) {
                 continue;

@@ -22,9 +22,6 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentMetaData.SynchronizedPropertyInfo;
 
@@ -68,7 +65,6 @@ public class ComponentMetaDataTest {
         public String getFoo() {
             return null;
         }
-
     }
 
     @Tag(Tag.A)
@@ -78,17 +74,52 @@ public class ComponentMetaDataTest {
         public String getFoo() {
             return null;
         }
+    }
 
+    public static class HasFooProtected extends Component {
+        @Synchronize(value = "bar", property = "baz")
+        protected String getFoo() {
+            return null;
+        }
+    }
+
+    public static class HasFooPackagePrivate extends Component {
+        @Synchronize(value = "bar", property = "baz")
+        String getFoo() {
+            return null;
+        }
+    }
+
+    public static class HasFooPrivate extends Component {
+        @Synchronize(value = "bar", property = "baz")
+        private String getFoo() {
+            return null;
+        }
     }
 
     @Test
     public void synchronizedProperties_methodInClass() {
-        assertFooPoperty(Sample.class);
+        assertFooProperty(Sample.class);
     }
 
     @Test
     public void synchronizedProperties_methodInInterface() {
-        assertFooPoperty(HasFooImpl.class);
+        assertFooProperty(HasFooImpl.class);
+    }
+
+    @Test
+    public void synchronizedProperties_protectedMethod() {
+        assertFooProperty(HasFooProtected.class);
+    }
+
+    @Test
+    public void synchronizedProperties_packagePrivateMethod() {
+        assertFooProperty(HasFooPackagePrivate.class);
+    }
+
+    @Test
+    public void synchronizedProperties_privateMethod() {
+        assertFooProperty(HasFooPrivate.class);
     }
 
     @Test
@@ -130,7 +161,7 @@ public class ComponentMetaDataTest {
         Assert.assertEquals("baz", events.get(0));
     }
 
-    private void assertFooPoperty(Class<? extends Component> clazz) {
+    private void assertFooProperty(Class<? extends Component> clazz) {
         ComponentMetaData data = new ComponentMetaData(clazz);
 
         Collection<SynchronizedPropertyInfo> props = data
