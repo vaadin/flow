@@ -112,17 +112,17 @@
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>polymer</artifactId>
-                <version>2.4.0</version>
+                <version>2.3.1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-polymer-polymer</artifactId>
-                <version>2.4.0</version>
+                <version>2.3.1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-Polymer-polymer</artifactId>
-                <version>2.4.0</version>
+                <version>2.3.1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
