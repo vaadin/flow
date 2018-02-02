@@ -30,4 +30,3 @@ scripts/*.pyc
 selenium_standalone_zips
 driver_zips
 driver
-flow-tests/test-slot
