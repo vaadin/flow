@@ -27,6 +27,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
@@ -55,6 +57,7 @@ public class WebJarServer implements Serializable {
     private final ResponseWriter responseWriter = new ResponseWriter();
 
     private final String prefix;
+    private final Pattern urlPattern;
 
     /**
      * Creates a webJar server that is able to search webJars for files and
@@ -85,6 +88,7 @@ public class WebJarServer implements Serializable {
                 + frontendPrefix.substring(
                         ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length())
                 + "bower_components/";
+        urlPattern = Pattern.compile("^([/.]?[/..]*)" + prefix);
 
         locator.getWebJars().forEach((webJarName, version) -> {
             String bowerModuleName = getBowerModuleName(webJarName);
@@ -176,14 +180,19 @@ public class WebJarServer implements Serializable {
      */
     public boolean hasWebJarResource(String filePathInContext,
             ServletContext servletContext) throws IOException {
-        String webJarPath = getWebJarPath(filePathInContext);
+        String webJarPath = null;
+
+        Matcher matcher = urlPattern.matcher(filePathInContext);
+        // If we don't find anything then we don't have the prefix at all.
+        if (matcher.find()) {
+            webJarPath = getWebJarPath(
+                    filePathInContext.substring(matcher.group(1).length()));
+        }
         if (webJarPath == null) {
             return false;
         }
 
-        URL resourceUrl = servletContext.getResource(webJarPath);
-
-        return resourceUrl != null;
+        return servletContext.getResource(webJarPath) != null;
     }
 
     private String getWebJarPath(String path) {
