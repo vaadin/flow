@@ -31,7 +31,6 @@ public final class PropertyNameRemapRegistry {
     private static final Map<String, Map<String, String>> REGISTRY = new HashMap<>();
     static {
         put("vaadin-checkbox", "value", "postValue");
-        put("vaadin-checkbox", "checked", "value");
         put("vaadin-date-picker", "value", "valueAsString");
         put("vaadin-date-picker", "min", "minAsString");
         put("vaadin-date-picker", "max", "maxAsString");

@@ -117,6 +117,11 @@ public class AnnotationValidatorTest {
     public static class ThemeViewportWithAliasParent extends Component {
     }
 
+    @Theme(MyTheme.class)
+    @Tag(Tag.DIV)
+    public static abstract class AbstractMain extends Component {
+    }
+
     @Route("multiple_annotations")
     @Theme(MyTheme.class)
     @Inline("inlie.css")
@@ -234,7 +239,7 @@ public class AnnotationValidatorTest {
             throws ServletException {
         annotationValidator.onStartup(
                 Stream.of(ThemeRootViewport.class, ThemeRootParent.class,
-                        MultiAnnotation.class).collect(Collectors.toSet()),
+                        MultiAnnotation.class, AbstractMain.class).collect(Collectors.toSet()),
                 servletContext);
     }
 }

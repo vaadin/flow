@@ -15,14 +15,17 @@
  */
 package com.vaadin.flow.theme;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
+import static org.junit.Assert.assertEquals;
+
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,14 +33,16 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.server.webjar.WebJarServer;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static org.junit.Assert.assertEquals;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Test resolving the theme url through
@@ -59,6 +64,8 @@ public class ThemeUrlResolverTest {
     @Mock
     ServletContext servletContext;
 
+    MockDeploymentConfiguration mockDeploymentConfiguration = new MockDeploymentConfiguration();
+
     @Before
     public void init() throws Exception {
         assert VaadinSession
@@ -68,7 +75,13 @@ public class ThemeUrlResolverTest {
 
         MockitoAnnotations.initMocks(this);
 
-        servlet = new VaadinServlet();
+        servlet = new VaadinServlet() {
+            @Override
+            protected DeploymentConfiguration createDeploymentConfiguration()
+                    throws ServletException {
+                return mockDeploymentConfiguration;
+            }
+        };
 
         Properties initParameters = new Properties();
         Mockito.when(servletConfig.getServletContext())
@@ -150,6 +163,47 @@ public class ThemeUrlResolverTest {
                 "src/button.html");
 
         assertEquals("Translation url was not the theme path one.", path,
+                urlTranslation);
+    }
+
+    @Test
+    public void themeTranslationCache_somethingIsCachedInProductionMode()
+            throws Exception {
+        mockDeploymentConfiguration.setProductionMode(true);
+        String path = "theme/custom/button.html";
+        Mockito.when(servletContext.getResource(path))
+                .thenReturn(new URL("http://theme/custom/button.html"));
+
+        // Prime cache
+        servlet.getUrlTranslation(theme, "src/button.html");
+
+        Mockito.when(servletContext.getResource(path))
+                .thenThrow(AssertionError.class);
+
+        // Ask again, should not trigger servletContext
+        servlet.getUrlTranslation(theme, "src/button.html");
+    }
+
+    @Test
+    public void themeTranslationCache_somethingIsNotCachedWithoutProductionMode()
+            throws Exception {
+        mockDeploymentConfiguration.setProductionMode(false);
+
+        String path = "theme/custom/button.html";
+        Mockito.when(servletContext.getResource(path))
+                .thenReturn(new URL("http://theme/custom/button.html"));
+
+        // Prime the cache
+        String urlTranslation = servlet.getUrlTranslation(theme,
+                "src/button.html");
+        // Sanity check
+        assertEquals("Translation should be used", "theme/custom/button.html",
+                urlTranslation);
+
+        Mockito.when(servletContext.getResource(path)).thenReturn(null);
+
+        urlTranslation = servlet.getUrlTranslation(theme, "src/button.html");
+        assertEquals("Result should be computed again", "src/button.html",
                 urlTranslation);
     }
 

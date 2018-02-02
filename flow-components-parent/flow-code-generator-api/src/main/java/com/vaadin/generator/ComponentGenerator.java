@@ -519,11 +519,17 @@ public class ComponentGenerator {
         classBehaviorsAndMixins.add(metadata.getTag());
 
         if (metadata.getBehaviors() != null) {
-            classBehaviorsAndMixins.addAll(metadata.getBehaviors());
+            metadata.getBehaviors().stream()
+                    .filter(behavior -> !ExclusionRegistry
+                            .isBehaviorOrMixinExcluded(metadata.getTag(), behavior))
+                    .forEach(classBehaviorsAndMixins::add);
         }
 
         if (metadata.getMixins() != null) {
-            classBehaviorsAndMixins.addAll(metadata.getMixins());
+            metadata.getMixins().stream()
+                    .filter(mixin -> !ExclusionRegistry
+                            .isBehaviorOrMixinExcluded(metadata.getTag(), mixin))
+                    .forEach(classBehaviorsAndMixins::add);
         }
 
         Set<Class<?>> interfaces = BehaviorRegistry

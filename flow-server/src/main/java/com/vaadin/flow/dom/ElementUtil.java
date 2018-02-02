@@ -33,7 +33,6 @@ import com.vaadin.flow.component.Composite;
  */
 public class ElementUtil {
 
-    public static final String A_STYLE_VALUE_CANNOT_BE_NULL = "A style value cannot be null";
     /**
      * Pattern for matching valid tag names, according to
      * https://www.w3.org/TR/html-markup/syntax.html#tag-name "HTML elements all
@@ -157,9 +156,6 @@ public class ElementUtil {
     }
 
     private static String getInvalidStylePropertyValueError(String value) {
-        if (value == null) {
-            return A_STYLE_VALUE_CANNOT_BE_NULL;
-        }
         if (value.endsWith(";")) {
             return "A style value cannot end in semicolon";
         }

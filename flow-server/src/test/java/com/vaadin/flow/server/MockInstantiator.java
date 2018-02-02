@@ -17,14 +17,8 @@ package com.vaadin.flow.server;
 
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceInitListener;
 
 public class MockInstantiator implements Instantiator {
 
@@ -45,19 +39,7 @@ public class MockInstantiator implements Instantiator {
     }
 
     @Override
-    public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
-        return ReflectTools.createInstance(routeTargetType);
+    public <T> T getOrCreate(Class<T> type) {
+        return ReflectTools.createInstance(type);
     }
-
-    @Override
-    public <T extends Component> T createComponent(Class<T> componentClass) {
-        return null;
-    }
-
-    @Override
-    public I18NProvider getI18NProvider() {
-        return null;
-    }
-
 }

@@ -18,7 +18,6 @@ package com.vaadin.flow.component.datepicker;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Focusable;
-import com.vaadin.flow.component.HasClickListeners;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -242,8 +241,7 @@ import com.vaadin.flow.dom.Element;
 @Tag("vaadin-date-picker")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
 public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
-        extends Component
-        implements HasStyle, Focusable<R>, HasClickListeners<R> {
+        extends Component implements HasStyle, Focusable<R> {
 
     /**
      * <p>
