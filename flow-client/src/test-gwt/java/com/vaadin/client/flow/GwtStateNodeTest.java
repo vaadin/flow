@@ -32,7 +32,7 @@ public class GwtStateNodeTest extends ClientEngineTestBase {
         tree = new StateTree(new Registry());
     }
 
-    public void testSetCookie_getCookie_sameInstance() {
+    public void testNodeData_getNodeData_sameInstance() {
         StateNode node = new StateNode(1, tree);
         TestData data = new TestData();
         node.setNodeData(data);

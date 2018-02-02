@@ -76,7 +76,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void setCookie_getCookie_retrievedInstanceIsTheSame() {
+    public void setNodeData_getNodeData_retrievedInstanceIsTheSame() {
         TestData data = new TestData();
         node.setNodeData(data);
         Assert.assertEquals(data, node.getNodeData(TestData.class));
