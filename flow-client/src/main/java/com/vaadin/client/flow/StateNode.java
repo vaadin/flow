@@ -52,6 +52,8 @@ public class StateNode {
     private final JsSet<Function<StateNode, Boolean>> domNodeSetListeners = JsCollections
             .set();
 
+    private final JsMap<Class<?>, Object> cookies = JsCollections.map();
+
     private Node domNode;
 
     /**
@@ -267,7 +269,7 @@ public class StateNode {
 
     /**
      * Get the parent {@link StateNode} if set.
-     * 
+     *
      * @return parent state node
      */
     public StateNode getParent() {
@@ -276,11 +278,43 @@ public class StateNode {
 
     /**
      * Set the parent {@link StateNode} for this node.
-     * 
+     *
      * @param parent
      *            the parent state node
      */
     public void setParent(StateNode parent) {
         this.parent = parent;
+    }
+
+    /**
+     * Stores the {@code object} in the {@link StateNode} instance.
+     * <p>
+     * The {@code object} may represent any kind of data. This data can be
+     * retrieved later on via the {@link #getCookie(Class)} providing the class
+     * of the object. So make sure you are using some custom type for your data
+     * to avoid clash with other types.
+     *
+     * @see #getCookie(Class)
+     *
+     * @param object
+     *            the object to store
+     */
+    public <T> void setCookie(T object) {
+        cookies.set(object.getClass(), object);
+    }
+
+    /**
+     * Gets the object previously stored by the {@link #setCookie(Object)} by
+     * its type.
+     * <p>
+     * If there is no stored object with the given type then the method returns
+     * {@code null}.
+     *
+     * @param clazz
+     *            the type of the object to get
+     * @return the object by its {@code clazz}
+     */
+    public <T> T getCookie(Class<T> clazz) {
+        return (T) cookies.get(clazz);
     }
 }
