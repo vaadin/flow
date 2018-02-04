@@ -16,14 +16,18 @@
 
 package com.vaadin.flow.server;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -52,6 +56,8 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -65,7 +71,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -119,6 +124,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private final VaadinResponse response;
         private final VaadinSession session;
         private final UI ui;
+        private final Class<?> pageConfigurationHolder;
 
         private String appId;
         private PushMode pushMode;
@@ -143,6 +149,29 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             this.response = response;
             this.session = session;
             this.ui = ui;
+
+            pageConfigurationHolder = resolvePageConfigurationHolder(ui,
+                    request);
+
+        }
+
+        private static Class<?> resolvePageConfigurationHolder(UI ui,
+                VaadinRequest request) {
+            return ui.getRouter()
+                    .flatMap(router -> router.resolveNavigationTarget(
+                            request.getPathInfo(), request.getParameterMap()))
+                    .map(navigationState -> {
+                        Class<? extends RouterLayout> parentLayout = RouterUtil
+                                .getTopParentLayout(
+                                        navigationState.getNavigationTarget(),
+                                        navigationState.getResolvedPath());
+
+                        if (parentLayout != null) {
+                            return parentLayout;
+                        }
+
+                        return navigationState.getNavigationTarget();
+                    }).orElse(null);
         }
 
         /**
@@ -262,6 +291,43 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .isProductionMode();
         }
 
+        /**
+         * Gets an annotation from the topmost class in the current navigation
+         * target hierarchy.
+         *
+         * @param annotationType
+         *            the type of the annotation to get
+         * @return an annotation, or an empty optional if there is no current
+         *         navigation target or if it doesn't have the annotation
+         */
+        public <T extends Annotation> Optional<T> getPageConfigurationAnnotation(
+                Class<T> annotationType) {
+            if (pageConfigurationHolder == null) {
+                return Optional.empty();
+            } else {
+                return AnnotationReader.getAnnotationFor(
+                        pageConfigurationHolder, annotationType);
+            }
+        }
+
+        /**
+         * Gets a a list of annotations from the topmost class in the current
+         * navigation target hierarchy.
+         *
+         * @param annotationType
+         *            the type of the annotation to get
+         * @return a list of annotation, or an empty list if there is no current
+         *         navigation target or if it doesn't have the annotation
+         */
+        public <T extends Annotation> List<T> getPageConfigurationAnnotations(
+                Class<T> annotationType) {
+            if (pageConfigurationHolder == null) {
+                return Collections.emptyList();
+            } else {
+                return AnnotationReader.getAnnotationsFor(
+                        pageConfigurationHolder, annotationType);
+            }
+        }
     }
 
     /**
@@ -597,8 +663,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         BootstrapUtils.getViewportContent(context)
                 .ifPresent(content -> head.appendElement(META_TAG)
-                        .attr("name", VIEWPORT)
-                        .attr(CONTENT_ATTRIBUTE, content));
+                        .attr("name", VIEWPORT).attr(CONTENT_ATTRIBUTE,
+                                content));
 
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
@@ -673,9 +739,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element createDependencyElement(VaadinUriResolver resolver,
             LoadMode loadMode, JsonObject dependency, Dependency.Type type) {
         boolean inlineElement = loadMode == LoadMode.INLINE;
-        String url = dependency.hasKey(Dependency.KEY_URL)
-                ? resolver.resolveVaadinUri(
-                        dependency.getString(Dependency.KEY_URL))
+        String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
+                .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
                 : null;
 
         final Element dependencyElement;
@@ -1112,8 +1177,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
                         + properties.getProperty("jsFile");
             } else {
-                getLogger().warn(
-                        "No compile.properties available on initialization, "
+                getLogger()
+                        .warn("No compile.properties available on initialization, "
                                 + "could not read client engine file name.");
             }
         } catch (IOException e) {
