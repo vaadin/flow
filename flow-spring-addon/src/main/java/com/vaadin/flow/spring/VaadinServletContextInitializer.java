@@ -29,6 +29,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -41,9 +42,6 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.page.BodySize;
-import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -51,10 +49,10 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.startup.AbstractAnnotationValidator;
 import com.vaadin.flow.server.startup.AbstractCustomElementRegistryInitializer;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
+import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.server.startup.ServletVerifier;
-import com.vaadin.flow.theme.Theme;
 
 /**
  * Servlet context initializer for Spring Boot Application.
@@ -178,8 +176,8 @@ public class VaadinServletContextInitializer
 
         @Override
         protected List<Class<?>> getAnnotations() {
-            return Arrays.asList(Viewport.class, BodySize.class, Inline.class,
-                    Theme.class);
+            return Arrays.asList(AnnotationValidator.class
+                    .getAnnotation(HandlesTypes.class).value());
         }
 
     }

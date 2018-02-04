@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,30 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.router.Route;
 
-/**
- * Route registry with a public constructor for testing purposes.
- *
- * @author Vaadin Ltd
- */
-public class TestRouteRegistry extends RouteRegistry {
-    /**
-     * Creates a new test route registry.
-     */
-    public TestRouteRegistry() {
-        super();
-    }
-
+@Push
+@Route("com.vaadin.flow.uitest.ui.PushSettingsView")
+public class PushSettingsView extends AbstractDivView {
     @Override
-    public boolean hasRoutes() {
-        /*
-         * Always pretend there are routes even though they might actually be
-         * injected later on.
-         */
-        return true;
+    protected void onAttach(AttachEvent attachEvent) {
+        setId("pushMode");
+        setText("Push mode: "
+                + attachEvent.getUI().getPushConfiguration().getPushMode());
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,35 +13,40 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.push;
+package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.vaadin.flow.component.Push;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
 
 @Push
-public class UpdateDivUI extends UI {
-
+@Route("com.vaadin.flow.uitest.ui.UpdateDivView")
+public class UpdateDivView extends AbstractDivView {
     private int msgId = 1;
     private Element div = ElementFactory.createDiv();
 
+    private ScheduledExecutorService ses;
+
     @Override
-    protected void init(VaadinRequest request) {
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+
         Element bodyElement = getElement();
         bodyElement.appendChild(div);
         updateDiv();
 
-        ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+        ses = Executors.newScheduledThreadPool(1);
         long delay = 2;
         ses.scheduleAtFixedRate(() -> {
 
-            access(() -> {
+            attachEvent.getUI().access(() -> {
                 updateDiv();
             });
 
@@ -51,8 +56,19 @@ public class UpdateDivUI extends UI {
         }, delay, delay, TimeUnit.MILLISECONDS);
     }
 
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
+
+        if (ses != null) {
+            ses.shutdownNow();
+            ses = null;
+        }
+    }
+
     private void updateDiv() {
         div.setText("Hello world at " + System.currentTimeMillis() + " ("
                 + msgId++ + ")");
     }
+
 }

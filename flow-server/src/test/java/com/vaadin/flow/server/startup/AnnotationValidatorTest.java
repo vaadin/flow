@@ -1,9 +1,16 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.ERROR_MESSAGE_BEGINNING;
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.MIDDLE_ROUTER_LAYOUT;
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT;
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT_ALIAS;
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_ROUTER_LAYOUT;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,20 +23,15 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
+import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
-
-import static com.vaadin.flow.server.startup.AnnotationValidator.ERROR_MESSAGE_BEGINNING;
-import static com.vaadin.flow.server.startup.AnnotationValidator.MIDDLE_ROUTER_LAYOUT;
-import static com.vaadin.flow.server.startup.AnnotationValidator.NON_PARENT;
-import static com.vaadin.flow.server.startup.AnnotationValidator.NON_PARENT_ALIAS;
-import static com.vaadin.flow.server.startup.AnnotationValidator.NON_ROUTER_LAYOUT;
 
 public class AnnotationValidatorTest {
 
@@ -89,6 +91,11 @@ public class AnnotationValidatorTest {
     @Tag(Tag.DIV)
     @Theme(MyTheme.class)
     public static class NonRoute extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Push
+    public static class NonRoutePush extends Component {
     }
 
     @Route("root")
@@ -204,6 +211,18 @@ public class AnnotationValidatorTest {
 
         annotationValidator.onStartup(
                 Stream.of(NonRoute.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void onStartUp_non_linked_push_throws() throws ServletException {
+        expectedEx.expect(InvalidApplicationConfigurationException.class);
+        expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING
+                + String.format(NON_ROUTER_LAYOUT, NonRoutePush.class.getName(),
+                        Push.class.getSimpleName()));
+
+        annotationValidator.onStartup(
+                Stream.of(NonRoutePush.class).collect(Collectors.toSet()),
                 servletContext);
     }
 
