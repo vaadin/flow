@@ -45,6 +45,7 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -282,5 +283,38 @@ class BootstrapUtils {
         dependency.put("LoadMode", LoadMode.INLINE.toString());
         dependency.put(Dependency.KEY_CONTENTS, content);
         return dependency;
+    }
+
+    /**
+     * Finds the class on on which page configuration annotation should be
+     * defined.
+     * 
+     * @param ui
+     *            the UI for which to do the lookup, not <code>null</code>
+     * @param request
+     *            the request for which to do the lookup, not <code>null</code>
+     * @return the class for which page configuration annotations should be
+     *         defined, or an empty optional if no such class is available
+     */
+    public static Optional<Class<?>> resolvePageConfigurationHolder(UI ui,
+            VaadinRequest request) {
+        assert ui != null;
+        assert request != null;
+
+        return ui.getRouter()
+                .flatMap(router -> router.resolveNavigationTarget(
+                        request.getPathInfo(), request.getParameterMap()))
+                .map(navigationState -> {
+                    Class<? extends RouterLayout> parentLayout = RouterUtil
+                            .getTopParentLayout(
+                                    navigationState.getNavigationTarget(),
+                                    navigationState.getResolvedPath());
+
+                    if (parentLayout != null) {
+                        return parentLayout;
+                    }
+
+                    return navigationState.getNavigationTarget();
+                });
     }
 }

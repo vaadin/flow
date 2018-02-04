@@ -52,6 +52,7 @@ import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.router.internal.RouterUtil;
@@ -168,6 +169,9 @@ public class UIInternals implements Serializable {
     private final ConstantPool constantPool = new ConstantPool();
 
     private AbstractTheme theme = null;
+
+    private RouterInterface router;
+
     private static final Pattern componentSource = Pattern
             .compile(".*/src/vaadin-([\\w\\-]*).html");
 
@@ -346,6 +350,16 @@ public class UIInternals implements Serializable {
         }
 
         if (session != null) {
+            VaadinService service = getSession().getService();
+            if (service != null) {
+                // Allow null service to simplify testing mocks
+                RouterInterface serviceRouter = service.getRouter();
+                if (serviceRouter != null
+                        && serviceRouter.getConfiguration().isConfigured()) {
+                    router = serviceRouter;
+                }
+            }
+
             ComponentUtil.onComponentAttach(ui, true);
         }
     }
@@ -831,7 +845,7 @@ public class UIInternals implements Serializable {
      *            last location navigated to
      */
     public void setLastHandledNavigation(Location location) {
-        this.lastHandledNavigation = location;
+        lastHandledNavigation = location;
     }
 
     /**
@@ -864,7 +878,7 @@ public class UIInternals implements Serializable {
     /**
      * Gets the application id tied with this UI. Different applications in the
      * same page have different unique ids.
-     * 
+     *
      * @return the id of the application tied with this UI
      */
     public String getAppId() {
@@ -872,5 +886,16 @@ public class UIInternals implements Serializable {
                 VaadinRequest.getCurrent());
         appId = appId.substring(0, appId.indexOf('-'));
         return appId;
+    }
+
+    /**
+     * Gets the router used for navigating in this UI, if the router was active
+     * when this UI was initialized.
+     *
+     * @return the router used for this UI, or <code>null</code> if there is no
+     *         router
+     */
+    public RouterInterface getRouter() {
+        return router;
     }
 }

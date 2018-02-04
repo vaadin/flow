@@ -49,15 +49,15 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponents;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -150,28 +150,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             this.session = session;
             this.ui = ui;
 
-            pageConfigurationHolder = resolvePageConfigurationHolder(ui,
-                    request);
+            pageConfigurationHolder = BootstrapUtils
+                    .resolvePageConfigurationHolder(ui, request).orElse(null);
 
-        }
-
-        private static Class<?> resolvePageConfigurationHolder(UI ui,
-                VaadinRequest request) {
-            return ui.getRouter()
-                    .flatMap(router -> router.resolveNavigationTarget(
-                            request.getPathInfo(), request.getParameterMap()))
-                    .map(navigationState -> {
-                        Class<? extends RouterLayout> parentLayout = RouterUtil
-                                .getTopParentLayout(
-                                        navigationState.getNavigationTarget(),
-                                        navigationState.getResolvedPath());
-
-                        if (parentLayout != null) {
-                            return parentLayout;
-                        }
-
-                        return navigationState.getNavigationTarget();
-                    }).orElse(null);
         }
 
         /**
@@ -392,10 +373,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             session));
         }
 
-        UI ui = createAndInitUI(uiClass, request, session);
-
-        BootstrapContext context = new BootstrapContext(request, response,
-                session, ui);
+        BootstrapContext context = createAndInitUI(uiClass, request, response,
+                session);
 
         ServletHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
@@ -992,26 +971,33 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return Optional.ofNullable(title);
     }
 
-    protected UI createAndInitUI(Class<? extends UI> uiClass,
-            VaadinRequest request, VaadinSession session) {
+    protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
+            VaadinRequest request, VaadinResponse response,
+            VaadinSession session) {
         UI ui = ReflectTools.createInstance(uiClass);
+        PushConfiguration pushConfiguration = ui.getPushConfiguration();
 
-        // Initialize some fields for a newly created UI
         ui.getInternals().setSession(session);
         ui.setLocale(session.getLocale());
 
-        PushMode pushMode = AnnotationReader.getPushMode(uiClass).orElseGet(
-                session.getService().getDeploymentConfiguration()::getPushMode);
-        ui.getPushConfiguration().setPushMode(pushMode);
+        BootstrapContext context = new BootstrapContext(request, response,
+                session, ui);
 
-        AnnotationReader.getPushTransport(uiClass)
-                .ifPresent(ui.getPushConfiguration()::setTransport);
+        Optional<Push> push = context
+                .getPageConfigurationAnnotation(Push.class);
+
+        PushMode pushMode = push.map(Push::value).orElseGet(context.getSession()
+                .getService().getDeploymentConfiguration()::getPushMode);
+        pushConfiguration.setPushMode(pushMode);
+
+        push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
         ui.doInit(request, session.getNextUIid());
         session.addUI(ui);
-        return ui;
+
+        return context;
     }
 
     /**

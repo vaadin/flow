@@ -1,6 +1,6 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import com.vaadin.flow.component.Push;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.ui.Transport;

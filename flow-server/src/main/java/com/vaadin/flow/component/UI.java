@@ -96,8 +96,6 @@ public class UI extends Component
 
     private final Page page = new Page(this);
 
-    private RouterInterface router;
-
     /**
      * Creates a new empty UI.
      */
@@ -189,11 +187,8 @@ public class UI extends Component
         init(request);
 
         // Use router if it's active
-        RouterInterface serviceRouter = getSession().getService().getRouter();
-        if (serviceRouter.getConfiguration().isConfigured()) {
-            router = serviceRouter;
-            router.initializeUI(this, request);
-        }
+        getRouterInterface()
+                .ifPresent(router -> router.initializeUI(this, request));
     }
 
     /**
@@ -709,6 +704,7 @@ public class UI extends Component
      *         implementation
      */
     public Optional<Router> getRouter() {
+        RouterInterface router = internals.getRouter();
         if (router instanceof Router) {
             return Optional.of((Router) router);
         } else {
@@ -730,7 +726,7 @@ public class UI extends Component
     public Optional<RouterInterface> getRouterInterface() {
         // XXX When removing this, also remove mention of the old router from
         // the javadoc for getRouter()
-        return Optional.ofNullable(router);
+        return Optional.ofNullable(internals.getRouter());
     }
 
     /**

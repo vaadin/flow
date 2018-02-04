@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2014 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,24 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.push;
+package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
 
 @Push
-public class BasicPushUI extends ClientServerCounterUI {
+@Route("com.vaadin.flow.uitest.ui.PushSettingsView")
+public class PushSettingsView extends AbstractDivView {
     @Override
-    protected void init(VaadinRequest request) {
-        /*
-         * Read push settings from the UI instead of the the navigation target /
-         * router layout to preserve the structure of these legacy testing UIs
-         */
-        Push push = getClass().getAnnotation(Push.class);
-
-        getPushConfiguration().setPushMode(push.value());
-        getPushConfiguration().setTransport(push.transport());
-
-        super.init(request);
+    protected void onAttach(AttachEvent attachEvent) {
+        setId("pushMode");
+        setText("Push mode: "
+                + attachEvent.getUI().getPushConfiguration().getPushMode());
     }
 }

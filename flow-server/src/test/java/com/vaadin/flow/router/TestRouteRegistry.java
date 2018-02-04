@@ -29,4 +29,14 @@ public class TestRouteRegistry extends RouteRegistry {
     public TestRouteRegistry() {
         super();
     }
+
+    @Override
+    public boolean hasRoutes() {
+        /*
+         * Always pretend there are routes even though they might actually be
+         * injected later on.
+         */
+        return true;
+    }
+
 }
