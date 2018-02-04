@@ -1,6 +1,11 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -13,6 +18,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.Document;
@@ -41,6 +48,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
@@ -52,12 +60,6 @@ import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class BootstrapHandlerTest {
 
@@ -323,6 +325,8 @@ public class BootstrapHandlerTest {
 
     @Before
     public void setup() {
+        TestRouteRegistry routeRegistry = new TestRouteRegistry();
+
         BootstrapHandler.clientEngineFile = "foobar";
         testUI = new TestUI();
 
@@ -330,8 +334,17 @@ public class BootstrapHandlerTest {
 
         service = Mockito
                 .spy(new MockVaadinServletService(deploymentConfiguration));
-        Mockito.when(service.getRouteRegistry())
-                .thenReturn(new TestRouteRegistry());
+        Mockito.when(service.getRouteRegistry()).thenReturn(routeRegistry);
+        Mockito.when(service.getRouter()).thenReturn(new Router(routeRegistry) {
+            @Override
+            public void initializeUI(UI ui, VaadinRequest initRequest) {
+                // Skip initial navigation during UI.init if no routes have been
+                // injected
+                if (routeRegistry.hasNavigationTargets()) {
+                    super.initializeUI(ui, initRequest);
+                }
+            }
+        });
 
         session = Mockito.spy(new MockVaadinSession(service));
         session.lock();
@@ -962,7 +975,6 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(ExtendingView.class));
 
-
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
@@ -1185,16 +1197,20 @@ public class BootstrapHandlerTest {
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format(
-                "In development mode, es6 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES6), urlES6, is(es6Prefix + urlPart));
+        assertThat(
+                String.format(
+                        "In development mode, es6 prefix should be equal to '%s' parameter value",
+                        Constants.FRONTEND_URL_ES6),
+                urlES6, is(es6Prefix + urlPart));
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format(
-                "In development mode, es5 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
+        assertThat(
+                String.format(
+                        "In development mode, es5 prefix should be equal to '%s' parameter value",
+                        Constants.FRONTEND_URL_ES5),
+                urlES5, is(es5Prefix + urlPart));
 
         Mockito.verify(session, Mockito.times(3)).getBrowser();
         Mockito.verify(mockedWebBrowser, Mockito.times(2)).isEs6Supported();
