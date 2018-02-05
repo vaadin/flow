@@ -27,10 +27,10 @@ import com.vaadin.flow.router.internal.*;
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface BeforeLeaveObserver extends BeforeLeaveHandler {
+public interface BeforeLeaveListener extends BeforeLeaveHandler {
 
     /**
-     * Method called before navigation to detaching Component chain is made.
+     * Method called before navigation.
      * 
      * @param event
      *            before navigation event with event details
