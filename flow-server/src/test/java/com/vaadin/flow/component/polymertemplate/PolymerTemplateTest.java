@@ -353,6 +353,44 @@ public class PolymerTemplateTest extends HasCurrentService {
         }
     }
 
+    public interface DeniedPropertyWithGetterModel extends TemplateModel {
+
+        @AllowClientUpdates(ClientUpdateMode.DENY)
+        String getName();
+    }
+
+    public interface TwoWayBindingPropertyWithGetterModel
+            extends TemplateModel {
+
+        @AllowClientUpdates(ClientUpdateMode.IF_TWO_WAY_BINDING)
+        String getName();
+    }
+
+    @Tag("deny-property")
+    public static class DeniedPropertyWithGetterTemplate
+            extends PolymerTemplate<DeniedPropertyWithGetterModel> {
+        DeniedPropertyWithGetterTemplate() {
+            super(new SimpleTemplateParser());
+        }
+    }
+
+    @Tag("two-way-property-annotation-disallowed")
+    public static class TwoWayBindingPropertyWithGetterNotAllowedTemplate
+            extends PolymerTemplate<TwoWayBindingPropertyWithGetterModel> {
+        TwoWayBindingPropertyWithGetterNotAllowedTemplate() {
+            super(new SimpleTemplateParser());
+        }
+    }
+
+    @Tag("two-way-property-annotation-allowed")
+    public static class TwoWayBindingPropertyWithGetterAllowedTemplate
+            extends PolymerTemplate<TwoWayBindingPropertyWithGetterModel> {
+        TwoWayBindingPropertyWithGetterAllowedTemplate() {
+            super(new TestTemplateParser(tag -> "<dom-module id='" + tag
+                    + "'><template><div>{{name}}</div></template></dom-module>"));
+        }
+    }
+
     @SuppressWarnings("serial")
     @Before
     public void setUp() throws NoSuchFieldException, SecurityException,
@@ -730,6 +768,21 @@ public class PolymerTemplateTest extends HasCurrentService {
         JsonArray properties = (JsonArray) params[1];
         Assert.assertEquals(1, properties.length());
         Assert.assertEquals("title", properties.get(0).asString());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void templateModelHasDenyProperty_propertyHasGetter_throw() {
+        new DeniedPropertyWithGetterTemplate();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void templateModelDeclaresTwoWayBindingProperty_propertyIsNotTwoWayBindingAnsHasGetter_throw() {
+        new TwoWayBindingPropertyWithGetterNotAllowedTemplate();
+    }
+
+    @Test
+    public void templateModelDeclaresTwoWayBindingProperty_propertyIsTwoWayBindingAnsHasGetter_templateIsConstructed() {
+        TwoWayBindingPropertyWithGetterAllowedTemplate template = new TwoWayBindingPropertyWithGetterAllowedTemplate();
     }
 
     private List<Integer> convertIntArray(JsonArray array) {

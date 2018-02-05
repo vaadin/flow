@@ -659,7 +659,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                     && modelProperty.hasGetter()) {
                 throw new IllegalStateException(String.format(
                         "There is a getter for the property '%s' whose update from the client-side to "
-                                + "the server-side is forbidden because the property is not "
+                                + "the server-side is forbidden because the property is not a"
                                 + "two way binding property but it's required to be "
                                 + "(implicitely if there is no '%s' annotation for this "
                                 + "property or explicitely if it's value is '%s')",
