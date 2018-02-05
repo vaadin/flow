@@ -131,7 +131,7 @@
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-element-mixin</artifactId>
-                <version>v1.0.1</version>
+                <version>1.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
