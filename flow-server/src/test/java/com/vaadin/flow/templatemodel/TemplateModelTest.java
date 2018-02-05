@@ -41,32 +41,39 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public interface BasicTypeModel extends TemplateModel {
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         boolean getBooleanPrimitive();
 
         boolean isBooleanPrimitive();
 
         void setBooleanPrimitive(boolean b);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         Boolean getBoolean();
 
         void setBoolean(Boolean b);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         int getInt();
 
         void setInt(int i);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         Integer getInteger();
 
         void setInteger(Integer i);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         double getDoublePrimitive();
 
         void setDoublePrimitive(double d);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         Double getDouble();
 
         void setDouble(Double d);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         String getString();
 
         void setString(String s);
@@ -108,6 +115,12 @@ public class TemplateModelTest extends HasCurrentService {
     }
 
     public interface BeanModel extends TemplateModel {
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "booleanObject")
+        @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "intObject")
+        @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "intValue")
+        @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "doubleValue")
+        @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "booleanValue")
         Bean getBean();
 
         void setBean(Bean bean);
@@ -116,38 +129,45 @@ public class TemplateModelTest extends HasCurrentService {
     public interface ListBeanModel extends TemplateModel {
         void setBeans(List<Bean> beans);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<Bean> getBeans();
     }
 
     public interface ListInsideListBeanModel extends TemplateModel {
         void setBeans(List<List<Bean>> beans);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<List<Bean>> getBeans();
     }
 
     public interface ListInsideListInsideList extends TemplateModel {
         void setBeans(List<List<List<Bean>>> beans);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<List<List<Bean>>> getBeans();
     }
 
     public interface SubBeanIface {
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         String getValue();
 
         void setValue(String value);
 
         void setBean(SubSubBeanIface bean);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         SubSubBeanIface getBean();
 
         void setBeanClass(SubBean bean);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         SubBean getBeanClass();
     }
 
     public interface SubSubBeanIface {
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         int getValue();
 
         void setValue(int value);
@@ -159,6 +179,7 @@ public class TemplateModelTest extends HasCurrentService {
 
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public SubSubBean getSubBean() {
             return null;
         }
@@ -168,6 +189,7 @@ public class TemplateModelTest extends HasCurrentService {
 
         private boolean visible;
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public boolean isVisible() {
             return visible;
         }
@@ -180,12 +202,14 @@ public class TemplateModelTest extends HasCurrentService {
 
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public SubSubBeanIface getBean() {
             return null;
         }
     }
 
     public static class SubSubBean {
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public Double getValue() {
             return null;
         }
@@ -198,10 +222,12 @@ public class TemplateModelTest extends HasCurrentService {
     public interface SubBeansModel extends TemplateModel {
         void setBean(SubBeanIface bean);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         SubBeanIface getBean();
 
         void setBeanClass(SubBean bean);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         SubBean getBeanClass();
     }
 
@@ -233,6 +259,12 @@ public class TemplateModelTest extends HasCurrentService {
             extends EmptyDivTemplate<TemplateWithExclude.ModelWithExclude> {
 
         public interface ModelWithExclude extends TemplateModel {
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "booleanObject")
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "intObject")
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "intValue")
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "doubleValue")
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "booleanValue")
             Bean getBean();
 
             @Exclude({ "doubleValue", "booleanObject" })
@@ -250,6 +282,8 @@ public class TemplateModelTest extends HasCurrentService {
             extends EmptyDivTemplate<M> {
 
         public interface ModelWithExcludeAndInclude extends TemplateModel {
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "booleanObject")
             Bean getBean();
 
             @Include({ "doubleValue", "booleanObject" })
@@ -282,6 +316,7 @@ public class TemplateModelTest extends HasCurrentService {
              */
             @Override
             @Include("doubleValue")
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "doubleValue")
             void setBean(Bean bean);
         }
 
@@ -293,7 +328,12 @@ public class TemplateModelTest extends HasCurrentService {
         public interface ModelWithExcludeForSubBean extends TemplateModel {
             BeanContainingBeans getBeanContainingBeans();
 
-            @Exclude({ "bean1.booleanObject", "bean2" })
+            @Exclude({ "bean1.booleanObject", "bean2", "bean3" })
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "bean1.intObject")
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "bean1.intValue")
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "bean1.booleanValue")
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "bean1.doubleValue")
             void setBeanContainingBeans(
                     BeanContainingBeans beanContainingBeans);
         }
@@ -312,6 +352,7 @@ public class TemplateModelTest extends HasCurrentService {
             @Exclude("intValue")
             void setBeans(List<Bean> beans);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             List<Bean> getBeans();
         }
 
@@ -324,6 +365,10 @@ public class TemplateModelTest extends HasCurrentService {
     public static class TemplateWithInclude
             extends EmptyDivTemplate<TemplateWithInclude.ModelWithInclude> {
         public interface ModelWithInclude extends TemplateModel {
+
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "booleanObject")
+            @AllowClientUpdates(value = ClientUpdateMode.ALLOW, path = "doubleValue")
             Bean getBean();
 
             @Include({ "doubleValue", "booleanObject" })
@@ -341,6 +386,7 @@ public class TemplateModelTest extends HasCurrentService {
             EmptyDivTemplate<TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean> {
 
         public interface ModelWithIncludeForSubBean extends TemplateModel {
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             BeanContainingBeans getBeanContainingBeans();
 
             @Include({ "bean1.booleanObject" })
@@ -361,6 +407,7 @@ public class TemplateModelTest extends HasCurrentService {
             @Include("intValue")
             void setBeans(List<Bean> beans);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             List<Bean> getBeans();
         }
 
@@ -386,6 +433,7 @@ public class TemplateModelTest extends HasCurrentService {
     public static class BasicTypeModelTemplate
             extends NoModelTemplate<BasicTypeModel> {
         @Override
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public BasicTypeModel getModel() {
             return super.getModel();
         };
@@ -434,6 +482,7 @@ public class TemplateModelTest extends HasCurrentService {
     public interface StringListModel extends TemplateModel {
         void setItems(List<String> beans);
 
+        @AllowClientUpdates(value = ClientUpdateMode.ALLOW)
         List<String> getItems();
     }
 
@@ -462,6 +511,7 @@ public class TemplateModelTest extends HasCurrentService {
 
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public final String getBar() {
             return null;
         }
@@ -482,6 +532,7 @@ public class TemplateModelTest extends HasCurrentService {
             implements TemplateModel {
 
         @Exclude({ "foo", "bar" })
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public BeanWithFinalAccessors getBean() {
             return null;
         }

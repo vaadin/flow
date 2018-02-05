@@ -225,27 +225,33 @@ public class BeanModelTypeTest {
         BeanModelType<?> bean2Type = (BeanModelType<?>) beanType
                 .getPropertyType("bean2");
 
-        Assert.assertEquals(ClientUpdateMode.ALLOW,
-                bean1Type.getClientUpdateMode("string"));
-        Assert.assertEquals(ClientUpdateMode.DENY,
-                bean1Type.getClientUpdateMode("booleanValue"));
-        Assert.assertEquals(ClientUpdateMode.ALLOW,
-                bean1Type.getClientUpdateMode("booleanObject"));
-        Assert.assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
-                bean1Type.getClientUpdateMode("intValue"));
-        Assert.assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
-                bean1Type.getClientUpdateMode("doubleObject"));
+        BeanModelType<?> bean3Type = (BeanModelType<?>) beanType
+                .getPropertyType("bean3");
 
+        Assert.assertEquals(ClientUpdateMode.ALLOW, bean1Type
+                .getClientUpdateMode(bean1Type.getExistingProperty("string")));
         Assert.assertEquals(ClientUpdateMode.ALLOW,
-                bean2Type.getClientUpdateMode("string"));
-        Assert.assertEquals(ClientUpdateMode.DENY,
-                bean2Type.getClientUpdateMode("booleanValue"));
+                bean1Type.getClientUpdateMode(
+                        bean1Type.getExistingProperty("booleanObject")));
         Assert.assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
-                bean2Type.getClientUpdateMode("booleanObject"));
+                bean1Type.getClientUpdateMode(
+                        bean1Type.getExistingProperty("intValue")));
+
+        Assert.assertEquals(ClientUpdateMode.ALLOW, bean2Type
+                .getClientUpdateMode(bean2Type.getExistingProperty("string")));
+        Assert.assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
+                bean2Type.getClientUpdateMode(
+                        bean2Type.getExistingProperty("booleanObject")));
         Assert.assertEquals(ClientUpdateMode.ALLOW,
-                bean2Type.getClientUpdateMode("intValue"));
+                bean2Type.getClientUpdateMode(
+                        bean2Type.getExistingProperty("intValue")));
+
+        Assert.assertEquals(ClientUpdateMode.DENY, bean3Type
+                .getClientUpdateMode(bean3Type.getExistingProperty("denyInt")));
+
         Assert.assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
-                bean2Type.getClientUpdateMode("doubleObject"));
+                bean3Type.getClientUpdateMode(
+                        bean3Type.getExistingProperty("doubleObject")));
     }
 
     private static ElementPropertyMap createEmptyModel() {

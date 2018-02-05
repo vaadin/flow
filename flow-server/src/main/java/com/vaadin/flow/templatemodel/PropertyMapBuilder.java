@@ -45,11 +45,14 @@ class PropertyMapBuilder {
         private final Class<?> declaringClass;
         private final Collection<Method> accessors = new ArrayList<>();
 
-        private PropertyData(Method method) {
+        private boolean hasGetter;
+
+        private PropertyData(Method method, boolean isGetter) {
             propertyName = ReflectTools.getPropertyName(method);
             propertyType = ReflectTools.getPropertyType(method);
             declaringClass = method.getDeclaringClass();
             accessors.add(method);
+            hasGetter = isGetter;
         }
 
         private PropertyData merge(PropertyData newData) {
@@ -57,6 +60,9 @@ class PropertyMapBuilder {
                     .format("This object is expected to be merged for objects with same 'propertyName' field, but got different ones: '%s' and '%s'",
                             propertyName, newData.propertyName);
             accessors.addAll(newData.accessors);
+            if (!hasGetter) {
+                hasGetter = newData.hasGetter;
+            }
             return this;
         }
 
@@ -77,7 +83,7 @@ class PropertyMapBuilder {
             return new BeanModelTypeProperty(
                     createModelType(innerFilter, innerConverters,
                             innerUpdateModes),
-                    innerUpdateModes.getItem(prefix).orElse(null));
+                    innerUpdateModes.getItem(prefix).orElse(null), hasGetter);
 
         }
 
@@ -151,11 +157,11 @@ class PropertyMapBuilder {
         assert javaType != null;
         assert propertyFilter != null;
 
-        properties = Stream
-                .concat(ReflectTools.getSetterMethods(javaType),
-                        ReflectTools.getGetterMethods(javaType))
-                .map(PropertyData::new)
-                .filter(data -> propertyFilter.test(data.getPropertyName()))
+        properties = Stream.concat(
+                getPropertiesData(ReflectTools.getGetterMethods(javaType), true,
+                        propertyFilter),
+                getPropertiesData(ReflectTools.getSetterMethods(javaType),
+                        false, propertyFilter))
                 .collect(Collectors.toMap(PropertyData::getPropertyName,
                         Function.identity(), PropertyData::merge))
                 .entrySet().stream()
@@ -171,6 +177,12 @@ class PropertyMapBuilder {
      */
     Map<String, BeanModelTypeProperty> getProperties() {
         return properties;
+    }
+
+    private Stream<PropertyData> getPropertiesData(Stream<Method> methods,
+            boolean getterMethods, PropertyFilter propertyFilter) {
+        return methods.map(getter -> new PropertyData(getter, getterMethods))
+                .filter(data -> propertyFilter.test(data.getPropertyName()));
     }
 
 }

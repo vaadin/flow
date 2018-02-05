@@ -18,10 +18,6 @@ import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.templatemodel.Convert;
-import com.vaadin.flow.templatemodel.InvalidTemplateModelException;
-import com.vaadin.flow.templatemodel.ModelConverter;
-import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyDivTemplate;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -36,27 +32,32 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             @Convert(value = LongToStringConverter.class)
             void setLongValue(long longValue);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             long getLongValue();
 
             @Convert(value = DateToStringConverter.class)
             void setDate(Date date);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             Date getDate();
 
             @Convert(value = DateToBeanWithStringConverter.class)
             void setDateString(Date date);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             Date getDateString();
 
             @Convert(value = StringToBeanWithStringConverter.class)
             void setString(String string);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             String getString();
 
             @Convert(value = LongToStringConverter.class, path = "longValue")
             @Convert(value = DateToStringConverter.class, path = "date")
             void setTestBean(TestBean bean);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             TestBean getTestBean();
         }
 
@@ -124,6 +125,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             @Convert(value = LongToStringConverter.class, path = "longValue")
             void setLongValue(long longValue);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             long getLongValue();
         }
 
@@ -156,6 +158,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             @Convert(value = LongToStringConverter.class, path = "id")
             void setReadOnlyBean(ReadOnlyBean readOnlyBean);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             ReadOnlyBean getReadOnlyBean();
         }
 
@@ -172,6 +175,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             @Convert(value = DateToDateBeanConverter.class)
             void setDate(Date date);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             Date getDate();
         }
 
@@ -189,6 +193,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             @Convert(value = DateToStringConverter.class, path = "date")
             void setTestBeans(List<TestBean> testBeans);
 
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             List<TestBean> getTestBeans();
         }
 
@@ -346,6 +351,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             this.stringValue = stringValue;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public String getStringValue() {
             return stringValue;
         }
@@ -367,6 +373,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             this.date = date;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public long getLongValue() {
             return longValue;
         }
@@ -375,6 +382,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             this.longValue = longValue;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public Date getDate() {
             return date;
         }
@@ -395,6 +403,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             this.longValue = longValue;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public long getLongValue() {
             return longValue;
         }
@@ -405,6 +414,8 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class ReadOnlyBean implements Serializable {
+
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public long getId() {
             return 0L;
         }
@@ -416,6 +427,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
         private int month;
         private int year;
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public int getDay() {
             return day;
         }
@@ -424,6 +436,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             this.day = day;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public int getMonth() {
             return month;
         }
@@ -432,6 +445,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             this.month = month;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public int getYear() {
             return year;
         }
@@ -448,27 +462,32 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             void setLongValue(long longValue);
 
             @Convert(value = LongToStringConverter.class)
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             long getLongValue();
 
             void setDate(Date date);
 
             @Convert(value = DateToStringConverter.class)
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             Date getDate();
 
             void setDateString(Date date);
 
             @Convert(value = DateToBeanWithStringConverter.class)
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             Date getDateString();
 
             void setString(String string);
 
             @Convert(value = StringToBeanWithStringConverter.class)
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             String getString();
 
             void setTestBean(TestBean bean);
 
             @Convert(value = LongToStringConverter.class, path = "longValue")
             @Convert(value = DateToStringConverter.class, path = "date")
+            @AllowClientUpdates(ClientUpdateMode.ALLOW)
             TestBean getTestBean();
         }
 
