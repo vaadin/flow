@@ -410,19 +410,19 @@ public class StateTreeTest {
 
     @Test
     public void beforeClientResponse_withAttachedNodesDuringExecution() {
-        StateNode rootNode = new AttachableNode(true);
-        AttachableNode emptyNode1 = new AttachableNode();
-        AttachableNode emptyNode2 = new AttachableNode();
+        StateNode rootNode = tree.getRootNode();
+        StateNode emptyNode1 = StateNodeTest.createEmptyNode("node1");
+        StateNode emptyNode2 = StateNodeTest.createEmptyNode("node2");
 
         List<Integer> results = new ArrayList<>();
 
         tree.beforeClientResponse(emptyNode1, () -> {
             results.add(0);
-            emptyNode2.setAttached(true);
+            StateNodeTest.setParent(emptyNode2, rootNode);
         });
         tree.beforeClientResponse(rootNode, () -> {
             results.add(1);
-            emptyNode1.setAttached(true);
+            StateNodeTest.setParent(emptyNode1, rootNode);
         });
         tree.beforeClientResponse(emptyNode2, () -> results.add(2));
         tree.beforeClientResponse(rootNode, () -> results.add(3));
@@ -439,6 +439,42 @@ public class StateTreeTest {
                 results.get(2).intValue());
         Assert.assertEquals("The result at index '3' should be 2", 2,
                 results.get(3).intValue());
+    }
+
+    @Test
+    public void beforeClientResponse_nodeGarbageCollectedDespiteClosure()
+            throws InterruptedException {
+        StateNode node1 = tree.getRootNode();
+        StateNode node2 = StateNodeTest.createEmptyNode("node2");
+
+        StateNodeTest.setParent(node2, node1);
+
+        class CapturingRunnable implements Runnable {
+            private final Object captured;
+
+            public CapturingRunnable(Object captured) {
+                this.captured = captured;
+            }
+
+            @Override
+            public void run() {
+                // nop
+            }
+        }
+
+        tree.beforeClientResponse(node2, new CapturingRunnable(node2));
+
+        StateNodeTest.setParent(node2, null);
+
+        WeakReference<StateNode> ref = new WeakReference<>(node2);
+        node2 = null;
+
+        // Collect to release from list of detached nodes
+        tree.collectChanges(value -> {
+            // nop
+        });
+
+        Assert.assertTrue(TestUtil.isGarbageCollected(ref));
     }
 
     @Test

@@ -16,15 +16,16 @@
 
 package com.vaadin.flow.internal;
 
-import java.lang.ref.WeakReference;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.change.NodeChange;
@@ -64,36 +65,32 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * Object that holds a {@link Runnable} to be executed before the client
-     * response, using a {@link StateNode} as context.
+     * A {@link Runnable} to be executed before the client response, together
+     * with an execution sequence number.
+     * <p>
+     * While of this class are stored inside individual state nodes, code
+     * outside {@link StateTree} should treat the those as opaque values.
      *
      * @see StateTree#beforeClientResponse(StateNode, Runnable) See
      *      {@link StateTree#runExecutionsBeforeClientResponse()}
      */
-    private static final class StateNodeOnBeforeClientResponse {
-        private WeakReference<StateNode> stateNodeReference;
-        private Runnable runnable;
+    public static final class BeforeClientResponseEntry {
+        private static final Comparator<BeforeClientResponseEntry> COMPARING_INDEX = Comparator
+                .comparingInt(BeforeClientResponseEntry::getIndex);
 
-        StateNodeOnBeforeClientResponse(StateNode stateNode,
-                Runnable runnable) {
-            stateNodeReference = new WeakReference<>(stateNode);
+        private final Runnable runnable;
+        private final int index;
+
+        private BeforeClientResponseEntry(int index, Runnable runnable) {
+            this.index = index;
             this.runnable = runnable;
         }
 
-        boolean isStateNodeAttached() {
-            StateNode stateNode = stateNodeReference.get();
-            return stateNode != null && stateNode.isAttached();
+        private int getIndex() {
+            return index;
         }
 
-        boolean isAvailable() {
-            return stateNodeReference.get() != null;
-        }
-
-        void setUnavailable() {
-            stateNodeReference.clear();
-        }
-
-        Runnable getRunnable() {
+        private Runnable getRunnable() {
             return runnable;
         }
     }
@@ -115,9 +112,11 @@ public class StateTree implements NodeOwner {
 
     private final Map<Integer, StateNode> idToNode = new HashMap<>();
 
-    private LinkedList<StateNodeOnBeforeClientResponse> executionsToProcessBeforeResponse = new LinkedList<>();
-
     private int nextId = 1;
+
+    private Set<StateNode> pendingExecutionNodes = new HashSet<>();
+
+    private int nextBeforeClientResponseIndex = 1;
 
     private final StateNode rootNode;
 
@@ -167,6 +166,11 @@ public class StateTree implements NodeOwner {
         }
 
         idToNode.put(nodeId, node);
+
+        if (node.hasBeforeClientResponseEntries()) {
+            pendingExecutionNodes.add(node);
+        }
+
         return nodeId;
     }
 
@@ -187,6 +191,8 @@ public class StateTree implements NodeOwner {
             throw new IllegalStateException(
                     "Unregistered node was not found based on its id. The tree is most likely corrupted.");
         }
+
+        pendingExecutionNodes.remove(node);
     }
 
     @Override
@@ -290,10 +296,13 @@ public class StateTree implements NodeOwner {
         assert context != null : "The 'context' parameter can not be null";
         assert execution != null : "The 'execution' parameter can not be null";
 
-        StateNodeOnBeforeClientResponse reference = new StateNodeOnBeforeClientResponse(
-                context, execution);
-        executionsToProcessBeforeResponse.add(reference);
-        return reference::setUnavailable;
+        if (context.isAttached()) {
+            pendingExecutionNodes.add(context);
+        }
+
+        BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
+                nextBeforeClientResponseIndex++, execution);
+        return context.addBeforeClientResponseEntry(entry);
     }
 
     /**
@@ -303,54 +312,31 @@ public class StateTree implements NodeOwner {
      * executed if able.
      */
     public void runExecutionsBeforeClientResponse() {
-        boolean newTasksPossiblyAddedOrNodesAttached;
-        do {
-            newTasksPossiblyAddedOrNodesAttached = false;
-            for (StateNodeOnBeforeClientResponse reference : flushCallbacks()) {
-                newTasksPossiblyAddedOrNodesAttached = executeRunnableIfAble(
-                        reference) || newTasksPossiblyAddedOrNodesAttached;
+        while (true) {
+            List<Runnable> callbacks = flushCallbacks();
+            if (callbacks.isEmpty()) {
+                return;
             }
-        } while (newTasksPossiblyAddedOrNodesAttached);
+            callbacks.forEach(Runnable::run);
+        }
     }
 
-    /**
-     * Verifies whether the runnable is able to be executed, by analyzing two
-     * scenarios:
-     * <ol>
-     * <li>If the StateNode associated with the Runnable was garbage collected,
-     * the runnable is not considered able to be executed, and is
-     * discarded.</li>
-     * <li>If the StateNode is present but not attached to the document, the
-     * runnable is not considered able to be executed, and it is saved be to
-     * executed later. It is evaluated again before the next client
-     * response.</li>
-     * </ol>
-     *
-     * @param reference
-     *            the StateNodeOnBeforeClientResponse object containing the
-     *            StateNode and the Runnable
-     * @return <code>true</code> if the runnable was executed right away,
-     *         <code>false</code> otherwise
-     */
-    private boolean executeRunnableIfAble(
-            StateNodeOnBeforeClientResponse reference) {
-        if (!reference.isAvailable()) {
-            return false;
-        }
-        if (!reference.isStateNodeAttached()) {
-            executionsToProcessBeforeResponse.add(reference);
-            return false;
-        }
-        reference.getRunnable().run();
-        return true;
-    }
-
-    private List<StateNodeOnBeforeClientResponse> flushCallbacks() {
-        if (executionsToProcessBeforeResponse.isEmpty()) {
+    private List<Runnable> flushCallbacks() {
+        if (pendingExecutionNodes.isEmpty()) {
             return Collections.emptyList();
         }
-        List<StateNodeOnBeforeClientResponse> flushed = executionsToProcessBeforeResponse;
-        executionsToProcessBeforeResponse = new LinkedList<>();
+
+        // Collect
+        List<Runnable> flushed = pendingExecutionNodes.stream()
+                .map(StateNode::dumpBeforeClientResponseEntries)
+                .flatMap(List::stream)
+                .sorted(BeforeClientResponseEntry.COMPARING_INDEX)
+                .map(BeforeClientResponseEntry::getRunnable)
+                .collect(Collectors.toList());
+
+        // Reset bookeeping for the next round
+        pendingExecutionNodes = new HashSet<>();
+
         return flushed;
     }
 }
