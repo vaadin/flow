@@ -15,11 +15,8 @@
  */
 package com.vaadin.flow.router.internal;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,7 +24,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.*;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -124,7 +121,7 @@ public class NavigationStateRenderer implements NavigationHandler {
                 event, routeTargetType);
 
         TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
-                beforeNavigationDeactivating, ui.getElement());
+                beforeNavigationDeactivating, ui.getElement(), ui.getInternals().getBeforeLeaveListeners());
 
         if (transitionOutcome == TransitionOutcome.REROUTED) {
             return reroute(event, beforeNavigationDeactivating);
@@ -160,7 +157,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         }
 
         transitionOutcome = executeBeforeEnterNavigation(
-                beforeNavigationActivating, chain);
+                beforeNavigationActivating, chain, ui);
 
         if (TransitionOutcome.REROUTED.equals(transitionOutcome)) {
             return reroute(event, beforeNavigationActivating);
@@ -240,13 +237,15 @@ public class NavigationStateRenderer implements NavigationHandler {
      *            navigation event sent to observers
      * @param element
      *            element for which to handle observers
+     * @param beforeLeaveHandlers
+     *            additional before leave handlers to be executed
      * @return result of observer events
      */
     private TransitionOutcome executeBeforeLeaveNavigation(
-            BeforeLeaveEvent beforeNavigation, Element element) {
-        Deque<BeforeLeaveObserver> leaveObservers;
+            BeforeLeaveEvent beforeNavigation, Element element, Collection<BeforeLeaveHandler> beforeLeaveHandlers) {
+        Deque<BeforeLeaveHandler> leaveObservers;
         if (postponed != null) {
-            leaveObservers = postponed.getLeaveObservers();
+            leaveObservers = postponed.getLeaveHandlers();
             if (!leaveObservers.isEmpty()) {
                 postponed = null;
             }
@@ -255,14 +254,16 @@ public class NavigationStateRenderer implements NavigationHandler {
                     EventUtil.collectBeforeLeaveObservers(element));
         }
 
+        leaveObservers.addAll(beforeLeaveHandlers);
+
         while (!leaveObservers.isEmpty()) {
-            BeforeLeaveObserver listener = leaveObservers.remove();
+            BeforeLeaveHandler listener = leaveObservers.remove();
             listener.beforeLeave(beforeNavigation);
 
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
             } else if (beforeNavigation.isPostponed()) {
-                postponed = Postpone.withLeaveObservers(leaveObservers);
+                postponed = Postpone.withLeaveHandlers(leaveObservers);
                 return TransitionOutcome.POSTPONED;
             }
         }
@@ -280,12 +281,16 @@ public class NavigationStateRenderer implements NavigationHandler {
      * @return result of observer events
      */
     private TransitionOutcome executeBeforeEnterNavigation(
-            BeforeEnterEvent beforeNavigation, List<HasElement> elements) {
-        List<BeforeEnterObserver> enterObservers = EventUtil
+            BeforeEnterEvent beforeNavigation, List<HasElement> elements, UI ui) {
+        Stream<BeforeEnterObserver> enterHandlersFromElements = EventUtil
                 .collectBeforeEnterObservers(elements);
 
-        for (BeforeEnterObserver observer : enterObservers) {
-            observer.beforeEnter(beforeNavigation);
+        Stream<BeforeEnterHandler> combinedHandlers = Stream.concat(enterHandlersFromElements, ui.getInternals().getBeforeEnterListeners().stream());
+
+        Iterable<BeforeEnterHandler> handlerIterable = combinedHandlers::iterator;
+
+        for (BeforeEnterHandler Handler : handlerIterable) {
+            Handler.beforeEnter(beforeNavigation);
 
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;

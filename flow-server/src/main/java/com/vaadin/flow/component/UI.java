@@ -18,9 +18,20 @@ package com.vaadin.flow.component;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
+import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.internal.*;
+import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.ErrorHandlingCommand;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,20 +46,6 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.router.EventUtil;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.ErrorHandlingCommand;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -790,5 +787,34 @@ public class UI extends Component
     @Override
     public Optional<UI> getUI() {
         return Optional.of(this);
+    }
+
+    /**
+     * Adds a listener that gets notified before the navigation state changes.
+     *
+     * @see BeforeEnterListener
+     *
+     * @param beforeEnterListener
+     *            the before enter listener
+     * @return a handle that can be used for removing the Handler
+     */
+    public Registration addBeforeEnterListener(BeforeEnterListener beforeEnterListener){
+        Objects.requireNonNull(beforeEnterListener);
+
+        return internals.addBeforeEnterListener(beforeEnterListener);
+    }
+
+    /**
+     * Adds a listener that gets notified after the navigation state changed.
+     *
+     * @see BeforeLeaveHandler
+     *
+     * @param beforeLeaveListener
+     *            the before leave listener
+     * @return a handle that can be used for removing the Handler
+     */
+    public Registration addBeforeLeaveListener(BeforeLeaveListener beforeLeaveListener){
+        Objects.requireNonNull(beforeLeaveListener);
+        return internals.addBeforeLeaveListener(beforeLeaveListener);
     }
 }

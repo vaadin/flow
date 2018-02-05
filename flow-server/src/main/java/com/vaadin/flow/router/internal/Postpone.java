@@ -19,63 +19,60 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.BeforeLeaveObserver;
-
 /**
  * Container class for containing left over listeners on postponed navigation.
  */
 public class Postpone implements Serializable {
-    private final ArrayDeque<BeforeLeaveObserver> remainingLeaveListeners;
-    private final ArrayDeque<BeforeEnterObserver> remainingNavigationListeners;
+    private final ArrayDeque<BeforeLeaveHandler> remainingLeaveListeners;
+    private final ArrayDeque<BeforeEnterHandler> remainingNavigationListeners;
 
-    private Postpone(Deque<BeforeLeaveObserver> beforeLeave,
-            Deque<BeforeEnterObserver> beforeNavigation) {
+    private Postpone(Deque<BeforeLeaveHandler> beforeLeave,
+            Deque<BeforeEnterHandler> beforeNavigation) {
         remainingLeaveListeners = new ArrayDeque<>(beforeLeave);
         remainingNavigationListeners = new ArrayDeque<>(beforeNavigation);
     }
 
     /**
-     * Set any remaining {@link BeforeLeaveObserver}s to be continued from.
+     * Set any remaining {@link BeforeLeaveHandler}s to be continued from.
      * 
      * @param beforeLeave
      *            listeners to continue calling
      * @return uncalled listeners to continue from
      */
-    public static Postpone withLeaveObservers(
-            Deque<BeforeLeaveObserver> beforeLeave) {
+    public static Postpone withLeaveHandlers(
+            Deque<BeforeLeaveHandler> beforeLeave) {
         return new Postpone(beforeLeave, new ArrayDeque<>());
     }
 
     /**
-     * Set any remaining {@link BeforeEnterObserver}s to be continued from.
+     * Set any remaining {@link BeforeEnterHandler}s to be continued from.
      *
      * @param beforeNavigation
      *            listeners to continue calling
      * @return uncalled listeners to continue from
      */
-    public static Postpone withNavigationObservers(
-            Deque<BeforeEnterObserver> beforeNavigation) {
+    public static Postpone withNavigationHandlers(
+            Deque<BeforeEnterHandler> beforeNavigation) {
         return new Postpone(new ArrayDeque<>(), beforeNavigation);
     }
 
     /**
-     * Get {@link BeforeLeaveObserver}s that have been left over from a
+     * Get {@link BeforeEnterHandler}s that have been left over from a
      * postpone.
      * 
-     * @return remaining BeforeLeaveObservers or empty ArrayDeque
+     * @return remaining BeforeLeaveHandlers or empty ArrayDeque
      */
-    public Deque<BeforeLeaveObserver> getLeaveObservers() {
+    public Deque<BeforeLeaveHandler> getLeaveHandlers() {
         return remainingLeaveListeners;
     }
 
     /**
-     * Get {@link BeforeEnterObserver}s that have been left over from a
+     * Get {@link BeforeEnterHandler}s that have been left over from a
      * postpone.
      * 
-     * @return remaining BeforeNavigationObservers or empty ArrayDeque
+     * @return remaining BeforeNavigationHandlers or empty ArrayDeque
      */
-    public Deque<BeforeEnterObserver> getNavigationObservers() {
+    public Deque<BeforeEnterHandler> getNavigationHandlers() {
         return remainingNavigationListeners;
     }
 }
