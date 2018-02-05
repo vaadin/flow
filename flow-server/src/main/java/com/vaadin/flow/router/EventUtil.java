@@ -74,37 +74,36 @@ public final class EventUtil {
     }
 
     /**
-     * Collect all Components implementing {@link BeforeEnterObserver} connected
+     * A stream of all Components implementing {@link BeforeEnterObserver} connected
      * to the tree of all given Components in list.
      *
      * @param components
      *            components to search
      * @return navigation listeners
      */
-    public static List<BeforeEnterObserver> collectBeforeEnterObservers(
+    public static Stream<BeforeEnterObserver> collectBeforeEnterObservers(
             List<HasElement> components) {
         Stream<Element> elements = components.stream().flatMap(
                 component -> flattenDescendants(component.getElement()));
 
-        return getImplementingComponents(elements, BeforeEnterObserver.class)
-                .collect(Collectors.toList());
+        return getImplementingComponents(elements, BeforeEnterObserver.class);
     }
 
     /**
-     * Collect all Components implementing {@link AfterNavigationObserver} that
+     * A stream of all Components implementing {@link AfterNavigationObserver} that
      * are found in the trees of given Components.
      *
      * @param components
      *            components to search
      * @return after navigation listeners
      */
-    public static List<AfterNavigationObserver> collectAfterNavigationObservers(
+    public static Stream<AfterNavigationObserver> collectAfterNavigationObservers(
             List<HasElement> components) {
         Stream<Element> elements = components.stream().flatMap(
                 component -> flattenDescendants(component.getElement()));
 
         return getImplementingComponents(elements,
-                AfterNavigationObserver.class).collect(Collectors.toList());
+                AfterNavigationObserver.class);
     }
 
     /**

@@ -16,17 +16,11 @@
 package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.router.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +45,6 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ContinueNavigationAction;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.router.legacy.HasChildView;
@@ -75,6 +67,26 @@ import com.vaadin.flow.theme.Theme;
  * @author Vaadin Ltd
  */
 public class UIInternals implements Serializable {
+
+    private final ArrayList<BeforeEnterListener> beforeEnterListeners = new ArrayList<>();
+
+    private final ArrayList<BeforeLeaveListener> beforeLeaveListeners = new ArrayList<>();
+
+    /**
+     * A {@link Collection} of {@link BeforeEnterListener}s for this UI.
+     * @return the Collection, not <code>null</code>
+     */
+    public Collection<BeforeEnterListener> getBeforeEnterListeners(){
+        return beforeEnterListeners;
+    }
+
+    /**
+     * A {@link Collection} of {@link BeforeLeaveListener}s for this UI.
+     * @return the Collection, not <code>null</code>
+     */
+    public Collection<BeforeLeaveListener> getBeforeLeaveListeners(){
+        return beforeLeaveListeners;
+    }
 
     /**
      * A {@link Page#executeJavaScript(String, Serializable...)} invocation that
