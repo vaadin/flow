@@ -80,6 +80,7 @@ public class EmptyListsView extends AbstractDivView {
     }
 
     public interface EmptyListsModel extends TemplateModel {
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<Item> getItems();
 
         void setItems(List<Item> items);
