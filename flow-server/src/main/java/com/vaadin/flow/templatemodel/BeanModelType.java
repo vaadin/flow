@@ -578,20 +578,29 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      * @return a predicate that accepts or rejects client-side updates to
      *         properties.
      *
+     * @see #getClientUpdateAllowedProperties(Set)
      * @see ElementPropertyMap#setUpdateFromClientFilter(SerializablePredicate)
      */
     public SerializablePredicate<String> createUpdateFromClientFilter(
             Set<String> twoWayBindingPaths) {
-        return getAllowedProperties(twoWayBindingPaths)::contains;
+        return getClientUpdateAllowedProperties(twoWayBindingPaths)::contains;
     }
 
     /**
-     * TODO
+     * Gets all properties (including subproperties) that allowed to be updated
+     * from the client-side.
+     *
+     * @see #createUpdateFromClientFilter(Set)
+     * @see ElementPropertyMap#setUpdateFromClientFilter(SerializablePredicate)
      *
      * @param twoWayBindingPaths
-     * @return
+     *            a set of path names for which two way bindings are define in
+     *            the template
+     * @return a collection of properties whose update is allowed from the
+     *         client-side
      */
-    public Set<String> getAllowedProperties(Set<String> twoWayBindingPaths) {
+    public Set<String> getClientUpdateAllowedProperties(
+            Set<String> twoWayBindingPaths) {
         Set<String> allowedProperties = new HashSet<>();
 
         // Recurse through all properties
