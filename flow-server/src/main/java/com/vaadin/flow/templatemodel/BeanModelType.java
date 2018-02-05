@@ -311,8 +311,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     /**
      * Gets the client update mode for a property.
      *
-     * @param propertyName
-     *            the name of the property for which to find the client update
+     * @param property
+     *            the property descriptor for which to find the client update
      *            mode
      * @return the client update mode, or IF_TWO_WAY_BINDING if no mode has been
      *         explicitly configured
