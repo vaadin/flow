@@ -156,6 +156,8 @@ public abstract class VaadinService implements Serializable {
 
     private final List<SessionInitListener> sessionInitListeners = new CopyOnWriteArrayList<>();
 
+    private final List<UIInitListener> uiInitListeners = new CopyOnWriteArrayList<>();
+
     private final List<SessionDestroyListener> sessionDestroyListeners = new CopyOnWriteArrayList<>();
 
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
@@ -543,6 +545,21 @@ public abstract class VaadinService implements Serializable {
     public Registration addSessionInitListener(SessionInitListener listener) {
         sessionInitListeners.add(listener);
         return () -> sessionInitListeners.remove(listener);
+    }
+
+    /**
+     * Adds a listener that gets notified when a new UI is
+     * initialized for this service.
+     *
+     * @see SessionInitListener
+     *
+     * @param listener
+     *            the Vaadin service session initialization listener
+     * @return a handle that can be used for removing the listener
+     */
+    public Registration addUIInitListener(UIInitListener listener) {
+        uiInitListeners.add(listener);
+        return () -> uiInitListeners.remove(listener);
     }
 
     /**
@@ -2135,5 +2152,13 @@ public abstract class VaadinService implements Serializable {
      */
     public RouterInterface getRouter() {
         return router;
+    }
+
+    /**
+     * gets the {@link UIInitListener} of this Service.
+     * @return the UIInitListeners, not <code>null</code>
+     */
+    List<UIInitListener> getUiInitListeners() {
+        return uiInitListeners;
     }
 }
