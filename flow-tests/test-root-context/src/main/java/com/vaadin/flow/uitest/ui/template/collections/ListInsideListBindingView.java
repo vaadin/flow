@@ -26,9 +26,11 @@ import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.ModelItem;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.RepeatIndex;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.templatemodel.AllowClientUpdates;
+import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListInsideListBindingView", layout = ViewTestLayout.class)
 @Tag("list-inside-list-binding")
@@ -47,6 +49,7 @@ public class ListInsideListBindingView extends
             this.text = text;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public String getText() {
             return text;
         }
@@ -61,6 +64,7 @@ public class ListInsideListBindingView extends
 
         void setNestedMessages(List<List<Message>> nested);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<List<Message>> getNestedMessages();
     }
 

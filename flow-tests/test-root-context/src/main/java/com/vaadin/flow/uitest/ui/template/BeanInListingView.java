@@ -37,6 +37,7 @@ public class BeanInListingView extends PolymerTemplate<ListModel> {
 
         void setUsers(List<User> users);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<User> getUsers();
 
         @AllowClientUpdates(ClientUpdateMode.ALLOW)
@@ -55,6 +56,7 @@ public class BeanInListingView extends PolymerTemplate<ListModel> {
     public static class User {
         private String name;
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public String getName() {
             return name;
         }

@@ -20,9 +20,11 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.templatemodel.AllowClientUpdates;
+import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.OneWayPolymerBindingView", layout = ViewTestLayout.class)
 @Tag("my-one-way-template")
@@ -42,8 +44,10 @@ public class OneWayPolymerBindingView
 
         void setTitle(String title);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         String getMessage();
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         String getTitle();
     }
 
