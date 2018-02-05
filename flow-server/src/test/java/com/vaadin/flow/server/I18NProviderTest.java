@@ -30,16 +30,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.SessionExpiredException;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WrappedHttpSession;
-import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -90,8 +81,8 @@ public class I18NProviderTest {
     }
 
     @After
-    public void clearCurrentService() {
-        VaadinService.setCurrent(null);
+    public void clearCurrentInstances() {
+        CurrentInstance.clearAll();
     }
 
     private VaadinServlet initServletAndService(Properties initParams)
