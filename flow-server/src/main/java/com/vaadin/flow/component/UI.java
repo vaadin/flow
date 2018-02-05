@@ -16,11 +16,24 @@
 
 package com.vaadin.flow.component;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
+import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.ErrorHandlingCommand;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,13 +55,8 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.ErrorHandlingCommand;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -97,6 +105,10 @@ public class UI extends Component
     private final Page page = new Page(this);
 
     private RouterInterface router;
+
+    private transient final List<BeforeEnterObserver> beforeEnterObservers = new ArrayList<>();
+
+    private transient final List<BeforeLeaveObserver> beforeLeaveObservers = new ArrayList<>();
 
     /**
      * Creates a new empty UI.
@@ -790,5 +802,51 @@ public class UI extends Component
     @Override
     public Optional<UI> getUI() {
         return Optional.of(this);
+    }
+
+    /**
+     * Adds an observer that gets notified before the navigation state changes.
+     *
+     * @see BeforeEnterObserver
+     *
+     * @param beforeEnterObserver
+     *            the before enter observer
+     * @return a handle that can be used for removing the observer
+     */
+    public Registration addBeforeEnterObserver(BeforeEnterObserver beforeEnterObserver){
+        Objects.requireNonNull(beforeEnterObserver);
+        beforeEnterObservers.add(beforeEnterObserver);
+        return () -> beforeEnterObservers.remove(beforeEnterObserver);
+    }
+
+    /**
+     * Adds an observer that gets notified after the navigation state changed.
+     *
+     * @see BeforeLeaveObserver
+     *
+     * @param beforeLeaveObserver
+     *            the before leave observer
+     * @return a handle that can be used for removing the observer
+     */
+    public Registration addBeforeLeaveObserver(BeforeLeaveObserver beforeLeaveObserver){
+        Objects.requireNonNull(beforeLeaveObserver);
+        beforeLeaveObservers.add(beforeLeaveObserver);
+        return () -> beforeLeaveObservers.remove(beforeLeaveObserver);
+    }
+
+    /**
+     * An unmodifiable {@link Collection} of {@link BeforeEnterObserver}s for this UI.
+     * @return the Collection, not <code>null</code>
+     */
+    public Collection<BeforeEnterObserver> getBeforeEnterObservers(){
+        return Collections.unmodifiableCollection(beforeEnterObservers);
+    }
+
+    /**
+     * An unmodifiable {@link Collection} of {@link BeforeLeaveObserver}s for this UI.
+     * @return the Stream, not <code>null</code>
+     */
+    public Collection<BeforeLeaveObserver> getBeforeLeaveObservers(){
+        return Collections.unmodifiableCollection(beforeLeaveObservers);
     }
 }
