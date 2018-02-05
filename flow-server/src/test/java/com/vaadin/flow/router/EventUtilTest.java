@@ -156,7 +156,7 @@ public class EventUtilTest {
         bar.getElement().appendChild(new Foo().getElement(), nested);
 
         List<BeforeEnterObserver> beforeNavigationObservers = EventUtil
-                .collectBeforeEnterObservers(Arrays.asList(foo, bar));
+                .collectBeforeEnterObservers(Arrays.asList(foo, bar)).collect(Collectors.toList());
 
         Assert.assertEquals("Wrong amount of listener instances found", 2,
                 beforeNavigationObservers.size());
@@ -178,7 +178,7 @@ public class EventUtilTest {
         bar.getElement().appendChild(new Foo().getElement(), nested);
 
         List<BeforeEnterObserver> beforeNavigationObservers = EventUtil
-                .collectBeforeEnterObservers(Arrays.asList(foo, bar));
+                .collectBeforeEnterObservers(Arrays.asList(foo, bar)).collect(Collectors.toList());
 
         Assert.assertEquals("Wrong amount of listener instances found", 2,
                 beforeNavigationObservers.size());
