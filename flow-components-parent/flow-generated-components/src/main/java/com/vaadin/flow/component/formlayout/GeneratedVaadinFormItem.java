@@ -146,14 +146,14 @@ import com.vaadin.flow.dom.Element;
  * <td>{@code 8em}</td>
  * </tr>
  * <tr>
- * <td>{@code --vaadin-form-item-label-gap}</td>
- * <td>Length of the gap between the label column and the input column when the
- * labels are aside</td>
+ * <td>{@code --vaadin-form-item-label-spacing}</td>
+ * <td>Spacing between the label column and the input column when the labels are
+ * aside</td>
  * <td>{@code 1em}</td>
  * </tr>
  * <tr>
- * <td>{@code --vaadin-form-item-row-gap}</td>
- * <td>Height of the gap between the form item elements</td>
+ * <td>{@code --vaadin-form-item-row-spacing}</td>
+ * <td>Height of the spacing between the form item elements</td>
  * <td>{@code 1em}</td>
  * </tr>
  * </tbody>
@@ -165,7 +165,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.FormItemElement#2.0.0-alpha5",
+        "WebComponent: Vaadin.FormItemElement#2.0.0-alpha6",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-form-item")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-item.html")
