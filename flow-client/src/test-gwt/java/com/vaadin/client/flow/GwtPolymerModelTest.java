@@ -8,6 +8,8 @@ import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.NativeFunction;
@@ -239,6 +241,9 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         String propertyValue = "coffee";
         setModelProperty(node, propertyName, propertyValue);
 
+        node.setNodeData(
+                new UpdatableModelProperties(JsCollections.array("black")));
+
         Binder.bind(node, element);
         Reactive.flush();
         assertEquals(
@@ -263,17 +268,13 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                 1.0, WidgetUtil.getJsProperty(element, "callbackCallCount"));
     }
 
-    public void testPropertiesWithSpecificSyncAreNotUpdated() {
+    public void testUpdateModelProperty_propertyIsNotUpdatable_propertyIsNotSync() {
         emulatePolymerNotLoaded();
         addMockMethods(element);
 
         String propertyName = "black";
         String propertyValue = "coffee";
 
-        NodeList synchronizedProperties = node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        synchronizedProperties.add(synchronizedProperties.length(),
-                propertyName);
         setModelProperty(node, propertyName, propertyValue);
 
         Binder.bind(node, element);
@@ -285,8 +286,9 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
         emulatePolymerPropertyChange(element, propertyName, "doesNotMatter");
         Reactive.flush();
-        assertEquals("Expected the property with name " + propertyName
-                + " not to be updated since it's contained in NodeFeatures.SYNCHRONIZED_PROPERTIES",
+        assertEquals(
+                "Expected the property with name " + propertyName
+                        + " not to be updated since it's not updatable",
                 propertyValue, WidgetUtil.getJsProperty(element, propertyName));
     }
 
