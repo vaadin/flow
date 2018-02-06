@@ -206,6 +206,15 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         // map and return their names as a list
         List<String> propertyNames = removeSimpleProperties();
 
+        // This has to be executed BEFORE model population to be able to know
+        // which properties needs update to the server
+        getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
+                .beforeClientResponse(getStateNode(),
+                        () -> ui.getPage().executeJavaScript(
+                                "this.registerUpdatableModelProperties($0, $1)",
+                                getElement(),
+                                filterUpdatableProperties(allowedProperties))));
+
         /*
          * Now populate model properties on the client side. Only explicitly set
          * by the developer properties are in the map at the moment of execution
@@ -222,12 +231,6 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                                 "this.populateModelProperties($0, $1)",
                                 getElement(),
                                 filterUnsetProperties(propertyNames))));
-        getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(getStateNode(),
-                        () -> ui.getPage().executeJavaScript(
-                                "this.registerUpdatableModelProperties($0, $1)",
-                                getElement(),
-                                filterUpdatableProperties(allowedProperties))));
     }
 
     private JsonArray filterUnsetProperties(List<String> properties) {

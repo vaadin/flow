@@ -134,15 +134,25 @@ public final class ExecuteJavaScriptElementUtils {
             return;
         }
         for (int i = 0; i < properties.length(); i++) {
-            String property = properties.get(i);
-            if (!isPropertyDefined(node.getDomNode(), property)) {
-                if (!map.hasPropertyValue(property)) {
-                    map.getProperty(property).setValue(null);
-                }
-            } else {
-                map.getProperty(property).syncToServer(
-                        WidgetUtil.getJsProperty(node.getDomNode(), property));
+            populateModelProperty(node, map, properties.get(i));
+        }
+    }
+
+    private static void populateModelProperty(StateNode node, NodeMap map,
+            String property) {
+        if (!isPropertyDefined(node.getDomNode(), property)) {
+            if (!map.hasPropertyValue(property)) {
+                map.getProperty(property).setValue(null);
             }
+        } else {
+            UpdatableModelProperties updatableProperties = node
+                    .getNodeData(UpdatableModelProperties.class);
+            if (updatableProperties == null
+                    || !updatableProperties.isUpdatableProperty(property)) {
+                return;
+            }
+            map.getProperty(property).syncToServer(
+                    WidgetUtil.getJsProperty(node.getDomNode(), property));
         }
     }
 

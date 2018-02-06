@@ -65,6 +65,8 @@ import jsinterop.annotations.JsFunction;
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
+    private static final String INITIAL_CHANGE = "isInitialChange";
+
     private static final String HIDDEN_ATTRIBUTE = "hidden";
 
     private static final String ELEMENT_ATTACH_ERROR_PREFIX = "Element addressed by the ";
@@ -236,17 +238,19 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
+            var initialChangeWrapper = {};
+            initialChangeWrapper.isInitialChange = true;
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
                 $entry(function () {
-                    self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
+                    self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node, initialChangeWrapper);
                 })();
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-    
+
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -255,13 +259,43 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }-*/;
 
     private void handlePropertiesChanged(
-            JavaScriptObject changedPropertyPathsToValues, StateNode node) {
+            JavaScriptObject changedPropertyPathsToValues, StateNode node,
+            JavaScriptObject initialChangeWrapper) {
         String[] keys = WidgetUtil.getKeys(changedPropertyPathsToValues);
+
+        /*
+         * The <code>initialChangeWrapper</code> object is used above in the
+         * <code>hookUpPolymerElement</code> method to distinguish the very
+         * first property change call and any subsequent.
+         *
+         * The very first call MAY BE (not necessary) done at the element
+         * initialization which is done from the server side via
+         * <code>NodeFeeature</code> mechanism. In this case it's called before
+         * any JS execution. And we won't have any info about updatable
+         * properties. So we need to postpone handling to wait when initial JS
+         * execution happens. So in case of initial change the handling is
+         * postponed via <code>Reactive.addPostFlushListener()</code>.
+         */
+
+        Boolean isInitialChange = (Boolean) WidgetUtil
+                .getJsProperty(initialChangeWrapper, INITIAL_CHANGE);
+
         for (String propertyName : keys) {
-            handlePropertyChange(propertyName, () -> WidgetUtil
-                    .getJsProperty(changedPropertyPathsToValues, propertyName),
+            Runnable handleProperty = () -> handlePropertyChange(propertyName,
+                    () -> WidgetUtil.getJsProperty(changedPropertyPathsToValues,
+                            propertyName),
                     node);
+            if (isInitialChange) {
+                Reactive.addPostFlushListener(() -> {
+                    handleProperty.run();
+                    WidgetUtil.setJsProperty(initialChangeWrapper,
+                            INITIAL_CHANGE, false);
+                });
+            } else {
+                handleProperty.run();
+            }
         }
+
     }
 
     private void handlePropertyChange(String fullPropertyName,
@@ -270,10 +304,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .getNodeData(UpdatableModelProperties.class);
         if (updatableProperties == null
                 || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
-            // don't do anything is the property/sub-property is not in the
+            // don't do anything if the property/sub-property is not in the
             // collection of updatable properties
             return;
         }
+
         // This is not the property value itself, its a parent node of the
         // property
         String[] subProperties = fullPropertyName.split("\\.");
@@ -303,7 +338,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 return;
             }
         }
-
         mapProperty.syncToServer(valueProvider.get());
     }
 

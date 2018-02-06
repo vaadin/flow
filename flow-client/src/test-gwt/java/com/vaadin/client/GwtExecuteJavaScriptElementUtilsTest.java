@@ -18,6 +18,7 @@ package com.vaadin.client;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
@@ -206,6 +207,8 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
     public void testPopulateModelProperties_propertyIsDefined_syncToServer() {
         defineProperty(element, "foo");
+        node.setNodeData(
+                new UpdatableModelProperties(JsCollections.array("foo")));
 
         WidgetUtil.setJsProperty(element, "foo", "bar");
 
@@ -225,6 +228,8 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         mockWhenDefined(element);
 
         defineProperty(element, "foo");
+        node.setNodeData(
+                new UpdatableModelProperties(JsCollections.array("foo")));
 
         WidgetUtil.setJsProperty(element, "foo", "bar");
 

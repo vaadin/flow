@@ -16,12 +16,11 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
-import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 public interface Message extends TemplateModel {
     void setText(String text);
 
-    @AllowClientUpdates(ClientUpdateMode.ALLOW)
+    @AllowClientUpdates
     String getText();
 }

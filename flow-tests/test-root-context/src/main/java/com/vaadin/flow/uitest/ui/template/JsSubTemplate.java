@@ -19,17 +19,26 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.templatemodel.AllowClientUpdates;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("js-sub-template")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/JsSubTemplate.html")
-public class JsSubTemplate extends PolymerTemplate<TemplateModel> {
+public class JsSubTemplate
+        extends PolymerTemplate<JsSubTemplate.JsSubTemplateModel> {
 
     @Id("js-grand-child")
     private JsInjectedGrandChild component;
 
+    public interface JsSubTemplateModel extends TemplateModel {
+        @AllowClientUpdates
+        String getFoo();
+
+        void setFoo(String value);
+    }
+
     public JsSubTemplate() {
-        getElement().setProperty("foo", "bar");
+        getModel().setFoo("bar");
     }
 
 }

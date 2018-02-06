@@ -724,9 +724,9 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         Assert.assertEquals(2, executionOrder.size());
         Assert.assertEquals("this.populateModelProperties($0, $1)",
-                executionOrder.get(0));
+                executionOrder.get(1));
 
-        Serializable[] params = executionParams.get(0);
+        Serializable[] params = executionParams.get(1);
         JsonArray properties = (JsonArray) params[1];
         Assert.assertEquals(1, properties.length());
         Assert.assertEquals("title", properties.get(0).asString());
