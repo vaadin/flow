@@ -34,6 +34,7 @@ import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.dom.DomElement.DomTokenList;
+import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
@@ -265,6 +266,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void handlePropertyChange(String fullPropertyName,
             Supplier<Object> valueProvider, StateNode node) {
+        UpdatableModelProperties updatableProperties = node
+                .getNodeData(UpdatableModelProperties.class);
+        if (updatableProperties == null
+                || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
+            // don't do anything is the property/sub-property is not in the
+            // collection of updatable properties
+            return;
+        }
         // This is not the property value itself, its a parent node of the
         // property
         String[] subProperties = fullPropertyName.split("\\.");
@@ -277,14 +286,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 Console.debug("Ignoring property change for property '"
                         + fullPropertyName
                         + "' which isn't defined from server");
-                return;
-            }
-            if (containsProperty(
-                    model.getList(NodeFeatures.SYNCHRONIZED_PROPERTIES),
-                    subProperty)) {
-                Console.debug("Ignoring property change for property '"
-                        + fullPropertyName
-                        + "' which is intended to be synchronized separately");
                 return;
             }
 
@@ -304,17 +305,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         mapProperty.syncToServer(valueProvider.get());
-    }
-
-    private boolean containsProperty(NodeList synchronizedProperties,
-            String property) {
-        for (int i = 0; i < synchronizedProperties.length(); i++) {
-            if (Objects.equals(synchronizedProperties.get(i).toString(),
-                    property)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {
