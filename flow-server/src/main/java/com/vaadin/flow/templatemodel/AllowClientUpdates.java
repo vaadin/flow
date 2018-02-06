@@ -29,8 +29,8 @@ import java.lang.annotation.Target;
  * <code>{{propertyName}}</code> or <code>{{propertyName:updatingEvent</code>
  * syntax in templates.
  * <p>
- * Use this annotation on setters in your {@link TemplateModel} class to define
- * whether it's allowed for the client to update server-side model values
+ * Use this annotation on accessors in your {@link TemplateModel} class to
+ * define whether it's allowed for the client to update server-side model values
  *
  * @see ClientUpdateMode
  *

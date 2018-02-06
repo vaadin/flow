@@ -7,9 +7,11 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.templatemodel.AllowClientUpdates;
+import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ClearListView", layout = ViewTestLayout.class)
 @Tag("clear-list")
@@ -34,6 +36,7 @@ public class ClearListView
             this.text = text;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public String getText() {
             return text;
         }
@@ -46,6 +49,7 @@ public class ClearListView
     public interface ClearListModel extends TemplateModel {
         void setMessages(List<Message> messages);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<Message> getMessages();
     }
 }

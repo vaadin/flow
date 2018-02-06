@@ -43,9 +43,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.polymertemplate.Id;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.HasCurrentService;
@@ -57,6 +54,8 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.CustomElementRegistry;
+import com.vaadin.flow.templatemodel.AllowClientUpdates;
+import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import elemental.json.JsonArray;
@@ -103,12 +102,15 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         void setTitle(String title);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         String getMessage();
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         String getTitle();
     }
 
     public interface TestModel extends ModelClass {
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<String> getList();
 
         void setList(List<String> list);

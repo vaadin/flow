@@ -203,7 +203,8 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                 .getModelTypeForProxy(model);
 
         SerializablePredicate<String> updateFilter = modelType
-                .createUpdateFromClientFilter(twoWayBindingPaths);
+                .getClientUpdateAllowedProperties(twoWayBindingPaths)
+                .keySet()::contains;
         ElementPropertyMap.getModel(getStateNode())
                 .setUpdateFromClientFilter(updateFilter);
 

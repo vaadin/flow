@@ -23,11 +23,13 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.templatemodel.AllowClientUpdates;
+import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.Convert;
 import com.vaadin.flow.templatemodel.ModelConverter;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.ConvertToBeanView", layout = ViewTestLayout.class)
 @Tag("convert-to-bean")
@@ -36,6 +38,7 @@ public class ConvertToBeanView
         extends PolymerTemplate<ConvertToBeanView.ConvertToBeanModel> {
 
     public interface ConvertToBeanModel extends TemplateModel {
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         Date getDate();
 
         @Convert(DateToBeanConverter.class)
@@ -49,6 +52,7 @@ public class ConvertToBeanView
         private String month;
         private String year;
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public String getDay() {
             return day;
         }
@@ -57,6 +61,7 @@ public class ConvertToBeanView
             this.day = day;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public String getMonth() {
             return month;
         }
@@ -65,6 +70,7 @@ public class ConvertToBeanView
             this.month = month;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public String getYear() {
             return year;
         }

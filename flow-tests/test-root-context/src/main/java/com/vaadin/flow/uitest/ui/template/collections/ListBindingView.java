@@ -27,10 +27,12 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.ModelItem;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.templatemodel.AllowClientUpdates;
+import com.vaadin.flow.templatemodel.ClientUpdateMode;
+import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.template.collections.ListBindingView.ListBindingModel;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListBindingView", layout = ViewTestLayout.class)
 @Tag("list-binding")
@@ -49,6 +51,7 @@ public class ListBindingView extends PolymerTemplate<ListBindingModel> {
             this.text = text;
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public String getText() {
             return text;
         }
@@ -63,6 +66,7 @@ public class ListBindingView extends PolymerTemplate<ListBindingModel> {
 
         void setMessages(List<Message> messages);
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<Message> getMessages();
     }
 

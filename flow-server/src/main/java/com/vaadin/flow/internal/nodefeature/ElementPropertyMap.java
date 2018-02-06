@@ -84,19 +84,14 @@ public class ElementPropertyMap extends AbstractPropertyMap {
              */
             if (updateFromClientFilter != null
                     && !updateFromClientFilter.test(key)) {
-                getLogger().warn(
-                        "Ignoring model update for {}. "
-                                + "For security reasons, the property must have a two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
+                getLogger().warn("Ignoring model update for {}. "
+                        + "For security reasons, the property must have a two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
                         key, AllowClientUpdates.class.getSimpleName());
                 return () -> {
                     // nop
                 };
             }
 
-            throw new IllegalArgumentException(String.format(
-                    "Feature '%s' doesn't allow the client to update '%s'. "
-                            + "For security reasons, the property must be defined as synchronized through the Element's API.",
-                    getClass().getName(), key));
         }
 
         return putWithDeferredChangeEvent(key, value, false);

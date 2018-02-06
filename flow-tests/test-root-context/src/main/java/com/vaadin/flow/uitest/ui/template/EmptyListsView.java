@@ -22,9 +22,11 @@ import java.util.List;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.templatemodel.AllowClientUpdates;
+import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route("com.vaadin.flow.uitest.ui.template.EmptyListsView")
 public class EmptyListsView extends AbstractDivView {
@@ -47,6 +49,7 @@ public class EmptyListsView extends AbstractDivView {
     public static class Tag {
         private String name;
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public String getName() {
             return name;
         }
@@ -61,10 +64,12 @@ public class EmptyListsView extends AbstractDivView {
 
         private String label;
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public List<Tag> getTags() {
             return new ArrayList<>();
         }
 
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         public String getLabel() {
             return label;
         }
@@ -75,6 +80,7 @@ public class EmptyListsView extends AbstractDivView {
     }
 
     public interface EmptyListsModel extends TemplateModel {
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<Item> getItems();
 
         void setItems(List<Item> items);
