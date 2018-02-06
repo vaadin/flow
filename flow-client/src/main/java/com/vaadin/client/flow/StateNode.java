@@ -317,4 +317,14 @@ public class StateNode {
     public <T> T getNodeData(Class<T> clazz) {
         return (T) nodeData.get(clazz);
     }
+
+    /**
+     * Removes the {@code object} from the stored data.
+     * 
+     * @param object
+     *            the object to remove
+     */
+    public <T> void clearNodeData(T object) {
+        nodeData.delete(object.getClass());
+    }
 }

@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -139,6 +140,26 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
+    private static class InitialPropertyUpdate {
+        private JsArray<Runnable> commands;
+        private final StateNode node;
+
+        private InitialPropertyUpdate(StateNode node) {
+            this.node = node;
+        }
+
+        private void setCommands(JsArray<Runnable> commands) {
+            this.commands = commands;
+        }
+
+        private void execute() {
+            if (commands != null) {
+                commands.forEach(Runnable::run);
+            }
+            node.clearNodeData(this);
+        }
+    }
+
     @Override
     public Element create(StateNode node) {
         String tag = getTag(node);
@@ -214,6 +235,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
         listeners.push(bindVisibility(listeners, context,
                 computationsCollection, nodeFactory));
+
+        InitialPropertyUpdate update = new InitialPropertyUpdate(stateNode);
+        stateNode.setNodeData(update);
+        /*
+         * Update command will be executed after all initial Reactive stuff.
+         * E.g. initial JS (if any) will be executed BEFORE initial update
+         * command execution
+         */
+        Reactive.addPostFlushListener(
+                () -> Scheduler.get().scheduleDeferred(() -> stateNode
+                        .getNodeData(InitialPropertyUpdate.class).execute()));
     }
 
     private native void bindPolymerModelProperties(StateNode node,
@@ -241,11 +273,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
-            var initialChangeWrapper = {};
-            initialChangeWrapper.isInitialChange = true;
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
                 $entry(function () {
-                    self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node, initialChangeWrapper);
+                    self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
                 })();
                 originalPropertiesChanged.apply(this, arguments);
             };
@@ -259,43 +289,24 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }-*/;
 
     private void handlePropertiesChanged(
-            JavaScriptObject changedPropertyPathsToValues, StateNode node,
-            JavaScriptObject initialChangeWrapper) {
+            JavaScriptObject changedPropertyPathsToValues, StateNode node) {
         String[] keys = WidgetUtil.getKeys(changedPropertyPathsToValues);
 
-        /*
-         * The <code>initialChangeWrapper</code> object is used above in the
-         * <code>hookUpPolymerElement</code> method to distinguish the very
-         * first property change call and any subsequent.
-         *
-         * The very first call MAY BE (not necessary) done at the element
-         * initialization which is done from the server side via
-         * <code>NodeFeeature</code> mechanism. In this case it's called before
-         * any JS execution. And we won't have any info about updatable
-         * properties. So we need to postpone handling to wait when initial JS
-         * execution happens. So in case of initial change the handling is
-         * postponed via <code>Reactive.addPostFlushListener()</code>.
-         */
-
-        Boolean isInitialChange = (Boolean) WidgetUtil
-                .getJsProperty(initialChangeWrapper, INITIAL_CHANGE);
+        InitialPropertyUpdate initialUpdate = node
+                .getNodeData(InitialPropertyUpdate.class);
+        JsArray<Runnable> commands = null;
+        if (initialUpdate != null) {
+            commands = JsCollections.array();
+            initialUpdate.setCommands(commands);
+        }
 
         for (String propertyName : keys) {
             Runnable handleProperty = () -> handlePropertyChange(propertyName,
                     () -> WidgetUtil.getJsProperty(changedPropertyPathsToValues,
                             propertyName),
                     node);
-            if (isInitialChange) {
-                Reactive.addPostFlushListener(() -> {
-                    handleProperty.run();
-                    WidgetUtil.setJsProperty(initialChangeWrapper,
-                            INITIAL_CHANGE, false);
-                });
-                // It might be that there will be no automatic flush since this
-                // change is not caused by the server, in this case let's call
-                // <code>flush()</code>. Extra <code>flush()</code> won't affect
-                // anything since it will be inside another <code>flush()</code>
-                Reactive.flush();
+            if (commands != null) {
+                commands.set(commands.length(), handleProperty);
             } else {
                 handleProperty.run();
             }
