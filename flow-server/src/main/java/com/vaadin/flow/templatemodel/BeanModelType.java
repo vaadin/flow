@@ -575,7 +575,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      * @see ElementPropertyMap#setUpdateFromClientFilter(SerializablePredicate)
      *
      * @param twoWayBindingPaths
-     *            a set of path names for which two way bindings are define in
+     *            a set of path names for which two way bindings are defined in
      *            the template
      * @return a map of properties whose update is allowed from the client-side
      *         and indicator of their getters presence
@@ -631,20 +631,20 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
             if (clientUpdateMode == ClientUpdateMode.DENY
                     && modelProperty.hasGetter()) {
-                LoggerFactory.getLogger(BeanModelType.class).info(
+                LoggerFactory.getLogger(BeanModelType.class).debug(
                         "There is a getter for the property '{}' whose update from the client-side to "
-                                + "the server-side is explicitely forbidden via @'{}' annotation value '{}'.",
+                                + "the server-side is explicitly forbidden via @'{}' annotation value '{}'.",
                         fullName, AllowClientUpdates.class.getSimpleName(),
                         ClientUpdateMode.DENY);
             } else if (clientUpdateMode == ClientUpdateMode.IF_TWO_WAY_BINDING
                     && !twoWayBindingPaths.contains(fullName)
                     && modelProperty.hasGetter()) {
-                LoggerFactory.getLogger(BeanModelType.class).info(
+                LoggerFactory.getLogger(BeanModelType.class).debug(
                         "There is a getter for the property '{}' whose update from the client-side to "
                                 + "the server-side is forbidden because the property is not a"
                                 + "two way binding property but it's required to be "
-                                + "(implicitely if there is no '{}' annotation for this "
-                                + "property or explicitely if it's value is '{}')",
+                                + "(implicitly if there is no '{}' annotation for this "
+                                + "property or explicitly if it's value is '{}')",
                         fullName, AllowClientUpdates.class.getSimpleName(),
                         ClientUpdateMode.IF_TWO_WAY_BINDING);
             }
