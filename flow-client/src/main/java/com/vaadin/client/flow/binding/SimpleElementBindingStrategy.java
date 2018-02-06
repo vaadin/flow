@@ -291,6 +291,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     WidgetUtil.setJsProperty(initialChangeWrapper,
                             INITIAL_CHANGE, false);
                 });
+                // It might be that there will be no automatic flush since this
+                // change is not caused by the server, in this case let's call
+                // <code>flush()</code>. Extra <code>flush()</code> won't affect
+                // anything since it will be inside another <code>flush()</code>
+                Reactive.flush();
             } else {
                 handleProperty.run();
             }
