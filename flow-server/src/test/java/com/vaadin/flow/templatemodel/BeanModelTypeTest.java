@@ -16,7 +16,9 @@
 package com.vaadin.flow.templatemodel;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -65,6 +67,106 @@ public class BeanModelTypeTest {
         public Date getDate() {
             return date;
         }
+    }
+
+    public interface DeniedPropertyWithGetterModel extends TemplateModel {
+
+        @AllowClientUpdates(ClientUpdateMode.DENY)
+        String getName();
+    }
+
+    public interface AllowPropertyModel extends TemplateModel {
+
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        String getName();
+
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        void setAge(int age);
+    }
+
+    public interface TwoWayBindingPropertyModel extends TemplateModel {
+
+        @AllowClientUpdates(ClientUpdateMode.IF_TWO_WAY_BINDING)
+        String getName();
+
+        @AllowClientUpdates(ClientUpdateMode.IF_TWO_WAY_BINDING)
+        void setAge(int age);
+    }
+
+    @Test
+    public void onlyDenyProperty_noAllowedProperties() {
+        ModelDescriptor<? extends DeniedPropertyWithGetterModel> descriptor = ModelDescriptor
+                .get(DeniedPropertyWithGetterModel.class);
+
+        DeniedPropertyWithGetterModel model = TemplateModelProxyHandler
+                .createModelProxy(createEmptyModel().getNode(), descriptor);
+
+        BeanModelType<?> modelType = TemplateModelProxyHandler
+                .getModelTypeForProxy(model);
+
+        Assert.assertEquals(0, modelType
+                .getClientUpdateAllowedProperties(Collections.emptySet())
+                .size());
+
+        Assert.assertEquals(0, modelType
+                .getClientUpdateAllowedProperties(Collections.singleton("name"))
+                .size());
+    }
+
+    @Test
+    public void twoWayDatabindingPropertyDeclared_propertyIsNotAllowedIfNotTwoWayDataBinding() {
+        ModelDescriptor<? extends TwoWayBindingPropertyModel> descriptor = ModelDescriptor
+                .get(TwoWayBindingPropertyModel.class);
+
+        TwoWayBindingPropertyModel model = TemplateModelProxyHandler
+                .createModelProxy(createEmptyModel().getNode(), descriptor);
+
+        BeanModelType<?> modelType = TemplateModelProxyHandler
+                .getModelTypeForProxy(model);
+
+        Assert.assertEquals(0, modelType
+                .getClientUpdateAllowedProperties(Collections.emptySet())
+                .size());
+
+        // test name property
+        Assert.assertEquals(1, modelType
+                .getClientUpdateAllowedProperties(Collections.singleton("name"))
+                .size());
+        // name property has getter
+        Assert.assertTrue(modelType
+                .getClientUpdateAllowedProperties(Collections.singleton("name"))
+                .get("name"));
+
+        // test age property
+        Assert.assertEquals(1, modelType
+                .getClientUpdateAllowedProperties(Collections.singleton("age"))
+                .size());
+        // age property has no getter
+        Assert.assertFalse(modelType
+                .getClientUpdateAllowedProperties(Collections.singleton("age"))
+                .get("age"));
+    }
+
+    @Test
+    public void allowPropertyDeclared_propertyIsAllowed() {
+        ModelDescriptor<? extends AllowPropertyModel> descriptor = ModelDescriptor
+                .get(AllowPropertyModel.class);
+
+        AllowPropertyModel model = TemplateModelProxyHandler
+                .createModelProxy(createEmptyModel().getNode(), descriptor);
+
+        BeanModelType<?> modelType = TemplateModelProxyHandler
+                .getModelTypeForProxy(model);
+
+        Map<String, Boolean> properties = modelType
+                .getClientUpdateAllowedProperties(Collections.emptySet());
+        Assert.assertEquals(2, properties.size());
+
+        // name property has getter
+        Assert.assertTrue(properties.get("name"));
+
+        // age property has no getter
+        Assert.assertFalse(properties.get("age"));
     }
 
     @Test

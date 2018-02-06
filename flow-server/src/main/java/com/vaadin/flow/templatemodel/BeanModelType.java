@@ -22,7 +22,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -31,6 +30,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.ReflectTools;
@@ -70,7 +71,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             return clientUpdateMode;
         }
 
-        public boolean hasGetter() {
+        boolean hasGetter() {
             return hasGetter;
         }
     }
@@ -567,41 +568,21 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     }
 
     /**
-     * Creates a client update filter for this bean model type and all children.
-     * The filter logic is based on {@link ClientUpdateMode} annotations with
-     * the default setting allowing updates for properties for which there is a
-     * two-way binding in the template.
+     * Gets a map whose keys are all properties (including subproperties) that
+     * allowed to be updated from the client-side and values indicate the
+     * property getter presence.
      *
-     * @param twoWayBindingPaths
-     *            a set of path names for which two way bindings are define in
-     *            the template
-     * @return a predicate that accepts or rejects client-side updates to
-     *         properties.
-     *
-     * @see #getClientUpdateAllowedProperties(Set)
-     * @see ElementPropertyMap#setUpdateFromClientFilter(SerializablePredicate)
-     */
-    public SerializablePredicate<String> createUpdateFromClientFilter(
-            Set<String> twoWayBindingPaths) {
-        return getClientUpdateAllowedProperties(twoWayBindingPaths)::contains;
-    }
-
-    /**
-     * Gets all properties (including subproperties) that allowed to be updated
-     * from the client-side.
-     *
-     * @see #createUpdateFromClientFilter(Set)
      * @see ElementPropertyMap#setUpdateFromClientFilter(SerializablePredicate)
      *
      * @param twoWayBindingPaths
      *            a set of path names for which two way bindings are define in
      *            the template
-     * @return a collection of properties whose update is allowed from the
-     *         client-side
+     * @return a map of properties whose update is allowed from the client-side
+     *         and indicator of their getters presence
      */
-    public Set<String> getClientUpdateAllowedProperties(
+    public Map<String, Boolean> getClientUpdateAllowedProperties(
             Set<String> twoWayBindingPaths) {
-        Set<String> allowedProperties = new HashSet<>();
+        Map<String, Boolean> allowedProperties = new HashMap<>();
 
         // Recurse through all properties
         collectAllowedProperties("", allowedProperties,
@@ -633,7 +614,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     }
 
     private void collectAllowedProperties(String prefix,
-            Set<String> allowedProperties, Set<String> twoWayBindingPaths) {
+            Map<String, Boolean> allowedProperties,
+            Set<String> twoWayBindingPaths) {
         properties.forEach((name, property) -> {
             String fullName = prefix + name;
 
@@ -644,27 +626,27 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             if (clientUpdateMode == ClientUpdateMode.ALLOW
                     || (clientUpdateMode == ClientUpdateMode.IF_TWO_WAY_BINDING
                             && twoWayBindingPaths.contains(fullName))) {
-                allowedProperties.add(fullName);
+                allowedProperties.put(fullName, modelProperty.hasGetter());
             }
 
             if (clientUpdateMode == ClientUpdateMode.DENY
                     && modelProperty.hasGetter()) {
-                throw new IllegalStateException(String.format(
-                        "There is a getter for the property '%s' whose update from the client-side to "
-                                + "the server-side is explicitely forbidden via @'%s' annotation value '%s'.",
+                LoggerFactory.getLogger(BeanModelType.class).info(
+                        "There is a getter for the property '{}' whose update from the client-side to "
+                                + "the server-side is explicitely forbidden via @'{}' annotation value '{}'.",
                         fullName, AllowClientUpdates.class.getSimpleName(),
-                        ClientUpdateMode.DENY));
+                        ClientUpdateMode.DENY);
             } else if (clientUpdateMode == ClientUpdateMode.IF_TWO_WAY_BINDING
                     && !twoWayBindingPaths.contains(fullName)
                     && modelProperty.hasGetter()) {
-                throw new IllegalStateException(String.format(
-                        "There is a getter for the property '%s' whose update from the client-side to "
+                LoggerFactory.getLogger(BeanModelType.class).info(
+                        "There is a getter for the property '{}' whose update from the client-side to "
                                 + "the server-side is forbidden because the property is not a"
                                 + "two way binding property but it's required to be "
-                                + "(implicitely if there is no '%s' annotation for this "
-                                + "property or explicitely if it's value is '%s')",
+                                + "(implicitely if there is no '{}' annotation for this "
+                                + "property or explicitely if it's value is '{}')",
                         fullName, AllowClientUpdates.class.getSimpleName(),
-                        ClientUpdateMode.IF_TWO_WAY_BINDING));
+                        ClientUpdateMode.IF_TWO_WAY_BINDING);
             }
 
             // Recurse if it's a bean
