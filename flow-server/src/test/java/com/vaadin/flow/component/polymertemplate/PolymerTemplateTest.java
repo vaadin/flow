@@ -722,7 +722,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assert.assertEquals(1, executionOrder.size());
+        Assert.assertEquals(2, executionOrder.size());
         Assert.assertEquals("this.populateModelProperties($0, $1)",
                 executionOrder.get(0));
 
