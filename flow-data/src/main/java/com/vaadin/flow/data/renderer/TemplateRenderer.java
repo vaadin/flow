@@ -13,12 +13,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.renderer;
+package com.vaadin.flow.data.renderer;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.function.SerializableConsumer;
@@ -26,24 +22,18 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.JsonSerializer;
 
 /**
- * A renderer that allows the usage of HTML and Polymer data binding syntax as
- * output. The output of the TemplateRenderer is meant to be used inside
- * {@code <template>} elements.
+ * Helper class to create {@link Renderer} instances, with fluent API.
  * 
  * @author Vaadin Ltd.
  *
  * @param <SOURCE>
  *            the type of the input object used inside the template
  * 
- * @see ValueProvider
+ * @see #of(String)
  * @see <a href=
  *      "https://www.polymer-project.org/2.0/docs/devguide/templates">https://www.polymer-project.org/2.0/docs/devguide/templates</a>
  */
-public class TemplateRenderer<SOURCE> implements Serializable {
-
-    private String template;
-    private Map<String, ValueProvider<SOURCE, ?>> valueProviders;
-    private Map<String, SerializableConsumer<SOURCE>> eventHandlers;
+public final class TemplateRenderer<SOURCE> extends Renderer<SOURCE> {
 
     /**
      * Creates a new TemplateRenderer based on the provided template. The
@@ -71,8 +61,7 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      */
     public static <SOURCE> TemplateRenderer<SOURCE> of(String template) {
         Objects.requireNonNull(template);
-        TemplateRenderer<SOURCE> renderer = new TemplateRenderer<>();
-        renderer.template = template;
+        TemplateRenderer<SOURCE> renderer = new TemplateRenderer<>(template);
         return renderer;
     }
 
@@ -114,9 +103,7 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      */
     public TemplateRenderer<SOURCE> withProperty(String property,
             ValueProvider<SOURCE, ?> provider) {
-        Objects.requireNonNull(property, "The property must not be null");
-        Objects.requireNonNull(provider, "The value provider must not be null");
-        valueProviders.put(property, provider);
+        setProperty(property, provider);
         return this;
     }
 
@@ -156,44 +143,11 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      */
     public TemplateRenderer<SOURCE> withEventHandler(String handlerName,
             SerializableConsumer<SOURCE> handler) {
-        Objects.requireNonNull(handlerName, "The handlerName must not be null");
-        Objects.requireNonNull(handler, "The event handler must not be null");
-        eventHandlers.put(handlerName, handler);
+        setEventHandler(handlerName, handler);
         return this;
     }
 
-    protected TemplateRenderer() {
-        valueProviders = new HashMap<>();
-        eventHandlers = new HashMap<>();
-    }
-
-    /**
-     * Gets the template set for this renderer.
-     * 
-     * @return the template, never <code>null</code>
-     */
-    public String getTemplate() {
-        return template;
-    }
-
-    /**
-     * Gets the property mapped to {@link ValueProvider}s in this renderer. The
-     * returned map is immutable.
-     * 
-     * @return the mapped properties, never <code>null</code>
-     */
-    public Map<String, ValueProvider<SOURCE, ?>> getValueProviders() {
-        return Collections.unmodifiableMap(valueProviders);
-    }
-
-    /**
-     * Gets the event handlers linked to this renderer. The returned map in
-     * immutable.
-     * 
-     * @return the mapped event handlers, never <code>null</code>
-     * @see #withEventHandler(String, SerializableConsumer)
-     */
-    public Map<String, SerializableConsumer<SOURCE>> getEventHandlers() {
-        return Collections.unmodifiableMap(eventHandlers);
+    private TemplateRenderer(String template) {
+        super(template);
     }
 }

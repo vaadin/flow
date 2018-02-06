@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.renderer;
+package com.vaadin.flow.data.renderer;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -34,9 +34,9 @@ import com.vaadin.flow.function.ValueProvider;
  * @author Vaadin Ltd.
  *
  */
-public class TemplateRendererUtil {
+public class RendererUtil {
 
-    private TemplateRendererUtil() {
+    private RendererUtil() {
     }
 
     /**
@@ -59,7 +59,7 @@ public class TemplateRendererUtil {
      * @param keyMapper
      *            a value provider that knows how to return items by a given key
      */
-    public static <T> void registerEventHandlers(TemplateRenderer<T> renderer,
+    public static <T> void registerEventHandlers(Renderer<T> renderer,
             Element contentTemplate, Element templateDataHost,
             ValueProvider<String, T> keyMapper) {
 
@@ -126,12 +126,12 @@ public class TemplateRendererUtil {
             if (item != null) {
                 consumer.accept(item);
             } else {
-                LoggerFactory.getLogger(TemplateRendererUtil.class.getName())
-                        .info("Received an event for the handler '{}' with item key '{}', but the item is not present in the KeyMapper. Ignoring event.",
-                                handlerName, itemKey);
+                LoggerFactory.getLogger(RendererUtil.class.getName()).info(
+                        "Received an event for the handler '{}' with item key '{}', but the item is not present in the KeyMapper. Ignoring event.",
+                        handlerName, itemKey);
             }
         } else {
-            LoggerFactory.getLogger(TemplateRendererUtil.class.getName()).info(
+            LoggerFactory.getLogger(RendererUtil.class.getName()).info(
                     "Received an event for the handler '{}' without any data. Ignoring event.",
                     handlerName);
         }

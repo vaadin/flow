@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.renderer;
+package com.vaadin.flow.data.renderer;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -33,7 +33,7 @@ import com.vaadin.flow.function.SerializableFunction;
  *            component
  *
  */
-public class IconRenderer<ITEM> implements ComponentRenderer<Component, ITEM> {
+public class IconRenderer<ITEM> extends ComponentRenderer<Component, ITEM> {
 
     private static class IconComponent extends Component
             implements HasComponents {
@@ -100,5 +100,4 @@ public class IconRenderer<ITEM> implements ComponentRenderer<Component, ITEM> {
         component.add(new IconComponent(text));
         return component;
     }
-
 }

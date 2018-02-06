@@ -31,7 +31,7 @@
       if (!this.nodeid || !this.appid) {
         return;
       }
-      const renderedComponent = window.Vaadin.Flow.clients[this.appid].getByNodeId(this.nodeid);
+      const renderedComponent = this._getRenderedComponent();
       if (this.firstElementChild) {
         if (!renderedComponent) {
           this._clear();
@@ -50,6 +50,16 @@
           this._asyncAttachRenderedComponentIfAble();
         }
       }
+    }
+
+    _getRenderedComponent() {
+      try {
+        return window.Vaadin.Flow.clients[this.appid].getByNodeId(this.nodeid);
+      } catch (error) {
+        console.error("Could not get node %s from app %s", this.nodeid, this.appid);
+        console.error(error);
+      }
+      return null;
     }
     
     _clear() {
