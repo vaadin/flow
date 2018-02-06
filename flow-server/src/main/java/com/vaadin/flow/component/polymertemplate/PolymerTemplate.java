@@ -16,13 +16,16 @@
 package com.vaadin.flow.component.polymertemplate;
 
 import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.templatemodel.BeanModelType;
@@ -181,20 +184,6 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         return null;
     }
 
-    private JsonArray filterUnsetProperties(List<String> properties) {
-        JsonArray array = Json.createArray();
-        ElementPropertyMap map = getStateNode()
-                .getFeature(ElementPropertyMap.class);
-        int i = 0;
-        for (String property : properties) {
-            if (!map.hasProperty(property)) {
-                array.set(i, property);
-                i++;
-            }
-        }
-        return array;
-    }
-
     private void initModel(Set<String> twoWayBindingPaths) {
         // Find metadata, fill initial values and create a proxy
         getModel();
@@ -202,11 +191,16 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         BeanModelType<?> modelType = TemplateModelProxyHandler
                 .getModelTypeForProxy(model);
 
-        SerializablePredicate<String> updateFilter = modelType
-                .getClientUpdateAllowedProperties(twoWayBindingPaths)
-                .keySet()::contains;
+        Map<String, Boolean> allowedProperties = modelType
+                .getClientUpdateAllowedProperties(twoWayBindingPaths);
+
+        Set<String> allowedPropertyName = Collections.emptySet();
+        if (!allowedProperties.isEmpty()) {
+            // copy to avoid referencing a map in the filter below
+            allowedPropertyName = new HashSet<>(allowedProperties.keySet());
+        }
         ElementPropertyMap.getModel(getStateNode())
-                .setUpdateFromClientFilter(updateFilter);
+                .setUpdateFromClientFilter(allowedPropertyName::contains);
 
         // remove properties whose values are not StateNode from the property
         // map and return their names as a list
@@ -228,6 +222,42 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                                 "this.populateModelProperties($0, $1)",
                                 getElement(),
                                 filterUnsetProperties(propertyNames))));
+        getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
+                .beforeClientResponse(getStateNode(),
+                        () -> ui.getPage().executeJavaScript(
+                                "this.registerUpdatableModelProperties($0, $1)",
+                                getElement(),
+                                filterUpdatableProperties(allowedProperties))));
+    }
+
+    private JsonArray filterUnsetProperties(List<String> properties) {
+        JsonArray array = Json.createArray();
+        ElementPropertyMap map = getStateNode()
+                .getFeature(ElementPropertyMap.class);
+        int i = 0;
+        for (String property : properties) {
+            if (!map.hasProperty(property)) {
+                array.set(i, property);
+                i++;
+            }
+        }
+        return array;
+    }
+
+    /*
+     * Keep only properties with getter.
+     */
+    private JsonArray filterUpdatableProperties(
+            Map<String, Boolean> allowedProperties) {
+        JsonArray array = Json.createArray();
+        int i = 0;
+        for (Entry<String, Boolean> entry : allowedProperties.entrySet()) {
+            if (entry.getValue()) {
+                array.set(i, entry.getKey());
+                i++;
+            }
+        }
+        return array;
     }
 
     private List<String> removeSimpleProperties() {
