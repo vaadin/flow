@@ -18,6 +18,7 @@ package com.vaadin.flow.internal;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -51,9 +53,14 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  */
 public class StateNode implements Serializable {
+    /**
+     * Cache of immutable node feature type set instances.
+     */
+    private static final Map<Set<Class<? extends NodeFeature>>, Set<Class<? extends NodeFeature>>> nodeFeatureSetCache = new ConcurrentHashMap<>();
+
     private final Map<Class<? extends NodeFeature>, NodeFeature> features = new HashMap<>();
 
-    private final Set<Class<? extends NodeFeature>> reportedFeatures = new HashSet<>();
+    private final Set<Class<? extends NodeFeature>> reportedFeatures;
 
     private Map<Class<? extends NodeFeature>, Serializable> changes;
 
@@ -113,9 +120,26 @@ public class StateNode implements Serializable {
     @SafeVarargs
     public StateNode(List<Class<? extends NodeFeature>> reportableFeatureTypes,
             Class<? extends NodeFeature>... nonReportableFeatureTypes) {
-        reportedFeatures.addAll(reportableFeatureTypes);
+        reportedFeatures = getCachedFeatureSet(reportableFeatureTypes);
         Stream.concat(reportableFeatureTypes.stream(),
                 Stream.of(nonReportableFeatureTypes)).forEach(this::addFeature);
+    }
+
+    private static Set<Class<? extends NodeFeature>> getCachedFeatureSet(
+            Collection<Class<? extends NodeFeature>> reportableFeatureTypes) {
+        Set<Class<? extends NodeFeature>> keyAndValue = Collections
+                .unmodifiableSet(new HashSet<>(reportableFeatureTypes));
+
+        Set<Class<? extends NodeFeature>> currentValue = nodeFeatureSetCache
+                .putIfAbsent(keyAndValue, keyAndValue);
+
+        if (currentValue == null) {
+            // If we put the value there
+            return keyAndValue;
+        } else {
+            // If there was already a value there
+            return currentValue;
+        }
     }
 
     /**
