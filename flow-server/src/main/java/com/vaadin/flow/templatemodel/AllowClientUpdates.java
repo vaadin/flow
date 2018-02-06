@@ -47,7 +47,7 @@ public @interface AllowClientUpdates {
      *
      * @return the client update mode to use.
      */
-    ClientUpdateMode value();
+    ClientUpdateMode value() default ClientUpdateMode.ALLOW;
 
     /**
      * A dot separated path of the sub property that this access control setting

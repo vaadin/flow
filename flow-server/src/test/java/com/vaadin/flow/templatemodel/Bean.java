@@ -22,7 +22,7 @@ public class Bean {
         string = String.valueOf(value);
     }
 
-    @AllowClientUpdates(ClientUpdateMode.ALLOW)
+    @AllowClientUpdates
     public String getString() {
         return string;
     }
