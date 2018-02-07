@@ -104,14 +104,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         }
     }
 
-    public static class CustomScheduler extends SchedulerImpl {
-
-        @Override
-        public void scheduleDeferred(ScheduledCommand cmd) {
-            cmd.execute();
-        }
-    }
-
     private MockResourceLoader mockResourceLoader;
 
     private Registry registry;

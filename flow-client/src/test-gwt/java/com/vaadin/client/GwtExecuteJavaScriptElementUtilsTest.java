@@ -18,6 +18,7 @@ package com.vaadin.client;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
@@ -104,7 +105,6 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         node = new StateNode(0, tree);
         element = Browser.getDocument().createElement("div");
         node.setDomNode(element);
-
     }
 
     public void testAttachExistingElement_noSibling() {
@@ -192,20 +192,22 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         mockWhenDefined(element);
 
         ExecuteJavaScriptElementUtils.populateModelProperties(node,
-                JsCollections.array("foo"));
+                JsCollections.array("bar"));
 
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-        assertFalse(map.hasPropertyValue("foo"));
+        assertFalse(map.hasPropertyValue("bar"));
 
         node.setDomNode(element);
         runWhenDefined(element);
         Reactive.flush();
 
-        assertTrue(map.hasPropertyValue("foo"));
+        assertTrue(map.hasPropertyValue("bar"));
     }
 
     public void testPopulateModelProperties_propertyIsDefined_syncToServer() {
         defineProperty(element, "foo");
+        node.setNodeData(
+                new UpdatableModelProperties(JsCollections.array("foo")));
 
         WidgetUtil.setJsProperty(element, "foo", "bar");
 
@@ -219,12 +221,28 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         assertEquals("foo", tree.syncedProperty.getName());
     }
 
+    public void testPopulateModelProperties_propertyIsDefinedAndNotUpodatable_noSyncToServer() {
+        defineProperty(element, "foo");
+
+        WidgetUtil.setJsProperty(element, "foo", "bar");
+
+        ExecuteJavaScriptElementUtils.populateModelProperties(node,
+                JsCollections.array("foo"));
+
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertFalse(map.hasPropertyValue("foo"));
+
+        assertNull(tree.syncedProperty);
+    }
+
     public void testPopulateModelProperties_elementIsNotReadyAndPropertyIsDefined_syncToServerWhenElementBecomesReady() {
         node.setDomNode(null);
 
         mockWhenDefined(element);
 
         defineProperty(element, "foo");
+        node.setNodeData(
+                new UpdatableModelProperties(JsCollections.array("foo")));
 
         WidgetUtil.setJsProperty(element, "foo", "bar");
 

@@ -205,6 +205,9 @@ public class ExecuteJavaScriptProcessor {
           object.populateModelProperties = function(element, properties){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::populateModelProperties(*)(object.getNode(element), properties);
           };
+          object.registerUpdatableModelProperties = function(element, properties){
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::registerUpdatableModelProperties(*)(object.getNode(element), properties);
+          };
           return object;
     }-*/;
 }

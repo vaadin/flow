@@ -1,6 +1,7 @@
 package com.vaadin.client.flow.dom;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.impl.SchedulerImpl;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.DependencyLoader;
 import com.vaadin.client.Registry;
@@ -41,6 +42,12 @@ public class GwtDomApiTest extends ClientEngineTestBase {
     private void initTest() {
         DomApi.polymerMicroLoaded = false;
         DomApi.impl = node -> (DomElement) node;
+
+        initScheduler(new SchedulerImpl() {
+            @Override
+            public void scheduleDeferred(ScheduledCommand cmd) {
+            }
+        });
 
         GwtPolymerApiImplTest.clearPolymer();
 
@@ -87,5 +94,10 @@ public class GwtDomApiTest extends ClientEngineTestBase {
                 "PolymerMicro should " + (used ? "" : "not ") + "be in use",
                 used, DomApi.polymerMicroLoaded);
     }
+
+    private native void initScheduler(SchedulerImpl scheduler)
+    /*-{
+       @com.google.gwt.core.client.impl.SchedulerImpl::INSTANCE = scheduler;
+    }-*/;
 
 }

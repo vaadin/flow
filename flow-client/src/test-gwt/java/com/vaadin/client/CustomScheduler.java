@@ -13,14 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.template;
+package com.vaadin.client;
 
-import com.vaadin.flow.templatemodel.AllowClientUpdates;
-import com.vaadin.flow.templatemodel.TemplateModel;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.core.client.impl.SchedulerImpl;
 
-public interface Message extends TemplateModel {
-    void setText(String text);
+public class CustomScheduler extends SchedulerImpl {
 
-    @AllowClientUpdates
-    String getText();
+    @Override
+    public void scheduleDeferred(ScheduledCommand cmd) {
+        cmd.execute();
+    }
 }

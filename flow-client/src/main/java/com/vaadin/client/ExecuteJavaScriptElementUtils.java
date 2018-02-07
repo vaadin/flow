@@ -20,6 +20,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.dom.DomApi;
+import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
@@ -133,15 +134,47 @@ public final class ExecuteJavaScriptElementUtils {
             return;
         }
         for (int i = 0; i < properties.length(); i++) {
-            String property = properties.get(i);
-            if (!isPropertyDefined(node.getDomNode(), property)) {
-                if (!map.hasPropertyValue(property)) {
-                    map.getProperty(property).setValue(null);
-                }
-            } else {
-                map.getProperty(property).syncToServer(
-                        WidgetUtil.getJsProperty(node.getDomNode(), property));
+            populateModelProperty(node, map, properties.get(i));
+        }
+    }
+
+    private static void populateModelProperty(StateNode node, NodeMap map,
+            String property) {
+        if (!isPropertyDefined(node.getDomNode(), property)) {
+            if (!map.hasPropertyValue(property)) {
+                map.getProperty(property).setValue(null);
             }
+        } else {
+            UpdatableModelProperties updatableProperties = node
+                    .getNodeData(UpdatableModelProperties.class);
+            if (updatableProperties == null
+                    || !updatableProperties.isUpdatableProperty(property)) {
+                return;
+            }
+            map.getProperty(property).syncToServer(
+                    WidgetUtil.getJsProperty(node.getDomNode(), property));
+        }
+    }
+
+    /**
+     * Register the updatable model properties of the {@code node}.
+     * <p>
+     * Only updates for the properties from the {@code properties} array will be
+     * sent to the server without explicit synchronization. The
+     * {@code properties} array includes all properties that are allowed to be
+     * updated (including sub properties).
+     *
+     * @param node
+     *            the node whose updatable properties should be registered
+     * @param properties
+     *            all updatable model properties
+     */
+    public static void registerUpdatableModelProperties(StateNode node,
+            JsArray<String> properties) {
+        if (!properties.isEmpty()) {
+            UpdatableModelProperties data = new UpdatableModelProperties(
+                    properties);
+            node.setNodeData(data);
         }
     }
 
@@ -163,7 +196,7 @@ public final class ExecuteJavaScriptElementUtils {
     private static native boolean isPropertyDefined(Node node, String property)
     /*-{
         return !!(node["constructor"] && node["constructor"]["properties"] &&
-            node["constructor"]["properties"][property] &&
-                node["constructor"]["properties"][property]["value"]);
+            node["constructor"]["properties"][property]) &&
+                 (typeof(node["constructor"]["properties"][property]["value"]) != "undefined");
     }-*/;
 }

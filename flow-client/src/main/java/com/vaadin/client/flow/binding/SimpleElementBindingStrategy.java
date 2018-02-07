@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -34,6 +35,7 @@ import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.dom.DomElement.DomTokenList;
+import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
@@ -63,6 +65,8 @@ import jsinterop.annotations.JsFunction;
  *
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
+
+    private static final String INITIAL_CHANGE = "isInitialChange";
 
     private static final String HIDDEN_ATTRIBUTE = "hidden";
 
@@ -133,6 +137,26 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             this.node = node;
             this.htmlNode = htmlNode;
             this.binderContext = binderContext;
+        }
+    }
+
+    private static class InitialPropertyUpdate {
+        private Runnable command;
+        private final StateNode node;
+
+        private InitialPropertyUpdate(StateNode node) {
+            this.node = node;
+        }
+
+        private void setCommand(Runnable command) {
+            this.command = command;
+        }
+
+        private void execute() {
+            if (command != null) {
+                command.run();
+            }
+            node.clearNodeData(this);
         }
     }
 
@@ -211,6 +235,21 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
         listeners.push(bindVisibility(listeners, context,
                 computationsCollection, nodeFactory));
+
+        scheduleInitialExecution(stateNode);
+    }
+
+    private void scheduleInitialExecution(StateNode stateNode) {
+        InitialPropertyUpdate update = new InitialPropertyUpdate(stateNode);
+        stateNode.setNodeData(update);
+        /*
+         * Update command will be executed after all initial Reactive stuff.
+         * E.g. initial JS (if any) will be executed BEFORE initial update
+         * command execution
+         */
+        Reactive.addPostFlushListener(
+                () -> Scheduler.get().scheduleDeferred(() -> stateNode
+                        .getNodeData(InitialPropertyUpdate.class).execute()));
     }
 
     private native void bindPolymerModelProperties(StateNode node,
@@ -235,7 +274,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -245,7 +284,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-    
+
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -256,15 +295,36 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void handlePropertiesChanged(
             JavaScriptObject changedPropertyPathsToValues, StateNode node) {
         String[] keys = WidgetUtil.getKeys(changedPropertyPathsToValues);
-        for (String propertyName : keys) {
-            handlePropertyChange(propertyName, () -> WidgetUtil
-                    .getJsProperty(changedPropertyPathsToValues, propertyName),
-                    node);
+
+        Runnable runnable = () -> {
+            for (String propertyName : keys) {
+                handlePropertyChange(propertyName,
+                        () -> WidgetUtil.getJsProperty(
+                                changedPropertyPathsToValues, propertyName),
+                        node);
+            }
+        };
+
+        InitialPropertyUpdate initialUpdate = node
+                .getNodeData(InitialPropertyUpdate.class);
+        if (initialUpdate == null) {
+            runnable.run();
+        } else {
+            initialUpdate.setCommand(runnable);
         }
     }
 
     private void handlePropertyChange(String fullPropertyName,
             Supplier<Object> valueProvider, StateNode node) {
+        UpdatableModelProperties updatableProperties = node
+                .getNodeData(UpdatableModelProperties.class);
+        if (updatableProperties == null
+                || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
+            // don't do anything if the property/sub-property is not in the
+            // collection of updatable properties
+            return;
+        }
+
         // This is not the property value itself, its a parent node of the
         // property
         String[] subProperties = fullPropertyName.split("\\.");
@@ -277,14 +337,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 Console.debug("Ignoring property change for property '"
                         + fullPropertyName
                         + "' which isn't defined from server");
-                return;
-            }
-            if (containsProperty(
-                    model.getList(NodeFeatures.SYNCHRONIZED_PROPERTIES),
-                    subProperty)) {
-                Console.debug("Ignoring property change for property '"
-                        + fullPropertyName
-                        + "' which is intended to be synchronized separately");
                 return;
             }
 
@@ -302,19 +354,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 return;
             }
         }
-
         mapProperty.syncToServer(valueProvider.get());
-    }
-
-    private boolean containsProperty(NodeList synchronizedProperties,
-            String property) {
-        for (int i = 0; i < synchronizedProperties.length(); i++) {
-            if (Objects.equals(synchronizedProperties.get(i).toString(),
-                    property)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {
