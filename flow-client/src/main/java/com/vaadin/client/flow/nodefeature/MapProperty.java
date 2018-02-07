@@ -273,7 +273,9 @@ public class MapProperty implements ReactiveValue {
             // server once the server value is set successfully (e.g. mutation
             // the same property from its observer).
             isServerUpdate = false;
-        } else if (!isServerUpdate) {
+        }
+        if (!(Objects.equals(newValue, currentValue) && hasValue())
+                && !isServerUpdate) {
             StateNode node = getMap().getNode();
             StateTree tree = node.getTree();
             if (tree.isActive(node)) {

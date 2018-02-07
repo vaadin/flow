@@ -346,4 +346,16 @@ public class MapPropertyTest {
 
         Assert.assertEquals("baz", property.getValue());
     }
+
+    @Test
+    public void syncToServer_propertyHasNoValue_propertyIsSync() {
+        TestTree tree = new TestTree();
+        StateNode node = new StateNode(11, tree);
+
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+
+        property.syncToServer(null);
+        Assert.assertEquals(property, tree.sentProperty);
+    }
 }
