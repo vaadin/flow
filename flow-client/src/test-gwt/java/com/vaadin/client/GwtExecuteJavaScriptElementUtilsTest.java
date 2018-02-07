@@ -105,7 +105,6 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         node = new StateNode(0, tree);
         element = Browser.getDocument().createElement("div");
         node.setDomNode(element);
-
     }
 
     public void testAttachExistingElement_noSibling() {
@@ -193,16 +192,16 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         mockWhenDefined(element);
 
         ExecuteJavaScriptElementUtils.populateModelProperties(node,
-                JsCollections.array("foo"));
+                JsCollections.array("bar"));
 
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-        assertFalse(map.hasPropertyValue("foo"));
+        assertFalse(map.hasPropertyValue("bar"));
 
         node.setDomNode(element);
         runWhenDefined(element);
         Reactive.flush();
 
-        assertTrue(map.hasPropertyValue("foo"));
+        assertTrue(map.hasPropertyValue("bar"));
     }
 
     public void testPopulateModelProperties_propertyIsDefined_syncToServer() {
