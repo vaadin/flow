@@ -26,8 +26,10 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -55,7 +57,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
-import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import elemental.json.JsonArray;
@@ -102,17 +103,15 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         void setTitle(String title);
 
-        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        @AllowClientUpdates
         String getMessage();
 
-        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        @AllowClientUpdates
         String getTitle();
     }
 
     public interface TestModel extends ModelClass {
-        @AllowClientUpdates(ClientUpdateMode.ALLOW)
-        List<String> getList();
-
+        @AllowClientUpdates
         void setList(List<String> list);
     }
 
@@ -732,12 +731,29 @@ public class PolymerTemplateTest extends HasCurrentService {
         Assert.assertEquals("title", properties.get(0).asString());
     }
 
-    private List<Integer> convertIntArray(JsonArray array) {
-        List<Integer> list = new ArrayList<>();
-        for (int i = 0; i < array.length(); i++) {
-            list.add((int) array.get(i).asNumber());
-        }
-        return list;
+    @Test
+    public void initModel_sendUpdatableProperties() {
+        UI ui = UI.getCurrent();
+        InitModelTemplate template = new InitModelTemplate();
+
+        ui.add(template);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        Assert.assertEquals(2, executionOrder.size());
+        Assert.assertEquals("this.registerUpdatableModelProperties($0, $1)",
+                executionOrder.get(0));
+
+        Serializable[] params = executionParams.get(0);
+        JsonArray properties = (JsonArray) params[1];
+        Assert.assertEquals(2, properties.length());
+
+        Set<String> props = new HashSet<>();
+        props.add(properties.get(0).asString());
+        props.add(properties.get(1).asString());
+        // all model properties except 'list' which has no getter
+        Assert.assertTrue(props.contains("message"));
+        Assert.assertTrue(props.contains("title"));
     }
 
     private void doParseTemplate_hasIdChild_childIsRegisteredInFeature(
