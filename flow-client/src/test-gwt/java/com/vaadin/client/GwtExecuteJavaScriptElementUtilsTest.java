@@ -222,6 +222,20 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         assertEquals("foo", tree.syncedProperty.getName());
     }
 
+    public void testPopulateModelProperties_propertyIsDefinedAndNotUpodatable_noSyncToServer() {
+        defineProperty(element, "foo");
+
+        WidgetUtil.setJsProperty(element, "foo", "bar");
+
+        ExecuteJavaScriptElementUtils.populateModelProperties(node,
+                JsCollections.array("foo"));
+
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        assertFalse(map.hasPropertyValue("foo"));
+
+        assertNull(tree.syncedProperty);
+    }
+
     public void testPopulateModelProperties_elementIsNotReadyAndPropertyIsDefined_syncToServerWhenElementBecomesReady() {
         node.setDomNode(null);
 
