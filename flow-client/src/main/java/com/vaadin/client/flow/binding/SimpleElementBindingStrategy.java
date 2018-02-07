@@ -330,10 +330,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         String[] subProperties = fullPropertyName.split("\\.");
         StateNode model = node;
         MapProperty mapProperty = null;
+        int i = 0;
+        int size = subProperties.length;
         for (String subProperty : subProperties) {
             NodeMap elementProperties = model
                     .getMap(NodeFeatures.ELEMENT_PROPERTIES);
-            if (!elementProperties.hasPropertyValue(subProperty)) {
+            if (!elementProperties.hasPropertyValue(subProperty)
+                    && i < size - 1) {
                 Console.debug("Ignoring property change for property '"
                         + fullPropertyName
                         + "' which isn't defined from server");
@@ -344,6 +347,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (mapProperty.getValue() instanceof StateNode) {
                 model = (StateNode) mapProperty.getValue();
             }
+            i++;
         }
         if (mapProperty.getValue() instanceof StateNode) {
             // Don't send to the server updates for list nodes
