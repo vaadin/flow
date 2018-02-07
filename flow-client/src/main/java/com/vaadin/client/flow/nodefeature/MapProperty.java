@@ -265,7 +265,7 @@ public class MapProperty implements ReactiveValue {
     public void syncToServer(Object newValue) {
         Object currentValue = hasValue() ? getValue() : null;
 
-        if (Objects.equals(newValue, currentValue)) {
+        if (hasValue() && Objects.equals(newValue, currentValue)) {
             // in case we are here with the same value that has been set from
             // the server then we unlock client side updates already here via
             // unmarking the server update flag. It allows another client side
