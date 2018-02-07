@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import com.google.gwt.core.client.impl.SchedulerImpl;
+import com.vaadin.client.CustomScheduler;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
@@ -44,6 +46,8 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         nextId = node.getId() + 1;
         element = createHtmlElement();
         initPolymer(element);
+
+        initScheduler(new CustomScheduler());
     }
 
     public void testPropertyAdded() {
@@ -299,7 +303,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         element._propertiesChanged = function() {
             element.propertiesChangedCallCount += 1;
         };
-
+    
         element.callbackCallCount = 0;
         $wnd.customElements = {
             whenDefined: function() {
@@ -496,5 +500,10 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         $wnd.Polymer.Element = {};
         $wnd.Polymer.version="2.0.1";
         element.__proto__ = $wnd.Polymer.Element;
+    }-*/;
+
+    private native void initScheduler(SchedulerImpl scheduler)
+    /*-{
+       @com.google.gwt.core.client.impl.SchedulerImpl::INSTANCE = scheduler;
     }-*/;
 }

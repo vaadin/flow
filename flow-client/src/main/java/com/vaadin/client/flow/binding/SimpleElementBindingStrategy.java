@@ -141,20 +141,20 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private static class InitialPropertyUpdate {
-        private JsArray<Runnable> commands;
+        private Runnable command;
         private final StateNode node;
 
         private InitialPropertyUpdate(StateNode node) {
             this.node = node;
         }
 
-        private void setCommands(JsArray<Runnable> commands) {
-            this.commands = commands;
+        private void setCommand(Runnable command) {
+            this.command = command;
         }
 
         private void execute() {
-            if (commands != null) {
-                commands.forEach(Runnable::run);
+            if (command != null) {
+                command.run();
             }
             node.clearNodeData(this);
         }
@@ -236,6 +236,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.push(bindVisibility(listeners, context,
                 computationsCollection, nodeFactory));
 
+        scheduleInitialExecution(stateNode);
+    }
+
+    private void scheduleInitialExecution(StateNode stateNode) {
         InitialPropertyUpdate update = new InitialPropertyUpdate(stateNode);
         stateNode.setNodeData(update);
         /*
@@ -270,7 +274,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -280,7 +284,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-
+    
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -292,26 +296,22 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             JavaScriptObject changedPropertyPathsToValues, StateNode node) {
         String[] keys = WidgetUtil.getKeys(changedPropertyPathsToValues);
 
+        Runnable runnable = () -> {
+            for (String propertyName : keys) {
+                handlePropertyChange(propertyName,
+                        () -> WidgetUtil.getJsProperty(
+                                changedPropertyPathsToValues, propertyName),
+                        node);
+            }
+        };
+
         InitialPropertyUpdate initialUpdate = node
                 .getNodeData(InitialPropertyUpdate.class);
-        JsArray<Runnable> commands = null;
-        if (initialUpdate != null) {
-            commands = JsCollections.array();
-            initialUpdate.setCommands(commands);
+        if (initialUpdate == null) {
+            runnable.run();
+        } else {
+            initialUpdate.setCommand(runnable);
         }
-
-        for (String propertyName : keys) {
-            Runnable handleProperty = () -> handlePropertyChange(propertyName,
-                    () -> WidgetUtil.getJsProperty(changedPropertyPathsToValues,
-                            propertyName),
-                    node);
-            if (commands != null) {
-                commands.set(commands.length(), handleProperty);
-            } else {
-                handleProperty.run();
-            }
-        }
-
     }
 
     private void handlePropertyChange(String fullPropertyName,
