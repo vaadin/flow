@@ -23,7 +23,6 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
-import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.template.BeanInListingView.ListModel;
@@ -37,10 +36,10 @@ public class BeanInListingView extends PolymerTemplate<ListModel> {
 
         void setUsers(List<User> users);
 
-        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        @AllowClientUpdates
         List<User> getUsers();
 
-        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        @AllowClientUpdates
         User getActiveUser();
 
         void setActiveUser(User user);
@@ -49,14 +48,14 @@ public class BeanInListingView extends PolymerTemplate<ListModel> {
 
         void setMessages(List<String> messages);
 
-        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        @AllowClientUpdates
         String getActiveMessage();
     }
 
     public static class User {
         private String name;
 
-        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        @AllowClientUpdates
         public String getName() {
             return name;
         }
