@@ -30,15 +30,18 @@ public class CoExistingSpringEndpointsIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void assertRoutesAndSpringEndpoint() throws Exception {
+    public void assertRoutesAndSpringEndpoint() {
         open();
 
+        String nonExistingRoutePath = "non-existing-route";
         Assert.assertTrue(isElementPresent(By.id("main")));
 
-        getDriver().get(getRootURL() + "/non-existing-route");
+        getDriver().get(getRootURL() + '/' + nonExistingRoutePath);
 
         WebElement div = findElement(By.tagName("div"));
-        Assert.assertEquals("Could not navigate to 'non-existing-route'",
+        Assert.assertEquals(String.format(
+                "Could not navigate to '%s'. Reason: Couldn't find route for '%s'",
+                nonExistingRoutePath, nonExistingRoutePath),
                 div.getText());
 
         getDriver().get(getRootURL() + "/oauth/authorize");
