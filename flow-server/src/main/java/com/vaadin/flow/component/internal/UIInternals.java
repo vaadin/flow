@@ -662,7 +662,7 @@ public class UIInternals implements Serializable {
             }
         } else {
             theme = null;
-            if (AnnotationReader
+            if (!AnnotationReader
                     .getAnnotationFor(target.getClass(), NoTheme.class)
                     .isPresent()) {
                 getLogger().warn(
