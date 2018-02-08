@@ -124,7 +124,7 @@ public interface Instantiator extends Serializable {
     /**
      * Provides an instance of any given type, this is an abstraction that
      * allows to make use of DI-frameworks from add-ons.
-     *
+     * <p>
      * How the object is created and whether it is being cached or not is up to
      * the implementation.
      * 
