@@ -18,12 +18,12 @@
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-lumo-styles</artifactId>
-                <version>1.0.0-alpha3</version>
+                <version>1.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-grid</artifactId>
-                <version>5.0.0-alpha7</version>
+                <version>5.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
@@ -33,89 +33,89 @@
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-text-field</artifactId>
-                <version>2.0.0-alpha10</version>
+                <version>2.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-date-picker</artifactId>
-                <version>3.0.0-alpha6</version>
+                <version>3.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-button</artifactId>
-                <version>2.0.0-alpha6</version>
+                <version>2.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-dialog</artifactId>
-                <version>2.0.0-alpha5</version>
+                <version>2.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-combo-box</artifactId>
-                <version>4.0.0-alpha6</version>
+                <version>4.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-form-layout</artifactId>
-                <version>2.0.0-alpha6</version>
+                <version>2.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-checkbox</artifactId>
-                <version>2.0.0-alpha7</version>
+                <version>2.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-split-layout</artifactId>
-                <version>4.0.0-alpha5</version>
+                <version>4.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-ordered-layout</artifactId>
-                <version>1.0.0-alpha8</version>
+                <version>1.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-upload</artifactId>
-                <version>4.0.0-alpha4</version>
+                <version>4.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-progress-bar</artifactId>
-                <version>1.0.0-alpha12</version>
+                <version>1.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-tabs</artifactId>
-                <version>2.0.0-alpha7</version>
+                <version>2.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-radio-button</artifactId>
-                <version>1.0.0-alpha12</version>
+                <version>1.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-notification</artifactId>
-                <version>1.0.0-alpha7</version>
+                <version>1.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-list-box</artifactId>
-                <version>1.0.0-alpha9</version>
+                <version>1.0.0-beta1</version>
             </dependency>
 
             <!-- WebJars' transitive dependencies resolutions -->
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-item</artifactId>
-                <version>2.0.0-alpha5</version>
+                <version>2.0.0-beta1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.polymer</groupId>
                 <artifactId>polymer</artifactId>
-                <version>2.3.1</version>
+                <version>2.5.0</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.webcomponents</groupId>
@@ -131,12 +131,12 @@
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-element-mixin</artifactId>
-                <version>1.0.1</version>
+                <version>1.0.2</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-control-state-mixin</artifactId>
-                <version>2.0.2</version>
+                <version>2.0.3</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
