@@ -126,7 +126,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TextAreaElement#2.0.0-alpha10",
+        "WebComponent: Vaadin.TextAreaElement#2.0.0-beta1",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-text-area")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-area.html")

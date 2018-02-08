@@ -2,7 +2,7 @@
   "name": "Vaadin.DatePickerElement",
   "tag": "vaadin-date-picker",
   "baseUrl": "vaadin-date-picker/src/vaadin-date-picker.html",
-  "version": "3.0.0-alpha6",
+  "version": "3.0.0-beta1",
   "properties": [
     {
       "name": "autofocus",

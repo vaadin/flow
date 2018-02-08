@@ -1,5 +1,5 @@
 {
-  "name": "MonthCalendarElement",
+  "name": "Vaadin.MonthCalendarElement",
   "tag": "vaadin-month-calendar",
   "baseUrl": "vaadin-date-picker/src/vaadin-month-calendar.html",
   "version": "UNKNOWN",

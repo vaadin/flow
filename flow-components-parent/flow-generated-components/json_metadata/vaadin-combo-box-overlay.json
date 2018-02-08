@@ -1,5 +1,5 @@
 {
-  "name": "Vaadin.VaadinComboBoxOverlay",
+  "name": "Vaadin.ComboBoxOverlayElement",
   "tag": "vaadin-combo-box-overlay",
   "baseUrl": "vaadin-combo-box/src/vaadin-combo-box-dropdown.html",
   "version": "UNKNOWN",

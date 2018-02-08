@@ -37,7 +37,8 @@ import com.vaadin.flow.shared.Registration;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.DropdownElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.ComboBoxDropdownElement#UNKNOWN",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-dropdown")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-dropdown.html")
 public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDropdown<R>>

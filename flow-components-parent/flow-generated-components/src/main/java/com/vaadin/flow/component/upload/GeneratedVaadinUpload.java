@@ -114,8 +114,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.UploadElement#4.0.0-alpha4",
-        "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.UploadElement#4.0.0-beta1", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-upload")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload.html")
 public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
@@ -330,7 +329,7 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      * <li>{@code error}: Error message in case the upload failed.</li>
      * <li>{@code abort}: True if the file was canceled by the user.</li>
      * <li>{@code complete}: True when the file was transferred to the server.</li>
-     * <li>{@code uploading}: True while trasferring data to the server.
+     * <li>{@code uploading}: True while transferring data to the server.
      * <p>
      * This property is synchronized automatically from client side when a
      * 'files-changed' event happens.</li>
@@ -374,7 +373,7 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      * <li>{@code error}: Error message in case the upload failed.</li>
      * <li>{@code abort}: True if the file was canceled by the user.</li>
      * <li>{@code complete}: True when the file was transferred to the server.</li>
-     * <li>{@code uploading}: True while trasferring data to the server.</li>
+     * <li>{@code uploading}: True while transferring data to the server.</li>
      * </ul>
      * 
      * @param files

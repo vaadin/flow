@@ -186,7 +186,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.SplitLayoutElement#4.0.0-alpha5",
+        "WebComponent: Vaadin.SplitLayoutElement#4.0.0-beta1",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-split-layout")
 @HtmlImport("frontend://bower_components/vaadin-split-layout/src/vaadin-split-layout.html")

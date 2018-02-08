@@ -1,5 +1,5 @@
 {
-  "name": "Vaadin.DropdownElement",
+  "name": "Vaadin.ComboBoxDropdownElement",
   "tag": "vaadin-combo-box-dropdown",
   "baseUrl": "vaadin-combo-box/src/vaadin-combo-box-dropdown.html",
   "version": "UNKNOWN",

@@ -2,7 +2,7 @@
   "name": "Vaadin.FormItemElement",
   "tag": "vaadin-form-item",
   "baseUrl": "vaadin-form-layout/src/vaadin-form-item.html",
-  "version": "2.0.0-alpha6",
+  "version": "2.0.0-beta1",
   "properties": [],
   "methods": [],
   "events": [],

@@ -28,7 +28,7 @@ import elemental.json.JsonObject;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * The default element used for items in the vaadin-combobox.
+ * The default element used for items in the vaadin-combo-box.
  * </p>
  * <h3>Styling</h3>
  * <p>

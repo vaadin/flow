@@ -1,5 +1,5 @@
 {
-  "name": "Vaadin.VaadinDialogOverlay",
+  "name": "Vaadin.DialogOverlayElement",
   "tag": "vaadin-dialog-overlay",
   "baseUrl": "vaadin-dialog/src/vaadin-dialog.html",
   "version": "UNKNOWN",

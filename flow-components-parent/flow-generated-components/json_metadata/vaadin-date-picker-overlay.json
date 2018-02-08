@@ -1,5 +1,5 @@
 {
-  "name": "VaadinDatePickerOverlayElement",
+  "name": "Vaadin.DatePickerOverlayElement",
   "tag": "vaadin-date-picker-overlay",
   "baseUrl": "vaadin-date-picker/src/vaadin-date-picker-overlay.html",
   "version": "UNKNOWN",
