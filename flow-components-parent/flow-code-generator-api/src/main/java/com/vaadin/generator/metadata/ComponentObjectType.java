@@ -90,7 +90,7 @@ public class ComponentObjectType implements ComponentType {
         /**
          * Set this property as optional or not.
          *
-         * @param optional
+         * @param optional whether the property optional or not
          */
         public void setOptional(boolean optional) {
             this.optional = optional;

@@ -46,6 +46,9 @@ public class ComponentDemoServer {
      * Starts a web server to the port defined by {@link #getPort()}. It serves
      * the test UIs annotated with <code>@Route</code>.
      * 
+     * @throws Exception
+     *             if any issue on server start occurs
+     * 
      * @return the server object
      */
     public Server startServer() throws Exception {

@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.flow.internal.ReflectTools;
 
 /**
@@ -52,6 +53,8 @@ public final class ParameterDeserializer {
      *            parameter to deserialize
      * @param targetClass
      *            name of handled class for exception usage
+     * @param <T>
+     *            the type to deserialize into
      * @return converted parameter as class if parameterType of supported type
      */
     public static <T> T deserializeParameter(Class<T> parameterType,

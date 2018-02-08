@@ -176,6 +176,8 @@ public final class EventUtil {
      *            collected elements
      * @param type
      *            class type to filter by
+     * @param <T>
+     *            type that is used in filtering
      * @return stream of components implementing T
      */
     public static <T> Stream<T> getImplementingComponents(

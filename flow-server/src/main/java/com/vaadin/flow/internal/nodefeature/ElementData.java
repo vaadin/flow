@@ -89,7 +89,8 @@ public class ElementData extends NodeValue<Serializable[]> {
 
     /**
      * Gets the payload data of the element.
-     *
+     * 
+     * @return the payload data of the element
      */
     public JsonValue getPayload() {
         Serializable[] value = getValue();

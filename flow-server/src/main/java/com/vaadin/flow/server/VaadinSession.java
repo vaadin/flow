@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -37,10 +40,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -357,6 +356,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Sets the session error handler.
      *
      * @param errorHandler
+     *            the new error handler
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
         assert hasLock();
@@ -502,6 +502,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Checks if the current thread has exclusive access to the given
      * WrappedSession.
      *
+     * @param service
+     *            the service to check
+     * @param session
+     *            the session to use for checking
+     * 
      * @return true if this thread has exclusive access, false otherwise
      * @since 7.6
      */
@@ -681,6 +686,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @param value
      *            the value to associate with the type, or <code>null</code> to
      *            remove a previous association.
+     * @param <T>
+     *            the type of the stored value
      */
     public <T> void setAttribute(Class<T> type, T value) {
         assert hasLock();
@@ -720,6 +727,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @param type
      *            the type of the value to get, can not be <code>null</code>.
+     * @param <T>
+     *            the type of the value to get
      * @return the value, or <code>null</code> if no value has been stored or if
      *         it has been set to null.
      */

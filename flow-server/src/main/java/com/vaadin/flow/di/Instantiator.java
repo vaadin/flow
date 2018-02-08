@@ -122,13 +122,17 @@ public interface Instantiator extends Serializable {
     }
 
     /**
-     * Provides an instance of any given type, this is an abstraction
-     * that allows to make use of DI-frameworks from add-ons.
+     * Provides an instance of any given type, this is an abstraction that
+     * allows to make use of DI-frameworks from add-ons.
      *
-     * How the object is created an whether it is being cached or not
-     * is up to the implementation.
+     * How the object is created an whether it is being cached or not is up to
+     * the implementation.
+     * 
      * @param type
      *            the instance type to create, not <code>null</code>
+     * @param <T>
+     *            the type of the instance to create
+     *
      * @return an instance of the given type
      */
     <T> T getOrCreate(Class<T> type);
@@ -143,6 +147,9 @@ public interface Instantiator extends Serializable {
      * @param event
      *            the navigation event for which the instance is created, not
      *            <code>null</code>
+     * @param <T>
+     *            the route target type
+     *
      * @return the created instance, not <code>null</code>
      */
     default <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
@@ -155,6 +162,9 @@ public interface Instantiator extends Serializable {
      *
      * @param componentClass
      *            the instance type to create, not <code>null</code>
+     * @param <T>
+     *            the component type
+     *
      * @return the created instance, not <code>null</code>
      */
     default <T extends Component> T createComponent(Class<T> componentClass){

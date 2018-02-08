@@ -59,6 +59,8 @@ public interface RpcDecoder {
      *            the value which needs to be decoded
      * @param type
      *            the required type to decode
+     * @param <T>
+     *            the decoded value type
      * @return the decoded value
      * @throws RpcDecodeException
      *             if the {@code value} cannot be converted to the {@code type}

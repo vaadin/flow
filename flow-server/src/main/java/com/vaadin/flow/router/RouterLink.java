@@ -150,6 +150,8 @@ public class RouterLink extends Component
      *            url parameter for navigation target
      * @param <T>
      *            url parameter type
+     * @param <C>
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(String text,
             Class<? extends C> navigationTarget, T parameter) {
@@ -191,6 +193,8 @@ public class RouterLink extends Component
      *            url parameter for navigation target
      * @param <T>
      *            url parameter type
+     * @param <C>
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
             com.vaadin.flow.router.Router router, String text,
@@ -226,6 +230,8 @@ public class RouterLink extends Component
      *            url parameter for navigation target
      * @param <T>
      *            url parameter type
+     * @param <C>
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             com.vaadin.flow.router.Router router,

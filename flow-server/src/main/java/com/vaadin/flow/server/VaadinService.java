@@ -352,6 +352,9 @@ public abstract class VaadinService implements Serializable {
      * custom service.
      *
      * @return an instantiator to use, not <code>null</code>
+     * 
+     * @throws ServiceException
+     *             if there are multiple applicable instantiators
      *
      * @see #loadInstantiators()
      * @see Instantiator
@@ -876,10 +879,8 @@ public abstract class VaadinService implements Serializable {
      * @param request
      *            The request which triggered session creation.
      * @return A new VaadinSession instance
-     * @throws ServiceException
      */
-    private VaadinSession createAndRegisterSession(VaadinRequest request)
-            throws ServiceException {
+    private VaadinSession createAndRegisterSession(VaadinRequest request) {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
@@ -934,15 +935,13 @@ public abstract class VaadinService implements Serializable {
      * @param request
      *            The request for which to create a VaadinSession
      * @return A new VaadinSession
-     * @throws ServiceException
      */
-    protected VaadinSession createVaadinSession(VaadinRequest request)
-            throws ServiceException {
+    protected VaadinSession createVaadinSession(VaadinRequest request) {
         return new VaadinSession(this);
     }
 
     private void onVaadinSessionStarted(VaadinRequest request,
-            VaadinSession session) throws ServiceException {
+            VaadinSession session) {
         SessionInitEvent event = new SessionInitEvent(this, session, request);
         for (SessionInitListener listener : sessionInitListeners) {
             try {
@@ -1066,7 +1065,7 @@ public abstract class VaadinService implements Serializable {
     /**
      * Sets the given Vaadin service as the current service.
      *
-     * @param service
+     * @param service the service to set
      */
     public static void setCurrent(VaadinService service) {
         CurrentInstance.set(VaadinService.class, service);

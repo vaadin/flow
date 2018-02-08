@@ -298,6 +298,8 @@ public class StateNode {
      *
      * @param object
      *            the object to store
+     * @param <T>
+     *            the type of the node data to set
      */
     public <T> void setNodeData(T object) {
         nodeData.set(object.getClass(), object);
@@ -312,6 +314,8 @@ public class StateNode {
      *
      * @param clazz
      *            the type of the object to get
+     * @param <T>
+     *            the type of the node data to get
      * @return the object by its {@code clazz}
      */
     public <T> T getNodeData(Class<T> clazz) {
@@ -323,6 +327,8 @@ public class StateNode {
      * 
      * @param object
      *            the object to remove
+     * @param <T>
+     *            the type of the object to remove
      */
     public <T> void clearNodeData(T object) {
         nodeData.delete(object.getClass());
