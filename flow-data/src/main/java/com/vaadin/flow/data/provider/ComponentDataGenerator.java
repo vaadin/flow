@@ -15,12 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.ValueProvider;
 
 import elemental.json.JsonObject;
@@ -39,50 +35,33 @@ import elemental.json.JsonObject;
  * @param <T>
  *            the date type
  */
-public class ComponentDataGenerator<T> implements DataGenerator<T> {
+public class ComponentDataGenerator<T>
+        extends AbstractComponentDataGenerator<T> {
 
-    private ComponentRenderer<? extends Component, T> componentRenderer;
-    private Map<String, Component> renderedComponents;
-    private Element container;
+    private final ComponentRenderer<? extends Component, T> componentRenderer;
+    private final ValueProvider<T, String> keyMapper;
     private String nodeIdPropertyName;
-    private ValueProvider<T, String> keyMapper;
 
     /**
      * Creates a new generator.
      * 
      * @param componentRenderer
      *            the renderer used to produce components based on data items
-     * @param container
-     *            the element used as parent for all generated components
-     * @param nodeIdPropertyName
-     *            the property name used in the JSON to transmit the nodeId of
-     *            the generated component to the client
      * @param keyMapper
      *            the DataKeyMapper used to fetch keys for items
      */
     public ComponentDataGenerator(
             ComponentRenderer<? extends Component, T> componentRenderer,
-            Element container, String nodeIdPropertyName,
             ValueProvider<T, String> keyMapper) {
-        this();
         this.componentRenderer = componentRenderer;
-        this.container = container;
-        this.nodeIdPropertyName = nodeIdPropertyName;
         this.keyMapper = keyMapper;
-    }
-
-    /**
-     * Default constructor.
-     */
-    public ComponentDataGenerator() {
-        renderedComponents = new HashMap<>();
     }
 
     @Override
     public void generateData(T item, JsonObject jsonObject) {
         String itemKey = getItemKey(item);
-        Component oldRenderedComponent = renderedComponents.get(itemKey);
-        Component renderedComponent = componentRenderer.createComponent(item);
+        Component oldRenderedComponent = getRenderedComponent(itemKey);
+        Component renderedComponent = createComponent(item);
         if (oldRenderedComponent != renderedComponent) {
             if (oldRenderedComponent != null) {
                 oldRenderedComponent.getElement().removeFromParent();
@@ -96,38 +75,11 @@ public class ComponentDataGenerator<T> implements DataGenerator<T> {
     }
 
     @Override
-    public void refreshData(T item) {
-        String itemKey = getItemKey(item);
-        Component oldComponent = renderedComponents.get(itemKey);
-        if (oldComponent != null) {
-            Component recreatedComponent = componentRenderer
-                    .createComponent(item);
-
-            int oldId = oldComponent.getElement().getNode().getId();
-            int newId = recreatedComponent.getElement().getNode().getId();
-            if (oldId != newId) {
-                container.removeChild(oldComponent.getElement());
-                registerRenderedComponent(itemKey, recreatedComponent);
-            }
-        }
+    protected Component createComponent(T item) {
+        return componentRenderer.createComponent(item);
     }
 
     @Override
-    public void destroyData(T item) {
-        String itemKey = getItemKey(item);
-        Component renderedComponent = renderedComponents.remove(itemKey);
-        if (renderedComponent != null) {
-            renderedComponent.getElement().removeFromParent();
-        }
-    }
-
-    @Override
-    public void destroyAllData() {
-        renderedComponents.values().forEach(
-                component -> component.getElement().removeFromParent());
-        renderedComponents.clear();
-    }
-
     protected String getItemKey(T item) {
         if (keyMapper == null) {
             return null;
@@ -139,41 +91,12 @@ public class ComponentDataGenerator<T> implements DataGenerator<T> {
         return componentRenderer;
     }
 
-    public void setComponentRenderer(
-            ComponentRenderer<? extends Component, T> componentRenderer) {
-        this.componentRenderer = componentRenderer;
-    }
-
-    public Element getContainer() {
-        return container;
-    }
-
-    public void setContainer(Element container) {
-        this.container = container;
-    }
-
     public String getNodeIdPropertyName() {
         return nodeIdPropertyName;
     }
 
     public void setNodeIdPropertyName(String nodeIdPropertyName) {
         this.nodeIdPropertyName = nodeIdPropertyName;
-    }
-
-    public ValueProvider<T, String> getKeyMapper() {
-        return keyMapper;
-    }
-
-    public void setKeyMapper(ValueProvider<T, String> keyMapper) {
-        this.keyMapper = keyMapper;
-    }
-
-    protected void registerRenderedComponent(String itemKey,
-            Component component) {
-
-        Element element = component.getElement();
-        container.appendChild(element);
-        renderedComponents.put(itemKey, component);
     }
 
 }

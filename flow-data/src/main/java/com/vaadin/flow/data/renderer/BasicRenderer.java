@@ -21,7 +21,7 @@ import java.util.Optional;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.data.provider.ComponentDataGenerator;
+import com.vaadin.flow.data.provider.AbstractComponentDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.KeyMapper;
 import com.vaadin.flow.dom.Element;
@@ -45,7 +45,7 @@ import elemental.json.JsonObject;
 public abstract class BasicRenderer<SOURCE, TARGET>
         extends ComponentRenderer<Component, SOURCE> {
 
-    private ValueProvider<SOURCE, TARGET> valueProvider;
+    private final ValueProvider<SOURCE, TARGET> valueProvider;
 
     /**
      * Builds a new template renderer using the value provider as the source of
@@ -56,7 +56,6 @@ public abstract class BasicRenderer<SOURCE, TARGET>
      *            <code>null</code>
      */
     protected BasicRenderer(ValueProvider<SOURCE, TARGET> valueProvider) {
-
         if (valueProvider == null) {
             throw new IllegalArgumentException("valueProvider may not be null");
         }
@@ -64,17 +63,12 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         this.valueProvider = valueProvider;
     }
 
-    /**
-     * Default constructor.
-     */
-    protected BasicRenderer() {
-    }
-
     @Override
     public Rendering<SOURCE> render(Element container,
             KeyMapper<SOURCE> keyMapper) {
 
-        SimpleValueRendering rendering = new SimpleValueRendering();
+        SimpleValueRendering rendering = new SimpleValueRendering(
+                keyMapper == null ? null : keyMapper::key);
         setupTemplate(container, rendering, keyMapper);
 
         return rendering;
@@ -181,12 +175,18 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         return String.valueOf(object);
     }
 
-    private class SimpleValueRendering extends ComponentDataGenerator<SOURCE>
+    private class SimpleValueRendering
+            extends AbstractComponentDataGenerator<SOURCE>
             implements Rendering<SOURCE> {
 
+        private final ValueProvider<SOURCE, String> keyMapper;
         private Element templateElement;
         private String propertyName;
         private Element container;
+
+        public SimpleValueRendering(ValueProvider<SOURCE, String> keyMapper) {
+            this.keyMapper = keyMapper;
+        }
 
         public void setContainer(Element container) {
             this.container = container;
@@ -230,6 +230,19 @@ public abstract class BasicRenderer<SOURCE, TARGET>
                 return;
             }
             super.refreshData(item);
+        }
+
+        @Override
+        protected String getItemKey(SOURCE item) {
+            if (keyMapper == null) {
+                return null;
+            }
+            return keyMapper.apply(item);
+        }
+
+        @Override
+        protected Component createComponent(SOURCE item) {
+            return BasicRenderer.this.createComponent(item);
         }
     }
 

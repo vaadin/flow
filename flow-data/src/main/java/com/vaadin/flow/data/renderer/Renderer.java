@@ -61,8 +61,6 @@ public class Renderer<SOURCE> implements Serializable {
      * Default constructor.
      */
     protected Renderer() {
-        valueProviders = new HashMap<>(0);
-        eventHandlers = new HashMap<>(0);
     }
 
     /**
@@ -72,7 +70,6 @@ public class Renderer<SOURCE> implements Serializable {
      *            the template used by the renderer
      */
     protected Renderer(String template) {
-        this();
         this.template = template;
     }
 
@@ -116,6 +113,9 @@ public class Renderer<SOURCE> implements Serializable {
             ValueProvider<SOURCE, ?> provider) {
         Objects.requireNonNull(property, "The property must not be null");
         Objects.requireNonNull(provider, "The value provider must not be null");
+        if (valueProviders == null) {
+            valueProviders = new HashMap<>();
+        }
         valueProviders.put(property, provider);
     }
 
@@ -157,6 +157,9 @@ public class Renderer<SOURCE> implements Serializable {
             SerializableConsumer<SOURCE> handler) {
         Objects.requireNonNull(handlerName, "The handlerName must not be null");
         Objects.requireNonNull(handler, "The event handler must not be null");
+        if (eventHandlers == null) {
+            eventHandlers = new HashMap<>();
+        }
         eventHandlers.put(handlerName, handler);
     }
 
@@ -199,18 +202,20 @@ public class Renderer<SOURCE> implements Serializable {
      * @return the mapped properties, never <code>null</code>
      */
     public Map<String, ValueProvider<SOURCE, ?>> getValueProviders() {
-        return Collections.unmodifiableMap(valueProviders);
+        return valueProviders == null ? Collections.emptyMap()
+                : Collections.unmodifiableMap(valueProviders);
     }
 
     /**
-     * Gets the event handlers linked to this renderer. The returned map in
+     * Gets the event handlers linked to this renderer. The returned map is
      * immutable.
      * 
      * @return the mapped event handlers, never <code>null</code>
      * @see #withEventHandler(String, SerializableConsumer)
      */
     public Map<String, SerializableConsumer<SOURCE>> getEventHandlers() {
-        return Collections.unmodifiableMap(eventHandlers);
+        return eventHandlers == null ? Collections.emptyMap()
+                : Collections.unmodifiableMap(eventHandlers);
     }
 
     private class TemplateRendering implements Rendering<SOURCE> {
@@ -223,7 +228,7 @@ public class Renderer<SOURCE> implements Serializable {
 
         @Override
         public Optional<DataGenerator<SOURCE>> getDataGenerator() {
-            if (valueProviders.isEmpty()) {
+            if (valueProviders == null || valueProviders.isEmpty()) {
                 return Optional.empty();
             }
             CompositeDataGenerator<SOURCE> composite = new CompositeDataGenerator<>();

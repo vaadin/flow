@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.data.renderer;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -29,6 +27,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.function.ValueProvider;
 
 /**
  * Base class for all renderers that support arbitrary {@link Component}s.
@@ -51,7 +50,6 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
     private SerializableSupplier<COMPONENT> componentSupplier;
     private SerializableFunction<SOURCE, COMPONENT> componentFunction;
     private SerializableBiConsumer<COMPONENT, SOURCE> itemConsumer;
-    private Map<String, String> rendererAttributes = new HashMap<>();
     private String componentRendererTag = "flow-component-renderer";
 
     /**
@@ -113,37 +111,19 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
     }
 
     /**
-     * Default constructor, that can be used by subclasses.
+     * Default constructor, that can be used by subclasses which supports
+     * different ways of creating components, other than those defined in the
+     * other constructors.
      */
     protected ComponentRenderer() {
-    }
-
-    /**
-     * Sets attributes to the internal component renderer, that can affect the
-     * actual rendering.
-     * <p>
-     * It is used internally by components that support ComponentRenderers.
-     *
-     * @param attribute
-     *            the attribute to set on the internal component renderer
-     *            element
-     * @param value
-     *            the value of the attribute, or <code>null</code> to add the
-     *            attribute without any value (such as boolean attributes)
-     */
-    public void setTemplateAttribute(String attribute, String value) {
-        rendererAttributes.put(attribute, value);
     }
 
     @Override
     public Rendering<SOURCE> render(Element container,
             KeyMapper<SOURCE> keyMapper) {
 
-        ComponentRendering rendering = new ComponentRendering();
-        if (keyMapper != null) {
-            rendering.setKeyMapper(keyMapper::key);
-        }
-
+        ComponentRendering rendering = new ComponentRendering(
+                keyMapper == null ? null : keyMapper::key);
         rendering.setTemplateElement(new Element("template", false));
 
         container.getNode()
@@ -168,17 +148,6 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         Objects.requireNonNull(componentRendererTag,
                 "The componentRendererTag should not be null");
         this.componentRendererTag = componentRendererTag;
-    }
-
-    /**
-     * Gets the tag of the webcomponent used at the client-side to manage
-     * component rendering inside {@code <template>}. By default it uses
-     * {@code <flow-component-renderer>}.
-     * 
-     * @return the tag of the client-side webcomponent for component rendering
-     */
-    public String getComponentRendererTag() {
-        return componentRendererTag;
     }
 
     private void setupTemplateWhenAttached(UI ui, Element owner,
@@ -243,8 +212,8 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
 
         private Element templateElement;
 
-        public ComponentRendering() {
-            setComponentRenderer(ComponentRenderer.this);
+        public ComponentRendering(ValueProvider<SOURCE, String> keyMapper) {
+            super(ComponentRenderer.this, keyMapper);
         }
 
         public void setTemplateElement(Element templateElement) {

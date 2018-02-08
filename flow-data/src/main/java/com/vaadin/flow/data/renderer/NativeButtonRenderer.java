@@ -53,7 +53,7 @@ public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
      *            the label of the rendered button, not <code>null</code>
      */
     public NativeButtonRenderer(String label) {
-        this(SOURCE -> label);
+        this(value -> label);
     }
 
     /**
