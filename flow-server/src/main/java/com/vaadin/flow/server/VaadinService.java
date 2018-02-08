@@ -649,12 +649,11 @@ public abstract class VaadinService implements Serializable {
      * @return the vaadin service session for the request, or <code>null</code>
      *         if no session is found and this is a request for which a new
      *         session shouldn't be created.
-     * @throws ServiceException
      * @throws SessionExpiredException
      *             if the session has already expired
      */
     public VaadinSession findVaadinSession(VaadinRequest request)
-            throws ServiceException, SessionExpiredException {
+            throws SessionExpiredException {
         VaadinSession vaadinSession = findOrCreateVaadinSession(request);
         if (vaadinSession == null) {
             return null;
@@ -785,7 +784,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     private VaadinSession findOrCreateVaadinSession(VaadinRequest request)
-            throws SessionExpiredException, ServiceException {
+            throws SessionExpiredException {
         boolean requestCanCreateSession = requestCanCreateSession(request);
         WrappedSession wrappedSession = getWrappedSession(request,
                 requestCanCreateSession);
@@ -818,7 +817,7 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession)
-            throws SessionExpiredException, ServiceException {
+            throws SessionExpiredException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 

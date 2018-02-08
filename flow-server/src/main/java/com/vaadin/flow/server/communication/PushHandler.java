@@ -19,18 +19,17 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Collection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.SystemMessages;
@@ -208,11 +207,6 @@ public class PushHandler {
             try {
                 session = service.findVaadinSession(vaadinRequest);
                 assert VaadinSession.getCurrent() == session;
-
-            } catch (ServiceException e) {
-                getLogger().error(
-                        "Could not get session. This should never happen", e);
-                return;
             } catch (SessionExpiredException e) {
                 sendNotificationAndDisconnect(resource,
                         VaadinService.createSessionExpiredJSON());
@@ -315,10 +309,6 @@ public class PushHandler {
 
         try {
             session = service.findVaadinSession(vaadinRequest);
-        } catch (ServiceException e) {
-            getLogger().error(
-                    "Could not get session. This should never happen", e);
-            return;
         } catch (SessionExpiredException e) {
             // This happens at least if the server is restarted without
             // preserving the session. After restart the client reconnects, gets

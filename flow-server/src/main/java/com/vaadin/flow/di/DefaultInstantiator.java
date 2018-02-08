@@ -20,12 +20,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidI18NConfigurationException;
 import com.vaadin.flow.server.VaadinService;

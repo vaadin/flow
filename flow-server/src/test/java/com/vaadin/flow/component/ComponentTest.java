@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,23 +27,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventBus;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -55,14 +43,13 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.TestUtil;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.mockito.Mockito.when;
 
 @NotThreadSafe
 public class ComponentTest {
