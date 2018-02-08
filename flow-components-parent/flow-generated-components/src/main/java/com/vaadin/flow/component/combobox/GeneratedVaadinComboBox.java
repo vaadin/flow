@@ -17,7 +17,7 @@ package com.vaadin.flow.component.combobox;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
+import com.vaadin.flow.component.Focusable;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -221,44 +221,29 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxElement#4.0.0-alpha6",
+        "WebComponent: Vaadin.ComboBoxElement#4.0.0-beta1",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box.html")
 public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle, Focusable<R> {
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * True if the dropdown is open, false otherwise.
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'opened-changed' event happens.
-     * </p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
      * 
-     * @return the {@code opened} property from the webcomponent
+     * @return the {@code autofocus} property from the webcomponent
      */
-    @Synchronize(property = "opened", value = "opened-changed")
-    protected boolean isOpenedBoolean() {
-        return getElement().getProperty("opened", false);
+    protected boolean isAutofocusBoolean() {
+        return getElement().getProperty("autofocus", false);
     }
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * True if the dropdown is open, false otherwise.
-     * </p>
-     * 
-     * @param opened
+     * @param autofocus
      *            the boolean value to set
      */
-    protected void setOpened(boolean opened) {
-        getElement().setProperty("opened", opened);
+    protected void setAutofocus(boolean autofocus) {
+        getElement().setProperty("autofocus", autofocus);
     }
 
     /**
@@ -291,6 +276,39 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      */
     protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * True if the dropdown is open, false otherwise.
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'opened-changed' event happens.
+     * </p>
+     * 
+     * @return the {@code opened} property from the webcomponent
+     */
+    @Synchronize(property = "opened", value = "opened-changed")
+    protected boolean isOpenedBoolean() {
+        return getElement().getProperty("opened", false);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * True if the dropdown is open, false otherwise.
+     * </p>
+     * 
+     * @param opened
+     *            the boolean value to set
+     */
+    protected void setOpened(boolean opened) {
+        getElement().setProperty("opened", opened);
     }
 
     /**
@@ -710,24 +728,6 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
     protected void setErrorMessage(String errorMessage) {
         getElement().setProperty("errorMessage",
                 errorMessage == null ? "" : errorMessage);
-    }
-
-    /**
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * 
-     * @return the {@code autofocus} property from the webcomponent
-     */
-    protected boolean isAutofocusBoolean() {
-        return getElement().getProperty("autofocus", false);
-    }
-
-    /**
-     * @param autofocus
-     *            the boolean value to set
-     */
-    protected void setAutofocus(boolean autofocus) {
-        getElement().setProperty("autofocus", autofocus);
     }
 
     /**

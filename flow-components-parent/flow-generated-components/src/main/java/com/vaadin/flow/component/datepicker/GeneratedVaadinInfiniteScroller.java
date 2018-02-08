@@ -26,7 +26,8 @@ import com.vaadin.flow.component.NotSupported;
 import elemental.json.JsonArray;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: InfiniteScrollerElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.InfiniteScrollerElement#UNKNOWN",
+        "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-infinite-scroller")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-infinite-scroller.html")
 public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteScroller<R>>
@@ -296,7 +297,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Target path to unlink.
      */
     @NotSupported
-    protected void unlinkPaths(JsonObject path) {
+    protected void unlinkPaths(String path) {
     }
 
     /**
@@ -319,7 +320,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Target path to unlink.
      */
     @NotSupported
-    protected void unlinkPaths(String path) {
+    protected void unlinkPaths(JsonObject path) {
     }
 
     /**
@@ -586,7 +587,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void pop(JsonObject path) {
+    protected void pop(String path) {
     }
 
     /**
@@ -613,7 +614,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void pop(String path) {
+    protected void pop(JsonObject path) {
     }
 
     /**
@@ -710,7 +711,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void shift(JsonObject path) {
+    protected void shift(String path) {
     }
 
     /**
@@ -737,7 +738,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void shift(String path) {
+    protected void shift(JsonObject path) {
     }
 
     /**
@@ -869,6 +870,11 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      * original location of the document containing the {@code dom-module} for
      * this element. This method will return the same URL before and after
      * bundling.
+     * </p>
+     * <p>
+     * Note that this function performs no resolution for URLs that start with
+     * {@code /} (absolute URLs) or {@code #} (hash identifiers). For general
+     * purpose URL resolution, use {@code window.URL}.
      * </p>
      * <p>
      * This function is not supported by Flow because it returns a

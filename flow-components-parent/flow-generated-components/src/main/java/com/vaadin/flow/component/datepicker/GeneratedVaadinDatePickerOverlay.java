@@ -49,7 +49,7 @@ import com.vaadin.flow.shared.Registration;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: VaadinDatePickerOverlayElement#UNKNOWN",
+        "WebComponent: Vaadin.DatePickerOverlayElement#UNKNOWN",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker-overlay")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-overlay.html")

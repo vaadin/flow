@@ -57,8 +57,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.VaadinNotificationCard#UNKNOWN",
-        "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.NotificationCard#UNKNOWN", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-notification-card")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public abstract class GeneratedVaadinNotificationCard<R extends GeneratedVaadinNotificationCard<R>>

@@ -32,7 +32,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.VaadinNotificationContainer#UNKNOWN",
+        "WebComponent: Vaadin.NotificationContainer#UNKNOWN",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-notification-container")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")

@@ -44,7 +44,7 @@ import com.vaadin.flow.shared.Registration;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.VaadinDialogOverlay#UNKNOWN",
+        "WebComponent: Vaadin.DialogOverlayElement#UNKNOWN",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-dialog-overlay")
 @HtmlImport("frontend://bower_components/vaadin-dialog/src/vaadin-dialog.html")

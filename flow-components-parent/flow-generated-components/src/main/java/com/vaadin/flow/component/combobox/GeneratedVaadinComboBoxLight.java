@@ -80,7 +80,7 @@ import com.vaadin.flow.component.EventData;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxLightElement#4.0.0-alpha6",
+        "WebComponent: Vaadin.ComboBoxLightElement#4.0.0-beta1",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-light.html")
@@ -776,11 +776,11 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
     public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
             extends ComponentEvent<R> {
         private final JsonObject detail;
-        private final JsonObject detailValue;
+        private final String detailValue;
 
         public SelectedItemChangeEvent(R source, boolean fromClient,
                 @EventData("event.detail") JsonObject detail,
-                @EventData("event.detail.value") JsonObject detailValue) {
+                @EventData("event.detail.value") String detailValue) {
             super(source, fromClient);
             this.detail = detail;
             this.detailValue = detailValue;
@@ -790,7 +790,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
             return detail;
         }
 
-        public JsonObject getDetailValue() {
+        public String getDetailValue() {
             return detailValue;
         }
     }
