@@ -204,6 +204,11 @@ public interface DataProvider<T, F> extends Serializable {
      *            callback will not be invoked at all if both would be
      *            <code>null</code>. Not <code>null</code>.
      *
+     * @param <Q>
+     *            the query filter type
+     * @param <C>
+     *            the configurable filter type
+     *
      * @return a data provider with a configurable filter, not <code>null</code>
      */
     default <Q, C> ConfigurableFilterDataProvider<T, Q, C> withConfigurableFilter(
@@ -303,6 +308,10 @@ public interface DataProvider<T, F> extends Serializable {
      * @param countCallback
      *            function that returns the number of items in the back end for
      *            a query
+     * @param <T>
+     *            data provider data type
+     * @param <F>
+     *            data provider filter type
      * @return a new callback data provider
      */
     static <T, F> CallbackDataProvider<T, F> fromFilteringCallbacks(
@@ -324,6 +333,8 @@ public interface DataProvider<T, F> extends Serializable {
      * @param countCallback
      *            function that returns the number of items in the back end for
      *            a query
+     * @param <T>
+     *            data provider data type
      * @return a new callback data provider
      */
     static <T> CallbackDataProvider<T, Void> fromCallbacks(

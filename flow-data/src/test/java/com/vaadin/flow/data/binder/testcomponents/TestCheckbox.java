@@ -1,7 +1,5 @@
 package com.vaadin.flow.data.binder.testcomponents;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Tag;
 
 @Tag("test-checkbox")

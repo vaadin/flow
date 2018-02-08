@@ -15,8 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,15 +23,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
@@ -51,6 +48,8 @@ import com.vaadin.flow.server.communication.streaming.StreamingErrorEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingStartEventImpl;
 import com.vaadin.flow.shared.ApplicationConstants;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
@@ -285,6 +284,8 @@ public class StreamReceiverHandler implements Serializable {
      * To adjust this value override the method, and register your own handler
      * in VaadinService.createRequestHandlers(). The default is 500ms, and
      * setting it to 0 effectively restores the old behavior.
+     * 
+     * @return the minimum interval to be used for streaming progress events
      */
     protected int getProgressEventInterval() {
         return DEFAULT_STREAMING_PROGRESS_EVENT_INTERVAL_MS;

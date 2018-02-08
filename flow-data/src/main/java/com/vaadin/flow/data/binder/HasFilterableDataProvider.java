@@ -57,6 +57,8 @@ public interface HasFilterableDataProvider<T, F> extends HasItems<T> {
      *            a function that converts filter values produced by this
      *            listing into filter values expected by the provided data
      *            provider, not <code>null</code>
+     * @param <C>
+     *            the filter type
      */
     <C> void setDataProvider(DataProvider<T, C> dataProvider,
             SerializableFunction<F, C> filterConverter);

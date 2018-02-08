@@ -62,6 +62,12 @@ public class InMemoryDataProviderHelpers {
      *            the value provider for providing values to filter
      * @param predicate
      *            the predicate to combine null filtering with
+     * @param <T>
+     *            the provided data type
+     * @param <Q>
+     *            the filter type
+     * @param <V>
+     *            the data provider object type
      * @return the wrapped data provider
      */
     public static <T, V, Q> DataProvider<T, Q> filteringByIgnoreNull(
@@ -88,6 +94,8 @@ public class InMemoryDataProviderHelpers {
      *            strings
      * @param localeSupplier
      *            the locale to use when converting strings to lower case
+     * @param <T>
+     *            the data provider object type
      * @return the wrapped data provider
      */
     public static <T> DataProvider<T, String> filteringByCaseInsensitiveString(
@@ -118,6 +126,11 @@ public class InMemoryDataProviderHelpers {
      *            the value provider to use
      * @param sortDirection
      *            the sort direction to use
+     * @param <T>
+     *            the data provider object type
+     * @param <V>
+     *            the provided value type
+     *
      * @return the created comparator
      */
     public static <V extends Comparable<? super V>, T> SerializableComparator<T> propertyComparator(
@@ -138,6 +151,8 @@ public class InMemoryDataProviderHelpers {
      *
      * @param sortDirection
      *            the sort direction to use
+     * @param <V>
+     *            the objects to compare
      * @return the natural comparator, with ordering defined by the given sort
      *         direction
      */
@@ -159,6 +174,11 @@ public class InMemoryDataProviderHelpers {
      *            the value provider to use
      * @param valueFilter
      *            the original predicate
+     * @param <T>
+     *            the data provider object type
+     * @param <V>
+     *            the provided value type
+     *            
      * @return the created predicate
      */
     public static <T, V> SerializablePredicate<T> createValueProviderFilter(
@@ -175,6 +195,10 @@ public class InMemoryDataProviderHelpers {
      *            the value provider to use
      * @param requiredValue
      *            the required value
+     * @param <T>
+     *            the data provider object type
+     * @param <V>
+     *            the provided value type
      * @return the created predicate
      */
     public static <T, V> SerializablePredicate<T> createEqualsFilter(

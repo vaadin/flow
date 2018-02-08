@@ -38,13 +38,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.component.HasValue.ValueChangeListener;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.BeanValidator;
@@ -1295,7 +1296,6 @@ public class Binder<BEAN> implements Serializable {
      *            the bean type to use, not {@code null}
      * @param scanNestedDefinitions
      *            if {@code true}, scan for nested property definitions as well
-     * @since
      */
     public Binder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
         this(BeanPropertySet.get(beanType, scanNestedDefinitions,
@@ -2209,9 +2209,6 @@ public class Binder<BEAN> implements Serializable {
      * this method with it seldom makes sense and almost always returns false.
      *
      * Return values for each case are compiled into the following table:
-     *
-     * <p>
-     *
      * <table summary="Return values">
      * <tr>
      * <td></td>

@@ -17,8 +17,6 @@ package com.vaadin.flow.server;
 
 /**
  * Interface for configuring the initial page contents.
- * <p>
- *
  */
 @FunctionalInterface
 public interface PageConfigurator {

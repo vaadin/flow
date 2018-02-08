@@ -190,6 +190,8 @@ public abstract class BeforeEvent extends EventObject {
      *            reroute target location string
      * @param routeParam
      *            route parameter
+     * @param <T>
+     *            route parameter type
      */
     public <T> void rerouteTo(String route, T routeParam) {
         rerouteTo(route, Collections.singletonList(routeParam));
@@ -203,6 +205,8 @@ public abstract class BeforeEvent extends EventObject {
      *            reroute target location string
      * @param routeParams
      *            route parameters
+     * @param <T>
+     *            route parameters type
      */
     public <T> void rerouteTo(String route, List<T> routeParams) {
         List<String> segments = routeParams.stream().map(Object::toString)

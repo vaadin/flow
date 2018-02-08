@@ -1,9 +1,7 @@
 package com.vaadin.flow.server.webjar;
 
 import javax.servlet.ServletContext;
-import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;

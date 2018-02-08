@@ -444,6 +444,8 @@ public class BeanPropertySet<T> implements PropertySet<T> {
      *            whether to scan for nested definitions in beanType
      * @param filterDefinition
      *            filtering conditions for nested properties
+     * @param <T>
+     *            the bean type to get a property set for
      * @return the bean property set, not <code>null</code>
      */
     @SuppressWarnings("unchecked")

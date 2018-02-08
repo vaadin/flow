@@ -161,6 +161,9 @@ public final class JsonSerializer {
      *            the type of the Java object convert the json to
      * @param json
      *            the json representation of the object
+     * @param <T>
+     *            the resulting object type
+     *
      * @return the deserialized object, or <code>null</code> if the input json
      *         is <code>null</code>
      */
@@ -272,6 +275,9 @@ public final class JsonSerializer {
      *            the type of the elements in the array
      * @param json
      *            the json representation of the objects
+     * @param <T>
+     *            the resulting objects types
+     *
      * @return a modifiable list of converted objects. Returns an empty list if
      *         the input array is <code>null</code>
      */

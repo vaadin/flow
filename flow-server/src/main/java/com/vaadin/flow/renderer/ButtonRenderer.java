@@ -48,7 +48,7 @@ public class ButtonRenderer<SOURCE> extends TemplateRenderer<SOURCE>
      * same for all the items.
      * <p>
      * Item click listeners can be added via
-     * {@link #addItemClickListener(com.vaadin.ui.renderers.ClickableRenderer.ItemClickListener)}.
+     * {@link #addItemClickListener(ItemClickListener)}.
      * 
      * @param label
      *            the label of the rendered button, not <code>null</code>
@@ -73,7 +73,7 @@ public class ButtonRenderer<SOURCE> extends TemplateRenderer<SOURCE>
      * all the items.
      * <p>
      * More click listeners can be added via
-     * {@link #addItemClickListener(com.vaadin.ui.renderers.ClickableRenderer.ItemClickListener)}.
+     * {@link #addItemClickListener(ItemClickListener)}.
      * 
      * @param label
      *            the label for the rendered button, not <code>null</code>
@@ -90,7 +90,7 @@ public class ButtonRenderer<SOURCE> extends TemplateRenderer<SOURCE>
      * Creates a new button renderer with a dynamic label.
      * <p>
      * Item click listeners can be added via
-     * {@link #addItemClickListener(com.vaadin.ui.renderers.ClickableRenderer.ItemClickListener)}.
+     * {@link #addItemClickListener(ItemClickListener)}.
      * 
      * @param labelProvider
      *            the provider for the labels of the rendered buttons, not
@@ -118,7 +118,7 @@ public class ButtonRenderer<SOURCE> extends TemplateRenderer<SOURCE>
      * {@link ItemClickListener} to receive events.
      * <p>
      * More click listeners can be added via
-     * {@link #addItemClickListener(com.vaadin.ui.renderers.ClickableRenderer.ItemClickListener)}.
+     * {@link #addItemClickListener(ItemClickListener)}.
      * 
      * @param labelProvider
      *            the provider for the labels of the rendered buttons, not

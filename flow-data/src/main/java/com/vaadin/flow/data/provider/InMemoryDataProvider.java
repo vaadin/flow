@@ -76,6 +76,8 @@ public interface InMemoryDataProvider<T> extends
      *            <code>null</code>
      * @param valueFilter
      *            filter for testing the property value, not <code>null</code>
+     * @param <V>
+     *            the provided value type
      */
     default <V> void setFilter(ValueProvider<T, V> valueProvider,
             SerializablePredicate<V> valueFilter) {
@@ -118,6 +120,8 @@ public interface InMemoryDataProvider<T> extends
      *            <code>null</code>
      * @param valueFilter
      *            filter for testing the property value, not <code>null</code>
+     * @param <V>
+     *            the provided value type
      */
     default <V> void addFilter(ValueProvider<T, V> valueProvider,
             SerializablePredicate<V> valueFilter) {
@@ -143,6 +147,8 @@ public interface InMemoryDataProvider<T> extends
      *            <code>null</code>
      * @param requiredValue
      *            the value that the property must have for the filter to pass
+     * @param <V>
+     *            the provided value type
      */
     default <V> void setFilterByValue(ValueProvider<T, V> valueProvider,
             V requiredValue) {
@@ -165,6 +171,8 @@ public interface InMemoryDataProvider<T> extends
      *            <code>null</code>
      * @param requiredValue
      *            the value that the property must have for the filter to pass
+     * @param <V>
+     *            the provided value type
      */
     default <V> void addFilterByValue(ValueProvider<T, V> valueProvider,
             V requiredValue) {
@@ -257,6 +265,8 @@ public interface InMemoryDataProvider<T> extends
      *            <code>null</code>
      * @param sortDirection
      *            the sort direction to use, not <code>null</code>
+     * @param <V>
+     *            the provided value type
      */
     default <V extends Comparable<? super V>> void setSortOrder(
             ValueProvider<T, V> valueProvider, SortDirection sortDirection) {
@@ -284,6 +294,8 @@ public interface InMemoryDataProvider<T> extends
      *            <code>null</code>
      * @param sortDirection
      *            the sort direction to use, not <code>null</code>
+     * @param <V>
+     *            the provided value type
      */
     default <V extends Comparable<? super V>> void addSortOrder(
             ValueProvider<T, V> valueProvider, SortDirection sortDirection) {
@@ -304,7 +316,9 @@ public interface InMemoryDataProvider<T> extends
      * @param predicate
      *            a predicate to use for comparing the item to the query filter,
      *            not <code>null</code>
-     *
+     * @param <Q>
+     *            the filter type
+     * 
      * @return a data provider that filters accordingly, not <code>null</code>
      */
     default <Q> DataProvider<T, Q> filteringBy(
@@ -332,7 +346,11 @@ public interface InMemoryDataProvider<T> extends
      * @param predicate
      *            a predicate to use for comparing the property value to the
      *            query filter, not <code>null</code>
-     *
+     * @param <V>
+     *            the provided value type
+     * @param <Q>
+     *            the filter type
+     * 
      * @return a data provider that filters accordingly, not <code>null</code>
      */
     default <V, Q> DataProvider<T, Q> filteringBy(
@@ -354,6 +372,8 @@ public interface InMemoryDataProvider<T> extends
      * @param valueProvider
      *            a value provider that gets the property value, not
      *            <code>null</code>
+     * @param <V>
+     *            the provided value type
      *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
