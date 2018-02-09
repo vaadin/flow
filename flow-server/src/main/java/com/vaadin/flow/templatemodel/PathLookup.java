@@ -70,7 +70,9 @@ public class PathLookup<T> {
 
     /**
      * Creates an empty path lookup.
-     * 
+     *
+     * @param <T>
+     *            the item type
      * @return and emtpy path lookup
      */
     public static <T> PathLookup<T> empty() {

@@ -88,6 +88,8 @@ public class EventDataCache {
      *            the component event type
      * @param constructor
      *            the DOM event constructor to store
+     * @param <T>
+     *            the event type
      * @return the stored DOM event constructor
      */
     public <T extends ComponentEvent<?>> Constructor<T> setEventConstructor(

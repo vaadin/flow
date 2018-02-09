@@ -32,7 +32,7 @@ import com.vaadin.flow.shared.Registration;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-dialog>} is a Polymer 2 element for customised modal dialogs.
+ * {@code <vaadin-dialog>} is a Polymer 2 element for customized modal dialogs.
  * </p>
  * <p>
  * &lt;vaadin-dialog opened&gt; &lt;template&gt; Sample dialog &lt;/template&gt;
@@ -52,7 +52,7 @@ import com.vaadin.flow.shared.Registration;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.VaadinDialog#null", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.DialogElement#null", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-dialog")
 @HtmlImport("frontend://bower_components/vaadin-dialog/src/vaadin-dialog.html")
 public abstract class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>

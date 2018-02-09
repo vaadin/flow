@@ -1,5 +1,5 @@
 {
-  "name": "Vaadin.VaadinNotificationContainer",
+  "name": "Vaadin.NotificationContainer",
   "tag": "vaadin-notification-container",
   "baseUrl": "vaadin-notification/src/vaadin-notification.html",
   "version": "UNKNOWN",

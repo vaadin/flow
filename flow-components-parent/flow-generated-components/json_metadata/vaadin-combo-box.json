@@ -2,16 +2,15 @@
   "name": "Vaadin.ComboBoxElement",
   "tag": "vaadin-combo-box",
   "baseUrl": "vaadin-combo-box/src/vaadin-combo-box.html",
-  "version": "4.0.0-alpha6",
+  "version": "4.0.0-beta1",
   "properties": [
     {
-      "name": "opened",
+      "name": "autofocus",
       "type": [
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the dropdown is open, false otherwise.\n         ",
-      "notify": true
+      "description": ""
     },
     {
       "name": "disabled",
@@ -20,6 +19,15 @@
       ],
       "objectType": [],
       "description": "Set to true to disable this input.\n             "
+    },
+    {
+      "name": "opened",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True if the dropdown is open, false otherwise.\n         ",
+      "notify": true
     },
     {
       "name": "readonly",
@@ -162,14 +170,6 @@
       "description": "The error message to display when the input is invalid.\n             "
     },
     {
-      "name": "autofocus",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": ""
-    },
-    {
       "name": "placeholder",
       "type": [
         "STRING"
@@ -179,6 +179,18 @@
     }
   ],
   "methods": [
+    {
+      "name": "connectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "disconnectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
     {
       "name": "open",
       "description": "Opens the dropdown list.\n     ",
@@ -206,18 +218,6 @@
     {
       "name": "checkValidity",
       "description": "Returns true if the current input value satisfies all constraints (if any)\n\nYou can override the `checkValidity` method for custom validations.\n     ",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "connectedCallback",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "disconnectedCallback",
-      "description": "",
       "parameters": [],
       "returns": "UNDEFINED"
     }
@@ -293,6 +293,8 @@
   ],
   "behaviors": [],
   "mixins": [
+    "Vaadin.ElementMixin",
+    "Vaadin.ControlStateMixin",
     "Vaadin.ComboBoxMixin",
     "Vaadin.ThemableMixin"
   ],

@@ -2,7 +2,7 @@
   "name": "Vaadin.UploadElement",
   "tag": "vaadin-upload",
   "baseUrl": "vaadin-upload/src/vaadin-upload.html",
-  "version": "4.0.0-alpha4",
+  "version": "4.0.0-beta1",
   "properties": [
     {
       "name": "nodrop",
@@ -50,7 +50,7 @@
         "ARRAY"
       ],
       "objectType": [],
-      "description": "The array of files being processed, or already uploaded.\n\nEach element is a [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)\nobject with a number of extra properties  to track the upload process:\n- `uploadTarget`: The target URL used to upload this file.\n- `elapsed`: Elapsed time since the upload started.\n- `elapsedStr`: Human-readable elapsed time.\n- `remaining`: Number of seconds remaining for the upload to finish.\n- `remainingStr`: Human-readable remaining time for the upload to finish.\n- `progress`: Percentage of the file already uploaded.\n- `speed`: Upload speed in kB/s.\n- `size`: File size in bytes.\n- `totalStr`: Human-readable total size of the file.\n- `loaded`: Bytes transferred so far.\n- `loadedStr`: Human-readable uploaded size at the moment.\n- `status`: Status of the upload process.\n- `error`: Error message in case the upload failed.\n- `abort`: True if the file was canceled by the user.\n- `complete`: True when the file was transferred to the server.\n- `uploading`: True while trasferring data to the server.\n             ",
+      "description": "The array of files being processed, or already uploaded.\n\nEach element is a [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File)\nobject with a number of extra properties  to track the upload process:\n- `uploadTarget`: The target URL used to upload this file.\n- `elapsed`: Elapsed time since the upload started.\n- `elapsedStr`: Human-readable elapsed time.\n- `remaining`: Number of seconds remaining for the upload to finish.\n- `remainingStr`: Human-readable remaining time for the upload to finish.\n- `progress`: Percentage of the file already uploaded.\n- `speed`: Upload speed in kB/s.\n- `size`: File size in bytes.\n- `totalStr`: Human-readable total size of the file.\n- `loaded`: Bytes transferred so far.\n- `loadedStr`: Human-readable uploaded size at the moment.\n- `status`: Status of the upload process.\n- `error`: Error message in case the upload failed.\n- `abort`: True if the file was canceled by the user.\n- `complete`: True when the file was transferred to the server.\n- `uploading`: True while transferring data to the server.\n             ",
       "notify": true
     },
     {

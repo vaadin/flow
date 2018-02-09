@@ -529,6 +529,8 @@ public class VaadinServlet extends HttpServlet {
      *
      * @deprecated As of 7.0. Will likely change or be removed in a future
      *             version
+     * 
+     * @return current application URL
      */
     @Deprecated
     protected URL getApplicationUrl(HttpServletRequest request)
@@ -577,7 +579,7 @@ public class VaadinServlet extends HttpServlet {
      * Escapes characters to html entities. An exception is made for some "safe
      * characters" to keep the text somewhat readable.
      *
-     * @param unsafe
+     * @param unsafe non-escaped string
      * @return a safe string to be added inside an html tag
      *
      * @deprecated As of 7.0. Will likely change or be removed in a future

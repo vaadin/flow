@@ -281,6 +281,10 @@ public class Router implements RouterInterface {
      *            navigation target to get url for
      * @param parameter
      *            parameter to embed into the generated url
+     * @param <T>
+     *            url parameter type
+     * @param <C>
+     *            navigation target type
      * @return url for the navigation target with parameter
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
@@ -303,6 +307,10 @@ public class Router implements RouterInterface {
      *            navigation target to get url for
      * @param parameters
      *            parameters to embed into the generated url, not null
+     * @param <T>
+     *            url parameter type
+     * @param <C>
+     *            navigation target type
      * @return url for the navigation target with parameter
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(

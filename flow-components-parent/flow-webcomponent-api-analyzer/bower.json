@@ -25,22 +25,19 @@
     "tests"
   ],
   "dependencies": {
-    "vaadin-text-field": "2.0.0-alpha10",
-    "vaadin-button": "2.0.0-alpha6",
-    "vaadin-checkbox": "2.0.0-alpha7",
-    "vaadin-combo-box": "4.0.0-alpha6",
-    "vaadin-form-layout": "2.0.0-alpha6",
-    "vaadin-split-layout": "4.0.0-alpha5",
-    "vaadin-date-picker": "3.0.0-alpha6",
-    "vaadin-dialog": "2.0.0-alpha5",
-    "vaadin-upload": "4.0.0-alpha4",
-    "vaadin-progress-bar": "1.0.0-alpha12",
-    "vaadin-tabs": "2.0.0-alpha7",
-    "vaadin-radio-button": "1.0.0-alpha12",
-    "vaadin-notification": "1.0.0-alpha7",
-    "vaadin-list-box": "1.0.0-alpha9"
-  },
-  "resolutions": {
-    "vaadin-progress-bar": "1.0.0-alpha12"
+    "vaadin-text-field": "2.0.0-beta1",
+    "vaadin-button": "2.0.0-beta1",
+    "vaadin-checkbox": "2.0.0-beta1",
+    "vaadin-combo-box": "4.0.0-beta1",
+    "vaadin-form-layout": "2.0.0-beta1",
+    "vaadin-split-layout": "4.0.0-beta1",
+    "vaadin-date-picker": "3.0.0-beta1",
+    "vaadin-dialog": "2.0.0-beta1",
+    "vaadin-upload": "4.0.0-beta1",
+    "vaadin-progress-bar": "1.0.0-beta1",
+    "vaadin-tabs": "2.0.0-beta1",
+    "vaadin-radio-button": "1.0.0-beta1",
+    "vaadin-notification": "1.0.0-beta1",
+    "vaadin-list-box": "1.0.0-beta1"
   }
 }

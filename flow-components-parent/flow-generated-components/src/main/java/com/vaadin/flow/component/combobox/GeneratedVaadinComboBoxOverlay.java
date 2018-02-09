@@ -49,7 +49,7 @@ import com.vaadin.flow.shared.Registration;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.VaadinComboBoxOverlay#UNKNOWN",
+        "WebComponent: Vaadin.ComboBoxOverlayElement#UNKNOWN",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-overlay")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-dropdown.html")

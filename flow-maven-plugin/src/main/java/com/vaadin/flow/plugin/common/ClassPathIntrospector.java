@@ -91,6 +91,9 @@ public abstract class ClassPathIntrospector {
      *
      * @param className
      *            the FQN of the class to load
+     * @param <T>
+     *            the class to be loaded
+     *
      * @return the class with the given {@code className} loaded by the project
      *         class loader
      */

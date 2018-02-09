@@ -1,5 +1,5 @@
 {
-  "name": "Vaadin.VaadinNotificationCard",
+  "name": "Vaadin.NotificationCard",
   "tag": "vaadin-notification-card",
   "baseUrl": "vaadin-notification/src/vaadin-notification.html",
   "version": "UNKNOWN",
