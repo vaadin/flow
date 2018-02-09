@@ -22,6 +22,9 @@ import com.vaadin.flow.component.HasElement;
  */
 public final class HighlightConditions {
 
+    private HighlightConditions() {
+    }
+
     /**
      * Highlight if the navigation path is the same of the target
      * {@link RouterLink}.
@@ -47,6 +50,8 @@ public final class HighlightConditions {
     /**
      * Highlight if the navigation path starts with {@code prefix}.
      *
+     * @param prefix
+     *            the prefix to match on the location path
      * @return the highlight condition
      */
     public static <C extends HasElement> HighlightCondition<C> locationPrefix(
@@ -71,8 +76,5 @@ public final class HighlightConditions {
      */
     public static <C extends HasElement> HighlightCondition<C> never() {
         return (link, event) -> false;
-    }
-
-    private HighlightConditions() {
     }
 }
