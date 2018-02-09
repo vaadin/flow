@@ -48,10 +48,16 @@ import com.vaadin.flow.shared.ApplicationConstants;
  */
 @Tag(Tag.A)
 public class RouterLink extends Component
-        implements HasText, HasComponents, HasStyle {
+        implements HasText, HasComponents, HasStyle, AfterNavigationObserver {
 
     private static final PropertyDescriptor<String, String> HREF = PropertyDescriptors
             .attributeWithDefault("href", "", false);
+
+    private HighlightCondition<RouterLink> highlightCondition = HighlightConditions
+            .locationPrefix();
+
+    private HighlightAction<RouterLink> highlightAction = HighlightActions
+            .toggleAttribute("highlight");
 
     /**
      * Creates a new empty router link.
@@ -420,5 +426,51 @@ public class RouterLink extends Component
                             + "Use overloaded method with explicit router parameter.");
         }
         return router.get();
+    }
+
+    /**
+     * Gets the {@link HighlightCondition} of this component.
+     *
+     * @return the highlight condition
+     */
+    public HighlightCondition<RouterLink> getHighlightCondition() {
+        return highlightCondition;
+    }
+
+    /**
+     * Sets the {@link HighlightCondition} of this component.
+     *
+     * @param highlightCondition
+     *            the highlight condition
+     */
+    public void setHighlightCondition(
+            HighlightCondition<RouterLink> highlightCondition) {
+        this.highlightCondition = highlightCondition;
+    }
+
+    /**
+     * Gets the {@link HighlightAction} of this component.
+     *
+     * @return the highlight action
+     */
+    public HighlightAction<RouterLink> getHighlightAction() {
+        return highlightAction;
+    }
+
+    /**
+     * Sets the {@link HighlightAction} of this component.
+     *
+     * @param highlightAction
+     *            the highlight action
+     */
+    public void setHighlightAction(
+            HighlightAction<RouterLink> highlightAction) {
+        this.highlightAction = highlightAction;
+    }
+
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        getHighlightAction().accept(this,
+                getHighlightCondition().test(this, event));
     }
 }

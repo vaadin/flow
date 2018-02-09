@@ -16,6 +16,8 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.ServletException;
+
+import java.util.Collections;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -337,6 +339,155 @@ public class RouterLinkTest extends HasCurrentService {
         RouterLink link = new RouterLink(router, "Greeting",
                 GreetingNavigationTarget.class, "hello");
         Assert.assertEquals("greeting/hello", link.getHref());
+    }
+
+    @Test
+    public void testRouterLinkDefaultHighlightCondition()
+            throws InvalidRouteConfigurationException {
+
+        registry.setNavigationTargets(Stream.of(FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router(
+                registry);
+
+        RouterLink link = new RouterLink(router, "Foo",
+                FooNavigationTarget.class);
+
+        AfterNavigationEvent event = new AfterNavigationEvent(
+                new LocationChangeEvent(router, this.createUI(),
+                        NavigationTrigger.ROUTER_LINK, new Location("foo/bar"),
+                        Collections.emptyList()));
+        link.afterNavigation(event);
+        Assert.assertTrue(link.getElement().hasAttribute("highlight"));
+
+        event = new AfterNavigationEvent(new LocationChangeEvent(router,
+                this.createUI(), NavigationTrigger.ROUTER_LINK,
+                new Location("baz"), Collections.emptyList()));
+        link.afterNavigation(event);
+        Assert.assertFalse(link.getElement().hasAttribute("highlight"));
+    }
+
+    @Test
+    public void testRouterLinkSameLocationHighlightCondition()
+            throws InvalidRouteConfigurationException {
+
+        registry.setNavigationTargets(Stream.of(FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router(
+                registry);
+
+        RouterLink link = new RouterLink(router, "Foo",
+                FooNavigationTarget.class);
+        link.setHighlightCondition(HighlightConditions.sameLocation());
+
+        AfterNavigationEvent event = new AfterNavigationEvent(
+                new LocationChangeEvent(router, this.createUI(),
+                        NavigationTrigger.ROUTER_LINK, new Location("foo/bar"),
+                        Collections.emptyList()));
+        link.afterNavigation(event);
+        Assert.assertFalse(link.getElement().hasAttribute("highlight"));
+
+        event = new AfterNavigationEvent(new LocationChangeEvent(router,
+                this.createUI(), NavigationTrigger.ROUTER_LINK,
+                new Location("foo"), Collections.emptyList()));
+        link.afterNavigation(event);
+        Assert.assertTrue(link.getElement().hasAttribute("highlight"));
+    }
+
+    @Test
+    public void testRouterLinkLocationPrefixHighlightCondition()
+            throws InvalidRouteConfigurationException {
+
+        registry.setNavigationTargets(Stream.of(FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router(
+                registry);
+
+        RouterLink link = new RouterLink(router, "Foo",
+                FooNavigationTarget.class);
+        link.setHighlightCondition(
+                HighlightConditions.locationPrefix("foo/ba"));
+
+        AfterNavigationEvent event = new AfterNavigationEvent(
+                new LocationChangeEvent(router, this.createUI(),
+                        NavigationTrigger.ROUTER_LINK, new Location("foo/bar"),
+                        Collections.emptyList()));
+
+        link.afterNavigation(event);
+        Assert.assertTrue(link.getElement().hasAttribute("highlight"));
+
+        event = new AfterNavigationEvent(new LocationChangeEvent(router,
+                this.createUI(), NavigationTrigger.ROUTER_LINK,
+                new Location("foo/baz"), Collections.emptyList()));
+        link.afterNavigation(event);
+        Assert.assertTrue(link.getElement().hasAttribute("highlight"));
+
+        event = new AfterNavigationEvent(new LocationChangeEvent(router,
+                this.createUI(), NavigationTrigger.ROUTER_LINK,
+                new Location("foo/qux"), Collections.emptyList()));
+        link.afterNavigation(event);
+        Assert.assertFalse(link.getElement().hasAttribute("highlight"));
+    }
+
+    @Test
+    public void testRouterLinkClassNameHightlightAction()
+            throws InvalidRouteConfigurationException {
+
+        registry.setNavigationTargets(Stream.of(FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router(
+                registry);
+
+        RouterLink link = new RouterLink(router, "Foo",
+                FooNavigationTarget.class);
+        link.setHighlightAction(HighlightActions.toggleClassName("highlight"));
+
+        AfterNavigationEvent event = new AfterNavigationEvent(
+                new LocationChangeEvent(router, this.createUI(),
+                        NavigationTrigger.ROUTER_LINK, new Location("foo/bar"),
+                        Collections.emptyList()));
+        link.afterNavigation(event);
+        Assert.assertTrue(link.hasClassName("highlight"));
+
+        event = new AfterNavigationEvent(new LocationChangeEvent(router,
+                this.createUI(), NavigationTrigger.ROUTER_LINK,
+                new Location("bar"), Collections.emptyList()));
+        link.afterNavigation(event);
+        Assert.assertFalse(link.getElement().hasAttribute("highlight"));
+    }
+
+    @Test
+    public void testRouterLinkThemeHightlightAction()
+            throws InvalidRouteConfigurationException {
+
+        registry.setNavigationTargets(Stream.of(FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router(
+                registry);
+
+        RouterLink link = new RouterLink(router, "Foo",
+                FooNavigationTarget.class);
+        link.setHighlightAction(HighlightActions.toggleTheme("highlight"));
+
+        AfterNavigationEvent event = new AfterNavigationEvent(
+                new LocationChangeEvent(router, this.createUI(),
+                        NavigationTrigger.ROUTER_LINK, new Location("foo/bar"),
+                        Collections.emptyList()));
+        link.afterNavigation(event);
+        Assert.assertTrue(
+                link.getElement().getThemeList().contains("highlight"));
+
+        event = new AfterNavigationEvent(new LocationChangeEvent(router,
+                this.createUI(), NavigationTrigger.ROUTER_LINK,
+                new Location("bar"), Collections.emptyList()));
+        link.afterNavigation(event);
+        Assert.assertFalse(
+                link.getElement().getThemeList().contains("highlight"));
     }
 
     @Rule
