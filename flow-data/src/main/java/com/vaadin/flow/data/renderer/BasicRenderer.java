@@ -104,6 +104,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         } else {
             String value = getFormattedValue(null);
             templateInnerHtml = getTemplateForProperty(value, rendering);
+            rendering.setContainer(owner);
         }
         templateElement.setProperty("innerHTML", templateInnerHtml);
 
@@ -243,6 +244,11 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         @Override
         protected Component createComponent(SOURCE item) {
             return BasicRenderer.this.createComponent(item);
+        }
+
+        @Override
+        protected Element getContainer() {
+            return container;
         }
     }
 

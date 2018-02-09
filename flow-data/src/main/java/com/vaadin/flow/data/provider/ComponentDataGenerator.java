@@ -17,6 +17,7 @@ package com.vaadin.flow.data.provider;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.ValueProvider;
 
 import elemental.json.JsonObject;
@@ -41,6 +42,7 @@ public class ComponentDataGenerator<T>
     private final ComponentRenderer<? extends Component, T> componentRenderer;
     private final ValueProvider<T, String> keyMapper;
     private String nodeIdPropertyName;
+    private Element container;
 
     /**
      * Creates a new generator.
@@ -85,6 +87,15 @@ public class ComponentDataGenerator<T>
             return null;
         }
         return keyMapper.apply(item);
+    }
+
+    @Override
+    protected Element getContainer() {
+        return container;
+    }
+
+    public void setContainer(Element container) {
+        this.container = container;
     }
 
     public ComponentRenderer<? extends Component, T> getComponentRenderer() {

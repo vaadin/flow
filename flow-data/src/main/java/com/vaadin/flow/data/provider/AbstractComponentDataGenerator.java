@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.vaadin.flow.component.Component;
@@ -33,8 +34,7 @@ import com.vaadin.flow.dom.Element;
 public abstract class AbstractComponentDataGenerator<T>
         implements DataGenerator<T> {
 
-    private Map<String, Component> renderedComponents;
-    private Element container;
+    private final Map<String, Component> renderedComponents = new HashMap<>();
 
     @Override
     public void refreshData(T item) {
@@ -46,7 +46,7 @@ public abstract class AbstractComponentDataGenerator<T>
             int oldId = oldComponent.getElement().getNode().getId();
             int newId = recreatedComponent.getElement().getNode().getId();
             if (oldId != newId) {
-                container.removeChild(oldComponent.getElement());
+                getContainer().removeChild(oldComponent.getElement());
                 registerRenderedComponent(itemKey, recreatedComponent);
             }
         }
@@ -73,19 +73,7 @@ public abstract class AbstractComponentDataGenerator<T>
      * 
      * @return the container
      */
-    public Element getContainer() {
-        return container;
-    }
-
-    /**
-     * Sets the element where the generated components will be attached to.
-     * 
-     * @param container
-     *            the container element
-     */
-    public void setContainer(Element container) {
-        this.container = container;
-    }
+    protected abstract Element getContainer();
 
     /**
      * Creates a new component based on the provided item.
@@ -119,7 +107,7 @@ public abstract class AbstractComponentDataGenerator<T>
             Component component) {
 
         Element element = component.getElement();
-        container.appendChild(element);
+        getContainer().appendChild(element);
         renderedComponents.put(itemKey, component);
     }
 
