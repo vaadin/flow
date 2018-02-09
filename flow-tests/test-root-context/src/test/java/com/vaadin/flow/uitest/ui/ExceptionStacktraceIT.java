@@ -31,13 +31,9 @@ public class ExceptionStacktraceIT extends ChromeBrowserTest {
 
         WebElement main = findElement(By.cssSelector("body > div"));
 
-        WebElement warning = main.findElement(By.tagName("div"));
-        // This may be wrong if tests have SLF4J binding. At the moment there is
-        // no any SLF4J binding dependency in the project so this warning should
-        // be shown
-        Assert.assertThat(
-                "There is no warning message about SLF4J binding absence",
-                warning.getText(), CoreMatchers.containsString("SLF4J"));
+        Assert.assertFalse(
+                "There should be no warning about SLF4J absence because the test project should have slf4j bindings",
+                isElementPresent(By.cssSelector("body > div > div")));
 
         WebElement stacktrace = main.findElement(By.tagName("pre"));
 
