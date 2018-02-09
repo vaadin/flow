@@ -851,9 +851,9 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("")
     @Tag(Tag.DIV)
-    public static class ExtendingView extends
-            AbstractMain {
+    public static class ExtendingView extends AbstractMain {
     }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -1993,14 +1993,13 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Resuming", eventCollector.get(3));
     }
 
-    @Test //3384
+    @Test // 3384
     public void theme_is_gotten_from_the_super_class()
             throws InvalidRouteConfigurationException, Exception {
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(ExtendingView.class));
 
-        router.navigate(ui, new Location(""),
-                NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
         Field theme = UIInternals.class.getDeclaredField("theme");
         theme.setAccessible(true);
@@ -2013,9 +2012,8 @@ public class RouterTest extends RoutingTestBase {
     public void postpone_then_resume_with_multiple_listeners()
             throws InvalidRouteConfigurationException, InterruptedException {
         router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(RootNavigationTarget.class,
-                                PostponingAndResumingCompoundNavigationTarget.class)
+                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
+                        PostponingAndResumingCompoundNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
         int status1 = router.navigate(ui, new Location("postpone"),
@@ -2102,8 +2100,7 @@ public class RouterTest extends RoutingTestBase {
         ui.navigateTo("sub");
         Assert.assertEquals(MainLayout.class, getUIComponent());
 
-        children = ui.getChildren()
-                .collect(Collectors.toList());
+        children = ui.getChildren().collect(Collectors.toList());
         Assert.assertEquals(1, children.size());
         Assert.assertEquals(MainLayout.class, children.get(0).getClass());
         children = children.get(0).getChildren().collect(Collectors.toList());
@@ -2114,6 +2111,68 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(SubLayout.class, children.get(0).getClass());
         children = children.get(0).getChildren().collect(Collectors.toList());
         Assert.assertTrue(children.isEmpty());
+
+    }
+
+    @Test // 3519
+    public void getUrl_throws_for_required_parameter()
+            throws InvalidRouteConfigurationException {
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(String.format(
+                "Navigation target '%s' requires a parameter and can not be resolved. "
+                        + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
+                        + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
+                        + "instead",
+                RouteWithParameter.class.getName()));
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(RouteWithParameter.class));
+
+        router.getUrl(RouteWithParameter.class);
+    }
+
+    @Test // 3519
+    public void getUrl_returns_url_if_parameter_is_wildcard_or_optional()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(RouteWithMultipleParameters.class,
+                                OptionalParameter.class)
+                        .collect(Collectors.toSet()));
+
+        String url = router.getUrl(RouteWithMultipleParameters.class);
+
+        Assert.assertEquals("Has url didn't match Wildcard parameter",
+                RouteWithMultipleParameters.class.getAnnotation(Route.class)
+                        .value(),
+                url);
+        url = router.getUrl(OptionalParameter.class);
+
+        Assert.assertEquals("Has url didn't match Optional parameter",
+                OptionalParameter.class.getAnnotation(Route.class).value(),
+                url);
+    }
+
+    @Test // 3519
+    public void getUrlBase_returns_url_without_parameter_even_for_required_parameters()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream
+                .of(RouteWithParameter.class, RouteWithMultipleParameters.class,
+                        OptionalParameter.class, FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        Assert.assertEquals("Required parameter didn't match url base.",
+                RouteWithParameter.class.getAnnotation(Route.class).value(),
+                router.getUrlBase(RouteWithParameter.class));
+        Assert.assertEquals("Wildcard parameter didn't match url base.",
+                RouteWithMultipleParameters.class.getAnnotation(Route.class)
+                        .value(),
+                router.getUrlBase(RouteWithMultipleParameters.class));
+        Assert.assertEquals("Optional parameter didn't match url base.",
+                OptionalParameter.class.getAnnotation(Route.class).value(),
+                router.getUrlBase(OptionalParameter.class));
+        Assert.assertEquals("Non parameterized url didn't match url base.",
+                FooNavigationTarget.class.getAnnotation(Route.class).value(),
+                router.getUrlBase(FooNavigationTarget.class));
 
     }
 

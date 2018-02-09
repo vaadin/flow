@@ -227,18 +227,43 @@ public class Router implements RouterInterface {
 
     /**
      * Get the registered url string for given navigation target.
-     *
+     * <p>
+     * Note! If the navigation target has a url parameter that is required then
+     * this method will throw and IllegalArgumentException.
+     * 
      * @param navigationTarget
      *            navigation target to get url for
      * @return url for the navigation target
+     * @throws IllegalArgumentException
+     *             if the navigation target requires a parameter
      */
     public String getUrl(Class<? extends Component> navigationTarget) {
         String routeString = getUrlForTarget(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
                 WildcardParameter.class)) {
             routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
+        } else if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
+            String message = String.format(
+                    "Navigation target '%s' requires a parameter and can not be resolved. "
+                            + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
+                            + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
+                            + "instead",
+                    navigationTarget.getName());
+            throw new IllegalArgumentException(message);
         }
         return trimRouteString(routeString);
+    }
+
+    /**
+     * Return the url base without any url parameters.
+     * 
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @return url base without url parameters
+     */
+    public String getUrlBase(Class<? extends Component> navigationTarget) {
+        String routeString = getUrlForTarget(navigationTarget);
+        return trimRouteString(routeString.replaceAll("/\\{[\\s\\S]*}", ""));
     }
 
     /**
