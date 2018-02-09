@@ -39,7 +39,6 @@ import com.vaadin.flow.shared.Registration;
 public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
         implements ClickableRenderer<SOURCE> {
 
-    private ValueProvider<SOURCE, String> labelProvider;
     private List<ItemClickListener<SOURCE>> listeners = new ArrayList<>(1);
 
     /**
@@ -125,14 +124,14 @@ public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
     protected String getTemplateForProperty(String property,
             Rendering<SOURCE> context) {
         String eventName = getTemplatePropertyName(context) + "_event";
-        setEventHandler(eventName, item -> onClick(item));
+        setEventHandler(eventName, this::onClick);
         return String.format("<button on-click=\"%s\">%s</button>", eventName,
                 property);
     }
 
     @Override
     public Component createComponent(SOURCE item) {
-        NativeButton button = new NativeButton(labelProvider.apply(item));
+        NativeButton button = new NativeButton(getValueProvider().apply(item));
         button.addClickListener(event -> getItemClickListeners()
                 .forEach(listener -> listener.onItemClicked(item)));
         return button;

@@ -65,6 +65,10 @@ public final class TemplateRenderer<SOURCE> extends Renderer<SOURCE> {
         return renderer;
     }
 
+    private TemplateRenderer(String template) {
+        super(template);
+    }
+
     /**
      * Sets a property to be used inside the template. Each property is
      * referenced inside the template by using the {@code [[item.property]]}
@@ -145,9 +149,5 @@ public final class TemplateRenderer<SOURCE> extends Renderer<SOURCE> {
             SerializableConsumer<SOURCE> handler) {
         setEventHandler(handlerName, handler);
         return this;
-    }
-
-    private TemplateRenderer(String template) {
-        super(template);
     }
 }

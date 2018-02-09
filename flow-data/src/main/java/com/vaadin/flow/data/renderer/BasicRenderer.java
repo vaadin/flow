@@ -19,7 +19,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.provider.AbstractComponentDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
@@ -63,6 +62,10 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         this.valueProvider = valueProvider;
     }
 
+    protected ValueProvider<SOURCE, TARGET> getValueProvider() {
+        return valueProvider;
+    }
+
     @Override
     public Rendering<SOURCE> render(Element container,
             KeyMapper<SOURCE> keyMapper) {
@@ -83,33 +86,31 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         owner.getNode()
                 .runWhenAttached(ui -> ui.getInternals().getStateTree()
                         .beforeClientResponse(owner.getNode(),
-                                () -> setupTemplateWhenAttached(ui, owner,
+                                () -> setupTemplateWhenAttached(owner,
                                         rendering, keyMapper)));
     }
 
-    private void setupTemplateWhenAttached(UI ui, Element owner,
+    private void setupTemplateWhenAttached(Element owner,
             SimpleValueRendering rendering, KeyMapper<SOURCE> keyMapper) {
 
         Element templateElement = rendering.getTemplateElement().get();
         owner.appendChild(templateElement);
 
-        String templateInnerHtml;
-
         if (keyMapper != null) {
             String propertyName = getTemplatePropertyName(rendering);
 
-            templateInnerHtml = getTemplateForProperty(
-                    "[[item." + propertyName + "]]", rendering);
+            templateElement.setProperty("innerHTML", getTemplateForProperty(
+                    "[[item." + propertyName + "]]", rendering));
             rendering.setPropertyName(propertyName);
+
+            RendererUtil.registerEventHandlers(this, templateElement, owner,
+                    keyMapper::get);
         } else {
             String value = getFormattedValue(null);
-            templateInnerHtml = getTemplateForProperty(value, rendering);
+            templateElement.setProperty("innerHTML",
+                    getTemplateForProperty(value, rendering));
             rendering.setContainer(owner);
         }
-        templateElement.setProperty("innerHTML", templateInnerHtml);
-
-        RendererUtil.registerEventHandlers(this, templateElement, owner,
-                keyMapper::get);
     }
 
     /**
