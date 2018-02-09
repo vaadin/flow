@@ -7,11 +7,11 @@ import java.util.function.Function;
 import com.google.gwt.core.client.impl.SchedulerImpl;
 import com.vaadin.client.CustomScheduler;
 import com.vaadin.client.PolymerUtils;
-import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.model.UpdatableModelProperties;
+import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.NativeFunction;
@@ -265,6 +265,13 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                 newPropertyValue, WidgetUtil.getJsProperty(element,
                         PROPERTY_PREFIX + propertyName));
 
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty(propertyName);
+        assertEquals(newPropertyValue, property.getValue());
+
+        assertEquals(newPropertyValue,
+                tree.synchronizedProperties.get(node).get(propertyName));
+
         assertEquals("`_propertiesChanged` should be triggered exactly once",
                 1.0, WidgetUtil.getJsProperty(element,
                         "propertiesChangedCallCount"));
@@ -298,6 +305,12 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                         + " updated from client side",
                 newPropertyValue, WidgetUtil.getJsProperty(element,
                         PROPERTY_PREFIX + propertyName));
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty(propertyName);
+        assertEquals(newPropertyValue, property.getValue());
+
+        assertEquals(newPropertyValue,
+                tree.synchronizedProperties.get(node).get(propertyName));
     }
 
     public void testInitialUpdateModelProperty_propertyIsUpdatableAndSchedulerIsNotExecuted_propertyIsNotSync() {
@@ -331,6 +344,39 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                         + " updated from client side",
                 propertyValue, WidgetUtil.getJsProperty(element,
                         PROPERTY_PREFIX + propertyName));
+        MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty(propertyName);
+        assertEquals(propertyValue, property.getValue());
+
+        assertFalse(tree.synchronizedProperties.has(node));
+    }
+
+    public void testUpdateModelSubProperty_subpropertyIsUpdatableAndIsNotSetFromServer_subpropertyIsSync() {
+        addMockMethods(element);
+        setModelProperty(node, "bar", modelNode);
+
+        String subpropertyName = "bar.foo";
+        node.setNodeData(new UpdatableModelProperties(
+                JsCollections.array(subpropertyName)));
+
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        String newSubPropertyValue = "baz";
+        emulatePolymerPropertyChange(element, subpropertyName,
+                newSubPropertyValue);
+        Reactive.flush();
+        assertEquals(
+                "Expected to have property with name " + subpropertyName
+                        + " updated from client side",
+                newSubPropertyValue, WidgetUtil.getJsProperty(element,
+                        PROPERTY_PREFIX + subpropertyName));
+        MapProperty property = modelNode.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+        assertEquals(newSubPropertyValue, property.getValue());
+
+        assertEquals(newSubPropertyValue,
+                tree.synchronizedProperties.get(modelNode).get("foo"));
     }
 
     public void testUpdateModelProperty_propertyIsNotUpdatable_propertyIsNotSync() {
@@ -451,8 +497,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
     }
 
     private StateNode createAndAttachModelNode(String modelPropertyName) {
-        StateNode modelNode = new StateNode(nextId,
-                new StateTree(new Registry()));
+        StateNode modelNode = new StateNode(nextId, node.getTree());
         nextId++;
         setModelProperty(node, modelPropertyName, modelNode, false);
         return modelNode;
