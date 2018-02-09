@@ -52,6 +52,7 @@ import com.vaadin.flow.server.startup.RouteRegistry;
  */
 public class Router implements RouterInterface {
 
+    private static final String PARAMETER_REGEX = "/\\{[\\s\\S]*}";
     private RouteResolver routeResolver;
 
     private final RouterConfiguration configuration = new RouterConfiguration() {
@@ -241,7 +242,7 @@ public class Router implements RouterInterface {
         String routeString = getUrlForTarget(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
                 WildcardParameter.class)) {
-            routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
+            routeString = routeString.replaceAll(PARAMETER_REGEX, "");
         } else if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             String message = String.format(
                     "Navigation target '%s' requires a parameter and can not be resolved. "
@@ -263,7 +264,7 @@ public class Router implements RouterInterface {
      */
     public String getUrlBase(Class<? extends Component> navigationTarget) {
         String routeString = getUrlForTarget(navigationTarget);
-        return trimRouteString(routeString.replaceAll("/\\{[\\s\\S]*}", ""));
+        return trimRouteString(routeString.replaceAll(PARAMETER_REGEX, ""));
     }
 
     /**
@@ -354,7 +355,7 @@ public class Router implements RouterInterface {
                 OptionalParameter.class)
                 || ParameterDeserializer.isAnnotatedParameter(navigationTarget,
                         WildcardParameter.class)) {
-            routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
+            routeString = routeString.replaceAll(PARAMETER_REGEX, "");
         } else {
             throw new NotFoundException(String.format(
                     "The navigation target '%s' has a non optional parameter that needs to be given.",
