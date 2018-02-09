@@ -141,7 +141,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private static class InitialPropertyUpdate {
-        private JsArray<Runnable> commands = JsCollections.array();
+        private final JsArray<Runnable> commands = JsCollections.array();
         private final StateNode node;
 
         private InitialPropertyUpdate(StateNode node) {
@@ -153,10 +153,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         private void execute() {
-            if (commands != null) {
-                commands.forEach(Runnable::run);
-            }
+            commands.forEach(Runnable::run);
             node.clearNodeData(this);
+            commands.clear();
         }
     }
 
@@ -296,21 +295,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             JavaScriptObject changedPropertyPathsToValues, StateNode node) {
         String[] keys = WidgetUtil.getKeys(changedPropertyPathsToValues);
 
-        Runnable runnable = () -> {
-            for (String propertyName : keys) {
-                handlePropertyChange(propertyName,
-                        () -> WidgetUtil.getJsProperty(
-                                changedPropertyPathsToValues, propertyName),
-                        node);
-            }
-        };
-
-        InitialPropertyUpdate initialUpdate = node
-                .getNodeData(InitialPropertyUpdate.class);
-        if (initialUpdate == null) {
-            runnable.run();
-        } else {
-            initialUpdate.addCommand(runnable);
+        for (String propertyName : keys) {
+            handlePropertyChange(propertyName, () -> WidgetUtil
+                    .getJsProperty(changedPropertyPathsToValues, propertyName),
+                    node);
         }
     }
 
@@ -354,7 +342,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 return;
             }
         }
-        mapProperty.syncToServer(valueProvider.get());
+        InitialPropertyUpdate initialUpdate = node
+                .getNodeData(InitialPropertyUpdate.class);
+        if (initialUpdate == null) {
+            mapProperty.syncToServer(valueProvider.get());
+        } else {
+            MapProperty prop = mapProperty;
+            initialUpdate
+                    .addCommand(() -> prop.syncToServer(valueProvider.get()));
+        }
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {
