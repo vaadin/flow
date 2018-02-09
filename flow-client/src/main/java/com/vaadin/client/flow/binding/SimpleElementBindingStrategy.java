@@ -141,20 +141,20 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private static class InitialPropertyUpdate {
-        private Runnable command;
+        private JsArray<Runnable> commands = JsCollections.array();
         private final StateNode node;
 
         private InitialPropertyUpdate(StateNode node) {
             this.node = node;
         }
 
-        private void setCommand(Runnable command) {
-            this.command = command;
+        private void addCommand(Runnable command) {
+            commands.set(commands.length(), command);
         }
 
         private void execute() {
-            if (command != null) {
-                command.run();
+            if (commands != null) {
+                commands.forEach(Runnable::run);
             }
             node.clearNodeData(this);
         }
@@ -310,7 +310,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (initialUpdate == null) {
             runnable.run();
         } else {
-            initialUpdate.setCommand(runnable);
+            initialUpdate.addCommand(runnable);
         }
     }
 
