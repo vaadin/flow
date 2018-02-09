@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,8 @@ import com.vaadin.flow.server.startup.RouteRegistry;
  */
 public class Router implements RouterInterface {
 
-    private static final String PARAMETER_REGEX = "/\\{[\\s\\S]*}";
+    private static final Pattern PARAMETER_PATTREN = Pattern
+            .compile("/\\{[\\s\\S]*}");
     private RouteResolver routeResolver;
 
     private final RouterConfiguration configuration = new RouterConfiguration() {
@@ -242,7 +244,7 @@ public class Router implements RouterInterface {
         String routeString = getUrlForTarget(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
                 WildcardParameter.class)) {
-            routeString = routeString.replaceAll(PARAMETER_REGEX, "");
+            routeString = PARAMETER_PATTREN.matcher(routeString).replaceAll("");
         } else if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             String message = String.format(
                     "Navigation target '%s' requires a parameter and can not be resolved. "
@@ -264,7 +266,7 @@ public class Router implements RouterInterface {
      */
     public String getUrlBase(Class<? extends Component> navigationTarget) {
         String routeString = getUrlForTarget(navigationTarget);
-        return trimRouteString(routeString.replaceAll(PARAMETER_REGEX, ""));
+        return trimRouteString(PARAMETER_PATTREN.matcher(routeString).replaceAll(""));
     }
 
     /**
@@ -355,7 +357,7 @@ public class Router implements RouterInterface {
                 OptionalParameter.class)
                 || ParameterDeserializer.isAnnotatedParameter(navigationTarget,
                         WildcardParameter.class)) {
-            routeString = routeString.replaceAll(PARAMETER_REGEX, "");
+            routeString = PARAMETER_PATTREN.matcher(routeString).replaceAll("");
         } else {
             throw new NotFoundException(String.format(
                     "The navigation target '%s' has a non optional parameter that needs to be given.",

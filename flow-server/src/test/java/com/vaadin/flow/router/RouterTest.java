@@ -2141,13 +2141,13 @@ public class RouterTest extends RoutingTestBase {
 
         String url = router.getUrl(RouteWithMultipleParameters.class);
 
-        Assert.assertEquals("Has url didn't match Wildcard parameter",
+        Assert.assertEquals("Returned url didn't match Wildcard parameter",
                 RouteWithMultipleParameters.class.getAnnotation(Route.class)
                         .value(),
                 url);
         url = router.getUrl(OptionalParameter.class);
 
-        Assert.assertEquals("Has url didn't match Optional parameter",
+        Assert.assertEquals("Returned url didn't match Optional parameter",
                 OptionalParameter.class.getAnnotation(Route.class).value(),
                 url);
     }
