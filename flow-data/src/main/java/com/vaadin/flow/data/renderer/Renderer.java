@@ -99,7 +99,7 @@ public class Renderer<SOURCE> implements Serializable {
      * </pre>
      * 
      * Any types supported by the {@link JsonSerializer} are valid types for the
-     * TemplateRenderer.
+     * Renderer.
      * 
      * @param property
      *            the name of the property used inside the template, not
@@ -107,7 +107,6 @@ public class Renderer<SOURCE> implements Serializable {
      * @param provider
      *            a {@link ValueProvider} that provides the actual value for the
      *            property, not <code>null</code>
-     * @return this instance for method chaining
      */
     protected void setProperty(String property,
             ValueProvider<SOURCE, ?> provider) {
@@ -149,7 +148,6 @@ public class Renderer<SOURCE> implements Serializable {
      * @param handler
      *            the handler executed when the event is triggered, not
      *            <code>null</code>
-     * @return this instance for method chaining
      * @see <a href=
      *      "https://www.polymer-project.org/2.0/docs/devguide/events">https://www.polymer-project.org/2.0/docs/devguide/events</a>
      */
@@ -211,7 +209,7 @@ public class Renderer<SOURCE> implements Serializable {
      * immutable.
      * 
      * @return the mapped event handlers, never <code>null</code>
-     * @see #withEventHandler(String, SerializableConsumer)
+     * @see #setEventHandler(String, SerializableConsumer)
      */
     public Map<String, SerializableConsumer<SOURCE>> getEventHandlers() {
         return eventHandlers == null ? Collections.emptyMap()
