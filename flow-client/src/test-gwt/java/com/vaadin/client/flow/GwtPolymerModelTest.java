@@ -411,7 +411,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         element._propertiesChanged = function() {
             element.propertiesChangedCallCount += 1;
         };
-    
+
         element.callbackCallCount = 0;
         $wnd.customElements = {
             whenDefined: function() {
