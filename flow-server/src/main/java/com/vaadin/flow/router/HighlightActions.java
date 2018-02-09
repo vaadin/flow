@@ -23,6 +23,9 @@ import com.vaadin.flow.component.HasStyle;
  */
 public final class HighlightActions {
 
+    private HighlightActions() {
+    }
+
     /**
      * An action which toggles {@code className} class on the target based on
      * its highlight state.
@@ -84,8 +87,5 @@ public final class HighlightActions {
         return (link, highligh) -> {
             // Do nothing.
         };
-    }
-
-    private HighlightActions() {
     }
 }

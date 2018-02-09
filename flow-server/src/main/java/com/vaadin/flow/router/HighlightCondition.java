@@ -17,7 +17,25 @@ package com.vaadin.flow.router;
 
 import com.vaadin.flow.function.SerializableBiPredicate;
 
+/**
+ * A condition to meet to determine the highlight state of the target.
+ *
+ * @param <T>
+ *            the target type of the highlight condition
+ */
 @FunctionalInterface
 public interface HighlightCondition<T>
         extends SerializableBiPredicate<T, AfterNavigationEvent> {
+
+    /**
+     * Tests if the target should be highlighted based on the navigation
+     * {@code event}.
+     *
+     * @param t
+     *            the target of the highlight condition
+     * @param event
+     *            the navigation event
+     */
+    @Override
+    boolean test(T t, AfterNavigationEvent event);
 }
