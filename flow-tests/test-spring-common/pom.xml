@@ -34,11 +34,6 @@
             <version>5.0.2.RELEASE</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.webjars.bowergithub.polymer</groupId>
-            <artifactId>polymer</artifactId>
-        </dependency>
-
     </dependencies>
 
     <build>
