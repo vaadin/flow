@@ -28,124 +28,12 @@
                 <version>2.0.0-beta1</version>
             </dependency>
             <dependency>
-                <groupId>org.webjars.bowergithub.polymer</groupId>
-                <artifactId>polymer</artifactId>
-                <version>2.5.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.webcomponents</groupId>
-                <artifactId>shadycss</artifactId>
-                <version>1.1.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.webcomponents</groupId>
-                <artifactId>webcomponentsjs</artifactId>
-                <version>1.1.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bowergithub.vaadin</groupId>
-                <artifactId>vaadin-element-mixin</artifactId>
-                <version>1.0.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.vaadin</groupId>
-                <artifactId>vaadin-control-state-mixin</artifactId>
-                <version>2.0.3</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.vaadin</groupId>
-                <artifactId>vaadin-themable-mixin</artifactId>
-                <version>1.1.5</version>
-            </dependency>
-            <dependency>
                 <groupId>org.webjars.bowergithub.vaadin</groupId>
                 <artifactId>vaadin-list-mixin</artifactId>
                 <version>2.0.0-alpha2</version>
             </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.vaadin</groupId>
-                <artifactId>vaadin-overlay</artifactId>
-                <version>2.0.5</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.vaadin</groupId>
-                <artifactId>vaadin-usage-statistics</artifactId>
-                <version>1.0.6</version>
-            </dependency>
+          </dependencies>
 
-            <dependency>
-                <groupId>org.webjars.bowergithub.vaadin</groupId>
-                <artifactId>vaadin-development-mode-detector</artifactId>
-                <version>1.0.3</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-a11y-announcer</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-a11y-keys-behavior</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-resizable-behavior</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-list</artifactId>
-                <version>2.0.12</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-scroll-target-behavior</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-icon</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-meta</artifactId>
-                <version>2.0.5</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-overlay-behavior</artifactId>
-                <version>2.3.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-iconset-svg</artifactId>
-                <version>2.1.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-media-query</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-flex-layout</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-fit-behavior</artifactId>
-                <version>2.1.0</version>
-            </dependency>
-            <!-- dependency for paper Elements. -->
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymerelements</groupId>
-                <artifactId>iron-behaviors</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-        </dependencies>
     </dependencyManagement>
 
 </project>
