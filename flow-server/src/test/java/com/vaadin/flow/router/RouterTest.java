@@ -1401,8 +1401,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void navigateToRoot_errorCode_dontRedirect()
-            throws NoSuchFieldException, IllegalAccessException,
-            InvalidRouteConfigurationException {
+            throws InvalidRouteConfigurationException {
 
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(FooNavigationTarget.class));
@@ -1648,15 +1647,36 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+                HttpServletResponse.SC_NOT_FOUND, result);
 
         String message = String.format(
                 "Invalid wildcard parameter in class %s. Only String is supported for wildcard parameters.",
                 UnsupportedWildParameter.class.getName());
-        String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
-                locationString, message);
+        String exceptionText = String.format("Could not navigate to '%s'. Reason: Failed to parse url parameter, exception: %s",
+                locationString, new UnsupportedOperationException(message));
 
-        assertExceptionComponent(exceptionText);
+        assertExceptionComponent(exceptionText, RouteNotFoundError.class);
+    }
+
+    @Test
+    public void unparsable_url_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(LongParameter.class));
+
+        String locationString = "long/unsupportedParam";
+        int result = router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Non existent route should have returned.",
+                HttpServletResponse.SC_NOT_FOUND, result);
+
+        String exceptionText = String.format(
+                "Could not navigate to '%s'. Reason: Failed to parse url parameter, exception: %s",
+                locationString, new NumberFormatException(
+                        "For input string: \"unsupportedParam\""));
+
+        assertExceptionComponent(exceptionText, RouteNotFoundError.class);
     }
 
     @Test
@@ -1667,7 +1687,8 @@ public class RouterTest extends RoutingTestBase {
         router.getRegistry().setErrorNavigationTargets(
                 Collections.singleton(ErrorTarget.class));
 
-        int result = router.navigate(ui, new Location("error"),
+        String locationString = "error";
+        int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Non existent route should have returned.",
                 HttpServletResponse.SC_NOT_FOUND, result);
@@ -1675,7 +1696,10 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
         Assert.assertEquals("",
-                "Redirected to error view, showing message: Could not navigate to 'error'",
+                String.format(
+                        "Redirected to error view, showing message: Could not navigate to 'error'. Reason: %s",
+                        String.format("Couldn't find route for '%s'",
+                                locationString)),
                 eventCollector.get(0));
     }
 

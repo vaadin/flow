@@ -32,8 +32,13 @@ public class RouteNotFoundError extends Component
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
-        getElement().setText(
-                "Could not navigate to '" + event.getLocation().getPath() + "'");
+        String errorMessage = String.format("Could not navigate to '%s'.",
+                event.getLocation().getPath());
+        if (parameter.hasCustomMessage()) {
+            errorMessage += String.format(" Reason: %s",
+                    parameter.getCustomMessage());
+        }
+        getElement().setText(errorMessage);
         return HttpServletResponse.SC_NOT_FOUND;
     }
 }

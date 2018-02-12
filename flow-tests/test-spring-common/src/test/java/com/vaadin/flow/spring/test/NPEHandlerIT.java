@@ -29,7 +29,7 @@ public class NPEHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void npeIsHandledByComponent() throws Exception {
+    public void npeIsHandledByComponent() {
         open();
 
         Assert.assertTrue(
@@ -39,11 +39,15 @@ public class NPEHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void noRouteIsHandledByExistingFlowComponent() throws Exception {
+    public void noRouteIsHandledByExistingFlowComponent() {
+        String nonExistingRoutePath = "non-existing-route";
         getDriver().get(
-                getTestURL(getRootURL(), "/no-existing-route", new String[0]));
+                getTestURL(getRootURL(), '/' + nonExistingRoutePath,
+                        new String[0]));
 
-        Assert.assertEquals("Could not navigate to 'no-existing-route'",
+        Assert.assertEquals(String.format(
+                "Could not navigate to '%s'. Reason: Couldn't find route for '%s'",
+                nonExistingRoutePath, nonExistingRoutePath),
                 findElement(By.tagName("div")).getText());
     }
 }
