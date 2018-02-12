@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,8 @@ import com.vaadin.flow.server.startup.RouteRegistry;
  */
 public class Router implements RouterInterface {
 
+    private static final Pattern PARAMETER_PATTREN = Pattern
+            .compile("/\\{[\\s\\S]*}");
     private RouteResolver routeResolver;
 
     private final RouterConfiguration configuration = new RouterConfiguration() {
@@ -227,18 +230,43 @@ public class Router implements RouterInterface {
 
     /**
      * Get the registered url string for given navigation target.
-     *
+     * <p>
+     * Note! If the navigation target has a url parameter that is required then
+     * this method will throw and IllegalArgumentException.
+     * 
      * @param navigationTarget
      *            navigation target to get url for
      * @return url for the navigation target
+     * @throws IllegalArgumentException
+     *             if the navigation target requires a parameter
      */
     public String getUrl(Class<? extends Component> navigationTarget) {
         String routeString = getUrlForTarget(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
                 WildcardParameter.class)) {
-            routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
+            routeString = PARAMETER_PATTREN.matcher(routeString).replaceAll("");
+        } else if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
+            String message = String.format(
+                    "Navigation target '%s' requires a parameter and can not be resolved. "
+                            + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
+                            + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
+                            + "instead",
+                    navigationTarget.getName());
+            throw new IllegalArgumentException(message);
         }
         return trimRouteString(routeString);
+    }
+
+    /**
+     * Return the url base without any url parameters.
+     * 
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @return url base without url parameters
+     */
+    public String getUrlBase(Class<? extends Component> navigationTarget) {
+        String routeString = getUrlForTarget(navigationTarget);
+        return trimRouteString(PARAMETER_PATTREN.matcher(routeString).replaceAll(""));
     }
 
     /**
@@ -329,7 +357,7 @@ public class Router implements RouterInterface {
                 OptionalParameter.class)
                 || ParameterDeserializer.isAnnotatedParameter(navigationTarget,
                         WildcardParameter.class)) {
-            routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
+            routeString = PARAMETER_PATTREN.matcher(routeString).replaceAll("");
         } else {
             throw new NotFoundException(String.format(
                     "The navigation target '%s' has a non optional parameter that needs to be given.",
