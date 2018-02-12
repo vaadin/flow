@@ -147,13 +147,14 @@ public class NavigationStateRenderer implements NavigationHandler {
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType);
 
-        Optional<List<String>> urlParameters = navigationState.getUrlParameters();
+        Optional<List<String>> urlParameters = navigationState
+                .getUrlParameters();
         if (urlParameters.isPresent()) {
-            HasUrlParameter hasUrlParameter = (HasUrlParameter) componentInstance;
+            final Object deserializedParameter;
             try {
-                hasUrlParameter.setParameter(beforeNavigationActivating,
-                        ParameterDeserializer.deserializeUrlParameters(
-                                routeTargetType, urlParameters.get()));
+                deserializedParameter = ParameterDeserializer
+                        .deserializeUrlParameters(routeTargetType,
+                                urlParameters.get());
             } catch (Exception e) {
                 beforeNavigationActivating.rerouteToError(
                         NotFoundException.class,
@@ -162,6 +163,8 @@ public class NavigationStateRenderer implements NavigationHandler {
                                 e));
                 return reroute(event, beforeNavigationActivating);
             }
+            ((HasUrlParameter) componentInstance).setParameter(
+                    beforeNavigationActivating, deserializedParameter);
         }
 
         if (beforeNavigationActivating.hasRerouteTarget()) {
