@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.renderer;
+package com.vaadin.flow.data.renderer;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -31,7 +31,7 @@ import com.vaadin.flow.function.ValueProvider;
  *
  */
 public class NumberRenderer<SOURCE>
-        extends SimpleValueTemplateRenderer<SOURCE, Number> {
+        extends BasicRenderer<SOURCE, Number> {
 
     private Locale locale;
     private NumberFormat numberFormat;

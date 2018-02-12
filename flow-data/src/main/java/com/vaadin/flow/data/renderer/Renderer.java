@@ -13,22 +13,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.renderer;
+package com.vaadin.flow.data.renderer;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
+import com.vaadin.flow.data.provider.CompositeDataGenerator;
+import com.vaadin.flow.data.provider.DataGenerator;
+import com.vaadin.flow.data.provider.KeyMapper;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.JsonSerializer;
 
 /**
- * A renderer that allows the usage of HTML and Polymer data binding syntax as
- * output. The output of the TemplateRenderer is meant to be used inside
- * {@code <template>} elements.
+ * Base class for all renderers - classes that take a given model object as
+ * input and outputs a set of elements that represents that item in the UI.
+ * <p>
+ * The default renderer only supports template based rendering. For component
+ * support, check {@link ComponentRenderer}.
  * 
  * @author Vaadin Ltd.
  *
@@ -36,44 +43,34 @@ import com.vaadin.flow.internal.JsonSerializer;
  *            the type of the input object used inside the template
  * 
  * @see ValueProvider
+ * @see ComponentRenderer
+ * @see TemplateRenderer
  * @see <a href=
  *      "https://www.polymer-project.org/2.0/docs/devguide/templates">https://www.polymer-project.org/2.0/docs/devguide/templates</a>
+ *
+ * @param <SOURCE>
+ *            the object model type
  */
-public class TemplateRenderer<SOURCE> implements Serializable {
+public class Renderer<SOURCE> implements Serializable {
 
     private String template;
     private Map<String, ValueProvider<SOURCE, ?>> valueProviders;
     private Map<String, SerializableConsumer<SOURCE>> eventHandlers;
 
     /**
-     * Creates a new TemplateRenderer based on the provided template. The
-     * template accepts anything that is allowed inside a {@code <template>}
-     * element, and works with Polymer data binding syntax.
-     * <p>
-     * Examples:
-     * 
-     * <pre>
-     * {@code
-     * // Prints the index of the item inside a repeating list
-     * TemplateRenderer.of("[[index]]");
-     * 
-     * // Prints the property of an item
-     * TemplateRenderer.of("<div>Property: [[item.property]]</div>");
-     * }
-     * </pre>
-     * 
-     * @param <SOURCE>
-     *            the type of the input object used inside the template
-     * @param template
-     *            the template used to render items, not <code>null</code>
-     * @return an initialized TemplateRenderer
-     * @see TemplateRenderer#withProperty(String, ValueProvider)
+     * Default constructor.
      */
-    public static <SOURCE> TemplateRenderer<SOURCE> of(String template) {
-        Objects.requireNonNull(template);
-        TemplateRenderer<SOURCE> renderer = new TemplateRenderer<>();
-        renderer.template = template;
-        return renderer;
+    protected Renderer() {
+    }
+
+    /**
+     * Builds a renderer with the specified template.
+     * 
+     * @param template
+     *            the template used by the renderer
+     */
+    protected Renderer(String template) {
+        this.template = template;
     }
 
     /**
@@ -102,7 +99,7 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * </pre>
      * 
      * Any types supported by the {@link JsonSerializer} are valid types for the
-     * TemplateRenderer.
+     * Renderer.
      * 
      * @param property
      *            the name of the property used inside the template, not
@@ -110,14 +107,15 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * @param provider
      *            a {@link ValueProvider} that provides the actual value for the
      *            property, not <code>null</code>
-     * @return this instance for method chaining
      */
-    public TemplateRenderer<SOURCE> withProperty(String property,
+    protected void setProperty(String property,
             ValueProvider<SOURCE, ?> provider) {
         Objects.requireNonNull(property, "The property must not be null");
         Objects.requireNonNull(provider, "The value provider must not be null");
+        if (valueProviders == null) {
+            valueProviders = new HashMap<>();
+        }
         valueProviders.put(property, provider);
-        return this;
     }
 
     /**
@@ -150,30 +148,49 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * @param handler
      *            the handler executed when the event is triggered, not
      *            <code>null</code>
-     * @return this instance for method chaining
      * @see <a href=
      *      "https://www.polymer-project.org/2.0/docs/devguide/events">https://www.polymer-project.org/2.0/docs/devguide/events</a>
      */
-    public TemplateRenderer<SOURCE> withEventHandler(String handlerName,
+    protected void setEventHandler(String handlerName,
             SerializableConsumer<SOURCE> handler) {
         Objects.requireNonNull(handlerName, "The handlerName must not be null");
         Objects.requireNonNull(handler, "The event handler must not be null");
+        if (eventHandlers == null) {
+            eventHandlers = new HashMap<>();
+        }
         eventHandlers.put(handlerName, handler);
-        return this;
-    }
-
-    protected TemplateRenderer() {
-        valueProviders = new HashMap<>();
-        eventHandlers = new HashMap<>();
     }
 
     /**
-     * Gets the template set for this renderer.
+     * Effectively creates the {@code <template>} used for rendering the model
+     * objects.
+     * <p>
+     * Subclasses of Renderer usually override this method to provide additional
+     * features.
      * 
-     * @return the template, never <code>null</code>
+     * @param container
+     *            the element in which the template will be attached to
+     * @param keyMapper
+     *            mapper used internally to fetch items by key and to provide
+     *            keys for given items. It is required when either event
+     *            handlers or {@link DataGenerator} are supported
+     * @return the context of the rendering, that can be used by the components
+     *         to provide extra customization
      */
-    public String getTemplate() {
-        return template;
+    public Rendering<SOURCE> render(Element container,
+            KeyMapper<SOURCE> keyMapper) {
+        Objects.requireNonNull(template,
+                "The template string is null. Either build the Renderer by using the 'Renderer(String)' constructor or override the 'render' method to provide custom behavior");
+        Element contentTemplate = new Element("template", false)
+                .setProperty("innerHTML", template);
+
+        container.appendChild(contentTemplate);
+
+        if (keyMapper != null) {
+            RendererUtil.registerEventHandlers(this, contentTemplate, container,
+                    keyMapper::get);
+        }
+        return new TemplateRendering(contentTemplate);
     }
 
     /**
@@ -183,17 +200,48 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * @return the mapped properties, never <code>null</code>
      */
     public Map<String, ValueProvider<SOURCE, ?>> getValueProviders() {
-        return Collections.unmodifiableMap(valueProviders);
+        return valueProviders == null ? Collections.emptyMap()
+                : Collections.unmodifiableMap(valueProviders);
     }
 
     /**
-     * Gets the event handlers linked to this renderer. The returned map in
+     * Gets the event handlers linked to this renderer. The returned map is
      * immutable.
      * 
      * @return the mapped event handlers, never <code>null</code>
-     * @see #withEventHandler(String, SerializableConsumer)
+     * @see #setEventHandler(String, SerializableConsumer)
      */
     public Map<String, SerializableConsumer<SOURCE>> getEventHandlers() {
-        return Collections.unmodifiableMap(eventHandlers);
+        return eventHandlers == null ? Collections.emptyMap()
+                : Collections.unmodifiableMap(eventHandlers);
     }
+
+    private class TemplateRendering implements Rendering<SOURCE> {
+
+        private final Element templateElement;
+
+        public TemplateRendering(Element templateElement) {
+            this.templateElement = templateElement;
+        }
+
+        @Override
+        public Optional<DataGenerator<SOURCE>> getDataGenerator() {
+            if (valueProviders == null || valueProviders.isEmpty()) {
+                return Optional.empty();
+            }
+            CompositeDataGenerator<SOURCE> composite = new CompositeDataGenerator<>();
+
+            valueProviders.forEach((key, provider) -> composite
+                    .addDataGenerator((item, jsonObject) -> jsonObject.put(key,
+                            JsonSerializer.toJson(provider.apply(item)))));
+            return Optional.of(composite);
+        }
+
+        @Override
+        public Optional<Element> getTemplateElement() {
+            return Optional.of(templateElement);
+        }
+
+    }
+
 }

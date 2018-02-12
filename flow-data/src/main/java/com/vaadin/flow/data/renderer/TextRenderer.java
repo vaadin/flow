@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.renderer;
+package com.vaadin.flow.data.renderer;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -30,7 +30,7 @@ import com.vaadin.flow.dom.Element;
  *            component
  *
  */
-public class TextRenderer<ITEM> implements ComponentRenderer<Component, ITEM> {
+public class TextRenderer<ITEM> extends ComponentRenderer<Component, ITEM> {
 
     private static class TextRendererComponent extends Component {
 

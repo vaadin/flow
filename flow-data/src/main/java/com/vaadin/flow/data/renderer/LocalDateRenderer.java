@@ -13,9 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.renderer;
+package com.vaadin.flow.data.renderer;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Locale;
@@ -23,98 +23,49 @@ import java.util.Locale;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
- * 
- * A template renderer for presenting {@code LocalDateTime} objects.
+ * A template renderer for presenting date values.
  *
  * @author Vaadin Ltd.
- * 
+ *
  * @param <SOURCE>
- *            the type of the input item, from which the {@link LocalDateTime}
- *            is extracted
+ *            the type of the input item, from which the {@link LocalDate} is
+ *            extracted
  */
-public class LocalDateTimeRenderer<SOURCE>
-        extends SimpleValueTemplateRenderer<SOURCE, LocalDateTime> {
+public class LocalDateRenderer<SOURCE>
+        extends BasicRenderer<SOURCE, LocalDate> {
 
     private DateTimeFormatter formatter;
     private String nullRepresentation;
 
     /**
-     * Creates a new LocalDateTimeRenderer.
+     * Creates a new LocalDateRenderer.
      * <p>
-     * The renderer is configured to render with the format style
-     * {@code FormatStyle.LONG} for the date and {@code FormatStyle.SHORT} for
-     * time, with an empty string as its null representation.
-     * 
+     * The renderer is configured with the format style {@code FormatStyle.LONG}
+     * and an empty string as its null representation.
+     *
      * @param valueProvider
-     *            the callback to provide a {@link LocalDateTime} to the
-     *            renderer, not <code>null</code>
+     *            the callback to provide a {@link LocalDate} to the renderer,
+     *            not <code>null</code>
      *
      * @see <a href=
      *      "https://docs.oracle.com/javase/8/docs/api/java/time/format/FormatStyle.html#LONG">
      *      FormatStyle.LONG</a>
-     * @see <a href=
-     *      "https://docs.oracle.com/javase/8/docs/api/java/time/format/FormatStyle.html#SHORT">
-     *      FormatStyle.SHORT</a>
      */
-    public LocalDateTimeRenderer(
-            ValueProvider<SOURCE, LocalDateTime> valueProvider) {
-        this(valueProvider, DateTimeFormatter
-                .ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT), "");
+    public LocalDateRenderer(ValueProvider<SOURCE, LocalDate> valueProvider) {
+        this(valueProvider, DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG),
+                "");
     }
 
     /**
-     * Creates a new LocalDateTimeRenderer.
-     * <p>
-     * The renderer is configured to render with the given formatter, with the
-     * empty string as its null representation.
-     *
-     * @param valueProvider
-     *            the callback to provide a {@link LocalDateTime} to the
-     *            renderer, not <code>null</code>
-     * @param formatter
-     *            the formatter to use, not <code>null</code>
-     */
-    public LocalDateTimeRenderer(
-            ValueProvider<SOURCE, LocalDateTime> valueProvider,
-            DateTimeFormatter formatter) {
-        this(valueProvider, formatter, "");
-    }
-
-    /**
-     * Creates a new LocalDateTimeRenderer.
-     * <p>
-     * The renderer is configured to render with the given formatter.
-     *
-     * @param valueProvider
-     *            the callback to provide a {@link LocalDateTime} to the
-     *            renderer, not <code>null</code>
-     * @param formatter
-     *            the formatter to use, not <code>null</code>
-     * @param nullRepresentation
-     *            the textual representation of the <code>null</code> value
-     */
-    public LocalDateTimeRenderer(
-            ValueProvider<SOURCE, LocalDateTime> valueProvider,
-            DateTimeFormatter formatter, String nullRepresentation) {
-        super(valueProvider);
-
-        if (formatter == null) {
-            throw new IllegalArgumentException("formatter may not be null");
-        }
-
-        this.formatter = formatter;
-        this.nullRepresentation = nullRepresentation;
-    }
-
-    /**
-     * Creates a new LocalDateTimeRenderer.
+     * Creates a new LocalDateRenderer.
      * <p>
      * The renderer is configured to render with the given string format, with
      * an empty string as its null representation.
      *
      * @param valueProvider
-     *            the callback to provide a {@link LocalDateTime} to the
-     *            renderer, not <code>null</code>
+     *            the callback to provide a {@link LocalDate} to the renderer,
+     *            not <code>null</code>
+     *
      * @param formatPattern
      *            the format pattern to format the date with, not
      *            <code>null</code>
@@ -123,22 +74,21 @@ public class LocalDateTimeRenderer<SOURCE>
      *      "https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns">
      *      Format Pattern Syntax</a>
      */
-    public LocalDateTimeRenderer(
-            ValueProvider<SOURCE, LocalDateTime> valueProvider,
+    public LocalDateRenderer(ValueProvider<SOURCE, LocalDate> valueProvider,
             String formatPattern) {
         this(valueProvider, formatPattern, Locale.getDefault());
     }
 
     /**
-     * Creates a new LocalDateTimeRenderer.
+     * Creates a new LocalDateRenderer.
      * <p>
      * The renderer is configured to render with the given string format, as
      * displayed in the given locale, with an empty string as its null
      * representation.
      *
      * @param valueProvider
-     *            the callback to provide a {@link LocalDateTime} to the
-     *            renderer, not <code>null</code>
+     *            the callback to provide a {@link LocalDate} to the renderer,
+     *            not <code>null</code>
      * @param formatPattern
      *            the format pattern to format the date with, not
      *            <code>null</code>
@@ -149,21 +99,20 @@ public class LocalDateTimeRenderer<SOURCE>
      *      "https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns">
      *      Format Pattern Syntax</a>
      */
-    public LocalDateTimeRenderer(
-            ValueProvider<SOURCE, LocalDateTime> valueProvider,
+    public LocalDateRenderer(ValueProvider<SOURCE, LocalDate> valueProvider,
             String formatPattern, Locale locale) {
         this(valueProvider, formatPattern, locale, "");
     }
 
     /**
-     * Creates a new LocalDateTimeRenderer.
+     * Creates a new LocalDateRenderer.
      * <p>
      * The renderer is configured to render with the given string format, as
      * displayed in the given locale.
      *
      * @param valueProvider
-     *            the callback to provide a {@link LocalDateTime} to the
-     *            renderer, not <code>null</code>
+     *            the callback to provide a {@link LocalDate} to the renderer,
+     *            not <code>null</code>
      * @param formatPattern
      *            the format pattern to format the date with, not
      *            <code>null</code>
@@ -176,8 +125,7 @@ public class LocalDateTimeRenderer<SOURCE>
      *      "https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns">
      *      Format Pattern Syntax</a>
      */
-    public LocalDateTimeRenderer(
-            ValueProvider<SOURCE, LocalDateTime> valueProvider,
+    public LocalDateRenderer(ValueProvider<SOURCE, LocalDate> valueProvider,
             String formatPattern, Locale locale, String nullRepresentation) {
         super(valueProvider);
 
@@ -194,9 +142,55 @@ public class LocalDateTimeRenderer<SOURCE>
         this.nullRepresentation = nullRepresentation;
     }
 
+    /**
+     * Creates a new LocalDateRenderer.
+     * <p>
+     * The renderer is configured to render with the given formatter, with an
+     * empty string as its null representation.
+     *
+     * @param valueProvider
+     *            the callback to provide a {@link LocalDate} to the renderer,
+     *            not <code>null</code>
+     * @param formatter
+     *            the formatter to use, not <code>null</code>
+     */
+    public LocalDateRenderer(ValueProvider<SOURCE, LocalDate> valueProvider,
+            DateTimeFormatter formatter) {
+        this(valueProvider, formatter, "");
+    }
+
+    /**
+     * Creates a new LocalDateRenderer.
+     * <p>
+     * The renderer is configured to render with the given formatter.
+     *
+     * @param valueProvider
+     *            the callback to provide a {@link LocalDate} to the renderer,
+     *            not <code>null</code>
+     * @param formatter
+     *            the formatter to use, not <code>null</code>
+     * @param nullRepresentation
+     *            the textual representation of the <code>null</code> value
+     * 
+     */
+    public LocalDateRenderer(ValueProvider<SOURCE, LocalDate> valueProvider,
+            DateTimeFormatter formatter, String nullRepresentation) {
+        super(valueProvider);
+
+        if (formatter == null) {
+            throw new IllegalArgumentException("formatter may not be null");
+        }
+
+        this.formatter = formatter;
+    }
+
     @Override
-    protected String getFormattedValue(LocalDateTime dateTime) {
-        return dateTime == null ? nullRepresentation
-                : formatter.format(dateTime);
+    protected String getFormattedValue(LocalDate date) {
+        try {
+            return date == null ? nullRepresentation : formatter.format(date);
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not format input date '"
+                    + date + "' using formatter '" + formatter + "'", e);
+        }
     }
 }
