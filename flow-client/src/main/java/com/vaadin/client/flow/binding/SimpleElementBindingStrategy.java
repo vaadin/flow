@@ -141,22 +141,21 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private static class InitialPropertyUpdate {
-        private Runnable command;
+        private final JsArray<Runnable> commands = JsCollections.array();
         private final StateNode node;
 
         private InitialPropertyUpdate(StateNode node) {
             this.node = node;
         }
 
-        private void setCommand(Runnable command) {
-            this.command = command;
+        private void addCommand(Runnable command) {
+            commands.set(commands.length(), command);
         }
 
         private void execute() {
-            if (command != null) {
-                command.run();
-            }
+            commands.forEach(Runnable::run);
             node.clearNodeData(this);
+            commands.clear();
         }
     }
 
@@ -274,7 +273,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -284,7 +283,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-
+    
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -296,35 +295,21 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             JavaScriptObject changedPropertyPathsToValues, StateNode node) {
         String[] keys = WidgetUtil.getKeys(changedPropertyPathsToValues);
 
-        Runnable runnable = () -> {
-            for (String propertyName : keys) {
-                handlePropertyChange(propertyName,
-                        () -> WidgetUtil.getJsProperty(
-                                changedPropertyPathsToValues, propertyName),
-                        node);
-            }
-        };
-
-        InitialPropertyUpdate initialUpdate = node
-                .getNodeData(InitialPropertyUpdate.class);
-        if (initialUpdate == null) {
-            runnable.run();
-        } else {
-            initialUpdate.setCommand(runnable);
+        for (String propertyName : keys) {
+            handlePropertyChange(propertyName, () -> WidgetUtil
+                    .getJsProperty(changedPropertyPathsToValues, propertyName),
+                    node);
         }
     }
 
     private void handlePropertyChange(String fullPropertyName,
             Supplier<Object> valueProvider, StateNode node) {
-        UpdatableModelProperties updatableProperties = node
-                .getNodeData(UpdatableModelProperties.class);
-        if (updatableProperties == null
-                || !updatableProperties.isUpdatableProperty(fullPropertyName)) {
-            // don't do anything if the property/sub-property is not in the
-            // collection of updatable properties
+        InitialPropertyUpdate initialUpdate = node
+                .getNodeData(InitialPropertyUpdate.class);
+        if (initialUpdate == null
+                && !isUpdatableProperty(node, fullPropertyName)) {
             return;
         }
-
         // This is not the property value itself, its a parent node of the
         // property
         String[] subProperties = fullPropertyName.split("\\.");
@@ -358,7 +343,24 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 return;
             }
         }
-        mapProperty.syncToServer(valueProvider.get());
+
+        MapProperty prop = mapProperty;
+        if (initialUpdate == null) {
+            prop.syncToServer(valueProvider.get());
+        } else {
+            initialUpdate.addCommand(() -> {
+                if (isUpdatableProperty(node, fullPropertyName)) {
+                    prop.syncToServer(valueProvider.get());
+                }
+            });
+        }
+    }
+
+    private boolean isUpdatableProperty(StateNode node, String property) {
+        UpdatableModelProperties updatableProperties = node
+                .getNodeData(UpdatableModelProperties.class);
+        return updatableProperties != null
+                && updatableProperties.isUpdatableProperty(property);
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {
