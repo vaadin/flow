@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValidation;
@@ -621,7 +620,7 @@ public class Binder<BEAN> implements Serializable {
          * @see HasValue#setRequiredIndicatorVisible(boolean)
          * @see HasValue#isEmpty()
          * @return this binding, for chaining
-         * 
+         *
          */
         default BindingBuilder<BEAN, TARGET> asRequired() {
             return asRequired(context -> "");
@@ -2026,7 +2025,7 @@ public class Binder<BEAN> implements Serializable {
 
     /**
      * Adds a listener to the binder.
-     * 
+     *
      * @param eventType
      *            the type of the event
      * @param method
@@ -2111,11 +2110,11 @@ public class Binder<BEAN> implements Serializable {
      *            the validation error result
      */
     protected void handleError(HasValue<?, ?> field, ValidationResult result) {
-            if (field instanceof HasValidation) {
-                HasValidation fieldWithValidation = (HasValidation) field;
-                fieldWithValidation.setInvalid(true);
-                fieldWithValidation.setErrorMessage(result.getErrorMessage());
-            }
+        if (field instanceof HasValidation) {
+            HasValidation fieldWithValidation = (HasValidation) field;
+            fieldWithValidation.setInvalid(true);
+            fieldWithValidation.setErrorMessage(result.getErrorMessage());
+        }
     }
 
     /**
@@ -2128,7 +2127,6 @@ public class Binder<BEAN> implements Serializable {
         if (field instanceof HasValidation) {
             HasValidation fieldWithValidation = (HasValidation) field;
             fieldWithValidation.setInvalid(false);
-            fieldWithValidation.setErrorMessage(null);
         }
     }
 

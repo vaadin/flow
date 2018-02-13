@@ -25,6 +25,12 @@ public interface HasValidation {
 
     /**
      * Sets an error message to the component.
+     * <p>
+     * The Web Component is responsible for deciding when to show the error
+     * message to the user, and this is usually triggered by triggering the
+     * invalid state for the Web Component. Which means that there is no need to
+     * clean up the message when component becomes valid (otherwise it may lead
+     * to undesired visual effects).
      *
      * @param errorMessage
      *            a new error message
@@ -40,6 +46,10 @@ public interface HasValidation {
 
     /**
      * Sets the validity of the component input.
+     * <p>
+     * When component becomes valid it hides the error message by itself, so
+     * there is no need to clean up the error message via the
+     * {@link #setErrorMessage(String)} call.
      *
      * @param invalid
      *            new value for component input validity
