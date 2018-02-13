@@ -20,42 +20,52 @@ import java.io.File;
 import java.util.Objects;
 
 /**
- * All information required to properly unpack WebJar.
+ * All information required to properly unpack the jar.
  *
  * @author Vaadin Ltd.
  */
-public final class WebJarData {
-    public static final String WEB_JAR_FILES_BASE = "META-INF/resources/webjars/";
-
-    private final File jarFile;
+public final class ArtifactData {
+    private final File fileOrDirectory;
     private final String artifactId;
     private final String version;
 
     /**
-     * Create a new WebJarData.
+     * Create a new ArtifactData.
      *
-     * @param jarFile    corresponding jar file, not {@code null}
-     * @param artifactId jar file's artifact id, not {@code null}
-     * @param version    jar file's artifact version, not {@code null}
-     * @throws IllegalArgumentException if jar file specified is not a file or does not exists
-     * @throws NullPointerException     if any of the constructor parameters are {@code null}
+     * @param fileOrDirectory
+     *            artifact file or directory, not {@code null}
+     * @param artifactId
+     *            jar file's artifact id, not {@code null}
+     * @param version
+     *            jar file's artifact version, not {@code null}
+     * @throws IllegalArgumentException
+     *             if jar file specified is not a file or does not exists
+     * @throws NullPointerException
+     *             if any of the constructor parameters are {@code null}
      */
-    public WebJarData(File jarFile, String artifactId, String version) {
-        if (!Objects.requireNonNull(jarFile).isFile()) {
-            throw new IllegalArgumentException(String.format("File '%s' does not exist or is not a file", jarFile));
-        }
-        this.jarFile = jarFile;
+    public ArtifactData(File fileOrDirectory, String artifactId,
+            String version) {
+        this.fileOrDirectory = Objects.requireNonNull(fileOrDirectory);
         this.artifactId = Objects.requireNonNull(artifactId);
         this.version = Objects.requireNonNull(version);
     }
 
     /**
-     * Gets corresponding jar file.
+     * Gets corresponding file or directory.
      *
-     * @return the jar file
+     * @return the artifact file or directory
      */
-    public File getJarFile() {
-        return jarFile;
+    public File getFileOrDirectory() {
+        return fileOrDirectory;
+    }
+
+    /**
+     * Gets corresponding artifact id.
+     *
+     * @return the artifact version
+     */
+    public String getArtifactId() {
+        return artifactId;
     }
 
     /**
@@ -75,21 +85,21 @@ public final class WebJarData {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        WebJarData webJar = (WebJarData) o;
-        return Objects.equals(jarFile, webJar.jarFile) &&
-                Objects.equals(artifactId, webJar.artifactId) &&
-                Objects.equals(version, webJar.version);
+        ArtifactData that = (ArtifactData) o;
+        return Objects.equals(fileOrDirectory, that.fileOrDirectory) &&
+                Objects.equals(artifactId, that.artifactId) &&
+                Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(jarFile, artifactId, version);
+        return Objects.hash(fileOrDirectory, artifactId, version);
     }
 
     @Override
     public String toString() {
-        return "WebJarData{" +
-                "file=" + jarFile +
+        return "ArtifactData{" +
+                "file=" + fileOrDirectory +
                 ", artifactId='" + artifactId + '\'' +
                 ", version='" + version + '\'' +
                 '}';
