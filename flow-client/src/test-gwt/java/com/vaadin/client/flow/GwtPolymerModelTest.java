@@ -313,51 +313,6 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                 tree.synchronizedProperties.get(node).get(propertyName));
     }
 
-    public void testInitialUpdateSeveralModelPropertiesAtOnce_propertiesAreUpdatable_propertiesAreSynced() {
-        addMockMethods(element);
-        String propertyName1 = "black";
-        String propertyValue1 = "coffee";
-        setModelProperty(node, propertyName1, propertyValue1);
-
-        String propertyName2 = "baz";
-        String propertyValue2 = "foo";
-        setModelProperty(node, propertyName2, propertyValue2);
-
-        node.setNodeData(new UpdatableModelProperties(
-                JsCollections.array(propertyName1, propertyName2)));
-
-        Binder.bind(node, element);
-        Reactive.flush();
-        assertEquals(
-                "Expected to have property with name " + propertyName1
-                        + " defined after initial binding",
-                propertyValue1, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName1));
-        assertEquals(
-                "Expected to have property with name " + propertyName2
-                        + " defined after initial binding",
-                propertyValue2, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName2));
-
-        String newPropertyValue1 = "bubblegum";
-        emulatePolymerPropertyChange(element, propertyName1, newPropertyValue1);
-
-        String newPropertyValue2 = "bar";
-        emulatePolymerPropertyChange(element, propertyName2, newPropertyValue2);
-
-        Reactive.flush();
-        assertEquals(
-                "Expected to have property with name " + propertyName1
-                        + " updated from client side",
-                newPropertyValue1, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName1));
-        assertEquals(
-                "Expected to have property with name " + propertyName2
-                        + " updated from client side",
-                newPropertyValue2, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName2));
-    }
-
     public void testInitialUpdateModelProperty_propertyIsUpdatableAndSchedulerIsNotExecuted_propertyIsNotSync() {
         addMockMethods(element);
         String propertyName = "black";
@@ -457,7 +412,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         element._propertiesChanged = function() {
             element.propertiesChangedCallCount += 1;
         };
-
+    
         element.callbackCallCount = 0;
         $wnd.customElements = {
             whenDefined: function() {
