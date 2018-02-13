@@ -13,11 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.renderer;
+package com.vaadin.flow.data.renderer;
 
 import org.junit.Test;
-
-import com.vaadin.flow.renderer.TextRenderer;
 
 public class TextRendererTest {
 

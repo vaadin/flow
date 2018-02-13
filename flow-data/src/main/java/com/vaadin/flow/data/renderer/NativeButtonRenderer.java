@@ -13,15 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.renderer;
+package com.vaadin.flow.data.renderer;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.internal.HtmlUtils;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -36,11 +36,9 @@ import com.vaadin.flow.shared.Registration;
  * @param <SOURCE>
  *            the type of the item to be received in the click listeners
  */
-public class ButtonRenderer<SOURCE> extends TemplateRenderer<SOURCE>
+public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
         implements ClickableRenderer<SOURCE> {
 
-    private static AtomicInteger RENDERER_ID_GENERATOR = new AtomicInteger();
-    private String template;
     private List<ItemClickListener<SOURCE>> listeners = new ArrayList<>(1);
 
     /**
@@ -53,18 +51,8 @@ public class ButtonRenderer<SOURCE> extends TemplateRenderer<SOURCE>
      * @param label
      *            the label of the rendered button, not <code>null</code>
      */
-    public ButtonRenderer(String label) {
-        if (label == null) {
-            throw new IllegalArgumentException("label may not be null");
-        }
-
-        int id = RENDERER_ID_GENERATOR.incrementAndGet();
-        String eventName = "_" + getClass().getSimpleName() + "_" + id
-                + "_event";
-
-        template = "<button on-click='" + eventName + "'>"
-                + HtmlUtils.escape(label) + "</button>";
-        withEventHandler(eventName, this::onClick);
+    public NativeButtonRenderer(String label) {
+        this(value -> label);
     }
 
     /**
@@ -80,7 +68,7 @@ public class ButtonRenderer<SOURCE> extends TemplateRenderer<SOURCE>
      * @param clickListener
      *            a listener to receive click events
      */
-    public ButtonRenderer(String label,
+    public NativeButtonRenderer(String label,
             ItemClickListener<SOURCE> clickListener) {
         this(label);
         addItemClickListener(clickListener);
@@ -96,21 +84,8 @@ public class ButtonRenderer<SOURCE> extends TemplateRenderer<SOURCE>
      *            the provider for the labels of the rendered buttons, not
      *            <code>null</code>
      */
-    public ButtonRenderer(ValueProvider<SOURCE, String> labelProvider) {
-        if (labelProvider == null) {
-            throw new IllegalArgumentException("labelProvider may not be null");
-        }
-
-        int id = RENDERER_ID_GENERATOR.incrementAndGet();
-        String propertyName = "_" + getClass().getSimpleName() + "_" + id
-                + "_label";
-        String eventName = "_" + getClass().getSimpleName() + "_" + id
-                + "_event";
-
-        template = "<button on-click='" + eventName + "'>[[item." + propertyName
-                + "]]</button>";
-        withProperty(propertyName, labelProvider);
-        withEventHandler(eventName, this::onClick);
+    public NativeButtonRenderer(ValueProvider<SOURCE, String> labelProvider) {
+        super(labelProvider);
     }
 
     /**
@@ -126,15 +101,10 @@ public class ButtonRenderer<SOURCE> extends TemplateRenderer<SOURCE>
      * @param clickListener
      *            a listener to receive click events
      */
-    public ButtonRenderer(ValueProvider<SOURCE, String> labelProvider,
+    public NativeButtonRenderer(ValueProvider<SOURCE, String> labelProvider,
             ItemClickListener<SOURCE> clickListener) {
         this(labelProvider);
         addItemClickListener(clickListener);
-    }
-
-    @Override
-    public String getTemplate() {
-        return template;
     }
 
     @Override
@@ -148,6 +118,23 @@ public class ButtonRenderer<SOURCE> extends TemplateRenderer<SOURCE>
     @Override
     public List<ItemClickListener<SOURCE>> getItemClickListeners() {
         return Collections.unmodifiableList(listeners);
+    }
+
+    @Override
+    protected String getTemplateForProperty(String property,
+            Rendering<SOURCE> context) {
+        String eventName = getTemplatePropertyName(context) + "_event";
+        setEventHandler(eventName, this::onClick);
+        return String.format("<button on-click=\"%s\">%s</button>", eventName,
+                property);
+    }
+
+    @Override
+    public Component createComponent(SOURCE item) {
+        NativeButton button = new NativeButton(getValueProvider().apply(item));
+        button.addClickListener(event -> getItemClickListeners()
+                .forEach(listener -> listener.onItemClicked(item)));
+        return button;
     }
 
 }
