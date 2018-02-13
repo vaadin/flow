@@ -36,13 +36,8 @@ public final class HighlightActions {
      */
     public static <C extends HasStyle> HighlightAction<C> toggleClassName(
             String className) {
-        return (link, highligh) -> {
-            if (highligh) {
-                link.addClassName(className);
-            } else {
-                link.removeClassName(className);
-            }
-        };
+        return (component, highlight) -> component.getClassNames()
+                .set(className, highlight);
     }
 
     /**
@@ -55,13 +50,8 @@ public final class HighlightActions {
      */
     public static <C extends HasElement> HighlightAction<C> toggleTheme(
             String theme) {
-        return (link, highligh) -> {
-            if (highligh) {
-                link.getElement().getThemeList().add(theme);
-            } else {
-                link.getElement().getThemeList().remove(theme);
-            }
-        };
+        return (component, highlight) -> component.getElement().getThemeList()
+                .set(theme, highlight);
     }
 
     /**
@@ -74,8 +64,8 @@ public final class HighlightActions {
      */
     public static <C extends HasElement> HighlightAction<C> toggleAttribute(
             String attribute) {
-        return (link, highlight) -> link.getElement().setAttribute(attribute,
-                highlight);
+        return (component, highlight) -> component.getElement()
+                .setAttribute(attribute, highlight);
     }
 
     /**
@@ -84,7 +74,7 @@ public final class HighlightActions {
      * @return the highlight action
      */
     public static <C extends HasElement> HighlightAction<C> none() {
-        return (link, highligh) -> {
+        return (component, highlight) -> {
             // Do nothing.
         };
     }
