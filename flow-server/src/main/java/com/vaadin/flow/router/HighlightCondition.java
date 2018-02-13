@@ -34,6 +34,7 @@ public interface HighlightCondition<T> extends Serializable {
      *            the target of the highlight condition
      * @param event
      *            the navigation event
+     * @return true if the condition is met, false otherwise
      */
-    boolean test(T t, AfterNavigationEvent event);
+    boolean shouldHighlight(T t, AfterNavigationEvent event);
 }

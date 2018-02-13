@@ -430,7 +430,7 @@ public class RouterLink extends Component
 
     /**
      * Gets the {@link HighlightCondition} of this link.
-     *
+     * <p>
      * The default condition is to checked whether the current location starts
      * with this link's {@link #getHref()} value, as defined in
      * {@link HighlightConditions#locationPrefix()}.
@@ -446,11 +446,12 @@ public class RouterLink extends Component
     /**
      * Sets the {@link HighlightCondition} of this link, which determines if the
      * link should be highlighted when a {@link AfterNavigationEvent} occurs.
-     *
+     * <p>
      * The evaluation of this condition will be processed by this link's
      * {@link HighlightAction}.
      *
      * @see #setHighlightAction(HighlightAction)
+     * @see HighlightConditions
      *
      * @param highlightCondition
      *            the highlight condition, not {@code null}
@@ -464,7 +465,7 @@ public class RouterLink extends Component
 
     /**
      * Gets the {@link HighlightAction} of this link.
-     *
+     * <p>
      * The default action is to toggle the {@code highlight} attribute of the
      * element, as defined in {@link HighlightActions#toggleAttribute(String)}.
      *
@@ -479,12 +480,13 @@ public class RouterLink extends Component
     /**
      * Sets the {@link HighlightAction} of this link, which will be performed
      * with the evaluation of this link's {@link HighlightCondition}.
-     *
+     * <p>
      * The old action will be executed passing {@code false} to
      * {@link HighlightAction#highlight(Object, boolean)} to clear any previous
      * highlight state.
      *
      * @see #setHighlightCondition(HighlightCondition)
+     * @see HighlightActions
      *
      * @param highlightAction
      *            the highlight action, not {@code null}
@@ -500,6 +502,6 @@ public class RouterLink extends Component
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
         getHighlightAction().highlight(this,
-                getHighlightCondition().test(this, event));
+                getHighlightCondition().shouldHighlight(this, event));
     }
 }

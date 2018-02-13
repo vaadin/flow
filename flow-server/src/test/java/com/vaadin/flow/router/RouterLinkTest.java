@@ -417,6 +417,26 @@ public class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
+    public void testRouterLinkClearOldHighlightAction()
+            throws InvalidRouteConfigurationException {
+
+        registry.setNavigationTargets(Stream.of(FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router(
+                registry);
+
+        RouterLink link = new RouterLink(router, "Foo",
+                FooNavigationTarget.class);
+        triggerNavigationEvent(router, link, "foo/bar");
+
+        link.setHighlightAction(HighlightActions.toggleClassName("highlight"));
+        triggerNavigationEvent(router, link, "foo/bar/baz");
+
+        Assert.assertFalse(link.getElement().hasAttribute("highlight"));
+    }
+
+    @Test
     public void testRouterLinkClassNameHightlightAction()
             throws InvalidRouteConfigurationException {
 
@@ -434,7 +454,7 @@ public class RouterLinkTest extends HasCurrentService {
         Assert.assertTrue(link.hasClassName("highlight"));
 
         triggerNavigationEvent(router, link, "bar");
-        Assert.assertFalse(link.getElement().hasAttribute("highlight"));
+        Assert.assertFalse(link.hasClassName("highlight"));
     }
 
     @Test
