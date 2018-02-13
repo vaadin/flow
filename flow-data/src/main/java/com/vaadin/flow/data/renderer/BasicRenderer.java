@@ -22,6 +22,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.provider.AbstractComponentDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
+import com.vaadin.flow.data.provider.DataKeyMapper;
 import com.vaadin.flow.data.provider.KeyMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.ValueProvider;
@@ -68,7 +69,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
 
     @Override
     public Rendering<SOURCE> render(Element container,
-            KeyMapper<SOURCE> keyMapper) {
+            DataKeyMapper<SOURCE> keyMapper) {
 
         SimpleValueRendering rendering = new SimpleValueRendering(
                 keyMapper == null ? null : keyMapper::key);
@@ -78,7 +79,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
     }
 
     private void setupTemplate(Element owner, SimpleValueRendering rendering,
-            KeyMapper<SOURCE> keyMapper) {
+            DataKeyMapper<SOURCE> keyMapper) {
 
         Element templateElement = new Element("template", false);
         rendering.setTemplateElement(templateElement);
@@ -91,7 +92,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
     }
 
     private void setupTemplateWhenAttached(Element owner,
-            SimpleValueRendering rendering, KeyMapper<SOURCE> keyMapper) {
+            SimpleValueRendering rendering, DataKeyMapper<SOURCE> keyMapper) {
 
         Element templateElement = rendering.getTemplateElement().get();
         owner.appendChild(templateElement);

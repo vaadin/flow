@@ -22,6 +22,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ComponentDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
+import com.vaadin.flow.data.provider.DataKeyMapper;
 import com.vaadin.flow.data.provider.KeyMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
@@ -120,7 +121,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
 
     @Override
     public Rendering<SOURCE> render(Element container,
-            KeyMapper<SOURCE> keyMapper) {
+            DataKeyMapper<SOURCE> keyMapper) {
 
         ComponentRendering rendering = new ComponentRendering(
                 keyMapper == null ? null : keyMapper::key);
@@ -151,7 +152,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
     }
 
     private void setupTemplateWhenAttached(UI ui, Element owner,
-            ComponentRendering rendering, KeyMapper<SOURCE> keyMapper) {
+            ComponentRendering rendering, DataKeyMapper<SOURCE> keyMapper) {
         String appId = ui.getInternals().getAppId();
         Element templateElement = rendering.getTemplateElement().get();
         owner.appendChild(templateElement);
