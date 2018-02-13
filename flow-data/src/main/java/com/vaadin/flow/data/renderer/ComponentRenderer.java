@@ -122,6 +122,8 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
     public Rendering<SOURCE> render(Element container,
             KeyMapper<SOURCE> keyMapper) {
 
+        removeTemplates(container);
+
         ComponentRendering rendering = new ComponentRendering(
                 keyMapper == null ? null : keyMapper::key);
         rendering.setTemplateElement(new Element("template", false));
@@ -152,6 +154,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
 
     private void setupTemplateWhenAttached(UI ui, Element owner,
             ComponentRendering rendering, KeyMapper<SOURCE> keyMapper) {
+
         String appId = ui.getInternals().getAppId();
         Element templateElement = rendering.getTemplateElement().get();
         owner.appendChild(templateElement);
