@@ -54,7 +54,7 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
     return new Promise((resolve, reject) => {
         console.log(`Deleting ${configurationTargetDirectory} directory...`);
         const buildBundler = new FlowBuildBundler(polymerProject.config, polymerProject.analyzer);
-        del([configurationTargetDirectory])
+        del([configurationTargetDirectory], {force: true})
             .then(() => {
                 console.log('Starting to process frontend files.');
                 const htmlSplitter = new polymerBuild.HtmlSplitter();
