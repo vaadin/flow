@@ -56,7 +56,7 @@ public final class HighlightConditions {
      */
     public static <C extends HasElement> HighlightCondition<C> locationPrefix(
             String prefix) {
-        return (link, event) -> event.getLocation().getPath()
+        return (component, event) -> event.getLocation().getPath()
                 .startsWith(prefix);
     }
 
@@ -66,7 +66,7 @@ public final class HighlightConditions {
      * @return an always true highlight condition
      */
     public static <C extends HasElement> HighlightCondition<C> always() {
-        return (link, event) -> true;
+        return (component, event) -> true;
     }
 
     /**
@@ -75,6 +75,6 @@ public final class HighlightConditions {
      * @return an always false highlight condition
      */
     public static <C extends HasElement> HighlightCondition<C> never() {
-        return (link, event) -> false;
+        return (component, event) -> false;
     }
 }
