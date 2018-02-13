@@ -429,48 +429,77 @@ public class RouterLink extends Component
     }
 
     /**
-     * Gets the {@link HighlightCondition} of this component.
+     * Gets the {@link HighlightCondition} of this link.
      *
-     * @return the highlight condition
+     * The default condition is to checked whether the current location starts
+     * with this link's {@link #getHref()} value, as defined in
+     * {@link HighlightConditions#locationPrefix()}.
+     *
+     * @see #setHighlightCondition(HighlightCondition)
+     *
+     * @return the highlight condition, never {@code null}
      */
     public HighlightCondition<RouterLink> getHighlightCondition() {
         return highlightCondition;
     }
 
     /**
-     * Sets the {@link HighlightCondition} of this component.
+     * Sets the {@link HighlightCondition} of this link, which determines if the
+     * link should be highlighted when a {@link AfterNavigationEvent} occurs.
+     *
+     * The evaluation of this condition will be processed by this link's
+     * {@link HighlightAction}.
+     *
+     * @see #setHighlightAction(HighlightAction)
      *
      * @param highlightCondition
-     *            the highlight condition
+     *            the highlight condition, not {@code null}
      */
     public void setHighlightCondition(
             HighlightCondition<RouterLink> highlightCondition) {
+        assert highlightCondition != null;
+
         this.highlightCondition = highlightCondition;
     }
 
     /**
-     * Gets the {@link HighlightAction} of this component.
+     * Gets the {@link HighlightAction} of this link.
      *
-     * @return the highlight action
+     * The default action is to toggle the {@code highlight} attribute of the
+     * element, as defined in {@link HighlightActions#toggleAttribute(String)}.
+     *
+     * @see #setHighlightAction(HighlightAction)
+     *
+     * @return the highlight action, never {@code null}
      */
     public HighlightAction<RouterLink> getHighlightAction() {
         return highlightAction;
     }
 
     /**
-     * Sets the {@link HighlightAction} of this component.
+     * Sets the {@link HighlightAction} of this link, which will be performed
+     * with the evaluation of this link's {@link HighlightCondition}.
+     *
+     * The old action will be executed passing {@code false} to
+     * {@link HighlightAction#highlight(Object, boolean)} to clear any previous
+     * highlight state.
+     *
+     * @see #setHighlightCondition(HighlightCondition)
      *
      * @param highlightAction
-     *            the highlight action
+     *            the highlight action, not {@code null}
      */
     public void setHighlightAction(
             HighlightAction<RouterLink> highlightAction) {
+        assert highlightAction != null;
+
+        this.highlightAction.highlight(this, false);
         this.highlightAction = highlightAction;
     }
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
-        getHighlightAction().accept(this,
+        getHighlightAction().highlight(this,
                 getHighlightCondition().test(this, event));
     }
 }

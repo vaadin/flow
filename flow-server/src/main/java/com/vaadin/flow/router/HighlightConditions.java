@@ -26,7 +26,7 @@ public final class HighlightConditions {
     }
 
     /**
-     * Highlight if the navigation path is the same of the target
+     * Highlight if the navigation path is the same as the target
      * {@link RouterLink}.
      *
      * @return the highlight condition

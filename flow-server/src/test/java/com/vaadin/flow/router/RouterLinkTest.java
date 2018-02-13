@@ -306,6 +306,15 @@ public class RouterLinkTest extends HasCurrentService {
         return ui;
     }
 
+    private void triggerNavigationEvent(com.vaadin.flow.router.Router router,
+            RouterLink link, String location) {
+        AfterNavigationEvent event = new AfterNavigationEvent(
+                new LocationChangeEvent(router, this.createUI(),
+                        NavigationTrigger.ROUTER_LINK, new Location(location),
+                        Collections.emptyList()));
+        link.afterNavigation(event);
+    }
+
     @Override
     protected VaadinService createService() {
         return Mockito.mock(VaadinService.class);
@@ -354,17 +363,10 @@ public class RouterLinkTest extends HasCurrentService {
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
 
-        AfterNavigationEvent event = new AfterNavigationEvent(
-                new LocationChangeEvent(router, this.createUI(),
-                        NavigationTrigger.ROUTER_LINK, new Location("foo/bar"),
-                        Collections.emptyList()));
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "foo/bar");
         Assert.assertTrue(link.getElement().hasAttribute("highlight"));
 
-        event = new AfterNavigationEvent(new LocationChangeEvent(router,
-                this.createUI(), NavigationTrigger.ROUTER_LINK,
-                new Location("baz"), Collections.emptyList()));
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "baz");
         Assert.assertFalse(link.getElement().hasAttribute("highlight"));
     }
 
@@ -382,17 +384,10 @@ public class RouterLinkTest extends HasCurrentService {
                 FooNavigationTarget.class);
         link.setHighlightCondition(HighlightConditions.sameLocation());
 
-        AfterNavigationEvent event = new AfterNavigationEvent(
-                new LocationChangeEvent(router, this.createUI(),
-                        NavigationTrigger.ROUTER_LINK, new Location("foo/bar"),
-                        Collections.emptyList()));
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "foo/bar");
         Assert.assertFalse(link.getElement().hasAttribute("highlight"));
 
-        event = new AfterNavigationEvent(new LocationChangeEvent(router,
-                this.createUI(), NavigationTrigger.ROUTER_LINK,
-                new Location("foo"), Collections.emptyList()));
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "foo");
         Assert.assertTrue(link.getElement().hasAttribute("highlight"));
     }
 
@@ -411,24 +406,13 @@ public class RouterLinkTest extends HasCurrentService {
         link.setHighlightCondition(
                 HighlightConditions.locationPrefix("foo/ba"));
 
-        AfterNavigationEvent event = new AfterNavigationEvent(
-                new LocationChangeEvent(router, this.createUI(),
-                        NavigationTrigger.ROUTER_LINK, new Location("foo/bar"),
-                        Collections.emptyList()));
-
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "foo/bar");
         Assert.assertTrue(link.getElement().hasAttribute("highlight"));
 
-        event = new AfterNavigationEvent(new LocationChangeEvent(router,
-                this.createUI(), NavigationTrigger.ROUTER_LINK,
-                new Location("foo/baz"), Collections.emptyList()));
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "foo/baz");
         Assert.assertTrue(link.getElement().hasAttribute("highlight"));
 
-        event = new AfterNavigationEvent(new LocationChangeEvent(router,
-                this.createUI(), NavigationTrigger.ROUTER_LINK,
-                new Location("foo/qux"), Collections.emptyList()));
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "foo/qux");
         Assert.assertFalse(link.getElement().hasAttribute("highlight"));
     }
 
@@ -446,17 +430,10 @@ public class RouterLinkTest extends HasCurrentService {
                 FooNavigationTarget.class);
         link.setHighlightAction(HighlightActions.toggleClassName("highlight"));
 
-        AfterNavigationEvent event = new AfterNavigationEvent(
-                new LocationChangeEvent(router, this.createUI(),
-                        NavigationTrigger.ROUTER_LINK, new Location("foo/bar"),
-                        Collections.emptyList()));
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "foo/bar");
         Assert.assertTrue(link.hasClassName("highlight"));
 
-        event = new AfterNavigationEvent(new LocationChangeEvent(router,
-                this.createUI(), NavigationTrigger.ROUTER_LINK,
-                new Location("bar"), Collections.emptyList()));
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "bar");
         Assert.assertFalse(link.getElement().hasAttribute("highlight"));
     }
 
@@ -474,18 +451,11 @@ public class RouterLinkTest extends HasCurrentService {
                 FooNavigationTarget.class);
         link.setHighlightAction(HighlightActions.toggleTheme("highlight"));
 
-        AfterNavigationEvent event = new AfterNavigationEvent(
-                new LocationChangeEvent(router, this.createUI(),
-                        NavigationTrigger.ROUTER_LINK, new Location("foo/bar"),
-                        Collections.emptyList()));
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "foo/bar");
         Assert.assertTrue(
                 link.getElement().getThemeList().contains("highlight"));
 
-        event = new AfterNavigationEvent(new LocationChangeEvent(router,
-                this.createUI(), NavigationTrigger.ROUTER_LINK,
-                new Location("bar"), Collections.emptyList()));
-        link.afterNavigation(event);
+        triggerNavigationEvent(router, link, "bar");
         Assert.assertFalse(
                 link.getElement().getThemeList().contains("highlight"));
     }

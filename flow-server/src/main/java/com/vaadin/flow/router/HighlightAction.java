@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import com.vaadin.flow.function.SerializableBiConsumer;
+import java.io.Serializable;
 
 /**
  * An action to be performed to set the highlight state of the target.
@@ -24,7 +24,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
  *            the target type of the highlight action
  */
 @FunctionalInterface
-public interface HighlightAction<T> extends SerializableBiConsumer<T, Boolean> {
+public interface HighlightAction<T> extends Serializable {
 
     /**
      * Performs the highlight action on the target.
@@ -32,8 +32,8 @@ public interface HighlightAction<T> extends SerializableBiConsumer<T, Boolean> {
      * @param t
      *            the target of the highlight action
      * @param highlight
-     *            true if the target should be highlighted
+     *            true if the target should be highlighted, false to clear the
+     *            highlight state previously set by this action
      */
-    @Override
-    void accept(T t, Boolean highlight);
+    void highlight(T t, boolean highlight);
 }
