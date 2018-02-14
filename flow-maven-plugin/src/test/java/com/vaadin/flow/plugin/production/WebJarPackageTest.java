@@ -8,7 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.vaadin.flow.plugin.common.WebJarData;
+import com.vaadin.flow.plugin.common.ArtifactData;
 
 import static org.junit.Assert.assertEquals;
 
@@ -58,6 +58,6 @@ public class WebJarPackageTest {
                 throw new UncheckedIOException("Failed to create test web jar file", e);
             }
         }
-        return new WebJarPackage(new WebJarData(webJarFile, "artifactId", version), name, "path");
+        return new WebJarPackage(new ArtifactData(webJarFile, "artifactId", version), name, "path");
     }
 }

@@ -16,26 +16,26 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.JarContentsManager;
-import com.vaadin.flow.plugin.common.WebJarData;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 
 /**
- * Goal that copies all production mode files into the {@link CopyProductionFilesMojo#copyOutputDirectory} directory.
- * Files are copied from {@link CopyProductionFilesMojo#frontendWorkingDirectory} directory, WebJars and regular jars,
- * refer to {@link ProductionModeCopyStep} for details.
+ * Goal that copies all production mode files into the
+ * {@link CopyProductionFilesMojo#copyOutputDirectory} directory. Files are
+ * copied from {@link CopyProductionFilesMojo#frontendWorkingDirectory}
+ * directory, WebJars and regular jars, refer to {@link ProductionModeCopyStep}
+ * for details.
  */
 @Mojo(name = "copy-production-files", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class CopyProductionFilesMojo extends AbstractMojo {
@@ -52,20 +52,13 @@ public class CopyProductionFilesMojo extends AbstractMojo {
     private MavenProject project;
 
     @Override
-    public void execute() throws MojoExecutionException {
-        JarContentsManager jarContentsManager = new JarContentsManager();
-        Set<Artifact> artifacts = project.getArtifacts();
-        Set<WebJarData> webJars = new HashSet<>(artifacts.size());
-        Set<File> nonWebJars = new HashSet<>(artifacts.size());
-
-        for (Artifact artifact : artifacts) {
-            if (jarContentsManager.containsPath(artifact.getFile(), WebJarData.WEB_JAR_FILES_BASE)) {
-                webJars.add(new WebJarData(artifact.getFile(), artifact.getArtifactId(), artifact.getVersion()));
-            } else {
-                nonWebJars.add(artifact.getFile());
-            }
-        }
-        new ProductionModeCopyStep(jarContentsManager, webJars, nonWebJars)
-                .copyWebApplicationFiles(copyOutputDirectory, frontendWorkingDirectory, excludes);
+    public void execute() {
+        List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
+                .map(artifact -> new ArtifactData(artifact.getFile(),
+                        artifact.getArtifactId(), artifact.getVersion()))
+                .collect(Collectors.toList());
+        new ProductionModeCopyStep(new JarContentsManager(), projectArtifacts)
+                .copyWebApplicationFiles(copyOutputDirectory,
+                        frontendWorkingDirectory, excludes);
     }
 }
