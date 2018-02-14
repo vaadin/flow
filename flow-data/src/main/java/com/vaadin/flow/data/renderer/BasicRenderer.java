@@ -68,10 +68,10 @@ public abstract class BasicRenderer<SOURCE, TARGET>
 
     @Override
     public Rendering<SOURCE> render(Element container,
-            DataKeyMapper<SOURCE> keyMapper) {
-        removeTemplates(container);
+            DataKeyMapper<SOURCE> keyMapper, Element contentTemplate) {
         SimpleValueRendering rendering = new SimpleValueRendering(
                 keyMapper == null ? null : keyMapper::key);
+        rendering.setTemplateElement(contentTemplate);
         setupTemplate(container, rendering, keyMapper);
 
         return rendering;
@@ -79,10 +79,6 @@ public abstract class BasicRenderer<SOURCE, TARGET>
 
     private void setupTemplate(Element owner, SimpleValueRendering rendering,
             DataKeyMapper<SOURCE> keyMapper) {
-
-        Element templateElement = new Element("template", false);
-        rendering.setTemplateElement(templateElement);
-
         owner.getNode()
                 .runWhenAttached(ui -> ui.getInternals().getStateTree()
                         .beforeClientResponse(owner.getNode(),
@@ -93,7 +89,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
     private void setupTemplateWhenAttached(Element owner,
             SimpleValueRendering rendering, DataKeyMapper<SOURCE> keyMapper) {
 
-        Element templateElement = rendering.getTemplateElement().get();
+        Element templateElement = rendering.getTemplateElement();
         owner.appendChild(templateElement);
 
         if (keyMapper != null) {
@@ -129,11 +125,11 @@ public abstract class BasicRenderer<SOURCE, TARGET>
      */
     protected String getTemplatePropertyName(Rendering<SOURCE> context) {
         Objects.requireNonNull(context, "The context should not be null");
-        if (!context.getTemplateElement().isPresent()) {
+        Element templateElement = context.getTemplateElement();
+        if (templateElement == null) {
             throw new IllegalArgumentException(
                     "The provided rendering doesn't contain a template element");
         }
-        Element templateElement = context.getTemplateElement().get();
         return "_" + getClass().getSimpleName() + "_"
                 + templateElement.getNode().getId();
     }
@@ -203,8 +199,8 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         }
 
         @Override
-        public Optional<Element> getTemplateElement() {
-            return Optional.ofNullable(templateElement);
+        public Element getTemplateElement() {
+            return templateElement;
         }
 
         @Override

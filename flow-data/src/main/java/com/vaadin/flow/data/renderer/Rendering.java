@@ -49,8 +49,8 @@ public interface Rendering<SOURCE> extends Serializable {
      * can be used to set specific attributes to the template, or change its
      * contents before it is stamped on the client-side.
      * 
-     * @return the associated template element, if any
+     * @return the associated template element
      */
-    Optional<Element> getTemplateElement();
+    Element getTemplateElement();
 
 }
