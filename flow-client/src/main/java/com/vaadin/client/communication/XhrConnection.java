@@ -22,6 +22,7 @@ import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.ValueMap;
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -156,10 +157,11 @@ public class XhrConnection {
         responseHandler.setPayload(payload);
         responseHandler.setRequestStartTime(Profiler.getRelativeTimeMillis());
 
-        XMLHttpRequest xhr = Xhr.post(getUri(), payload.toJson(),
+        String payloadJson = WidgetUtil.stringify(payload);
+        XMLHttpRequest xhr = Xhr.post(getUri(), payloadJson,
                 JsonConstants.JSON_CONTENT_TYPE, responseHandler);
 
-        Console.log("Sending xhr message to server: " + payload.toJson());
+        Console.log("Sending xhr message to server: " + payloadJson);
 
         if (webkitMaybeIgnoringRequests && BrowserInfo.get().isWebkit()) {
             final int retryTimeout = 250;

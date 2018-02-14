@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow;
 
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsSet;
@@ -162,7 +163,7 @@ public class TreeChangeProcessor {
             property.setValue(child);
         } else {
             assert false : "Change should have either value or nodeValue property: "
-                    + change.toJson();
+                    + WidgetUtil.stringify(change);
         }
     }
 
