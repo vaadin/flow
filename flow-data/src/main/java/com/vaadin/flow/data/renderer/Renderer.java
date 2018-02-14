@@ -24,7 +24,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
-import com.vaadin.flow.data.provider.KeyMapper;
+import com.vaadin.flow.data.provider.DataKeyMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.ValueProvider;
@@ -178,7 +178,7 @@ public class Renderer<SOURCE> implements Serializable {
      *         to provide extra customization
      */
     public Rendering<SOURCE> render(Element container,
-            KeyMapper<SOURCE> keyMapper) {
+            DataKeyMapper<SOURCE> keyMapper) {
         Objects.requireNonNull(template,
                 "The template string is null. Either build the Renderer by using the 'Renderer(String)' constructor or override the 'render' method to provide custom behavior");
         Element contentTemplate = new Element("template", false)
