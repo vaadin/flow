@@ -31,7 +31,7 @@ import com.vaadin.flow.dom.Element;
  * @param <SOURCE>
  *            the type of the object model
  * 
- * @see Renderer#render(Element, com.vaadin.flow.data.provider.KeyMapper)
+ * @see Renderer#render(Element, com.vaadin.flow.data.provider.DataKeyMapper)
  */
 public interface Rendering<SOURCE> extends Serializable {
 

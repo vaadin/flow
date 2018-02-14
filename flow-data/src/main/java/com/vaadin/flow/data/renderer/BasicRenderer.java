@@ -23,7 +23,6 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.provider.AbstractComponentDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
-import com.vaadin.flow.data.provider.KeyMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.ValueProvider;
 
@@ -119,8 +118,8 @@ public abstract class BasicRenderer<SOURCE, TARGET>
      * template. By default, it generates a unique name by using the class name
      * of the renderer and the node id of the template element.
      * <p>
-     * This method is only called when {@link #render(Element, KeyMapper)} is
-     * invoked.
+     * This method is only called when {@link #render(Element, DataKeyMapper)}
+     * is invoked.
      * 
      * @param context
      *            the rendering context
@@ -142,8 +141,8 @@ public abstract class BasicRenderer<SOURCE, TARGET>
     /**
      * Gets the template String for a given property.
      * <p>
-     * This method is only called when {@link #render(Element, KeyMapper)} is
-     * invoked.
+     * This method is only called when {@link #render(Element, DataKeyMapper)}
+     * is invoked.
      * 
      * @param property
      *            the property to be used inside the template

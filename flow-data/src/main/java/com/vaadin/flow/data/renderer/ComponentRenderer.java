@@ -23,7 +23,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ComponentDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
-import com.vaadin.flow.data.provider.KeyMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
@@ -34,9 +33,9 @@ import com.vaadin.flow.function.ValueProvider;
  * Base class for all renderers that support arbitrary {@link Component}s.
  * <p>
  * Components that support renderers should use the appropriate method from this
- * class to provide component rendering: {@link #render(Element, KeyMapper)} for
- * components that uses {@code <template>}, and {@link #createComponent(Object)}
- * for components that use light-dom.
+ * class to provide component rendering: {@link #render(Element, DataKeyMapper)}
+ * for components that uses {@code <template>}, and
+ * {@link #createComponent(Object)} for components that use light-dom.
  * 
  * @author Vaadin Ltd.
  *
