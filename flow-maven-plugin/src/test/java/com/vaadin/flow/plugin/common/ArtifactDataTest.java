@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.plugin.common;
 
-import java.io.File;
 import java.io.IOException;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -27,37 +26,27 @@ import org.junit.rules.TemporaryFolder;
 /**
  * @author Vaadin Ltd.
  */
-public class WebJarDataTest {
+public class ArtifactDataTest {
     @Rule
     public TemporaryFolder testDirectory = new TemporaryFolder();
 
     @Test(expected = NullPointerException.class)
     public void constructor_nullFile() {
-        new WebJarData(null, "one", "two");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructor_notExistingFile() {
-        new WebJarData(new File("wow"), "one", "two");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructor_directoryInsteadOfFile() {
-        new WebJarData(testDirectory.getRoot(), "one", "two");
+        new ArtifactData(null, "one", "two");
     }
 
     @Test(expected = NullPointerException.class)
     public void constructor_nullArtifactId() throws IOException {
-        new WebJarData(testDirectory.newFile("test"), null, "two");
+        new ArtifactData(testDirectory.newFile("test"), null, "two");
     }
 
     @Test(expected = NullPointerException.class)
     public void constructor_nullVersion() throws IOException {
-        new WebJarData(testDirectory.newFile("test"), "one", null);
+        new ArtifactData(testDirectory.newFile("test"), "one", null);
     }
 
     @Test
     public void equalsContract() {
-        EqualsVerifier.forClass(WebJarData.class).verify();
+        EqualsVerifier.forClass(ArtifactData.class).verify();
     }
 }

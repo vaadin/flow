@@ -17,15 +17,15 @@ package com.vaadin.flow.plugin.production;
 
 import java.util.Objects;
 
-import com.vaadin.flow.plugin.common.WebJarData;
+import com.vaadin.flow.plugin.common.ArtifactData;
 
 /**
- * Wrapper around {@link WebJarData} that holds information about a package located in the corresponding WebJar.
+ * Wrapper around {@link ArtifactData} that holds information about a package located in the corresponding WebJar.
  *
  * @author Vaadin Ltd.
  */
 public class WebJarPackage {
-    private final WebJarData webJar;
+    private final ArtifactData webJar;
     private final String packageName;
     private final String pathToPackage;
 
@@ -36,7 +36,7 @@ public class WebJarPackage {
      * @param packageName   name of a package inside the WebJar, not {@code null}
      * @param pathToPackage path to package inside the WebJar, not {@code null}
      */
-    public WebJarPackage(WebJarData webJar, String packageName, String pathToPackage) {
+    public WebJarPackage(ArtifactData webJar, String packageName, String pathToPackage) {
         this.webJar = Objects.requireNonNull(webJar);
         this.packageName = Objects.requireNonNull(packageName);
         this.pathToPackage = Objects.requireNonNull(pathToPackage);
@@ -47,7 +47,7 @@ public class WebJarPackage {
      *
      * @return web jar data
      */
-    public WebJarData getWebJar() {
+    public ArtifactData getWebJar() {
         return webJar;
     }
 

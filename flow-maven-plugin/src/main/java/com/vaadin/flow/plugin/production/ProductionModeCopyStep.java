@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -32,10 +34,9 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
+import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.plugin.common.JarContentsManager;
-import com.vaadin.flow.plugin.common.WebJarData;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -48,51 +49,90 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd.
  */
 public class ProductionModeCopyStep {
+    static final String WEB_JAR_FILES_BASE = "META-INF/resources/webjars/";
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductionModeCopyStep.class);
     private static final String NON_WEB_JAR_RESOURCE_PATH = "META-INF/resources/frontend";
     private static final String BOWER_JSON_FILE_NAME = "bower.json";
     private static final String BOWER_COMPONENTS_DIRECTORY_NAME = "bower_components";
 
     private final JarContentsManager jarContentsManager;
-    private final Set<File> nonWebJars;
-    private final Map<String, WebJarPackage> webJarNameToPackage;
+    private final Set<File> nonWebJars = new HashSet<>();
+    private final Map<String, WebJarPackage> webJarNameToPackage = new HashMap<>();
 
     /**
      * Fill and verify initial jar files' data.
      *
-     * @param jarContentsManager a class to manage jar file contents, not {@code null}
-     * @param webJars            set of WebJars to copy files from, not {@code null}. Only bower webJars are supported now.
-     * @param nonWebJars         set of other jars to copy data from, only files from {@link ProductionModeCopyStep#NON_WEB_JAR_RESOURCE_PATH} are copied; not {@code null}
-     * @throws IllegalArgumentException if no {@literal bower.json} is found inside any WebJar
-     * @throws UncheckedIOException     if any {@link IOException} occurs during {@literal bower.json} parsing
+     * @param projectArtifacts
+     *            project artifacts to get the data from
+     * @throws IllegalArgumentException
+     *             if no {@literal bower.json} is found inside any WebJar
+     * @throws UncheckedIOException
+     *             if any {@link IOException} occurs during
+     *             {@literal bower.json} parsing
      */
-    public ProductionModeCopyStep(JarContentsManager jarContentsManager,
-                                  Set<WebJarData> webJars, Set<File> nonWebJars) {
-        this.jarContentsManager = Objects.requireNonNull(jarContentsManager);
-        this.nonWebJars = Objects.requireNonNull(nonWebJars);
-        webJarNameToPackage = extractWebPackages(webJars);
+    public ProductionModeCopyStep(Collection<ArtifactData> projectArtifacts) {
+        this(new JarContentsManager(), projectArtifacts);
     }
 
-    private Map<String, WebJarPackage> extractWebPackages(Collection<WebJarData> webJars) {
-        Map<String, WebJarPackage> result = Maps.newHashMapWithExpectedSize(webJars.size());
-        for (WebJarData webJar : webJars) {
-            jarContentsManager.findFiles(webJar.getJarFile(), WebJarData.WEB_JAR_FILES_BASE, BOWER_JSON_FILE_NAME).stream()
-                    .map(bowerJsonPath -> new WebJarPackage(webJar, getPackageName(webJar, bowerJsonPath), getPackageDirectory(bowerJsonPath)))
-                    .forEach(webJarPackage -> result.merge(webJarPackage.getPackageName(), webJarPackage, WebJarPackage::selectCorrectPackage));
+    /**
+     * Fill and verify initial jar files' data, use custom version of
+     * {@link JarContentsManager} for the operations.
+     *
+     * @param jarContentsManager
+     *            a class to manage jar file contents, not {@code null}
+     * @param projectArtifacts
+     *            project artifacts to get the data from
+     * @throws IllegalArgumentException
+     *             if no {@literal bower.json} is found inside any WebJar
+     * @throws UncheckedIOException
+     *             if any {@link IOException} occurs during
+     *             {@literal bower.json} parsing
+     */
+    public ProductionModeCopyStep(JarContentsManager jarContentsManager,
+            Collection<ArtifactData> projectArtifacts) {
+        this.jarContentsManager = Objects.requireNonNull(jarContentsManager);
+
+        for (ArtifactData artifact : projectArtifacts) {
+            File artifactFile = artifact.getFileOrDirectory();
+            if (artifactFile.isFile()) {
+                if (jarContentsManager.containsPath(artifactFile,
+                        WEB_JAR_FILES_BASE)) {
+                    storeWebJarData(artifact);
+                } else {
+                    nonWebJars.add(artifactFile);
+                }
+            } else {
+                LOGGER.debug(
+                        "Skipping project artifact '{}' because it does not exist or not a file",
+                        artifact);
+            }
         }
-        return result;
+    }
+
+    private void storeWebJarData(ArtifactData webJar) {
+        jarContentsManager
+                .findFiles(webJar.getFileOrDirectory(), WEB_JAR_FILES_BASE,
+                        BOWER_JSON_FILE_NAME)
+                .stream()
+                .map(bowerJsonPath -> new WebJarPackage(webJar,
+                        getPackageName(webJar, bowerJsonPath),
+                        getPackageDirectory(bowerJsonPath)))
+                .forEach(webJarPackage -> webJarNameToPackage.merge(
+                        webJarPackage.getPackageName(), webJarPackage,
+                        WebJarPackage::selectCorrectPackage));
     }
 
     private String getPackageDirectory(String bowerJsonPath) {
         return bowerJsonPath.substring(0, bowerJsonPath.lastIndexOf('/') + 1);
     }
 
-    private String getPackageName(WebJarData webJar, String nameSourceJarPath) {
+    private String getPackageName(ArtifactData webJar, String nameSourceJarPath) {
         String fileContents;
         try {
-            fileContents = IOUtils.toString(jarContentsManager.getFileContents(webJar.getJarFile(), nameSourceJarPath), StandardCharsets.UTF_8.displayName());
+            fileContents = IOUtils.toString(jarContentsManager.getFileContents(webJar.getFileOrDirectory(), nameSourceJarPath), StandardCharsets.UTF_8.displayName());
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format("Unable to read file '%s' from webJar '%s'", nameSourceJarPath, webJar.getJarFile()), e);
+            throw new UncheckedIOException(String.format("Unable to read file '%s' from webJar '%s'", nameSourceJarPath, webJar.getFileOrDirectory()), e);
         }
         JsonObject jsonObject = Json.parse(fileContents);
         if (jsonObject.hasKey("name")) {
@@ -130,7 +170,7 @@ public class ProductionModeCopyStep {
             webJarNameToPackage.forEach((name, webJarPackage) -> {
                 File webJarDirectory = new File(bowerComponents, name);
                 FlowPluginFileUtils.forceMkdir(webJarDirectory);
-                jarContentsManager.copyFilesFromJarTrimmingBasePath(webJarPackage.getWebJar().getJarFile(), webJarPackage.getPathToPackage(), webJarDirectory, wildcardExclusions);
+                jarContentsManager.copyFilesFromJarTrimmingBasePath(webJarPackage.getWebJar().getFileOrDirectory(), webJarPackage.getPathToPackage(), webJarDirectory, wildcardExclusions);
             });
         }
 
