@@ -122,6 +122,8 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
     public Rendering<SOURCE> render(Element container,
             DataKeyMapper<SOURCE> keyMapper) {
 
+        removeTemplates(container);
+
         ComponentRendering rendering = new ComponentRendering(
                 keyMapper == null ? null : keyMapper::key);
         rendering.setTemplateElement(new Element("template", false));

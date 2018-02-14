@@ -69,7 +69,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
     @Override
     public Rendering<SOURCE> render(Element container,
             DataKeyMapper<SOURCE> keyMapper) {
-
+        removeTemplates(container);
         SimpleValueRendering rendering = new SimpleValueRendering(
                 keyMapper == null ? null : keyMapper::key);
         setupTemplate(container, rendering, keyMapper);

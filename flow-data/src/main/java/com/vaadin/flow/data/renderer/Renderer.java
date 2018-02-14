@@ -181,6 +181,9 @@ public class Renderer<SOURCE> implements Serializable {
             DataKeyMapper<SOURCE> keyMapper) {
         Objects.requireNonNull(template,
                 "The template string is null. Either build the Renderer by using the 'Renderer(String)' constructor or override the 'render' method to provide custom behavior");
+
+        removeTemplates(container);
+
         Element contentTemplate = new Element("template", false)
                 .setProperty("innerHTML", template);
 
@@ -242,6 +245,19 @@ public class Renderer<SOURCE> implements Serializable {
             return Optional.of(templateElement);
         }
 
+    }
+
+    /**
+     * Removes any {@code <template>} elements inside the given element.
+     * 
+     * @param parent
+     *            the element whose template-children to remove, not
+     *            {@code null}
+     */
+    protected void removeTemplates(Element parent) {
+        parent.removeChild(parent.getChildren()
+                .filter(child -> "template".equals(child.getTag()))
+                .toArray(Element[]::new));
     }
 
 }
