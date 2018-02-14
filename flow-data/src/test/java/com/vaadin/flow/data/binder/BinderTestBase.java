@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.data.binder;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -78,8 +75,6 @@ public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
     }
 
     void assertValidField(HasValidation field) {
-        assertThat("The field should contain no error message",
-                field.getErrorMessage(), isEmptyOrNullString());
         Assert.assertFalse("The field should be valid", field.isInvalid());
     }
 

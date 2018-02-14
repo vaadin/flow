@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.data.binder;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.isEmptyString;
@@ -476,7 +475,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertEquals("foobar", componentErrors.get(textField));
 
         textField.setValue("value");
-        assertThat(textField.getErrorMessage(), isEmptyString());
+        assertFalse(textField.isInvalid());
         assertTrue(textField.isRequiredIndicatorVisible());
     }
 
@@ -526,7 +525,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertEquals(1, invokes.get());
 
         textField.setValue("value");
-        assertThat(textField.getErrorMessage(), isEmptyString());
+        assertFalse(textField.isInvalid());
         assertTrue(textField.isRequiredIndicatorVisible());
     }
 
@@ -880,8 +879,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         // Restore values and test no errors.
         ageField.setValue(String.valueOf(initialAge));
-        assertThat("There should be no error", ageField.getErrorMessage(),
-                is(""));
+        assertFalse("The field should be valid", ageField.isInvalid());
 
         bindingHandler.expectingError = false;
         nameField.setValue(initialName);
