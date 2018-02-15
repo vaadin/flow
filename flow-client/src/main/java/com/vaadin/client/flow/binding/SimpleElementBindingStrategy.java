@@ -656,11 +656,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         String name = mapProperty.getName();
         CSSStyleDeclaration styleElement = element.getStyle();
         if (mapProperty.hasValue()) {
-            WidgetUtil.setJsProperty(styleElement, name,
-                    mapProperty.getValue());
+            styleElement.setProperty(name, (String) mapProperty.getValue());
         } else {
-            // Can't delete a style property, so just clear the value
-            WidgetUtil.setJsProperty(styleElement, name, null);
+            styleElement.removeProperty(name);
         }
     }
 
