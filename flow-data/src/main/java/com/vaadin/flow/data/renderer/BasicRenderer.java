@@ -114,8 +114,8 @@ public abstract class BasicRenderer<SOURCE, TARGET>
      * template. By default, it generates a unique name by using the class name
      * of the renderer and the node id of the template element.
      * <p>
-     * This method is only called when {@link #render(Element, DataKeyMapper,
-     * Element))} is invoked.
+     * This method is only called when
+     * {@link #render(Element, DataKeyMapper, Element)} is invoked.
      * 
      * @param context
      *            the rendering context
@@ -137,8 +137,8 @@ public abstract class BasicRenderer<SOURCE, TARGET>
     /**
      * Gets the template String for a given property.
      * <p>
-     * This method is only called when {@link #render(Element, DataKeyMapper,
-     * Element))} is invoked.
+     * This method is only called when
+     * {@link #render(Element, DataKeyMapper, Element)} is invoked.
      * 
      * @param property
      *            the property to be used inside the template
