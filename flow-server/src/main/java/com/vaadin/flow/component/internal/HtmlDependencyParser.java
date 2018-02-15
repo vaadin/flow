@@ -100,10 +100,11 @@ public class HtmlDependencyParser {
                 getLogger().info(
                         "Can't find resource '%s' via the servlet context",
                         path);
+            } else {
+                parseHtmlImports(content, path)
+                        .map(uri -> resolveUri(uri, path))
+                        .forEach(uri -> parseDependencies(uri, dependencies));
             }
-
-            parseHtmlImports(content, path).map(uri -> resolveUri(uri, path))
-                    .forEach(uri -> parseDependencies(uri, dependencies));
         } catch (IOException exception) {
             // ignore exception on close()
             getLogger().debug("Couldn't close template input stream",
@@ -112,6 +113,9 @@ public class HtmlDependencyParser {
     }
 
     private String resolveUri(String relative, String base) {
+        if (relative.startsWith("/")) {
+            return relative;
+        }
         try {
             URI uri = new URI(base);
             return uri.resolve(relative).toString();
