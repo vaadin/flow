@@ -779,16 +779,17 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(componentClass);
-        dependencies.getHtmlImports().forEach(html -> page
-                .addHtmlImport(getHtmlImportValue(html), html.loadMode()));
+        dependencies.getHtmlImports()
+                .forEach(html -> html.getUris().forEach(
+                        uri -> page.addHtmlImport(getHtmlImportValue(uri),
+                                html.getLoadMode())));
         dependencies.getJavaScripts()
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
     }
 
-    private String getHtmlImportValue(HtmlImport html) {
-        String importValue = html.value();
+    private String getHtmlImportValue(String importValue) {
         if (theme != null) {
             return VaadinServlet.getCurrent().getUrlTranslation(theme,
                     importValue);
@@ -864,7 +865,7 @@ public class UIInternals implements Serializable {
     /**
      * Gets the application id tied with this UI. Different applications in the
      * same page have different unique ids.
-     * 
+     *
      * @return the id of the application tied with this UI
      */
     public String getAppId() {
