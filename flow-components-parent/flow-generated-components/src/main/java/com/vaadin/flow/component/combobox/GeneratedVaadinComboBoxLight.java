@@ -15,21 +15,23 @@
  */
 package com.vaadin.flow.component.combobox;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.Synchronize;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import com.vaadin.flow.component.NotSupported;
-import com.vaadin.flow.component.DomEvent;
+
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.component.ComponentSupplier;
+import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.shared.Registration;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -776,11 +778,11 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
     public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
             extends ComponentEvent<R> {
         private final JsonObject detail;
-        private final String detailValue;
+        private final JsonObject detailValue;
 
         public SelectedItemChangeEvent(R source, boolean fromClient,
                 @EventData("event.detail") JsonObject detail,
-                @EventData("event.detail.value") String detailValue) {
+                @EventData("event.detail.value") JsonObject detailValue) {
             super(source, fromClient);
             this.detail = detail;
             this.detailValue = detailValue;
@@ -790,7 +792,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
             return detail;
         }
 
-        public String getDetailValue() {
+        public JsonObject getDetailValue() {
             return detailValue;
         }
     }

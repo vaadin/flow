@@ -2,7 +2,7 @@
   "name": "Vaadin.TabsElement",
   "tag": "vaadin-tabs",
   "baseUrl": "vaadin-tabs/src/vaadin-tabs.html",
-  "version": "2.0.0-beta1",
+  "version": "2.0.0-beta2",
   "properties": [
     {
       "name": "selected",
