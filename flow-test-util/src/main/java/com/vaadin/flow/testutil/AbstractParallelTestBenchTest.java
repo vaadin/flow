@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.junit.Before;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
+import com.vaadin.testbench.IPAddress;
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunLocally;
@@ -128,53 +129,7 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
         if (getLocalExecution().isPresent()) {
             return "localhost";
         }
-        return getCurrentHostAddress();
-    }
-
-    /**
-     * Returns host address that can be targeted from the outside, like from a
-     * test hub.
-     *
-     * @return host address
-     * @throws RuntimeException
-     *             if host name could not be determined or
-     *             {@link SocketException} was caught during the determination.
-     */
-    protected String getCurrentHostAddress() {
-        try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface
-                    .getNetworkInterfaces();
-            while (interfaces.hasMoreElements()) {
-                NetworkInterface nwInterface = interfaces.nextElement();
-                if (!nwInterface.isUp() || nwInterface.isLoopback()
-                        || nwInterface.isVirtual()) {
-                    continue;
-                }
-                Optional<String> address = getHostAddress(nwInterface);
-                if (address.isPresent()) {
-                    return address.get();
-                }
-            }
-        } catch (SocketException e) {
-            throw new RuntimeException("Could not find the host name", e);
-        }
-        throw new RuntimeException(
-                "No compatible (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) ip address found.");
-    }
-
-    private static Optional<String> getHostAddress(
-            NetworkInterface nwInterface) {
-        Enumeration<InetAddress> addresses = nwInterface.getInetAddresses();
-        while (addresses.hasMoreElements()) {
-            InetAddress address = addresses.nextElement();
-            if (address.isLoopbackAddress()) {
-                continue;
-            }
-            if (address.isSiteLocalAddress()) {
-                return Optional.of(address.getHostAddress());
-            }
-        }
-        return Optional.empty();
+        return IPAddress.findSiteLocalAddress();
     }
 
     /**
