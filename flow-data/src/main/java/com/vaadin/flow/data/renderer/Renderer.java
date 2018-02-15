@@ -162,11 +162,8 @@ public class Renderer<SOURCE> implements Serializable {
     }
 
     /**
-     * Effectively creates the {@code <template>} used for rendering the model
-     * objects.
-     * <p>
-     * Subclasses of Renderer usually override this method to provide additional
-     * features.
+     * Handles the rendering of the model objects by creating a new
+     * {@code <template>} element in the given container.
      * 
      * @param container
      *            the element in which the template will be attached to
@@ -179,15 +176,39 @@ public class Renderer<SOURCE> implements Serializable {
      */
     public Rendering<SOURCE> render(Element container,
             DataKeyMapper<SOURCE> keyMapper) {
+        return render(container, keyMapper, new Element("template", false));
+    }
+
+    /**
+     * Handles the rendering of the model objects by using the given
+     * {@code <template>} element in the given container.
+     * <p>
+     * Subclasses of Renderer usually override this method to provide additional
+     * features.
+     * 
+     * @param container
+     *            the element in which the template will be attached to, not
+     *            {@code null}
+     * @param keyMapper
+     *            mapper used internally to fetch items by key and to provide
+     *            keys for given items. It is required when either event
+     *            handlers or {@link DataGenerator} are supported
+     * @param contentTemplate
+     *            the {@code <template>} element to be used for rendering in the
+     *            container, not {@code null}
+     * @return the context of the rendering, that can be used by the components
+     *         to provide extra customization
+     */
+    public Rendering<SOURCE> render(Element container,
+            DataKeyMapper<SOURCE> keyMapper, Element contentTemplate) {
         Objects.requireNonNull(template,
                 "The template string is null. Either build the Renderer by using the 'Renderer(String)' constructor or override the 'render' method to provide custom behavior");
 
-        removeTemplates(container);
+        contentTemplate.setProperty("innerHTML", template);
 
-        Element contentTemplate = new Element("template", false)
-                .setProperty("innerHTML", template);
-
-        container.appendChild(contentTemplate);
+        if (contentTemplate.getParent() != container) {
+            container.appendChild(contentTemplate);
+        }
 
         if (keyMapper != null) {
             RendererUtil.registerEventHandlers(this, contentTemplate, container,
@@ -241,23 +262,10 @@ public class Renderer<SOURCE> implements Serializable {
         }
 
         @Override
-        public Optional<Element> getTemplateElement() {
-            return Optional.of(templateElement);
+        public Element getTemplateElement() {
+            return templateElement;
         }
 
-    }
-
-    /**
-     * Removes any {@code <template>} elements inside the given element.
-     * 
-     * @param parent
-     *            the element whose template-children to remove, not
-     *            {@code null}
-     */
-    protected void removeTemplates(Element parent) {
-        parent.removeChild(parent.getChildren()
-                .filter(child -> "template".equals(child.getTag()))
-                .toArray(Element[]::new));
     }
 
 }

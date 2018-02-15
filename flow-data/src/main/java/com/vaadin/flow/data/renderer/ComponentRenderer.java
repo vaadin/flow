@@ -120,13 +120,11 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
 
     @Override
     public Rendering<SOURCE> render(Element container,
-            DataKeyMapper<SOURCE> keyMapper) {
-
-        removeTemplates(container);
+            DataKeyMapper<SOURCE> keyMapper, Element contentTemplate) {
 
         ComponentRendering rendering = new ComponentRendering(
                 keyMapper == null ? null : keyMapper::key);
-        rendering.setTemplateElement(new Element("template", false));
+        rendering.setTemplateElement(contentTemplate);
 
         container.getNode()
                 .runWhenAttached(ui -> ui.getInternals().getStateTree()
@@ -155,7 +153,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
     private void setupTemplateWhenAttached(UI ui, Element owner,
             ComponentRendering rendering, DataKeyMapper<SOURCE> keyMapper) {
         String appId = ui.getInternals().getAppId();
-        Element templateElement = rendering.getTemplateElement().get();
+        Element templateElement = rendering.getTemplateElement();
         owner.appendChild(templateElement);
 
         Element container = new Element("div", false);
@@ -223,8 +221,8 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         }
 
         @Override
-        public Optional<Element> getTemplateElement() {
-            return Optional.ofNullable(templateElement);
+        public Element getTemplateElement() {
+            return templateElement;
         }
 
         @Override
