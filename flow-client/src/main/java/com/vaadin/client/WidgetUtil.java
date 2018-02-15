@@ -285,4 +285,22 @@ public class WidgetUtil {
     /*-{
       return Object.keys(value);
     }-*/;
+
+    /**
+     * We drop the keys '__shady', 'host' and 'parent' for the JsonObject as
+     * these come when we run with polyfills and may create cyclic dependencies.
+     *
+     * @param payload
+     *            JsonObject to stringify
+     * @return json string of given object
+     */
+    public static native String stringify(JsonObject payload) /*-{
+        return JSON.stringify(payload, function(key, value) {
+            if(value instanceof Node){
+                throw "Message JsonObject contained a dom node reference which " +
+                "should not be sent to the server and can cause a cyclic dependecy.";
+            }
+            return value;
+        });
+    }-*/;
 }
