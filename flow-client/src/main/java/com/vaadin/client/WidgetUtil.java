@@ -18,7 +18,6 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-
 import com.vaadin.client.flow.dom.DomApi;
 
 import elemental.client.Browser;
@@ -284,5 +283,24 @@ public class WidgetUtil {
     public static native String[] getKeys(Object value)
     /*-{
       return Object.keys(value);
+    }-*/;
+
+    /**
+     * When serializing the JsonObject we check the values for dom nodes and
+     * throw and exception if one is found as they should not be synced and may
+     * create cyclic dependencies.
+     *
+     * @param payload
+     *            JsonObject to stringify
+     * @return json string of given object
+     */
+    public static native String stringify(JsonObject payload) /*-{
+        return JSON.stringify(payload, function(key, value) {
+            if(value instanceof Node){
+                throw "Message JsonObject contained a dom node reference which " +
+                "should not be sent to the server and can cause a cyclic dependecy.";
+            }
+            return value;
+        });
     }-*/;
 }

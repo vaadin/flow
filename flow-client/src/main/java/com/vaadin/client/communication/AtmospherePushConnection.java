@@ -25,6 +25,7 @@ import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.ValueMap;
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -264,17 +265,18 @@ public class AtmospherePushConnection implements PushConnection {
                     "This server to client push connection should not be used to send client to server messages");
         }
         if (state == State.CONNECTED) {
+            String messageJson = WidgetUtil.stringify(message);
             Console.log("Sending push (" + transport + ") message to server: "
-                    + message.toJson());
+                    + messageJson);
 
             if (transport.equals("websocket")) {
                 FragmentedMessage fragmented = new FragmentedMessage(
-                        message.toJson());
+                        messageJson);
                 while (fragmented.hasNextFragment()) {
                     doPush(socket, fragmented.getNextFragment());
                 }
             } else {
-                doPush(socket, message.toJson());
+                doPush(socket, messageJson);
             }
             return;
         }
