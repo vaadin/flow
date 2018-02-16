@@ -18,7 +18,6 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-
 import com.vaadin.client.flow.dom.DomApi;
 
 import elemental.client.Browser;
@@ -287,8 +286,9 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * We drop the keys '__shady', 'host' and 'parent' for the JsonObject as
-     * these come when we run with polyfills and may create cyclic dependencies.
+     * When serializing the JsonObject we check the values for dom nodes and
+     * throw and exception if one is found as they should not be synced and may
+     * create cyclic dependencies.
      *
      * @param payload
      *            JsonObject to stringify
