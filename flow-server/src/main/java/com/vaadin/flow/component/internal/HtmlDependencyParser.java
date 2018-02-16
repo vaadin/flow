@@ -82,8 +82,7 @@ public class HtmlDependencyParser {
             /*
              * Cannot happen in runtime.
              *
-             * But not all unit tests set it. So let's just return the root uri
-             * and return.
+             * But not all unit tests set it. Let's just don't proceed further.
              */
             return;
         }

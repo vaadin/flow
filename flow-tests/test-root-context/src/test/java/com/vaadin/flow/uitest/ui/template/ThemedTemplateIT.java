@@ -75,7 +75,7 @@ public class ThemedTemplateIT extends ChromeBrowserTest {
                 hrefs.contains(
                         "/frontend/com/vaadin/flow/uitest/ui/custom-theme/relative2.html"));
         Assert.assertTrue(
-                "The themed HTML file for the absolute file"
+                "The themed HTML file for the absolute file "
                         + "is not added as an HMTL import to the head",
                 hrefs.contains("/frontend/absolute.html"));
     }

@@ -38,6 +38,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
+import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.dom.Element;
@@ -779,14 +780,18 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(componentClass);
-        dependencies.getHtmlImports()
-                .forEach(html -> html.getUris().forEach(
-                        uri -> page.addHtmlImport(getHtmlImportValue(uri),
-                                html.getLoadMode())));
+        dependencies.getHtmlImports().stream()
+                .forEach(html -> addHtmlImport(html, page));
         dependencies.getJavaScripts()
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+    }
+
+    private void addHtmlImport(HtmlImportDependency dependency, Page page) {
+        dependency.getUris().stream()
+                .forEach(uri -> page.addHtmlImport(getHtmlImportValue(uri),
+                        dependency.getLoadMode()));
     }
 
     private String getHtmlImportValue(String importValue) {

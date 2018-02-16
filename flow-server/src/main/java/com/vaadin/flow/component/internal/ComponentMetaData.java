@@ -76,12 +76,12 @@ public class ComponentMetaData {
 
         private HtmlImportDependency(Collection<String> uris,
                 LoadMode loadMode) {
-            this.uris = uris;
+            this.uris = Collections.unmodifiableCollection(uris);
             this.loadMode = loadMode;
         }
 
         public Collection<String> getUris() {
-            return Collections.unmodifiableCollection(uris);
+            return uris;
         }
 
         public LoadMode getLoadMode() {
