@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
@@ -458,7 +459,8 @@ public class RouterLink extends Component
      */
     public void setHighlightCondition(
             HighlightCondition<RouterLink> highlightCondition) {
-        assert highlightCondition != null;
+        Objects.requireNonNull(highlightCondition,
+                "HighlightCondition may not be null");
 
         this.highlightCondition = highlightCondition;
     }
@@ -493,7 +495,8 @@ public class RouterLink extends Component
      */
     public void setHighlightAction(
             HighlightAction<RouterLink> highlightAction) {
-        assert highlightAction != null;
+        Objects.requireNonNull(highlightCondition,
+                "HighlightAction may not be null");
 
         this.highlightAction.highlight(this, false);
         this.highlightAction = highlightAction;
