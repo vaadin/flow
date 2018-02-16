@@ -90,7 +90,10 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
                 .getSource()).getServlet().getServletContext();
 
         String es6Base = es6ContextPathResolver.resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX) + '/';
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        if(!es6Base.endsWith("/")) {
+            es6Base += '/';
+        }
         String bundleManifestContextPath = es6Base + FLOW_BUNDLE_MANIFEST;
         try (InputStream bundleManifestStream = servletContext
                 .getResourceAsStream(bundleManifestContextPath)) {
