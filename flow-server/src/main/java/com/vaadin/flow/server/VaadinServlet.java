@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -636,7 +635,14 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
-    public InputStream getResourceAsStream(String url) {
+    /**
+     * Resolves the given {@code url} resource using vaadin URI resolver.
+     *
+     * @param url
+     *            the resource to resolve
+     * @return resolved resource
+     */
+    public String resolveResource(String url) {
         VaadinRequest request = VaadinRequest.getCurrent();
         VaadinSession session = VaadinSession.getCurrent();
         if (request == null || session == null
@@ -652,21 +658,23 @@ public class VaadinServlet extends HttpServlet {
         VaadinUriResolverFactory uriResolverFactory = session
                 .getAttribute(VaadinUriResolverFactory.class);
 
-        ServletContext context = ((WrappedHttpSession) request
-                .getWrappedSession()).getHttpSession().getServletContext();
-
         String resolvedUrl = uriResolverFactory.toServletContextPath(request,
                 url);
 
-        InputStream inputStream = null;
-        if (webJarServer != null) {
-            inputStream = webJarServer.getWebJarResourceAsStream(resolvedUrl,
-                    context);
+        try {
+            if (webJarServer != null) {
+                Optional<String> webJarUrl = webJarServer
+                        .getWebJarResourcePath(resolvedUrl);
+                if (webJarUrl.isPresent() && getServletContext()
+                        .getResource(webJarUrl.get()) != null) {
+                    return webJarUrl.get();
+                }
+            }
+        } catch (MalformedURLException exception) {
+            // log
         }
-        if (inputStream == null) {
-            inputStream = context.getResourceAsStream(resolvedUrl);
-        }
-        return inputStream;
+
+        return resolvedUrl;
     }
 
     private final String computeUrlTranslation(AbstractTheme theme,

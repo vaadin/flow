@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -30,42 +29,36 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinUriResolverFactory;
-import com.vaadin.flow.server.WrappedHttpSession;
 
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class HtmlDependencyParserTest {
 
-    private VaadinRequest request;
     private VaadinSession session;
-    private WrappedHttpSession wrappedSession;
+    private VaadinServlet servlet;
     private ServletContext context;
-    private VaadinUriResolverFactory factory;
+    private VaadinServletService service;
 
     @Before
     public void setUp() {
-        request = Mockito.mock(VaadinRequest.class);
-        CurrentInstance.set(VaadinRequest.class, request);
+        service = Mockito.mock(VaadinServletService.class);
+        CurrentInstance.set(VaadinService.class, service);
+
+        servlet = Mockito.mock(VaadinServlet.class);
+        Mockito.when(service.getServlet()).thenReturn(servlet);
+
         session = Mockito.mock(VaadinSession.class);
         CurrentInstance.set(VaadinSession.class, session);
 
-        wrappedSession = Mockito.mock(WrappedHttpSession.class);
         context = Mockito.mock(ServletContext.class);
-        factory = Mockito.mock(VaadinUriResolverFactory.class);
 
-        Mockito.when(session.getAttribute(VaadinUriResolverFactory.class))
-                .thenReturn(factory);
-
-        HttpSession httpSesson = Mockito.mock(HttpSession.class);
-
-        Mockito.when(httpSesson.getServletContext()).thenReturn(context);
-
-        Mockito.when(request.getWrappedSession()).thenReturn(wrappedSession);
-        Mockito.when(wrappedSession.getHttpSession()).thenReturn(httpSesson);
+        Mockito.when(servlet.getServletContext()).thenReturn(context);
+        Mockito.when(session.hasLock()).thenReturn(true);
     }
 
     @After
@@ -88,8 +81,7 @@ public class HtmlDependencyParserTest {
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
 
         String resolvedRoot = "baz/bar/" + root;
-        Mockito.when(factory.toServletContextPath(request, root))
-                .thenReturn(resolvedRoot);
+        Mockito.when(servlet.resolveResource(root)).thenReturn(resolvedRoot);
 
         String importContent = "<link rel='import' href='relative1.html'>"
                 + "<link rel='import' href='../relative2.html'>"
@@ -125,8 +117,7 @@ public class HtmlDependencyParserTest {
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
 
         String resolvedRoot = "baz/bar/" + root;
-        Mockito.when(factory.toServletContextPath(request, root))
-                .thenReturn(resolvedRoot);
+        Mockito.when(servlet.resolveResource(root)).thenReturn(resolvedRoot);
 
         String importContent = "<link rel='import' href='relative.html'>";
         InputStream stream = new ByteArrayInputStream(
@@ -135,7 +126,7 @@ public class HtmlDependencyParserTest {
                 .thenReturn(stream);
 
         String resolvedRelative = "baz/bar/relative.html";
-        Mockito.when(factory.toServletContextPath(request, "relative.html"))
+        Mockito.when(servlet.resolveResource("relative.html"))
                 .thenReturn(resolvedRelative);
 
         InputStream relativeContent = new ByteArrayInputStream(

@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Html import dependencies parser.
@@ -42,6 +43,18 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  */
 public class HtmlDependencyParser {
+
+    private static class HtmlDependenciesCache {
+        private final Set<String> dependencies = new HashSet<>();
+
+        void addDependency(String url) {
+            dependencies.add(url);
+        }
+
+        boolean hasDependency(String url) {
+            return dependencies.contains(url);
+        }
+    }
 
     private final String root;
 
@@ -69,8 +82,9 @@ public class HtmlDependencyParser {
         }
         dependencies.add(path);
 
+        VaadinSession session = VaadinSession.getCurrent();
         VaadinServlet servlet = VaadinServlet.getCurrent();
-        if (servlet == null) {
+        if (servlet == null || session == null) {
             /*
              * Cannot happen in runtime.
              *
@@ -79,7 +93,23 @@ public class HtmlDependencyParser {
             return;
         }
 
-        try (InputStream content = servlet.getResourceAsStream(path)) {
+        assert session.hasLock();
+        HtmlDependenciesCache cache = session
+                .getAttribute(HtmlDependenciesCache.class);
+        if (cache == null) {
+            cache = new HtmlDependenciesCache();
+            session.setAttribute(HtmlDependenciesCache.class, cache);
+        }
+
+        String resolvedResource = servlet.resolveResource(path);
+
+        if (cache.hasDependency(resolvedResource)) {
+            return;
+        }
+        cache.addDependency(resolvedResource);
+
+        try (InputStream content = servlet.getServletContext()
+                .getResourceAsStream(resolvedResource)) {
             if (content == null) {
                 getLogger().info(
                         "Can't find resource '%s' via the servlet context",
