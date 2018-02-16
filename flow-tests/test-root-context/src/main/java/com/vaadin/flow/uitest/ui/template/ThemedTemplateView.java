@@ -34,8 +34,10 @@ public class ThemedTemplateView extends PolymerTemplate<TemplateModel> {
 
         @Override
         public String getBaseUrl() {
-            return ThemedTemplateView.class.getPackage().getName().replace('.',
-                    '/');
+            String pkg = ThemedTemplateView.class.getPackage().getName();
+            int index = pkg.lastIndexOf('.');
+            pkg = pkg.substring(0, index);
+            return "/" + pkg.replace('.', '/');
         }
 
         @Override
