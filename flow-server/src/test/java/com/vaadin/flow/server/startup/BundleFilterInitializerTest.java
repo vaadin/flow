@@ -93,7 +93,7 @@ public class BundleFilterInitializerTest {
         Mockito.doAnswer(invocation -> {
             return inputStreamProducer
                     .apply(invocation.getArgumentAt(0, String.class));
-        }).when(context).getResourceAsStream(Mockito.anyString());
+        }).when(context).getResourceAsStream("/frontend-es6/vaadin-flow-bundle-manifest.json");
         Mockito.doAnswer(invocation -> {
             return resourceProducer
                     .apply(invocation.getArgumentAt(0, String.class));
