@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.webjar;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.regex.Matcher;
@@ -113,7 +114,7 @@ public class WebJarServer implements Serializable {
 
     /**
      * Check if a file is existent in a WebJar.
-     * 
+     *
      * @param filePathInContext
      *            servlet context path for file
      * @param servletContext
@@ -124,6 +125,34 @@ public class WebJarServer implements Serializable {
      */
     public boolean hasWebJarResource(String filePathInContext,
             ServletContext servletContext) throws IOException {
+        String webJarPath = getWebJarResourcePath(filePathInContext);
+        if (webJarPath == null) {
+            return false;
+        }
+
+        return servletContext.getResource(webJarPath) != null;
+    }
+
+    /**
+     * Gets web jar resource as an {@link InputStream} if it exists.
+     *
+     * @param filePathInContext
+     *            servlet context path for file
+     * @param servletContext
+     *            servlet context
+     * @return an input stream if the resource is available
+     */
+    public InputStream getWebJarResourceAsStream(String filePathInContext,
+            ServletContext servletContext) {
+        String webJarPath = getWebJarResourcePath(filePathInContext);
+        if (webJarPath == null) {
+            return null;
+        }
+
+        return servletContext.getResourceAsStream(webJarPath);
+    }
+
+    private String getWebJarResourcePath(String filePathInContext) {
         String webJarPath = null;
 
         Matcher matcher = urlPattern.matcher(filePathInContext);
@@ -133,10 +162,9 @@ public class WebJarServer implements Serializable {
                     filePathInContext.substring(matcher.group(1).length()));
         }
         if (webJarPath == null) {
-            return false;
+            return null;
         }
-
-        return servletContext.getResource(webJarPath) != null;
+        return webJarPath;
     }
 
     private String getWebJarPath(String path) {

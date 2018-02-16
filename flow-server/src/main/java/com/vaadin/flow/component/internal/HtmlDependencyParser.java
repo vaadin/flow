@@ -25,18 +25,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinUriResolverFactory;
-import com.vaadin.flow.server.WrappedHttpSession;
+import com.vaadin.flow.server.VaadinServlet;
 
 /**
  * Html import dependencies parser.
@@ -75,10 +69,8 @@ public class HtmlDependencyParser {
         }
         dependencies.add(path);
 
-        VaadinRequest request = VaadinService.getCurrentRequest();
-        VaadinSession session = VaadinSession.getCurrent();
-        if (request == null || session == null
-                || request.getWrappedSession() == null) {
+        VaadinServlet servlet = VaadinServlet.getCurrent();
+        if (servlet == null) {
             /*
              * Cannot happen in runtime.
              *
@@ -86,15 +78,8 @@ public class HtmlDependencyParser {
              */
             return;
         }
-        VaadinUriResolverFactory factory = session
-                .getAttribute(VaadinUriResolverFactory.class);
-        assert factory != null;
-        ServletContext context = ((WrappedHttpSession) request
-                .getWrappedSession()).getHttpSession().getServletContext();
 
-        String resolvedUri = factory.toServletContextPath(request, path);
-
-        try (InputStream content = context.getResourceAsStream(resolvedUri)) {
+        try (InputStream content = servlet.getResourceAsStream(path)) {
             if (content == null) {
                 getLogger().info(
                         "Can't find resource '%s' via the servlet context",
@@ -121,7 +106,7 @@ public class HtmlDependencyParser {
         } catch (URISyntaxException exception) {
             getLogger().debug(
                     "Couldn't make URI for {}. The path {} will be used as is.",
-                    base, relative);
+                    base, relative, exception);
         }
         return relative;
     }
