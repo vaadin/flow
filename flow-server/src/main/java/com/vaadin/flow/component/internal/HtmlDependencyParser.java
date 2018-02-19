@@ -132,13 +132,22 @@ public class HtmlDependencyParser {
         }
         try {
             URI uri = new URI(base);
-            return uri.resolve(relative).toString();
+            return relativize(relative, uri);
         } catch (URISyntaxException exception) {
             getLogger().debug(
                     "Couldn't make URI for {}. The path {} will be used as is.",
                     base, relative, exception);
         }
         return relative;
+    }
+
+    private String relativize(String relative, URI base) {
+        if (base.getPath().isEmpty()) {
+            String uriString = base.toString();
+            int index = uriString.lastIndexOf('/');
+            return uriString.substring(0, index + 1) + relative;
+        }
+        return base.resolve(relative).toString();
     }
 
     private Stream<String> parseHtmlImports(InputStream content, String path) {
