@@ -645,8 +645,7 @@ public class VaadinServlet extends HttpServlet {
     public String resolveResource(String url) {
         VaadinRequest request = VaadinRequest.getCurrent();
         VaadinSession session = VaadinSession.getCurrent();
-        if (request == null || session == null
-                || request.getWrappedSession() == null) {
+        if (request == null || session == null) {
             /*
              * Cannot happen in runtime.
              *

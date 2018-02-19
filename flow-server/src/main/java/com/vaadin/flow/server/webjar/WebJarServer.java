@@ -77,7 +77,6 @@ public class WebJarServer implements Serializable {
                         ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length())
                 + "bower_components/";
         urlPattern = Pattern.compile("^([/.]?[/..]*)" + prefix);
-
     }
 
     /**

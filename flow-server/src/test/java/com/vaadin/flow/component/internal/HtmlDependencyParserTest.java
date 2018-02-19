@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.internal.HtmlDependencyParser.HtmlDependenciesCache;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
@@ -147,6 +148,38 @@ public class HtmlDependencyParserTest {
         Assert.assertTrue(
                 "Dependencies parser doesn't return the realtive URI which is located in the parent folder",
                 dependencies.contains("relative1.html"));
+    }
+
+    @Test
+    public void dependenciesAreCached() {
+        String root = "foo.html";
+        HtmlDependencyParser parser = new HtmlDependencyParser(root);
+
+        String resolvedRoot = "baz/bar/" + root;
+        Mockito.when(servlet.resolveResource(root)).thenReturn(resolvedRoot);
+
+        String importContent = "<link rel='import' href='relative.html'>";
+        InputStream stream = new ByteArrayInputStream(
+                importContent.getBytes(StandardCharsets.UTF_8));
+        Mockito.when(context.getResourceAsStream(resolvedRoot))
+                .thenReturn(stream);
+
+        HtmlDependenciesCache cache = new HtmlDependenciesCache();
+        Mockito.when(session.getAttribute(HtmlDependenciesCache.class))
+                .thenReturn(cache);
+
+        Collection<String> dependencies = parser.parseDependencies();
+
+        Assert.assertEquals(2, dependencies.size());
+        Mockito.verify(context).getResourceAsStream(resolvedRoot);
+
+        // call one more time
+        dependencies = parser.parseDependencies();
+        // this time only root resource should be returned
+        Assert.assertEquals(1, dependencies.size());
+        // and there shouldn't be one more call for reading the content of the
+        // import
+        Mockito.verify(context).getResourceAsStream(resolvedRoot);
     }
 
 }

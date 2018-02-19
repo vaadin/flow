@@ -44,7 +44,7 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public class HtmlDependencyParser {
 
-    private static class HtmlDependenciesCache {
+    static class HtmlDependenciesCache {
         private final Set<String> dependencies = new HashSet<>();
 
         void addDependency(String url) {
