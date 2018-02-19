@@ -18,6 +18,7 @@ package com.vaadin.flow.server.webjar;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,7 +77,6 @@ public class WebJarServer implements Serializable {
                         ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length())
                 + "bower_components/";
         urlPattern = Pattern.compile("^([/.]?[/..]*)" + prefix);
-
     }
 
     /**
@@ -113,7 +113,7 @@ public class WebJarServer implements Serializable {
 
     /**
      * Check if a file is existent in a WebJar.
-     * 
+     *
      * @param filePathInContext
      *            servlet context path for file
      * @param servletContext
@@ -124,6 +124,23 @@ public class WebJarServer implements Serializable {
      */
     public boolean hasWebJarResource(String filePathInContext,
             ServletContext servletContext) throws IOException {
+        Optional<String> webJarPath = getWebJarResourcePath(filePathInContext);
+        if (!webJarPath.isPresent()) {
+            return false;
+        }
+
+        return servletContext.getResource(webJarPath.get()) != null;
+    }
+
+    /**
+     * Gets web jar resource path if it exists.
+     *
+     * @param filePathInContext
+     *            servlet context path for file
+     * @return an optional web jar resource path, or an empty optional if the
+     *         resource is not web jar resource
+     */
+    public Optional<String> getWebJarResourcePath(String filePathInContext) {
         String webJarPath = null;
 
         Matcher matcher = urlPattern.matcher(filePathInContext);
@@ -132,11 +149,7 @@ public class WebJarServer implements Serializable {
             webJarPath = getWebJarPath(
                     filePathInContext.substring(matcher.group(1).length()));
         }
-        if (webJarPath == null) {
-            return false;
-        }
-
-        return servletContext.getResource(webJarPath) != null;
+        return Optional.ofNullable(webJarPath);
     }
 
     private String getWebJarPath(String path) {

@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -33,6 +27,13 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.LoggerFactory;
 
@@ -373,9 +374,9 @@ public class VaadinServlet extends HttpServlet {
             staticFileServer.serveStaticResource(request, response);
             return true;
         }
-        
-        return webJarServer != null && webJarServer
-                .tryServeWebJarResource(request, response);
+
+        return webJarServer != null
+                && webJarServer.tryServeWebJarResource(request, response);
     }
 
     /**
@@ -529,7 +530,7 @@ public class VaadinServlet extends HttpServlet {
      *
      * @deprecated As of 7.0. Will likely change or be removed in a future
      *             version
-     * 
+     *
      * @return current application URL
      */
     @Deprecated
@@ -579,7 +580,8 @@ public class VaadinServlet extends HttpServlet {
      * Escapes characters to html entities. An exception is made for some "safe
      * characters" to keep the text somewhat readable.
      *
-     * @param unsafe non-escaped string
+     * @param unsafe
+     *            non-escaped string
      * @return a safe string to be added inside an html tag
      *
      * @deprecated As of 7.0. Will likely change or be removed in a future
@@ -631,6 +633,48 @@ public class VaadinServlet extends HttpServlet {
         } else {
             return computeUrlTranslation(theme, urlToTranslate);
         }
+    }
+
+    /**
+     * Resolves the given {@code url} resource using vaadin URI resolver.
+     *
+     * @param url
+     *            the resource to resolve
+     * @return resolved resource
+     */
+    public String resolveResource(String url) {
+        VaadinRequest request = VaadinRequest.getCurrent();
+        VaadinSession session = VaadinSession.getCurrent();
+        if (request == null || session == null) {
+            /*
+             * Cannot happen in runtime.
+             *
+             * But not all unit tests set it. Let's just return null.
+             */
+            return null;
+        }
+
+        VaadinUriResolverFactory uriResolverFactory = session
+                .getAttribute(VaadinUriResolverFactory.class);
+
+        String resolvedUrl = uriResolverFactory.toServletContextPath(request,
+                url);
+
+        if (webJarServer != null) {
+            Optional<String> webJarUrl = webJarServer
+                    .getWebJarResourcePath(resolvedUrl);
+            try {
+                if (webJarUrl.isPresent() && getServletContext()
+                        .getResource(webJarUrl.get()) != null) {
+                    return webJarUrl.get();
+                }
+            } catch (MalformedURLException exception) {
+                LoggerFactory.getLogger(VaadinServlet.class).trace(
+                        "Failed to parse url {}.", webJarUrl.get(), exception);
+            }
+        }
+
+        return resolvedUrl;
     }
 
     private final String computeUrlTranslation(AbstractTheme theme,

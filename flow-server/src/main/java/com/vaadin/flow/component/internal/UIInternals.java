@@ -38,6 +38,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
+import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.dom.Element;
@@ -779,16 +780,21 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(componentClass);
-        dependencies.getHtmlImports().forEach(html -> page
-                .addHtmlImport(getHtmlImportValue(html), html.loadMode()));
+        dependencies.getHtmlImports().stream()
+                .forEach(html -> addHtmlImport(html, page));
         dependencies.getJavaScripts()
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
     }
 
-    private String getHtmlImportValue(HtmlImport html) {
-        String importValue = html.value();
+    private void addHtmlImport(HtmlImportDependency dependency, Page page) {
+        dependency.getUris().stream()
+                .forEach(uri -> page.addHtmlImport(getHtmlImportValue(uri),
+                        dependency.getLoadMode()));
+    }
+
+    private String getHtmlImportValue(String importValue) {
         if (theme != null) {
             return VaadinServlet.getCurrent().getUrlTranslation(theme,
                     importValue);
@@ -864,7 +870,7 @@ public class UIInternals implements Serializable {
     /**
      * Gets the application id tied with this UI. Different applications in the
      * same page have different unique ids.
-     * 
+     *
      * @return the id of the application tied with this UI
      */
     public String getAppId() {

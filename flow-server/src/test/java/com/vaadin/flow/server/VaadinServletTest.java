@@ -15,12 +15,65 @@
  */
 package com.vaadin.flow.server;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
-import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class VaadinServletTest {
+
+    private VaadinRequest request;
+    private VaadinSession session;
+    private ServletContext context;
+    private VaadinUriResolverFactory factory;
+    private VaadinServletService service;
+
+    private VaadinServlet servlet = new VaadinServlet() {
+        @Override
+        public ServletContext getServletContext() {
+            return context;
+        }
+
+        @Override
+        protected VaadinServletService createServletService() {
+            return service;
+        }
+    };
+
+    @Before
+    public void setUp() {
+        request = Mockito.mock(VaadinRequest.class);
+        CurrentInstance.set(VaadinRequest.class, request);
+        session = Mockito.mock(VaadinSession.class);
+        CurrentInstance.set(VaadinSession.class, session);
+
+        context = Mockito.mock(ServletContext.class);
+        factory = Mockito.mock(VaadinUriResolverFactory.class);
+
+        context = Mockito.mock(ServletContext.class);
+
+        Mockito.when(session.getAttribute(VaadinUriResolverFactory.class))
+                .thenReturn(factory);
+    }
+
+    @After
+    public void tearDown() {
+        CurrentInstance.clearAll();
+    }
 
     @Test
     public void testGetLastPathParameter() {
@@ -58,5 +111,49 @@ public class VaadinServletTest {
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2"));
         Assert.assertEquals("", VaadinServlet
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2/"));
+    }
+
+    @Test
+    public void resolveResource_noWebJars_resolveViaResolverFactory() {
+        String path = "foo";
+        String resolved = "bar";
+        Mockito.when(factory.toServletContextPath(request, path))
+                .thenReturn(resolved);
+
+        Assert.assertEquals(resolved, servlet.resolveResource(path));
+    }
+
+    @Test
+    public void resolveResource_webJarResource_resolvedAsWebJarsResource()
+            throws ServletException, MalformedURLException {
+        String path = "foo";
+        String frontendPrefix = "context://baz/";
+        String resolved = "/baz/bower_components/";
+        Mockito.when(factory.toServletContextPath(request, path))
+                .thenReturn(resolved);
+
+        service = Mockito.mock(VaadinServletService.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+
+        Mockito.when(configuration.getDevelopmentFrontendPrefix())
+                .thenReturn(frontendPrefix);
+
+        Mockito.when(configuration.areWebJarsEnabled()).thenReturn(true);
+
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+
+        ServletConfig config = Mockito.mock(ServletConfig.class);
+        servlet.init(config);
+
+        CurrentInstance.set(VaadinRequest.class, request);
+        CurrentInstance.set(VaadinSession.class, session);
+
+        URL url = new URL("http://example.com");
+        String webjars = "/webjars/";
+        Mockito.when(context.getResource(webjars)).thenReturn(url);
+
+        Assert.assertEquals(webjars, servlet.resolveResource(path));
     }
 }

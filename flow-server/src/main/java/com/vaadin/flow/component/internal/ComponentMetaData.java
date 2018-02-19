@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -34,6 +35,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Immutable meta data related to a component class.
@@ -48,11 +50,11 @@ public class ComponentMetaData {
      * Framework internal class, thus package-private.
      */
     public static class DependencyInfo {
-        private final List<HtmlImport> htmlImports = new ArrayList<>();
+        private final List<HtmlImportDependency> htmlImports = new ArrayList<>();
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
 
-        List<HtmlImport> getHtmlImports() {
+        List<HtmlImportDependency> getHtmlImports() {
             return Collections.unmodifiableList(htmlImports);
         }
 
@@ -64,6 +66,27 @@ public class ComponentMetaData {
             return Collections.unmodifiableList(styleSheets);
         }
 
+    }
+
+    public static class HtmlImportDependency {
+
+        private final Collection<String> uris;
+
+        private final LoadMode loadMode;
+
+        private HtmlImportDependency(Collection<String> uris,
+                LoadMode loadMode) {
+            this.uris = Collections.unmodifiableCollection(uris);
+            this.loadMode = loadMode;
+        }
+
+        public Collection<String> getUris() {
+            return uris;
+        }
+
+        public LoadMode getLoadMode() {
+            return loadMode;
+        }
     }
 
     /**
@@ -126,8 +149,8 @@ public class ComponentMetaData {
 
         scannedClasses.add(componentClass);
 
-        dependencyInfo.htmlImports.addAll(
-                AnnotationReader.getHtmlImportAnnotations(componentClass));
+        dependencyInfo.htmlImports
+                .addAll(getHtmlImportDependencies(componentClass));
         dependencyInfo.javaScripts.addAll(
                 AnnotationReader.getJavaScriptAnnotations(componentClass));
         dependencyInfo.styleSheets.addAll(
@@ -167,6 +190,22 @@ public class ComponentMetaData {
      */
     public DependencyInfo getDependencyInfo() {
         return dependencyInfo;
+    }
+
+    private static Collection<HtmlImportDependency> getHtmlImportDependencies(
+            Class<? extends Component> componentClass) {
+        return AnnotationReader.getHtmlImportAnnotations(componentClass)
+                .stream().map(ComponentMetaData::getHtmlImportDependencies)
+                .collect(Collectors.toList());
+    }
+
+    private static HtmlImportDependency getHtmlImportDependencies(
+            HtmlImport htmlImport) {
+        String value = htmlImport.value();
+        HtmlDependencyParser parser = new HtmlDependencyParser(value);
+
+        return new HtmlImportDependency(parser.parseDependencies(),
+                htmlImport.loadMode());
     }
 
     /**

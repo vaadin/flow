@@ -44,6 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.junit.After;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -67,7 +68,6 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
-import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -446,8 +446,14 @@ public class UidlWriterTest {
     }
 
     private UI initializeUIForDependenciesTest(UI ui) {
+        ServletContext context = Mockito.mock(ServletContext.class);
         VaadinServletService service = new VaadinServletService(
-                new VaadinServlet(), new MockDeploymentConfiguration()) {
+                new VaadinServlet() {
+                    @Override
+                    public ServletContext getServletContext() {
+                        return context;
+                    }
+                }, new MockDeploymentConfiguration()) {
             RouterInterface router = new com.vaadin.flow.router.legacy.Router();
 
             @Override
