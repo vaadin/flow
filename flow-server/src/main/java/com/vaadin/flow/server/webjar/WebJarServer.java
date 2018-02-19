@@ -125,7 +125,7 @@ public class WebJarServer implements Serializable {
     public boolean hasWebJarResource(String filePathInContext,
             ServletContext servletContext) throws IOException {
         Optional<String> webJarPath = getWebJarResourcePath(filePathInContext);
-        if (webJarPath.isPresent()) {
+        if (!webJarPath.isPresent()) {
             return false;
         }
 
