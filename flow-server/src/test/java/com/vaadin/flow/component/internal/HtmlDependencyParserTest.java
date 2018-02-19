@@ -113,6 +113,28 @@ public class HtmlDependencyParserTest {
     }
 
     @Test
+    public void oneLevelDependency_frontendUri_URIsAreCollectedCorrectly() {
+        String root = "frontend://foo.html";
+        HtmlDependencyParser parser = new HtmlDependencyParser(root);
+
+        Mockito.when(servlet.resolveResource(root)).thenReturn(root);
+
+        String importContent = "<link rel='import' href='relative.html'>";
+        InputStream stream = new ByteArrayInputStream(
+                importContent.getBytes(StandardCharsets.UTF_8));
+        Mockito.when(context.getResourceAsStream(root)).thenReturn(stream);
+
+        Collection<String> dependencies = parser.parseDependencies();
+
+        Assert.assertEquals(2, dependencies.size());
+
+        Assert.assertTrue("Dependencies parser doesn't return the root URI",
+                dependencies.contains(root));
+        Assert.assertTrue("Dependencies parser doesn't return the relative URI",
+                dependencies.contains("frontend://relative.html"));
+    }
+
+    @Test
     public void nestedDependencyLevels_variousURIs_URIsAreCollectedCorrectly() {
         String root = "foo.html";
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
