@@ -368,7 +368,8 @@ public class DataCommunicator<T> {
         final Range effectiveRequested = requestedRange
                 .restrictTo(Range.withLength(0, assumedSize));
 
-        resendEntireRange |= !previousActive.intersects(effectiveRequested);
+        resendEntireRange |= !(previousActive.intersects(effectiveRequested)
+                || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
         // Phase 1: Find all items that the client should have
         List<String> newActiveKeyOrder = collectKeysToFlush(previousActive,
