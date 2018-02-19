@@ -660,17 +660,18 @@ public class VaadinServlet extends HttpServlet {
         String resolvedUrl = uriResolverFactory.toServletContextPath(request,
                 url);
 
-        try {
-            if (webJarServer != null) {
-                Optional<String> webJarUrl = webJarServer
-                        .getWebJarResourcePath(resolvedUrl);
+        if (webJarServer != null) {
+            Optional<String> webJarUrl = webJarServer
+                    .getWebJarResourcePath(resolvedUrl);
+            try {
                 if (webJarUrl.isPresent() && getServletContext()
                         .getResource(webJarUrl.get()) != null) {
                     return webJarUrl.get();
                 }
+            } catch (MalformedURLException exception) {
+                LoggerFactory.getLogger(VaadinServlet.class).trace(
+                        "Failed to parse url {}.", webJarUrl.get(), exception);
             }
-        } catch (MalformedURLException exception) {
-            // log
         }
 
         return resolvedUrl;
