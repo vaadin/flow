@@ -45,7 +45,7 @@ public abstract class AbstractComponentDataGenerator<T>
 
             int oldId = oldComponent.getElement().getNode().getId();
             int newId = recreatedComponent.getElement().getNode().getId();
-            if (oldId != newId) {
+            if (oldId != newId && !oldComponent.equals(recreatedComponent)) {
                 getContainer().removeChild(oldComponent.getElement());
                 registerRenderedComponent(itemKey, recreatedComponent);
             }
