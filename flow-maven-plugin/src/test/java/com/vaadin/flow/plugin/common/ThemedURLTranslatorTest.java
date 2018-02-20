@@ -17,6 +17,7 @@ package com.vaadin.flow.plugin.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -152,4 +153,39 @@ public class ThemedURLTranslatorTest {
         new ThemedURLTranslator(factory, introspector);
     }
 
+    @Test
+    public void applyTheme_when_annotation_on_a_routerLayout() throws Exception {
+        ClassPathIntrospector introspector = new ClassPathIntrospector(
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(
+                        "annotation-extractor-test/RouterLayoutTheme.jar")) {
+        };
+        Function<String, File> factory = url -> new File(
+                temporaryFolder.getRoot(), url);
+
+        ThemedURLTranslator translator = new ThemedURLTranslator(factory,
+                introspector);
+
+        Field themeClass = translator.getClass().getDeclaredField("themeClass");
+        themeClass.setAccessible(true);
+        Assert.assertNotNull("No theme was found for ParentLayout!",
+                themeClass.get(translator));
+
+        String url1 = "src/component1.html"; // should be rewritten to
+        // theme/myTheme/component1.html
+        String url2 = "component2.html"; // should not be rewritten
+
+        temporaryFolder.newFolder("src");
+        temporaryFolder.newFile(url1);
+
+        new File(temporaryFolder.newFolder("theme"), "myTheme").mkdir();
+        temporaryFolder.newFile("theme/myTheme/component1.html");
+
+        Set<String> translated = translator
+                .applyTheme(new HashSet<>(Arrays.asList(url1, url2)));
+
+        Assert.assertTrue(translated.contains("theme/myTheme/component1.html"));
+        Assert.assertTrue(translated.contains("component2.html"));
+    }
 }

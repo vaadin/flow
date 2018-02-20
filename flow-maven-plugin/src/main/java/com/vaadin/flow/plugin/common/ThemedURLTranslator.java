@@ -19,6 +19,7 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,6 +38,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -97,6 +99,7 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
      */
     public Set<String> applyTheme(Set<String> urls) {
         if (themeClass == null) {
+            LOGGER.info("No Theme available");
             return urls;
         }
 
@@ -163,7 +166,7 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
         Class<? extends Annotation> theme = loadClassInProjectClassLoader(
                 Theme.class.getName());
         Map<Class<? extends AbstractTheme>, List<Class<?>>> themedComponents = getAnnotatedClasses(
-                theme).filter(this::isNavigationTarget).collect(
+                theme).filter(this::isValidThemeTarget).collect(
                         Collectors.toMap(clazz -> getTheme(clazz, theme),
                                 Collections::singletonList, this::mergeLists));
         if (themedComponents.size() > 1) {
@@ -217,11 +220,51 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
         return builder.toString();
     }
 
-    private boolean isNavigationTarget(Class<?> clazz) {
-        return Stream.of(clazz.getAnnotations()).map(Annotation::annotationType)
+    /**
+     * A Theme is valid if it is on a Route with no parentLayout, if it is on a
+     * RouterLayout with no ParentLayout or is on a abstract class.
+     *
+     * @param clazz
+     *            class to check
+     * @return if Theme annotation is seemingly valid
+     */
+    private boolean isValidThemeTarget(Class<?> clazz) {
+        boolean navigationTarget = Stream.of(clazz.getAnnotations())
+                .filter(this::validRootLayout).findAny().isPresent();
+
+        boolean hasParent = Stream.of(clazz.getAnnotations())
+                .map(Annotation::annotationType).map(Class::getName)
+                .anyMatch(fqn -> fqn.equals(ParentLayout.class.getName()));
+
+        boolean possibleTopLayout = Stream.of(clazz.getInterfaces())
                 .map(Class::getName)
-                .anyMatch(fqn -> fqn.equals(Route.class.getName())
-                        || fqn.equals(RouteAlias.class.getName())
-                        || fqn.equals(ParentLayout.class.getName()));
+                .anyMatch(name -> name.equals(RouterLayout.class.getName()))
+                || Modifier.isAbstract(clazz.getModifiers());
+
+        return (possibleTopLayout || navigationTarget) && !hasParent;
+    }
+
+    /**
+     * A valid route target should not have a defined parent layout.
+     * 
+     * @param annotation
+     *            annotation to check
+     * @return false if not a route or if annotation defines layout
+     */
+    private boolean validRootLayout(Annotation annotation) {
+        String annotationClassName = annotation.annotationType().getName();
+        if (annotationClassName.equals(Route.class.getName())
+                || annotationClassName.equals(RouteAlias.class.getName())) {
+            try {
+                Method layout = annotation.annotationType().getMethod("layout");
+                return layout.invoke(annotation) == layout.getDefaultValue();
+            } catch (IllegalAccessException | InvocationTargetException
+                    | NoSuchMethodException exception) {
+                throw new RuntimeException(String.format(
+                        "Unable to invoke '%s' on the annotation '%s'",
+                        "layout", annotationClassName), exception);
+            }
+        }
+        return false;
     }
 }
