@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
@@ -33,17 +31,19 @@ import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.DependencyFilter;
+import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.server.WrappedHttpSession;
-import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 
@@ -53,15 +53,28 @@ import com.vaadin.flow.shared.ui.Dependency.Type;
  * The implementation scans all HTML imports annotations for the given template
  * class and tries to find the one that contains template definition using the
  * tag name.
+ * <p>
+ * The class is Singleton. Use {@link DefaultTemplateParser#getInstance()} to
+ * get its instance.
  *
  * @see TemplateParser
  *
  * @author Vaadin Ltd
  *
  */
-public class DefaultTemplateParser implements TemplateParser {
+public final class DefaultTemplateParser implements TemplateParser {
     private static final ReflectionCache<PolymerTemplate<?>, AtomicBoolean> LOG_CACHE = new ReflectionCache<>(
             clazz -> new AtomicBoolean());
+
+    private static final TemplateParser INSTANCE = new DefaultTemplateParser();
+
+    private DefaultTemplateParser() {
+        // Doesn't allow external instantiation
+    }
+
+    public static TemplateParser getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     public Element getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
@@ -98,7 +111,8 @@ public class DefaultTemplateParser implements TemplateParser {
             String path = resolvePath(request, url);
 
             if (logEnabled) {
-                getLogger().debug("Html import path '{}' is resolved to '{}'", url, path);
+                getLogger().debug("Html import path '{}' is resolved to '{}'",
+                        url, path);
             }
             try (InputStream content = context.getResourceAsStream(path)) {
                 if (content == null) {
@@ -108,8 +122,10 @@ public class DefaultTemplateParser implements TemplateParser {
                 }
                 Element templateElement = parseHtmlImport(content, url, tag);
                 if (logEnabled && templateElement != null) {
-                    getLogger().debug("Found a template file containing template "
-                        + "definition for the tag '{}' by the path '{}'", tag, url);
+                    getLogger().debug(
+                            "Found a template file containing template "
+                                    + "definition for the tag '{}' by the path '{}'",
+                            tag, url);
                 }
 
                 if (templateElement != null) {
@@ -119,7 +135,8 @@ public class DefaultTemplateParser implements TemplateParser {
             } catch (IOException exception) {
                 // ignore exception on close()
                 if (logEnabled) {
-                    getLogger().warn("Couldn't close template input stream", exception);
+                    getLogger().warn("Couldn't close template input stream",
+                            exception);
                 }
             }
         }
