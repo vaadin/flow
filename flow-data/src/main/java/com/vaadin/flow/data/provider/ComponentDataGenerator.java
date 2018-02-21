@@ -61,21 +61,27 @@ public class ComponentDataGenerator<T>
 
     @Override
     public void generateData(T item, JsonObject jsonObject) {
+        // if no nodeIdProperty set do nothing.
+        if (nodeIdPropertyName == null) {
+            return;
+        }
+
         String itemKey = getItemKey(item);
         Component oldRenderedComponent = getRenderedComponent(itemKey);
-        Component renderedComponent = createComponent(item);
+
+        int nodeId;
+        // If we have a component for the given item use that, else create new
+        // component and register it.
         if (oldRenderedComponent != null) {
-            if (!oldRenderedComponent.equals(renderedComponent)) {
-                oldRenderedComponent.getElement().removeFromParent();
-                registerRenderedComponent(itemKey, renderedComponent);
-            }
+            nodeId = oldRenderedComponent.getElement().getNode().getId();
         } else {
+            Component renderedComponent = createComponent(item);
             registerRenderedComponent(itemKey, renderedComponent);
+
+            nodeId = renderedComponent.getElement().getNode().getId();
         }
-        if (nodeIdPropertyName != null) {
-            int nodeId = renderedComponent.getElement().getNode().getId();
-            jsonObject.put(nodeIdPropertyName, nodeId);
-        }
+
+        jsonObject.put(nodeIdPropertyName, nodeId);
     }
 
     @Override
