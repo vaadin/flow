@@ -653,16 +653,7 @@ public class VaadinServlet extends HttpServlet {
             return null;
         }
 
-        VaadinUriResolverFactory uriResolverFactory = session
-                .getAttribute(VaadinUriResolverFactory.class);
-
-        String resolvedUrl = uriResolverFactory
-                .getUriResolver(VaadinRequest.getCurrent())
-                .resolveVaadinUri(url);
-
-        if (!resolvedUrl.startsWith("/")) {
-            resolvedUrl = "/" + resolvedUrl;
-        }
+        String resolvedUrl = resolveUrl(url, session);
 
         if (webJarServer != null) {
             Optional<String> webJarUrl = webJarServer
@@ -693,15 +684,7 @@ public class VaadinServlet extends HttpServlet {
     }
 
     private boolean resourceIsFound(String url) {
-        VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
-                .getAttribute(VaadinUriResolverFactory.class);
-        String resolvedUrl = uriResolverFactory
-                .getUriResolver(VaadinRequest.getCurrent())
-                .resolveVaadinUri(url);
-
-        if (!resolvedUrl.startsWith("/")) {
-            resolvedUrl = "/" + resolvedUrl;
-        }
+        String resolvedUrl = resolveUrl(url, VaadinSession.getCurrent());
 
         try {
             return inServletContext(resolvedUrl) || inWebJar(resolvedUrl);
@@ -710,6 +693,19 @@ public class VaadinServlet extends HttpServlet {
                     .trace("Failed to parse url.", e);
             return false;
         }
+    }
+
+    private String resolveUrl(String url, VaadinSession session) {
+        VaadinUriResolverFactory uriResolverFactory = session
+                .getAttribute(VaadinUriResolverFactory.class);
+        String resolvedUrl = uriResolverFactory
+                .getUriResolver(VaadinRequest.getCurrent())
+                .resolveVaadinUri(url);
+
+        if (!resolvedUrl.startsWith("/")) {
+            resolvedUrl = "/" + resolvedUrl;
+        }
+        return resolvedUrl;
     }
 
     private boolean inServletContext(String resolvedUrl)
