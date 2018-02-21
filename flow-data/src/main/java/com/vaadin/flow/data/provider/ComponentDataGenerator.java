@@ -64,10 +64,12 @@ public class ComponentDataGenerator<T>
         String itemKey = getItemKey(item);
         Component oldRenderedComponent = getRenderedComponent(itemKey);
         Component renderedComponent = createComponent(item);
-        if (oldRenderedComponent != renderedComponent) {
-            if (oldRenderedComponent != null) {
+        if (oldRenderedComponent != null) {
+            if (!oldRenderedComponent.equals(renderedComponent)) {
                 oldRenderedComponent.getElement().removeFromParent();
+                registerRenderedComponent(itemKey, renderedComponent);
             }
+        } else {
             registerRenderedComponent(itemKey, renderedComponent);
         }
         if (nodeIdPropertyName != null) {
