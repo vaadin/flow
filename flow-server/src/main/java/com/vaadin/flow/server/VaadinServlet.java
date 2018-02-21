@@ -686,6 +686,11 @@ public class VaadinServlet extends HttpServlet {
     private boolean resourceIsFound(String url) {
         String resolvedUrl = resolveUrl(url, VaadinSession.getCurrent());
 
+        // Servlet context requires a valid URL string
+        if (!resolvedUrl.startsWith("/")) {
+            resolvedUrl = "/" + resolvedUrl;
+        }
+
         try {
             return inServletContext(resolvedUrl) || inWebJar(resolvedUrl);
         } catch (IOException e) {
@@ -701,10 +706,6 @@ public class VaadinServlet extends HttpServlet {
         String resolvedUrl = uriResolverFactory
                 .getUriResolver(VaadinRequest.getCurrent())
                 .resolveVaadinUri(url);
-
-        if (!resolvedUrl.startsWith("/")) {
-            resolvedUrl = "/" + resolvedUrl;
-        }
         return resolvedUrl;
     }
 

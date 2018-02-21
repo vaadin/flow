@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.server;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,8 +30,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
-
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.flow.shared.VaadinUriResolver;
 
 @NotThreadSafe
 public class VaadinServletTest {
@@ -39,8 +38,8 @@ public class VaadinServletTest {
     private VaadinRequest request;
     private VaadinSession session;
     private ServletContext context;
-    private VaadinUriResolverFactory factory;
     private VaadinServletService service;
+    private VaadinUriResolver vaadinUriResolver;
 
     private VaadinServlet servlet = new VaadinServlet() {
         @Override
@@ -62,12 +61,17 @@ public class VaadinServletTest {
         CurrentInstance.set(VaadinSession.class, session);
 
         context = Mockito.mock(ServletContext.class);
-        factory = Mockito.mock(VaadinUriResolverFactory.class);
+        VaadinUriResolverFactory factory = Mockito.mock(VaadinUriResolverFactory.class);
 
         context = Mockito.mock(ServletContext.class);
 
         Mockito.when(session.getAttribute(VaadinUriResolverFactory.class))
                 .thenReturn(factory);
+
+        vaadinUriResolver = Mockito.mock(VaadinUriResolver.class);
+
+        Mockito.when(factory.getUriResolver(request))
+                .thenReturn(vaadinUriResolver);
     }
 
     @After
@@ -117,7 +121,7 @@ public class VaadinServletTest {
     public void resolveResource_noWebJars_resolveViaResolverFactory() {
         String path = "foo";
         String resolved = "bar";
-        Mockito.when(factory.toServletContextPath(request, path))
+        Mockito.when(vaadinUriResolver.resolveVaadinUri(path))
                 .thenReturn(resolved);
 
         Assert.assertEquals(resolved, servlet.resolveResource(path));
@@ -129,7 +133,7 @@ public class VaadinServletTest {
         String path = "foo";
         String frontendPrefix = "context://baz/";
         String resolved = "/baz/bower_components/";
-        Mockito.when(factory.toServletContextPath(request, path))
+        Mockito.when(vaadinUriResolver.resolveVaadinUri(path))
                 .thenReturn(resolved);
 
         service = Mockito.mock(VaadinServletService.class);

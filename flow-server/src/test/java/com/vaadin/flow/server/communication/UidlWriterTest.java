@@ -15,20 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,9 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -69,6 +55,7 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -77,7 +64,19 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @NotThreadSafe
 public class UidlWriterTest {
@@ -496,6 +495,13 @@ public class UidlWriterTest {
         ui.doInit(vaadinRequestMock, 1);
 
         factory = mock(VaadinUriResolverFactory.class);
+        VaadinUriResolver vaadinUriResolver = Mockito
+                .mock(VaadinUriResolver.class);
+
+        Mockito.when(factory.getUriResolver(any()))
+                .thenReturn(vaadinUriResolver);
+        Mockito.when(vaadinUriResolver.resolveVaadinUri(anyString()))
+                .thenAnswer(invocation -> invocation.getArguments()[0]);
         doAnswer(invocation -> invocation.getArguments()[1]).when(factory)
                 .toServletContextPath(any(), anyString());
 
