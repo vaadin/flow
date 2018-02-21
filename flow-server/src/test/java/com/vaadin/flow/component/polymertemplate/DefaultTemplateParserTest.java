@@ -41,8 +41,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.polymertemplate.DefaultTemplateParser;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplateTest.ModelClass;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DependencyFilter;
@@ -54,8 +52,8 @@ import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.server.WrappedHttpSession;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
-import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.ui.Dependency.Type;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -153,8 +151,7 @@ public class DefaultTemplateParserTest {
 
     @Test
     public void defaultParser_hasTemplate_returnsContent() {
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        Element element = parser
+        Element element = DefaultTemplateParser.getInstance()
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
 
         Assert.assertTrue(element.getElementById("foo") != null);
@@ -169,8 +166,7 @@ public class DefaultTemplateParserTest {
                 new ByteArrayInputStream("<dom-module id='foo'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
 
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        Element element = parser
+        Element element = DefaultTemplateParser.getInstance()
                 .getTemplateContent(RootImportsInspectTemplate.class, "foo");
 
         Assert.assertTrue(element.getElementById("foo") != null);
@@ -183,8 +179,7 @@ public class DefaultTemplateParserTest {
 
         Mockito.when(request.getServletPath()).thenReturn("");
 
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        Element element = parser
+        Element element = DefaultTemplateParser.getInstance()
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
 
         Assert.assertTrue(element.getElementById("foo") != null);
@@ -210,8 +205,7 @@ public class DefaultTemplateParserTest {
                         "<dom-module id='foo'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
 
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        Element element = parser
+        Element element = DefaultTemplateParser.getInstance()
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
 
         Assert.assertTrue(element.getElementById("foo") != null);
@@ -237,8 +231,7 @@ public class DefaultTemplateParserTest {
                         "<dom-module id='foo'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
 
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        Element element = parser
+        Element element = DefaultTemplateParser.getInstance()
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
 
         Assert.assertTrue(element.getElementById("foo") != null);
@@ -256,8 +249,7 @@ public class DefaultTemplateParserTest {
                         "<!-- comment1 --><dom-module id='foo'><!-- comment2 --></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
 
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        Element element = parser
+        Element element = DefaultTemplateParser.getInstance()
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
         Assert.assertTrue(element.getElementById("foo") != null);
         assertThat("No comments should be present in the parsing result",
@@ -274,8 +266,8 @@ public class DefaultTemplateParserTest {
 
     @Test(expected = IllegalStateException.class)
     public void defaultParser_noTemplate_throws() {
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        parser.getTemplateContent(ImportsInspectTemplate.class, "bar1");
+        DefaultTemplateParser.getInstance()
+                .getTemplateContent(ImportsInspectTemplate.class, "bar1");
     }
 
     @Test(expected = IllegalStateException.class)
@@ -283,8 +275,8 @@ public class DefaultTemplateParserTest {
         Mockito.when(context.getResourceAsStream("/bar1.html"))
                 .thenReturn(null);
 
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
+        DefaultTemplateParser.getInstance()
+                .getTemplateContent(ImportsInspectTemplate.class, "foo");
     }
 
     @Test
@@ -301,7 +293,7 @@ public class DefaultTemplateParserTest {
         Mockito.when(service.getDependencyFilters())
                 .thenReturn(Collections.singletonList(filter));
 
-        DefaultTemplateParser parser = new DefaultTemplateParser();
+        TemplateParser parser = DefaultTemplateParser.getInstance();
 
         Element element = parser
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
@@ -331,8 +323,8 @@ public class DefaultTemplateParserTest {
         Mockito.when(service.getDependencyFilters())
                 .thenReturn(Collections.singletonList(filter));
 
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
+        DefaultTemplateParser.getInstance()
+                .getTemplateContent(ImportsInspectTemplate.class, "foo");
     }
 
     @Test(expected = IllegalStateException.class)
@@ -349,8 +341,8 @@ public class DefaultTemplateParserTest {
         Mockito.when(service.getDependencyFilters())
                 .thenReturn(Collections.singletonList(filter));
 
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
+        DefaultTemplateParser.getInstance()
+                .getTemplateContent(ImportsInspectTemplate.class, "foo");
     }
 
 }
