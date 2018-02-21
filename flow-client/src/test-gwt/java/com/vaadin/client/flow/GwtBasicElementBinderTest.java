@@ -646,6 +646,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testAddStylesBeforeBind() {
+        polyfillStyleSetProperty(element);
         node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES).getProperty("color")
                 .setValue("green");
 
@@ -657,6 +658,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testAddStylesAfterBind() {
+        polyfillStyleSetProperty(element);
         Binder.bind(node, element);
         node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES).getProperty("color")
                 .setValue("green");
@@ -666,6 +668,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testRemoveStyles() {
+        polyfillStyleSetProperty(element);
         Binder.bind(node, element);
 
         NodeMap styleMap = node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES);
@@ -673,7 +676,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         styleMap.getProperty("color").setValue("white");
 
         Reactive.flush();
-        assertEquals("background: blue; color: white;",
+        assertEquals("background: blue;color: white;",
                 element.getAttribute("style"));
 
         styleMap.getProperty("color").removeValue();
@@ -682,7 +685,19 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("background: blue;", element.getAttribute("style"));
     }
 
+    private native void polyfillStyleSetProperty(Element element)/*-{
+         // This polyfills just enough to make the tests pass and nothing else
+         element.style.__proto__.setProperty = function(key,value) {
+             var newValue = element.getAttribute("style");
+             if (!newValue) newValue = "";
+             else if (!newValue.endsWith(";")) newValue +=";"
+
+             element.setAttribute("style", newValue + key+": "+value+";");
+         };
+         }-*/;
+
     public void testAddStylesAfterUnbind() {
+        polyfillStyleSetProperty(element);
         Binder.bind(node, element);
 
         NodeMap styleMap = node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES);
