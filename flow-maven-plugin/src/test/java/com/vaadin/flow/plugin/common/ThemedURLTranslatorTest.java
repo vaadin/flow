@@ -45,9 +45,6 @@ public class ThemedURLTranslatorTest {
      *
      * - three navigation target components annotated with theme CustomTheme1
      *
-     * - one component annotated with CustomTheme2 which is not navigation
-     * target
-     *
      * So: only one theme CustomTheme1 is discovered and this theme rewrites
      * "src/" to "theme/myTheme".
      *
@@ -60,7 +57,7 @@ public class ThemedURLTranslatorTest {
                 TestUtils.getTestResource(
                         "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
                 TestUtils.getTestResource(
-                        "annotation-extractor-test/themes-one-active-theme.jar"),
+                        "annotation-extractor-test/themes-one-theme.jar"),
                 TestUtils.getTestResource(
                         "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar")) {
         };
