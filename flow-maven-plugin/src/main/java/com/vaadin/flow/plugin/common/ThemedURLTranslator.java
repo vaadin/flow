@@ -34,9 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.ParentLayout;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -97,6 +94,7 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
      */
     public Set<String> applyTheme(Set<String> urls) {
         if (themeClass == null) {
+            LOGGER.info("No Theme available");
             return urls;
         }
 
@@ -163,7 +161,7 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
         Class<? extends Annotation> theme = loadClassInProjectClassLoader(
                 Theme.class.getName());
         Map<Class<? extends AbstractTheme>, List<Class<?>>> themedComponents = getAnnotatedClasses(
-                theme).filter(this::isNavigationTarget).collect(
+                theme).collect(
                         Collectors.toMap(clazz -> getTheme(clazz, theme),
                                 Collections::singletonList, this::mergeLists));
         if (themedComponents.size() > 1) {
@@ -215,13 +213,5 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
         builder.append(entry.getValue().stream().map(Class::getName)
                 .collect(Collectors.joining(", ")));
         return builder.toString();
-    }
-
-    private boolean isNavigationTarget(Class<?> clazz) {
-        return Stream.of(clazz.getAnnotations()).map(Annotation::annotationType)
-                .map(Class::getName)
-                .anyMatch(fqn -> fqn.equals(Route.class.getName())
-                        || fqn.equals(RouteAlias.class.getName())
-                        || fqn.equals(ParentLayout.class.getName()));
     }
 }
