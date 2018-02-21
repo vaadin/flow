@@ -14,7 +14,7 @@ public class SubContextUI extends DependencyUI {
      */
     @WebServlet(urlPatterns = {
             "/SubContext/*" }, name = "AnotherServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = SubContextUI.class, productionMode = false)
+    @VaadinServletConfiguration(ui = SubContextUI.class, productionMode = false, usingNewRouting = false)
     public static class SubContextServlet extends VaadinServlet {
     }
 
