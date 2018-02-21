@@ -85,7 +85,7 @@ public class TemplateInitializer {
     }
 
     private interface InjectableFieldCunsumer {
-        public void apply(Field field, String id, String tag);
+        void apply(Field field, String id, String tag);
     }
 
     /**
@@ -419,8 +419,7 @@ public class TemplateInitializer {
     /* Map declared fields marked @Id */
 
     private void mapComponents() {
-        parserData.forEachInjectedField(
-                (field, id, tag) -> tryMapComponentOrElement(field, id, tag));
+        parserData.forEachInjectedField(this::tryMapComponentOrElement);
     }
 
     private void tryMapComponentOrElement(Field field, String id, String tag) {
