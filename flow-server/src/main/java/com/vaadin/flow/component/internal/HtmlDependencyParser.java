@@ -112,7 +112,7 @@ public class HtmlDependencyParser {
                 .getResourceAsStream(resolvedResource)) {
             if (content == null) {
                 getLogger().info(
-                        "Can't find resource '%s' via the servlet context",
+                        "Can't find resource '{}' via the servlet context",
                         path);
             } else {
                 parseHtmlImports(content, path)
