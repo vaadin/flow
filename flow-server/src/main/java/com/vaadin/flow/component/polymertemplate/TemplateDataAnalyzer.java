@@ -1,0 +1,354 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.component.polymertemplate;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+import org.jsoup.select.NodeVisitor;
+
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.startup.CustomElementRegistry;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
+
+/**
+ * Template data analyzer which produces immutable data required for template
+ * initializer using provided template class and a parser.
+ *
+ * @author Vaadin Ltd
+ *
+ */
+class TemplateDataAnalyzer {
+
+    // {{propertyName}} or {{propertyName::event}}
+    private static final Pattern TWO_WAY_BINDING_PATTERN = Pattern
+            .compile("\\s*\\{\\{([^}:]*)(::[^}]*)?\\}\\}\\s*");
+
+    private final Class<? extends PolymerTemplate<?>> templateClass;
+    private final TemplateParser parser;
+    private final String tag;
+
+    private final Map<String, String> tagById = new HashMap<>();
+    private final Map<Field, String> idByField = new HashMap<>();
+
+    private final Collection<SubTemplateData> subTemplates = new ArrayList<>();
+    private final Set<String> twoWayBindingPaths = new HashSet<>();
+    private final Set<String> notInjectableElementIds = new HashSet<>();
+
+    private org.jsoup.nodes.Element templateRoot;
+
+    @FunctionalInterface
+    interface InjectableFieldCunsumer {
+        void apply(Field field, String id, String tag);
+    }
+
+    /**
+     * Immutable parser data which may be stored in cache.
+     */
+    static class ParserData {
+
+        private final Map<String, String> tagById;
+        private final Map<Field, String> idByField;
+
+        private final Set<String> twoWayBindingPaths;
+
+        private final Collection<SubTemplateData> subTemplates;
+
+        private ParserData(Map<Field, String> fields, Map<String, String> tags,
+                Set<String> twoWayBindings,
+                Collection<SubTemplateData> subTemplates) {
+            tagById = Collections.unmodifiableMap(tags);
+            idByField = Collections.unmodifiableMap(fields);
+            twoWayBindingPaths = Collections.unmodifiableSet(twoWayBindings);
+            this.subTemplates = Collections
+                    .unmodifiableCollection(subTemplates);
+        }
+
+        void forEachInjectedField(InjectableFieldCunsumer consumer) {
+            idByField.forEach(
+                    (field, id) -> consumer.apply(field, id, tagById.get(id)));
+        }
+
+        Set<String> getTwoWayBindingPaths() {
+            return twoWayBindingPaths;
+        }
+
+        void forEachSubTemplate(Consumer<SubTemplateData> dataConsumer) {
+            subTemplates.forEach(dataConsumer);
+        }
+    }
+
+    static class SubTemplateData {
+        private final String id;
+        private final String tag;
+        private final JsonArray path;
+
+        SubTemplateData(String id, String tag, JsonArray path) {
+            this.id = id;
+            this.tag = tag;
+            this.path = path;
+        }
+
+        String getId() {
+            return id;
+        }
+
+        String getTag() {
+            return tag;
+        }
+
+        JsonArray getPath() {
+            return path;
+        }
+    }
+
+    /**
+     * Create an instance of the analyzer using the {@code templateClass} and
+     * the template {@code parser}.
+     *
+     * @param templateClass
+     *            a template type
+     * @param parser
+     *            a template parser
+     */
+    TemplateDataAnalyzer(Class<? extends PolymerTemplate<?>> templateClass,
+            TemplateParser parser) {
+        this.templateClass = templateClass;
+        this.parser = parser;
+        this.tag = getTag(templateClass);
+    }
+
+    /**
+     * Gets the template data for the template initializer.
+     *
+     * @return the template data
+     */
+    ParserData parseTemplate() {
+        templateRoot = parser.getTemplateContent(templateClass, tag);
+        Elements templates = templateRoot.getElementsByTag("template");
+        for (org.jsoup.nodes.Element element : templates) {
+            org.jsoup.nodes.Element parent = element.parent();
+            if (parent != null && tag.equals(parent.id())) {
+                inspectCustomElements(element, element);
+
+                inspectTwoWayBindings(element);
+            }
+        }
+        collectInjectedIds(templateClass);
+        return readData();
+    }
+
+    private void collectInjectedIds(Class<?> cls) {
+        if (!AbstractTemplate.class.equals(cls.getSuperclass())) {
+            // Parent fields
+            collectInjectedIds(cls.getSuperclass());
+        }
+
+        Stream.of(cls.getDeclaredFields()).filter(field -> !field.isSynthetic())
+                .forEach(field -> collectedInjectedId(field));
+    }
+
+    private void collectedInjectedId(Field field) {
+        Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
+                Id.class);
+        if (!idAnnotation.isPresent()) {
+            return;
+        }
+        String id = idAnnotation.get().value();
+        if (notInjectableElementIds.contains(id)) {
+            throw new IllegalStateException(String.format(
+                    "Class '%s' contains field '%s' annotated with @Id('%s'). "
+                            + "Corresponding element was found in a sub template, for which injection is not supported",
+                    templateClass.getName(), field.getName(), id));
+        }
+
+        if (!addTagName(id, field).isPresent()) {
+            throw new IllegalStateException(String.format(
+                    "There is no element with "
+                            + "id='%s' in the template file. Cannot map it using @%s",
+                    id, Id.class.getSimpleName()));
+        }
+    }
+
+    private void inspectTwoWayBindings(org.jsoup.nodes.Element element) {
+        Matcher matcher = TWO_WAY_BINDING_PATTERN.matcher("");
+        element.traverse(new NodeVisitor() {
+            @Override
+            public void head(Node node, int depth) {
+                // Two way bindings should only be in property bindings, not
+                // inside text content.
+                for (Attribute attribute : node.attributes()) {
+                    matcher.reset(attribute.getValue());
+                    if (matcher.matches()) {
+                        String path = matcher.group(1);
+                        addTwoWayBindingPath(path);
+                    }
+                }
+            }
+
+            @Override
+            public void tail(Node node, int depth) {
+                // Nop
+            }
+        });
+    }
+
+    private ParserData readData() {
+        return new ParserData(idByField, tagById, twoWayBindingPaths,
+                subTemplates);
+    }
+
+    private String getTag(Class<? extends PolymerTemplate<?>> clazz) {
+        Optional<String> tagNameAnnotation = AnnotationReader
+                .getAnnotationFor(clazz, Tag.class).map(Tag::value);
+        assert tagNameAnnotation.isPresent();
+        return tagNameAnnotation.get();
+    }
+
+    private void inspectCustomElements(org.jsoup.nodes.Element childElement,
+            org.jsoup.nodes.Element templateRoot) {
+        if (isInsideTemplate(childElement, templateRoot)) {
+            storeNotInjectableElementId(childElement);
+        }
+
+        collectCustomElement(childElement, templateRoot);
+        childElement.children()
+                .forEach(child -> inspectCustomElements(child, templateRoot));
+    }
+
+    private void collectCustomElement(org.jsoup.nodes.Element element,
+            org.jsoup.nodes.Element templateRoot) {
+        String tag = element.tagName();
+
+        if (CustomElementRegistry.getInstance()
+                .isRegisteredCustomElement(tag)) {
+            if (isInsideTemplate(element, templateRoot)) {
+                throw new IllegalStateException("Couldn't parse the template: "
+                        + "sub-templates are not supported. Sub-template found: \n"
+                        + element);
+            }
+
+            String id = element.hasAttr("id") ? element.attr("id") : null;
+            JsonArray path = getPath(element, templateRoot);
+            addSubTemplate(id, tag, path);
+        }
+    }
+
+    private JsonArray getPath(org.jsoup.nodes.Element element,
+            org.jsoup.nodes.Element templateRoot) {
+        List<Integer> path = new ArrayList<>();
+        org.jsoup.nodes.Element current = element;
+        while (!current.equals(templateRoot)) {
+            org.jsoup.nodes.Element parent = current.parent();
+            path.add(indexOf(parent, current));
+            current = parent;
+        }
+        JsonArray array = Json.createArray();
+        for (int i = 0; i < path.size(); i++) {
+            array.set(i, path.get(path.size() - i - 1));
+        }
+        return array;
+    }
+
+    /**
+     * Returns the index of the {@code child} in the collection of
+     * {@link org.jsoup.nodes.Element} children of the {@code parent} ignoring
+     * "style" elements.
+     * <p>
+     * "style" elements are handled differently depending on ES5/ES6. Also
+     * "style" tag can be moved on the top in the resulting client side DOM
+     * regardless of its initial position (e.g. Chrome does this).
+     *
+     * @param parent
+     *            the parent of the {@code child}
+     * @param child
+     *            the child element whose index is calculated
+     * @return the index of the {@code child} in the {@code parent}
+     */
+    private static int indexOf(org.jsoup.nodes.Element parent,
+            org.jsoup.nodes.Element child) {
+        Elements children = parent.children();
+        int index = -1;
+        for (org.jsoup.nodes.Element nextChild : children) {
+            if (!"style".equals(nextChild.tagName())) {
+                index++;
+            }
+            if (nextChild.equals(child)) {
+                break;
+            }
+        }
+        return index;
+    }
+
+    private void storeNotInjectableElementId(org.jsoup.nodes.Element element) {
+        String id = element.id();
+        if (id != null && !id.isEmpty()) {
+            addNotInjectableId(id);
+        }
+    }
+
+    private boolean isInsideTemplate(org.jsoup.nodes.Element element,
+            org.jsoup.nodes.Element templateRoot) {
+        if (element == templateRoot) {
+            return false;
+        }
+        if ("template".equalsIgnoreCase(element.tagName())) {
+            return true;
+        }
+        return isInsideTemplate(element.parent(), templateRoot);
+    }
+
+    private void addSubTemplate(String id, String tag, JsonArray path) {
+        subTemplates.add(new SubTemplateData(id, tag, path));
+    }
+
+    private void addNotInjectableId(String id) {
+        notInjectableElementIds.add(id);
+    }
+
+    private void addTwoWayBindingPath(String path) {
+        twoWayBindingPaths.add(path);
+    }
+
+    private Optional<String> addTagName(String id, Field field) {
+        idByField.put(field, id);
+        Optional<String> tag = Optional
+                .ofNullable(templateRoot.getElementById(id))
+                .map(org.jsoup.nodes.Element::tagName);
+        if (tag.isPresent()) {
+            tagById.put(id, tag.get());
+        }
+        return tag;
+    }
+}
