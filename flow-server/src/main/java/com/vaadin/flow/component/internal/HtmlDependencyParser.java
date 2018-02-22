@@ -162,7 +162,7 @@ public class HtmlDependencyParser {
                     .map(link -> link.attr("href"));
         } catch (IOException exception) {
             getLogger().info(
-                    "Can't parse the template declared using '%s' path", path,
+                    "Can't parse the template declared using '{}' path", path,
                     exception);
         }
         return Stream.empty();
