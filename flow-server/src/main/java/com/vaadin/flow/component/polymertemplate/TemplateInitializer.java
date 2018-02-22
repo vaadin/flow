@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -62,18 +63,14 @@ public class TemplateInitializer {
     private static final Pattern TWO_WAY_BINDING_PATTERN = Pattern
             .compile("\\s*\\{\\{([^}:]*)(::[^}]*)?\\}\\}\\s*");
 
-    private static final ReflectionCache<PolymerTemplate<?>, ParserData> CACHE = new ReflectionCache<>(
-            clazz -> new ParserData());
+    private static final ConcurrentHashMap<TemplateParser, ReflectionCache<PolymerTemplate<?>, ParserData>> CACHE = new ConcurrentHashMap<>();
 
     private final PolymerTemplate<?> template;
     private final Class<? extends PolymerTemplate<?>> templateClass;
 
-    private final Map<String, Element> registeredElementIdToInjected = new HashMap<>();
-    private final boolean useCache;
     private final ParserData parserData;
-    private final Set<String> notInjectableElementIds = new HashSet<>();
 
-    private org.jsoup.nodes.Element parsedTemplateRoot;
+    private final Map<String, Element> registeredElementIdToInjected = new HashMap<>();
 
     private static class SubTemplateData {
         private final String id;
@@ -87,23 +84,86 @@ public class TemplateInitializer {
         }
     }
 
-    private static class ParserData
-            implements Function<String, Optional<String>> {
+    private interface InjectableFieldCunsumer {
+        void apply(Field field, String id, String tag);
+    }
+
+    /**
+     * Immutable parser data which may be stored in cache.
+     */
+    private static class ParserData {
+
+        private final Map<String, String> tagById;
+        private final Map<Field, String> idByField;
+
+        private final Set<String> twoWayBindingPaths;
+
+        private final Collection<SubTemplateData> subTemplates;
+
+        private ParserData(Map<Field, String> fields, Map<String, String> tags,
+                Set<String> twoWayBindings,
+                Collection<SubTemplateData> subTemplates) {
+            tagById = Collections.unmodifiableMap(tags);
+            idByField = Collections.unmodifiableMap(fields);
+            twoWayBindingPaths = Collections.unmodifiableSet(twoWayBindings);
+            this.subTemplates = Collections
+                    .unmodifiableCollection(subTemplates);
+        }
+
+        private void forEachInjectedField(InjectableFieldCunsumer consumer) {
+            idByField.forEach(
+                    (field, id) -> consumer.apply(field, id, tagById.get(id)));
+        }
+
+        private Set<String> getTwoWayBindingPaths() {
+            return twoWayBindingPaths;
+        }
+
+        private void forEachSubTemplate(
+                Consumer<SubTemplateData> dataConsumer) {
+            subTemplates.forEach(dataConsumer);
+        }
+    }
+
+    /**
+     * Mutable temporary parser data which is used to collected data only during
+     * initialization. The data will be discarded and not stored anywhere.
+     */
+    private static class ParserDataContext {
         private final Map<String, String> tagById = new HashMap<>();
+        private final Map<Field, String> idByField = new HashMap<>();
+
         private final Collection<SubTemplateData> subTemplates = new ArrayList<>();
         private final Set<String> twoWayBindingPaths = new HashSet<>();
+        private final Set<String> notInjectableElementIds = new HashSet<>();
 
-        @Override
-        public Optional<String> apply(String id) {
-            return Optional.ofNullable(tagById.get(id));
-        }
-
-        private void addTag(String id, String tag) {
-            tagById.put(id, tag);
-        }
+        private org.jsoup.nodes.Element templateRoot;
 
         private void addSubTemplate(String id, String tag, JsonArray path) {
             subTemplates.add(new SubTemplateData(id, tag, path));
+        }
+
+        private void addNotInjectableId(String id) {
+            notInjectableElementIds.add(id);
+        }
+
+        private void addTwoWayBindingPath(String path) {
+            twoWayBindingPaths.add(path);
+        }
+
+        private void setTemplateRoot(org.jsoup.nodes.Element root) {
+            templateRoot = root;
+        }
+
+        private Optional<String> addTagName(String id, Field field) {
+            idByField.put(field, id);
+            Optional<String> tag = Optional
+                    .ofNullable(templateRoot.getElementById(id))
+                    .map(org.jsoup.nodes.Element::tagName);
+            if (tag.isPresent()) {
+                tagById.put(id, tag.get());
+            }
+            return tag;
         }
 
     }
@@ -120,20 +180,49 @@ public class TemplateInitializer {
     public TemplateInitializer(PolymerTemplate<?> template,
             TemplateParser parser) {
         this.template = template;
-        templateClass = (Class<? extends PolymerTemplate<?>>) template
-                .getClass();
 
         boolean productionMode = VaadinService.getCurrent()
                 .getDeploymentConfiguration().isProductionMode();
-        useCache = productionMode && CACHE.contains(templateClass);
-        parserData = productionMode ? CACHE.get(templateClass)
-                : new ParserData();
 
-        if (!useCache) {
-            parsedTemplateRoot = parser.getTemplateContent(templateClass,
-                    getElement().getTag());
-            parseTemplate();
+        templateClass = (Class<? extends PolymerTemplate<?>>) template
+                .getClass();
+
+        ParserData data = null;
+        if (productionMode) {
+            ReflectionCache<PolymerTemplate<?>, ParserData> cache = CACHE
+                    .computeIfAbsent(parser,
+                            analyzer -> new ReflectionCache<PolymerTemplate<?>, ParserData>(
+                                    clazz -> parseTemplate(clazz, analyzer)));
+            data = cache.get(templateClass);
         }
+        if (data == null) {
+            data = parseTemplate(templateClass, parser);
+        }
+        parserData = data;
+    }
+
+    private ParserData readData(ParserDataContext context) {
+        return new ParserData(context.idByField, context.tagById,
+                context.twoWayBindingPaths, context.subTemplates);
+    }
+
+    private ParserData parseTemplate(Class<? extends PolymerTemplate<?>> clazz,
+            TemplateParser parser) {
+        org.jsoup.nodes.Element root = parser.getTemplateContent(templateClass,
+                getElement().getTag());
+        ParserDataContext data = new ParserDataContext();
+        data.setTemplateRoot(root);
+        Elements templates = root.getElementsByTag("template");
+        for (org.jsoup.nodes.Element element : templates) {
+            org.jsoup.nodes.Element parent = element.parent();
+            if (parent != null && getElement().getTag().equals(parent.id())) {
+                inspectCustomElements(element, element, data);
+
+                inspectTwoWayBindings(element, data);
+            }
+        }
+        collectInjectedIds(clazz, data);
+        return readData(data);
     }
 
     /**
@@ -141,7 +230,7 @@ public class TemplateInitializer {
      */
     public void initChildElements() {
         registeredElementIdToInjected.clear();
-        mapComponents(templateClass);
+        mapComponents();
         createSubTemplates();
     }
 
@@ -151,41 +240,30 @@ public class TemplateInitializer {
      * @return an unmodifiable collection of two way binding paths
      */
     public Set<String> getTwoWayBindingPaths() {
-        return Collections.unmodifiableSet(parserData.twoWayBindingPaths);
+        return parserData.getTwoWayBindingPaths();
     }
 
     private void inspectCustomElements(org.jsoup.nodes.Element childElement,
-            org.jsoup.nodes.Element templateRoot) {
+            org.jsoup.nodes.Element templateRoot, ParserDataContext data) {
         if (isInsideTemplate(childElement, templateRoot)) {
-            storeNotInjectableElementId(childElement);
+            storeNotInjectableElementId(childElement, data);
         }
 
-        collectCustomElement(childElement, templateRoot);
-        childElement.children()
-                .forEach(child -> inspectCustomElements(child, templateRoot));
+        collectCustomElement(childElement, templateRoot, data);
+        childElement.children().forEach(
+                child -> inspectCustomElements(child, templateRoot, data));
     }
 
-    private void storeNotInjectableElementId(org.jsoup.nodes.Element element) {
+    private void storeNotInjectableElementId(org.jsoup.nodes.Element element,
+            ParserDataContext data) {
         String id = element.id();
         if (id != null && !id.isEmpty()) {
-            notInjectableElementIds.add(id);
+            data.addNotInjectableId(id);
         }
     }
 
-    private void parseTemplate() {
-        assert parsedTemplateRoot != null;
-        Elements templates = parsedTemplateRoot.getElementsByTag("template");
-        for (org.jsoup.nodes.Element element : templates) {
-            org.jsoup.nodes.Element parent = element.parent();
-            if (parent != null && getElement().getTag().equals(parent.id())) {
-                inspectCustomElements(element, element);
-
-                inspectTwoWayBindings(element);
-            }
-        }
-    }
-
-    private void inspectTwoWayBindings(org.jsoup.nodes.Element element) {
+    private void inspectTwoWayBindings(org.jsoup.nodes.Element element,
+            ParserDataContext data) {
         Matcher matcher = TWO_WAY_BINDING_PATTERN.matcher("");
         element.traverse(new NodeVisitor() {
             @Override
@@ -196,7 +274,7 @@ public class TemplateInitializer {
                     matcher.reset(attribute.getValue());
                     if (matcher.matches()) {
                         String path = matcher.group(1);
-                        parserData.twoWayBindingPaths.add(path);
+                        data.addTwoWayBindingPath(path);
                     }
                 }
             }
@@ -220,7 +298,7 @@ public class TemplateInitializer {
     }
 
     private void collectCustomElement(org.jsoup.nodes.Element element,
-            org.jsoup.nodes.Element templateRoot) {
+            org.jsoup.nodes.Element templateRoot, ParserDataContext data) {
         String tag = element.tagName();
 
         if (CustomElementRegistry.getInstance()
@@ -233,8 +311,7 @@ public class TemplateInitializer {
 
             String id = element.hasAttr("id") ? element.attr("id") : null;
             JsonArray path = getPath(element, templateRoot);
-            assert !useCache;
-            parserData.addSubTemplate(id, tag, path);
+            data.addSubTemplate(id, tag, path);
         }
     }
 
@@ -307,60 +384,51 @@ public class TemplateInitializer {
                 .orElseGet(() -> getElement().attachShadow());
     }
 
-    /* Map declared fields marked @Id */
-
-    private void mapComponents(Class<?> cls) {
+    private void collectInjectedIds(Class<?> cls, ParserDataContext data) {
         if (!AbstractTemplate.class.equals(cls.getSuperclass())) {
             // Parent fields
-            mapComponents(cls.getSuperclass());
+            collectInjectedIds(cls.getSuperclass(), data);
         }
 
         Stream.of(cls.getDeclaredFields()).filter(field -> !field.isSynthetic())
-                .forEach(field -> tryMapComponentOrElement(field));
+                .forEach(field -> collectedInjectedId(field, data));
     }
 
-    private void tryMapComponentOrElement(Field field) {
+    private void collectedInjectedId(Field field, ParserDataContext data) {
         Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
                 Id.class);
         if (!idAnnotation.isPresent()) {
             return;
         }
         String id = idAnnotation.get().value();
-        if (notInjectableElementIds.contains(id)) {
+        if (data.notInjectableElementIds.contains(id)) {
             throw new IllegalStateException(String.format(
                     "Class '%s' contains field '%s' annotated with @Id('%s'). "
                             + "Corresponding element was found in a sub template, for which injection is not supported",
                     templateClass.getName(), field.getName(), id));
         }
 
-        Optional<String> tagName = getTagName(id);
-        if (!tagName.isPresent()) {
+        if (!data.addTagName(id, field).isPresent()) {
             throw new IllegalStateException(String.format(
                     "There is no element with "
                             + "id='%s' in the template file. Cannot map it using @%s",
                     id, Id.class.getSimpleName()));
         }
+    }
 
+    /* Map declared fields marked @Id */
+
+    private void mapComponents() {
+        parserData.forEachInjectedField(this::tryMapComponentOrElement);
+    }
+
+    private void tryMapComponentOrElement(Field field, String id, String tag) {
         Element element = getElementById(id).orElse(null);
 
         if (element == null) {
-            injectClientSideElement(tagName.get(), id, field);
+            injectClientSideElement(tag, id, field);
         } else {
             injectServerSideElement(element, field);
-        }
-    }
-
-    private Optional<String> getTagName(String id) {
-        if (useCache) {
-            return parserData.apply(id);
-        } else {
-            Optional<String> tag = Optional
-                    .ofNullable(parsedTemplateRoot.getElementById(id))
-                    .map(org.jsoup.nodes.Element::tagName);
-            if (tag.isPresent()) {
-                parserData.addTag(id, tag.get());
-            }
-            return tag;
         }
     }
 
@@ -471,9 +539,8 @@ public class TemplateInitializer {
     }
 
     private void createSubTemplates() {
-        parserData.subTemplates
-                .forEach(data -> doRequestAttachCustomElement(data.id, data.tag,
-                        data.path));
+        parserData.forEachSubTemplate(data -> doRequestAttachCustomElement(
+                data.id, data.tag, data.path));
     }
 
 }

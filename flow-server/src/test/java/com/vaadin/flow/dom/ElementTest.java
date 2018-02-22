@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.server.StreamResource;
@@ -1145,8 +1146,8 @@ public class ElementTest extends AbstractNodeTest {
 
         List<String> styles = style.getNames().collect(Collectors.toList());
         Assert.assertEquals(2, styles.size());
-        Assert.assertTrue(styles.contains("borderColor"));
-        Assert.assertTrue(styles.contains("borderFoo"));
+        Assert.assertTrue(styles.contains("border-color"));
+        Assert.assertTrue(styles.contains("border-foo"));
     }
 
     @Test
@@ -1158,6 +1159,49 @@ public class ElementTest extends AbstractNodeTest {
         style.set("borderColor", null);
         List<String> styles = style.getNames().collect(Collectors.toList());
         Assert.assertFalse(styles.contains("borderColor"));
+    }
+
+    @Test
+    public void sendPropertyInCorrectFormatToClient() {
+        assertClientStyleKey("--some-variable", "--some-variable");
+        assertClientStyleKey("-webkit-border", "-webkit-border");
+        assertClientStyleKey("background-color", "background-color");
+        assertClientStyleKey("color", "color");
+
+        assertClientStyleKey("-webkit-border", "webkitBorder");
+        assertClientStyleKey("background-color", "backgroundColor");
+    }
+
+    private void assertClientStyleKey(String sentToClient,
+            String setUsingStyleApi) {
+        Element element = ElementFactory.createDiv();
+        StateNode stateNode = element.getNode();
+        ElementStylePropertyMap map = stateNode
+                .getFeature(ElementStylePropertyMap.class);
+
+        Style style = element.getStyle();
+        style.set(setUsingStyleApi, "foo");
+        Assert.assertEquals("foo", style.get(setUsingStyleApi));
+        Assert.assertEquals(sentToClient, map.getPropertyNames().toArray()[0]);
+        Assert.assertEquals("foo", map.getProperty(sentToClient));
+
+    }
+
+    @Test
+    public void customPropertyStyle() {
+        Element element = ElementFactory.createDiv();
+        Style style = element.getStyle();
+        style.set("--some-variable", "foo");
+        Assert.assertEquals("foo", style.get("--some-variable"));
+    }
+
+    @Test
+    public void useCustomPropertyStyle() {
+        Element element = ElementFactory.createDiv();
+
+        Style style = element.getStyle();
+        style.set("color", "var(--some-var)");
+        Assert.assertEquals("var(--some-var)", style.get("color"));
     }
 
     @Test

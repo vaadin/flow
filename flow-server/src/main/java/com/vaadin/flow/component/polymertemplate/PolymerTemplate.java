@@ -80,7 +80,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * functionality.
      */
     public PolymerTemplate() {
-        this(new DefaultTemplateParser());
+        this(DefaultTemplateParser.getInstance());
     }
 
     /**
