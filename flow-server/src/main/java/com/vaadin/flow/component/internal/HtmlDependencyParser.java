@@ -112,7 +112,7 @@ public class HtmlDependencyParser {
                 .getResourceAsStream(resolvedResource)) {
             if (content == null) {
                 getLogger().info(
-                        "Can't find resource '%s' via the servlet context",
+                        "Can't find resource '{}' via the servlet context",
                         path);
             } else {
                 parseHtmlImports(content, path)
@@ -162,7 +162,7 @@ public class HtmlDependencyParser {
                     .map(link -> link.attr("href"));
         } catch (IOException exception) {
             getLogger().info(
-                    "Can't parse the template declared using '%s' path", path,
+                    "Can't parse the template declared using '{}' path", path,
                     exception);
         }
         return Stream.empty();
