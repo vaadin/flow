@@ -636,9 +636,6 @@ public class VaadinServlet extends HttpServlet {
 
     /**
      * Resolves the given {@code url} resource using vaadin URI resolver.
-     * <p>
-     * Any possible servlet path is removed from the result and the target will
-     * point to the context root.
      *
      * @param url
      *            the resource to resolve
@@ -656,11 +653,13 @@ public class VaadinServlet extends HttpServlet {
             return null;
         }
 
-        String resolvedUrl = resolveUrl(url, session);
+        String resolvedUrl = session
+                .getAttribute(VaadinUriResolverFactory.class)
+                .toServletContextPath(request, url);
 
         if (webJarServer != null) {
             Optional<String> webJarUrl = webJarServer
-                    .getWebJarResourcePath(resolvedUrl);
+                    .getWebJarResourcePath(resolveUrl(url, session));
             try {
                 if (webJarUrl.isPresent() && getServletContext()
                         .getResource(webJarUrl.get()) != null) {

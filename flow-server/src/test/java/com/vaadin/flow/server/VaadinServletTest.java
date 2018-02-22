@@ -129,7 +129,7 @@ public class VaadinServletTest {
     public void resolveResource_noWebJars_resolveViaResolverFactory() {
         String path = "foo";
         String resolved = "bar";
-        Mockito.when(vaadinUriResolver.resolveVaadinUri(path))
+        Mockito.when(factory.toServletContextPath(request, path))
                 .thenReturn(resolved);
 
         Assert.assertEquals(resolved, servlet.resolveResource(path));
@@ -170,7 +170,7 @@ public class VaadinServletTest {
     }
 
     @Test
-    public void resolveResource_for_servlet_with_path()
+    public void resolveTranslation_for_servlet_with_path()
             throws MalformedURLException {
         request = Mockito.mock(VaadinServletRequest.class);
         CurrentInstance.set(VaadinRequest.class, request);
@@ -191,9 +191,6 @@ public class VaadinServletTest {
         Mockito.when(vaadinUriResolver.resolveVaadinUri(path))
                 .thenReturn(resolved);
 
-        Assert.assertEquals("resolution did not remove servlet path",
-                "./src/bar", servlet.resolveResource(path));
-
         Mockito.when(vaadinUriResolver.resolveVaadinUri("/theme/foo"))
                 .thenReturn("./../theme/foo");
         Mockito.when(context.getResource("/./theme/foo"))
@@ -204,7 +201,7 @@ public class VaadinServletTest {
     }
 
     @Test
-    public void resolveResource_for_servlet_with_muliple_path_parts()
+    public void resolveTranslation_for_servlet_with_muliple_path_parts()
             throws MalformedURLException {
         request = Mockito.mock(VaadinServletRequest.class);
         CurrentInstance.set(VaadinRequest.class, request);
@@ -224,10 +221,6 @@ public class VaadinServletTest {
         String resolved = "./../../src/bar";
         Mockito.when(vaadinUriResolver.resolveVaadinUri(path))
                 .thenReturn(resolved);
-
-        Assert.assertEquals("resolution did not remove servlet path",
-                "./src/bar", servlet.resolveResource(path));
-
         Mockito.when(vaadinUriResolver.resolveVaadinUri("/theme/foo"))
                 .thenReturn("./../../theme/foo");
         Mockito.when(context.getResource("/./theme/foo"))
