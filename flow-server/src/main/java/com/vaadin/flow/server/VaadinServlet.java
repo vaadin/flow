@@ -636,6 +636,9 @@ public class VaadinServlet extends HttpServlet {
 
     /**
      * Resolves the given {@code url} resource using vaadin URI resolver.
+     * <p>
+     * Any possible servlet path is removed from the result and the target will
+     * point to the context root.
      *
      * @param url
      *            the resource to resolve
@@ -703,9 +706,34 @@ public class VaadinServlet extends HttpServlet {
     private String resolveUrl(String url, VaadinSession session) {
         VaadinUriResolverFactory uriResolverFactory = session
                 .getAttribute(VaadinUriResolverFactory.class);
-        String resolvedUrl = uriResolverFactory
-                .getUriResolver(VaadinRequest.getCurrent())
+
+        VaadinRequest request = VaadinRequest.getCurrent();
+
+        String resolvedUrl = uriResolverFactory.getUriResolver(request)
                 .resolveVaadinUri(url);
+
+        assert resolvedUrl != null;
+        if (resolvedUrl.contains("../")
+                && request instanceof VaadinServletRequest) {
+            VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+
+            String servletPath = servletRequest.getServletPath();
+            assert servletPath != null;
+            if (servletPath.startsWith("/")) {
+                servletPath = servletPath.substring(1);
+            }
+            if (servletPath.endsWith("/")) {
+                servletPath = servletPath.substring(0,
+                        servletPath.lastIndexOf("/"));
+            }
+
+            // "Revert" the `../` from uri resolver so that we point to the
+            // context root.
+            for (String path : servletPath.split("/")) {
+                resolvedUrl = resolvedUrl.replaceFirst("(../)", "");
+            }
+        }
+
         return resolvedUrl;
     }
 
