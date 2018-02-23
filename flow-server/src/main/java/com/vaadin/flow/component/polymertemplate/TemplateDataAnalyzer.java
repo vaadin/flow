@@ -68,8 +68,29 @@ class TemplateDataAnalyzer {
 
     private org.jsoup.nodes.Element templateRoot;
 
+    /**
+     * Three argument consumer.
+     *
+     * @author Vaadin Ltd
+     *
+     */
     @FunctionalInterface
     interface InjectableFieldCunsumer {
+
+        /**
+         * Performs this operation on the given arguments.
+         * <p>
+         * The arguments are: the field declared in a template class, the
+         * identifier of the element inside the HTML template file, the element
+         * tag.
+         *
+         * @param field
+         *            the field declared in a template class
+         * @param id
+         *            the element id
+         * @param tag
+         *            the element tag
+         */
         void apply(Field field, String id, String tag);
     }
 
@@ -343,12 +364,12 @@ class TemplateDataAnalyzer {
 
     private Optional<String> addTagName(String id, Field field) {
         idByField.put(field, id);
-        Optional<String> tag = Optional
+        Optional<String> tagName = Optional
                 .ofNullable(templateRoot.getElementById(id))
                 .map(org.jsoup.nodes.Element::tagName);
-        if (tag.isPresent()) {
-            tagById.put(id, tag.get());
+        if (tagName.isPresent()) {
+            tagById.put(id, tagName.get());
         }
-        return tag;
+        return tagName;
     }
 }
