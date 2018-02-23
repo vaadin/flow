@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -27,13 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.LoggerFactory;
 
@@ -654,15 +653,13 @@ public class VaadinServlet extends HttpServlet {
             return null;
         }
 
-        VaadinUriResolverFactory uriResolverFactory = session
-                .getAttribute(VaadinUriResolverFactory.class);
-
-        String resolvedUrl = uriResolverFactory.toServletContextPath(request,
-                url);
+        String resolvedUrl = session
+                .getAttribute(VaadinUriResolverFactory.class)
+                .toServletContextPath(request, url);
 
         if (webJarServer != null) {
             Optional<String> webJarUrl = webJarServer
-                    .getWebJarResourcePath(resolvedUrl);
+                    .getWebJarResourcePath(resolveUrl(url, session));
             try {
                 if (webJarUrl.isPresent() && getServletContext()
                         .getResource(webJarUrl.get()) != null) {
@@ -689,10 +686,12 @@ public class VaadinServlet extends HttpServlet {
     }
 
     private boolean resourceIsFound(String url) {
-        VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
-                .getAttribute(VaadinUriResolverFactory.class);
-        String resolvedUrl = uriResolverFactory
-                .toServletContextPath(VaadinRequest.getCurrent(), url);
+        String resolvedUrl = resolveUrl(url, VaadinSession.getCurrent());
+
+        // Servlet context requires a valid URL string
+        if (!resolvedUrl.startsWith("/")) {
+            resolvedUrl = "/" + resolvedUrl;
+        }
 
         try {
             return inServletContext(resolvedUrl) || inWebJar(resolvedUrl);
@@ -701,6 +700,42 @@ public class VaadinServlet extends HttpServlet {
                     .trace("Failed to parse url.", e);
             return false;
         }
+    }
+
+    private String resolveUrl(String url, VaadinSession session) {
+        VaadinUriResolverFactory uriResolverFactory = session
+                .getAttribute(VaadinUriResolverFactory.class);
+
+        VaadinRequest request = VaadinRequest.getCurrent();
+
+        String resolvedUrl = uriResolverFactory.getUriResolver(request)
+                .resolveVaadinUri(url);
+
+        assert resolvedUrl != null;
+        if (resolvedUrl.contains("../")
+                && request instanceof VaadinServletRequest) {
+            VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+
+            String servletPath = servletRequest.getServletPath();
+            assert servletPath != null;
+            if (servletPath.startsWith("/")) {
+                servletPath = servletPath.substring(1);
+            }
+            if (servletPath.endsWith("/")) {
+                servletPath = servletPath.substring(0,
+                        servletPath.lastIndexOf('/'));
+            }
+
+            if (!servletPath.isEmpty()) {
+                // "Revert" the `../` from uri resolver so that we point to the
+                // context root.
+                for (int i = 0; i < servletPath.split("/").length; i++) {
+                    resolvedUrl = resolvedUrl.replaceFirst("(../)", "");
+                }
+            }
+        }
+
+        return resolvedUrl;
     }
 
     private boolean inServletContext(String resolvedUrl)

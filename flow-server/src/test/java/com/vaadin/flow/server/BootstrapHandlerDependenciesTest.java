@@ -1,5 +1,33 @@
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import net.jcip.annotations.NotThreadSafe;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.flow.shared.VaadinUriResolver;
+import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.either;
@@ -14,42 +42,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayInputStream;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinUriResolverFactory;
-import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
-import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class BootstrapHandlerDependenciesTest {
@@ -267,6 +259,14 @@ public class BootstrapHandlerDependenciesTest {
 
         VaadinUriResolverFactory factory = Mockito
                 .mock(VaadinUriResolverFactory.class);
+
+        VaadinUriResolver vaadinUriResolver = Mockito.mock(VaadinUriResolver.class);
+
+        Mockito.when(factory.getUriResolver(Mockito.any()))
+                .thenReturn(vaadinUriResolver);
+        Mockito.when(vaadinUriResolver.resolveVaadinUri(Mockito.anyString()))
+                .thenAnswer(i -> i.getArguments()[0]);
+
         Mockito.doAnswer(invocation -> invocation.getArguments()[1])
                 .when(factory)
                 .toServletContextPath(Mockito.any(), Mockito.anyString());
