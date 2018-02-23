@@ -36,7 +36,7 @@ import com.vaadin.flow.function.ValueProvider;
  * class to provide component rendering: {@link #render(Element, DataKeyMapper)}
  * for components that uses {@code <template>}, and
  * {@link #createComponent(Object)} for components that use light-dom.
- * 
+ *
  * @author Vaadin Ltd.
  *
  * @param <COMPONENT>
@@ -140,7 +140,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
      * Sets the tag of the webcomponent used at the client-side to manage
      * component rendering inside {@code <template>}. By default it uses
      * {@code <flow-component-renderer>}.
-     * 
+     *
      * @param componentRendererTag
      *            the tag of the client-side webcomponent for component
      *            rendering, not <code>null</code>
@@ -157,7 +157,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         Element templateElement = rendering.getTemplateElement();
         owner.appendChild(templateElement);
 
-        Element container = new Element("div", false);
+        Element container = new Element("div");
         owner.appendVirtualChild(container);
         rendering.setContainer(container);
         String templateInnerHtml;
@@ -192,7 +192,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
     /**
      * Creates a component for a given object model item. Subclasses can
      * override this method to provide specific behavior.
-     * 
+     *
      * @param item
      *            the model item, possibly <code>null</code>
      * @return a component instance representing the provided item

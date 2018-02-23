@@ -37,7 +37,6 @@ import org.jsoup.select.NodeVisitor;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.server.startup.CustomElementRegistry;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -167,7 +166,7 @@ class TemplateDataAnalyzer {
             TemplateParser parser) {
         this.templateClass = templateClass;
         this.parser = parser;
-        this.tag = getTag(templateClass);
+        tag = getTag(templateClass);
     }
 
     /**
@@ -272,8 +271,7 @@ class TemplateDataAnalyzer {
             org.jsoup.nodes.Element templateRoot) {
         String tag = element.tagName();
 
-        if (CustomElementRegistry.getInstance()
-                .isRegisteredCustomElement(tag)) {
+        if (TemplateInitializer.getUsesClass(templateClass, tag).isPresent()) {
             if (isInsideTemplate(element, templateRoot)) {
                 throw new IllegalStateException("Couldn't parse the template: "
                         + "sub-templates are not supported. Sub-template found: \n"

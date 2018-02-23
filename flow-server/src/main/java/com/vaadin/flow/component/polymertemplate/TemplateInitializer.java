@@ -17,6 +17,7 @@ package com.vaadin.flow.component.polymertemplate;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -25,15 +26,16 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.ParserData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.CustomElementRegistry;
 
 import elemental.json.JsonArray;
 
@@ -46,6 +48,8 @@ import elemental.json.JsonArray;
  */
 public class TemplateInitializer {
     private static final ConcurrentHashMap<TemplateParser, ReflectionCache<PolymerTemplate<?>, ParserData>> CACHE = new ConcurrentHashMap<>();
+    private static final ReflectionCache<PolymerTemplate<?>, Map<String, Class<? extends Component>>> USES_CACHE = new ReflectionCache<>(
+            TemplateInitializer::extractUsesMap);
 
     private final PolymerTemplate<?> template;
     private final Class<? extends PolymerTemplate<?>> templateClass;
@@ -76,10 +80,9 @@ public class TemplateInitializer {
         ParserData data = null;
         if (productionMode) {
             ReflectionCache<PolymerTemplate<?>, ParserData> cache = CACHE
-                    .computeIfAbsent(parser,
-                            analyzer -> new ReflectionCache<PolymerTemplate<?>, ParserData>(
-                                    clazz -> new TemplateDataAnalyzer(clazz,
-                                            analyzer).parseTemplate()));
+                    .computeIfAbsent(parser, analyzer -> new ReflectionCache<>(
+                            clazz -> new TemplateDataAnalyzer(clazz, analyzer)
+                                    .parseTemplate()));
             data = cache.get(templateClass);
         }
         if (data == null) {
@@ -122,7 +125,30 @@ public class TemplateInitializer {
                 path);
 
         // anything else
-        CustomElementRegistry.getInstance().wrapElementIfNeeded(element);
+        attachComponentIfUses(element);
+    }
+
+    /**
+     * Looks for a component class with the given tag name among the classes
+     * used by the given polymer template class. Usage is determined based on
+     * the {@link Uses @Uses} annotation.
+     *
+     * @param templateType
+     *            the polymer template type
+     * @param tagName
+     *            the tag name to look for
+     * @return an optional component class, or an empty optional if the template
+     *         doesn't use any component with the given tag name
+     */
+    public static Optional<Class<? extends Component>> getUsesClass(
+            Class<? extends PolymerTemplate<?>> templateType, String tagName) {
+        return Optional.ofNullable(USES_CACHE.get(templateType)
+                .get(tagName.toLowerCase(Locale.ROOT)));
+    }
+
+    private void attachComponentIfUses(Element element) {
+        getUsesClass(templateClass, element.getTag()).ifPresent(
+                componentClass -> Component.from(element, componentClass));
     }
 
     private ShadowRoot getShadowRoot() {
@@ -224,7 +250,7 @@ public class TemplateInitializer {
     private void injectTemplateElement(Element element, Field field) {
         Class<?> fieldType = field.getType();
         if (Component.class.isAssignableFrom(fieldType)) {
-            CustomElementRegistry.getInstance().wrapElementIfNeeded(element);
+            attachComponentIfUses(element);
             Component component;
 
             Optional<Component> wrappedComponent = element.getComponent();
@@ -257,4 +283,26 @@ public class TemplateInitializer {
                 data.getId(), data.getTag(), data.getPath()));
     }
 
+    private static Map<String, Class<? extends Component>> extractUsesMap(
+            Class<PolymerTemplate<?>> templateType) {
+        Map<String, Class<? extends Component>> map = new HashMap<>();
+
+        AnnotationReader
+                .getAnnotationValuesFor(templateType, Uses.class, Uses::value)
+                .forEach(usedType -> AnnotationReader
+                        .getAnnotationValueFor(usedType, Tag.class, Tag::value)
+                        .ifPresent(tag -> {
+                            String lowerCaseTag = tag.toLowerCase(Locale.ROOT);
+                            Class<?> previous = map.put(lowerCaseTag, usedType);
+                            if (previous != null && previous != usedType) {
+                                throw new IllegalStateException(templateType
+                                        + " has multiple @Uses classes with the tag name "
+                                        + lowerCaseTag + ": "
+                                        + usedType.getName() + " and "
+                                        + previous.getName());
+                            }
+                        }));
+
+        return map;
+    }
 }
