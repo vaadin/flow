@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-@WebServlet("/frontend/*")
+@WebServlet("/*")
 public class WebJarsServlet extends VaadinServlet {
     @Override
     protected void service(HttpServletRequest request,
