@@ -45,7 +45,6 @@ import com.vaadin.flow.internal.nodefeature.TemplateMap;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
 import com.vaadin.flow.template.angular.TemplateNode;
@@ -93,38 +92,33 @@ public class Element extends Node<Element> {
 
     /**
      * Creates an element using the given tag name.
-     * <p>
-     * This will always check for possible CustomElement registered for tag and
-     * create and wire a Component to element if found.
      *
      * @param tag
      *            the tag name of the element. Must be a non-empty string and
      *            can contain letters, numbers and dashes ({@literal -})
      */
     public Element(String tag) {
-        this(tag, true);
+        super(createStateNode(tag), BasicElementStateProvider.get());
+
+        assert getNode() != null;
+        assert getStateProvider() != null;
     }
 
     /**
-     * Create an element using tag name, but only create component for custom
-     * element tag if autocreate.
+     * Creates an element using the given tag name.
      *
      * @param tag
      *            tag name of the element. Must be a non-empty string and can
      *            contain letters, numbers and dashes ({@literal -})
      * @param autocreate
-     *            autocreate and wire custom element component for element
+     *            parameter is ignored, but retained in the API for backwards
+     *            compatibility
+     * @deprecated The {@code autoCreate} parameter no longer has any effect.
+     *             Use {@link #Element(String)} instead.
      */
+    @Deprecated
     public Element(String tag, boolean autocreate) {
-        super(createStateNode(tag), BasicElementStateProvider.get());
-
-        assert getNode() != null;
-        assert getStateProvider() != null;
-
-        if (autocreate) {
-            CustomElementRegistry.getInstance()
-                    .wrapElementIfNeeded(Element.this);
-        }
+        this(tag);
     }
 
     /**
