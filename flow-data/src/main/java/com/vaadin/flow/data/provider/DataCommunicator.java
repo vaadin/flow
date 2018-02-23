@@ -139,7 +139,8 @@ public class DataCommunicator<T> {
      */
     public void reset() {
         resendEntireRange = true;
-
+        dataGenerator.destroyAllData();
+        updatedData.clear();
         requestFlush();
     }
 
