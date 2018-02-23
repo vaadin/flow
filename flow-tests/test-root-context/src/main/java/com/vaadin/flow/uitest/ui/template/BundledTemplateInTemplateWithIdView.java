@@ -17,13 +17,14 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.BundledTemplateInTemplateWithIdView", layout = ViewTestLayout.class)
 public class BundledTemplateInTemplateWithIdView extends AbstractDivView {
@@ -33,6 +34,7 @@ public class BundledTemplateInTemplateWithIdView extends AbstractDivView {
     // This will make the DependencyFilter remove all other imports and add the
     // proper bundle
     @HtmlImport("bundle://something.html")
+    @Uses(ChildTemplate.class)
     public static class ParentTemplate extends PolymerTemplate<TemplateModel> {
 
     }

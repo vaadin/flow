@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +31,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.jsoup.Jsoup;
@@ -45,6 +43,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.di.DefaultInstantiator;
@@ -57,7 +56,6 @@ import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
@@ -73,6 +71,9 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     private List<Object> executionOrder = new ArrayList<>();
     private List<Serializable[]> executionParams = new ArrayList<>();
+
+    // Field to prevent current instance from being garbage collected
+    private UI ui;
 
     private static class TestTemplateParser implements TemplateParser {
 
@@ -164,6 +165,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag("parent-template")
+    @Uses(TestPolymerTemplate.class)
+    @Uses(TemplateChild.class)
     private static class TemplateInTemplate
             extends PolymerTemplate<ModelClass> {
 
@@ -182,6 +185,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag("parent-inject-child")
+    @Uses(TestPolymerTemplate.class)
+    @Uses(TemplateChild.class)
     private static class BundledTemplateInTemplate
             extends PolymerTemplate<ModelClass> {
 
@@ -204,15 +209,15 @@ public class PolymerTemplateTest extends HasCurrentService {
         private TemplateChild child;
 
         public TemplateInjectTemplate() {
-            super((clazz,
-                    tag) -> new TemplateData("", Jsoup.parse("<dom-module id='"
-                            + tag
+            super((clazz, tag) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='" + tag
                             + "'><template><child-template id='child'></template></dom-module>")));
         }
 
     }
 
     @Tag("parent-template")
+    @Uses(TemplateChild.class)
     private static class TemplateWithChildInDomRepeat
             extends PolymerTemplate<ModelClass> {
 
@@ -226,6 +231,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag("parent-template")
+    @Uses(TemplateChild.class)
     private static class TemplateWithDomRepeat
             extends PolymerTemplate<ModelClass> {
 
@@ -246,6 +252,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag(TAG)
+    @Uses(TemplateChild.class)
     private static class TextNodesInHtmlTemplate
             extends PolymerTemplate<ModelClass> {
 
@@ -342,6 +349,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag("template-initializer-test")
+    @Uses(ExecutionChild.class)
     public static class ExecutionOrder extends PolymerTemplate<TemplateModel> {
         @Id("div")
         public CustomComponent element;
@@ -361,6 +369,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag("template-initialization")
+    @Uses(TestPolymerTemplate.class)
+    @Uses(TemplateChild.class)
     public static class TemplateInitialization
             extends PolymerTemplate<TestModel> {
 
@@ -373,6 +383,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag("another-template-initialization")
+    @Uses(TestPolymerTemplate.class)
+    @Uses(TemplateChild.class)
     public static class AnotherTemplateInitialization
             extends PolymerTemplate<TestModel> {
 
@@ -391,20 +403,8 @@ public class PolymerTemplateTest extends HasCurrentService {
         executionOrder.clear();
         executionParams.clear();
 
-        Field customElements = CustomElementRegistry.class
-                .getDeclaredField("customElements");
-        customElements.setAccessible(true);
-        customElements.set(CustomElementRegistry.getInstance(),
-                new AtomicReference<>());
-
-        Map<String, Class<? extends Component>> map = new HashMap<>();
-        map.put("child-template", TemplateChild.class);
-        map.put("ffs", TestPolymerTemplate.class);
-        map.put("execution-child", ExecutionChild.class);
-        CustomElementRegistry.getInstance().setCustomElements(map);
-
         VaadinSession session = Mockito.mock(VaadinSession.class);
-        UI ui = new UI() {
+        ui = new UI() {
             private Page page = new Page(this) {
 
                 @Override
@@ -680,7 +680,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     public void parseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated() {
-        doParseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated(
+        doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(
                 new TemplateWithDomRepeat());
     }
 
@@ -691,7 +691,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         // run in the production mode (with caching enabled) for the first time
         TemplateWithDomRepeat template = new TemplateWithDomRepeat();
         TestTemplateParser parser = template.parser;
-        doParseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated(
+        doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(
                 new TemplateWithDomRepeat());
 
         // run in the production mode (with caching enabled) for the second time
@@ -699,7 +699,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         // parser shouldn't be called
         assertEquals(1, parser.callCount);
         // the result should be the same
-        doParseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated(
+        doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(
                 template);
     }
 
@@ -890,7 +890,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         assertEquals(1, (int) path.get(0).asNumber());
     }
 
-    private void doParseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated(
+    private void doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(
             TemplateWithDomRepeat template) {
         UI ui = new UI();
         ui.add(template);

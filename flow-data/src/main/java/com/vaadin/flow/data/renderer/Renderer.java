@@ -176,7 +176,7 @@ public class Renderer<SOURCE> implements Serializable {
      */
     public Rendering<SOURCE> render(Element container,
             DataKeyMapper<SOURCE> keyMapper) {
-        return render(container, keyMapper, new Element("template", false));
+        return render(container, keyMapper, new Element("template"));
     }
 
     /**
