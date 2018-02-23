@@ -22,6 +22,6 @@ import com.vaadin.testbench.elementsbase.Element;
  * A TestBench element representing a <code>&lt;button&gt;</code> element.
  */
 @Element("button")
-public class ButtonElement extends TestBenchElement {
+public class NativeButtonElement extends TestBenchElement {
 
 }
