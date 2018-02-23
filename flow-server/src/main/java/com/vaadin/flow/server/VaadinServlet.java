@@ -723,13 +723,15 @@ public class VaadinServlet extends HttpServlet {
             }
             if (servletPath.endsWith("/")) {
                 servletPath = servletPath.substring(0,
-                        servletPath.lastIndexOf("/"));
+                        servletPath.lastIndexOf('/'));
             }
 
-            // "Revert" the `../` from uri resolver so that we point to the
-            // context root.
-            for (String path : servletPath.split("/")) {
-                resolvedUrl = resolvedUrl.replaceFirst("(../)", "");
+            if (!servletPath.isEmpty()) {
+                // "Revert" the `../` from uri resolver so that we point to the
+                // context root.
+                for (int i = 0; i < servletPath.split("/").length; i++) {
+                    resolvedUrl = resolvedUrl.replaceFirst("(../)", "");
+                }
             }
         }
 
