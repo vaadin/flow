@@ -29,7 +29,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -352,6 +354,30 @@ public class PolymerTemplateTest extends HasCurrentService {
         }
     }
 
+    @Tag("template-initialization")
+    public static class TemplateInitialization
+            extends PolymerTemplate<TestModel> {
+
+        @Id("foo")
+        private TestPolymerTemplate child;
+
+        public TemplateInitialization(TemplateParser parser) {
+            super(parser);
+        }
+    }
+
+    @Tag("another-template-initialization")
+    public static class AnotherTemplateInitialization
+            extends PolymerTemplate<TestModel> {
+
+        @Id("bar")
+        private TemplateChild child;
+
+        public AnotherTemplateInitialization(TemplateParser parser) {
+            super(parser);
+        }
+    }
+
     @SuppressWarnings("serial")
     @Before
     public void setUp() throws NoSuchFieldException, SecurityException,
@@ -499,6 +525,65 @@ public class PolymerTemplateTest extends HasCurrentService {
         assertEquals(1, parser.callCount);
         // the result should be the same
         doParseTemplate_hasIdChild_childIsRegisteredInFeature(template);
+    }
+
+    @Test
+    public void parseCachedTemplate_twoTemplatesWithInjetions_injectionsAreRegisteredInFeature() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+
+        AtomicInteger parserCallCount = new AtomicInteger();
+
+        TemplateParser parser = new TemplateParser() {
+
+            @Override
+            public Element getTemplateContent(
+                    Class<? extends PolymerTemplate<?>> clazz, String tag) {
+                String content;
+                parserCallCount.incrementAndGet();
+                if (clazz.equals(TemplateInitialization.class)) {
+                    content = "<dom-module id='" + tag + "'><template>"
+                            + "<ffs id='foo'></ffs>"
+                            + "<child-template></child-template>"
+                            + "</template></dom-module>";
+                } else {
+                    content = "<dom-module id='" + tag + "'><template>"
+                            + "<child-template id='bar'></child-template> <ffs></ffs>"
+                            + "</template></dom-module>";
+                }
+                return Jsoup.parse(content);
+            }
+        };
+
+        // run in the production mode (with caching enabled) for the first time
+        TemplateInitialization template1 = new TemplateInitialization(parser);
+        assertEquals(1, parserCallCount.get());
+
+        assertTemplateInitialization(template1);
+
+        // run in the production mode (with caching enabled) for the second time
+        template1 = new TemplateInitialization(parser);
+        // parser shouldn't be called
+        assertEquals(1, parserCallCount.get());
+
+        assertTemplateInitialization(template1);
+
+        parserCallCount.set(0);
+
+        // Now initialize another template
+
+        // run in the production mode (with caching enabled) for the first time
+        AnotherTemplateInitialization template2 = new AnotherTemplateInitialization(
+                parser);
+        assertEquals(1, parserCallCount.get());
+
+        assertAnotherTemplateInitialization(template2);
+
+        // run in the production mode (with caching enabled) for the second time
+        template2 = new AnotherTemplateInitialization(parser);
+        // parser shouldn't be called
+        assertEquals(1, parserCallCount.get());
+
+        assertAnotherTemplateInitialization(template2);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -758,9 +843,6 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     private void doParseTemplate_hasIdChild_childIsRegisteredInFeature(
             IdChildTemplate template) {
-        UI ui = new UI();
-        ui.add(template);
-
         VirtualChildrenList feature = template.getStateNode()
                 .getFeature(VirtualChildrenList.class);
         assertEquals(1, feature.size());
@@ -831,5 +913,40 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         Assert.assertTrue(
                 object.get(NodeProperties.PAYLOAD) instanceof JsonArray);
+    }
+
+    private void assertTemplateInitialization(TemplateInitialization template) {
+        VirtualChildrenList feature = template.getStateNode()
+                .getFeature(VirtualChildrenList.class);
+        assertEquals(2, feature.size());
+
+        Optional<Component> child = com.vaadin.flow.dom.Element
+                .get(feature.get(0)).getComponent();
+
+        Assert.assertTrue(child.isPresent());
+        Assert.assertEquals(TestPolymerTemplate.class, child.get().getClass());
+
+        child = com.vaadin.flow.dom.Element.get(feature.get(1)).getComponent();
+
+        Assert.assertTrue(child.isPresent());
+        Assert.assertEquals(TemplateChild.class, child.get().getClass());
+    }
+
+    private void assertAnotherTemplateInitialization(
+            AnotherTemplateInitialization template) {
+        VirtualChildrenList feature = template.getStateNode()
+                .getFeature(VirtualChildrenList.class);
+        assertEquals(2, feature.size());
+
+        Optional<Component> child = com.vaadin.flow.dom.Element
+                .get(feature.get(0)).getComponent();
+
+        Assert.assertTrue(child.isPresent());
+        Assert.assertEquals(TemplateChild.class, child.get().getClass());
+
+        child = com.vaadin.flow.dom.Element.get(feature.get(1)).getComponent();
+
+        Assert.assertTrue(child.isPresent());
+        Assert.assertEquals(TestPolymerTemplate.class, child.get().getClass());
     }
 }
