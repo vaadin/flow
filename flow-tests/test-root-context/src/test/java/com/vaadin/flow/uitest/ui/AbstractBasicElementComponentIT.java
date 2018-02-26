@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.html.testbench.ButtonElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -20,7 +20,7 @@ public abstract class AbstractBasicElementComponentIT
 
         Assert.assertEquals(0, getThankYouCount());
         $(InputTextElement.class).first().setValue("abc");
-        $(ButtonElement.class).first().click();
+        $(NativeButtonElement.class).first().click();
 
         Assert.assertEquals(1, getThankYouCount());
 
