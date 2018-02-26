@@ -94,9 +94,7 @@ public class WebJarServer implements Serializable {
      */
     public boolean tryServeWebJarResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        String pathInContext = request.getServletPath() + request.getPathInfo();
-
-        String webJarPath = getWebJarPath(pathInContext);
+        String webJarPath = getWebJarPath(request.getPathInfo());
         if (webJarPath == null) {
             return false;
         }

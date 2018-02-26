@@ -17,27 +17,12 @@ package com.vaadin.flow.contexttest.ui;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 
-public class RootContextUI extends DependencyUI {
-
-    /**
-     * The main servlet for the application.
-     */
-    @WebServlet(urlPatterns = {
-            "/*" }, name = "UIServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = RootContextUI.class, productionMode = false, usingNewRouting = false)
-    public static class Servlet extends VaadinServlet {
-    }
-
-    @Override
-    protected void init(VaadinRequest request) {
-        getElement().appendChild(ElementFactory.createDiv("Root Context UI")
-                .setAttribute("id", "root"));
-        super.init(request);
-    }
+@WebServlet(urlPatterns = {
+        "/frontend-resource/*" }, name = "FrontendServlet", asyncSupported = true)
+@VaadinServletConfiguration(productionMode = false)
+public class FrontendServlet extends VaadinServlet {
 
 }
