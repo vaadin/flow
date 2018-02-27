@@ -50,6 +50,7 @@ public class ExclusionRegistry {
         excludeProperty("vaadin-dialog", "noCloseOnEsc");
         excludeProperty("vaadin-dialog", "noCloseOnOutsideClick");
         excludeProperty("vaadin-list-box", "selected");
+        excludeProperty("vaadin-list-box", "items");
         excludeEvent("vaadin-combo-box", "selected-item-changed");
         excludeEvent("vaadin-combo-box", "change");
         excludeBehaviorOrMixin("vaadin-date-picker",

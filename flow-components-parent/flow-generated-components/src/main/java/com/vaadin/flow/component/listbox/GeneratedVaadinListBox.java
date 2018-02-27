@@ -21,13 +21,6 @@ import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import elemental.json.JsonArray;
-import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.DomEvent;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
 
 /**
  * <p>
@@ -69,63 +62,14 @@ import com.vaadin.flow.shared.Registration;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ListBoxElement#1.0.0-beta1",
+        "WebComponent: Vaadin.ListBoxElement#1.0.0-beta2",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-list-box")
 @HtmlImport("frontend://bower_components/vaadin-list-box/src/vaadin-list-box.html")
 public abstract class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>>
         extends Component implements HasStyle, ComponentSupplier<R> {
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The array of list items
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'items-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code items} property from the webcomponent
-     */
-    @Synchronize(property = "items", value = "items-changed")
-    protected JsonArray getItemsJsonArray() {
-        return (JsonArray) getElement().getPropertyRaw("items");
-    }
-
     protected void focus() {
         getElement().callFunction("focus");
-    }
-
-    @DomEvent("items-changed")
-    public static class ItemsChangeEvent<R extends GeneratedVaadinListBox<R>>
-            extends ComponentEvent<R> {
-        private final JsonArray items;
-
-        public ItemsChangeEvent(R source, boolean fromClient,
-                @EventData("event.items") JsonArray items) {
-            super(source, fromClient);
-            this.items = items;
-        }
-
-        public JsonArray getItems() {
-            return items;
-        }
-    }
-
-    /**
-     * Adds a listener for {@code items-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Registration addItemsChangeListener(
-            ComponentEventListener<ItemsChangeEvent<R>> listener) {
-        return addListener(ItemsChangeEvent.class,
-                (ComponentEventListener) listener);
     }
 }
