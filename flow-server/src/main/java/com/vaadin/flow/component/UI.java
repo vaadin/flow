@@ -28,7 +28,9 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -734,10 +736,10 @@ public class UI extends Component
     }
 
     /**
-     * Registers a {@link Runnable} to be executed before the response is sent
-     * to the client. The runnables are executed in order of registration. If
-     * runnables register more runnables, they are executed after all already
-     * registered executions for the moment.
+     * Registers a task to be executed before the response is sent to the
+     * client. The tasks are executed in order of registration. If tasks
+     * register more tasks, they are executed after all already registered tasks
+     * for the moment.
      * <p>
      * Example: three tasks are submitted, {@code A}, {@code B} and {@code C},
      * where {@code B} produces two more tasks during execution, {@code D} and
@@ -758,7 +760,7 @@ public class UI extends Component
      *         runnable
      */
     public ExecutionRegistration beforeClientResponse(Component component,
-            Runnable execution) {
+            SerializableConsumer<ExecutionContext> execution) {
 
         if (component == null) {
             throw new IllegalArgumentException(

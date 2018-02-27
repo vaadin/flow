@@ -136,7 +136,7 @@ public abstract class AbstractNodeStateProvider
                 .createStateNode(tagName);
 
         node.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(node, () -> {
+                .beforeClientResponse(node, context -> {
                     node.getFeature(AttachExistingElementFeature.class)
                             .register(getNode(node), previousSibling,
                                     proposedNode, callback);

@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.Registration;
@@ -78,20 +79,27 @@ public class StateTree implements NodeOwner {
         private static final Comparator<BeforeClientResponseEntry> COMPARING_INDEX = Comparator
                 .comparingInt(BeforeClientResponseEntry::getIndex);
 
-        private final Runnable runnable;
+        private final SerializableConsumer<ExecutionContext> execution;
+        private final StateNode stateNode;
         private final int index;
 
-        private BeforeClientResponseEntry(int index, Runnable runnable) {
+        private BeforeClientResponseEntry(int index, StateNode stateNode,
+                SerializableConsumer<ExecutionContext> execution) {
             this.index = index;
-            this.runnable = runnable;
+            this.stateNode = stateNode;
+            this.execution = execution;
         }
 
         private int getIndex() {
             return index;
         }
 
-        private Runnable getRunnable() {
-            return runnable;
+        public StateNode getStateNode() {
+            return stateNode;
+        }
+
+        public SerializableConsumer<ExecutionContext> getExecution() {
+            return execution;
         }
     }
 
@@ -292,7 +300,7 @@ public class StateTree implements NodeOwner {
      *         runnable
      */
     public ExecutionRegistration beforeClientResponse(StateNode context,
-            Runnable execution) {
+            SerializableConsumer<ExecutionContext> execution) {
         assert context != null : "The 'context' parameter can not be null";
         assert execution != null : "The 'execution' parameter can not be null";
 
@@ -301,37 +309,41 @@ public class StateTree implements NodeOwner {
         }
 
         BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
-                nextBeforeClientResponseIndex++, execution);
+                nextBeforeClientResponseIndex, context, execution);
+        nextBeforeClientResponseIndex++;
         return context.addBeforeClientResponseEntry(entry);
     }
 
     /**
      * Called internally by the framework before the response is sent to the
      * client. All runnables registered at
-     * {@link #beforeClientResponse(StateNode, Runnable)} are evaluated and
-     * executed if able.
+     * {@link #beforeClientResponse(StateNode, SerializableConsumer) are
+     * evaluated and executed if able.
      */
     public void runExecutionsBeforeClientResponse() {
         while (true) {
-            List<Runnable> callbacks = flushCallbacks();
+            List<StateTree.BeforeClientResponseEntry> callbacks = flushCallbacks();
             if (callbacks.isEmpty()) {
                 return;
             }
-            callbacks.forEach(Runnable::run);
+            callbacks.forEach(entry -> {
+                ExecutionContext context = new ExecutionContext(getUI(),
+                        entry.getStateNode().wasAttached());
+                entry.getExecution().accept(context);
+            });
         }
     }
 
-    private List<Runnable> flushCallbacks() {
+    private List<StateTree.BeforeClientResponseEntry> flushCallbacks() {
         if (pendingExecutionNodes.isEmpty()) {
             return Collections.emptyList();
         }
 
         // Collect
-        List<Runnable> flushed = pendingExecutionNodes.stream()
-                .map(StateNode::dumpBeforeClientResponseEntries)
+        List<StateTree.BeforeClientResponseEntry> flushed = pendingExecutionNodes
+                .stream().map(StateNode::dumpBeforeClientResponseEntries)
                 .flatMap(List::stream)
                 .sorted(BeforeClientResponseEntry.COMPARING_INDEX)
-                .map(BeforeClientResponseEntry::getRunnable)
                 .collect(Collectors.toList());
 
         // Reset bookeeping for the next round

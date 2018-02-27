@@ -1,16 +1,13 @@
 package com.vaadin.flow.component;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -18,12 +15,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
 import com.vaadin.flow.dom.Element;
@@ -42,6 +33,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class UITest {
 
@@ -298,9 +292,9 @@ public class UITest {
 
         List<Integer> results = new ArrayList<>();
 
-        ui.beforeClientResponse(rootComponent, () -> results.add(0));
-        ui.beforeClientResponse(rootComponent, () -> results.add(1));
-        ui.beforeClientResponse(rootComponent, () -> results.add(2));
+        ui.beforeClientResponse(rootComponent, context -> results.add(0));
+        ui.beforeClientResponse(rootComponent, context -> results.add(1));
+        ui.beforeClientResponse(rootComponent, context -> results.add(2));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 3 results in the list",
@@ -321,13 +315,13 @@ public class UITest {
 
         List<Integer> results = new ArrayList<>();
 
-        ui.beforeClientResponse(rootComponent, () -> results.add(0));
-        ui.beforeClientResponse(rootComponent, () -> {
+        ui.beforeClientResponse(rootComponent, context -> results.add(0));
+        ui.beforeClientResponse(rootComponent, context -> {
             results.add(1);
-            ui.beforeClientResponse(rootComponent, () -> results.add(3));
-            ui.beforeClientResponse(rootComponent, () -> results.add(4));
+            ui.beforeClientResponse(rootComponent, context2 -> results.add(3));
+            ui.beforeClientResponse(rootComponent, context2 -> results.add(4));
         });
-        ui.beforeClientResponse(rootComponent, () -> results.add(2));
+        ui.beforeClientResponse(rootComponent, context -> results.add(2));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 5 results in the list",
@@ -349,10 +343,10 @@ public class UITest {
 
         List<Integer> results = new ArrayList<>();
 
-        ui.beforeClientResponse(emptyComponent, () -> results.add(0));
-        ui.beforeClientResponse(rootComponent, () -> results.add(1));
-        ui.beforeClientResponse(emptyComponent, () -> results.add(2));
-        ui.beforeClientResponse(rootComponent, () -> results.add(3));
+        ui.beforeClientResponse(emptyComponent, context -> results.add(0));
+        ui.beforeClientResponse(rootComponent, context -> results.add(1));
+        ui.beforeClientResponse(emptyComponent, context -> results.add(2));
+        ui.beforeClientResponse(rootComponent, context -> results.add(3));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 2 results in the list",
@@ -374,16 +368,16 @@ public class UITest {
 
         List<Integer> results = new ArrayList<>();
 
-        ui.beforeClientResponse(emptyComponent1, () -> {
+        ui.beforeClientResponse(emptyComponent1, context -> {
             results.add(0);
             ui.add(emptyComponent2);
         });
-        ui.beforeClientResponse(rootComponent, () -> {
+        ui.beforeClientResponse(rootComponent, context -> {
             results.add(1);
             ui.add(emptyComponent1);
         });
-        ui.beforeClientResponse(emptyComponent2, () -> results.add(2));
-        ui.beforeClientResponse(rootComponent, () -> results.add(3));
+        ui.beforeClientResponse(emptyComponent2, context -> results.add(2));
+        ui.beforeClientResponse(rootComponent, context -> results.add(3));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 4 results in the list",

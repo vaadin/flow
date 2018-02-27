@@ -333,6 +333,14 @@ public class StateNode implements Serializable {
         return parent != null && parent.isAttached();
     }
 
+    /*
+     * Used internally by the state tree when processing beforeClientResponse
+     * callbacks.
+     */
+    boolean wasAttached() {
+        return wasAttached;
+    }
+
     /**
      * Collects all changes made to this node since the last time
      * {@link #collectChanges(Consumer)} has been called. If the node is

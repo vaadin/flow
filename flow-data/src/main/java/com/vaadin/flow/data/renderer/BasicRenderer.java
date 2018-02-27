@@ -82,7 +82,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         owner.getNode()
                 .runWhenAttached(ui -> ui.getInternals().getStateTree()
                         .beforeClientResponse(owner.getNode(),
-                                () -> setupTemplateWhenAttached(owner,
+                                context -> setupTemplateWhenAttached(owner,
                                         rendering, keyMapper)));
     }
 
