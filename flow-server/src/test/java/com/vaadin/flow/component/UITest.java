@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -391,5 +392,58 @@ public class UITest {
                 results.get(2).intValue());
         Assert.assertEquals("The result at index '3' should be 2", 2,
                 results.get(3).intValue());
+    }
+
+    @Test
+    public void beforeClientResponse_withReattachedNodes() {
+        UI ui = createAndInitTestUI("");
+        Component root = new AttachableComponent();
+        ui.add(root);
+        ui.getInternals().getStateTree().collectChanges(change -> {
+        });
+        AttachableComponent leaf = new AttachableComponent();
+        ui.add(leaf);
+
+        AtomicInteger callCounter = new AtomicInteger();
+
+        ui.beforeClientResponse(root, context -> {
+            Assert.assertTrue(
+                    "Root component should be marked as 'wasAttached'",
+                    context.wasAttached());
+            callCounter.incrementAndGet();
+
+        });
+        ui.beforeClientResponse(leaf, context -> {
+            Assert.assertFalse(
+                    "Leaf component should not be marked as 'wasAttached'",
+                    context.wasAttached());
+            callCounter.incrementAndGet();
+        });
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        ui.remove(root);
+        ui.add(root);
+        ui.beforeClientResponse(root, context -> {
+            Assert.assertTrue(
+                    "Reattached root component (in the same request) should be marked as 'wasAttached'",
+                    context.wasAttached());
+            callCounter.incrementAndGet();
+        });
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        ui.remove(root);
+        ui.getInternals().getStateTree().collectChanges(change -> {
+        });
+        ui.add(root);
+        ui.beforeClientResponse(root, context -> {
+            Assert.assertFalse(
+                    "Reattached root component (in different requests) should not be marked as 'wasAttached'",
+                    context.wasAttached());
+            callCounter.incrementAndGet();
+        });
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        Assert.assertEquals("There should be 4 invocations", 4,
+                callCounter.get());
     }
 }
