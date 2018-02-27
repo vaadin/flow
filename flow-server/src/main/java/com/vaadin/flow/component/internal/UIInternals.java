@@ -490,7 +490,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Shows a view in a chain of layouts in the related UI. This method is
-     * intended for framework use only. Use {@link UI#navigateTo(String)} to
+     * intended for framework use only. Use {@link UI#navigate(String)} to
      * change the view that is shown in a UI.
      *
      * @param viewLocation
@@ -567,7 +567,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Shows a route target in the related UI. This method is intended for
-     * framework use only. Use {@link UI#navigateTo(String)} to change the route
+     * framework use only. Use {@link UI#navigate(String)} to change the route
      * target that is shown in a UI.
      *
      * @param viewLocation

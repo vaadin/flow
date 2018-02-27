@@ -108,7 +108,7 @@ public class LocationObserverTest {
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(Translations.class));
 
-        ui.navigateTo("");
+        ui.navigate("");
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());

@@ -43,6 +43,14 @@ public interface RouterInterface extends Serializable {
 
     /**
      * Navigates the given UI to the given location.
+     * <p>
+     * This method just shows the given {@code location} on the page and doesn't
+     * update the browser location (and page history). Use the
+     * {@link UI#navigate(String, QueryParameters)} method if you want to update
+     * the browser location as well.
+     *
+     * @see UI#navigate(String)
+     * @see UI#navigate(String, QueryParameters)
      *
      * @param ui
      *            the UI to update, not <code>null</code>

@@ -39,7 +39,7 @@ public class NavigationTriggerView extends AbstractDivView
 
         Element navigateButton = ElementFactory.createButton("UI.navigate");
         navigateButton.addEventListener("click",
-                e -> getUI().get().navigateTo(CLASS_NAME + "/navigate"));
+                e -> getUI().get().navigate(CLASS_NAME + "/navigate"));
         navigateButton.setAttribute("id", "navigate");
 
         getElement().appendChild(routerLink, navigateButton);

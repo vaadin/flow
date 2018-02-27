@@ -78,7 +78,7 @@ public class ViewTestLayout extends Div
         viewSelect.synchronizeProperty("value", "change");
         viewSelect.addEventListener("change", e -> {
             UI ui = UI.getCurrent();
-            ui.navigateTo(viewSelect.getProperty("value"));
+            ui.navigate(viewSelect.getProperty("value"));
         });
 
         element.appendChild(viewSelect, ElementFactory.createHr(),
