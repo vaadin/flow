@@ -152,7 +152,7 @@ public class UITest {
     public void locationAfterServerNavigation() {
         UI ui = createAndInitTestUI("");
 
-        ui.navigateTo("foo/bar");
+        ui.navigate("foo/bar");
 
         assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
@@ -176,7 +176,7 @@ public class UITest {
                     return HttpServletResponse.SC_OK;
                 }));
 
-        ui.navigateTo(route, params);
+        ui.navigate(route, params);
 
         assertEquals(route,
                 ui.getInternals().getActiveViewLocation().getPath());
@@ -204,7 +204,7 @@ public class UITest {
         for (String invalidTarget : invalidTargets) {
             UI ui = createAndInitTestUI("");
             try {
-                ui.navigateTo(invalidTarget);
+                ui.navigate(invalidTarget);
                 Assert.fail("Navigation target should cause exception: "
                         + invalidTarget);
             } catch (IllegalArgumentException expected) {
