@@ -49,7 +49,7 @@ public enum NavigationTrigger {
     /**
      * Navigation was triggered programmatically.
      *
-     * @see UI#navigateTo(String, QueryParameters)
+     * @see UI#navigate(String, QueryParameters)
      */
     PROGRAMMATIC
 }
