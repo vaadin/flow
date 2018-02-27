@@ -38,11 +38,10 @@ public class CoExistingSpringEndpointsIT extends ChromeBrowserTest {
 
         getDriver().get(getRootURL() + '/' + nonExistingRoutePath);
 
-        WebElement div = findElement(By.tagName("div"));
-        Assert.assertEquals(String.format(
-                "Could not navigate to '%s'. Reason: Couldn't find route for '%s'",
-                nonExistingRoutePath, nonExistingRoutePath),
-                div.getText());
+        Assert.assertTrue(getDriver().getPageSource().contains(String
+                .format("Could not navigate to '%s'", nonExistingRoutePath)));
+        Assert.assertTrue(getDriver().getPageSource().contains(String.format(
+                "Reason: Couldn't find route for '%s'", nonExistingRoutePath)));
 
         getDriver().get(getRootURL() + "/oauth/authorize");
 
