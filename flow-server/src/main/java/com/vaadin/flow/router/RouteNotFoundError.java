@@ -39,8 +39,6 @@ import com.vaadin.flow.theme.NoTheme;
 public class RouteNotFoundError extends Component
         implements HasErrorParameter<NotFoundException> {
 
-    private static String prodModeTemplate;
-
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
@@ -66,15 +64,7 @@ public class RouteNotFoundError extends Component
 
     private static String getErrorHtml(boolean productionMode) {
         if (productionMode) {
-            // Note that this is no thread safe and it's possible that multiple
-            // threads will read the template at the same time. With the current
-            // code it does not really matter BUT if this code is changed to
-            // something else, then threadsafety might become a problem.
-            if (prodModeTemplate == null) {
-                prodModeTemplate = readHtmlFile("RouteNotFoundError_prod.html");
-            }
-
-            return prodModeTemplate;
+            return LazyInit.PRODUCTION_MODE_TEMPLATE;
         } else {
             return readHtmlFile("RouteNotFoundError_dev.html");
         }
@@ -114,9 +104,14 @@ public class RouteNotFoundError extends Component
                     .text(text);
             return new Element(Tag.LI).appendChild(link);
         } else {
-            return new Element(Tag.LI)
-                    .text(text + " (requires parameter)");
+            return new Element(Tag.LI).text(text + " (requires parameter)");
         }
 
+    }
+
+    private static class LazyInit {
+
+        private static final String PRODUCTION_MODE_TEMPLATE = readHtmlFile(
+                "RouteNotFoundError_prod.html");
     }
 }
