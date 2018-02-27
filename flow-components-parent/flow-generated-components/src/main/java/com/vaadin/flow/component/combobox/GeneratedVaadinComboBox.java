@@ -15,22 +15,23 @@
  */
 package com.vaadin.flow.component.combobox;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Focusable;
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.Synchronize;
-import elemental.json.JsonArray;
-import com.vaadin.flow.component.NotSupported;
-import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.DomEvent;
+
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
-import elemental.json.JsonObject;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.shared.Registration;
+
+import elemental.json.JsonArray;
 
 /**
  * <p>
@@ -39,8 +40,9 @@ import com.vaadin.flow.dom.Element;
  * <p>
  * {@code <vaadin-combo-box>} is a combo box element combining a dropdown list
  * with an input field for filtering the list of items. If you want to replace
- * the default input field with a custom implementation, you should use the <a
- * href="#/elements/vaadin-combo-box-light">{@code <vaadin-combo-box-light>}</a>
+ * the default input field with a custom implementation, you should use the
+ * <a href=
+ * "#/elements/vaadin-combo-box-light">{@code <vaadin-combo-box-light>}</a>
  * element.
  * </p>
  * <p>
@@ -215,9 +217,9 @@ import com.vaadin.flow.dom.Element;
  * </tbody>
  * </table>
  * <p>
- * See <a
- * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
- * how to apply styles for shadow parts</a>
+ * See
+ * <a href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin
+ * – how to apply styles for shadow parts</a>
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
@@ -863,26 +865,10 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
                 (ComponentEventListener) listener);
     }
 
-    @DomEvent("value-changed")
     public static class ValueChangeEvent<R extends GeneratedVaadinComboBox<R>>
             extends ComponentEvent<R> {
-        private final JsonObject detail;
-        private final String detailValue;
-
-        public ValueChangeEvent(R source, boolean fromClient,
-                @EventData("event.detail") JsonObject detail,
-                @EventData("event.detail.value") String detailValue) {
+        public ValueChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
-            this.detail = detail;
-            this.detailValue = detailValue;
-        }
-
-        public JsonObject getDetail() {
-            return detail;
-        }
-
-        public String getDetailValue() {
-            return detailValue;
         }
     }
 
@@ -894,22 +880,22 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent<R>> listener) {
-        return addListener(ValueChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("value",
+                        event -> listener
+                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
-    @DomEvent("opened-changed")
     public static class OpenedChangeEvent<R extends GeneratedVaadinComboBox<R>>
             extends ComponentEvent<R> {
         private final boolean opened;
 
-        public OpenedChangeEvent(R source, boolean fromClient,
-                @EventData("event.opened") boolean opened) {
+        public OpenedChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
-            this.opened = opened;
+            this.opened = source.isOpenedBoolean();
         }
 
         public boolean isOpened() {
@@ -925,22 +911,22 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
-        return addListener(OpenedChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("opened",
+                        event -> listener.onComponentEvent(
+                                new OpenedChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
-    @DomEvent("filter-changed")
     public static class FilterChangeEvent<R extends GeneratedVaadinComboBox<R>>
             extends ComponentEvent<R> {
         private final String filter;
 
-        public FilterChangeEvent(R source, boolean fromClient,
-                @EventData("event.filter") String filter) {
+        public FilterChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
-            this.filter = filter;
+            this.filter = source.getFilterString();
         }
 
         public String getFilter() {
@@ -956,22 +942,22 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addFilterChangeListener(
             ComponentEventListener<FilterChangeEvent<R>> listener) {
-        return addListener(FilterChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("filter",
+                        event -> listener.onComponentEvent(
+                                new FilterChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
-    @DomEvent("invalid-changed")
     public static class InvalidChangeEvent<R extends GeneratedVaadinComboBox<R>>
             extends ComponentEvent<R> {
         private final boolean invalid;
 
-        public InvalidChangeEvent(R source, boolean fromClient,
-                @EventData("event.invalid") boolean invalid) {
+        public InvalidChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
-            this.invalid = invalid;
+            this.invalid = source.isInvalidBoolean();
         }
 
         public boolean isInvalid() {
@@ -987,11 +973,13 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
-        return addListener(InvalidChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("invalid",
+                        event -> listener.onComponentEvent(
+                                new InvalidChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
     /**
@@ -1000,11 +988,11 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      * 
      * @param components
      *            The components to add.
-     * @see <a
-     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
      *      page about slots</a>
-     * @see <a
-     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     * @see <a href=
+     *      "https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
      * @return this instance, for method chaining
      */

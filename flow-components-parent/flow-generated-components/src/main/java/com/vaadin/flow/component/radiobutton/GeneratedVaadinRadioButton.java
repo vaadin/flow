@@ -23,7 +23,6 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -255,11 +254,17 @@ public abstract class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioB
         getElement().setProperty("value", value == null ? "" : value);
     }
 
-    @DomEvent("checked-changed")
     public static class CheckedChangeEvent<R extends GeneratedVaadinRadioButton<R>>
             extends ComponentEvent<R> {
+        private final boolean checked;
+
         public CheckedChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.checked = source.isCheckedBoolean();
+        }
+
+        public boolean isChecked() {
+            return checked;
         }
     }
 
@@ -271,10 +276,12 @@ public abstract class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioB
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addCheckedChangeListener(
             ComponentEventListener<CheckedChangeEvent<R>> listener) {
-        return addListener(CheckedChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("checked",
+                        event -> listener.onComponentEvent(
+                                new CheckedChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 }

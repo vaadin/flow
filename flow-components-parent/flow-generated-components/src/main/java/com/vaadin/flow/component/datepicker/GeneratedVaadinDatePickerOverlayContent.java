@@ -352,11 +352,17 @@ public abstract class GeneratedVaadinDatePickerOverlayContent<R extends Generate
                 (ComponentEventListener) listener);
     }
 
-    @DomEvent("selected-date-changed")
     public static class SelectedDateChangeEvent<R extends GeneratedVaadinDatePickerOverlayContent<R>>
             extends ComponentEvent<R> {
+        private final JsonObject selectedDate;
+
         public SelectedDateChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.selectedDate = source.getSelectedDateJsonObject();
+        }
+
+        public JsonObject getSelectedDate() {
+            return selectedDate;
         }
     }
 
@@ -368,18 +374,25 @@ public abstract class GeneratedVaadinDatePickerOverlayContent<R extends Generate
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
-        return addListener(SelectedDateChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement().addPropertyChangeListener("selectedDate",
+                event -> listener
+                        .onComponentEvent(new SelectedDateChangeEvent<R>(get(),
+                                event.isUserOriginated())));
     }
 
-    @DomEvent("focused-date-changed")
     public static class FocusedDateChangeEvent<R extends GeneratedVaadinDatePickerOverlayContent<R>>
             extends ComponentEvent<R> {
+        private final JsonObject focusedDate;
+
         public FocusedDateChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.focusedDate = source.getFocusedDateJsonObject();
+        }
+
+        public JsonObject getFocusedDate() {
+            return focusedDate;
         }
     }
 
@@ -391,10 +404,11 @@ public abstract class GeneratedVaadinDatePickerOverlayContent<R extends Generate
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addFocusedDateChangeListener(
             ComponentEventListener<FocusedDateChangeEvent<R>> listener) {
-        return addListener(FocusedDateChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement().addPropertyChangeListener("focusedDate",
+                event -> listener
+                        .onComponentEvent(new FocusedDateChangeEvent<R>(get(),
+                                event.isUserOriginated())));
     }
 }

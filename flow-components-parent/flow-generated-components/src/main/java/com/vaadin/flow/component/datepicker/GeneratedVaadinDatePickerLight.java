@@ -24,8 +24,6 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.flow.component.NotSupported;
-import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -723,15 +721,13 @@ public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDa
     protected void checkValidity(String value) {
     }
 
-    @DomEvent("value-changed")
     public static class ValueChangeEvent<R extends GeneratedVaadinDatePickerLight<R>>
             extends ComponentEvent<R> {
         private final String value;
 
-        public ValueChangeEvent(R source, boolean fromClient,
-                @EventData("event.value") String value) {
+        public ValueChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
-            this.value = value;
+            this.value = source.getValueString();
         }
 
         public String getValue() {
@@ -747,22 +743,22 @@ public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDa
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent<R>> listener) {
-        return addListener(ValueChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("value",
+                        event -> listener
+                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
-    @DomEvent("opened-changed")
     public static class OpenedChangeEvent<R extends GeneratedVaadinDatePickerLight<R>>
             extends ComponentEvent<R> {
         private final boolean opened;
 
-        public OpenedChangeEvent(R source, boolean fromClient,
-                @EventData("event.opened") boolean opened) {
+        public OpenedChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
-            this.opened = opened;
+            this.opened = source.isOpenedBoolean();
         }
 
         public boolean isOpened() {
@@ -778,10 +774,12 @@ public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDa
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
-        return addListener(OpenedChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("opened",
+                        event -> listener.onComponentEvent(
+                                new OpenedChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 }

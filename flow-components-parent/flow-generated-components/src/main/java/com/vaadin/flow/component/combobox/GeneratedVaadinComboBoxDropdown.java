@@ -228,11 +228,17 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
                 (ComponentEventListener) listener);
     }
 
-    @DomEvent("opened-changed")
     public static class OpenedChangeEvent<R extends GeneratedVaadinComboBoxDropdown<R>>
             extends ComponentEvent<R> {
+        private final boolean opened;
+
         public OpenedChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.opened = source.isOpenedBoolean();
+        }
+
+        public boolean isOpened() {
+            return opened;
         }
     }
 
@@ -244,18 +250,26 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
-        return addListener(OpenedChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("opened",
+                        event -> listener.onComponentEvent(
+                                new OpenedChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
-    @DomEvent("template-changed")
     public static class TemplateChangeEvent<R extends GeneratedVaadinComboBoxDropdown<R>>
             extends ComponentEvent<R> {
+        private final JsonObject template;
+
         public TemplateChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.template = source.getTemplateJsonObject();
+        }
+
+        public JsonObject getTemplate() {
+            return template;
         }
     }
 
@@ -267,10 +281,12 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addTemplateChangeListener(
             ComponentEventListener<TemplateChangeEvent<R>> listener) {
-        return addListener(TemplateChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("template",
+                        event -> listener.onComponentEvent(
+                                new TemplateChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 }

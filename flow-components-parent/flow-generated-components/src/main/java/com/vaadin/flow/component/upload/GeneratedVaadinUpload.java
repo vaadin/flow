@@ -1224,11 +1224,17 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
                 (ComponentEventListener) listener);
     }
 
-    @DomEvent("files-changed")
     public static class FilesChangeEvent<R extends GeneratedVaadinUpload<R>>
             extends ComponentEvent<R> {
+        private final JsonArray files;
+
         public FilesChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.files = source.getFilesJsonArray();
+        }
+
+        public JsonArray getFiles() {
+            return files;
         }
     }
 
@@ -1240,18 +1246,26 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addFilesChangeListener(
             ComponentEventListener<FilesChangeEvent<R>> listener) {
-        return addListener(FilesChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("files",
+                        event -> listener
+                                .onComponentEvent(new FilesChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
-    @DomEvent("max-files-reached-changed")
     public static class MaxFilesReachedChangeEvent<R extends GeneratedVaadinUpload<R>>
             extends ComponentEvent<R> {
+        private final boolean maxFilesReached;
+
         public MaxFilesReachedChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.maxFilesReached = source.isMaxFilesReachedBoolean();
+        }
+
+        public boolean isMaxFilesReached() {
+            return maxFilesReached;
         }
     }
 
@@ -1263,11 +1277,12 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addMaxFilesReachedChangeListener(
             ComponentEventListener<MaxFilesReachedChangeEvent<R>> listener) {
-        return addListener(MaxFilesReachedChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement().addPropertyChangeListener("maxFilesReached",
+                event -> listener.onComponentEvent(
+                        new MaxFilesReachedChangeEvent<R>(get(),
+                                event.isUserOriginated())));
     }
 
     /**

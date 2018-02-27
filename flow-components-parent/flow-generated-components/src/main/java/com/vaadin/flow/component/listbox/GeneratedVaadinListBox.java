@@ -23,8 +23,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import elemental.json.JsonArray;
 import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -98,15 +96,13 @@ public abstract class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>
         getElement().callFunction("focus");
     }
 
-    @DomEvent("items-changed")
     public static class ItemsChangeEvent<R extends GeneratedVaadinListBox<R>>
             extends ComponentEvent<R> {
         private final JsonArray items;
 
-        public ItemsChangeEvent(R source, boolean fromClient,
-                @EventData("event.items") JsonArray items) {
+        public ItemsChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
-            this.items = items;
+            this.items = source.getItemsJsonArray();
         }
 
         public JsonArray getItems() {
@@ -122,10 +118,12 @@ public abstract class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addItemsChangeListener(
             ComponentEventListener<ItemsChangeEvent<R>> listener) {
-        return addListener(ItemsChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("items",
+                        event -> listener
+                                .onComponentEvent(new ItemsChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 }

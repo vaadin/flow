@@ -294,11 +294,17 @@ public abstract class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDial
                 (ComponentEventListener) listener);
     }
 
-    @DomEvent("opened-changed")
     public static class OpenedChangeEvent<R extends GeneratedVaadinDialogOverlay<R>>
             extends ComponentEvent<R> {
+        private final boolean opened;
+
         public OpenedChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.opened = source.isOpenedBoolean();
+        }
+
+        public boolean isOpened() {
+            return opened;
         }
     }
 
@@ -310,18 +316,26 @@ public abstract class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDial
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
-        return addListener(OpenedChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("opened",
+                        event -> listener.onComponentEvent(
+                                new OpenedChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
-    @DomEvent("template-changed")
     public static class TemplateChangeEvent<R extends GeneratedVaadinDialogOverlay<R>>
             extends ComponentEvent<R> {
+        private final JsonObject template;
+
         public TemplateChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.template = source.getTemplateJsonObject();
+        }
+
+        public JsonObject getTemplate() {
+            return template;
         }
     }
 
@@ -333,18 +347,26 @@ public abstract class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDial
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addTemplateChangeListener(
             ComponentEventListener<TemplateChangeEvent<R>> listener) {
-        return addListener(TemplateChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("template",
+                        event -> listener.onComponentEvent(
+                                new TemplateChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
-    @DomEvent("content-changed")
     public static class ContentChangeEvent<R extends GeneratedVaadinDialogOverlay<R>>
             extends ComponentEvent<R> {
+        private final JsonObject content;
+
         public ContentChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.content = source.getContentJsonObject();
+        }
+
+        public JsonObject getContent() {
+            return content;
         }
     }
 
@@ -356,10 +378,12 @@ public abstract class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDial
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addContentChangeListener(
             ComponentEventListener<ContentChangeEvent<R>> listener) {
-        return addListener(ContentChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("content",
+                        event -> listener.onComponentEvent(
+                                new ContentChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 }

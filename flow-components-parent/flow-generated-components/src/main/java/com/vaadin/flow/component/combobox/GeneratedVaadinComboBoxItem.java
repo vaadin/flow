@@ -113,23 +113,6 @@ public abstract class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinCombo
      * 
      * @return the {@code item} property from the webcomponent
      */
-    protected String getItemStringString() {
-        return getElement().getProperty("item");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The item to render
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code item} property from the webcomponent
-     */
     protected JsonObject getItemObjectJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("item");
     }
