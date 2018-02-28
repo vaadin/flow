@@ -1089,7 +1089,7 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
      */
     protected Registration addValueAsStringChangeListener(
             ComponentEventListener<ValueAsStringChangeEvent<R>> listener) {
-        return getElement().addPropertyChangeListener("valueAsString",
+        return getElement().addPropertyChangeListener("value",
                 event -> listener
                         .onComponentEvent(new ValueAsStringChangeEvent<R>(get(),
                                 event.isUserOriginated())));

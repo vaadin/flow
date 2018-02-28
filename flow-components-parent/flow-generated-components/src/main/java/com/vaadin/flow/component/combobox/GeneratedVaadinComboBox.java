@@ -15,23 +15,21 @@
  */
 package com.vaadin.flow.component.combobox;
 
-import javax.annotation.Generated;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.DomEvent;
-import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.NotSupported;
-import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Focusable;
+import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.shared.Registration;
-
+import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonArray;
+import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.dom.Element;
 
 /**
  * <p>
@@ -40,9 +38,8 @@ import elemental.json.JsonArray;
  * <p>
  * {@code <vaadin-combo-box>} is a combo box element combining a dropdown list
  * with an input field for filtering the list of items. If you want to replace
- * the default input field with a custom implementation, you should use the
- * <a href=
- * "#/elements/vaadin-combo-box-light">{@code <vaadin-combo-box-light>}</a>
+ * the default input field with a custom implementation, you should use the <a
+ * href="#/elements/vaadin-combo-box-light">{@code <vaadin-combo-box-light>}</a>
  * element.
  * </p>
  * <p>
@@ -217,9 +214,9 @@ import elemental.json.JsonArray;
  * </tbody>
  * </table>
  * <p>
- * See
- * <a href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin
- * – how to apply styles for shadow parts</a>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
@@ -988,11 +985,11 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      * 
      * @param components
      *            The components to add.
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
      *      page about slots</a>
-     * @see <a href=
-     *      "https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
      * @return this instance, for method chaining
      */
