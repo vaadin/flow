@@ -1340,16 +1340,16 @@ public class ComponentGenerator {
         eventJavaApiName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(eventJavaApiName);
 
-        // will be null if this is not a property-change event
         String propertyNameCamelCase = null;
-
-        if (eventJavaApiName.endsWith("Changed")) {
+        boolean isPropertyChange = eventJavaApiName.endsWith("Changed");
+        if (isPropertyChange) {
             // removes the "d" in the end, to create addSomethingChangeListener
             // and SomethingChangeEvent
             eventJavaApiName = eventJavaApiName.substring(0,
                     eventJavaApiName.length() - 1);
 
-            propertyNameCamelCase = eventJavaApiName.replace("Change", "");
+            propertyNameCamelCase = eventJavaApiName.substring(0,
+                    eventJavaApiName.length() - "Change".length());
         }
 
         JavaClassSource eventClass = createEventListenerEventClass(javaClass,
@@ -1374,7 +1374,7 @@ public class ComponentGenerator {
                 .addTagValue(JAVADOC_RETURN,
                         "a {@link Registration} for removing the event listener");
 
-        if (propertyNameCamelCase != null) {
+        if (isPropertyChange) {
             String propertyNameBeforeRenaming = ComponentGeneratorUtils
                     .formatStringToValidJavaIdentifier(event.getName()
                             .replace(PROPERTY_CHANGE_EVENT_POSTFIX, ""));
