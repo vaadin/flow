@@ -114,8 +114,6 @@ public class ComponentGenerator {
 
     private final JavaDocFormatter javaDocFormatter = new JavaDocFormatter();
 
-    private Map<String, MethodSource<JavaClassSource>> propertyToGetterMap = new HashMap<>();
-
     /**
      * Converts the JSON file to {@link ComponentMetadata}.
      *
@@ -405,9 +403,11 @@ public class ComponentGenerator {
 
         addClassAnnotations(metadata, javaClass);
 
+        Map<String, MethodSource<JavaClassSource>> propertyToGetterMap = new HashMap<String, MethodSource<JavaClassSource>>();
+
         if (metadata.getProperties() != null) {
             generateEventsForPropertiesWithNotify(metadata);
-            generateGettersAndSetters(metadata, javaClass);
+            generateGettersAndSetters(metadata, javaClass, propertyToGetterMap);
         }
 
         if (metadata.getMethods() != null) {
@@ -423,7 +423,7 @@ public class ComponentGenerator {
                     .filter(event -> !ExclusionRegistry.isEventExcluded(
                             metadata.getTag(), event.getName()))
                     .forEach(event -> generateEventListenerFor(javaClass,
-                            metadata, event));
+                            metadata, event, propertyToGetterMap));
         }
 
         if (metadata.getSlots() != null && !metadata.getSlots().isEmpty()) {
@@ -556,14 +556,15 @@ public class ComponentGenerator {
     }
 
     private void generateGettersAndSetters(ComponentMetadata metadata,
-            JavaClassSource javaClass) {
+            JavaClassSource javaClass,
+            Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
 
         metadata.getProperties().stream()
                 .filter(property -> !ExclusionRegistry.isPropertyExcluded(
                         metadata.getTag(), property.getName()))
                 .forEachOrdered(property -> {
                     generateGetterFor(javaClass, metadata, property,
-                            metadata.getEvents());
+                            metadata.getEvents(), propertyToGetterMap);
 
                     if (!property.isReadOnly()) {
                         generateSetterFor(javaClass, metadata, property);
@@ -737,8 +738,6 @@ public class ComponentGenerator {
     public void generateClass(ComponentMetadata metadata, File targetPath,
             String basePackage, String licenseNote) {
 
-        propertyToGetterMap.clear();
-
         JavaClassSource javaClass = generateClassSource(metadata, basePackage);
         String source = addLicenseHeaderIfAvailable(javaClass.toString(),
                 licenseNote);
@@ -768,7 +767,8 @@ public class ComponentGenerator {
 
     private void generateGetterFor(JavaClassSource javaClass,
             ComponentMetadata metadata, ComponentPropertyData property,
-            List<ComponentEventData> events) {
+            List<ComponentEventData> events,
+            Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
 
         String propertyJavaName = getJavaNameForProperty(metadata,
                 property.getName());
@@ -1322,7 +1322,8 @@ public class ComponentGenerator {
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,
-            ComponentMetadata metadata, ComponentEventData event) {
+            ComponentMetadata metadata, ComponentEventData event,
+            Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
         String eventJavaApiName = getJavaNameForPropertyChangeEvent(metadata,
                 event.getName());
 
@@ -1352,7 +1353,8 @@ public class ComponentGenerator {
         }
 
         JavaClassSource eventClass = createEventListenerEventClass(javaClass,
-                event, eventJavaApiName, propertyNameCamelCase);
+                event, eventJavaApiName, propertyNameCamelCase,
+                propertyToGetterMap);
 
         javaClass.addNestedType(eventClass);
         MethodSource<JavaClassSource> method = javaClass.addMethod()
@@ -1401,7 +1403,8 @@ public class ComponentGenerator {
 
     private JavaClassSource createEventListenerEventClass(
             JavaClassSource javaClass, ComponentEventData event,
-            String javaEventName, String propertyNameCamelCase) {
+            String javaEventName, String propertyNameCamelCase,
+            Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
         boolean isPropertyChange = propertyNameCamelCase != null;
 
         String eventClassName = StringUtils.capitalize(javaEventName);
