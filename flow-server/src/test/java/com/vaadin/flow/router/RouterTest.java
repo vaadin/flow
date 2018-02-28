@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,8 +50,7 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
-import com.vaadin.flow.router.internal.ContinueNavigationAction;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
