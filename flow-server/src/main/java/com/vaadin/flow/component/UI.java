@@ -654,22 +654,30 @@ public class UI extends Component
     /**
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
      *
-     * @see #navigateTo(String, QueryParameters)
+     * @see #navigate(String, QueryParameters)
+     * @see RouterInterface#navigate(UI, Location, NavigationTrigger)
      *
      * @param location
      *            the location to navigate to, not {@code null}
      */
-    public void navigateTo(String location) {
-        navigateTo(location, QueryParameters.empty());
+    public void navigate(String location) {
+        navigate(location, QueryParameters.empty());
     }
 
     /**
      * Updates this UI to show the view corresponding to the given location and
      * query parameters. The location must be a relative path without any ".."
      * segments.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
      *
-     * @see #navigateTo(String)
+     * @see #navigate(String)
+     * @see RouterInterface#navigate(UI, Location, NavigationTrigger)
      *
      * @param location
      *            the location to navigate to, not {@code null}
@@ -677,7 +685,7 @@ public class UI extends Component
      *            query parameters that are used for navigation, not
      *            {@code null}
      */
-    public void navigateTo(String location, QueryParameters queryParameters) {
+    public void navigate(String location, QueryParameters queryParameters) {
         if (location == null) {
             throw new IllegalArgumentException("Location may not be null");
         }

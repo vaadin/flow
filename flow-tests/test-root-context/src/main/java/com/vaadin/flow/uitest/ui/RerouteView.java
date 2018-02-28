@@ -39,7 +39,7 @@ public class RerouteView extends AbstractDivView {
         button.setId("navigate");
         button.addClickListener(e -> {
             button.getUI().ifPresent(ui -> ui
-                    .navigateTo("com.vaadin.flow.uitest.ui.RerouteView"));
+                    .navigate("com.vaadin.flow.uitest.ui.RerouteView"));
         });
 
         CheckBox checkbox = new CheckBox("RerouteToError");

@@ -2,7 +2,7 @@
   "name": "Vaadin.ListBoxElement",
   "tag": "vaadin-list-box",
   "baseUrl": "vaadin-list-box/src/vaadin-list-box.html",
-  "version": "1.0.0-beta1",
+  "version": "1.0.0-beta2",
   "properties": [
     {
       "name": "selected",

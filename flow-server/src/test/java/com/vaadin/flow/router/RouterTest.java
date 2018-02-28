@@ -674,7 +674,7 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             eventCollector.add("Loop");
-            UI.getCurrent().navigateTo("loop");
+            UI.getCurrent().navigate("loop");
         }
     }
 
@@ -686,7 +686,7 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             eventCollector.add("Redirect");
-            UI.getCurrent().navigateTo("loop");
+            UI.getCurrent().navigate("loop");
         }
     }
 
@@ -1923,7 +1923,7 @@ public class RouterTest extends RoutingTestBase {
         router.getRegistry().setNavigationTargets(
                 Stream.of(LoopByReroute.class).collect(Collectors.toSet()));
 
-        ui.navigateTo("loop");
+        ui.navigate("loop");
 
         Assert.assertEquals("Expected only one request to loop", 1,
                 eventCollector.size());
@@ -1937,7 +1937,7 @@ public class RouterTest extends RoutingTestBase {
                         .of(LoopByReroute.class, RedirectToLoopByReroute.class)
                         .collect(Collectors.toSet()));
 
-        ui.navigateTo("redirect/loop");
+        ui.navigate("redirect/loop");
 
         Assert.assertEquals("Expected two events", 2, eventCollector.size());
     }
@@ -2093,7 +2093,7 @@ public class RouterTest extends RoutingTestBase {
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(Translations.class));
 
-        ui.navigateTo("");
+        ui.navigate("");
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
@@ -2110,7 +2110,7 @@ public class RouterTest extends RoutingTestBase {
                 Stream.of(FooNavigationTarget.class, Translations.class)
                         .collect(Collectors.toSet()));
 
-        ui.navigateTo("");
+        ui.navigate("");
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
@@ -2119,7 +2119,7 @@ public class RouterTest extends RoutingTestBase {
                         + Locale.getDefault().getDisplayName(),
                 eventCollector.get(0));
 
-        ui.navigateTo("foo");
+        ui.navigate("foo");
 
         Assert.assertEquals("Recorded event amount should have stayed the same",
                 1, eventCollector.size());
@@ -2132,7 +2132,7 @@ public class RouterTest extends RoutingTestBase {
                 Stream.of(BaseLayout.class, SubLayout.class)
                         .collect(Collectors.toSet()));
 
-        ui.navigateTo("base");
+        ui.navigate("base");
         Assert.assertEquals(MainLayout.class, getUIComponent());
 
         List<Component> children = ui.getChildren()
@@ -2145,7 +2145,7 @@ public class RouterTest extends RoutingTestBase {
         children = children.get(0).getChildren().collect(Collectors.toList());
         Assert.assertTrue(children.isEmpty());
 
-        ui.navigateTo("sub");
+        ui.navigate("sub");
         Assert.assertEquals(MainLayout.class, getUIComponent());
 
         children = ui.getChildren().collect(Collectors.toList());
