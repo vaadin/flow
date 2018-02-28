@@ -41,6 +41,15 @@ public class BeforeLeaveEvent extends BeforeEvent {
         private ContinueNavigationAction() {
         }
 
+        /**
+         * Sets the navigation {@code handler} and the navigation {@code event}
+         * for this action.
+         *
+         * @param handler
+         *            the navigation handler
+         * @param event
+         *            the navigation event
+         */
         public void setReferences(NavigationHandler handler,
                 NavigationEvent event) {
             if (event != null) {
