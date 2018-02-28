@@ -331,7 +331,7 @@ public class StateTree implements NodeOwner {
             }
             callbacks.forEach(entry -> {
                 ExecutionContext context = new ExecutionContext(getUI(),
-                        !entry.getStateNode().hasInitializedClientSide());
+                        entry.getStateNode().isClientSideInitialized());
                 entry.getExecution().accept(context);
             });
         }

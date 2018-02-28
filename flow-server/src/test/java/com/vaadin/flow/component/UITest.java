@@ -407,16 +407,16 @@ public class UITest {
         AtomicInteger callCounter = new AtomicInteger();
 
         ui.beforeClientResponse(root, context -> {
-            Assert.assertFalse(
-                    "Root component should NOT be marked as 'initializingClientSide'",
-                    context.isInitializingClientSide());
+            Assert.assertTrue(
+                    "Root component should be marked as 'clientSideInitialized'",
+                    context.isClientSideInitialized());
             callCounter.incrementAndGet();
 
         });
         ui.beforeClientResponse(leaf, context -> {
-            Assert.assertTrue(
-                    "Leaf component should be marked as 'initializingClientSide'",
-                    context.isInitializingClientSide());
+            Assert.assertFalse(
+                    "Leaf component should NOT be marked as 'clientSideInitialized'",
+                    context.isClientSideInitialized());
             callCounter.incrementAndGet();
         });
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -424,9 +424,9 @@ public class UITest {
         ui.remove(root);
         ui.add(root);
         ui.beforeClientResponse(root, context -> {
-            Assert.assertFalse(
-                    "Reattached root component (in the same request) should NOT be marked as 'initializingClientSide'",
-                    context.isInitializingClientSide());
+            Assert.assertTrue(
+                    "Reattached root component (in the same request) should be marked as 'clientSideInitialized'",
+                    context.isClientSideInitialized());
             callCounter.incrementAndGet();
         });
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -436,9 +436,9 @@ public class UITest {
         });
         ui.add(root);
         ui.beforeClientResponse(root, context -> {
-            Assert.assertTrue(
-                    "Reattached root component (in different requests) should be marked as 'initializingClientSide'",
-                    context.isInitializingClientSide());
+            Assert.assertFalse(
+                    "Reattached root component (in different requests) should NOT be marked as 'clientSideInitialized'",
+                    context.isClientSideInitialized());
             callCounter.incrementAndGet();
         });
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();

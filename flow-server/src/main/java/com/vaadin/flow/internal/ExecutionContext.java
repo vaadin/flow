@@ -30,22 +30,22 @@ import com.vaadin.flow.component.UI;
 public class ExecutionContext implements Serializable {
 
     private final UI ui;
-    private final boolean initializingClientSide;
+    private final boolean clientSideInitialized;
 
     /**
      * Creates a new, immutable context.
      * 
      * @param ui
      *            The UI associated with the execution
-     * @param initializingClientSide
-     *            <code>true</code> if the client side is being initialized as
-     *            part of the response (ie. when a node is first attached),
-     *            <code>false</code> otherwise
+     * @param clientSideInitialized
+     *            <code>true</code> if the client side is already initialized,
+     *            <code>false</code> if it is being initialized as part of the
+     *            current response
      */
-    public ExecutionContext(UI ui, boolean initializingClientSide) {
+    public ExecutionContext(UI ui, boolean clientSideInitialized) {
         assert ui != null;
         this.ui = ui;
-        this.initializingClientSide = initializingClientSide;
+        this.clientSideInitialized = clientSideInitialized;
     }
 
     /**
@@ -61,12 +61,12 @@ public class ExecutionContext implements Serializable {
      * Gets whether the client side is being initialized as part of the server
      * response.
      * 
-     * @return <code>true</code> if the client side is being initialized as part
-     *         of the response (ie. when a node is first attached),
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the client side is already initialized,
+     *         <code>false</code> if it is being initialized as part of the
+     *         current response
      */
-    public boolean isInitializingClientSide() {
-        return initializingClientSide;
+    public boolean isClientSideInitialized() {
+        return clientSideInitialized;
     }
 
 }

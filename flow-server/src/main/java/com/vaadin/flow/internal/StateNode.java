@@ -342,7 +342,7 @@ public class StateNode implements Serializable {
      * @return <code>true</code> if the node has a initialized client side and
      *         <code>false</code> if the client side is not initialized yet
      */
-    boolean hasInitializedClientSide() {
+    boolean isClientSideInitialized() {
         return wasAttached;
     }
 
