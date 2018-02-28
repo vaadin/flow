@@ -750,7 +750,7 @@ public class UI extends Component
      * before the next response.
      * <p>
      * The task receives a {@link ExecutionContext} as parameter, which contains
-     * information about the component state during the server roundtrip.
+     * information about the component state before the response.
      *
      * @param component
      *            the Component relevant for the execution. Can not be

@@ -334,17 +334,15 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Gets whether this node was attached to the tree when the server roundtrip
-     * was started.
+     * Gets whether the client side has been initialized for this node.
      * <p>
      * This is used internally by the state tree when processing
      * beforeClientResponse callbacks.
      * 
-     * @return <code>true</code> if the node was previously attached when the
-     *         roundtrip started, and <code>false</code> when the node was
-     *         attached during the current roundtrip
+     * @return <code>true</code> if the node has a initialized client side and
+     *         <code>false</code> if the client side is not initialized yet
      */
-    boolean wasAttachedInPreviousRoundtrip() {
+    boolean hasInitializedClientSide() {
         return wasAttached;
     }
 

@@ -20,7 +20,7 @@ import java.io.Serializable;
 import com.vaadin.flow.component.UI;
 
 /**
- * Represents the context of a callback execution when
+ * Context of a callback execution when
  * {@link UI#beforeClientResponse(com.vaadin.flow.component.Component, com.vaadin.flow.function.SerializableConsumer)}
  * is invoked.
  * 
@@ -30,22 +30,22 @@ import com.vaadin.flow.component.UI;
 public class ExecutionContext implements Serializable {
 
     private final UI ui;
-    private final boolean wasAttachedInPreviousRoundtrip;
+    private final boolean initializingClientSide;
 
     /**
      * Creates a new, immutable context.
      * 
      * @param ui
      *            The UI associated with the execution
-     * @param wasAttachedInPreviousRoundtrip
-     *            <code>true</code> if the node was previously attached when the
-     *            roundtrip started, and <code>false</code> when the node was
-     *            attached during the current roundtrip
+     * @param initializingClientSide
+     *            <code>true</code> if the client side is being initialized as
+     *            part of the response (ie. when a node is first attached),
+     *            <code>false</code> otherwise
      */
-    public ExecutionContext(UI ui, boolean wasAttachedInPreviousRoundtrip) {
+    public ExecutionContext(UI ui, boolean initializingClientSide) {
         assert ui != null;
         this.ui = ui;
-        this.wasAttachedInPreviousRoundtrip = wasAttachedInPreviousRoundtrip;
+        this.initializingClientSide = initializingClientSide;
     }
 
     /**
@@ -58,15 +58,15 @@ public class ExecutionContext implements Serializable {
     }
 
     /**
-     * Gets whether the node associated to the execution was attached to the
-     * tree when the server roundtrip was started.
+     * Gets whether the client side is being initialized as part of the server
+     * response.
      * 
-     * @return <code>true</code> if the node was previously attached when the
-     *         roundtrip started, and <code>false</code> when the node was
-     *         attached during the current roundtrip
+     * @return <code>true</code> if the client side is being initialized as part
+     *         of the response (ie. when a node is first attached),
+     *         <code>false</code> otherwise
      */
-    public boolean wasAttachedInPreviousRoundtrip() {
-        return wasAttachedInPreviousRoundtrip;
+    public boolean isInitializingClientSide() {
+        return initializingClientSide;
     }
 
 }

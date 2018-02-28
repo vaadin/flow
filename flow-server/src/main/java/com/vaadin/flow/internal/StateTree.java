@@ -292,7 +292,7 @@ public class StateTree implements NodeOwner {
      * before the next response.
      * <p>
      * The task receives a {@link ExecutionContext} as parameter, which contains
-     * information about the node state during the server roundtrip.
+     * information about the node state before the response.
      *
      * @param context
      *            the StateNode relevant for the execution. Can not be
@@ -331,7 +331,7 @@ public class StateTree implements NodeOwner {
             }
             callbacks.forEach(entry -> {
                 ExecutionContext context = new ExecutionContext(getUI(),
-                        entry.getStateNode().wasAttachedInPreviousRoundtrip());
+                        !entry.getStateNode().hasInitializedClientSide());
                 entry.getExecution().accept(context);
             });
         }
