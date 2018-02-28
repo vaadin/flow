@@ -334,6 +334,19 @@ public class StateNode implements Serializable {
     }
 
     /**
+     * Gets whether the client side has been initialized for this node.
+     * <p>
+     * This is used internally by the state tree when processing
+     * beforeClientResponse callbacks.
+     * 
+     * @return <code>true</code> if the node has a initialized client side and
+     *         <code>false</code> if the client side is not initialized yet
+     */
+    boolean isClientSideInitialized() {
+        return wasAttached;
+    }
+
+    /**
      * Collects all changes made to this node since the last time
      * {@link #collectChanges(Consumer)} has been called. If the node is
      * recently attached, then the reported changes will be relative to a newly
@@ -729,7 +742,8 @@ public class StateNode implements Serializable {
     /**
      * Checks whether there are pending executions for this node.
      *
-     * @see StateTree#beforeClientResponse(StateNode, Runnable)
+     * @see StateTree#beforeClientResponse(StateNode,
+     *      com.vaadin.flow.function.SerializableConsumer)
      *
      * @return <code>true</code> if there are pending executions, otherwise
      *         <code>false</code>
@@ -742,7 +756,8 @@ public class StateNode implements Serializable {
      * Gets the current list of pending execution entries for this node and
      * clears the current list.
      *
-     * @see StateTree#beforeClientResponse(StateNode, Runnable)
+     * @see StateTree#beforeClientResponse(StateNode,
+     *      com.vaadin.flow.function.SerializableConsumer)
      *
      * @return the current list of entries, or and empty list if there are no
      *         entries
@@ -758,8 +773,8 @@ public class StateNode implements Serializable {
     /**
      * Adds an entry to be executed before the next client response for this
      * node. Entries should always be created through
-     * {@link StateTree#beforeClientResponse(StateNode, Runnable)} to ensure
-     * proper ordering.
+     * {@link StateTree#beforeClientResponse(StateNode, com.vaadin.flow.function.SerializableConsumer)}
+     * to ensure proper ordering.
      *
      * @param entry
      *            the entry to add, not <code>null</code>

@@ -129,8 +129,9 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         container.getNode()
                 .runWhenAttached(ui -> ui.getInternals().getStateTree()
                         .beforeClientResponse(container.getNode(),
-                                () -> setupTemplateWhenAttached(ui, container,
-                                        rendering, keyMapper)));
+                                context -> setupTemplateWhenAttached(
+                                        context.getUI(), container, rendering,
+                                        keyMapper)));
 
         return rendering;
     }

@@ -1372,19 +1372,20 @@ public class Element extends Node<Element> {
 
     private void doCallFunction(UI ui, String functionName,
             Serializable... arguments) {
-        ui.getInternals().getStateTree().beforeClientResponse(getNode(), () -> {
-            // $0.method($1,$2,$3)
-            String paramPlaceholderString = IntStream
-                    .range(1, arguments.length + 1).mapToObj(i -> "$" + i)
-                    .collect(Collectors.joining(","));
-            Serializable[] jsParameters = Stream
-                    .concat(Stream.of(this), Stream.of(arguments))
-                    .toArray(Serializable[]::new);
+        ui.getInternals().getStateTree().beforeClientResponse(getNode(),
+                context -> {
+                    // $0.method($1,$2,$3)
+                    String paramPlaceholderString = IntStream
+                            .range(1, arguments.length + 1)
+                            .mapToObj(i -> "$" + i)
+                            .collect(Collectors.joining(","));
+                    Serializable[] jsParameters = Stream
+                            .concat(Stream.of(this), Stream.of(arguments))
+                            .toArray(Serializable[]::new);
 
-            ui.getPage().executeJavaScript(
-                    "$0." + functionName + "(" + paramPlaceholderString + ")",
-                    jsParameters);
-        });
+                    ui.getPage().executeJavaScript("$0." + functionName + "("
+                            + paramPlaceholderString + ")", jsParameters);
+                });
     }
 
     /**

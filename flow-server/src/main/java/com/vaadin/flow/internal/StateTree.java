@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.Registration;
@@ -65,44 +66,51 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * A {@link Runnable} to be executed before the client response, together
-     * with an execution sequence number.
+     * A task to be executed before the client response, together with an
+     * execution sequence number and context object.
      * <p>
      * While of this class are stored inside individual state nodes, code
      * outside {@link StateTree} should treat the those as opaque values.
      *
-     * @see StateTree#beforeClientResponse(StateNode, Runnable) See
-     *      {@link StateTree#runExecutionsBeforeClientResponse()}
+     * @see StateTree#beforeClientResponse(StateNode, SerializableConsumer)
+     * @see StateTree#runExecutionsBeforeClientResponse()
      */
     public static final class BeforeClientResponseEntry {
         private static final Comparator<BeforeClientResponseEntry> COMPARING_INDEX = Comparator
                 .comparingInt(BeforeClientResponseEntry::getIndex);
 
-        private final Runnable runnable;
+        private final SerializableConsumer<ExecutionContext> execution;
+        private final StateNode stateNode;
         private final int index;
 
-        private BeforeClientResponseEntry(int index, Runnable runnable) {
+        private BeforeClientResponseEntry(int index, StateNode stateNode,
+                SerializableConsumer<ExecutionContext> execution) {
             this.index = index;
-            this.runnable = runnable;
+            this.stateNode = stateNode;
+            this.execution = execution;
         }
 
         private int getIndex() {
             return index;
         }
 
-        private Runnable getRunnable() {
-            return runnable;
+        public StateNode getStateNode() {
+            return stateNode;
+        }
+
+        public SerializableConsumer<ExecutionContext> getExecution() {
+            return execution;
         }
     }
 
     /**
-     * A registration object for removing a runnable registered for execution
-     * before the client response.
+     * A registration object for removing a task registered for execution before
+     * the client response.
      */
     @FunctionalInterface
     public interface ExecutionRegistration extends Registration {
         /**
-         * Removes the associated runnable from the execution queue.
+         * Removes the associated task from the execution queue.
          */
         @Override
         void remove();
@@ -270,29 +278,32 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * Registers a {@link Runnable} to be executed before the response is sent
-     * to the client. The runnables are executed in order of registration. If
-     * runnables register more runnables, they are executed after all already
-     * registered executions for the moment.
+     * Registers a task to be executed before the response is sent to the
+     * client. The tasks are executed in order of registration. If tasks
+     * register more tasks, they are executed after all already registered tasks
+     * for the moment.
      * <p>
      * Example: three tasks are submitted, {@code A}, {@code B} and {@code C},
      * where {@code B} produces two more tasks during execution, {@code D} and
      * {@code E}. The resulting execution would be {@code ABCDE}.
      * <p>
-     * If the {@link StateNode} related to the runnable is not attached to the
-     * document by the time the runnable is evaluated, the execution is
-     * postponed to before the next response.
+     * If the {@link StateNode} related to the task is not attached to the
+     * document by the time the task is evaluated, the execution is postponed to
+     * before the next response.
+     * <p>
+     * The task receives a {@link ExecutionContext} as parameter, which contains
+     * information about the node state before the response.
      *
      * @param context
      *            the StateNode relevant for the execution. Can not be
      *            <code>null</code>
      * @param execution
-     *            the Runnable to be executed. Can not be <code>null</code>
+     *            the task to be executed. Can not be <code>null</code>
      * @return a registration that can be used to cancel the execution of the
-     *         runnable
+     *         task
      */
     public ExecutionRegistration beforeClientResponse(StateNode context,
-            Runnable execution) {
+            SerializableConsumer<ExecutionContext> execution) {
         assert context != null : "The 'context' parameter can not be null";
         assert execution != null : "The 'execution' parameter can not be null";
 
@@ -301,37 +312,41 @@ public class StateTree implements NodeOwner {
         }
 
         BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
-                nextBeforeClientResponseIndex++, execution);
+                nextBeforeClientResponseIndex, context, execution);
+        nextBeforeClientResponseIndex++;
         return context.addBeforeClientResponseEntry(entry);
     }
 
     /**
      * Called internally by the framework before the response is sent to the
-     * client. All runnables registered at
-     * {@link #beforeClientResponse(StateNode, Runnable)} are evaluated and
-     * executed if able.
+     * client. All tasks registered at
+     * {@link #beforeClientResponse(StateNode, SerializableConsumer)} are
+     * evaluated and executed if able.
      */
     public void runExecutionsBeforeClientResponse() {
         while (true) {
-            List<Runnable> callbacks = flushCallbacks();
+            List<StateTree.BeforeClientResponseEntry> callbacks = flushCallbacks();
             if (callbacks.isEmpty()) {
                 return;
             }
-            callbacks.forEach(Runnable::run);
+            callbacks.forEach(entry -> {
+                ExecutionContext context = new ExecutionContext(getUI(),
+                        entry.getStateNode().isClientSideInitialized());
+                entry.getExecution().accept(context);
+            });
         }
     }
 
-    private List<Runnable> flushCallbacks() {
+    private List<StateTree.BeforeClientResponseEntry> flushCallbacks() {
         if (pendingExecutionNodes.isEmpty()) {
             return Collections.emptyList();
         }
 
         // Collect
-        List<Runnable> flushed = pendingExecutionNodes.stream()
-                .map(StateNode::dumpBeforeClientResponseEntries)
+        List<StateTree.BeforeClientResponseEntry> flushed = pendingExecutionNodes
+                .stream().map(StateNode::dumpBeforeClientResponseEntries)
                 .flatMap(List::stream)
                 .sorted(BeforeClientResponseEntry.COMPARING_INDEX)
-                .map(BeforeClientResponseEntry::getRunnable)
                 .collect(Collectors.toList());
 
         // Reset bookeeping for the next round

@@ -75,19 +75,20 @@ public class RendererUtil {
              * the template element must have the "__dataHost" property set with
              * the column element.
              */
-            templateDataHost.getNode()
-                    .runWhenAttached(ui -> ui.getInternals().getStateTree()
-                            .beforeClientResponse(templateDataHost.getNode(),
-                                    () -> processTemplateRendererEventHandlers(
-                                            ui, templateDataHost, eventHandlers,
-                                            keyMapper)));
+            templateDataHost.getNode().runWhenAttached(
+                    ui -> ui.getInternals().getStateTree().beforeClientResponse(
+                            templateDataHost.getNode(),
+                            context -> processTemplateRendererEventHandlers(
+                                    context.getUI(), templateDataHost,
+                                    eventHandlers, keyMapper)));
 
             contentTemplate.getNode().runWhenAttached(
                     ui -> ui.getInternals().getStateTree().beforeClientResponse(
                             templateDataHost.getNode(),
-                            () -> ui.getPage().executeJavaScript(
-                                    "$0.__dataHost = $1;", contentTemplate,
-                                    templateDataHost)));
+                            context -> context.getUI().getPage()
+                                    .executeJavaScript("$0.__dataHost = $1;",
+                                            contentTemplate,
+                                            templateDataHost)));
         }
     }
 
