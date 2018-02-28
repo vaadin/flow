@@ -47,6 +47,8 @@ import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInne
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 
+import static org.hamcrest.CoreMatchers.containsString;
+
 /**
  * Unit tests for the component generator
  */
@@ -359,8 +361,8 @@ public class ComponentGeneratorTest {
         generatedClass = ComponentGeneratorTestUtils
                 .removeIndentation(generatedClass);
 
-        Assert.assertTrue("Custom event class was not found.",
-                generatedClass.contains(
+        Assert.assertThat("Custom event class was not found.", generatedClass,
+                containsString(
                         "public static class SomethingChangeEvent<R extends MyComponent<R>> extends ComponentEvent<R> {"));
 
         Assert.assertFalse("DomEvent should not be used for property changes",
@@ -373,18 +375,19 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("Couldn't find correct listener for event.",
                 matcher.find());
 
-        Assert.assertTrue(
+        Assert.assertThat(
                 "Event should be propagated to a property change listener",
-                StringUtils.deleteWhitespace(generatedClass).contains(
+                StringUtils.deleteWhitespace(generatedClass), containsString(
                         "getElement().addPropertyChangeListener(\"something\","));
 
         Assert.assertFalse("DomEvent imported even without dom-events",
                 generatedClass
                         .contains("import " + DomEvent.class.getName() + ";"));
-        Assert.assertTrue("Missing ComponentEvent import", generatedClass
-                .contains("import " + ComponentEvent.class.getName() + ";"));
-        Assert.assertTrue("Missing ComponentEventListener import",
-                generatedClass.contains("import "
+        Assert.assertThat("Missing ComponentEvent import", generatedClass,
+                containsString(
+                        "import " + ComponentEvent.class.getName() + ";"));
+        Assert.assertThat("Missing ComponentEventListener import",
+                generatedClass, containsString("import "
                         + ComponentEventListener.class.getName() + ";"));
         Assert.assertFalse("EventData imported even without events",
                 generatedClass
@@ -609,13 +612,13 @@ public class ComponentGeneratorTest {
         generatedClass = ComponentGeneratorTestUtils
                 .removeIndentation(generatedClass);
 
-        Assert.assertTrue(
+        Assert.assertThat(
                 "Event should save the property value from the source component",
-                generatedClass
-                        .contains("someproperty = source.getSomeproperty();"));
+                generatedClass,
+                containsString("someproperty = source.getSomeproperty();"));
 
-        Assert.assertTrue("Event should have getter for the property",
-                generatedClass.contains(
+        Assert.assertThat("Event should have getter for the property",
+                generatedClass, containsString(
                         "public String getSomeproperty() { return someproperty; }"));
     }
 
