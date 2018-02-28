@@ -66,14 +66,14 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * A {@link Runnable} to be executed before the client response, together
-     * with an execution sequence number.
+     * A task to be executed before the client response, together with an
+     * execution sequence number and context object.
      * <p>
      * While of this class are stored inside individual state nodes, code
      * outside {@link StateTree} should treat the those as opaque values.
      *
-     * @see StateTree#beforeClientResponse(StateNode, Runnable) See
-     *      {@link StateTree#runExecutionsBeforeClientResponse()}
+     * @see StateTree#beforeClientResponse(StateNode, SerializableConsumer)
+     * @see StateTree#runExecutionsBeforeClientResponse()
      */
     public static final class BeforeClientResponseEntry {
         private static final Comparator<BeforeClientResponseEntry> COMPARING_INDEX = Comparator
@@ -104,13 +104,13 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * A registration object for removing a runnable registered for execution
-     * before the client response.
+     * A registration object for removing a task registered for execution before
+     * the client response.
      */
     @FunctionalInterface
     public interface ExecutionRegistration extends Registration {
         /**
-         * Removes the associated runnable from the execution queue.
+         * Removes the associated task from the execution queue.
          */
         @Override
         void remove();
@@ -319,8 +319,8 @@ public class StateTree implements NodeOwner {
 
     /**
      * Called internally by the framework before the response is sent to the
-     * client. All runnables registered at
-     * {@link #beforeClientResponse(StateNode, SerializableConsumer) are
+     * client. All tasks registered at
+     * {@link #beforeClientResponse(StateNode, SerializableConsumer)} are
      * evaluated and executed if able.
      */
     public void runExecutionsBeforeClientResponse() {
