@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.internal.ContinueNavigationAction;
 
 /**
  * Event created before navigation happens.
@@ -26,6 +27,44 @@ import com.vaadin.flow.router.internal.ContinueNavigationAction;
 public class BeforeLeaveEvent extends BeforeEvent {
 
     private ContinueNavigationAction continueNavigationAction = null;
+
+    /**
+     * The action to resume a postponed {@link BeforeEnterEvent}.
+     *
+     * @author Vaadin Ltd.
+     */
+    public class ContinueNavigationAction implements Serializable {
+
+        private NavigationHandler handler = null;
+        private NavigationEvent event = null;
+
+        private ContinueNavigationAction() {
+        }
+
+        public void setReferences(NavigationHandler handler,
+                NavigationEvent event) {
+            assert event.getUI().getSession().hasLock();
+            this.handler = handler;
+            this.event = event;
+        }
+
+        /**
+         * Resumes the page transition associated with the postponed event.
+         */
+        public void proceed() {
+            BeforeLeaveEvent.this.continueNavigationAction = null;
+            if (handler != null && event != null) {
+                if (!event.getUI().getSession().hasLock()) {
+                    throw new IllegalStateException(
+                            "The method 'proceed' may not be called without the session lock. "
+                                    + "Use UI.access() to execute any UI related code from a separate thread properly");
+                }
+
+                handler.handle(event);
+                setReferences(null, null);
+            }
+        }
+    }
 
     /**
      * Construct event from a NavigationEvent.

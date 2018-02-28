@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -32,6 +33,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -284,7 +286,7 @@ public class NavigationStateRenderer implements NavigationHandler {
 
     /**
      * Inform any {@link BeforeEnterObserver}s in attaching element chain.
-     * 
+     *
      * @param beforeNavigation
      *            navigation event sent to observers
      * @param elements
