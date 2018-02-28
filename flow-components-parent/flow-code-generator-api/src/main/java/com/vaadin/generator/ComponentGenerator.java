@@ -1448,77 +1448,79 @@ public class ComponentGenerator {
                         .setName(getterNameInEvent).setBody(String
                                 .format("return %s;", propertyNameCamelCase));
             }
-        }
-
-        else {
-            for (ComponentPropertyBaseData property : event.getProperties()) {
-                // Add new parameter to constructor
-                final String propertyName = property.getName();
-                String normalizedProperty = ComponentGeneratorUtils
-                        .formatStringToValidJavaIdentifier(propertyName);
-                Class<?> propertyJavaType;
-
-                if (containsObjectType(property)) {
-                    JavaClassSource nestedClass = generateNestedPojo(javaClass,
-                            property.getObjectType().get(0),
-                            eventClassName + "-" + propertyName,
-                            String.format(
-                                    "Class that encapsulates the data received on the '%s' property of @{link %s} events, from the @{link %s} component.",
-                                    propertyName, eventClass.getName(),
-                                    javaClass.getName()));
-
-                    propertyJavaType = JsonObject.class;
-
-                    eventClass.addField().setType(propertyJavaType).setPrivate()
-                            .setFinal(true).setName(normalizedProperty);
-
-                    eventClass.addMethod().setName(ComponentGeneratorUtils
-                            .generateMethodNameForProperty("get", propertyName))
-                            .setPublic().setReturnType(nestedClass)
-                            .setBody(String.format(
-                                    "return new %s().readJson(%s);",
-                                    nestedClass.getName(), normalizedProperty));
-                } else {
-                    if (!property.getType().isEmpty()) {
-                        // for varying types, using the first type declared in
-                        // the
-                        // JSDoc
-                        // it is anyway very rare to have varying property type
-                        propertyJavaType = ComponentGeneratorUtils.toJavaType(
-                                property.getType().iterator().next());
-                    } else { // object property
-                        propertyJavaType = JsonObject.class;
-                    }
-
-                    // Create private field
-                    eventClass.addProperty(propertyJavaType, normalizedProperty)
-                            .setAccessible(true).setMutable(false);
-                }
-
-                ParameterSource<JavaClassSource> parameter = ComponentGeneratorUtils
-                        .addMethodParameter(javaClass, eventConstructor,
-                                propertyJavaType, normalizedProperty);
-                parameter.addAnnotation(EventData.class).setStringValue(
-                        String.format("event.%s", propertyName));
-
-                // Set value to private field
-                eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
-                        eventConstructor.getBody(), normalizedProperty,
-                        normalizedProperty));
-                // Add the EventData as a import
-                javaClass.addImport(EventData.class);
-            }
-
+        } else {
+            addEventDataParameters(javaClass, event, eventClassName, eventClass,
+                    eventConstructor);
             eventClass.addAnnotation(DomEvent.class)
                     .setStringValue(event.getName());
-
             javaClass.addImport(DomEvent.class);
         }
-
         javaClass.addImport(ComponentEvent.class);
         javaClass.addImport(ComponentEventListener.class);
 
         return eventClass;
+    }
+
+    private void addEventDataParameters(JavaClassSource javaClass,
+            ComponentEventData event, String eventClassName,
+            JavaClassSource eventClass,
+            MethodSource<JavaClassSource> eventConstructor) {
+        for (ComponentPropertyBaseData property : event.getProperties()) {
+            // Add new parameter to constructor
+            final String propertyName = property.getName();
+            String normalizedProperty = ComponentGeneratorUtils
+                    .formatStringToValidJavaIdentifier(propertyName);
+            Class<?> propertyJavaType;
+
+            if (containsObjectType(property)) {
+                JavaClassSource nestedClass = generateNestedPojo(javaClass,
+                        property.getObjectType().get(0),
+                        eventClassName + "-" + propertyName,
+                        String.format(
+                                "Class that encapsulates the data received on the '%s' property of @{link %s} events, from the @{link %s} component.",
+                                propertyName, eventClass.getName(),
+                                javaClass.getName()));
+
+                propertyJavaType = JsonObject.class;
+
+                eventClass.addField().setType(propertyJavaType).setPrivate()
+                        .setFinal(true).setName(normalizedProperty);
+
+                eventClass.addMethod().setName(ComponentGeneratorUtils
+                        .generateMethodNameForProperty("get", propertyName))
+                        .setPublic().setReturnType(nestedClass)
+                        .setBody(String.format("return new %s().readJson(%s);",
+                                nestedClass.getName(), normalizedProperty));
+            } else {
+                if (!property.getType().isEmpty()) {
+                    // for varying types, using the first type declared in
+                    // the
+                    // JSDoc
+                    // it is anyway very rare to have varying property type
+                    propertyJavaType = ComponentGeneratorUtils
+                            .toJavaType(property.getType().iterator().next());
+                } else { // object property
+                    propertyJavaType = JsonObject.class;
+                }
+
+                // Create private field
+                eventClass.addProperty(propertyJavaType, normalizedProperty)
+                        .setAccessible(true).setMutable(false);
+            }
+
+            ParameterSource<JavaClassSource> parameter = ComponentGeneratorUtils
+                    .addMethodParameter(javaClass, eventConstructor,
+                            propertyJavaType, normalizedProperty);
+            parameter.addAnnotation(EventData.class)
+                    .setStringValue(String.format("event.%s", propertyName));
+
+            // Set value to private field
+            eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
+                    eventConstructor.getBody(), normalizedProperty,
+                    normalizedProperty));
+            // Add the EventData as a import
+            javaClass.addImport(EventData.class);
+        }
     }
 
     private boolean containsObjectType(ComponentPropertyBaseData property) {
