@@ -1423,34 +1423,8 @@ public class ComponentGenerator {
         eventConstructor.addParameter("boolean", "fromClient");
 
         if (isPropertyChange) {
-            // Save the property value to the event and add a getter if
-            // corresponding getter is found from the component.
-
-            MethodSource<JavaClassSource> getterInComponent = propertyToGetterMap
-                    .get(propertyNameCamelCase);
-
-            if (getterInComponent != null) {
-                eventConstructor.setBody(eventConstructor.getBody() + String
-                        .format("this.%s = source.%s();", propertyNameCamelCase,
-                                getterInComponent.getName()));
-                eventClass.addField().setPrivate().setFinal(true)
-                        .setType(getterInComponent.getReturnType().getName())
-                        .setName(propertyNameCamelCase);
-
-                // Remove the trailing type name from the getter name.
-                // Eg. isOpenedBoolean -> isOpened
-                String getterNameInEvent = getterInComponent.getName()
-                        .substring(0,
-                                getterInComponent.getName()
-                                        .lastIndexOf(StringUtils.capitalize(
-                                                propertyNameCamelCase))
-                                        + propertyNameCamelCase.length());
-
-                eventClass.addMethod().setPublic()
-                        .setReturnType(getterInComponent.getReturnType())
-                        .setName(getterNameInEvent).setBody(String
-                                .format("return %s;", propertyNameCamelCase));
-            }
+            addFieldAndGetterToPropertyChangeEvent(propertyNameCamelCase,
+                    propertyToGetterMap, eventClass, eventConstructor);
         } else {
             addEventDataParameters(javaClass, event, eventClassName, eventClass,
                     eventConstructor);
@@ -1462,6 +1436,40 @@ public class ComponentGenerator {
         javaClass.addImport(ComponentEventListener.class);
 
         return eventClass;
+    }
+
+    private void addFieldAndGetterToPropertyChangeEvent(
+            String propertyNameCamelCase,
+            Map<String, MethodSource<JavaClassSource>> propertyToGetterMap,
+            JavaClassSource eventClass,
+            MethodSource<JavaClassSource> eventConstructor) {
+
+        // Save the property value to the event and add a getter if
+        // corresponding getter is found from the component.
+
+        MethodSource<JavaClassSource> getterInComponent = propertyToGetterMap
+                .get(propertyNameCamelCase);
+
+        if (getterInComponent != null) {
+            eventConstructor.setBody(eventConstructor.getBody() + String.format(
+                    "this.%s = source.%s();", propertyNameCamelCase,
+                    getterInComponent.getName()));
+            eventClass.addField().setPrivate().setFinal(true)
+                    .setType(getterInComponent.getReturnType().getName())
+                    .setName(propertyNameCamelCase);
+
+            // Remove the trailing type name from the getter name.
+            // Eg. isOpenedBoolean -> isOpened
+            String getterNameInEvent = getterInComponent.getName().substring(0,
+                    getterInComponent.getName().lastIndexOf(
+                            StringUtils.capitalize(propertyNameCamelCase))
+                            + propertyNameCamelCase.length());
+
+            eventClass.addMethod().setPublic()
+                    .setReturnType(getterInComponent.getReturnType())
+                    .setName(getterNameInEvent).setBody(
+                            String.format("return %s;", propertyNameCamelCase));
+        }
     }
 
     private void addEventDataParameters(JavaClassSource javaClass,
