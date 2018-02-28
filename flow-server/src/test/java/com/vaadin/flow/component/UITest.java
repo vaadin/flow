@@ -409,14 +409,14 @@ public class UITest {
         ui.beforeClientResponse(root, context -> {
             Assert.assertTrue(
                     "Root component should be marked as 'wasAttached'",
-                    context.wasAttached());
+                    context.wasAttachedInPreviousRoundtrip());
             callCounter.incrementAndGet();
 
         });
         ui.beforeClientResponse(leaf, context -> {
             Assert.assertFalse(
                     "Leaf component should not be marked as 'wasAttached'",
-                    context.wasAttached());
+                    context.wasAttachedInPreviousRoundtrip());
             callCounter.incrementAndGet();
         });
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -426,7 +426,7 @@ public class UITest {
         ui.beforeClientResponse(root, context -> {
             Assert.assertTrue(
                     "Reattached root component (in the same request) should be marked as 'wasAttached'",
-                    context.wasAttached());
+                    context.wasAttachedInPreviousRoundtrip());
             callCounter.incrementAndGet();
         });
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -438,7 +438,7 @@ public class UITest {
         ui.beforeClientResponse(root, context -> {
             Assert.assertFalse(
                     "Reattached root component (in different requests) should not be marked as 'wasAttached'",
-                    context.wasAttached());
+                    context.wasAttachedInPreviousRoundtrip());
             callCounter.incrementAndGet();
         });
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();

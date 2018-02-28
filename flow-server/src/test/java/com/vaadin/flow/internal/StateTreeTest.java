@@ -450,11 +450,11 @@ public class StateTreeTest {
 
         StateNodeTest.setParent(node2, node1);
 
-        class CapturingRunnable
+        class CapturingConsumer
                 implements SerializableConsumer<ExecutionContext> {
             private final Object captured;
 
-            public CapturingRunnable(Object captured) {
+            public CapturingConsumer(Object captured) {
                 this.captured = captured;
             }
 
@@ -464,7 +464,7 @@ public class StateTreeTest {
             }
         }
 
-        tree.beforeClientResponse(node2, new CapturingRunnable(node2));
+        tree.beforeClientResponse(node2, new CapturingConsumer(node2));
 
         StateNodeTest.setParent(node2, null);
 

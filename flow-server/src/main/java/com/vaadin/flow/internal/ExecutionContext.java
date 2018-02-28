@@ -20,8 +20,9 @@ import java.io.Serializable;
 import com.vaadin.flow.component.UI;
 
 /**
- * Class that holds the context of a callback execution of a call to
- * {@link UI#beforeClientResponse(com.vaadin.flow.component.Component, com.vaadin.flow.function.SerializableConsumer)}.
+ * Represents the context of a callback execution when
+ * {@link UI#beforeClientResponse(com.vaadin.flow.component.Component, com.vaadin.flow.function.SerializableConsumer)}
+ * is invoked.
  * 
  * @author Vaadin Ltd.
  *
@@ -29,22 +30,22 @@ import com.vaadin.flow.component.UI;
 public class ExecutionContext implements Serializable {
 
     private final UI ui;
-    private final boolean wasAttached;
+    private final boolean wasAttachedInPreviousRoundtrip;
 
     /**
      * Creates a new, immutable context.
      * 
      * @param ui
      *            The UI associated with the execution
-     * @param wasAttached
-     *            <code>true</code> when the node associated with the execution
-     *            was attached to the tree before the request was processed,
-     *            <code>false</code> otherwise.
+     * @param wasAttachedInPreviousRoundtrip
+     *            <code>true</code> if the node was previously attached when the
+     *            roundtrip started, and <code>false</code> when the node was
+     *            attached during the current roundtrip
      */
-    public ExecutionContext(UI ui, boolean wasAttached) {
+    public ExecutionContext(UI ui, boolean wasAttachedInPreviousRoundtrip) {
         assert ui != null;
         this.ui = ui;
-        this.wasAttached = wasAttached;
+        this.wasAttachedInPreviousRoundtrip = wasAttachedInPreviousRoundtrip;
     }
 
     /**
@@ -57,15 +58,15 @@ public class ExecutionContext implements Serializable {
     }
 
     /**
-     * Gets the attached status of the node associated with the execution when
-     * the request was first received by the server.
+     * Gets whether the node associated to the execution was attached to the
+     * tree when the server roundtrip was started.
      * 
-     * @return <code>true</code> when the node associated with the execution was
-     *         attached to the tree before the request was processed,
-     *         <code>false</code> otherwise.
+     * @return <code>true</code> if the node was previously attached when the
+     *         roundtrip started, and <code>false</code> when the node was
+     *         attached during the current roundtrip
      */
-    public boolean wasAttached() {
-        return wasAttached;
+    public boolean wasAttachedInPreviousRoundtrip() {
+        return wasAttachedInPreviousRoundtrip;
     }
 
 }

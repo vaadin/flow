@@ -278,26 +278,29 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * Registers a {@link Runnable} to be executed before the response is sent
-     * to the client. The runnables are executed in order of registration. If
-     * runnables register more runnables, they are executed after all already
-     * registered executions for the moment.
+     * Registers a task to be executed before the response is sent to the
+     * client. The tasks are executed in order of registration. If tasks
+     * register more tasks, they are executed after all already registered tasks
+     * for the moment.
      * <p>
      * Example: three tasks are submitted, {@code A}, {@code B} and {@code C},
      * where {@code B} produces two more tasks during execution, {@code D} and
      * {@code E}. The resulting execution would be {@code ABCDE}.
      * <p>
-     * If the {@link StateNode} related to the runnable is not attached to the
-     * document by the time the runnable is evaluated, the execution is
-     * postponed to before the next response.
+     * If the {@link StateNode} related to the task is not attached to the
+     * document by the time the task is evaluated, the execution is postponed to
+     * before the next response.
+     * <p>
+     * The task receives a {@link ExecutionContext} as parameter, which contains
+     * information about the node state during the server roundtrip.
      *
      * @param context
      *            the StateNode relevant for the execution. Can not be
      *            <code>null</code>
      * @param execution
-     *            the Runnable to be executed. Can not be <code>null</code>
+     *            the task to be executed. Can not be <code>null</code>
      * @return a registration that can be used to cancel the execution of the
-     *         runnable
+     *         task
      */
     public ExecutionRegistration beforeClientResponse(StateNode context,
             SerializableConsumer<ExecutionContext> execution) {
@@ -328,7 +331,7 @@ public class StateTree implements NodeOwner {
             }
             callbacks.forEach(entry -> {
                 ExecutionContext context = new ExecutionContext(getUI(),
-                        entry.getStateNode().wasAttached());
+                        entry.getStateNode().wasAttachedInPreviousRoundtrip());
                 entry.getExecution().accept(context);
             });
         }

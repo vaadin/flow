@@ -745,19 +745,22 @@ public class UI extends Component
      * where {@code B} produces two more tasks during execution, {@code D} and
      * {@code E}. The resulting execution would be {@code ABCDE}.
      * <p>
-     * If the {@link Component} related to the runnable is not attached to the
-     * document by the time the runnable is evaluated, the execution is
-     * postponed to before the next response.
+     * If the {@link Component} related to the task is not attached to the
+     * document by the time the task is evaluated, the execution is postponed to
+     * before the next response.
+     * <p>
+     * The task receives a {@link ExecutionContext} as parameter, which contains
+     * information about the component state during the server roundtrip.
      *
      * @param component
      *            the Component relevant for the execution. Can not be
      *            <code>null</code>
      *
      * @param execution
-     *            the Runnable to be executed. Can not be <code>null</code>
+     *            the task to be executed. Can not be <code>null</code>
      *
      * @return a registration that can be used to cancel the execution of the
-     *         runnable
+     *         task
      */
     public ExecutionRegistration beforeClientResponse(Component component,
             SerializableConsumer<ExecutionContext> execution) {
