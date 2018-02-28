@@ -27,7 +27,6 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -856,15 +855,13 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
                 (ComponentEventListener) listener);
     }
 
-    @DomEvent("value-changed")
     public static class ValueChangeEvent<R extends GeneratedVaadinTextField<R>>
             extends ComponentEvent<R> {
         private final String value;
 
-        public ValueChangeEvent(R source, boolean fromClient,
-                @EventData("event.value") String value) {
+        public ValueChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
-            this.value = value;
+            this.value = source.getValueString();
         }
 
         public String getValue() {
@@ -880,22 +877,22 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent<R>> listener) {
-        return addListener(ValueChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("value",
+                        event -> listener
+                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
-    @DomEvent("invalid-changed")
     public static class InvalidChangeEvent<R extends GeneratedVaadinTextField<R>>
             extends ComponentEvent<R> {
         private final boolean invalid;
 
-        public InvalidChangeEvent(R source, boolean fromClient,
-                @EventData("event.invalid") boolean invalid) {
+        public InvalidChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
-            this.invalid = invalid;
+            this.invalid = source.isInvalidBoolean();
         }
 
         public boolean isInvalid() {
@@ -911,11 +908,13 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addInvalidChangeListener(
             ComponentEventListener<InvalidChangeEvent<R>> listener) {
-        return addListener(InvalidChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("invalid",
+                        event -> listener.onComponentEvent(
+                                new InvalidChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
     /**

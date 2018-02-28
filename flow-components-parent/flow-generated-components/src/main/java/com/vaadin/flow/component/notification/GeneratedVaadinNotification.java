@@ -22,7 +22,6 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -177,11 +176,17 @@ public abstract class GeneratedVaadinNotification<R extends GeneratedVaadinNotif
         getElement().callFunction("close");
     }
 
-    @DomEvent("opened-changed")
     public static class OpenedChangeEvent<R extends GeneratedVaadinNotification<R>>
             extends ComponentEvent<R> {
+        private final boolean opened;
+
         public OpenedChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.opened = source.isOpenedBoolean();
+        }
+
+        public boolean isOpened() {
+            return opened;
         }
     }
 
@@ -193,10 +198,12 @@ public abstract class GeneratedVaadinNotification<R extends GeneratedVaadinNotif
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addOpenedChangeListener(
             ComponentEventListener<OpenedChangeEvent<R>> listener) {
-        return addListener(OpenedChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("opened",
+                        event -> listener.onComponentEvent(
+                                new OpenedChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 }

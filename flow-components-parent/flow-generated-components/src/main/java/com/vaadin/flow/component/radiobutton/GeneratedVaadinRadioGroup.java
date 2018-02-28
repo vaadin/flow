@@ -21,7 +21,6 @@ import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -110,7 +109,6 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
         getElement().setProperty("disabled", disabled);
     }
 
-    @DomEvent("value-changed")
     public static class ValueChangeEvent<R extends GeneratedVaadinRadioGroup<R>>
             extends ComponentEvent<R> {
         public ValueChangeEvent(R source, boolean fromClient) {
@@ -126,10 +124,12 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent<R>> listener) {
-        return addListener(ValueChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("value",
+                        event -> listener
+                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 }

@@ -22,7 +22,6 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -277,11 +276,17 @@ public abstract class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMont
         return getElement().getProperty("disabled", false);
     }
 
-    @DomEvent("selected-date-changed")
     public static class SelectedDateChangeEvent<R extends GeneratedVaadinMonthCalendar<R>>
             extends ComponentEvent<R> {
+        private final JsonObject selectedDate;
+
         public SelectedDateChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.selectedDate = source.getSelectedDateJsonObject();
+        }
+
+        public JsonObject getSelectedDate() {
+            return selectedDate;
         }
     }
 
@@ -293,10 +298,11 @@ public abstract class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMont
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
-        return addListener(SelectedDateChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement().addPropertyChangeListener("selectedDate",
+                event -> listener
+                        .onComponentEvent(new SelectedDateChangeEvent<R>(get(),
+                                event.isUserOriginated())));
     }
 }

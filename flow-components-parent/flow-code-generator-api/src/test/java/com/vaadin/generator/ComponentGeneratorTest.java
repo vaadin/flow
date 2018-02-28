@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,6 +46,8 @@ import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
+
+import static org.hamcrest.CoreMatchers.containsString;
 
 /**
  * Unit tests for the component generator
@@ -346,6 +349,52 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void generateClassWithPropertyChangeEvent_propertyChangeListenerUsedInsteadOfDomEvent() {
+        ComponentEventData eventData = new ComponentEventData();
+        eventData.setName("something-changed");
+        eventData.setDescription("Property change event.");
+        componentMetadata.setEvents(Collections.singletonList(eventData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        Assert.assertThat("Custom event class was not found.", generatedClass,
+                containsString(
+                        "public static class SomethingChangeEvent<R extends MyComponent<R>> extends ComponentEvent<R> {"));
+
+        Assert.assertFalse("DomEvent should not be used for property changes",
+                generatedClass.contains("@DomEvent"));
+
+        // Using matcher as the formatter may cut the method.
+        Pattern pattern = Pattern.compile(
+                "addSomethingChangeListener\\((\\w?)(\\s*?)ComponentEventListener<SomethingChangeEvent<R>> listener\\)");
+        Matcher matcher = pattern.matcher(generatedClass);
+        Assert.assertTrue("Couldn't find correct listener for event.",
+                matcher.find());
+
+        Assert.assertThat(
+                "Event should be propagated to a property change listener",
+                StringUtils.deleteWhitespace(generatedClass), containsString(
+                        "getElement().addPropertyChangeListener(\"something\","));
+
+        Assert.assertFalse("DomEvent imported even without dom-events",
+                generatedClass
+                        .contains("import " + DomEvent.class.getName() + ";"));
+        Assert.assertThat("Missing ComponentEvent import", generatedClass,
+                containsString(
+                        "import " + ComponentEvent.class.getName() + ";"));
+        Assert.assertThat("Missing ComponentEventListener import",
+                generatedClass, containsString("import "
+                        + ComponentEventListener.class.getName() + ";"));
+        Assert.assertFalse("EventData imported even without events",
+                generatedClass
+                        .contains("import " + EventData.class.getName() + ";"));
+    }
+
+    @Test
     public void generateClassWithEventWithEventData_classTypedComponentEventWithEventData() {
         ComponentEventData eventData = new ComponentEventData();
         eventData.setName("change");
@@ -544,6 +593,33 @@ public class ComponentGeneratorTest {
                 generatedClass.contains(
                         "@Synchronize(property = \"someproperty\", value = \"someproperty-changed\") "
                                 + "public String getSomeproperty() {"));
+    }
+
+    @Test
+    public void classContainsGetterAndRelatedChangeEvent_eventContainsPropertyAndGetter() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("someproperty");
+        property.setType(Collections.singleton(ComponentBasicType.STRING));
+        componentMetadata.setProperties(Collections.singletonList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("someproperty-changed");
+        componentMetadata.setEvents(Collections.singletonList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        Assert.assertThat(
+                "Event should save the property value from the source component",
+                generatedClass,
+                containsString("someproperty = source.getSomeproperty();"));
+
+        Assert.assertThat("Event should have getter for the property",
+                generatedClass, containsString(
+                        "public String getSomeproperty() { return someproperty; }"));
     }
 
     @Test
@@ -746,7 +822,7 @@ public class ComponentGeneratorTest {
         eventData.setObjectType(Collections.singletonList(objectType));
 
         ComponentEventData event = new ComponentEventData();
-        event.setName("something-changed");
+        event.setName("something-happened");
         event.setProperties(Collections.singletonList(eventData));
 
         componentMetadata.setEvents(Collections.singletonList(event));
@@ -758,17 +834,17 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertTrue(
-                "Generated class should contain the SomethingChangeDetails nested class",
+                "Generated class should contain the SomethingHappenedDetails nested class",
                 generatedClass.contains(
-                        "public static class SomethingChangeDetails implements JsonSerializable"));
+                        "public static class SomethingHappenedDetails implements JsonSerializable"));
 
         Assert.assertTrue(
-                "Generated class should contain the addSomethingChangeListener method",
+                "Generated class should contain the addSomethingChangHappenedListener method",
                 generatedClass.contains(
-                        "public Registration addSomethingChangeListener( ComponentEventListener<SomethingChangeEvent<R>> listener)"));
+                        "public Registration addSomethingHappenedListener( ComponentEventListener<SomethingHappenedEvent<R>> listener)"));
 
         int indexOfEventDeclaration = generatedClass.indexOf(
-                "public static class SomethingChangeEvent<R extends MyComponent<R>> extends ComponentEvent<R> {");
+                "public static class SomethingHappenedEvent<R extends MyComponent<R>> extends ComponentEvent<R> {");
         int endIndexOfEventDeclaration = generatedClass.indexOf("} }",
                 indexOfEventDeclaration);
         String eventDeclaration = generatedClass.substring(
@@ -777,7 +853,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated event should contain the getDetails method",
                 eventDeclaration.contains(
-                        "public SomethingChangeDetails getDetails() { return new SomethingChangeDetails().readJson(details); } }"));
+                        "public SomethingHappenedDetails getDetails() { return new SomethingHappenedDetails().readJson(details); } }"));
 
     }
 

@@ -403,9 +403,11 @@ public class ComponentGenerator {
 
         addClassAnnotations(metadata, javaClass);
 
+        Map<String, MethodSource<JavaClassSource>> propertyToGetterMap = new HashMap<String, MethodSource<JavaClassSource>>();
+
         if (metadata.getProperties() != null) {
             generateEventsForPropertiesWithNotify(metadata);
-            generateGettersAndSetters(metadata, javaClass);
+            generateGettersAndSetters(metadata, javaClass, propertyToGetterMap);
         }
 
         if (metadata.getMethods() != null) {
@@ -421,7 +423,7 @@ public class ComponentGenerator {
                     .filter(event -> !ExclusionRegistry.isEventExcluded(
                             metadata.getTag(), event.getName()))
                     .forEach(event -> generateEventListenerFor(javaClass,
-                            metadata, event));
+                            metadata, event, propertyToGetterMap));
         }
 
         if (metadata.getSlots() != null && !metadata.getSlots().isEmpty()) {
@@ -521,14 +523,14 @@ public class ComponentGenerator {
         if (metadata.getBehaviors() != null) {
             metadata.getBehaviors().stream()
                     .filter(behavior -> !ExclusionRegistry
-                            .isBehaviorOrMixinExcluded(metadata.getTag(), behavior))
+                            .isBehaviorOrMixinExcluded(metadata.getTag(),
+                                    behavior))
                     .forEach(classBehaviorsAndMixins::add);
         }
 
         if (metadata.getMixins() != null) {
-            metadata.getMixins().stream()
-                    .filter(mixin -> !ExclusionRegistry
-                            .isBehaviorOrMixinExcluded(metadata.getTag(), mixin))
+            metadata.getMixins().stream().filter(mixin -> !ExclusionRegistry
+                    .isBehaviorOrMixinExcluded(metadata.getTag(), mixin))
                     .forEach(classBehaviorsAndMixins::add);
         }
 
@@ -554,14 +556,15 @@ public class ComponentGenerator {
     }
 
     private void generateGettersAndSetters(ComponentMetadata metadata,
-            JavaClassSource javaClass) {
+            JavaClassSource javaClass,
+            Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
 
         metadata.getProperties().stream()
                 .filter(property -> !ExclusionRegistry.isPropertyExcluded(
                         metadata.getTag(), property.getName()))
                 .forEachOrdered(property -> {
                     generateGetterFor(javaClass, metadata, property,
-                            metadata.getEvents());
+                            metadata.getEvents(), propertyToGetterMap);
 
                     if (!property.isReadOnly()) {
                         generateSetterFor(javaClass, metadata, property);
@@ -764,10 +767,13 @@ public class ComponentGenerator {
 
     private void generateGetterFor(JavaClassSource javaClass,
             ComponentMetadata metadata, ComponentPropertyData property,
-            List<ComponentEventData> events) {
+            List<ComponentEventData> events,
+            Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
 
         String propertyJavaName = getJavaNameForProperty(metadata,
                 property.getName());
+        MethodSource<JavaClassSource> method = javaClass.addMethod();
+        propertyToGetterMap.put(propertyJavaName, method);
 
         if (containsObjectType(property)) {
             JavaClassSource nestedClass = generateNestedPojo(javaClass,
@@ -777,8 +783,7 @@ public class ComponentGenerator {
                             "Class that encapsulates the data of the '%s' property in the {@link %s} component.",
                             property.getName(), javaClass.getName()));
 
-            MethodSource<JavaClassSource> method = javaClass.addMethod()
-                    .setReturnType(nestedClass);
+            method.setReturnType(nestedClass);
 
             setMethodVisibility(method, property.getObjectType());
 
@@ -820,8 +825,7 @@ public class ComponentGenerator {
             for (ComponentBasicType basicType : property.getType()) {
                 Class<?> javaType = ComponentGeneratorUtils
                         .toJavaType(basicType);
-                MethodSource<JavaClassSource> method = javaClass.addMethod()
-                        .setReturnType(javaType);
+                method.setReturnType(javaType);
 
                 setMethodVisibility(method, basicType);
 
@@ -1318,7 +1322,8 @@ public class ComponentGenerator {
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,
-            ComponentMetadata metadata, ComponentEventData event) {
+            ComponentMetadata metadata, ComponentEventData event,
+            Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
         String eventJavaApiName = getJavaNameForPropertyChangeEvent(metadata,
                 event.getName());
 
@@ -1335,17 +1340,23 @@ public class ComponentGenerator {
         eventJavaApiName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(eventJavaApiName);
 
-        if (eventJavaApiName.endsWith("Changed")) {
+        String propertyNameCamelCase = null;
+        boolean isPropertyChange = eventJavaApiName.endsWith("Changed");
+        if (isPropertyChange) {
             // removes the "d" in the end, to create addSomethingChangeListener
             // and SomethingChangeEvent
             eventJavaApiName = eventJavaApiName.substring(0,
                     eventJavaApiName.length() - 1);
+
+            propertyNameCamelCase = eventJavaApiName.substring(0,
+                    eventJavaApiName.length() - "Change".length());
         }
 
-        JavaClassSource eventListener = createEventListenerEventClass(javaClass,
-                event, eventJavaApiName);
+        JavaClassSource eventClass = createEventListenerEventClass(javaClass,
+                event, eventJavaApiName, propertyNameCamelCase,
+                propertyToGetterMap);
 
-        javaClass.addNestedType(eventListener);
+        javaClass.addNestedType(eventClass);
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName("add"
                         + StringUtils.capitalize(eventJavaApiName + "Listener"))
@@ -1353,7 +1364,7 @@ public class ComponentGenerator {
 
         setMethodVisibility(method);
 
-        method.addParameter("ComponentEventListener<" + eventListener.getName()
+        method.addParameter("ComponentEventListener<" + eventClass.getName()
                 + GENERIC_TYPE_DECLARATION + ">", "listener");
 
         method.getJavaDoc().setText(String.format(
@@ -1363,12 +1374,22 @@ public class ComponentGenerator {
                 .addTagValue(JAVADOC_RETURN,
                         "a {@link Registration} for removing the event listener");
 
-        method.addAnnotation(SuppressWarnings.class)
-                .setStringArrayValue(new String[] { "rawtypes", "unchecked" });
-
-        method.setBody(String.format(
-                "return addListener(%s.class, (ComponentEventListener) listener);",
-                eventListener.getName()));
+        if (isPropertyChange) {
+            String propertyNameBeforeRenaming = ComponentGeneratorUtils
+                    .formatStringToValidJavaIdentifier(event.getName()
+                            .replace(PROPERTY_CHANGE_EVENT_POSTFIX, ""));
+            method.setBody(String.format(
+                    "return getElement().addPropertyChangeListener(\"%s\", "
+                            + "event -> listener.onComponentEvent(new %s<%s>(get(), event.isUserOriginated())));",
+                    propertyNameBeforeRenaming, eventClass.getName(),
+                    eventClass.getTypeVariables().get(0).getName()));
+        } else {
+            method.setBody(String.format(
+                    "return addListener(%s.class, (ComponentEventListener) listener);",
+                    eventClass.getName()));
+            method.addAnnotation(SuppressWarnings.class).setStringArrayValue(
+                    new String[] { "rawtypes", "unchecked" });
+        }
     }
 
     private void overrideHasValueGetClientValuePropertyName(
@@ -1382,22 +1403,79 @@ public class ComponentGenerator {
 
     private JavaClassSource createEventListenerEventClass(
             JavaClassSource javaClass, ComponentEventData event,
-            String javaEventName) {
+            String javaEventName, String propertyNameCamelCase,
+            Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
+        boolean isPropertyChange = propertyNameCamelCase != null;
+
         String eventClassName = StringUtils.capitalize(javaEventName);
-        String eventListenerString = String.format(
+        String eventClassString = String.format(
                 "public static class %sEvent<%s extends %s<%s>> extends ComponentEvent<%s> {}",
                 eventClassName, GENERIC_TYPE, javaClass.getName(), GENERIC_TYPE,
                 GENERIC_TYPE);
 
-        JavaClassSource eventListener = Roaster.parse(JavaClassSource.class,
-                eventListenerString);
+        JavaClassSource eventClass = Roaster.parse(JavaClassSource.class,
+                eventClassString);
 
-        MethodSource<JavaClassSource> eventConstructor = eventListener
-                .addMethod().setConstructor(true).setPublic()
+        MethodSource<JavaClassSource> eventConstructor = eventClass.addMethod()
+                .setConstructor(true).setPublic()
                 .setBody("super(source, fromClient);");
         eventConstructor.addParameter(GENERIC_TYPE, "source");
         eventConstructor.addParameter("boolean", "fromClient");
 
+        if (isPropertyChange) {
+            addFieldAndGetterToPropertyChangeEvent(propertyNameCamelCase,
+                    propertyToGetterMap, eventClass, eventConstructor);
+        } else {
+            addEventDataParameters(javaClass, event, eventClassName, eventClass,
+                    eventConstructor);
+            eventClass.addAnnotation(DomEvent.class)
+                    .setStringValue(event.getName());
+            javaClass.addImport(DomEvent.class);
+        }
+        javaClass.addImport(ComponentEvent.class);
+        javaClass.addImport(ComponentEventListener.class);
+
+        return eventClass;
+    }
+
+    private void addFieldAndGetterToPropertyChangeEvent(
+            String propertyNameCamelCase,
+            Map<String, MethodSource<JavaClassSource>> propertyToGetterMap,
+            JavaClassSource eventClass,
+            MethodSource<JavaClassSource> eventConstructor) {
+
+        // Save the property value to the event and add a getter if
+        // corresponding getter is found from the component.
+
+        MethodSource<JavaClassSource> getterInComponent = propertyToGetterMap
+                .get(propertyNameCamelCase);
+
+        if (getterInComponent != null) {
+            eventConstructor.setBody(eventConstructor.getBody() + String.format(
+                    "this.%s = source.%s();", propertyNameCamelCase,
+                    getterInComponent.getName()));
+            eventClass.addField().setPrivate().setFinal(true)
+                    .setType(getterInComponent.getReturnType().getName())
+                    .setName(propertyNameCamelCase);
+
+            // Remove the trailing type name from the getter name.
+            // Eg. isOpenedBoolean -> isOpened
+            String getterNameInEvent = getterInComponent.getName().substring(0,
+                    getterInComponent.getName().lastIndexOf(
+                            StringUtils.capitalize(propertyNameCamelCase))
+                            + propertyNameCamelCase.length());
+
+            eventClass.addMethod().setPublic()
+                    .setReturnType(getterInComponent.getReturnType())
+                    .setName(getterNameInEvent).setBody(
+                            String.format("return %s;", propertyNameCamelCase));
+        }
+    }
+
+    private void addEventDataParameters(JavaClassSource javaClass,
+            ComponentEventData event, String eventClassName,
+            JavaClassSource eventClass,
+            MethodSource<JavaClassSource> eventConstructor) {
         for (ComponentPropertyBaseData property : event.getProperties()) {
             // Add new parameter to constructor
             final String propertyName = property.getName();
@@ -1411,22 +1489,23 @@ public class ComponentGenerator {
                         eventClassName + "-" + propertyName,
                         String.format(
                                 "Class that encapsulates the data received on the '%s' property of @{link %s} events, from the @{link %s} component.",
-                                propertyName, eventListener.getName(),
+                                propertyName, eventClass.getName(),
                                 javaClass.getName()));
 
                 propertyJavaType = JsonObject.class;
 
-                eventListener.addField().setType(propertyJavaType).setPrivate()
+                eventClass.addField().setType(propertyJavaType).setPrivate()
                         .setFinal(true).setName(normalizedProperty);
 
-                eventListener.addMethod().setName(ComponentGeneratorUtils
+                eventClass.addMethod().setName(ComponentGeneratorUtils
                         .generateMethodNameForProperty("get", propertyName))
                         .setPublic().setReturnType(nestedClass)
                         .setBody(String.format("return new %s().readJson(%s);",
                                 nestedClass.getName(), normalizedProperty));
             } else {
                 if (!property.getType().isEmpty()) {
-                    // for varying types, using the first type declared in the
+                    // for varying types, using the first type declared in
+                    // the
                     // JSDoc
                     // it is anyway very rare to have varying property type
                     propertyJavaType = ComponentGeneratorUtils
@@ -1436,7 +1515,7 @@ public class ComponentGenerator {
                 }
 
                 // Create private field
-                eventListener.addProperty(propertyJavaType, normalizedProperty)
+                eventClass.addProperty(propertyJavaType, normalizedProperty)
                         .setAccessible(true).setMutable(false);
             }
 
@@ -1453,16 +1532,6 @@ public class ComponentGenerator {
             // Add the EventData as a import
             javaClass.addImport(EventData.class);
         }
-
-        eventListener.addAnnotation(DomEvent.class)
-                .setStringValue(event.getName());
-
-        // Add event imports.
-        javaClass.addImport(DomEvent.class);
-        javaClass.addImport(ComponentEvent.class);
-        javaClass.addImport(ComponentEventListener.class);
-
-        return eventListener;
     }
 
     private boolean containsObjectType(ComponentPropertyBaseData property) {

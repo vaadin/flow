@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,8 +103,7 @@ public class PropertyNameRemapRegistryTest {
                         "return getElement().getProperty(\"original-property-name\");"));
 
         Assert.assertTrue("Setter for renamed property should be present",
-                generatedSource
-                        .contains("setRenamed(String renamed)"));
+                generatedSource.contains("setRenamed(String renamed)"));
         Assert.assertTrue(
                 "Setter should use the original property name for setting the value through the element API",
                 generatedSource.contains(
@@ -117,9 +117,9 @@ public class PropertyNameRemapRegistryTest {
                 generatedSource
                         .contains("public static class RenamedChangeEvent"));
         Assert.assertTrue(
-                "Renamed change event class should still be bound to the original property name",
-                generatedSource.contains(
-                        "@DomEvent(\"original-property-name-changed\")"));
+                "Renamed property change listener should internally use the original property name",
+                StringUtils.deleteWhitespace(generatedSource).contains(
+                        "addPropertyChangeListener(\"originalPropertyName\","));
     }
 
     @Test

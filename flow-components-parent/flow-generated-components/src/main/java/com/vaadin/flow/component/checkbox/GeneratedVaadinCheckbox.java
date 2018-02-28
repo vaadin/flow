@@ -23,7 +23,6 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -299,11 +298,17 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
         getElement().setProperty("value", postValue == null ? "" : postValue);
     }
 
-    @DomEvent("checked-changed")
     public static class CheckedChangeEvent<R extends GeneratedVaadinCheckbox<R>>
             extends ComponentEvent<R> {
+        private final boolean checked;
+
         public CheckedChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.checked = source.isCheckedBoolean();
+        }
+
+        public boolean isChecked() {
+            return checked;
         }
     }
 
@@ -315,18 +320,26 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addCheckedChangeListener(
             ComponentEventListener<CheckedChangeEvent<R>> listener) {
-        return addListener(CheckedChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement()
+                .addPropertyChangeListener("checked",
+                        event -> listener.onComponentEvent(
+                                new CheckedChangeEvent<R>(get(),
+                                        event.isUserOriginated())));
     }
 
-    @DomEvent("indeterminate-changed")
     public static class IndeterminateChangeEvent<R extends GeneratedVaadinCheckbox<R>>
             extends ComponentEvent<R> {
+        private final boolean indeterminate;
+
         public IndeterminateChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.indeterminate = source.isIndeterminateBoolean();
+        }
+
+        public boolean isIndeterminate() {
+            return indeterminate;
         }
     }
 
@@ -338,10 +351,11 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      *            the listener
      * @return a {@link Registration} for removing the event listener
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Registration addIndeterminateChangeListener(
             ComponentEventListener<IndeterminateChangeEvent<R>> listener) {
-        return addListener(IndeterminateChangeEvent.class,
-                (ComponentEventListener) listener);
+        return getElement().addPropertyChangeListener("indeterminate",
+                event -> listener
+                        .onComponentEvent(new IndeterminateChangeEvent<R>(get(),
+                                event.isUserOriginated())));
     }
 }
