@@ -43,7 +43,12 @@ public class BeforeLeaveEvent extends BeforeEvent {
 
         public void setReferences(NavigationHandler handler,
                 NavigationEvent event) {
-            assert event.getUI().getSession().hasLock();
+            if (event != null) {
+                event.getUI().getSession().hasLock();
+            } else {
+                assert UI.getCurrent() != null
+                        && UI.getCurrent().getSession().hasLock();
+            }
             this.handler = handler;
             this.event = event;
         }

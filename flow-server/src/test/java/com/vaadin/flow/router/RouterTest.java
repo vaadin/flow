@@ -456,6 +456,7 @@ public class RouterTest extends RoutingTestBase {
         public Optional<RouterInterface> getRouterInterface() {
             return Optional.of(router);
         }
+
     }
 
     @Route("navigationEvents")
@@ -766,14 +767,24 @@ public class RouterTest extends RoutingTestBase {
     }
 
     static void sleepThenRun(int millis, ContinueNavigationAction action) {
+        UI ui = UI.getCurrent();
         new Thread(() -> {
+            ui.getSession().lock();
+            UI.setCurrent(ui);
             try {
                 Thread.sleep(millis);
             } catch (InterruptedException e) {
                 fail("Resuming thread was interrupted");
             }
             eventCollector.add("Resuming");
-            action.proceed();
+            try {
+                action.proceed();
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            } finally {
+                ui.getSession().unlock();
+            }
+            UI.setCurrent(null);
         }).start();
     }
 
@@ -2023,7 +2034,11 @@ public class RouterTest extends RoutingTestBase {
                 HttpServletResponse.SC_OK, status3);
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
 
+        ui.getSession().unlock();
+
         Thread.sleep(200);
+
+        ui.getSession().lock();
 
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 4,
