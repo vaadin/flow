@@ -29,7 +29,14 @@
       "description": "Set to true to disable closing dialog on Escape press\n             "
     }
   ],
-  "methods": [],
+  "methods": [
+    {
+      "name": "disconnectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [
     {
       "name": "opened-changed",
