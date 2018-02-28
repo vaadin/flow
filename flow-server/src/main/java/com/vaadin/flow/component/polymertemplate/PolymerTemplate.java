@@ -210,7 +210,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         // which properties needs update to the server
         getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
                 .beforeClientResponse(getStateNode(),
-                        () -> ui.getPage().executeJavaScript(
+                        context -> context.getUI().getPage().executeJavaScript(
                                 "this.registerUpdatableModelProperties($0, $1)",
                                 getElement(),
                                 filterUpdatableProperties(allowedProperties))));
@@ -227,7 +227,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
          */
         getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
                 .beforeClientResponse(getStateNode(),
-                        () -> ui.getPage().executeJavaScript(
+                        context -> context.getUI().getPage().executeJavaScript(
                                 "this.populateModelProperties($0, $1)",
                                 getElement(),
                                 filterUnsetProperties(propertyNames))));

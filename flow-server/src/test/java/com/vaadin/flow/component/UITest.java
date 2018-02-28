@@ -1,16 +1,14 @@
 package com.vaadin.flow.component;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -18,12 +16,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
 import com.vaadin.flow.dom.Element;
@@ -42,6 +34,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class UITest {
 
@@ -298,9 +293,9 @@ public class UITest {
 
         List<Integer> results = new ArrayList<>();
 
-        ui.beforeClientResponse(rootComponent, () -> results.add(0));
-        ui.beforeClientResponse(rootComponent, () -> results.add(1));
-        ui.beforeClientResponse(rootComponent, () -> results.add(2));
+        ui.beforeClientResponse(rootComponent, context -> results.add(0));
+        ui.beforeClientResponse(rootComponent, context -> results.add(1));
+        ui.beforeClientResponse(rootComponent, context -> results.add(2));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 3 results in the list",
@@ -321,13 +316,13 @@ public class UITest {
 
         List<Integer> results = new ArrayList<>();
 
-        ui.beforeClientResponse(rootComponent, () -> results.add(0));
-        ui.beforeClientResponse(rootComponent, () -> {
+        ui.beforeClientResponse(rootComponent, context -> results.add(0));
+        ui.beforeClientResponse(rootComponent, context -> {
             results.add(1);
-            ui.beforeClientResponse(rootComponent, () -> results.add(3));
-            ui.beforeClientResponse(rootComponent, () -> results.add(4));
+            ui.beforeClientResponse(rootComponent, context2 -> results.add(3));
+            ui.beforeClientResponse(rootComponent, context2 -> results.add(4));
         });
-        ui.beforeClientResponse(rootComponent, () -> results.add(2));
+        ui.beforeClientResponse(rootComponent, context -> results.add(2));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 5 results in the list",
@@ -349,10 +344,10 @@ public class UITest {
 
         List<Integer> results = new ArrayList<>();
 
-        ui.beforeClientResponse(emptyComponent, () -> results.add(0));
-        ui.beforeClientResponse(rootComponent, () -> results.add(1));
-        ui.beforeClientResponse(emptyComponent, () -> results.add(2));
-        ui.beforeClientResponse(rootComponent, () -> results.add(3));
+        ui.beforeClientResponse(emptyComponent, context -> results.add(0));
+        ui.beforeClientResponse(rootComponent, context -> results.add(1));
+        ui.beforeClientResponse(emptyComponent, context -> results.add(2));
+        ui.beforeClientResponse(rootComponent, context -> results.add(3));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 2 results in the list",
@@ -374,16 +369,16 @@ public class UITest {
 
         List<Integer> results = new ArrayList<>();
 
-        ui.beforeClientResponse(emptyComponent1, () -> {
+        ui.beforeClientResponse(emptyComponent1, context -> {
             results.add(0);
             ui.add(emptyComponent2);
         });
-        ui.beforeClientResponse(rootComponent, () -> {
+        ui.beforeClientResponse(rootComponent, context -> {
             results.add(1);
             ui.add(emptyComponent1);
         });
-        ui.beforeClientResponse(emptyComponent2, () -> results.add(2));
-        ui.beforeClientResponse(rootComponent, () -> results.add(3));
+        ui.beforeClientResponse(emptyComponent2, context -> results.add(2));
+        ui.beforeClientResponse(rootComponent, context -> results.add(3));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 4 results in the list",
@@ -397,5 +392,58 @@ public class UITest {
                 results.get(2).intValue());
         Assert.assertEquals("The result at index '3' should be 2", 2,
                 results.get(3).intValue());
+    }
+
+    @Test
+    public void beforeClientResponse_withReattachedNodes() {
+        UI ui = createAndInitTestUI("");
+        Component root = new AttachableComponent();
+        ui.add(root);
+        ui.getInternals().getStateTree().collectChanges(change -> {
+        });
+        AttachableComponent leaf = new AttachableComponent();
+        ui.add(leaf);
+
+        AtomicInteger callCounter = new AtomicInteger();
+
+        ui.beforeClientResponse(root, context -> {
+            Assert.assertTrue(
+                    "Root component should be marked as 'clientSideInitialized'",
+                    context.isClientSideInitialized());
+            callCounter.incrementAndGet();
+
+        });
+        ui.beforeClientResponse(leaf, context -> {
+            Assert.assertFalse(
+                    "Leaf component should NOT be marked as 'clientSideInitialized'",
+                    context.isClientSideInitialized());
+            callCounter.incrementAndGet();
+        });
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        ui.remove(root);
+        ui.add(root);
+        ui.beforeClientResponse(root, context -> {
+            Assert.assertTrue(
+                    "Reattached root component (in the same request) should be marked as 'clientSideInitialized'",
+                    context.isClientSideInitialized());
+            callCounter.incrementAndGet();
+        });
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        ui.remove(root);
+        ui.getInternals().getStateTree().collectChanges(change -> {
+        });
+        ui.add(root);
+        ui.beforeClientResponse(root, context -> {
+            Assert.assertFalse(
+                    "Reattached root component (in different requests) should NOT be marked as 'clientSideInitialized'",
+                    context.isClientSideInitialized());
+            callCounter.incrementAndGet();
+        });
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        Assert.assertEquals("There should be 4 invocations", 4,
+                callCounter.get());
     }
 }

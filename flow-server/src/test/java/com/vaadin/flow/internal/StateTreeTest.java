@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -346,9 +347,9 @@ public class StateTreeTest {
 
         List<Integer> results = new ArrayList<>();
 
-        tree.beforeClientResponse(rootNode, () -> results.add(0));
-        tree.beforeClientResponse(rootNode, () -> results.add(1));
-        tree.beforeClientResponse(rootNode, () -> results.add(2));
+        tree.beforeClientResponse(rootNode, context -> results.add(0));
+        tree.beforeClientResponse(rootNode, context -> results.add(1));
+        tree.beforeClientResponse(rootNode, context -> results.add(2));
 
         tree.runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 3 results in the list",
@@ -367,13 +368,13 @@ public class StateTreeTest {
 
         List<Integer> results = new ArrayList<>();
 
-        tree.beforeClientResponse(rootNode, () -> results.add(0));
-        tree.beforeClientResponse(rootNode, () -> {
+        tree.beforeClientResponse(rootNode, context -> results.add(0));
+        tree.beforeClientResponse(rootNode, context -> {
             results.add(1);
-            tree.beforeClientResponse(rootNode, () -> results.add(3));
-            tree.beforeClientResponse(rootNode, () -> results.add(4));
+            tree.beforeClientResponse(rootNode, context2 -> results.add(3));
+            tree.beforeClientResponse(rootNode, context2 -> results.add(4));
         });
-        tree.beforeClientResponse(rootNode, () -> results.add(2));
+        tree.beforeClientResponse(rootNode, context -> results.add(2));
 
         tree.runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 5 results in the list",
@@ -393,10 +394,10 @@ public class StateTreeTest {
 
         List<Integer> results = new ArrayList<>();
 
-        tree.beforeClientResponse(emptyNode, () -> results.add(0));
-        tree.beforeClientResponse(rootNode, () -> results.add(1));
-        tree.beforeClientResponse(emptyNode, () -> results.add(2));
-        tree.beforeClientResponse(rootNode, () -> results.add(3));
+        tree.beforeClientResponse(emptyNode, context -> results.add(0));
+        tree.beforeClientResponse(rootNode, context -> results.add(1));
+        tree.beforeClientResponse(emptyNode, context -> results.add(2));
+        tree.beforeClientResponse(rootNode, context -> results.add(3));
 
         tree.runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 2 results in the list",
@@ -416,16 +417,16 @@ public class StateTreeTest {
 
         List<Integer> results = new ArrayList<>();
 
-        tree.beforeClientResponse(emptyNode1, () -> {
+        tree.beforeClientResponse(emptyNode1, context -> {
             results.add(0);
             StateNodeTest.setParent(emptyNode2, rootNode);
         });
-        tree.beforeClientResponse(rootNode, () -> {
+        tree.beforeClientResponse(rootNode, context -> {
             results.add(1);
             StateNodeTest.setParent(emptyNode1, rootNode);
         });
-        tree.beforeClientResponse(emptyNode2, () -> results.add(2));
-        tree.beforeClientResponse(rootNode, () -> results.add(3));
+        tree.beforeClientResponse(emptyNode2, context -> results.add(2));
+        tree.beforeClientResponse(rootNode, context -> results.add(3));
 
         tree.runExecutionsBeforeClientResponse();
         Assert.assertTrue("There should be 4 results in the list",
@@ -449,20 +450,21 @@ public class StateTreeTest {
 
         StateNodeTest.setParent(node2, node1);
 
-        class CapturingRunnable implements Runnable {
+        class CapturingConsumer
+                implements SerializableConsumer<ExecutionContext> {
             private final Object captured;
 
-            public CapturingRunnable(Object captured) {
+            public CapturingConsumer(Object captured) {
                 this.captured = captured;
             }
 
             @Override
-            public void run() {
-                // nop
+            public void accept(ExecutionContext t) {
+                // no-op
             }
         }
 
-        tree.beforeClientResponse(node2, new CapturingRunnable(node2));
+        tree.beforeClientResponse(node2, new CapturingConsumer(node2));
 
         StateNodeTest.setParent(node2, null);
 

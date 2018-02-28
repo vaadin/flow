@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
@@ -89,8 +90,8 @@ public class DataCommunicator<T> {
     private Registration dataProviderUpdateRegistration;
     private Set<T> updatedData = new HashSet<>();
 
-    private Runnable flushRequest;
-    private Runnable flushUpdatedDataRequest;
+    private SerializableConsumer<ExecutionContext> flushRequest;
+    private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
 
     /**
      * Creates a new instance.
@@ -337,7 +338,7 @@ public class DataCommunicator<T> {
 
     private void requestFlush() {
         if (flushRequest == null) {
-            flushRequest = () -> {
+            flushRequest = context -> {
                 flush();
                 flushRequest = null;
             };
@@ -348,7 +349,7 @@ public class DataCommunicator<T> {
 
     private void requestFlushUpdatedData() {
         if (flushUpdatedDataRequest == null) {
-            flushUpdatedDataRequest = () -> {
+            flushUpdatedDataRequest = context -> {
                 flushUpdatedData();
                 flushUpdatedDataRequest = null;
             };

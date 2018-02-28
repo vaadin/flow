@@ -16,12 +16,6 @@
 
 package com.vaadin.flow.component.polymertemplate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -35,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.junit.After;
@@ -63,7 +58,12 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import net.jcip.annotations.NotThreadSafe;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @NotThreadSafe
 public class PolymerTemplateTest extends HasCurrentService {

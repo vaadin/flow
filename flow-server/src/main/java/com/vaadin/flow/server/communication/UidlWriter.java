@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server.communication;
 
+import javax.servlet.http.HttpServletRequest;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,8 +39,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -287,9 +287,9 @@ public class UidlWriter implements Serializable {
     }
 
     /**
-     * Encodes the state tree changes of the given UI. The runnables registered
+     * Encodes the state tree changes of the given UI. The executions registered
      * at
-     * {@link StateTree#beforeClientResponse(com.vaadin.flow.internal.StateNode, Runnable)}
+     * {@link StateTree#beforeClientResponse(com.vaadin.flow.internal.StateNode, com.vaadin.flow.function.SerializableConsumer)}
      * at evaluated before the changes are encoded.
      *
      * @param ui
