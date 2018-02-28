@@ -1373,10 +1373,13 @@ public class ComponentGenerator {
                         "a {@link Registration} for removing the event listener");
 
         if (propertyNameCamelCase != null) {
+            String propertyNameBeforeRenaming = ComponentGeneratorUtils
+                    .formatStringToValidJavaIdentifier(event.getName()
+                            .replace(PROPERTY_CHANGE_EVENT_POSTFIX, ""));
             method.setBody(String.format(
                     "return getElement().addPropertyChangeListener(\"%s\", "
                             + "event -> listener.onComponentEvent(new %s<%s>(get(), event.isUserOriginated())));",
-                    propertyNameCamelCase, eventClass.getName(),
+                    propertyNameBeforeRenaming, eventClass.getName(),
                     eventClass.getTypeVariables().get(0).getName()));
         } else {
             method.setBody(String.format(
@@ -1447,7 +1450,7 @@ public class ComponentGenerator {
             }
         }
 
-        if (!isPropertyChange) {
+        else {
             for (ComponentPropertyBaseData property : event.getProperties()) {
                 // Add new parameter to constructor
                 final String propertyName = property.getName();
