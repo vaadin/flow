@@ -2,7 +2,7 @@
   "name": "Vaadin.DatePickerLightElement",
   "tag": "vaadin-date-picker-light",
   "baseUrl": "vaadin-date-picker/src/vaadin-date-picker-light.html",
-  "version": "3.0.0-beta1",
+  "version": "3.0.0-beta3",
   "properties": [
     {
       "name": "value",

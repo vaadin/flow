@@ -32,6 +32,22 @@ import elemental.json.JsonObject;
  * </p>
  * <h3>Styling</h3>
  * <p>
+ * The following shadow DOM parts are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code content}</td>
+ * <td>The element that wraps the item label or template content</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
  * The following state attributes are exposed for styling:
  * </p>
  * <table>
