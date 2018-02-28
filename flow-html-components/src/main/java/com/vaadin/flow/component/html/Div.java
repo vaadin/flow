@@ -44,4 +44,15 @@ public class Div extends HtmlContainer implements ClickNotifier {
     public Div(Component... components) {
         super(components);
     }
+
+    /**
+     * Creates a new div with the given text.
+     *
+     * @param text
+     *            the text
+     */
+    public Div(String text) {
+        super();
+        setText(text);
+    }
 }
