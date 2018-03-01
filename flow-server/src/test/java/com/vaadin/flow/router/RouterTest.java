@@ -506,11 +506,34 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route(value = "child", layout = RouteParent.class)
-    public static class RouteChild extends Component {
+    @Tag(Tag.DIV)
+    public static class RouteChild extends Component
+            implements BeforeLeaveObserver, BeforeEnterObserver {
+
+        static List<EventObject> events = new ArrayList<>();
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            events.add(event);
+        }
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            events.add(event);
+        }
     }
 
     @Route(value = "single", layout = RouteParent.class, absolute = true)
-    public static class LoneRoute extends Component {
+    @Tag(Tag.DIV)
+    public static class LoneRoute extends Component
+            implements BeforeEnterObserver {
+
+        static List<EventObject> events = new ArrayList<>();
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            events.add(event);
+        }
     }
 
     @Route("")
@@ -2279,6 +2302,28 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(1, RootNavigationTarget.events.size());
         Assert.assertEquals(AfterNavigationEvent.class,
                 RootNavigationTarget.events.get(0).getClass());
+    }
+
+    @Test
+    public void navaigateWithinOneParent_oneLeaveEventOneEnterEvent()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(RouteChild.class, LoneRoute.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("parent/child"),
+                NavigationTrigger.PROGRAMMATIC);
+        RouteChild.events.clear();
+        router.navigate(ui, new Location("single"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(1, RouteChild.events.size());
+        Assert.assertEquals(BeforeLeaveEvent.class,
+                RouteChild.events.get(0).getClass());
+
+        Assert.assertEquals(1, LoneRoute.events.size());
+        Assert.assertEquals(BeforeEnterEvent.class,
+                RouteChild.events.get(0).getClass());
     }
 
     private Class<? extends Component> getUIComponent() {
