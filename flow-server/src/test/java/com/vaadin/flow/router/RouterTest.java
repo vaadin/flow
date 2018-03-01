@@ -24,10 +24,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,8 +51,7 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
-import com.vaadin.flow.router.internal.ContinueNavigationAction;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -82,7 +81,15 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("")
     @Tag(Tag.DIV)
-    public static class RootNavigationTarget extends Component {
+    public static class RootNavigationTarget extends Component
+            implements AfterNavigationObserver {
+
+        static List<EventObject> events = new ArrayList<>();
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            events.add(event);
+        }
     }
 
     @Route("foo")
@@ -458,6 +465,7 @@ public class RouterTest extends RoutingTestBase {
         public Optional<RouterInterface> getRouterInterface() {
             return Optional.of(router);
         }
+
     }
 
     @Route("navigationEvents")
@@ -767,15 +775,37 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("foo")
+    @Tag(Tag.DIV)
+    public static class ProceedRightAfterPospone extends Component
+            implements BeforeLeaveObserver {
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            event.postpone().proceed();
+        }
+
+    }
+
     static void sleepThenRun(int millis, ContinueNavigationAction action) {
+        UI ui = UI.getCurrent();
         new Thread(() -> {
+            ui.getSession().lock();
+            UI.setCurrent(ui);
             try {
                 Thread.sleep(millis);
             } catch (InterruptedException e) {
                 fail("Resuming thread was interrupted");
             }
             eventCollector.add("Resuming");
-            action.proceed();
+            try {
+                action.proceed();
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            } finally {
+                ui.getSession().unlock();
+            }
+            UI.setCurrent(null);
         }).start();
     }
 
@@ -2025,7 +2055,11 @@ public class RouterTest extends RoutingTestBase {
                 HttpServletResponse.SC_OK, status3);
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
 
+        ui.getSession().unlock();
+
         Thread.sleep(200);
+
+        ui.getSession().lock();
 
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 4,
@@ -2222,6 +2256,29 @@ public class RouterTest extends RoutingTestBase {
                 FooNavigationTarget.class.getAnnotation(Route.class).value(),
                 router.getUrlBase(FooNavigationTarget.class));
 
+    }
+
+    @Test
+    public void proceedRightAfterPostpone_navigationIsDone()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(ProceedRightAfterPospone.class,
+                                RootNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        RootNavigationTarget.events.clear();
+
+        router.navigate(ui, new Location("foo"),
+                NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        // View ProceedRightAfterPospone postpones the navigation and
+        // immediately proceed, it means that RootNavigationTarget should be
+        // informed about AfterNavigationEvent
+        Assert.assertEquals(1, RootNavigationTarget.events.size());
+        Assert.assertEquals(AfterNavigationEvent.class,
+                RootNavigationTarget.events.get(0).getClass());
     }
 
     private Class<? extends Component> getUIComponent() {
