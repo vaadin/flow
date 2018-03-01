@@ -71,12 +71,21 @@ public class Poller {
             pollTimer = new Timer() {
                 @Override
                 public void run() {
-                    StateTree stateTree = registry.getStateTree();
-                    stateTree.sendEventToServer(stateTree.getRootNode(),
-                            PollEvent.DOM_EVENT_NAME, null);
+                    poll();
                 }
+
             };
             pollTimer.scheduleRepeating(interval);
         }
     }
+
+    /**
+     * Polls the server for changes.
+     */
+    public void poll() {
+        StateTree stateTree = registry.getStateTree();
+        stateTree.sendEventToServer(stateTree.getRootNode(),
+                PollEvent.DOM_EVENT_NAME, null);
+    }
+
 }

@@ -20,6 +20,7 @@ import com.vaadin.client.communication.DefaultConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
+import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.PushConfiguration;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
@@ -85,5 +86,6 @@ public class DefaultRegistry extends Registry {
         set(ReconnectDialogConfiguration.class,
                 new ReconnectDialogConfiguration(this));
         set(ScrollPositionHandler.class, new ScrollPositionHandler(this));
+        set(Poller.class, new Poller(this));
     }
 }
