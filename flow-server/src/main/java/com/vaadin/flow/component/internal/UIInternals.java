@@ -16,17 +16,13 @@
 package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.internal.*;
+import com.vaadin.flow.shared.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,10 +48,6 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.ContinueNavigationAction;
-import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.router.legacy.HasChildView;
 import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.VaadinRequest;
@@ -76,6 +68,59 @@ import com.vaadin.flow.theme.Theme;
  * @author Vaadin Ltd
  */
 public class UIInternals implements Serializable {
+
+    private final ArrayList<BeforeEnterListener> beforeEnterListeners = new ArrayList<>();
+
+    private final ArrayList<BeforeLeaveListener> beforeLeaveListeners = new ArrayList<>();
+
+    /**
+     * A {@link Collection} of {@link BeforeEnterHandler}s for this UI.
+     * This collection is not modifiable.
+     * @return the Collection, not <code>null</code>
+     */
+    public Collection<BeforeEnterHandler> getBeforeEnterListeners(){
+        return Collections.unmodifiableCollection(beforeEnterListeners);
+    }
+
+    /**
+     * A {@link Collection} of {@link BeforeLeaveHandler}s for this UI.
+     * This collection is not modifiable.
+     * @return the Collection, not <code>null</code>
+     */
+    public Collection<BeforeLeaveHandler> getBeforeLeaveListeners(){
+        return Collections.unmodifiableCollection(beforeLeaveListeners);
+    }
+
+    /**
+     * Adds a listener that gets notified before the navigation state changes.
+     *
+     * @see BeforeEnterListener
+     *
+     * @param beforeEnterListener
+     *            the before enter listener
+     * @return a handle that can be used for removing the Handler
+     */
+    public Registration addBeforeEnterListener(BeforeEnterListener beforeEnterListener) {
+
+        beforeEnterListeners.add(beforeEnterListener);
+
+        return () -> beforeEnterListeners.remove(beforeEnterListener);
+    }
+
+    /**
+     * Adds a listener that gets notified after the navigation state changed.
+     *
+     * @see BeforeLeaveHandler
+     *
+     * @param beforeLeaveListener
+     *            the before leave listener
+     * @return a handle that can be used for removing the Handler
+     */
+    public Registration addBeforeLeaveListener(BeforeLeaveListener beforeLeaveListener) {
+        beforeLeaveListeners.add(beforeLeaveListener);
+
+        return () -> beforeLeaveListeners.remove(beforeLeaveListener);
+    }
 
     /**
      * A {@link Page#executeJavaScript(String, Serializable...)} invocation that
