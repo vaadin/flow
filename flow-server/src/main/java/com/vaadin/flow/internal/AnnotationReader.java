@@ -23,15 +23,11 @@ import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Push;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.legacy.View;
-import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.shared.ui.Transport;
 
 /**
  * Helper class for reading annotation data.
@@ -55,32 +51,6 @@ public class AnnotationReader {
             Class<? extends View> viewWithTitle) {
         return getAnnotationFor(viewWithTitle, PageTitle.class)
                 .map(PageTitle::value);
-    }
-
-    /**
-     * Finds the {@link PushMode} to use for a specific UI, if defined with a
-     * {@link Push @Push} annotation.
-     *
-     * @param uiClass
-     *            the UI to search for the Push annotation.
-     * @return the push mode to use, or an empty optional if no annotation
-     *         present
-     */
-    public static Optional<PushMode> getPushMode(Class<? extends UI> uiClass) {
-        return getAnnotationFor(uiClass, Push.class).map(Push::value);
-    }
-
-    /**
-     * Finds the {@link Transport} to use for a specific UI, if defined with a
-     * {@link Push @Push} annotation.
-     *
-     * @param uiClass
-     *            the UI to search for the Push annotation
-     * @return the transport type to use, or an empty optional if no annotation
-     *         present
-     */
-    public static Optional<Transport> getPushTransport(Class<?> uiClass) {
-        return getAnnotationFor(uiClass, Push.class).map(Push::transport);
     }
 
     /**

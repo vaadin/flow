@@ -22,11 +22,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.annotation.HandlesTypes;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.page.BodySize;
-import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -35,7 +34,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.theme.Theme;
 
 /**
  * Common validation methods for route registry initializer.
@@ -87,8 +85,11 @@ public abstract class AbstractRouteRegistryInitializer {
         }
 
         /* Validate annotation usage */
-        Stream.of(Viewport.class, BodySize.class, Inline.class, Theme.class)
-                .forEach(annotation -> {
+        Stream.of(AnnotationValidator.class.getAnnotation(HandlesTypes.class)
+                .value()).forEach(type -> {
+                    Class<? extends Annotation> annotation = type
+                            .asSubclass(Annotation.class);
+
                     validateRouteAnnotation(route, annotation);
 
                     for (RouteAlias alias : route

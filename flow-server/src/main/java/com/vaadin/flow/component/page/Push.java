@@ -14,13 +14,14 @@
  * the License.
  */
 
-package com.vaadin.flow.component;
+package com.vaadin.flow.component.page;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
