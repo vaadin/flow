@@ -55,7 +55,7 @@ public class ApplicationConnection {
         StateNode rootNode = registry.getStateTree().getRootNode();
 
         // Bind UI configuration objects
-        PollConfigurator.observe(rootNode, new Poller(registry));
+        PollConfigurator.observe(rootNode, registry.getPoller());
         ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
 
         new PopStateHandler(registry).bind();
@@ -139,7 +139,10 @@ public class ApplicationConnection {
             return ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId);
         });
         client.productionMode = productionMode;
-    
+        client.poll = $entry(function() {
+                var poller = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getPoller()();
+                poller.@com.vaadin.client.communication.Poller::poll()();
+        });
         $wnd.Vaadin.Flow.resolveUri = $entry(function(uriToResolve) {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);

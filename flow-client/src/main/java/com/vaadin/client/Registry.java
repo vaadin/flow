@@ -19,6 +19,7 @@ import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
+import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.PushConfiguration;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
@@ -311,4 +312,14 @@ public class Registry {
     public InitialPropertiesHandler getInitialPropertiesHandler() {
         return get(InitialPropertiesHandler.class);
     }
+
+    /**
+     * Gets the {@link Poller} singleton.
+     *
+     * @return the {@link Poller} singleton
+     */
+    public Poller getPoller() {
+        return get(Poller.class);
+    }
+
 }
