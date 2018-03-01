@@ -1119,7 +1119,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void test_reroute_on_before_navigation_event()
+    public void reroute_on_before_navigation_event()
             throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(Stream
                 .of(RootNavigationTarget.class, ReroutingNavigationTarget.class,
@@ -2323,7 +2323,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(1, LoneRoute.events.size());
         Assert.assertEquals(BeforeEnterEvent.class,
-                RouteChild.events.get(0).getClass());
+                LoneRoute.events.get(0).getClass());
     }
 
     private Class<? extends Component> getUIComponent() {

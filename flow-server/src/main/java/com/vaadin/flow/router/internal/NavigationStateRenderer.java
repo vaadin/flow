@@ -17,9 +17,12 @@ package com.vaadin.flow.router.internal;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -107,6 +110,7 @@ public class NavigationStateRenderer implements NavigationHandler {
                 .createRouteTarget(routeTargetType, event));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
@@ -173,16 +177,15 @@ public class NavigationStateRenderer implements NavigationHandler {
             return reroute(event, beforeNavigationActivating);
         }
 
+        List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
+                .subList(1, chain.size());
+
         transitionOutcome = executeBeforeEnterNavigation(
-                beforeNavigationActivating, chain);
+                beforeNavigationActivating, componentInstance, routerLayouts);
 
         if (TransitionOutcome.REROUTED.equals(transitionOutcome)) {
             return reroute(event, beforeNavigationActivating);
         }
-
-        @SuppressWarnings("unchecked")
-        List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
-                .subList(1, chain.size());
 
         ui.getInternals().showRouteTarget(event.getLocation(),
                 navigationState.getResolvedPath(), componentInstance,
@@ -289,14 +292,24 @@ public class NavigationStateRenderer implements NavigationHandler {
      *
      * @param beforeNavigation
      *            navigation event sent to observers
+     * @param observersRoot
+     *            element which is used as a root to traverse for obeservers
      * @param elements
      *            elements for which to handle observers
      * @return result of observer events
      */
     private TransitionOutcome executeBeforeEnterNavigation(
-            BeforeEnterEvent beforeNavigation, List<HasElement> elements) {
-        List<BeforeEnterObserver> enterObservers = EventUtil
-                .collectBeforeEnterObservers(elements);
+            BeforeEnterEvent beforeNavigation, HasElement observersRoot,
+            List<? extends HasElement> elements) {
+        List<BeforeEnterObserver> enterObservers = Stream
+                .concat(EventUtil
+                        .collectBeforeEnterObservers(
+                                Collections.singletonList(observersRoot))
+                        .stream(),
+                        EventUtil.getImplementingComponents(
+                                elements.stream().map(HasElement::getElement),
+                                BeforeEnterObserver.class))
+                .collect(Collectors.toList());
 
         for (BeforeEnterObserver observer : enterObservers) {
             observer.beforeEnter(beforeNavigation);
