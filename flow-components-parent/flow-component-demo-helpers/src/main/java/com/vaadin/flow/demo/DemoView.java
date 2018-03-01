@@ -199,10 +199,10 @@ public abstract class DemoView extends Component
         if (tab != null) {
             container.removeAll();
             container.add(tab);
+            navBar.setActive(getTabUrl(tabUrl));
+            tab.getElement().getNode().runWhenAttached(ui -> ui.getPage()
+                    .executeJavaScript("Prism.highlightAll();"));
         }
-        navBar.setActive(getTabUrl(tabUrl));
-        tab.getElement().getNode().runWhenAttached(
-                ui -> ui.getPage().executeJavaScript("Prism.highlightAll();"));
     }
 
     @Override
