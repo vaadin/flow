@@ -946,6 +946,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         UI.setCurrent(ui);
         ui.doInit(request, session.getNextUIid());
         session.addUI(ui);
+
+        VaadinService vaadinService = VaadinService.getCurrent();
+
+        UIInitEvent uiInitEvent = new UIInitEvent(ui, vaadinService);
+
+        for (UIInitListener uiInitListener : vaadinService.getUiInitListeners()) {
+            uiInitListener.uiInit(uiInitEvent);
+        }
+
         return ui;
     }
 
