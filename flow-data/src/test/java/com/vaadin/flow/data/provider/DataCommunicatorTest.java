@@ -95,8 +95,7 @@ public class DataCommunicatorTest {
     @Test
     public void communicator_with_0_items_should_not_refresh_all() {
         dataCommunicator.setRequestedRange(0, 0);
-        // Fake client communication.
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        fakeClientCommunication();
 
         Assert.assertEquals(Range.withLength(0, 0), lastSet);
         Assert.assertNull(
@@ -104,8 +103,7 @@ public class DataCommunicatorTest {
                 lastClear);
 
         dataCommunicator.setRequestedRange(0, 0);
-        // Fake client communication.
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        fakeClientCommunication();
 
         Assert.assertEquals(Range.withLength(0, 0), lastSet);
         Assert.assertNull(
@@ -115,40 +113,90 @@ public class DataCommunicatorTest {
 
     @Test
     public void communicator_with_items_should_send_updates_but_not_refresh_all() {
-        dataCommunicator
-                .setDataProvider(new AbstractDataProvider<String, Object>() {
-                    @Override
-                    public boolean isInMemory() {
-                        return true;
-                    }
-
-                    @Override
-                    public int size(Query<String, Object> query) {
-                        return 100;
-                    }
-
-                    @Override
-                    public Stream<String> fetch(Query<String, Object> query) {
-                        return IntStream
-                                .range(query.getOffset(),
-                                        query.getLimit() + query.getOffset())
-                                .mapToObj(Integer::toString);
-                    }
-                }, null);
+        dataCommunicator.setDataProvider(createDataProvider(), null);
 
         dataCommunicator.setRequestedRange(0, 50);
-        // Fake client communication.
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        fakeClientCommunication();
 
         Assert.assertEquals(
                 "Expected request range for 50 items on first request.",
                 Range.withLength(0, 50), lastSet);
 
         dataCommunicator.setRequestedRange(0, 70);
-        // Fake client communication.
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        fakeClientCommunication();
+
         Assert.assertEquals("Expected request range for 20 new items.",
                 Range.withLength(50, 20), lastSet);
+    }
+
+    @Test
+    public void reattach_different_roundtrip_refresh_all() {
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertEquals("Expected initial full reset.",
+                Range.withLength(0, 50), lastSet);
+        lastSet = null;
+
+        element.removeFromParent();
+        fakeClientCommunication();
+
+        Assert.assertNull("Expected no during reattach.", lastSet);
+
+        ui.getElement().appendChild(element);
+        fakeClientCommunication();
+
+        Assert.assertEquals("Expected initial full reset after reattach",
+                Range.withLength(0, 50), lastSet);
+    }
+
+    @Test
+    public void reattach_same_roundtrip_refresh_nothing() {
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertEquals("Expected initial full reset.",
+                Range.withLength(0, 50), lastSet);
+        lastSet = null;
+
+        element.removeFromParent();
+
+        Assert.assertNull("Expected no communication during reattach", lastSet);
+
+        ui.getElement().appendChild(element);
+        fakeClientCommunication();
+
+        Assert.assertNull("Expected no communication after reattach", lastSet);
+    }
+
+    private void fakeClientCommunication() {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().getStateTree().collectChanges(ignore -> {
+        });
+    }
+
+    private AbstractDataProvider<String, Object> createDataProvider() {
+        return new AbstractDataProvider<String, Object>() {
+            @Override
+            public boolean isInMemory() {
+                return true;
+            }
+
+            @Override
+            public int size(Query<String, Object> query) {
+                return 100;
+            }
+
+            @Override
+            public Stream<String> fetch(Query<String, Object> query) {
+                return IntStream
+                        .range(query.getOffset(),
+                                query.getLimit() + query.getOffset())
+                        .mapToObj(Integer::toString);
+            }
+        };
     }
 
     public static class MockUI extends UI {
