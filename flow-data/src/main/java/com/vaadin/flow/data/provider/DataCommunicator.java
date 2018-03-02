@@ -326,6 +326,9 @@ public class DataCommunicator<T> {
                         reset();
                     }
                 });
+
+        // Ensure the initialize check is done
+        requestFlush();
     }
 
     private void handleDetach() {
@@ -339,6 +342,10 @@ public class DataCommunicator<T> {
     private void requestFlush() {
         if (flushRequest == null) {
             flushRequest = context -> {
+                if (!context.isClientSideInitialized()) {
+                    reset();
+                    arrayUpdater.initialize();
+                }
                 flush();
                 flushRequest = null;
             };
