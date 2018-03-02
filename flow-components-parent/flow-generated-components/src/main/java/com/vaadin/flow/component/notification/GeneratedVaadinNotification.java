@@ -44,7 +44,7 @@ Your work has been saved
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.NotificationElement#1.0.0-beta1",
+        "WebComponent: Vaadin.NotificationElement#1.0.0-beta2",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-notification")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
