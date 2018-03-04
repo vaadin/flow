@@ -505,6 +505,32 @@ public class RouterTest extends RoutingTestBase {
     public static class RouteParent extends Component implements RouterLayout {
     }
 
+    @Route(value = "after-navigation-child", layout = RouteParent.class)
+    @Tag(Tag.DIV)
+    public static class AfterNavigationChild extends Component
+            implements AfterNavigationObserver {
+
+        static List<EventObject> events = new ArrayList<>();
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            events.add(event);
+        }
+    }
+
+    @Route(value = "after-navigation-within-same-parent", layout = RouteParent.class)
+    @Tag(Tag.DIV)
+    public static class AfterNavigationWithinSameParent extends Component
+            implements AfterNavigationObserver {
+
+        static List<EventObject> events = new ArrayList<>();
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            events.add(event);
+        }
+    }
+
     @Route(value = "child", layout = RouteParent.class)
     @Tag(Tag.DIV)
     public static class RouteChild extends Component
@@ -521,6 +547,7 @@ public class RouterTest extends RoutingTestBase {
         public void beforeLeave(BeforeLeaveEvent event) {
             events.add(event);
         }
+
     }
 
     @Route(value = "single", layout = RouteParent.class, absolute = true)
@@ -534,6 +561,7 @@ public class RouterTest extends RoutingTestBase {
         public void beforeEnter(BeforeEnterEvent event) {
             events.add(event);
         }
+
     }
 
     @Route("")
@@ -2324,6 +2352,29 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(1, LoneRoute.events.size());
         Assert.assertEquals(BeforeEnterEvent.class,
                 LoneRoute.events.get(0).getClass());
+    }
+
+    @Test
+    public void navaigateWithinOneParent_oneAfterNavigationEventOneEventOnly()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(AfterNavigationChild.class,
+                                AfterNavigationWithinSameParent.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("parent/after-navigation-child"),
+                NavigationTrigger.PROGRAMMATIC);
+        AfterNavigationChild.events.clear();
+        router.navigate(ui,
+                new Location("parent/after-navigation-within-same-parent"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(0, AfterNavigationChild.events.size());
+
+        Assert.assertEquals(1, AfterNavigationWithinSameParent.events.size());
+        Assert.assertEquals(AfterNavigationEvent.class,
+                AfterNavigationWithinSameParent.events.get(0).getClass());
     }
 
     private Class<? extends Component> getUIComponent() {

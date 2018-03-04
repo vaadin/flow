@@ -32,6 +32,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
@@ -197,7 +198,7 @@ public class NavigationStateRenderer implements NavigationHandler {
                 chain);
 
         if (locationChangeEvent.getStatusCode() == HttpServletResponse.SC_OK) {
-            fireAfterNavigationListeners(chain,
+            fireAfterNavigationListeners(componentInstance, routerLayouts,
                     new AfterNavigationEvent(locationChangeEvent));
         }
 
@@ -225,9 +226,16 @@ public class NavigationStateRenderer implements NavigationHandler {
         });
     }
 
-    private void fireAfterNavigationListeners(List<HasElement> chain,
-            AfterNavigationEvent event) {
-        EventUtil.collectAfterNavigationObservers(chain)
+    private void fireAfterNavigationListeners(HasElement observersRoot,
+            List<? extends HasElement> elements, AfterNavigationEvent event) {
+        Stream.concat(
+                EventUtil
+                        .collectAfterNavigationObservers(
+                                Collections.singletonList(observersRoot))
+                        .stream(),
+                EventUtil.getImplementingComponents(
+                        elements.stream().map(HasElement::getElement),
+                        AfterNavigationObserver.class))
                 .forEach(listener -> listener.afterNavigation(event));
     }
 
