@@ -2370,10 +2370,19 @@ public class RouterTest extends RoutingTestBase {
                 new Location("parent/after-navigation-within-same-parent"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(0, AfterNavigationChild.events.size());
+        Assert.assertEquals(
+                "After navigation event should not be fired for "
+                        + AfterNavigationChild.class.getSimpleName(),
+                0, AfterNavigationChild.events.size());
 
-        Assert.assertEquals(1, AfterNavigationWithinSameParent.events.size());
-        Assert.assertEquals(AfterNavigationEvent.class,
+        Assert.assertEquals(
+                "Only one navigation event should be fired for "
+                        + AfterNavigationWithinSameParent.class.getSimpleName(),
+                1, AfterNavigationWithinSameParent.events.size());
+        Assert.assertEquals(
+                "The fired event type should be "
+                        + AfterNavigationEvent.class.getSimpleName(),
+                AfterNavigationEvent.class,
                 AfterNavigationWithinSameParent.events.get(0).getClass());
     }
 

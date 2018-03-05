@@ -228,14 +228,15 @@ public class NavigationStateRenderer implements NavigationHandler {
 
     private void fireAfterNavigationListeners(HasElement observersRoot,
             List<? extends HasElement> elements, AfterNavigationEvent event) {
-        Stream.concat(
-                EventUtil
-                        .collectAfterNavigationObservers(
-                                Collections.singletonList(observersRoot))
-                        .stream(),
-                EventUtil.getImplementingComponents(
+        Stream<AfterNavigationObserver> observerRootDescendants = EventUtil
+                .collectAfterNavigationObservers(
+                        Collections.singletonList(observersRoot))
+                .stream();
+        Stream<AfterNavigationObserver> otherObservers = EventUtil
+                .getImplementingComponents(
                         elements.stream().map(HasElement::getElement),
-                        AfterNavigationObserver.class))
+                        AfterNavigationObserver.class);
+        Stream.concat(observerRootDescendants, otherObservers)
                 .forEach(listener -> listener.afterNavigation(event));
     }
 
