@@ -154,6 +154,9 @@ public class Bootstrapper implements EntryPoint {
 
         // Debug or production mode?
         conf.setProductionMode(!jsoConfiguration.getConfigBoolean("debug"));
+        conf.setRequestTiming(
+                jsoConfiguration.getConfigBoolean("requestTiming"));
+
     }
 
     private static void doStartApplication(final String applicationId) {

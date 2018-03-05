@@ -33,6 +33,7 @@ public final class Constants implements Serializable {
             "2.4.5.vaadin2";
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
+    public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
     // Javadocs for VaadinService should be updated if this value is changed
     public static final String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = "disable-xsrf-protection";
     public static final String SERVLET_PARAMETER_HEARTBEAT_INTERVAL = "heartbeatInterval";

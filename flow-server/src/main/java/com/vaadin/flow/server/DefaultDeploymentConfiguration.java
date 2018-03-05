@@ -97,6 +97,7 @@ public class DefaultDeploymentConfiguration
     private boolean sendUrlsAsParameters;
     private String webComponentsPolyfillBase;
     private boolean usingNewRouting;
+    private boolean requestTiming;
 
     /**
      * Create a new deployment configuration instance.
@@ -120,6 +121,7 @@ public class DefaultDeploymentConfiguration
         this.systemPropertyBaseClass = systemPropertyBaseClass;
 
         checkProductionMode();
+        checkRequestTiming();
         checkXsrfProtection();
         checkHeartbeatInterval();
         checkCloseIdleSessions();
@@ -226,6 +228,17 @@ public class DefaultDeploymentConfiguration
 
     /**
      * {@inheritDoc}
+     *
+     * The default is <code>true</code> when not in production and
+     * <code>false</code> when in production mode.
+     */
+    @Override
+    public boolean isRequestTiming() {
+        return requestTiming;
+    }
+
+    /**
+     * {@inheritDoc}
      * <p>
      * The default is true.
      */
@@ -308,6 +321,14 @@ public class DefaultDeploymentConfiguration
         if (!productionMode) {
             getLogger().warn(NOT_PRODUCTION_MODE_INFO);
         }
+    }
+
+    /**
+     * Checks if request timing data should be provided to the client.
+     */
+    private void checkRequestTiming() {
+        requestTiming = getBooleanProperty(
+                Constants.SERVLET_PARAMETER_REQUEST_TIMING, !productionMode);
     }
 
     /**
@@ -435,10 +456,10 @@ public class DefaultDeploymentConfiguration
         String scanBase = uriResolver.resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
         if (!scanBase.startsWith(CONTEXT_ROOT_PATH)) {
-            String message = formatDefaultPolyfillMessage( String
-                .format( "Cannot automatically find the %s polyfill because the property "
-                        + "'%s' value is not absolute (doesn't start with '/')",
-                    WEB_COMPONENTS_LOADER_JS_NAME, Constants.FRONTEND_URL_ES6 ) );
+            String message = formatDefaultPolyfillMessage(String.format(
+                    "Cannot automatically find the %s polyfill because the property "
+                            + "'%s' value is not absolute (doesn't start with '/')",
+                    WEB_COMPONENTS_LOADER_JS_NAME, Constants.FRONTEND_URL_ES6));
             getLogger().warn(message);
             return Optional.empty();
         }
@@ -478,7 +499,8 @@ public class DefaultDeploymentConfiguration
         String fileName = polyfills.iterator().next();
         String dirName = fileName.substring(0, fileName.lastIndexOf('/'));
 
-        getLogger().info("Will use {} polyfill discovered in {}", WEB_COMPONENTS_LOADER_JS_NAME, dirName);
+        getLogger().info("Will use {} polyfill discovered in {}",
+                WEB_COMPONENTS_LOADER_JS_NAME, dirName);
         return Optional.of(prefix + dirName + '/');
     }
 
@@ -488,4 +510,5 @@ public class DefaultDeploymentConfiguration
                 + "Configure %2$s with an explicit value to use that location instead of scanning for an implementation.",
                 baseMessage, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
     }
+
 }

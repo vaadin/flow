@@ -74,8 +74,9 @@ public class ApplicationConnection {
         appRootPanelName = appRootPanelName.replaceFirst("-\\d+$", "");
 
         boolean productionMode = applicationConfiguration.isProductionMode();
-        publishProductionModeJavascriptMethods(appRootPanelName,
-                productionMode);
+        boolean requestTiming = applicationConfiguration.isRequestTiming();
+        publishProductionModeJavascriptMethods(appRootPanelName, productionMode,
+                requestTiming);
         if (!productionMode) {
             String servletVersion = applicationConfiguration
                     .getServletVersion();
@@ -126,9 +127,15 @@ public class ApplicationConnection {
      *
      * @param applicationId
      *            the application id provided by the server
+     * @param productionMode
+     *            <code>true</code> if running in production mode,
+     *            <code>false</code> otherwise
+     * @param requestTiming
+     *            <code>true</code> if request timing info should be made
+     *            available, <code>false</code> otherwise
      */
     private native void publishProductionModeJavascriptMethods(
-            String applicationId, boolean productionMode)
+            String applicationId, boolean productionMode, boolean requestTiming)
     /*-{
         var ap = this;
         var client = {};
@@ -143,6 +150,22 @@ public class ApplicationConnection {
                 var poller = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getPoller()();
                 poller.@com.vaadin.client.communication.Poller::poll()();
         });
+        if (requestTiming) {
+           client.getProfilingData = $entry(function() {
+            var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler()();
+            var pd = [
+                smh.@com.vaadin.client.communication.MessageHandler::lastProcessingTime,
+                    smh.@com.vaadin.client.communication.MessageHandler::totalProcessingTime
+                ];
+            if (null != smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo) {
+                pd = pd.concat(smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo);
+            } else {
+                pd = pd.concat(-1, -1);
+            }
+            pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
+            return pd;
+        });
+        }
         $wnd.Vaadin.Flow.resolveUri = $entry(function(uriToResolve) {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
@@ -181,20 +204,6 @@ public class ApplicationConnection {
             return { "flow": servletVersion};
         });
     
-        client.getProfilingData = $entry(function() {
-            var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler()();
-            var pd = [
-                smh.@com.vaadin.client.communication.MessageHandler::lastProcessingTime,
-                    smh.@com.vaadin.client.communication.MessageHandler::totalProcessingTime
-                ];
-            if (null != smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo) {
-                pd = pd.concat(smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo);
-            } else {
-                pd = pd.concat(-1, -1);
-            }
-            pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
-            return pd;
-        });
     }-*/;
 
     /**

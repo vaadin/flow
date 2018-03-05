@@ -37,6 +37,12 @@ public class MockDeploymentConfiguration
         return productionMode;
     }
 
+    @Override
+    public boolean isRequestTiming() {
+        return !productionMode;
+    }
+
+
     public void setProductionMode(boolean productionMode) {
         this.productionMode = productionMode;
     }
@@ -122,4 +128,5 @@ public class MockDeploymentConfiguration
     public boolean isUsingNewRouting() {
         return true;
     }
+
 }
