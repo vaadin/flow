@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -53,7 +53,7 @@ import elemental.json.JsonValue;
  *            the bean type
  *
  */
-public class DataCommunicator<T> {
+public class DataCommunicator<T> implements Serializable {
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
     private final SerializableConsumer<JsonArray> dataUpdater;
@@ -66,6 +66,8 @@ public class DataCommunicator<T> {
 
     // Items that have been synced to the client and not yet passivated
     private int activeStart = 0;
+
+    // ArrayList or emptyList(), both are serializable
     private List<String> activeKeyOrder = Collections.emptyList();
 
     // Last total size value sent to the client
@@ -77,18 +79,21 @@ public class DataCommunicator<T> {
     private int nextUpdateId = 0;
 
     // Keys that can be discarded once some specific update id gets confirmed
-    private final Map<Integer, Set<String>> passivatedByUpdate = new HashMap<>();
+    private final HashMap<Integer, Set<String>> passivatedByUpdate = new HashMap<>();
 
     // Update ids that have been confirmed since the last flush
-    private final Set<Integer> confirmedUpdates = new HashSet<>();
+    private final HashSet<Integer> confirmedUpdates = new HashSet<>();
 
     private DataProvider<T, ?> dataProvider = DataProvider.ofItems();
+
+    // Serializability of filter and comparator are up to the application
     private Object filter;
     private Comparator<T> inMemorySorting;
-    private final List<QuerySortOrder> backEndSorting = new ArrayList<>();
+
+    private final ArrayList<QuerySortOrder> backEndSorting = new ArrayList<>();
 
     private Registration dataProviderUpdateRegistration;
-    private Set<T> updatedData = new HashSet<>();
+    private HashSet<T> updatedData = new HashSet<>();
 
     private SerializableConsumer<ExecutionContext> flushRequest;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;

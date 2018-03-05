@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.io.Serializable;
 import java.util.List;
 
 import elemental.json.JsonValue;
@@ -25,7 +26,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-public interface ArrayUpdater {
+public interface ArrayUpdater extends Serializable {
 
     /**
      * Array updater strategy.
