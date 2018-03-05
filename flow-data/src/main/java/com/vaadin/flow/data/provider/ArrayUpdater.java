@@ -25,7 +25,6 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-@FunctionalInterface
 public interface ArrayUpdater {
 
     /**
@@ -71,4 +70,9 @@ public interface ArrayUpdater {
      * @return array update strategy
      */
     Update startUpdate(int sizeChange);
+
+    /**
+     * Initialize the array.
+     */
+    void initialize();
 }
