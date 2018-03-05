@@ -101,6 +101,10 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         openUrl("view-production", parameters);
     }
 
+    protected void openProductionWithTiming(String... parameters) {
+        openUrl("view-production-timing", parameters);
+    }
+
     protected void openForEs6Url(String... parameters) {
         openUrl("view-es6-url", parameters);
     }
@@ -233,11 +237,13 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Returns host address that can be targeted from the outside, like from a test hub.
+     * Returns host address that can be targeted from the outside, like from a
+     * test hub.
      *
      * @return host address
-     * @throws RuntimeException if host name could not be determined or {@link SocketException} was caught during
-     * the determination.
+     * @throws RuntimeException
+     *             if host name could not be determined or
+     *             {@link SocketException} was caught during the determination.
      */
     protected String getCurrentHostAddress() {
         try {
@@ -316,7 +322,8 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 .filter(LocalExecution::active);
     }
 
-    private static Optional<String> getHostAddress(NetworkInterface nwInterface) {
+    private static Optional<String> getHostAddress(
+            NetworkInterface nwInterface) {
         Enumeration<InetAddress> addresses = nwInterface.getInetAddresses();
         while (addresses.hasMoreElements()) {
             InetAddress address = addresses.nextElement();

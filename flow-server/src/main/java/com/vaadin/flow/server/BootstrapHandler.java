@@ -642,8 +642,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         BootstrapUtils.getViewportContent(context)
                 .ifPresent(content -> head.appendElement(META_TAG)
-                        .attr("name", VIEWPORT).attr(CONTENT_ATTRIBUTE,
-                                content));
+                        .attr("name", VIEWPORT)
+                        .attr(CONTENT_ATTRIBUTE, content));
 
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
@@ -718,8 +718,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element createDependencyElement(VaadinUriResolver resolver,
             LoadMode loadMode, JsonObject dependency, Dependency.Type type) {
         boolean inlineElement = loadMode == LoadMode.INLINE;
-        String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
-                .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
+        String url = dependency.hasKey(Dependency.KEY_URL)
+                ? resolver.resolveVaadinUri(
+                        dependency.getString(Dependency.KEY_URL))
                 : null;
 
         final Element dependencyElement;
@@ -851,15 +852,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static JsonObject getApplicationParameters(VaadinRequest request,
             VaadinSession session) {
         VaadinService vaadinService = session.getService();
-        final boolean productionMode = session.getConfiguration()
+        DeploymentConfiguration deploymentConfiguration = session
+                .getConfiguration();
+        final boolean productionMode = deploymentConfiguration
                 .isProductionMode();
 
         JsonObject appConfig = Json.createObject();
 
         appConfig.put(ApplicationConstants.FRONTEND_URL_ES6,
-                session.getConfiguration().getEs6FrontendPrefix());
+                deploymentConfiguration.getEs6FrontendPrefix());
         appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
-                session.getConfiguration().getEs5FrontendPrefix());
+                deploymentConfiguration.getEs5FrontendPrefix());
 
         if (!productionMode) {
             JsonObject versionInfo = Json.createObject();
@@ -918,11 +921,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             appConfig.put("debug", true);
         }
 
-        appConfig.put("heartbeatInterval", vaadinService
-                .getDeploymentConfiguration().getHeartbeatInterval());
+        if (deploymentConfiguration.isRequestTiming()) {
+            appConfig.put("requestTiming", true);
+        }
 
-        boolean sendUrlsAsParameters = vaadinService
-                .getDeploymentConfiguration().isSendUrlsAsParameters();
+        appConfig.put("heartbeatInterval",
+                deploymentConfiguration.getHeartbeatInterval());
+
+        boolean sendUrlsAsParameters = deploymentConfiguration
+                .isSendUrlsAsParameters();
         if (!sendUrlsAsParameters) {
             appConfig.put("sendUrlsAsParameters", false);
         }
@@ -1163,8 +1170,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
                         + properties.getProperty("jsFile");
             } else {
-                getLogger()
-                        .warn("No compile.properties available on initialization, "
+                getLogger().warn(
+                        "No compile.properties available on initialization, "
                                 + "could not read client engine file name.");
             }
         } catch (IOException e) {

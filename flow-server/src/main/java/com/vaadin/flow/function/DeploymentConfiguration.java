@@ -43,6 +43,13 @@ public interface DeploymentConfiguration extends Serializable {
     boolean isProductionMode();
 
     /**
+     * Returns whether the server provides timing info to the client.
+     *
+     * @return true if timing info is provided, false otherwise.
+     */
+    boolean isRequestTiming();
+
+    /**
      * Returns whether cross-site request forgery protection is enabled.
      *
      * @return true if XSRF protection is enabled, false otherwise.

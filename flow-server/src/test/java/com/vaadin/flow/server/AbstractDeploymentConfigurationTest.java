@@ -76,6 +76,11 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
+        public boolean isRequestTiming() {
+            return !isProductionMode();
+        }
+
+        @Override
         public boolean isXsrfProtectionEnabled() {
             return false;
         }
@@ -106,8 +111,8 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue,
-                                                    Function<String, T> converter) {
+        public <T> T getApplicationOrSystemProperty(String propertyName,
+                T defaultValue, Function<String, T> converter) {
             return Optional.ofNullable(properties.getProperty(propertyName))
                     .map(converter).orElse(defaultValue);
         }

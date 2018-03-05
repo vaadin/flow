@@ -37,6 +37,7 @@ public class ApplicationConfiguration {
     private int heartbeatInterval;
 
     private boolean productionMode;
+    private boolean requestTiming;
     private String servletVersion;
     private String atmosphereVersion;
     private String atmosphereJSVersion;
@@ -273,6 +274,16 @@ public class ApplicationConfiguration {
     }
 
     /**
+     * Checks if request timing info should be made available.
+     *
+     * @return {@code true} if request timing info should be made availble,
+     *         {@code false} otherwise
+     */
+    public boolean isRequestTiming() {
+        return requestTiming;
+    }
+
+    /**
      * Sets whether we are running in production mode.
      * <p>
      * With production mode disabled, a lot more information is logged to the
@@ -287,6 +298,17 @@ public class ApplicationConfiguration {
     public void setProductionMode(boolean productionMode) {
         this.productionMode = productionMode;
         Console.setProductionMode(productionMode);
+    }
+
+    /**
+     * Sets whether request timing info should be made available.
+     *
+     * @param requestTiming
+     *            {@code true} if request timing info should be made available,
+     *            {@code false} otherwise
+     */
+    public void setRequestTiming(boolean requestTiming) {
+        this.requestTiming = requestTiming;
     }
 
     /**
