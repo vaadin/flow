@@ -1,10 +1,6 @@
 package com.vaadin.flow.server;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,9 +15,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.io.IOUtils;
+import org.hamcrest.CoreMatchers;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -60,6 +55,12 @@ import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class BootstrapHandlerTest {
 
@@ -563,7 +564,7 @@ public class BootstrapHandlerTest {
 
         Elements allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        Assert.assertEquals(
+        assertStringEquals(
                 "Content javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"content script\");</script>",
@@ -582,7 +583,7 @@ public class BootstrapHandlerTest {
 
         Elements allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        Assert.assertEquals(
+        assertStringEquals(
                 "Content javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
@@ -601,12 +602,12 @@ public class BootstrapHandlerTest {
 
         Elements allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        Assert.assertEquals(
+        assertStringEquals(
                 "File javascript should have been appended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
                 allElements.get(allElements.size() - 3).toString());
-        Assert.assertEquals(
+        assertStringEquals(
                 "File html should have been appended to head element",
                 "<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
@@ -614,8 +615,7 @@ public class BootstrapHandlerTest {
                         + "    window.messages.push(\"inline.html\");\n"
                         + "</script>",
                 allElements.get(allElements.size() - 2).toString());
-        Assert.assertEquals(
-                "File css should have been appended to head element",
+        assertStringEquals("File css should have been appended to head element",
                 "<style type=\"text/css\">/* inline.css */\n" + "\n"
                         + "#preloadedDiv {\n"
                         + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
@@ -757,12 +757,12 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, testUI));
 
         Elements allElements = page.head().getAllElements();
-        Assert.assertEquals(
+        assertStringEquals(
                 "File javascript should have been appended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
                 allElements.get(allElements.size() - 3).toString());
-        Assert.assertEquals(
+        assertStringEquals(
                 "File html should have been appended to head element",
                 "<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
@@ -770,8 +770,7 @@ public class BootstrapHandlerTest {
                         + "    window.messages.push(\"inline.html\");\n"
                         + "</script>",
                 allElements.get(allElements.size() - 2).toString());
-        Assert.assertEquals(
-                "File css should have been appended to head element",
+        assertStringEquals("File css should have been appended to head element",
                 "<style type=\"text/css\">/* inline.css */\n" + "\n"
                         + "#preloadedDiv {\n"
                         + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
@@ -791,12 +790,12 @@ public class BootstrapHandlerTest {
 
         Elements allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        Assert.assertEquals(
+        assertStringEquals(
                 "File javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
                 allElements.get(1).toString());
-        Assert.assertEquals(
+        assertStringEquals(
                 "File html should have been prepended to head element",
                 "<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
@@ -804,7 +803,7 @@ public class BootstrapHandlerTest {
                         + "    window.messages.push(\"inline.html\");\n"
                         + "</script>",
                 allElements.get(2).toString());
-        Assert.assertEquals(
+        assertStringEquals(
                 "File css should have been prepended to head element",
                 "<style type=\"text/css\">/* inline.css */\n" + "\n"
                         + "#preloadedDiv {\n"
@@ -824,15 +823,14 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, testUI));
 
         Elements allElements = page.body().getAllElements();
-        Assert.assertEquals(
-                "File css should have been appended to body element",
+        assertStringEquals("File css should have been appended to body element",
                 "<style type=\"text/css\">/* inline.css */\n" + "\n"
                         + "#preloadedDiv {\n"
                         + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
                         + "#inlineCssTestDiv {\n"
                         + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
                 allElements.get(allElements.size() - 3).toString());
-        Assert.assertEquals(
+        assertStringEquals(
                 "File html should have been appended to body element",
                 "<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
@@ -840,7 +838,7 @@ public class BootstrapHandlerTest {
                         + "    window.messages.push(\"inline.html\");\n"
                         + "</script>",
                 allElements.get(allElements.size() - 2).toString());
-        Assert.assertEquals(
+        assertStringEquals(
                 "File javascript should have been appended to body element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
@@ -858,12 +856,12 @@ public class BootstrapHandlerTest {
 
         Elements allElements = page.body().getAllElements();
         // Note element 0 is the full head element.
-        Assert.assertEquals(
+        assertStringEquals(
                 "File javascript should have been prepended to body element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
                 allElements.get(1).toString());
-        Assert.assertEquals(
+        assertStringEquals(
                 "File html should have been prepended to body element",
                 "<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
@@ -871,7 +869,7 @@ public class BootstrapHandlerTest {
                         + "    window.messages.push(\"inline.html\");\n"
                         + "</script>",
                 allElements.get(2).toString());
-        Assert.assertEquals(
+        assertStringEquals(
                 "File css should have been prepended to body element",
                 "<style type=\"text/css\">/* inline.css */\n" + "\n"
                         + "#preloadedDiv {\n"
@@ -891,7 +889,8 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, testUI));
 
         Elements allElements = page.head().getAllElements();
-        Assert.assertEquals(
+
+        assertStringEquals(
                 "File css should have been prepended to body element",
                 "<style type=\"text/css\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</style>",
@@ -915,7 +914,7 @@ public class BootstrapHandlerTest {
 
         allElements = page.body().getAllElements();
         // Note element 0 is the full head element.
-        Assert.assertEquals("Custom style should have been added to head.",
+        assertStringEquals("Custom style should have been added to head.",
                 "<custom-style><style include=\"lumo-typography\"></style></custom-style>",
                 allElements.get(2).toString());
 
@@ -945,7 +944,7 @@ public class BootstrapHandlerTest {
                                 "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
         allElements = page.body().getAllElements();
         // Note element 0 is the full head element.
-        Assert.assertEquals("Custom style should have been added to head.",
+        assertStringEquals("Custom style should have been added to head.",
                 "<custom-style><style include=\"lumo-typography\"></style></custom-style>",
                 allElements.get(2).toString());
 
@@ -986,7 +985,7 @@ public class BootstrapHandlerTest {
 
         allElements = page.body().getAllElements();
         // Note element 0 is the full head element.
-        Assert.assertEquals("Custom style should have been added to head.",
+        assertStringEquals("Custom style should have been added to head.",
                 "<custom-style><style include=\"lumo-typography\"></style></custom-style>",
                 allElements.get(2).toString());
 
@@ -1197,20 +1196,16 @@ public class BootstrapHandlerTest {
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(
-                String.format(
-                        "In development mode, es6 prefix should be equal to '%s' parameter value",
-                        Constants.FRONTEND_URL_ES6),
-                urlES6, is(es6Prefix + urlPart));
+        assertThat(String.format(
+                "In development mode, es6 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES6), urlES6, is(es6Prefix + urlPart));
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(
-                String.format(
-                        "In development mode, es5 prefix should be equal to '%s' parameter value",
-                        Constants.FRONTEND_URL_ES5),
-                urlES5, is(es5Prefix + urlPart));
+        assertThat(String.format(
+                "In development mode, es5 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
 
         Mockito.verify(session, Mockito.times(3)).getBrowser();
         Mockito.verify(mockedWebBrowser, Mockito.times(2)).isEs6Supported();
@@ -1290,6 +1285,13 @@ public class BootstrapHandlerTest {
 
         checkInlinedScript(head, "es6-collections.js", false);
         checkInlinedScript(head, "babel-helpers.min.js", false);
+    }
+
+    private void assertStringEquals(String message, String expected,
+            String actual) {
+        Assert.assertThat(message,
+                actual.replaceAll(System.getProperty("line.separator"), "\n"),
+                CoreMatchers.equalTo(expected));
     }
 
     private Element initTestUI() {
