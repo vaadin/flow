@@ -89,7 +89,7 @@
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
-        <testbench.version>6.0.0.alpha15</testbench.version>
+        <testbench.version>6.0.0.beta1</testbench.version>
         <!-- Jetty 9.3.8/9.3.9 causes the build to fail with 'address already
             in use' -->
         <jetty.version>9.3.7.v20160115</jetty.version>
