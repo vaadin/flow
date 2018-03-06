@@ -1289,7 +1289,6 @@ public class BootstrapHandlerTest {
 
     private void assertStringEquals(String message, String expected,
             String actual) {
-        // Handle line separator problems on Windows
         Assert.assertThat(message,
                 actual.replaceAll(System.getProperty("line.separator"), "\n"),
                 CoreMatchers.equalTo(expected));
