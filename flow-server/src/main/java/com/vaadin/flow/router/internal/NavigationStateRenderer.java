@@ -214,16 +214,14 @@ public class NavigationStateRenderer implements NavigationHandler {
 
     private void storeContinueNavigationAction(UI ui,
             ContinueNavigationAction currentAction) {
-        ui.accessSynchronously(() -> {
-            ContinueNavigationAction previousAction = ui.getInternals()
-                    .getContinueNavigationAction();
-            if (previousAction != null && previousAction != currentAction) {
-                // Any earlier action is now obsolete, so it must be defused
-                // to prevent it from wreaking havoc if it's ever called
-                previousAction.setReferences(null, null);
-            }
-            ui.getInternals().setContinueNavigationAction(currentAction);
-        });
+        ContinueNavigationAction previousAction = ui.getInternals()
+                .getContinueNavigationAction();
+        if (previousAction != null && previousAction != currentAction) {
+            // Any earlier action is now obsolete, so it must be defused
+            // to prevent it from wreaking havoc if it's ever called
+            previousAction.setReferences(null, null);
+        }
+        ui.getInternals().setContinueNavigationAction(currentAction);
     }
 
     private void fireAfterNavigationListeners(HasElement observersRoot,
