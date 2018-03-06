@@ -23,9 +23,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.templatemodel.BeanModelType;
@@ -271,6 +275,19 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                 .collect(Collectors.toList());
         props.forEach(map::removeProperty);
         return props;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Please note that components defined using {@link Id @Id} are not child
+     * components since they are attached inside the Shadow DOM. Only components
+     * explicitly added through methods such as {@link HasComponents#add} or
+     * {@link Element#appendChild(Element...)} are returned by this method.
+     */
+    @Override
+    public Stream<Component> getChildren() {
+        return super.getChildren();
     }
 
 }
