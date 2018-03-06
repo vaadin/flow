@@ -1,5 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -61,4 +63,45 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
         openProduction();
         poll();
     }
+
+    @Test
+    public void profilingInfoAvailableInDevelopmentMode() {
+        open();
+        $(TestBenchElement.class).id("poll").click();
+        List<Long> profilingData = getProfilingData();
+        assertProfilingDataSensible(profilingData);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void profilingInfoNotAvailableInProduction() {
+        openProduction();
+        getProfilingData();
+    }
+
+    @Test
+    public void profilingInfoAvailableWhenRequestedInProduction() {
+        openProductionWithTiming();
+        $(TestBenchElement.class).id("poll").click();
+        assertProfilingDataSensible(getProfilingData());
+    }
+
+    private void assertProfilingDataSensible(List<Long> profilingData) {
+        Assert.assertEquals(5, profilingData.size());
+        // Time rendering the poll response can be 0ms
+        Assert.assertTrue(profilingData.get(0) >= 0);
+        for (int i = 1; i < 5; i++)
+            Assert.assertTrue(profilingData.get(i) > 0);
+    }
+
+    private List<Long> getProfilingData() {
+        Object data = executeScript("var clients = window.Vaadin.Flow.clients;"
+                + "var client = clients[Object.keys(clients)[0]];"
+                + "if (!client.getProfilingData) return null;" //
+                + "return client.getProfilingData();");
+        if (data == null) {
+            throw new IllegalStateException("No profiling data available");
+        }
+        return (List<Long>) data;
+    }
+
 }
