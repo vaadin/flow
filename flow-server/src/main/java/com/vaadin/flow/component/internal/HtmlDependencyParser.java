@@ -108,7 +108,7 @@ public class HtmlDependencyParser {
         }
         cache.addDependency(resolvedResource);
 
-        try (InputStream content = servlet.getServletContext()
+        try (InputStream content = servlet
                 .getResourceAsStream(resolvedResource)) {
             if (content == null) {
                 getLogger().info(

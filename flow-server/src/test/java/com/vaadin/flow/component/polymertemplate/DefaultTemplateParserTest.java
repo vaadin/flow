@@ -82,8 +82,6 @@ public class DefaultTemplateParserTest {
 
     }
 
-    private ServletContext context;
-
     private VaadinUriResolver resolver;
 
     private VaadinService service;
@@ -115,20 +113,17 @@ public class DefaultTemplateParserTest {
         Mockito.when(session.getAttribute(VaadinUriResolverFactory.class))
                 .thenReturn(factory);
 
-        context = Mockito.mock(ServletContext.class);
-        Mockito.when(httpSession.getServletContext()).thenReturn(context);
-
         Mockito.when(request.getWrappedSession()).thenReturn(wrappedSession);
         Mockito.when(request.getServletPath()).thenReturn("");
 
-        Mockito.when(context.getResourceAsStream("/bar.html")).thenReturn(
+        Mockito.when(service.getResourceAsStream("/bar.html")).thenReturn(
                 new ByteArrayInputStream("<dom-module id='bar'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
-        Mockito.when(context.getResourceAsStream("/bar1.html")).thenReturn(
+        Mockito.when(service.getResourceAsStream("/bar1.html")).thenReturn(
                 new ByteArrayInputStream("<dom-module id='foo'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
 
-        Mockito.when(context.getResourceAsStream("/bundle.html"))
+        Mockito.when(service.getResourceAsStream("/bundle.html"))
                 .thenReturn(getBundle(), getBundle(), getBundle());
 
         CurrentInstance.set(VaadinRequest.class, request);
@@ -162,7 +157,7 @@ public class DefaultTemplateParserTest {
         Mockito.when(resolver.resolveVaadinUri("/bar.html"))
                 .thenReturn("/foo.html");
 
-        Mockito.when(context.getResourceAsStream("/foo.html")).thenReturn(
+        Mockito.when(service.getResourceAsStream("/foo.html")).thenReturn(
                 new ByteArrayInputStream("<dom-module id='foo'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
 
@@ -196,11 +191,11 @@ public class DefaultTemplateParserTest {
 
         Mockito.when(request.getServletPath()).thenReturn("/run/");
 
-        Mockito.when(context.getResourceAsStream("/run/./../bar.html"))
+        Mockito.when(service.getResourceAsStream("/run/./../bar.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "<dom-module id='bar'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
-        Mockito.when(context.getResourceAsStream("/run/./../bar1.html"))
+        Mockito.when(service.getResourceAsStream("/run/./../bar1.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "<dom-module id='foo'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
@@ -222,11 +217,11 @@ public class DefaultTemplateParserTest {
 
         Mockito.when(request.getServletPath()).thenReturn("/run/");
 
-        Mockito.when(context.getResourceAsStream("/run/./../bar.html"))
+        Mockito.when(service.getResourceAsStream("/run/./../bar.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "<dom-module id='bar'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
-        Mockito.when(context.getResourceAsStream("/run/./../bar1.html"))
+        Mockito.when(service.getResourceAsStream("/run/./../bar1.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "<dom-module id='foo'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
@@ -238,13 +233,13 @@ public class DefaultTemplateParserTest {
 
         // The double slash should be ignored e.g. `/run//./..` should become
         // `/run/./..`
-        Mockito.verify(context).getResourceAsStream("/run/./../bar.html");
-        Mockito.verify(context).getResourceAsStream("/run/./../bar1.html");
+        Mockito.verify(service).getResourceAsStream("/run/./../bar.html");
+        Mockito.verify(service).getResourceAsStream("/run/./../bar1.html");
     }
 
     @Test
     public void defaultParser_removesComments() {
-        Mockito.when(context.getResourceAsStream("/bar.html"))
+        Mockito.when(service.getResourceAsStream("/bar.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "<!-- comment1 --><dom-module id='foo'><!-- comment2 --></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
@@ -272,7 +267,7 @@ public class DefaultTemplateParserTest {
 
     @Test(expected = IllegalStateException.class)
     public void defaultParser_templateResourceIsNotFound_throws() {
-        Mockito.when(context.getResourceAsStream("/bar1.html"))
+        Mockito.when(service.getResourceAsStream("/bar1.html"))
                 .thenReturn(null);
 
         DefaultTemplateParser.getInstance()

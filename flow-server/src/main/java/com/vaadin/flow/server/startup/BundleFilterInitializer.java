@@ -86,8 +86,8 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
 
     private Map<String, Set<String>> readBundleDependencies(
             ServiceInitEvent event, VaadinUriResolver es6ContextPathResolver) {
-        ServletContext servletContext = ((VaadinServletService) event
-                .getSource()).getServlet().getServletContext();
+        VaadinServletService servlet = ((VaadinServletService) event
+                .getSource());
 
         String es6Base = es6ContextPathResolver.resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
@@ -95,7 +95,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
             es6Base += '/';
         }
         String bundleManifestContextPath = es6Base + FLOW_BUNDLE_MANIFEST;
-        try (InputStream bundleManifestStream = servletContext
+        try (InputStream bundleManifestStream = servlet
                 .getResourceAsStream(bundleManifestContextPath)) {
             if (bundleManifestStream == null) {
                 getLogger().info(
@@ -112,7 +112,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
                         .getArray(bundlePath);
                 for (int i = 0; i < bundledFiles.length(); i++) {
                     String bundledFile = bundledFiles.getString(i);
-                    if (servletContext.getResource(es6ContextPathResolver
+                    if (servlet.getResource(es6ContextPathResolver
                             .resolveVaadinUri(es6Base + bundlePath)) == null) {
                         throw new IllegalArgumentException(String.format(
                                 "Failed to find bundle at context path '%s', specified in manifest '%s'. "

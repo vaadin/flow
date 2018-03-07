@@ -41,6 +41,7 @@ import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.server.WrappedHttpSession;
@@ -80,11 +81,7 @@ public final class DefaultTemplateParser implements TemplateParser {
     public Element getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
             String tag) {
         VaadinRequest request = VaadinService.getCurrentRequest();
-        WrappedHttpSession session = (WrappedHttpSession) request
-                .getWrappedSession();
-        assert session != null;
-
-        ServletContext context = session.getHttpSession().getServletContext();
+        VaadinService service = VaadinServletService.getCurrent();
 
         boolean logEnabled = LOG_CACHE.get(clazz).compareAndSet(false, true);
 
@@ -114,7 +111,7 @@ public final class DefaultTemplateParser implements TemplateParser {
                 getLogger().debug("Html import path '{}' is resolved to '{}'",
                         url, path);
             }
-            try (InputStream content = context.getResourceAsStream(path)) {
+            try (InputStream content = service.getResourceAsStream(path)) {
                 if (content == null) {
                     throw new IllegalStateException(
                             String.format("Can't find resource '%s' "

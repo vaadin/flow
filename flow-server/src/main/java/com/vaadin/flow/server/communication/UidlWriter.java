@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -215,8 +214,7 @@ public class UidlWriter implements Serializable {
                 .filter(string -> !string.isEmpty()).map(Charset::forName)
                 .orElse(StandardCharsets.UTF_8);
 
-        try (InputStream inlineResourceStream = getInlineResourceStream(url,
-                currentRequest);
+        try (InputStream inlineResourceStream = getInlineResourceStream(url);
                 BufferedReader bufferedReader = new BufferedReader(
                         new InputStreamReader(inlineResourceStream,
                                 requestCharset))) {
@@ -228,8 +226,7 @@ public class UidlWriter implements Serializable {
         }
     }
 
-    private static InputStream getInlineResourceStream(String url,
-            HttpServletRequest currentRequest) {
+    private static InputStream getInlineResourceStream(String url) {
         VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
                 .getAttribute(VaadinUriResolverFactory.class);
 
@@ -237,7 +234,7 @@ public class UidlWriter implements Serializable {
 
         String resolvedPath = uriResolverFactory
                 .toServletContextPath(VaadinService.getCurrentRequest(), url);
-        InputStream stream = currentRequest.getServletContext()
+        InputStream stream = VaadinService.getCurrent()
                 .getResourceAsStream(resolvedPath);
 
         if (stream == null) {

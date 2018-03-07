@@ -236,14 +236,11 @@ public class BootstrapHandlerDependenciesTest {
         service = Mockito
                 .spy(new MockVaadinServletService(deploymentConfiguration));
 
-        ServletContext servletContextMock = mock(ServletContext.class);
-        when(servletContextMock.getResourceAsStream(anyString()))
+        when(service.getResourceAsStream(anyString()))
                 .thenAnswer(invocation -> new ByteArrayInputStream(
                         ((String) invocation.getArguments()[0]).getBytes()));
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
-        when(servletRequestMock.getServletContext())
-                .thenReturn(servletContextMock);
 
         VaadinServletRequest vaadinRequestMock = mock(
                 VaadinServletRequest.class);

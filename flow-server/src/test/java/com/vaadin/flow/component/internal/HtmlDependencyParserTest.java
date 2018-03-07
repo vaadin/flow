@@ -20,8 +20,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
-import javax.servlet.ServletContext;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,14 +34,11 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
-import net.jcip.annotations.NotThreadSafe;
-
 @NotThreadSafe
 public class HtmlDependencyParserTest {
 
     private VaadinSession session;
     private VaadinServlet servlet;
-    private ServletContext context;
     private VaadinServletService service;
 
     @Before
@@ -56,9 +52,6 @@ public class HtmlDependencyParserTest {
         session = Mockito.mock(VaadinSession.class);
         CurrentInstance.set(VaadinSession.class, session);
 
-        context = Mockito.mock(ServletContext.class);
-
-        Mockito.when(servlet.getServletContext()).thenReturn(context);
         Mockito.when(session.hasLock()).thenReturn(true);
     }
 
@@ -90,7 +83,7 @@ public class HtmlDependencyParserTest {
                 + "<link rel='import' href='/absolute.html'>";
         InputStream stream = new ByteArrayInputStream(
                 importContent.getBytes(StandardCharsets.UTF_8));
-        Mockito.when(context.getResourceAsStream(resolvedRoot))
+        Mockito.when(servlet.getResourceAsStream(resolvedRoot))
                 .thenReturn(stream);
 
         Collection<String> dependencies = parser.parseDependencies();
@@ -122,7 +115,7 @@ public class HtmlDependencyParserTest {
         String importContent = "<link rel='import' href='relative.html'>";
         InputStream stream = new ByteArrayInputStream(
                 importContent.getBytes(StandardCharsets.UTF_8));
-        Mockito.when(context.getResourceAsStream(root)).thenReturn(stream);
+        Mockito.when(servlet.getResourceAsStream(root)).thenReturn(stream);
 
         Collection<String> dependencies = parser.parseDependencies();
 
@@ -145,7 +138,7 @@ public class HtmlDependencyParserTest {
         String importContent = "<link rel='import' href='relative.html'>";
         InputStream stream = new ByteArrayInputStream(
                 importContent.getBytes(StandardCharsets.UTF_8));
-        Mockito.when(context.getResourceAsStream(resolvedRoot))
+        Mockito.when(servlet.getResourceAsStream(resolvedRoot))
                 .thenReturn(stream);
 
         String resolvedRelative = "baz/bar/relative.html";
@@ -155,7 +148,7 @@ public class HtmlDependencyParserTest {
         InputStream relativeContent = new ByteArrayInputStream(
                 "<link rel='import' href='relative1.html'>"
                         .getBytes(StandardCharsets.UTF_8));
-        Mockito.when(context.getResourceAsStream(resolvedRelative))
+        Mockito.when(servlet.getResourceAsStream(resolvedRelative))
                 .thenReturn(relativeContent);
 
         Collection<String> dependencies = parser.parseDependencies();
@@ -183,7 +176,7 @@ public class HtmlDependencyParserTest {
         String importContent = "<link rel='import' href='relative.html'>";
         InputStream stream = new ByteArrayInputStream(
                 importContent.getBytes(StandardCharsets.UTF_8));
-        Mockito.when(context.getResourceAsStream(resolvedRoot))
+        Mockito.when(servlet.getResourceAsStream(resolvedRoot))
                 .thenReturn(stream);
 
         HtmlDependenciesCache cache = new HtmlDependenciesCache();
@@ -193,7 +186,7 @@ public class HtmlDependencyParserTest {
         Collection<String> dependencies = parser.parseDependencies();
 
         Assert.assertEquals(2, dependencies.size());
-        Mockito.verify(context).getResourceAsStream(resolvedRoot);
+        Mockito.verify(servlet).getResourceAsStream(resolvedRoot);
 
         // call one more time
         dependencies = parser.parseDependencies();
@@ -201,7 +194,7 @@ public class HtmlDependencyParserTest {
         Assert.assertEquals(1, dependencies.size());
         // and there shouldn't be one more call for reading the content of the
         // import
-        Mockito.verify(context).getResourceAsStream(resolvedRoot);
+        Mockito.verify(servlet).getResourceAsStream(resolvedRoot);
     }
 
 }

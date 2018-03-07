@@ -21,6 +21,7 @@ import javax.servlet.ServletException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Optional;
 import java.util.Properties;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -92,6 +93,10 @@ public class ThemeUrlResolverTest {
         Mockito.when(servletContext.getInitParameterNames()).thenReturn(
                 (Enumeration<String>) initParameters.propertyNames());
 
+        Mockito.when(servletContext.getResource(Mockito.anyString()))
+                .thenAnswer(
+                        i -> new URL("http://localhost" + i.getArguments()[0]));
+
         servlet.init(servletConfig);
 
         Mockito.when(session.getAttribute(VaadinUriResolverFactory.class))
@@ -126,7 +131,7 @@ public class ThemeUrlResolverTest {
     @Test
     public void servlet_context_file_resolves_correct_url() throws Exception {
         String path = "theme/custom/button.html";
-        Mockito.when(servletContext.getResource("/" + path))
+        Mockito.when(servlet.getResource("/" + path))
                 .thenReturn(new URL("http://theme/custom/button.html"));
 
         String urlTranslation = servlet.getUrlTranslation(theme,
@@ -139,7 +144,7 @@ public class ThemeUrlResolverTest {
     @Test
     public void no_file_resolves_original_url() throws Exception {
         String path = "theme/custom/button.html";
-        Mockito.when(servletContext.getResource("/" + path)).thenReturn(null);
+        Mockito.when(servlet.getResource("/" + path)).thenReturn(null);
 
         String urlTranslation = servlet.getUrlTranslation(theme,
                 "src/button.html");
@@ -151,7 +156,7 @@ public class ThemeUrlResolverTest {
     @Test
     public void theme_translation_accepts_web_jar() throws Exception {
         String path = "theme/custom/button.html";
-        Mockito.when(servletContext.getResource("/" + path)).thenReturn(null);
+        Mockito.when(servlet.getResource("/" + path)).thenReturn(null);
         WebJarServer webJarServer = Mockito.mock(WebJarServer.class);
         Field webJarServerField = VaadinServlet.class
                 .getDeclaredField("webJarServer");
@@ -159,8 +164,8 @@ public class ThemeUrlResolverTest {
         webJarServerField.set(servlet, webJarServer);
         webJarServerField.setAccessible(false);
 
-        Mockito.when(webJarServer.hasWebJarResource("/" + path, servletContext))
-                .thenReturn(true);
+        Mockito.when(webJarServer.getWebJarResourcePath("/" + path))
+                .thenReturn(Optional.of("/webjar/theme/custom/button.html"));
 
         String urlTranslation = servlet.getUrlTranslation(theme,
                 "src/button.html");
@@ -174,13 +179,13 @@ public class ThemeUrlResolverTest {
             throws Exception {
         mockDeploymentConfiguration.setProductionMode(true);
         String path = "theme/custom/button.html";
-        Mockito.when(servletContext.getResource("/" + path))
+        Mockito.when(servlet.getResource("/" + path))
                 .thenReturn(new URL("http://theme/custom/button.html"));
 
         // Prime cache
         servlet.getUrlTranslation(theme, "src/button.html");
 
-        Mockito.when(servletContext.getResource("/" + path))
+        Mockito.when(servlet.getResource("/" + path))
                 .thenThrow(AssertionError.class);
 
         // Ask again, should not trigger servletContext
@@ -193,7 +198,7 @@ public class ThemeUrlResolverTest {
         mockDeploymentConfiguration.setProductionMode(false);
 
         String path = "theme/custom/button.html";
-        Mockito.when(servletContext.getResource("/" + path))
+        Mockito.when(servlet.getResource("/" + path))
                 .thenReturn(new URL("http://theme/custom/button.html"));
 
         // Prime the cache
@@ -203,7 +208,7 @@ public class ThemeUrlResolverTest {
         assertEquals("Translation should be used", "theme/custom/button.html",
                 urlTranslation);
 
-        Mockito.when(servletContext.getResource("/" + path)).thenReturn(null);
+        Mockito.when(servlet.getResource("/" + path)).thenReturn(null);
 
         urlTranslation = servlet.getUrlTranslation(theme, "src/button.html");
         assertEquals("Result should be computed again", "src/button.html",

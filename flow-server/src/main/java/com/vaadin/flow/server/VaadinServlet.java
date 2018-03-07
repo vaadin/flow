@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -657,17 +658,11 @@ public class VaadinServlet extends HttpServlet {
                 .getAttribute(VaadinUriResolverFactory.class)
                 .toServletContextPath(request, url);
 
-        if (webJarServer != null) {
+        if (getResource(resolvedUrl) == null && webJarServer != null) {
             Optional<String> webJarUrl = webJarServer
-                    .getWebJarResourcePath(resolveUrl(url, session));
-            try {
-                if (webJarUrl.isPresent() && getServletContext()
-                        .getResource(webJarUrl.get()) != null) {
-                    return webJarUrl.get();
-                }
-            } catch (MalformedURLException exception) {
-                LoggerFactory.getLogger(VaadinServlet.class).trace(
-                        "Failed to parse url {}.", webJarUrl.get(), exception);
+                    .getWebJarResourcePath(resolveUrl(url));
+            if (webJarUrl.isPresent() && getResource(webJarUrl.get()) != null) {
+                return webJarUrl.get();
             }
         }
 
@@ -686,12 +681,7 @@ public class VaadinServlet extends HttpServlet {
     }
 
     private boolean resourceIsFound(String url) {
-        String resolvedUrl = resolveUrl(url, VaadinSession.getCurrent());
-
-        // Servlet context requires a valid URL string
-        if (!resolvedUrl.startsWith("/")) {
-            resolvedUrl = "/" + resolvedUrl;
-        }
+        String resolvedUrl = resolveUrl(url);
 
         try {
             return inServletContext(resolvedUrl) || inWebJar(resolvedUrl);
@@ -702,8 +692,8 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
-    private String resolveUrl(String url, VaadinSession session) {
-        VaadinUriResolverFactory uriResolverFactory = session
+    private String resolveUrl(String url) {
+        VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
                 .getAttribute(VaadinUriResolverFactory.class);
 
         VaadinRequest request = VaadinRequest.getCurrent();
@@ -735,16 +725,59 @@ public class VaadinServlet extends HttpServlet {
             }
         }
 
+        // Servlet context requires a valid URL string
+        if (!resolvedUrl.startsWith("/")) {
+            resolvedUrl = "/" + resolvedUrl;
+        }
+
         return resolvedUrl;
     }
 
     private boolean inServletContext(String resolvedUrl)
             throws MalformedURLException {
-        return getServletContext().getResource(resolvedUrl) != null;
+        return getResource(resolvedUrl) != null;
     }
 
     private boolean inWebJar(String resolvedUrl) throws IOException {
-        return webJarServer != null && webJarServer
-                .hasWebJarResource(resolvedUrl, getServletContext());
+        if (webJarServer != null) {
+            Optional<String> webJarPath = webJarServer
+                    .getWebJarResourcePath(resolvedUrl);
+            if (webJarPath.isPresent()) {
+                return getResource(webJarPath.get()) != null;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns a URL to the resource that is mapped to the given path. The path
+     * must begin with a <tt>/</tt>.
+     * 
+     * @param path
+     *            the path to the resource
+     * @return the resource located at the named path, or <code>null</code> if
+     *         there is no resource at that path or an exception happened.
+     */
+    public URL getResource(String path) {
+        try {
+            return getServletContext().getResource(path);
+        } catch (MalformedURLException exception) {
+            LoggerFactory.getLogger(VaadinServlet.class)
+                    .trace("Failed to parse url {}.", path, exception);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the resource located at the named path as an
+     * <code>InputStream</code> object.
+     * 
+     * @param path
+     *            the path to the resource
+     * @return the <code>InputStream</code> returned to the servlet, or
+     *         <code>null</code> if no resource exists at the specified path
+     */
+    public InputStream getResourceAsStream(String path) {
+        return getServletContext().getResourceAsStream(path);
     }
 }
