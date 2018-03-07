@@ -29,8 +29,7 @@ public final class Constants implements Serializable {
 
     // Keep the version number in sync with push/build.xml and other locations
     // listed in that file
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION =
-            "2.4.5.vaadin2";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.5.vaadin2";
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
@@ -50,11 +49,6 @@ public final class Constants implements Serializable {
      * Configuration name for loading the ES5 adapters.
      */
     public static final String LOAD_ES5_ADAPTERS = "load.es5.adapters";
-
-    /**
-     * Configuration name for forcing the ShadyDOM polyfill.
-     */
-    public static final String FORCE_SHADY_DOM = "force.shady.dom";
 
     /**
      * Configuration name for the frontend URL prefix for ES6.
