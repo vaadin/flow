@@ -218,10 +218,6 @@ public class PushRequestHandler
         // Disable Atmosphere's message about commercial support
         atmosphere.addInitParameter("org.atmosphere.cpr.showSupportMessage",
                 "false");
-        // Suppress JSR356 detection, see
-        // https://github.com/Atmosphere/atmosphere/issues/2104
-        atmosphere.addInitParameter(ApplicationConfig.WEBSOCKET_SUPPRESS_JSR356,
-                "true");
 
         try {
             atmosphere.init(vaadinServletConfig);

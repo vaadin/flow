@@ -29,7 +29,7 @@ public final class Constants implements Serializable {
 
     // Keep the version number in sync with push/build.xml and other locations
     // listed in that file
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.5.vaadin2";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.11.vaadin3";
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
