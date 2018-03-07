@@ -20,8 +20,36 @@ import java.util.function.Supplier;
 
 /**
  * Interface for supplying {@link Component}s. Interfaces that contain fluent
- * APIs should extend this supplier, so then can return the proper types for
+ * APIs should extend this supplier, so they can return the proper types for
  * method chains.
+ * <p>
+ * Here is an example on how to create a fluent method for a component
+ * interface:
+ * 
+ * <pre>
+ * interface HasWidth&ltC extends Component&gt extends ComponentSupplier&ltC&gt {
+ * 
+ *     public C setWidth(String width) {
+ *         get().getElement().setProperty("width", width);
+ *         return get();
+ *     }
+ * }
+ * </pre>
+ * 
+ * Here is a concrete class that inherits the fluent method:
+ * 
+ * <pre>
+ * class MyComponent implements HasWidth&ltMyComponent&gt {
+ *     ...
+ * }
+ * </pre>
+ * 
+ * Then you can use the component fluently by chaining methods together:
+ * 
+ * <pre>
+ * MyComponent component = new MyComponent();
+ * component.setWidth("100px").setId("my-component");
+ * </pre>
  *
  * @param <C>
  *            the type of the component
