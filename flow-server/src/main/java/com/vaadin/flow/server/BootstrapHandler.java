@@ -682,13 +682,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendChild(createInlineJavaScriptElement(BABEL_HELPERS_JS));
         }
 
-        boolean forceShadyDom = config.getBooleanProperty(
-                Constants.FORCE_SHADY_DOM, webComponents.isPresent()
-                        && webComponents.get().forceShadyDom());
         head.appendChild(createJavaScriptElement(
                 context.getUriResolver().resolveVaadinUri(
                         webComponentsPolyfillBase + "webcomponents-loader.js"),
-                false).attr("shadydom", forceShadyDom));
+                false));
     }
 
     private static Element createInlineJavaScriptElement(
