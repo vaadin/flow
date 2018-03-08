@@ -18,15 +18,17 @@ package com.vaadin.flow.router;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 
 /**
- * Any {@code com.vaadin.ui.Component} implementing this interface will be
- * informed when they are being detached from the
- * {@link com.vaadin.flow.component.UI}.
+ * A listener that may be added to the {@link com.vaadin.flow.component.UI}
+ * using
+ * {@link com.vaadin.flow.component.UI#addBeforeLeaveListener(BeforeLeaveListener)}.
+ * <p>
+ * All listeners added this way will be informed when old components are
+ * detached from the {@link com.vaadin.flow.component.UI}.
  * <p>
  * During this phase there is the possibility to reroute to another navigation
  * target or to postpone the navigation (to for instance get user input).
  *
- * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface BeforeLeaveObserver extends BeforeLeaveHandler {
+public interface BeforeLeaveListener extends BeforeLeaveHandler {
 }

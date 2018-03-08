@@ -13,20 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.flow.router.internal;
 
-import com.vaadin.flow.router.internal.BeforeLeaveHandler;
+import com.vaadin.flow.router.AfterNavigationEvent;
 
 /**
- * Any {@code com.vaadin.ui.Component} implementing this interface will be
- * informed when they are being detached from the
- * {@link com.vaadin.flow.component.UI}.
- * <p>
- * During this phase there is the possibility to reroute to another navigation
- * target or to postpone the navigation (to for instance get user input).
- *
- * @author Vaadin Ltd
+ * The base interface for every interface that handles {@link AfterNavigationEvent}.
  */
 @FunctionalInterface
-public interface BeforeLeaveObserver extends BeforeLeaveHandler {
+public interface AfterNavigationHandler {
+
+    /**
+     * Method called after navigation has been executed.
+     *
+     * @param event
+     *            after navigation event with event details
+     */
+    void afterNavigation(AfterNavigationEvent event);
 }

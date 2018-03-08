@@ -17,6 +17,7 @@ package com.vaadin.flow.router;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +29,7 @@ import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.router.internal.BeforeEnterHandler;
 
 /**
  * Event handling utilities.
@@ -57,6 +59,28 @@ public final class EventUtil {
     }
 
     private EventUtil() {
+    }
+
+    /**
+     *
+     * @param observersRoot
+     *            element which is used as a root to traverse for obeservers
+     * @param elements
+     *            elements for which to handle observers
+     * @return
+     */
+    public static List<BeforeEnterHandler> collectEnterObservers(
+            HasElement observersRoot, List<? extends HasElement> elements) {
+        Stream<BeforeEnterObserver> observerRootDescendants = EventUtil
+                .collectBeforeEnterObservers(
+                        Collections.singletonList(observersRoot))
+                .stream();
+        Stream<BeforeEnterObserver> otherObservers = EventUtil
+                .getImplementingComponents(
+                        elements.stream().map(HasElement::getElement),
+                        BeforeEnterObserver.class);
+        return Stream.concat(observerRootDescendants, otherObservers)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -105,6 +129,20 @@ public final class EventUtil {
 
         return getImplementingComponents(elements,
                 AfterNavigationObserver.class).collect(Collectors.toList());
+    }
+
+    public static List<AfterNavigationObserver> collectAfterNavigationObservers(
+            HasElement observersRoot, List<? extends HasElement> elements) {
+        Stream<AfterNavigationObserver> observerRootDescendants = EventUtil
+                .collectAfterNavigationObservers(
+                        Collections.singletonList(observersRoot))
+                .stream();
+        Stream<AfterNavigationObserver> otherObservers = EventUtil
+                .getImplementingComponents(
+                        elements.stream().map(HasElement::getElement),
+                        AfterNavigationObserver.class);
+        return Stream.concat(observerRootDescendants, otherObservers)
+                .collect(Collectors.toList());
     }
 
     /**

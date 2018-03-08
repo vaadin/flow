@@ -52,10 +52,16 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.router.AfterNavigationListener;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
+import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.AfterNavigationHandler;
+import com.vaadin.flow.router.internal.BeforeEnterHandler;
+import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.router.legacy.HasChildView;
 import com.vaadin.flow.router.legacy.View;
@@ -64,6 +70,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -153,6 +160,11 @@ public class UIInternals implements Serializable {
     private Location viewLocation = new Location("");
     private ArrayList<View> viewChain = new ArrayList<>();
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
+
+    private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
+    private ArrayList<BeforeEnterListener> enterListeners = new ArrayList<>();
+    private ArrayList<BeforeLeaveListener> leaveListeners = new ArrayList<>();
+    private ArrayList<AfterNavigationListener> afterListeners = new ArrayList<>();
 
     private final Set<Integer> sentTemplateIds = new HashSet<>();
 
@@ -407,6 +419,65 @@ public class UIInternals implements Serializable {
         }
 
         this.pushConnection = pushConnection;
+    }
+
+    /**
+     * Add a listener that will be informed when a new set of components are
+     * going to be attached.
+     *
+     * @param listener
+     *            the before enter listener
+     * @return handler to remove the event listener
+     */
+    public Registration addBeforeEnterListener(BeforeEnterListener listener) {
+        return addNavigationListener(BeforeEnterHandler.class, listener);
+    }
+
+    /**
+     * Add a listener that will be informed when old components are detached.
+     *
+     * @param listener
+     *            the before leave listener
+     * @return handler to remove the event listener
+     */
+    public Registration addBeforeLeaveListener(BeforeLeaveListener listener) {
+        return addNavigationListener(BeforeLeaveHandler.class, listener);
+    }
+
+    /**
+     * Add a listener that will be informed when new components have been
+     * attached and all navigation tasks have resolved.
+     *
+     * @param listener
+     *            the after navigation listener
+     * @return handler to remove the event listener
+     */
+    public Registration addAfterNavigationListener(
+            AfterNavigationListener listener) {
+        return addNavigationListener(AfterNavigationHandler.class, listener);
+    }
+
+    private <E> Registration addNavigationListener(Class<E> navigationHandler,
+            E listener) {
+        List<E> list = (List<E>) listeners.computeIfAbsent(navigationHandler,
+                key -> new ArrayList<>());
+        list.add(listener);
+        return () -> list.remove(listener);
+    }
+
+    /**
+     * Get all registered listeners for given navigation handler type.
+     * 
+     * @param navigationHandler
+     *            handler to get listeners for
+     * @param <E>
+     *            the handler type
+     * @return unmodifiable list of registered listeners for navigation handler
+     */
+    public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
+        List<E> registeredListeners = (List<E>) listeners
+                .computeIfAbsent(navigationHandler, key -> new ArrayList<>());
+        return Collections.unmodifiableList(registeredListeners);
     }
 
     /**

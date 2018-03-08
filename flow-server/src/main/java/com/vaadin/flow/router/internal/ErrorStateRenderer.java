@@ -118,12 +118,17 @@ public class ErrorStateRenderer implements NavigationHandler {
 
         validateStatusCode(statusCode, routeTargetType);
 
-        EventUtil.collectBeforeEnterObservers(chain).forEach(
-                listener -> listener.beforeEnter(beforeNavigationActivating));
-
         @SuppressWarnings("unchecked")
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
+
+        List<BeforeEnterHandler> beforeEnterandlers = new ArrayList<>(
+                ui.getNavigationListeners(BeforeEnterHandler.class));
+        beforeEnterandlers.addAll(EventUtil.collectEnterObservers(componentInstance,
+                routerLayouts));
+
+        beforeEnterandlers.forEach(
+                listener -> listener.beforeEnter(beforeNavigationActivating));
 
         ui.getInternals().showRouteTarget(event.getLocation(), null,
                 componentInstance, routerLayouts);
@@ -133,7 +138,13 @@ public class ErrorStateRenderer implements NavigationHandler {
         AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
                 RouterUtil.createEvent(event, chain));
 
-        EventUtil.collectAfterNavigationObservers(chain).forEach(
+
+        List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
+                ui.getNavigationListeners(AfterNavigationHandler.class));
+        afterNavigationHandlers.addAll(
+                EventUtil.collectAfterNavigationObservers(componentInstance,
+                        routerLayouts));
+        afterNavigationHandlers.forEach(
                 listener -> listener.afterNavigation(afterNavigationEvent));
 
         return statusCode;

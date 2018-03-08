@@ -16,8 +16,10 @@
 
 package com.vaadin.flow.component;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
@@ -37,6 +39,9 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.router.AfterNavigationListener;
+import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.router.EventUtil;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
@@ -53,6 +58,7 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -799,5 +805,63 @@ public class UI extends Component
     @Override
     public Optional<UI> getUI() {
         return Optional.of(this);
+    }
+
+    /**
+     * Add a listener that will be informed when a new set of components are
+     * going to be attached.
+     * <p>
+     * Listeners will be executed before any found observers.
+     * 
+     * @param listener
+     *            the before enter listener
+     * @return handler to remove the event listener
+     */
+    public Registration addBeforeEnterListener(BeforeEnterListener listener) {
+        Objects.requireNonNull(listener, "Listener can not be 'null'");
+        return internals.addBeforeEnterListener(listener);
+    }
+
+    /**
+     * Add a listener that will be informed when old components are detached.
+     * <p>
+     * Listeners will be executed before any found observers.
+     * 
+     * @param listener
+     *            the before leave listener
+     * @return handler to remove the event listener
+     */
+    public Registration addBeforeLeaveListener(BeforeLeaveListener listener) {
+        Objects.requireNonNull(listener, "Listener can not be 'null'");
+        return internals.addBeforeLeaveListener(listener);
+    }
+
+    /**
+     * Add a listener that will be informed when new components have been
+     * attached and all navigation tasks have resolved.
+     * <p>
+     * Listeners will be executed before any found observers.
+     * 
+     * @param listener
+     *            the after navigation listener
+     * @return handler to remove the event listener
+     */
+    public Registration addAfterNavigationListener(
+            AfterNavigationListener listener) {
+        Objects.requireNonNull(listener, "Listener can not be 'null'");
+        return internals.addAfterNavigationListener(listener);
+    }
+
+    /**
+     * Get all registered listener of given navigation handler type.
+     *
+     * @param navigationHandler
+     *            navigation handler type to get listeners for
+     * @param <E>
+     *            the handler type
+     * @return unmodifiable list of registered listeners for navigation handler
+     */
+    public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
+        return internals.getNavigationListeners(navigationHandler);
     }
 }
