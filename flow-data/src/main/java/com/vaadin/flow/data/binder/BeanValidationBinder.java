@@ -25,8 +25,14 @@ import com.vaadin.flow.data.validator.BeanValidator;
 import com.vaadin.flow.internal.BeanUtil;
 
 /**
+ * Binder that uses reflection based on the provided bean type to resolve bean
+ * properties. The Binder automatically adds BeanValidator which validates beans
+ * using JSR-303 specification. It assumes that JSR-303 bean validation
+ * implementation is present on the classpath.
+ * 
  * @author Vaadin Ltd
  * @see Binder
+ * @see BeanValidator
  * @see HasValue
  *
  * @param <BEAN>
