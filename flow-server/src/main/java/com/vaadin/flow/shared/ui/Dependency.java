@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -86,24 +87,9 @@ public class Dependency implements Serializable {
         assert type != null;
 
         this.type = type;
-        this.url = prefixIfRelative(url,
+        this.url = SharedUtil.prefixIfRelative(url,
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
         this.loadMode = loadMode;
-    }
-
-    private static String prefixIfRelative(String url, String prefix) {
-        // Absolute
-        if (url.startsWith("/")) {
-            return url;
-        }
-
-        // Has a protocol
-        // https://tools.ietf.org/html/rfc3986#section-3.1
-        if (url.matches("^[a-zA-Z0-9.\\-+]+:.*")) {
-            return url;
-        }
-
-        return prefix + url;
     }
 
     /**

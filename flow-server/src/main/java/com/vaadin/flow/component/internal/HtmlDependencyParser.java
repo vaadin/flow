@@ -20,10 +20,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -32,12 +30,10 @@ import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.ui.Dependency;
-import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Html import dependencies parser.
@@ -107,46 +103,32 @@ public class HtmlDependencyParser {
             session.setAttribute(HtmlDependenciesCache.class, cache);
         }
 
-        DependencyFilter.FilterContext filterContext = new DependencyFilter.FilterContext(
-                VaadinSession.getCurrent());
-        List<Dependency> dependencyFilters = new ArrayList<>();
-        dependencyFilters.add(new Dependency(Dependency.Type.HTML_IMPORT, path, LoadMode.EAGER));
-        for (DependencyFilter filter : VaadinService.getCurrent()
-                .getDependencyFilters()) {
-            dependencyFilters = filter.filter(new ArrayList<>(dependencyFilters),
-                    filterContext);
+        String url = SharedUtil.prefixIfRelative(path,
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+
+        String resolvedPath = servlet
+                .resolveResource(url);
+
+        if (cache.hasDependency(resolvedPath)) {
+            return;
         }
+        cache.addDependency(resolvedPath);
 
-        for (Dependency dependency : dependencyFilters) {
-            if (dependency.getType() != Dependency.Type.HTML_IMPORT) {
-                continue;
+        try (InputStream content = servlet.getServletContext()
+                .getResourceAsStream(resolvedPath)) {
+            if (content == null) {
+                getLogger().trace(
+                        "Can't find resource '{}' to parse for imports via the servlet context",
+                        path);
+            } else {
+                parseHtmlImports(content, resolvedPath)
+                        .map(uri -> resolveUri(uri, path))
+                        .forEach(uri -> parseDependencies(uri, dependencies));
             }
-
-            String url = dependency.getUrl();
-
-            String resolvedPath = servlet.resolveResource(url);
-
-            if (cache.hasDependency(resolvedPath)) {
-                return;
-            }
-            cache.addDependency(resolvedPath);
-
-            try (InputStream content = servlet.getServletContext()
-                    .getResourceAsStream(resolvedPath)) {
-                if (content == null) {
-                    getLogger().warn(
-                            "Can't find resource '{}' to parse for imports via the servlet context",
-                            path);
-                } else {
-                    parseHtmlImports(content, resolvedPath)
-                            .map(uri -> resolveUri(uri, path))
-                            .forEach(uri -> parseDependencies(uri, dependencies));
-                }
-            } catch (IOException exception) {
-                // ignore exception on close()
-                getLogger().debug("Couldn't close template input stream",
-                        exception);
-            }
+        } catch (IOException exception) {
+            // ignore exception on close()
+            getLogger().debug("Couldn't close template input stream",
+                    exception);
         }
     }
 
