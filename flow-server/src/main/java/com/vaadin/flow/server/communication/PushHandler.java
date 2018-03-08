@@ -77,15 +77,6 @@ public class PushHandler {
         resource.getResponse().setContentType("text/plain; charset=UTF-8");
 
         VaadinSession session = ui.getSession();
-        if (resource.transport() == TRANSPORT.STREAMING) {
-            // Must ensure that the streaming response contains
-            // "Connection: close", otherwise iOS 6 will wait for the
-            // response to this request before sending another request to
-            // the same server (as it will apparently try to reuse the same
-            // connection)
-            resource.getResponse().addHeader("Connection", "close");
-        }
-
         String requestToken = resource.getRequest()
                 .getParameter(ApplicationConstants.PUSH_ID_PARAMETER);
         if (!isPushIdValid(session, requestToken)) {
