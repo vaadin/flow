@@ -526,8 +526,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void removeUI(UI ui) {
         assert hasLock() : "Session is locked";
-        assert UI.getCurrent() != null : "Current UI connot be null";
-        assert ui != null : "Removed UI connot be null";
+        assert UI.getCurrent() != null : "Current UI cannot be null";
+        assert ui != null : "Removed UI cannot be null";
         assert UI.getCurrent().getUIId() == ui.getUIId() : "UIs don't match";
         ui.getInternals().setSession(null);
         uIs.remove(ui.getUIId());
