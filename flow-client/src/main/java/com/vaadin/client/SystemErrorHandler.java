@@ -45,28 +45,6 @@ public class SystemErrorHandler {
     }
 
     /**
-     * Shows the communication error notification.
-     *
-     * @param details
-     *            message details or null if there are no details
-     */
-    public void handleCommunicationError(String details) {
-        handleUnrecoverableError(details,
-                registry.getApplicationConfiguration().getCommunicationError());
-    }
-
-    /**
-     * Shows the authentication error notification.
-     *
-     * @param details
-     *            message details or null if there are no details
-     */
-    public void handleAuthenticationError(String details) {
-        handleUnrecoverableError(details,
-                registry.getApplicationConfiguration().getAuthorizationError());
-    }
-
-    /**
      * Shows the session expiration notification.
      *
      * @param details

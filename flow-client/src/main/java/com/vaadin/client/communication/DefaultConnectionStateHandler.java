@@ -458,10 +458,10 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     protected void handleUnauthorized(XhrConnectionError xhrConnectionError) {
         /*
-         * Authorization has failed (401). Could be that the session has timed
+         * Authorization has failed (401). Assume that the session has timed
          * out.
          */
-        registry.getSystemErrorHandler().handleAuthenticationError("");
+        registry.getSystemErrorHandler().handleSessionExpiredError("");
         stopApplication();
     }
 

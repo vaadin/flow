@@ -145,10 +145,6 @@ public class Bootstrapper implements EntryPoint {
         conf.setServletVersion(jsoConfiguration.getVaadinVersion());
         conf.setAtmosphereVersion(jsoConfiguration.getAtmosphereVersion());
         conf.setAtmosphereJSVersion(jsoConfiguration.getAtmosphereJSVersion());
-        conf.setCommunicationError(
-                jsoConfiguration.getConfigError("comErrMsg"));
-        conf.setAuthorizationError(
-                jsoConfiguration.getConfigError("authErrMsg"));
         conf.setSessionExpiredError(
                 jsoConfiguration.getConfigError("sessExpMsg"));
 

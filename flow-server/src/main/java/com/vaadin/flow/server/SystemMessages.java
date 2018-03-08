@@ -31,13 +31,13 @@ import java.io.Serializable;
  * <li><b>sessionExpiredURL</b> = null</li>
  * <li><b>sessionExpiredNotificationEnabled</b> = true</li>
  * <li><b>sessionExpiredCaption</b> = ""</li>
- * <li><b>sessionExpiredMessage</b> =
- * "Take note of any unsaved data, and <u>click here</u> to continue."</li>
+ * <li><b>sessionExpiredMessage</b> = "Take note of any unsaved data, and
+ * <u>click here</u> to continue."</li>
  * <li><b>communicationErrorURL</b> = null</li>
  * <li><b>communicationErrorNotificationEnabled</b> = true</li>
  * <li><b>communicationErrorCaption</b> = "Communication problem"</li>
- * <li><b>communicationErrorMessage</b> =
- * "Take note of any unsaved data, and <u>click here</u> to continue."</li>
+ * <li><b>communicationErrorMessage</b> = "Take note of any unsaved data, and
+ * <u>click here</u> to continue."</li>
  * <li><b>internalErrorURL</b> = null</li>
  * <li><b>internalErrorNotificationEnabled</b> = true</li>
  * <li><b>internalErrorCaption</b> = "Internal error"</li>
@@ -57,16 +57,6 @@ public class SystemMessages implements Serializable {
     protected boolean sessionExpiredNotificationEnabled = true;
     protected String sessionExpiredCaption = "Session Expired";
     protected String sessionExpiredMessage = "Take note of any unsaved data, and <u>click here</u> or press ESC key to continue.";
-
-    protected String communicationErrorURL = null;
-    protected boolean communicationErrorNotificationEnabled = true;
-    protected String communicationErrorCaption = "Communication problem";
-    protected String communicationErrorMessage = "Take note of any unsaved data, and <u>click here</u> or press ESC to continue.";
-
-    protected String authenticationErrorURL = null;
-    protected boolean authenticationErrorNotificationEnabled = true;
-    protected String authenticationErrorCaption = "Authentication problem";
-    protected String authenticationErrorMessage = "Take note of any unsaved data, and <u>click here</u> or press ESC to continue.";
 
     protected String internalErrorURL = null;
     protected boolean internalErrorNotificationEnabled = true;
@@ -128,90 +118,6 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * Gets the URL the user will be redirected to after dismissing a
-     * communication error message.
-     *
-     * @return the URL to redirect to, or null to refresh the page
-     */
-    public String getCommunicationErrorURL() {
-        return communicationErrorURL;
-    }
-
-    /**
-     * Checks if "communication error" notifications should be shown to the end
-     * user. If the notification is disabled the user will be immediately
-     * redirected to the URL returned by {@link #getCommunicationErrorURL()}.
-     *
-     * @return {@code true} to show the notification to the end user,
-     *         {@code false} to redirect directly
-     */
-    public boolean isCommunicationErrorNotificationEnabled() {
-        return communicationErrorNotificationEnabled;
-    }
-
-    /**
-     * Gets the caption to show in a "communication error" notification.
-     *
-     * @return The caption to show or {@code null} to show no caption.
-     */
-    public String getCommunicationErrorCaption() {
-        return (communicationErrorNotificationEnabled
-                ? communicationErrorCaption : null);
-    }
-
-    /**
-     * Gets the message to show in a "communication error" notification.
-     *
-     * @return The message to show or {@code null} to show no message.
-     */
-    public String getCommunicationErrorMessage() {
-        return (communicationErrorNotificationEnabled
-                ? communicationErrorMessage : null);
-    }
-
-    /**
-     * Gets the URL the user will be redirected to after dismissing an
-     * authentication error message.
-     *
-     * @return the URL to redirect to, or null to refresh the page
-     */
-    public String getAuthenticationErrorURL() {
-        return authenticationErrorURL;
-    }
-
-    /**
-     * Checks if "authentication error" messages should be shown to the end
-     * user. If the notification is disabled the user will be immediately
-     * redirected to the URL returned by {@link #getAuthenticationErrorURL()}.
-     *
-     * @return {@code true} to show the notification to the end user,
-     *         {@code false} to redirect directly
-     */
-    public boolean isAuthenticationErrorNotificationEnabled() {
-        return authenticationErrorNotificationEnabled;
-    }
-
-    /**
-     * Gets the caption to show in an "authentication error" notification.
-     *
-     * @return The caption to show or {@code null} to show no caption.
-     */
-    public String getAuthenticationErrorCaption() {
-        return (authenticationErrorNotificationEnabled
-                ? authenticationErrorCaption : null);
-    }
-
-    /**
-     * Gets the message to show in a "authentication error" notification.
-     *
-     * @return The message to show or {@code null} to show no message.
-     */
-    public String getAuthenticationErrorMessage() {
-        return (authenticationErrorNotificationEnabled
-                ? authenticationErrorMessage : null);
-    }
-
-    /**
      * Gets the URL the user will be redirected to after dismissing an internal
      * error message.
      *
@@ -252,8 +158,8 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * Gets the URL the user will be redirected to after dismissing a
-     * "cookies disabled" message.
+     * Gets the URL the user will be redirected to after dismissing a "cookies
+     * disabled" message.
      *
      * @return the URL to redirect to, or null to refresh the page
      */
