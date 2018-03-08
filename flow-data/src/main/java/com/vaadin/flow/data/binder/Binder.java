@@ -180,7 +180,7 @@ public class Binder<BEAN> implements Serializable {
          * @param readOnly
          *            {@code true} to set binding read-only; {@code false} to
          *            enable writes
-         * @since
+         * 
          * @throws IllegalStateException
          *             if trying to make binding read-write and the setter is
          *             {@code null}
@@ -201,7 +201,6 @@ public class Binder<BEAN> implements Serializable {
          * Gets the getter associated with this Binding.
          *
          * @return the getter
-         * @since
          */
         public ValueProvider<BEAN, TARGET> getGetter();
 
@@ -209,7 +208,6 @@ public class Binder<BEAN> implements Serializable {
          * Gets the setter associated with this Binding.
          *
          * @return the setter
-         * @since
          */
         public Setter<BEAN, TARGET> getSetter();
     }
@@ -266,8 +264,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * <p>
          * <strong>Note:</strong> when a {@code null} setter is given the field
-         * will be marked as readonly by invoking
-         * ({@link HasValue::setReadOnly}.
+         * will be marked as readonly by invoking {@link HasValue::setReadOnly}.
          * 
          * @param getter
          *            the function to get the value of the property to the
@@ -299,8 +296,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * <p>
          * <strong>Note:</strong> when the binding is <i>read-only</i> the field
-         * will be marked as readonly by invoking
-         * ({@link HasValue::setReadOnly}.
+         * will be marked as readonly by invoking {@link HasValue::setReadOnly}.
          * 
          * @param propertyName
          *            the name of the property to bind, not null
