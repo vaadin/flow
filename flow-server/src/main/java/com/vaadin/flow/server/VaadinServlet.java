@@ -733,12 +733,11 @@ public class VaadinServlet extends HttpServlet {
         return resolvedUrl;
     }
 
-    private boolean inServletContext(String resolvedUrl)
-            throws MalformedURLException {
+    private boolean inServletContext(String resolvedUrl) {
         return getResource(resolvedUrl) != null;
     }
 
-    private boolean inWebJar(String resolvedUrl) throws IOException {
+    private boolean inWebJar(String resolvedUrl) {
         if (webJarServer != null) {
             Optional<String> webJarPath = webJarServer
                     .getWebJarResourcePath(resolvedUrl);
