@@ -176,9 +176,8 @@ public interface VaadinResponse {
      * Sets all conceivable headers that might prevent a response from being
      * stored in any caches.
      *
-     * @since
      */
-    public default void setNoCacheHeaders() {
+    default void setNoCacheHeaders() {
         // no-store to disallow storing even if cache would be revalidated
         // must-revalidate to not use stored value even if someone asks for it
         setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
