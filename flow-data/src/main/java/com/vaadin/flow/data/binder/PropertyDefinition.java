@@ -69,11 +69,11 @@ public interface PropertyDefinition<T, V> extends Serializable {
     String getName();
 
     /**
-     * Gets the top level name of this property
-     * 
+     * Gets the top level name of this property.
+     *
      * @return the top level property name, not <code>null</code>
      */
-    public default String getTopLevelName() {
+    default String getTopLevelName() {
         return getName();
     }
 

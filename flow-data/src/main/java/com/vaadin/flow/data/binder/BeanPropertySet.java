@@ -222,6 +222,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
             return parent.getName() + "." + super.getName();
         }
 
+        @Override
         public String getTopLevelName() {
             return super.getName();
         }
