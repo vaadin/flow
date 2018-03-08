@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -37,6 +34,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -524,8 +525,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the UI to remove
      */
     public void removeUI(UI ui) {
-        assert hasLock();
-        assert UI.getCurrent() == ui;
+        assert hasLock() : "Session is locked";
+        assert UI.getCurrent() != null : "Current UI connot be null";
+        assert ui != null : "Removed UI connot be null";
+        assert UI.getCurrent().getUIId() == ui.getUIId() : "UIs don't match";
         ui.getInternals().setSession(null);
         uIs.remove(ui.getUIId());
     }
