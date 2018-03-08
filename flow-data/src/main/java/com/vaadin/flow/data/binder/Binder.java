@@ -34,11 +34,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.external.org.slf4j.Logger;
+import com.vaadin.external.org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValidation;
@@ -792,8 +793,8 @@ public class Binder<BEAN> implements Serializable {
             ValueProvider<BEAN, ?> getter = definition.getGetter();
             Setter<BEAN, ?> setter = definition.getSetter().orElse(null);
             if (setter == null) {
-                getLogger().fine(() -> propertyName
-                        + " does not have an accessible setter");
+                getLogger().info(
+                        propertyName + " does not have an accessible setter");
             }
 
             BindingBuilder<BEAN, ?> finalBinding = withConverter(
@@ -2791,6 +2792,6 @@ public class Binder<BEAN> implements Serializable {
     }
 
     private static final Logger getLogger() {
-        return Logger.getLogger(Binder.class.getName());
+        return LoggerFactory.getLogger(Binder.class.getName());
     }
 }
