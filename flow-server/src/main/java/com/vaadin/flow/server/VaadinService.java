@@ -16,9 +16,8 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,6 +44,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +80,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -1368,12 +1370,26 @@ public abstract class VaadinService implements Serializable {
     public boolean isUIActive(UI ui) {
         if (ui.isClosing()) {
             return false;
-        } else {
-            long now = System.currentTimeMillis();
-            int timeout = 1000 * getHeartbeatTimeout();
-            return timeout < 0 || now
-                    - ui.getInternals().getLastHeartbeatTimestamp() < timeout;
         }
+
+        // Check for long running tasks
+        Lock lockInstance = ui.getSession().getLockInstance();
+        if (lockInstance instanceof ReentrantLock) {
+            if (((ReentrantLock) lockInstance).hasQueuedThreads()) {
+                /*
+                 * Someone is trying to access the session. Leaving all UIs
+                 * alive for now. A possible kill decision will be made at a
+                 * later time when the session access has ended.
+                 */
+                return true;
+            }
+        }
+
+        // Check timeout
+        long now = System.currentTimeMillis();
+        int timeout = 1000 * getHeartbeatTimeout();
+        return timeout < 0 || now
+                - ui.getInternals().getLastHeartbeatTimestamp() < timeout;
     }
 
     /**
