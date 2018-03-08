@@ -69,7 +69,7 @@ public class SystemMessages implements Serializable {
     protected String authenticationErrorMessage = "Take note of any unsaved data, and <u>click here</u> or press ESC to continue.";
 
     protected String internalErrorURL = null;
-    protected boolean internalErrorNotificationEnabled = true;
+    protected boolean internalErrorNotificationEnabled = false;
     protected String internalErrorCaption = "Internal error";
     protected String internalErrorMessage = "Please notify the administrator.<br>Take note of any unsaved data, and <u>click here</u> or press ESC to continue.";
 
