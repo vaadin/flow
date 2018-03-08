@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -100,7 +99,7 @@ public class WebJarServer implements Serializable {
             return false;
         }
 
-        URL resourceUrl = VaadinService.getCurrent().getResource(webJarPath);
+        URL resourceUrl = request.getServletContext().getResource(webJarPath);
         if (resourceUrl == null) {
             return false;
         }
