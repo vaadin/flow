@@ -27,7 +27,7 @@ import java.util.function.Supplier;
  * interface:
  * 
  * <pre>
- * interface HasWidth&ltC extends Component&gt extends ComponentSupplier&ltC&gt {
+ * interface HasWidth&lt;C extends Component&gt; extends ComponentSupplier&lt;C&gt; {
  * 
  *     public C setWidth(String width) {
  *         get().getElement().setProperty("width", width);
@@ -39,7 +39,7 @@ import java.util.function.Supplier;
  * Here is a concrete class that inherits the fluent method:
  * 
  * <pre>
- * class MyComponent implements HasWidth&ltMyComponent&gt {
+ * class MyComponent implements HasWidth&lt;MyComponent&gt; {
  *     ...
  * }
  * </pre>
