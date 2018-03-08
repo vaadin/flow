@@ -54,7 +54,7 @@ import java.io.Serializable;
  */
 public class SystemMessages implements Serializable {
     protected String sessionExpiredURL = null;
-    protected boolean sessionExpiredNotificationEnabled = true;
+    protected boolean sessionExpiredNotificationEnabled = false;
     protected String sessionExpiredCaption = "Session Expired";
     protected String sessionExpiredMessage = "Take note of any unsaved data, and <u>click here</u> or press ESC key to continue.";
 
