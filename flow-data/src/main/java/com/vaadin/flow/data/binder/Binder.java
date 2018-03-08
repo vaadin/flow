@@ -193,7 +193,6 @@ public class Binder<BEAN> implements Serializable {
          * @see #setReadOnly(boolean)
          * 
          * @return {@code true} if read-only; {@code false} if not
-         * @since
          */
         public boolean isReadOnly();
 
@@ -264,7 +263,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * <p>
          * <strong>Note:</strong> when a {@code null} setter is given the field
-         * will be marked as readonly by invoking {@link HasValue::setReadOnly}.
+         * will be marked as readonly by invoking {@link HasValue#setReadOnly}.
          * 
          * @param getter
          *            the function to get the value of the property to the
@@ -296,7 +295,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * <p>
          * <strong>Note:</strong> when the binding is <i>read-only</i> the field
-         * will be marked as readonly by invoking {@link HasValue::setReadOnly}.
+         * will be marked as readonly by invoking {@link HasValue#setReadOnly}.
          * 
          * @param propertyName
          *            the name of the property to bind, not null
