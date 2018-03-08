@@ -683,13 +683,7 @@ public class VaadinServlet extends HttpServlet {
     private boolean resourceIsFound(String url) {
         String resolvedUrl = resolveUrl(url);
 
-        try {
-            return inServletContext(resolvedUrl) || inWebJar(resolvedUrl);
-        } catch (IOException e) {
-            LoggerFactory.getLogger(VaadinServlet.class)
-                    .trace("Failed to parse url.", e);
-            return false;
-        }
+        return inServletContext(resolvedUrl) || inWebJar(resolvedUrl);
     }
 
     private String resolveUrl(String url) {
