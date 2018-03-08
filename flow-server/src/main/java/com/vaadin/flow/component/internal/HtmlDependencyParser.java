@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Html import dependencies parser.
@@ -101,21 +103,25 @@ public class HtmlDependencyParser {
             session.setAttribute(HtmlDependenciesCache.class, cache);
         }
 
-        String resolvedResource = servlet.resolveResource(path);
+        String url = SharedUtil.prefixIfRelative(path,
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
-        if (cache.hasDependency(resolvedResource)) {
+        String resolvedPath = servlet
+                .resolveResource(url);
+
+        if (cache.hasDependency(resolvedPath)) {
             return;
         }
-        cache.addDependency(resolvedResource);
+        cache.addDependency(resolvedPath);
 
         try (InputStream content = servlet.getServletContext()
-                .getResourceAsStream(resolvedResource)) {
+                .getResourceAsStream(resolvedPath)) {
             if (content == null) {
-                getLogger().info(
-                        "Can't find resource '{}' via the servlet context",
+                getLogger().trace(
+                        "Can't find resource '{}' to parse for imports via the servlet context",
                         path);
             } else {
-                parseHtmlImports(content, path)
+                parseHtmlImports(content, resolvedPath)
                         .map(uri -> resolveUri(uri, path))
                         .forEach(uri -> parseDependencies(uri, dependencies));
             }

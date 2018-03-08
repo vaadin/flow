@@ -3,6 +3,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -252,6 +253,8 @@ public class BootstrapHandlerDependenciesTest {
 
         service.setCurrentInstances(vaadinRequestMock,
                 mock(VaadinResponse.class));
+        Mockito.when(service.getDependencyFilters())
+                .thenReturn(Collections.emptyList());
 
         session = new MockVaadinSession(service);
         session.lock();

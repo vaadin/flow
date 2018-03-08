@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.testutil;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
@@ -25,6 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 /**
@@ -38,18 +38,19 @@ public class ViewOrUITest extends AbstractTestBenchTest {
 
     @Override
     protected String getTestPath() {
-        Class<? extends UI> uiClass = getUIClass();
+        Class<? extends Component> viewClass = getViewClass();
         try {
+            if (viewClass != null) {
+                return "/view/"
+                        + URLEncoder.encode(viewClass.getName(), UTF_8.name());
+            }
+
+            Class<? extends UI> uiClass = getUIClass();
             if (uiClass != null) {
                 return "/run/"
                         + URLEncoder.encode(uiClass.getName(), UTF_8.name());
             }
 
-            Class<? extends Component> viewClass = getViewClass();
-            if (viewClass != null) {
-                return "/view/"
-                        + URLEncoder.encode(viewClass.getName(), UTF_8.name());
-            }
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

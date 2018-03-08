@@ -316,4 +316,28 @@ public class SharedUtil implements Serializable {
         return join(parts, "-");
     }
 
+    /**
+     * Prepend the given url with the prefix if it is not absolute and doesn't
+     * have a protocol.
+     * 
+     * @param url
+     *            url to check
+     * @param prefix
+     *            prefix to add to url
+     * @return prefixed url or url if absolute or has a protocol
+     */
+    public static String prefixIfRelative(String url, String prefix) {
+        // Absolute
+        if (url.startsWith("/")) {
+            return url;
+        }
+
+        // Has a protocol
+        // https://tools.ietf.org/html/rfc3986#section-3.1
+        if (url.matches("^[a-zA-Z0-9.\\-+]+:.*")) {
+            return url;
+        }
+
+        return prefix + url;
+    }
 }
