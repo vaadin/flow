@@ -31,8 +31,6 @@ public class ApplicationConfiguration {
     private String frontendRootUrl;
     private String serviceUrl;
     private int uiId;
-    private ErrorMessage communicationError;
-    private ErrorMessage authorizationError;
     private ErrorMessage sessionExpiredError;
     private int heartbeatInterval;
 
@@ -142,44 +140,6 @@ public class ApplicationConfiguration {
      */
     public void setHeartbeatInterval(int heartbeatInterval) {
         this.heartbeatInterval = heartbeatInterval;
-    }
-
-    /**
-     * Gets the message used when a communication error occurs.
-     *
-     * @return the communication error message
-     */
-    public ErrorMessage getCommunicationError() {
-        return communicationError;
-    }
-
-    /**
-     * Sets the message used when a communication error occurs.
-     *
-     * @param communicationError
-     *            the communication error message
-     */
-    public void setCommunicationError(ErrorMessage communicationError) {
-        this.communicationError = communicationError;
-    }
-
-    /**
-     * Gets the message used when an authorization error occurs.
-     *
-     * @return the authorization error message
-     */
-    public ErrorMessage getAuthorizationError() {
-        return authorizationError;
-    }
-
-    /**
-     * Sets the message used when an authorization error occurs.
-     *
-     * @param authorizationError
-     *            the authorization error message
-     */
-    public void setAuthorizationError(ErrorMessage authorizationError) {
-        this.authorizationError = authorizationError;
     }
 
     /**

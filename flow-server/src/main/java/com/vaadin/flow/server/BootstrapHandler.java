@@ -878,27 +878,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         SystemMessages systemMessages = vaadinService.getSystemMessages(locale,
                 request);
         if (systemMessages != null) {
-            // Write the CommunicationError -message to client
-            JsonObject comErrMsg = Json.createObject();
-            putValueOrNull(comErrMsg, CAPTION,
-                    systemMessages.getCommunicationErrorCaption());
-            putValueOrNull(comErrMsg, MESSAGE,
-                    systemMessages.getCommunicationErrorMessage());
-            putValueOrNull(comErrMsg, URL,
-                    systemMessages.getCommunicationErrorURL());
-
-            appConfig.put("comErrMsg", comErrMsg);
-
-            JsonObject authErrMsg = Json.createObject();
-            putValueOrNull(authErrMsg, CAPTION,
-                    systemMessages.getAuthenticationErrorCaption());
-            putValueOrNull(authErrMsg, MESSAGE,
-                    systemMessages.getAuthenticationErrorMessage());
-            putValueOrNull(authErrMsg, URL,
-                    systemMessages.getAuthenticationErrorURL());
-
-            appConfig.put("authErrMsg", authErrMsg);
-
             JsonObject sessExpMsg = Json.createObject();
             putValueOrNull(sessExpMsg, CAPTION,
                     systemMessages.getSessionExpiredCaption());
