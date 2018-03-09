@@ -122,16 +122,22 @@ public class HtmlDependencyParserTest {
 
         Assert.assertEquals(5, dependencies.size());
 
+        Mockito.verify(servlet).getResourceAsStream(resolvedRoot);
+        Mockito.verify(servlet).getResourceAsStream("baz/relative1.html");
+        Mockito.verify(servlet).getResourceAsStream("relative2.html");
+        Mockito.verify(servlet).getResourceAsStream("relative3.html");
+        Mockito.verify(servlet).getResourceAsStream("absolute.html");
+
         Assert.assertTrue("Dependencies parser doesn't return the root URI",
                 dependencies.contains(root));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the simple relative URI (same parent)",
                 dependencies.contains("baz/relative1.html"));
         Assert.assertTrue(
-                "Dependencies parser doesn't return the realtive URI which is located in the parent folder",
+                "Dependencies parser doesn't return the relative URI which is located in the parent folder",
                 dependencies.contains("relative2.html"));
         Assert.assertTrue(
-                "Dependencies parser doesn't return the realtive URI which is located sub folder",
+                "Dependencies parser doesn't return the relative URI which is located sub folder",
                 dependencies.contains("baz/sub/relative3.html"));
         Assert.assertTrue("Dependencies parser doesn't return the absolute URI",
                 dependencies.contains("/absolute.html"));
@@ -203,7 +209,7 @@ public class HtmlDependencyParserTest {
                 "Dependencies parser doesn't return the simple relative URI (same parent)",
                 dependencies.contains("relative.html"));
         Assert.assertTrue(
-                "Dependencies parser doesn't return the realtive URI which is located in the parent folder",
+                "Dependencies parser doesn't return the relative URI which is located in the parent folder",
                 dependencies.contains("relative1.html"));
     }
 
