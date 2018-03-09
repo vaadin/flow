@@ -15,29 +15,27 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
-import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.ui.Dependency.Type;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
 public class DependencyListTest {
@@ -206,8 +204,8 @@ public class DependencyListTest {
         deps.add(new Dependency(Type.JAVASCRIPT, foo, LoadMode.EAGER));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void addSameDependencyInDifferentModes() {
+    @Test
+    public void addSameDependencyInDifferentModes_logsError_doesntThrow() {
         String url = "foo/bar.js";
         Type type = Type.JAVASCRIPT;
 

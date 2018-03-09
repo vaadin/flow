@@ -89,14 +89,6 @@ public class DependencyList implements Serializable {
                             + "The loading strategy is changed to {} to avoid conflicts. This may impact performance.",
                             newDependency.getUrl(), newDependency.getLoadMode(),
                             currentDependency.getLoadMode(), LoadMode.EAGER);
-            if (currentDependency.getLoadMode() != newDependency
-                    .getLoadMode()) {
-                throw new IllegalStateException(String.format(
-                        "Dependency with url %s is loaded both with %s and %s modes",
-                        currentDependency.getUrl(),
-                        currentDependency.getLoadMode(),
-                        newDependency.getLoadMode()));
-            }
         }
     }
 
