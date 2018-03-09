@@ -115,7 +115,7 @@ public class HtmlDependencyParser {
         cache.addDependency(resolvedPath);
 
         try (InputStream content = servlet
-                .getResourceAsStream(resolvedResource)) {
+                .getResourceAsStream(resolvedPath)) {
             if (content == null) {
                 getLogger().trace(
                         "Can't find resource '{}' to parse for imports via the servlet context",
