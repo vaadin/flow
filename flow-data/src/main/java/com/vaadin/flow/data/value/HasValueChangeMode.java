@@ -67,6 +67,11 @@ public interface HasValueChangeMode<C extends Component, V>
                     getClientPropertyChangeEventName());
             element.synchronizeProperty(getClientValuePropertyName(), "blur");
             break;
+        case ON_CHANGE:
+            element.removeSynchronizedPropertyEvent(
+                getClientPropertyChangeEventName());
+            element.synchronizeProperty(getClientValuePropertyName(), "change");
+            break;
         default:
             throw new IllegalArgumentException(
                     "Unexpected value change mode: " + valueChangeMode);

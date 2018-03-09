@@ -36,4 +36,14 @@ public enum ValueChangeMode {
      *      event description</a>
      */
     ON_BLUR,
+
+    /**
+     * Syncs the value to the server on {@code change} event, i.e. when the
+     * component value is committed.
+     *
+     * @see <a href=
+     *       "https://developer.mozilla.org/en-US/docs/Web/Events/change">
+     *       Change event description</a>
+     */
+    ON_CHANGE,
 }
