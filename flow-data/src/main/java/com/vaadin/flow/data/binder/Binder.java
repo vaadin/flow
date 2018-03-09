@@ -185,7 +185,7 @@ public class Binder<BEAN> implements Serializable {
          *             if trying to make binding read-write and the setter is
          *             {@code null}
          */
-        public void setReadOnly(boolean readOnly);
+        void setReadOnly(boolean readOnly);
 
         /**
          * Gets the current read-only status for this Binding.
@@ -194,21 +194,21 @@ public class Binder<BEAN> implements Serializable {
          * 
          * @return {@code true} if read-only; {@code false} if not
          */
-        public boolean isReadOnly();
+        boolean isReadOnly();
 
         /**
          * Gets the getter associated with this Binding.
          *
          * @return the getter
          */
-        public ValueProvider<BEAN, TARGET> getGetter();
+        ValueProvider<BEAN, TARGET> getGetter();
 
         /**
          * Gets the setter associated with this Binding.
          *
          * @return the setter
          */
-        public Setter<BEAN, TARGET> getSetter();
+        Setter<BEAN, TARGET> getSetter();
     }
 
     /**
@@ -921,6 +921,10 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public HasValue<?, FIELDVALUE> getField() {
             return field;
+        }
+
+        private static final Logger getLogger() {
+            return LoggerFactory.getLogger(Binder.class.getName());
         }
     }
 
@@ -2341,8 +2345,7 @@ public class Binder<BEAN> implements Serializable {
      *            to set them to read-write
      */
     public void setReadOnly(boolean readOnly) {
-        getBindings().stream()
-                .filter(binding -> binding.getSetter() != null)
+        getBindings().stream().filter(binding -> binding.getSetter() != null)
                 .forEach(field -> field.setReadOnly(readOnly));
     }
 
@@ -2784,9 +2787,5 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(propertyName, "Property name may not be null");
         Optional.ofNullable(boundProperties.get(propertyName))
                 .ifPresent(Binding::unbind);
-    }
-
-    private static final Logger getLogger() {
-        return LoggerFactory.getLogger(Binder.class.getName());
     }
 }
