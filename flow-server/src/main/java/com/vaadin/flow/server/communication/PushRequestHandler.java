@@ -18,28 +18,26 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.atmosphere.cache.UUIDBroadcasterCache;
-import org.atmosphere.client.TrackMessageSizeInterceptor;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.cpr.AtmosphereFramework.AtmosphereHandlerWrapper;
 import org.atmosphere.cpr.AtmosphereHandler;
-import org.atmosphere.cpr.AtmosphereInterceptor;
 import org.atmosphere.cpr.AtmosphereRequestImpl;
 import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -47,7 +45,6 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.shared.communication.PushConstants;
 
 /**
@@ -218,19 +215,9 @@ public class PushRequestHandler
         // Disable Atmosphere's message about commercial support
         atmosphere.addInitParameter("org.atmosphere.cpr.showSupportMessage",
                 "false");
-        // Suppress JSR356 detection, see
-        // https://github.com/Atmosphere/atmosphere/issues/2104
-        atmosphere.addInitParameter(ApplicationConfig.WEBSOCKET_SUPPRESS_JSR356,
-                "true");
 
         try {
             atmosphere.init(vaadinServletConfig);
-
-            // Ensure the client-side knows how to split the message stream
-            // into individual messages when using certain transports
-            AtmosphereInterceptor trackMessageSize = new TrackMessageSizeInterceptor();
-            trackMessageSize.configure(atmosphere.getAtmosphereConfig());
-            atmosphere.interceptor(trackMessageSize);
         } catch (ServletException e) {
             throw new RuntimeException("Atmosphere init failed", e);
         }

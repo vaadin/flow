@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import javax.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -63,9 +64,17 @@ public class HtmlDependencyParserTest {
     @Test
     public void mainImportDoesntHaveContentToParse_mainInportIsReturnedAndNoExceptions() {
         String root = "foo.html";
+
+        Mockito.when(servlet.resolveResource("frontend://foo.html"))
+                .thenReturn("foo.html");
+        Mockito.when(context.getResourceAsStream("foo.html")).thenReturn(
+                new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
+
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
         Collection<String> dependencies = parser.parseDependencies();
-        Assert.assertTrue("Dependencies parser doesn't return the root URI",
+        Assert.assertTrue(
+                "Dependencies parser doesn't return the root URI but '"
+                        + dependencies + "'",
                 dependencies.contains(root));
     }
 
@@ -75,7 +84,8 @@ public class HtmlDependencyParserTest {
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
 
         String resolvedRoot = "baz/bar/" + root;
-        Mockito.when(servlet.resolveResource(root)).thenReturn(resolvedRoot);
+        Mockito.when(servlet.resolveResource("frontend://" + root))
+                .thenReturn(resolvedRoot);
 
         String importContent = "<link rel='import' href='relative1.html'>"
                 + "<link rel='import' href='../relative2.html'>"
@@ -85,6 +95,28 @@ public class HtmlDependencyParserTest {
                 importContent.getBytes(StandardCharsets.UTF_8));
         Mockito.when(servlet.getResourceAsStream(resolvedRoot))
                 .thenReturn(stream);
+
+        Mockito.when(servlet.resolveResource("frontend://baz/relative1.html"))
+                .thenReturn("baz/relative1.html");
+        Mockito.when(context.getResourceAsStream("baz/relative1.html"))
+                .thenReturn(new ByteArrayInputStream(
+                        "".getBytes(StandardCharsets.UTF_8)));
+
+        Mockito.when(servlet.resolveResource("frontend://relative2.html"))
+                .thenReturn("relative2.html");
+        Mockito.when(context.getResourceAsStream("relative2.html")).thenReturn(
+                new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
+
+        Mockito.when(
+                servlet.resolveResource("frontend://baz/sub/relative3.html"))
+                .thenReturn("relative3.html");
+        Mockito.when(context.getResourceAsStream("relative3.html")).thenReturn(
+                new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
+
+        Mockito.when(servlet.resolveResource("/absolute.html"))
+                .thenReturn("absolute.html");
+        Mockito.when(context.getResourceAsStream("absolute.html")).thenReturn(
+                new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Collection<String> dependencies = parser.parseDependencies();
 
@@ -117,6 +149,11 @@ public class HtmlDependencyParserTest {
                 importContent.getBytes(StandardCharsets.UTF_8));
         Mockito.when(servlet.getResourceAsStream(root)).thenReturn(stream);
 
+        Mockito.when(servlet.resolveResource("frontend://relative.html"))
+                .thenReturn("relative.html");
+        Mockito.when(context.getResourceAsStream("relative.html")).thenReturn(
+                new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
+
         Collection<String> dependencies = parser.parseDependencies();
 
         Assert.assertEquals(2, dependencies.size());
@@ -133,7 +170,8 @@ public class HtmlDependencyParserTest {
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
 
         String resolvedRoot = "baz/bar/" + root;
-        Mockito.when(servlet.resolveResource(root)).thenReturn(resolvedRoot);
+        Mockito.when(servlet.resolveResource("frontend://" + root))
+                .thenReturn(resolvedRoot);
 
         String importContent = "<link rel='import' href='relative.html'>";
         InputStream stream = new ByteArrayInputStream(
@@ -142,14 +180,18 @@ public class HtmlDependencyParserTest {
                 .thenReturn(stream);
 
         String resolvedRelative = "baz/bar/relative.html";
-        Mockito.when(servlet.resolveResource("relative.html"))
+        Mockito.when(servlet.resolveResource("frontend://relative.html"))
                 .thenReturn(resolvedRelative);
+        Mockito.when(servlet.resolveResource("frontend://relative1.html"))
+                .thenReturn("relative1.html");
 
         InputStream relativeContent = new ByteArrayInputStream(
                 "<link rel='import' href='relative1.html'>"
                         .getBytes(StandardCharsets.UTF_8));
         Mockito.when(servlet.getResourceAsStream(resolvedRelative))
                 .thenReturn(relativeContent);
+        Mockito.when(context.getResourceAsStream("relative1.html")).thenReturn(
+                new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Collection<String> dependencies = parser.parseDependencies();
 
@@ -171,13 +213,19 @@ public class HtmlDependencyParserTest {
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
 
         String resolvedRoot = "baz/bar/" + root;
-        Mockito.when(servlet.resolveResource(root)).thenReturn(resolvedRoot);
+        Mockito.when(servlet.resolveResource("frontend://" + root))
+                .thenReturn(resolvedRoot);
 
         String importContent = "<link rel='import' href='relative.html'>";
         InputStream stream = new ByteArrayInputStream(
                 importContent.getBytes(StandardCharsets.UTF_8));
         Mockito.when(servlet.getResourceAsStream(resolvedRoot))
                 .thenReturn(stream);
+
+        Mockito.when(servlet.resolveResource("frontend://relative.html"))
+                .thenReturn("relative.html");
+        Mockito.when(context.getResourceAsStream("relative.html")).thenReturn(
+                new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         HtmlDependenciesCache cache = new HtmlDependenciesCache();
         Mockito.when(session.getAttribute(HtmlDependenciesCache.class))

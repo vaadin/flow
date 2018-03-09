@@ -79,11 +79,11 @@ public class SpringServlet extends VaadinServlet {
         setProperty(
                 Constants.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
                 properties);
+        setProperty(Constants.SERVLET_PARAMETER_REQUEST_TIMING, properties);
 
         setProperty(Constants.DISABLE_WEBJARS, properties);
         setProperty(Constants.FRONTEND_URL_ES5, properties);
         setProperty(Constants.FRONTEND_URL_ES6, properties);
-        setProperty(Constants.FORCE_SHADY_DOM, properties);
 
         setProperty(Constants.I18N_PROVIDER, properties);
 
