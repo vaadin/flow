@@ -85,6 +85,8 @@ import com.vaadin.flow.shared.Registration;
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
+    private static final String NULL_LISTENER = "Listener can not be 'null'";
+
     /**
      * The id of this UI, used to find the server side instance of the UI form
      * which a request originates. A negative value indicates that the UI id has
@@ -818,7 +820,7 @@ public class UI extends Component
      * @return handler to remove the event listener
      */
     public Registration addBeforeEnterListener(BeforeEnterListener listener) {
-        Objects.requireNonNull(listener, "Listener can not be 'null'");
+        Objects.requireNonNull(listener, NULL_LISTENER);
         return internals.addBeforeEnterListener(listener);
     }
 
@@ -832,7 +834,7 @@ public class UI extends Component
      * @return handler to remove the event listener
      */
     public Registration addBeforeLeaveListener(BeforeLeaveListener listener) {
-        Objects.requireNonNull(listener, "Listener can not be 'null'");
+        Objects.requireNonNull(listener, NULL_LISTENER);
         return internals.addBeforeLeaveListener(listener);
     }
 
@@ -848,7 +850,7 @@ public class UI extends Component
      */
     public Registration addAfterNavigationListener(
             AfterNavigationListener listener) {
-        Objects.requireNonNull(listener, "Listener can not be 'null'");
+        Objects.requireNonNull(listener, NULL_LISTENER);
         return internals.addAfterNavigationListener(listener);
     }
 

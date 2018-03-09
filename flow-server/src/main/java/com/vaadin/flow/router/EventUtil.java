@@ -62,14 +62,15 @@ public final class EventUtil {
     }
 
     /**
+     * Collect enterObservers for root instance and elements in list.
      *
      * @param observersRoot
-     *            element which is used as a root to traverse for obeservers
+     *            element which is used as a root to traverse for observers
      * @param elements
      *            elements for which to handle observers
-     * @return
+     * @return list of found BeforeEnterObservers
      */
-    public static List<BeforeEnterHandler> collectEnterObservers(
+    public static List<BeforeEnterObserver> collectEnterObservers(
             HasElement observersRoot, List<? extends HasElement> elements) {
         Stream<BeforeEnterObserver> observerRootDescendants = EventUtil
                 .collectBeforeEnterObservers(
@@ -131,6 +132,15 @@ public final class EventUtil {
                 AfterNavigationObserver.class).collect(Collectors.toList());
     }
 
+    /**
+     * Collect afterNavigationObservers for root instance and elements in list.
+     *
+     * @param observersRoot
+     *            element which is used as a root to traverse for observers
+     * @param elements
+     *            elements for which to handle observers
+     * @return list of found AfterNavigationObservers
+     */
     public static List<AfterNavigationObserver> collectAfterNavigationObservers(
             HasElement observersRoot, List<? extends HasElement> elements) {
         Stream<AfterNavigationObserver> observerRootDescendants = EventUtil

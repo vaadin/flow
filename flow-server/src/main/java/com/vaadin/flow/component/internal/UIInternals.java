@@ -162,9 +162,6 @@ public class UIInternals implements Serializable {
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
 
     private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
-    private ArrayList<BeforeEnterListener> enterListeners = new ArrayList<>();
-    private ArrayList<BeforeLeaveListener> leaveListeners = new ArrayList<>();
-    private ArrayList<AfterNavigationListener> afterListeners = new ArrayList<>();
 
     private final Set<Integer> sentTemplateIds = new HashSet<>();
 
