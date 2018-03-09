@@ -157,7 +157,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  * <p>
  * See <a href=
- * "https://vaadin.com/elements/vaadin-text-field/html-api/elements/Vaadin.TextFieldElement"
+ * "https://vaadin.com/components/vaadin-text-field/html-api/elements/Vaadin.TextFieldElement"
  * >{@code <vaadin-text-field>} documentation</a> for the text field parts.
  * </p>
  * <p>
@@ -220,7 +220,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxElement#4.0.0-beta3",
+        "WebComponent: Vaadin.ComboBoxElement#4.0.0-beta4",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box.html")
