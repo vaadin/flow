@@ -29,7 +29,6 @@ import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
-import com.vaadin.flow.router.internal.BeforeEnterHandler;
 
 /**
  * Event handling utilities.
