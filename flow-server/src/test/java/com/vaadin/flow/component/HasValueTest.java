@@ -22,7 +22,7 @@ import org.junit.Test;
 
 public class HasValueTest {
 
-    public static class HasValueComponent extends RouterLink implements HasValue<RouterLink, String> {
+    private class HasValueComponent extends RouterLink implements HasValue<RouterLink, String> {
 
         @Override
         public void setValue(String value) {
@@ -31,11 +31,12 @@ public class HasValueTest {
 
         @Override
         public String getValue() {
-            return null;
+            return getElement().getProperty(getClientValuePropertyName(),
+                    getEmptyValue());
         }
     }
 
-    public static class HasValueNotComponent implements HasValue<RouterLink, String> {
+    private class HasValueNotComponent implements HasValue<RouterLink, String> {
 
         @Override
         public void setValue(String value) {
@@ -47,6 +48,15 @@ public class HasValueTest {
             return null;
         }
     }
+
+    private class HasValueWithNonNullEmptyValue extends HasValueComponent {
+        @Override
+        public String getEmptyValue() {
+            return "";
+        }
+    }
+
+    private HasValue<?, String> component;
 
     @Test
     public void testGetComponent_hasValueIsComponent_defaultWorks() {
@@ -68,5 +78,93 @@ public class HasValueTest {
         component.setValue("foobar");
 
         Assert.assertEquals("Incorrect event source",component, sourceReference.get());
+    }
+    @Test
+    public void testValueChangeListener_valueChangedFromServer_triggersEvent() {
+        component = new HasValueComponent();
+
+        AtomicReference<HasValue.ValueChangeEvent> reference = new AtomicReference<>();
+        component.addValueChangeListener(reference::set);
+
+        component.setValue(null);
+        Assert.assertNull("no event should be triggered yet", reference.get());
+
+        component.setValue("foobar");
+
+        Assert.assertNotNull("event should have been triggered",
+                reference.get());
+        HasValue.ValueChangeEvent event = reference.get();
+
+        Assert.assertNull("invalid previous value", event.getOldValue());
+        Assert.assertEquals("invalid value", "foobar", event.getValue());
+
+        component.clear();
+
+        event = reference.get();
+
+        Assert.assertEquals("invalid previous value", "foobar",
+                event.getOldValue());
+        Assert.assertNull("invalid value", event.getValue());
+    }
+
+    @Test
+    public void testValueChangeListener_nonNullDefaultValue_valueChangedFromServer_triggersEvent() {
+        component = new HasValueWithNonNullEmptyValue();
+
+        AtomicReference<HasValue.ValueChangeEvent> reference = new AtomicReference<>();
+        component.addValueChangeListener(reference::set);
+
+        component.setValue(null);
+        Assert.assertNull("no event should be triggered yet", reference.get());
+
+        component.setValue("foobar");
+
+        Assert.assertNotNull("event should have been triggered",
+                reference.get());
+        HasValue.ValueChangeEvent event = reference.get();
+
+        Assert.assertEquals("invalid previous value", "", event.getOldValue());
+        Assert.assertEquals("invalid value", "foobar", event.getValue());
+
+        component.clear();
+
+        event = reference.get();
+
+        Assert.assertEquals("invalid previous value", "foobar",
+                event.getOldValue());
+        Assert.assertEquals("invalid value", "", event.getValue());
+    }
+
+    @Test
+    public void testValueChangeListener_nonNullDefaultValue_initialValueChangedFromNullToEmpty_noEvent() {
+        component = new HasValueWithNonNullEmptyValue();
+
+        AtomicReference<HasValue.ValueChangeEvent> reference = new AtomicReference<>();
+        component.addValueChangeListener(reference::set);
+
+        component.setValue("");
+        Assert.assertNull("no event should be triggered yet", reference.get());
+
+        component.setValue("foobar");
+
+        Assert.assertNotNull("event should have been triggered",
+                reference.get());
+        HasValue.ValueChangeEvent event = reference.get();
+
+        Assert.assertEquals("invalid previous value", "", event.getOldValue());
+        Assert.assertEquals("invalid value", "foobar", event.getValue());
+
+        component.setValue(null);
+
+        event = reference.get();
+
+        Assert.assertEquals("invalid previous value", "foobar",
+                event.getOldValue());
+        Assert.assertEquals("invalid value", "", event.getValue());
+
+        reference.set(null);
+
+        component.setValue("");
+        Assert.assertNull("no event should be triggered yet", reference.get());
     }
 }
