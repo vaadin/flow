@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -32,8 +33,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <V>
  *            the value type
  */
-public interface HasValue<C extends Component, V>
-        extends ComponentSupplier<C> {
+public interface HasValue<C extends Component, V> extends ComponentSupplier<C> {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -43,8 +43,7 @@ public interface HasValue<C extends Component, V>
      * @param <V>
      *            the value type
      */
-    class ValueChangeEvent<C extends Component, V>
-    extends ComponentEvent<C> {
+    class ValueChangeEvent<C extends Component, V> extends ComponentEvent<C> {
 
         private final V oldValue;
         private final V value;
@@ -102,8 +101,8 @@ public interface HasValue<C extends Component, V>
      * @see Registration
      */
     @FunctionalInterface
-    interface ValueChangeListener<C extends Component, V> extends
-            ComponentEventListener<ValueChangeEvent<C, V>> {
+    interface ValueChangeListener<C extends Component, V>
+            extends ComponentEventListener<ValueChangeEvent<C, V>> {
 
         /**
          * Invoked when this listener receives a value change event from an
@@ -122,7 +121,8 @@ public interface HasValue<C extends Component, V>
      * {@code IllegalArgumentException} if the value is not acceptable.
      * <p>
      * <i>Implementation note:</i> the implementing class should document
-     * whether null values are accepted or not.
+     * whether null values are accepted or not, and override
+     * {@link #getEmptyValue()} if the empty value is not {@code null}.
      *
      * @param value
      *            the new value
@@ -135,7 +135,8 @@ public interface HasValue<C extends Component, V>
      * Returns the current value of this object.
      * <p>
      * <i>Implementation note:</i> the implementing class should document
-     * whether null values may be returned or not.
+     * whether null values may be returned or not, and override
+     * {@link #getEmptyValue()} if the empty value is not {@code null}.
      *
      * @return the current value
      */
@@ -144,7 +145,10 @@ public interface HasValue<C extends Component, V>
     /**
      * Adds a value change listener. The listener is called when the value of
      * this {@code HasValue} is changed either by the user or programmatically.
-     *
+     * <p>
+     * <i>Implementation note:</i> the added listener is triggered if the value
+     * property, named by {@link #getClientValuePropertyName()}, is changed.
+     * 
      * @param listener
      *            the value change listener, not null
      * @return a registration for the listener
@@ -154,7 +158,7 @@ public interface HasValue<C extends Component, V>
         return get().getElement().addPropertyChangeListener(
                 getClientValuePropertyName(),
                 event -> listener.onComponentEvent(new ValueChangeEvent<>(get(),
-                        this, (V) event.getOldValue(),
+                        this, resolvePreviousValue(this, event),
                         event.isUserOriginated())));
     }
 
@@ -274,5 +278,35 @@ public interface HasValue<C extends Component, V>
      */
     default boolean isRequiredIndicatorVisible() {
         return get().getElement().getProperty("required", false);
+    }
+
+    /**
+     * Resolve the previous value for a {@link ValueChangeEvent}.
+     * <p>
+     * For the state tree, the default empty value of any property is {@code null},
+     * but for any {@link HasValue} it might be something else as defined by
+     * {@link #getEmptyValue()}. (#3496)
+     * <p>
+     * This method can be used so that the default value does not have to be set
+     * in the component constructor for each component instance - unless the
+     * default value is different from what is used in the browser.
+     *
+     *
+     * @param hasValue
+     *            the value component
+     * @param event
+     *            the property change event
+     * @param <V>
+     *            type of the value
+     * @return the previous value
+     */
+    static <V> V resolvePreviousValue(HasValue<?, V> hasValue,
+            PropertyChangeEvent event) {
+        final V emptyValue = hasValue.getEmptyValue();
+        final V propertyChangeEventValue = (V) event.getOldValue();
+        if (propertyChangeEventValue == null && emptyValue != null) {
+            return emptyValue;
+        }
+        return propertyChangeEventValue;
     }
 }
