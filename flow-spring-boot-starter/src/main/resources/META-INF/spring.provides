@@ -1,1 +1,1 @@
-provides: flow-spring-addon, spring-boot-starter-web, flow-html-components
+provides: vaadin-core, flow-server, flow-spring-addon, spring-boot-starter-web
