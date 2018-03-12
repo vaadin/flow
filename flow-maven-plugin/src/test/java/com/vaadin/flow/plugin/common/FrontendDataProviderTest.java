@@ -16,13 +16,6 @@
 
 package com.vaadin.flow.plugin.common;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -36,9 +29,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.ImmutableSet;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,8 +42,14 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.google.common.collect.ImmutableSet;
 import com.vaadin.flow.component.dependency.HtmlImport;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Vaadin Ltd.
@@ -74,12 +73,13 @@ public class FrontendDataProviderTest {
     public class TestFrontendDataProvider extends FrontendDataProvider {
 
         public TestFrontendDataProvider(boolean shouldBundle,
-                File es6SourceDirectory,
+                boolean shouldMinify, File es6SourceDirectory,
                 AnnotationValuesExtractor annotationValuesExtractor,
                 File fragmentConfigurationFile,
                 Map<String, Set<String>> userDefinedFragments) {
-            super(shouldBundle, es6SourceDirectory, annotationValuesExtractor,
-                    fragmentConfigurationFile, userDefinedFragments);
+            super(shouldBundle, shouldMinify, es6SourceDirectory,
+                    annotationValuesExtractor, fragmentConfigurationFile,
+                    userDefinedFragments);
         }
 
         @Override
@@ -122,13 +122,13 @@ public class FrontendDataProviderTest {
                 new File(sourceDirectory, nonExistentFragmentFile)
                         .getAbsolutePath());
 
-        new TestFrontendDataProvider(true, sourceDirectory,
+        new TestFrontendDataProvider(true, true, sourceDirectory,
                 mock(AnnotationValuesExtractor.class), null,
                 Collections.singletonMap("fragmentName",
                         Collections.singleton(nonExistentFragmentFile)));
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     @Test
     public void shellImportsAreCheckedForExistence() {
         String nonExistentImport = "nonExistentImport";
@@ -143,7 +143,7 @@ public class FrontendDataProviderTest {
         exception.expectMessage(
                 new File(sourceDirectory, nonExistentImport).getAbsolutePath());
 
-        new TestFrontendDataProvider(true, sourceDirectory,
+        new TestFrontendDataProvider(true, true, sourceDirectory,
                 annotationValuesExtractorMock, null, Collections.emptyMap());
 
         verify(annotationValuesExtractorMock, Mockito.times(2))
@@ -151,27 +151,38 @@ public class FrontendDataProviderTest {
     }
 
     @Test
-    public void shouldBundleIsPersisted() {
-        boolean shouldBundle = ThreadLocalRandom.current().nextBoolean();
+    public void optionsArePersisted() {
+        assertOptionsArePersisted(true, true);
+        assertOptionsArePersisted(false, true);
+        assertOptionsArePersisted(true, false);
+        assertOptionsArePersisted(false, false);
+    }
+
+    private void assertOptionsArePersisted(boolean shouldBundle,
+            boolean shouldMinify) {
         AnnotationValuesExtractor annotationValuesExtractorMock = mock(
                 AnnotationValuesExtractor.class);
         when(annotationValuesExtractorMock.extractAnnotationValues(anyMap()))
                 .thenReturn(new HashMap<>());
 
         FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
-                shouldBundle, sourceDirectory, annotationValuesExtractorMock,
-                null, Collections.emptyMap());
+                shouldBundle, shouldMinify, sourceDirectory,
+                annotationValuesExtractorMock, null, Collections.emptyMap());
 
         boolean actualShouldBundle = frontendDataProvider.shouldBundle();
+        boolean actualShouldMinify = frontendDataProvider.shouldMinify();
         assertEquals(
                 "Expect to have the same value for 'shouldBundle' variable as passed into a constructor",
                 shouldBundle, actualShouldBundle);
+        assertEquals(
+                "Expect to have the same value for 'shouldMinify' variable as passed into a constructor",
+                shouldMinify, actualShouldMinify);
 
         verify(annotationValuesExtractorMock, Mockito.times(2))
                 .extractAnnotationValues(anyMap());
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     @Test
     public void themedHtmlImports_existingThemedImportIsConverted_nonExistentIsPreserved()
             throws IOException {
@@ -200,7 +211,7 @@ public class FrontendDataProviderTest {
                 new HashSet<>(Arrays.asList("theme/myTheme/component1.html",
                         "src/component2.html")));
 
-        FrontendDataProvider provider = new TestFrontendDataProvider(true,
+        FrontendDataProvider provider = new TestFrontendDataProvider(true, true,
                 sourceDirectory, annotationValuesExtractorMock, null,
                 Collections.emptyMap());
 
@@ -226,8 +237,8 @@ public class FrontendDataProviderTest {
                 .thenReturn(new HashMap<>());
 
         FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
-                false, sourceDirectory, annotationValuesExtractorMock, null,
-                Collections.singletonMap("whatever",
+                false, true, sourceDirectory, annotationValuesExtractorMock,
+                null, Collections.singletonMap("whatever",
                         Collections.singleton("doesNotMatter")));
         Set<String> fragmentFiles = frontendDataProvider
                 .createFragmentFiles(targetDirectory);
@@ -241,7 +252,7 @@ public class FrontendDataProviderTest {
                 .extractAnnotationValues(anyMap());
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     @Test
     public void fragmentsContentsIsNotIncludedIntoShellFile()
             throws IOException {
@@ -260,8 +271,8 @@ public class FrontendDataProviderTest {
                         .singletonMap(HtmlImport.class, allImports)));
 
         FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
-                true, sourceDirectory, annotationValuesExtractorMock, null,
-                Collections.singletonMap(fragmentName, fragmentImports));
+                true, true, sourceDirectory, annotationValuesExtractorMock,
+                null, Collections.singletonMap(fragmentName, fragmentImports));
 
         Set<String> fragmentFilePaths = frontendDataProvider
                 .createFragmentFiles(targetDirectory);
@@ -302,7 +313,7 @@ public class FrontendDataProviderTest {
                 StandardCharsets.UTF_8);
 
         FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
-                true, sourceDirectory, annotationValuesExtractorMock,
+                true, true, sourceDirectory, annotationValuesExtractorMock,
                 configurationFile, Collections.singletonMap(firstFragment,
                         Collections.singleton(firstFragmentImport)));
 

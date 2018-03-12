@@ -1,6 +1,7 @@
 'use strict';
 
 const bundle = {bundle};
+const minify = {minify};
 const shellFile = "{shell_file}";
 const fragmentFiles = [{fragment_files}];
 const es6SourceDirectory = "{es6_source_directory}";
@@ -47,10 +48,10 @@ function build(transpileJs, configurationName) {
     }
     const polymerProject = new polymerBuild.PolymerProject(polymerProperties);
 
-    buildConfiguration(polymerProject, path.relative(workingDirectory, es6SourceDirectory), path.join(targetDirectory, configurationName), transpileJs, bundle);
+    buildConfiguration(polymerProject, path.relative(workingDirectory, es6SourceDirectory), path.join(targetDirectory, configurationName), transpileJs, bundle, minify);
 }
 
-function buildConfiguration(polymerProject, redundantPathPrefix, configurationTargetDirectory, transpileJs, bundle) {
+function buildConfiguration(polymerProject, redundantPathPrefix, configurationTargetDirectory, transpileJs, bundle, minify) {
     return new Promise((resolve, reject) => {
         console.log(`Deleting ${configurationTargetDirectory} directory...`);
         const buildBundler = new FlowBuildBundler(polymerProject.config, polymerProject.analyzer);
@@ -64,20 +65,24 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                     console.log('Will transpile frontend files.');
                     initialStream = initialStream.pipe(gulpIf(/\.js$/, new SafeTransform('babel', babelTransform, {plugins: ['babel-plugin-external-helpers'], presets: [babelPresetES2015NoModules]})));
                 }
-
-                console.log('Will minify frontend files.');
-                const streamWithMinification = initialStream
+                
+                let processedStream;
+                if (minify) {
+                    console.log('Will minify frontend files.');
+                    processedStream = initialStream
                     .pipe(gulpIf(/\.html$/, new SafeTransform('html-minify', htmlMinifier.minify, {collapseWhitespace: true, removeComments: true, minifyCSS: true})))
                     .pipe(gulpIf(/\.css$/, new SafeTransform('css-slam', cssSlam.css)))
                     .pipe(gulpIf(/\.js$/, new SafeTransform('babel', babelTransform, {presets: [minifyPreset(null, {simplifyComparisons: false})]})))
-                    .pipe(htmlSplitter.rejoin());
-
-                let processedStream;
+                    .pipe(htmlSplitter.rejoin());                    
+                } else {
+                    processedStream = initialStream;
+                }
+                
                 if (bundle) {
                     console.log('Will bundle frontend files.');
-                    processedStream = streamWithMinification.pipe(buildBundler);
+                    processedStream = processedStream.pipe(buildBundler);
                 } else {
-                    processedStream = streamWithMinification.pipe(gulpIgnore.exclude(file => { return file.path === shellFile } ));
+                    processedStream = processedStream.pipe(gulpIgnore.exclude(file => { return file.path === shellFile } ));
                 }
 
                 const nonSourceUserFilesStream = gulp.src([`${es6SourceDirectory}/**/*`, `!${es6SourceDirectory}/**/*.{html,css,js}`]);
