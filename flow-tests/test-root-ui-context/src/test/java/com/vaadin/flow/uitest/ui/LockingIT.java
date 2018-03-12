@@ -19,13 +19,11 @@ public class LockingIT extends ChromeBrowserTest {
     }
 
     private void clickButtonAndCheckMessage(String buttonId, String text) {
-
         findElement(By.id(buttonId)).click();
         checkMessage(text);
     }
 
     private void checkMessage(String text) {
-
         waitForElementPresent(By.id("message"));
 
         WebElement message = findElement(By.id("message"));
