@@ -22,18 +22,19 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -140,7 +141,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             return false;
         }
         VaadinService service = request.getService();
-        service.writeStringResponse(response, JsonConstants.JSON_CONTENT_TYPE,
+        service.writeUncachedStringResponse(response,
+                JsonConstants.JSON_CONTENT_TYPE,
                 VaadinService.createSessionExpiredJSON());
 
         return true;

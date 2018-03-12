@@ -3,6 +3,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -252,6 +253,8 @@ public class BootstrapHandlerDependenciesTest {
 
         service.setCurrentInstances(vaadinRequestMock,
                 mock(VaadinResponse.class));
+        Mockito.when(service.getDependencyFilters())
+                .thenReturn(Collections.emptyList());
 
         session = new MockVaadinSession(service);
         session.lock();
@@ -290,10 +293,10 @@ public class BootstrapHandlerDependenciesTest {
                 new UIWithMethods_BothBothInlineAndEagerTest(),
                 new UIAnnotated_BothLazyAndInlineTest(),
                 new UIWithMethods_BothBothLazyAndInlineTest())
-                .forEach(this::checkUiWithException);
+                .forEach(this::checkUiWithNoException);
     }
 
-    private void checkUiWithException(UI ui) {
+    private void checkUiWithNoException(UI ui) {
         boolean exceptionCaught = false;
         try {
             testUis(doc -> {
@@ -301,10 +304,10 @@ public class BootstrapHandlerDependenciesTest {
         } catch (IllegalStateException expected) {
             exceptionCaught = true;
         } finally {
-            assertThat(
+            assertFalse(
                     "The exception was expected, but not thrown for ui "
                             + ui.getClass().getCanonicalName(),
-                    exceptionCaught, is(true));
+                    exceptionCaught);
         }
     }
 

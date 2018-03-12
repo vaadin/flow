@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,11 +70,11 @@ public class DependencyList implements Serializable {
      *            the dependency to include on the page
      */
     public void add(Dependency dependency) {
-        String dependencyUrl = dependency.getUrl();
+        final String dependencyUrl = dependency.getUrl();
 
         if (urlCache.contains(dependencyUrl)) {
             Optional.ofNullable(urlToLoadedDependency.get(dependencyUrl))
-                    .ifPresent(currentDependency -> checkDuplicateDependency(
+                    .ifPresent(currentDependency -> handleDuplicateDependency(
                             dependency, currentDependency));
         } else {
             urlCache.add(dependencyUrl);
@@ -81,22 +82,19 @@ public class DependencyList implements Serializable {
         }
     }
 
-    private void checkDuplicateDependency(Dependency newDependency,
+    private void handleDuplicateDependency(Dependency newDependency,
             Dependency currentDependency) {
         if (newDependency.getLoadMode() != currentDependency.getLoadMode()) {
+            final LoadMode moreEagerLoadMode = LoadMode.values()[Math.min(
+                    newDependency.getLoadMode().ordinal(),
+                    currentDependency.getLoadMode().ordinal())];
             getLogger().warn(
-                            "Dependency with url {} was imported with two different loading strategies: {} and {}. "
-                            + "The loading strategy is changed to {} to avoid conflicts. This may impact performance.",
-                            newDependency.getUrl(), newDependency.getLoadMode(),
-                            currentDependency.getLoadMode(), LoadMode.EAGER);
-            if (currentDependency.getLoadMode() != newDependency
-                    .getLoadMode()) {
-                throw new IllegalStateException(String.format(
-                        "Dependency with url %s is loaded both with %s and %s modes",
-                        currentDependency.getUrl(),
-                        currentDependency.getLoadMode(),
-                        newDependency.getLoadMode()));
-            }
+                    "Dependency with url {} was imported with two different loading strategies: {} and {}. The dependency will be loaded as {}.",
+                    newDependency.getUrl(), newDependency.getLoadMode(),
+                    currentDependency.getLoadMode(), moreEagerLoadMode);
+            urlToLoadedDependency.replace(newDependency.getUrl(),
+                    new Dependency(newDependency.getType(),
+                            newDependency.getUrl(), moreEagerLoadMode));
         }
     }
 

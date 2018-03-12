@@ -234,7 +234,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.DatePickerElement#3.0.0-beta3",
+        "WebComponent: Vaadin.DatePickerElement#3.0.0-beta4",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
