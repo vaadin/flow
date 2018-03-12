@@ -1,7 +1,6 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -74,7 +73,10 @@ public class BootstrapHandlerTest {
     @StyleSheet("context://eager-relative.css")
     @StyleSheet("eager.css")
     @HtmlImport("eager.html")
-    private class TestUI extends UI {
+    protected static class TestUI extends UI {
+
+        public TestUI() {
+        }
 
         @Override
         protected void init(VaadinRequest request) {
@@ -1285,6 +1287,20 @@ public class BootstrapHandlerTest {
 
         checkInlinedScript(head, "es6-collections.js", false);
         checkInlinedScript(head, "babel-helpers.min.js", false);
+    }
+
+    @Test // UIInitListeners
+    public void all_listeners_are_notified_on_ui_init() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        AtomicReference<UI> uiReference = new AtomicReference<>();
+
+        service.addUIInitListener(
+                event -> uiReference.compareAndSet(null, event.getUi()));
+        BootstrapContext context = bootstrapHandler
+                .createAndInitUI(TestUI.class, createVaadinRequest(), response, session);
+
+        Assert.assertEquals(context.getUI(), uiReference.get());
     }
 
     private void assertStringEquals(String message, String expected,

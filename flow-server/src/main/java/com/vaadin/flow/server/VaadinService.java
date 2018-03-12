@@ -16,8 +16,9 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,10 +45,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +77,7 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -157,7 +155,7 @@ public abstract class VaadinService implements Serializable {
             .newSetFromMap(new ConcurrentHashMap<>());
 
     private final List<SessionInitListener> sessionInitListeners = new CopyOnWriteArrayList<>();
-
+    private final List<UIInitListener> uiInitListeners = new CopyOnWriteArrayList<>();
     private final List<SessionDestroyListener> sessionDestroyListeners = new CopyOnWriteArrayList<>();
 
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
@@ -551,6 +549,20 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Adds a listener that gets notified when a new UI has been initialized.
+     *
+     * @see UIInitListener
+     *
+     * @param listener
+     *            the UI initialization listener
+     * @return a handle that can be used for removing the listener
+     */
+    public Registration addUIInitListener(UIInitListener listener) {
+        uiInitListeners.add(listener);
+        return () -> uiInitListeners.remove(listener);
+    }
+
+    /**
      * Adds a listener that gets notified when a Vaadin service session that has
      * been initialized for this service is destroyed.
      * <p>
@@ -818,8 +830,7 @@ public abstract class VaadinService implements Serializable {
      * @throws ServiceException
      */
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
-            boolean requestCanCreateSession)
-            throws SessionExpiredException {
+            boolean requestCanCreateSession) throws SessionExpiredException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
@@ -1066,7 +1077,8 @@ public abstract class VaadinService implements Serializable {
     /**
      * Sets the given Vaadin service as the current service.
      *
-     * @param service the service to set
+     * @param service
+     *            the service to set
      */
     public static void setCurrent(VaadinService service) {
         CurrentInstance.set(VaadinService.class, service);
@@ -2157,5 +2169,17 @@ public abstract class VaadinService implements Serializable {
      */
     public RouterInterface getRouter() {
         return router;
+    }
+
+    /**
+     * Fire UI initialization event to all registered
+     * {@link UIInitListener}s.
+     * 
+     * @param ui
+     *            the initialized {@link UI}
+     */
+    public void fireUIInitListeners(UI ui) {
+        UIInitEvent initEvent = new UIInitEvent(ui, this);
+        uiInitListeners.forEach(listener -> listener.uiInit(initEvent));
     }
 }
