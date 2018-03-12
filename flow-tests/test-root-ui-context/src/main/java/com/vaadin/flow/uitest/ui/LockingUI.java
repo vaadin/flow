@@ -22,22 +22,10 @@ public class LockingUI extends UI {
         message.setId("message");
         message.setText("default");
 
-        NativeButton lockButton = new NativeButton("Lock UI for too long",
-                e -> {
-            int heartbeatInterval = VaadinService.getCurrent()
-                    .getDeploymentConfiguration().getHeartbeatInterval();
-            try {
-                // Wait for 4 heartbeats
-                long timeout = heartbeatInterval * 1000;
-                for (int i = 0; i < 4; ++i) {
-                    Thread.sleep(timeout);
-                }
-
-            } catch (InterruptedException e1) {
-                throw new RuntimeException(
-                        "Timeout should not get interrupted.");
-            }
-                    message.setText(LOCKING_ENDED);
+        NativeButton lockButton = new NativeButton("Lock UI for too long");
+        lockButton.addClickListener(e -> {
+            setHeartBeats();
+            message.setText(LOCKING_ENDED);
         });
         NativeButton checkButton = new NativeButton("Test communication",
                 e -> message.setText(ALL_OK));
@@ -47,5 +35,21 @@ public class LockingUI extends UI {
         checkButton.setId("check");
 
         add(lockButton, checkButton, message);
+    }
+
+    private void setHeartBeats() {
+        int heartbeatInterval = VaadinService.getCurrent()
+                .getDeploymentConfiguration().getHeartbeatInterval();
+        try {
+            // Wait for 4 heartbeats
+            long timeout = heartbeatInterval * 1000;
+            for (int i = 0; i < 4; ++i) {
+                Thread.sleep(timeout);
+            }
+
+        } catch (InterruptedException e1) {
+            throw new RuntimeException(
+                    "Timeout should not get interrupted.");
+        }
     }
 }
