@@ -72,8 +72,9 @@ public class HtmlDependencyParser {
 
     Collection<String> parseDependencies() {
         Set<String> dependencies = new HashSet<>();
-
-        parseDependencies(root, dependencies);
+        String rooUri = SharedUtil.prefixIfRelative(root,
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        parseDependencies(rooUri, dependencies);
 
         return dependencies;
     }
@@ -103,10 +104,8 @@ public class HtmlDependencyParser {
             session.setAttribute(HtmlDependenciesCache.class, cache);
         }
 
-        String url = SharedUtil.prefixIfRelative(path,
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
-        String resolvedPath = servlet.resolveResource(url);
+        String resolvedPath = servlet.resolveResource(path);
 
         if (cache.hasDependency(resolvedPath)) {
             return;

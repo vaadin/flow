@@ -78,10 +78,7 @@ public class ComponentMetaData {
 
         private HtmlImportDependency(Collection<String> uris,
                 LoadMode loadMode) {
-            List<String> uriList = new ArrayList<>();
-            uris.forEach(uri -> uriList.add(SharedUtil.prefixIfRelative(uri,
-                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)));
-            this.uris = Collections.unmodifiableCollection(uriList);
+            this.uris = Collections.unmodifiableCollection(uris);
             this.loadMode = loadMode;
         }
 

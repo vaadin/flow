@@ -74,7 +74,7 @@ public class HtmlDependencyParserTest {
         Assert.assertTrue(
                 "Dependencies parser doesn't return the root URI but '"
                         + dependencies + "'",
-                dependencies.contains(root));
+                dependencies.contains("frontend://" + root));
     }
 
     @Test
@@ -97,24 +97,24 @@ public class HtmlDependencyParserTest {
 
         Mockito.when(servlet.resolveResource("frontend://baz/relative1.html"))
                 .thenReturn("baz/relative1.html");
-        Mockito.when(service.getResourceAsStream("baz/relative1.html"))
+        Mockito.when(servlet.getResourceAsStream("baz/relative1.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "".getBytes(StandardCharsets.UTF_8)));
 
-        Mockito.when(servlet.resolveResource("frontend://relative2.html"))
+        Mockito.when(servlet.resolveResource("frontend://baz/../relative2.html"))
                 .thenReturn("relative2.html");
-        Mockito.when(service.getResourceAsStream("relative2.html")).thenReturn(
+        Mockito.when(servlet.getResourceAsStream("relative2.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Mockito.when(
                 servlet.resolveResource("frontend://baz/sub/relative3.html"))
                 .thenReturn("relative3.html");
-        Mockito.when(service.getResourceAsStream("relative3.html")).thenReturn(
+        Mockito.when(servlet.getResourceAsStream("relative3.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Mockito.when(servlet.resolveResource("/absolute.html"))
                 .thenReturn("absolute.html");
-        Mockito.when(service.getResourceAsStream("absolute.html")).thenReturn(
+        Mockito.when(servlet.getResourceAsStream("absolute.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Collection<String> dependencies = parser.parseDependencies();
@@ -128,16 +128,16 @@ public class HtmlDependencyParserTest {
         Mockito.verify(servlet).getResourceAsStream("absolute.html");
 
         Assert.assertTrue("Dependencies parser doesn't return the root URI",
-                dependencies.contains(root));
+                dependencies.contains("frontend://" + root));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the simple relative URI (same parent)",
-                dependencies.contains("baz/relative1.html"));
+                dependencies.contains("frontend://baz/relative1.html"));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the relative URI which is located in the parent folder",
-                dependencies.contains("relative2.html"));
+                dependencies.contains("frontend://baz/../relative2.html"));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the relative URI which is located sub folder",
-                dependencies.contains("baz/sub/relative3.html"));
+                dependencies.contains("frontend://baz/sub/relative3.html"));
         Assert.assertTrue("Dependencies parser doesn't return the absolute URI",
                 dependencies.contains("/absolute.html"));
     }
@@ -203,13 +203,13 @@ public class HtmlDependencyParserTest {
         Assert.assertEquals(3, dependencies.size());
 
         Assert.assertTrue("Dependencies parser doesn't return the root URI",
-                dependencies.contains(root));
+                dependencies.contains("frontend://" + root));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the simple relative URI (same parent)",
-                dependencies.contains("relative.html"));
+                dependencies.contains("frontend://relative.html"));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the relative URI which is located in the parent folder",
-                dependencies.contains("relative1.html"));
+                dependencies.contains("frontend://relative1.html"));
     }
 
     @Test
