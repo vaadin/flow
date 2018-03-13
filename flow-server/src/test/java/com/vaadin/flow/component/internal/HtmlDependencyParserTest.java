@@ -79,7 +79,7 @@ public class HtmlDependencyParserTest {
         Assert.assertTrue(
                 "Dependencies parser doesn't return the root URI but '"
                         + dependencies + "'",
-                dependencies.contains(root));
+                dependencies.contains("frontend://" + root));
     }
 
     @Test
@@ -127,16 +127,16 @@ public class HtmlDependencyParserTest {
         Assert.assertEquals(5, dependencies.size());
 
         Assert.assertTrue("Dependencies parser doesn't return the root URI",
-                dependencies.contains(root));
+                dependencies.contains("frontend://" + root));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the simple relative URI (same parent)",
-                dependencies.contains("baz/relative1.html"));
+                dependencies.contains("frontend://baz/relative1.html"));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the realtive URI which is located in the parent folder",
-                dependencies.contains("relative2.html"));
+                dependencies.contains("frontend://relative2.html"));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the realtive URI which is located sub folder",
-                dependencies.contains("baz/sub/relative3.html"));
+                dependencies.contains("frontend://baz/sub/relative3.html"));
         Assert.assertTrue("Dependencies parser doesn't return the absolute URI",
                 dependencies.contains("/absolute.html"));
     }
@@ -202,13 +202,13 @@ public class HtmlDependencyParserTest {
         Assert.assertEquals(3, dependencies.size());
 
         Assert.assertTrue("Dependencies parser doesn't return the root URI",
-                dependencies.contains(root));
+                dependencies.contains("frontend://" + root));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the simple relative URI (same parent)",
-                dependencies.contains("relative.html"));
+                dependencies.contains("frontend://relative.html"));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the realtive URI which is located in the parent folder",
-                dependencies.contains("relative1.html"));
+                dependencies.contains("frontend://relative1.html"));
     }
 
     @Test

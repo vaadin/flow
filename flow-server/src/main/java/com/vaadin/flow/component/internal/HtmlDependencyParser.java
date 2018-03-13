@@ -79,10 +79,13 @@ public class HtmlDependencyParser {
     }
 
     private void parseDependencies(String path, Set<String> dependencies) {
-        if (dependencies.contains(path)) {
+        String url = SharedUtil.prefixIfRelative(path,
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+
+        if (dependencies.contains(url)) {
             return;
         }
-        dependencies.add(path);
+        dependencies.add(url);
 
         VaadinSession session = VaadinSession.getCurrent();
         VaadinServlet servlet = VaadinServlet.getCurrent();
@@ -103,8 +106,6 @@ public class HtmlDependencyParser {
             session.setAttribute(HtmlDependenciesCache.class, cache);
         }
 
-        String url = SharedUtil.prefixIfRelative(path,
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
         String resolvedPath = servlet
                 .resolveResource(url);
