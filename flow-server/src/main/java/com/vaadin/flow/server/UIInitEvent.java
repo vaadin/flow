@@ -20,8 +20,7 @@ import java.util.EventObject;
 import com.vaadin.flow.component.UI;
 
 /**
- * Event fired to {@link UIInitListener} when a {@link UI} has been
- * initialized.
+ * Event fired to {@link UIInitListener} when a {@link UI} has been initialized.
  */
 public class UIInitEvent extends EventObject {
 
@@ -45,7 +44,12 @@ public class UIInitEvent extends EventObject {
         return (VaadinService) super.getSource();
     }
 
-    public UI getUi() {
+    /**
+     * Get the initialized UI for this initialization event.
+     * 
+     * @return initialized UI
+     */
+    public UI getUI() {
         return ui;
     }
 }
