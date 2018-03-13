@@ -55,7 +55,7 @@ public interface HasValueChangeMode<C extends Component, V>
     default void setValueChangeMode(ValueChangeMode valueChangeMode) {
         Objects.requireNonNull(valueChangeMode,
                 "New valueChangeMode should not be null");
-        Element element = get().getElement();
+        Element element = ((C) this).getElement();
         switch (valueChangeMode) {
         case EAGER:
             element.removeSynchronizedPropertyEvent("blur");
