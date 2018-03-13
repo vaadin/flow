@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,8 +79,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -1393,12 +1390,12 @@ public abstract class VaadinService implements Serializable {
         Lock lockInstance = ui.getSession().getLockInstance();
         if (lockInstance instanceof ReentrantLock
                 && ((ReentrantLock) lockInstance).hasQueuedThreads()) {
-                /*
-                 * Someone is trying to access the session. Leaving all UIs
-                 * alive for now. A possible kill decision will be made at a
-                 * later time when the session access has ended.
-                 */
-                return true;
+            /*
+             * Someone is trying to access the session. Leaving all UIs alive
+             * for now. A possible kill decision will be made at a later time
+             * when the session access has ended.
+             */
+            return true;
         }
 
         // Check timeout
@@ -2190,8 +2187,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Fire UI initialization event to all registered
-     * {@link UIInitListener}s.
+     * Fire UI initialization event to all registered {@link UIInitListener}s.
      * 
      * @param ui
      *            the initialized {@link UI}
