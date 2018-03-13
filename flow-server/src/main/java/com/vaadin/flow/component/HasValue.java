@@ -150,7 +150,7 @@ public interface HasValue<C extends Component, V> extends HasElement {
      */
     default Registration addValueChangeListener(
             ValueChangeListener<C, V> listener) {
-        return this.getElement().addPropertyChangeListener(
+        return getElement().addPropertyChangeListener(
                 getClientValuePropertyName(),
                 event -> listener
                         .onComponentEvent(new ValueChangeEvent<>((C) this,
@@ -241,7 +241,7 @@ public interface HasValue<C extends Component, V> extends HasElement {
      *            read-only mode or not
      */
     default void setReadOnly(boolean readOnly) {
-        this.getElement().setProperty("readonly", readOnly);
+        getElement().setProperty("readonly", readOnly);
     }
 
     /**
@@ -251,7 +251,7 @@ public interface HasValue<C extends Component, V> extends HasElement {
      *         not.
      */
     default boolean isReadOnly() {
-        return this.getElement().getProperty("readonly", false);
+        return getElement().getProperty("readonly", false);
     }
 
     /**
@@ -264,7 +264,7 @@ public interface HasValue<C extends Component, V> extends HasElement {
      *            <code>false</code> if not
      */
     default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-        this.getElement().setProperty("required",
+        getElement().setProperty("required",
                 requiredIndicatorVisible);
     }
 
@@ -274,6 +274,6 @@ public interface HasValue<C extends Component, V> extends HasElement {
      * @return <code>true</code> if visible, <code>false</code> if not
      */
     default boolean isRequiredIndicatorVisible() {
-        return this.getElement().getProperty("required", false);
+        return getElement().getProperty("required", false);
     }
 }
