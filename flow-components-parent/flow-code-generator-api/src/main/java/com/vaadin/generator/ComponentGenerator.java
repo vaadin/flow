@@ -33,9 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -46,10 +43,12 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ComponentSupplier;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.HasComponents;
@@ -546,13 +545,13 @@ public class ComponentGenerator {
             }
         });
 
-        boolean componentSupplierAdded = interfaces.stream()
-                .filter(ComponentSupplier.class::isAssignableFrom).count() > 0;
-
-        if (!componentSupplierAdded) {
-            javaClass.addInterface(ComponentSupplier.class.getName()
-                    + GENERIC_TYPE_DECLARATION);
-        }
+        // boolean componentSupplierAdded = interfaces.stream()
+        // .filter(ComponentSupplier.class::isAssignableFrom).count() > 0;
+        //
+        // if (!componentSupplierAdded) {
+        // javaClass.addInterface(ComponentSupplier.class.getName()
+        // + GENERIC_TYPE_DECLARATION);
+        // }
     }
 
     private void generateGettersAndSetters(ComponentMetadata metadata,
@@ -869,8 +868,8 @@ public class ComponentGenerator {
                     }
                     javaClass.addInterface(HasValue.class.getName() + "<"
                             + GENERIC_TYPE + ", " + javaType.getName() + ">");
-                    javaClass.removeImport(ComponentSupplier.class);
-                    javaClass.removeInterface(ComponentSupplier.class);
+                    // javaClass.removeImport(ComponentSupplier.class);
+                    // javaClass.removeInterface(ComponentSupplier.class);
                     method.addAnnotation(Override.class);
 
                     method.setBody(ComponentGeneratorUtils
@@ -1133,7 +1132,7 @@ public class ComponentGenerator {
                     preventSettingTheSameValue(javaClass, parameterName,
                             method);
                     if (setterType.isPrimitive()) {
-                        implementHasValueSetterWithPimitiveType(javaClass,
+                        implementHasValueSetterWithPrimitiveType(javaClass,
                                 property, method, setterType, parameterName);
                     } else if (!nullable) {
                         method.setBody(String.format(
@@ -1154,7 +1153,7 @@ public class ComponentGenerator {
      * Note that for double, an overload setter with {@link Number} is also
      * created, to allow the developer to call the setValue method using int.
      */
-    private void implementHasValueSetterWithPimitiveType(
+    private void implementHasValueSetterWithPrimitiveType(
             JavaClassSource javaClass, ComponentPropertyData property,
             MethodSource<JavaClassSource> method, Class<?> setterType,
             String parameterName) {
@@ -1210,7 +1209,7 @@ public class ComponentGenerator {
 
     private void addFluentReturnToMethod(MethodSource<JavaClassSource> method) {
         method.setReturnType(GENERIC_TYPE);
-        method.setBody(method.getBody() + "return get();");
+        method.setBody(method.getBody() + "return (R) this;");
         method.getJavaDoc().addTagValue(JAVADOC_RETURN,
                 "this instance, for method chaining");
     }
@@ -1380,7 +1379,7 @@ public class ComponentGenerator {
                             .replace(PROPERTY_CHANGE_EVENT_POSTFIX, ""));
             method.setBody(String.format(
                     "return getElement().addPropertyChangeListener(\"%s\", "
-                            + "event -> listener.onComponentEvent(new %s<%s>(get(), event.isUserOriginated())));",
+                            + "event -> listener.onComponentEvent(new %s<%s>((R) this, event.isUserOriginated())));",
                     propertyNameBeforeRenaming, eventClass.getName(),
                     eventClass.getTypeVariables().get(0).getName()));
         } else {

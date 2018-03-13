@@ -29,7 +29,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ComponentSupplier;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.HasClickListeners;
@@ -536,15 +535,6 @@ public class ComponentGeneratorTest {
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
                 generatedClass, "MyComponent", HasStyle.class);
-    }
-
-    @Test
-    public void generateClass_implementsComponentSupplier() {
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent", ComponentSupplier.class);
     }
 
     @Test

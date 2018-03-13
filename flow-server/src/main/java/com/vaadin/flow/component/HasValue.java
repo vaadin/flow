@@ -32,8 +32,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <V>
  *            the value type
  */
-public interface HasValue<C extends Component, V>
-        extends ComponentSupplier<C> {
+public interface HasValue<C extends Component, V> {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -151,9 +150,10 @@ public interface HasValue<C extends Component, V>
      */
     default Registration addValueChangeListener(
             ValueChangeListener<C, V> listener) {
-        return get().getElement().addPropertyChangeListener(
+        return ((C) this).getElement().addPropertyChangeListener(
                 getClientValuePropertyName(),
-                event -> listener.onComponentEvent(new ValueChangeEvent<>(get(),
+                event -> listener
+                        .onComponentEvent(new ValueChangeEvent<>((C) this,
                         this, (V) event.getOldValue(),
                         event.isUserOriginated())));
     }
@@ -241,7 +241,7 @@ public interface HasValue<C extends Component, V>
      *            read-only mode or not
      */
     default void setReadOnly(boolean readOnly) {
-        get().getElement().setProperty("readonly", readOnly);
+        ((C) this).getElement().setProperty("readonly", readOnly);
     }
 
     /**
@@ -251,7 +251,7 @@ public interface HasValue<C extends Component, V>
      *         not.
      */
     default boolean isReadOnly() {
-        return get().getElement().getProperty("readonly", false);
+        return ((C) this).getElement().getProperty("readonly", false);
     }
 
     /**
@@ -264,7 +264,8 @@ public interface HasValue<C extends Component, V>
      *            <code>false</code> if not
      */
     default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-        get().getElement().setProperty("required", requiredIndicatorVisible);
+        ((C) this).getElement().setProperty("required",
+                requiredIndicatorVisible);
     }
 
     /**
@@ -273,6 +274,6 @@ public interface HasValue<C extends Component, V>
      * @return <code>true</code> if visible, <code>false</code> if not
      */
     default boolean isRequiredIndicatorVisible() {
-        return get().getElement().getProperty("required", false);
+        return ((C) this).getElement().getProperty("required", false);
     }
 }

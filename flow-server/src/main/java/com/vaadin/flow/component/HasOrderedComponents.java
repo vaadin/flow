@@ -27,7 +27,7 @@ import com.vaadin.flow.dom.Element;
  *            the type of the component which implements the interface
  */
 public interface HasOrderedComponents<T extends Component>
-        extends HasComponents, ComponentSupplier<T> {
+        extends HasComponents {
 
     /**
      * Replaces the component in the container with another one without changing
@@ -84,7 +84,8 @@ public interface HasOrderedComponents<T extends Component>
             throw new IllegalArgumentException(
                     "The 'component' parameter cannot be null");
         }
-        Iterator<Component> it = get().getChildren().sequential().iterator();
+        Iterator<Component> it = ((T) this).getChildren().sequential()
+                .iterator();
         int index = 0;
         while (it.hasNext()) {
             Component next = it.next();
@@ -102,7 +103,7 @@ public interface HasOrderedComponents<T extends Component>
      * @return the number of components
      */
     default int getComponentCount() {
-        return (int) get().getChildren().count();
+        return (int) ((T) this).getChildren().count();
     }
 
     /**
@@ -123,7 +124,7 @@ public interface HasOrderedComponents<T extends Component>
                     "The 'index' argument should be greater than 0. It was: "
                             + index);
         }
-        return get().getChildren().sequential().skip(index).findFirst()
+        return ((T) this).getChildren().sequential().skip(index).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         "The 'index' argument should not be greater than or equals to the number of children components. It was: "
                                 + index));

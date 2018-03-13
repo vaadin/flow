@@ -25,7 +25,7 @@ package com.vaadin.flow.component;
  * @see HasFocusListeners
  */
 public interface Focusable<T extends Component> extends HasElement,
-        HasBlurListeners<T>, HasFocusListeners<T>, ComponentSupplier<T> {
+        HasBlurListeners<T>, HasFocusListeners<T> {
 
     /**
      * Sets the <code>tabindex</code> attribute in the component. The tabIndex
@@ -58,7 +58,7 @@ public interface Focusable<T extends Component> extends HasElement,
      */
     default T setTabIndex(int tabIndex) {
         getElement().setAttribute("tabindex", String.valueOf(tabIndex));
-        return get();
+        return (T) this;
     }
 
     /**
