@@ -35,7 +35,9 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Immutable meta data related to a component class.
@@ -76,7 +78,10 @@ public class ComponentMetaData {
 
         private HtmlImportDependency(Collection<String> uris,
                 LoadMode loadMode) {
-            this.uris = Collections.unmodifiableCollection(uris);
+            List<String> uriList = new ArrayList<>();
+            uris.forEach(uri -> uriList.add(SharedUtil.prefixIfRelative(uri,
+                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)));
+            this.uris = Collections.unmodifiableCollection(uriList);
             this.loadMode = loadMode;
         }
 

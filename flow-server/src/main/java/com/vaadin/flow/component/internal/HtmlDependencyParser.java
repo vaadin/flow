@@ -79,13 +79,10 @@ public class HtmlDependencyParser {
     }
 
     private void parseDependencies(String path, Set<String> dependencies) {
-        String url = SharedUtil.prefixIfRelative(path,
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-
-        if (dependencies.contains(url)) {
+        if (dependencies.contains(path)) {
             return;
         }
-        dependencies.add(url);
+        dependencies.add(path);
 
         VaadinSession session = VaadinSession.getCurrent();
         VaadinServlet servlet = VaadinServlet.getCurrent();
@@ -106,17 +103,17 @@ public class HtmlDependencyParser {
             session.setAttribute(HtmlDependenciesCache.class, cache);
         }
 
+        String url = SharedUtil.prefixIfRelative(path,
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
-        String resolvedPath = servlet
-                .resolveResource(url);
+        String resolvedPath = servlet.resolveResource(url);
 
         if (cache.hasDependency(resolvedPath)) {
             return;
         }
         cache.addDependency(resolvedPath);
 
-        try (InputStream content = servlet
-                .getResourceAsStream(resolvedPath)) {
+        try (InputStream content = servlet.getResourceAsStream(resolvedPath)) {
             if (content == null) {
                 getLogger().trace(
                         "Can't find resource '{}' to parse for imports via the servlet context",
