@@ -538,7 +538,7 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClass_EventChangeReturn() {
+    public void componentContainsNotifiedProperty_generatedListenerUsesComponentAsEventSource(){
         generator.withProtectedMethods(true);
 
         ComponentPropertyData property = new ComponentPropertyData();
@@ -546,17 +546,8 @@ public class ComponentGeneratorTest {
         property.setType(Collections.singleton(ComponentBasicType.STRING));
         property.setNotify(true);
 
-        ComponentPropertyData value = new ComponentPropertyData();
-        value.setName("value");
-        value.setType(Collections.singleton(ComponentBasicType.NUMBER));
-        value.setNotify(true);
-        componentMetadata.setProperties(Arrays.asList(property, value));
-
-        ComponentFunctionData function = new ComponentFunctionData();
-        function.setName("function");
-        componentMetadata.setMethods(Collections.singletonList(function));
-
-        componentMetadata.setSlots(Arrays.asList("", "named"));
+        componentMetadata
+                .setProperties(Collections.singletonList(property));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -565,9 +556,9 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertThat(
-                "(R) this should be included in the change event return",
+                "Generated listener should use component as event source",
                 generatedClass, containsString(
-                        "(R) this, event.isUserOriginated())));"));
+                        "ChangeEvent<R>( (R) this, event.isUserOriginated())));"));
     }
 
     @Test

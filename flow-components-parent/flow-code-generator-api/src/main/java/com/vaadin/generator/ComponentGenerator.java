@@ -611,7 +611,7 @@ public class ComponentGenerator {
                         "<a href=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot\">MDN page about slots</a>")
                 .addTagValue(JAVADOC_SEE,
                         "<a href=\"https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element\">Spec website about slots</a>");
-        
+
         if (fluentMethod) {
             addFluentReturnToMethod(method);
         }
