@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,7 +79,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -159,7 +157,7 @@ public abstract class VaadinService implements Serializable {
             .newSetFromMap(new ConcurrentHashMap<>());
 
     private final List<SessionInitListener> sessionInitListeners = new CopyOnWriteArrayList<>();
-
+    private final List<UIInitListener> uiInitListeners = new CopyOnWriteArrayList<>();
     private final List<SessionDestroyListener> sessionDestroyListeners = new CopyOnWriteArrayList<>();
 
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
@@ -550,6 +548,20 @@ public abstract class VaadinService implements Serializable {
     public Registration addSessionInitListener(SessionInitListener listener) {
         sessionInitListeners.add(listener);
         return () -> sessionInitListeners.remove(listener);
+    }
+
+    /**
+     * Adds a listener that gets notified when a new UI has been initialized.
+     *
+     * @see UIInitListener
+     *
+     * @param listener
+     *            the UI initialization listener
+     * @return a handle that can be used for removing the listener
+     */
+    public Registration addUIInitListener(UIInitListener listener) {
+        uiInitListeners.add(listener);
+        return () -> uiInitListeners.remove(listener);
     }
 
     /**
@@ -1378,12 +1390,12 @@ public abstract class VaadinService implements Serializable {
         Lock lockInstance = ui.getSession().getLockInstance();
         if (lockInstance instanceof ReentrantLock
                 && ((ReentrantLock) lockInstance).hasQueuedThreads()) {
-                /*
-                 * Someone is trying to access the session. Leaving all UIs
-                 * alive for now. A possible kill decision will be made at a
-                 * later time when the session access has ended.
-                 */
-                return true;
+            /*
+             * Someone is trying to access the session. Leaving all UIs alive
+             * for now. A possible kill decision will be made at a later time
+             * when the session access has ended.
+             */
+            return true;
         }
 
         // Check timeout
@@ -2172,6 +2184,17 @@ public abstract class VaadinService implements Serializable {
      */
     public RouterInterface getRouter() {
         return router;
+    }
+
+    /**
+     * Fire UI initialization event to all registered {@link UIInitListener}s.
+     * 
+     * @param ui
+     *            the initialized {@link UI}
+     */
+    public void fireUIInitListeners(UI ui) {
+        UIInitEvent initEvent = new UIInitEvent(ui, this);
+        uiInitListeners.forEach(listener -> listener.uiInit(initEvent));
     }
 
     /**
