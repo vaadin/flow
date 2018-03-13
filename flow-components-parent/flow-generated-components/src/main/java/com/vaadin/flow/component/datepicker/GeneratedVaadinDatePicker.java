@@ -1138,14 +1138,12 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToPrefix(Component... components) {
+    protected void addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**

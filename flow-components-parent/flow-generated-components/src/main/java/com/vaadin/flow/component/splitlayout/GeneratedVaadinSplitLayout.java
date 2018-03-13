@@ -284,14 +284,12 @@ public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitL
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToPrimary(Component... components) {
+    protected void addToPrimary(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "primary");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**
@@ -306,14 +304,12 @@ public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitL
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToSecondary(Component... components) {
+    protected void addToSecondary(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "secondary");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**

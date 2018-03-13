@@ -82,14 +82,12 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToTopStretch(Component... components) {
+    protected void addToTopStretch(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top-stretch");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**
@@ -104,14 +102,12 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToTopStart(Component... components) {
+    protected void addToTopStart(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top-start");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**
@@ -126,14 +122,12 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToTopCenter(Component... components) {
+    protected void addToTopCenter(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top-center");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**
@@ -148,14 +142,12 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToTopEnd(Component... components) {
+    protected void addToTopEnd(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "top-end");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**
@@ -170,14 +162,12 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToMiddle(Component... components) {
+    protected void addToMiddle(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "middle");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**
@@ -192,14 +182,12 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToBottomStart(Component... components) {
+    protected void addToBottomStart(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom-start");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**
@@ -214,14 +202,12 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToBottomCenter(Component... components) {
+    protected void addToBottomCenter(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom-center");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**
@@ -236,14 +222,12 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToBottomEnd(Component... components) {
+    protected void addToBottomEnd(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom-end");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**
@@ -258,14 +242,12 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToBottomStretch(Component... components) {
+    protected void addToBottomStretch(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "bottom-stretch");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**

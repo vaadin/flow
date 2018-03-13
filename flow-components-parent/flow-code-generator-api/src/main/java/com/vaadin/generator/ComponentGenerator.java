@@ -106,7 +106,7 @@ public class ComponentGenerator {
     private String licenseNote;
     private String frontendDirectory = "bower_components/";
     // https://github.com/vaadin/flow/issues/2370
-    private boolean fluentMethods;
+    private boolean fluentMethod;
 
     private boolean protectedMethods;
     private boolean abstractClass;
@@ -153,7 +153,7 @@ public class ComponentGenerator {
      * @return this
      */
     public ComponentGenerator withFluentSetters(boolean fluentSetters) {
-        this.fluentMethods = fluentSetters;
+        this.fluentMethod = fluentSetters;
         return this;
     }
 
@@ -612,8 +612,8 @@ public class ComponentGenerator {
                         "<a href=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot\">MDN page about slots</a>")
                 .addTagValue(JAVADOC_SEE,
                         "<a href=\"https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element\">Spec website about slots</a>");
-
-        if (fluentMethods) {
+        
+        if (fluentMethod) {
             addFluentReturnToMethod(method);
         }
     }
@@ -1072,7 +1072,7 @@ public class ComponentGenerator {
             method.getJavaDoc().addTagValue(JAVADOC_PARAM,
                     "property the property to set");
 
-            if (fluentMethods) {
+            if (fluentMethod) {
                 addFluentReturnToMethod(method);
             }
 
@@ -1116,7 +1116,7 @@ public class ComponentGenerator {
                         String.format("%s the %s value to set", parameterName,
                                 setterType.getSimpleName()));
 
-                if (fluentMethods) {
+                if (fluentMethod) {
                     addFluentReturnToMethod(method);
                 }
 
@@ -1179,7 +1179,7 @@ public class ComponentGenerator {
                     overloadMethod);
             preventNullArgument(javaClass, parameterName, overloadMethod);
 
-            if (fluentMethods) {
+            if (fluentMethod) {
                 addFluentReturnToMethod(overloadMethod);
             }
         }
@@ -1534,7 +1534,7 @@ public class ComponentGenerator {
     private JavaClassSource generateNestedPojo(JavaClassSource javaClass,
             ComponentObjectType type, String nameHint, String description) {
         JavaClassSource nestedClass = new NestedClassGenerator().withType(type)
-                .withFluentSetters(fluentMethods).withNameHint(nameHint)
+                .withFluentSetters(fluentMethod).withNameHint(nameHint)
                 .build();
 
         if (javaClass.getNestedType(nestedClass.getName()) != null) {

@@ -538,6 +538,39 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void generateClass_EventChangeReturn() {
+        generator.withProtectedMethods(true);
+
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("something");
+        property.setType(Collections.singleton(ComponentBasicType.STRING));
+        property.setNotify(true);
+
+        ComponentPropertyData value = new ComponentPropertyData();
+        value.setName("value");
+        value.setType(Collections.singleton(ComponentBasicType.NUMBER));
+        value.setNotify(true);
+        componentMetadata.setProperties(Arrays.asList(property, value));
+
+        ComponentFunctionData function = new ComponentFunctionData();
+        function.setName("function");
+        componentMetadata.setMethods(Collections.singletonList(function));
+
+        componentMetadata.setSlots(Arrays.asList("", "named"));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        Assert.assertThat(
+                "(R) this should be included in the change event return",
+                generatedClass, containsString(
+                        "(R) this, event.isUserOriginated())));"));
+    }
+
+    @Test
     public void generateClassWithClickableBehavior_classImplementsHasClickListeners() {
         componentMetadata.setBehaviors(
                 Collections.singletonList("Polymer.GestureEventListeners"));
@@ -643,13 +676,13 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamed1\" method",
-                generatedClass.contains("public R addToNamed1("));
+                generatedClass.contains("public void addToNamed1("));
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamed2\" method",
-                generatedClass.contains("public R addToNamed2("));
+                generatedClass.contains("public void addToNamed2("));
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamedThree\" method",
-                generatedClass.contains("public R addToNamedThree("));
+                generatedClass.contains("public void addToNamedThree("));
         Assert.assertTrue(
                 "The generated class should contain the \"remove\" method",
                 generatedClass.contains("public void remove("));
@@ -671,13 +704,13 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamed1\" method",
-                generatedClass.contains("public R addToNamed1("));
+                generatedClass.contains("public void addToNamed1("));
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamed2\" method",
-                generatedClass.contains("public R addToNamed2("));
+                generatedClass.contains("public void addToNamed2("));
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamedThree\" method",
-                generatedClass.contains("public R addToNamedThree("));
+                generatedClass.contains("public void addToNamedThree("));
         Assert.assertTrue(
                 "The generated class should contain the \"remove\" method",
                 generatedClass.contains("public void remove("));
@@ -1289,7 +1322,7 @@ public class ComponentGeneratorTest {
                 CoreMatchers.containsString("protected void function()"));
 
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "protected R addToNamed(Component... components)"));
+                "protected void addToNamed(Component... components)"));
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "protected void remove(Component... components)"));
         Assert.assertThat(generatedClass,

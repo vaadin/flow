@@ -183,14 +183,12 @@ public abstract class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToLabel(Component... components) {
+    protected void addToLabel(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "label");
             getElement().appendChild(component.getElement());
         }
-        return (R) this;
     }
 
     /**
