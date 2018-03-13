@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.data.value;
 
-import java.util.Objects;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.dom.Element;
@@ -26,8 +24,11 @@ import com.vaadin.flow.dom.Element;
  * An interface, denoting that the component is able to change the way its value
  * on the client side is synchronized with the server side.
  * <p>
- * The value which mode is change is defined by
- * {@link HasValue#getClientValuePropertyName()}
+ * The value which mode is changed is defined by
+ * {@link HasValue#getClientValuePropertyName()}.
+ * <p>
+ * Any component implementing this interface should take care of setting the
+ * default value for its value change mode.
  *
  * @param <C>
  *            the component type
@@ -42,7 +43,8 @@ public interface HasValueChangeMode<C extends Component, V>
     /**
      * Gets current value change mode of the component.
      *
-     * @return current value change mode of the component
+     * @return current value change mode of the component, or {@code null} if
+     *         the value is not synchronized
      */
     ValueChangeMode getValueChangeMode();
 
@@ -50,17 +52,21 @@ public interface HasValueChangeMode<C extends Component, V>
      * Sets new value change mode for the component.
      *
      * @param valueChangeMode
-     *            new value change mode, not {@code null}
+     *            new value change mode, or {@code null} to disable the value
+     *            synchronization
      */
     default void setValueChangeMode(ValueChangeMode valueChangeMode) {
-        Objects.requireNonNull(valueChangeMode,
-                "New valueChangeMode should not be null");
         Element element = get().getElement();
 
         element.removeSynchronizedPropertyEvent(
                 getClientPropertyChangeEventName());
         element.removeSynchronizedPropertyEvent("blur");
         element.removeSynchronizedPropertyEvent("change");
+
+        if (valueChangeMode == null) {
+            element.removeSynchronizedProperty(getClientValuePropertyName());
+            return;
+        }
 
         switch (valueChangeMode) {
         case EAGER:

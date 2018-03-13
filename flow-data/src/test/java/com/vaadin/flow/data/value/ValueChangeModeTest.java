@@ -41,6 +41,25 @@ public class ValueChangeModeTest {
         setAndAssertValueChangeModeOnChange(component);
     }
 
+    @Test
+    public void changingValueChangeModeToNull_noPropertiesSynchronized() {
+
+        ValueChangeModeComponent component = new ValueChangeModeComponent();
+        component.setValueChangeMode(ValueChangeMode.EAGER);
+
+        component.setValueChangeMode(null);
+
+        Assert.assertTrue(
+                "Component should not have synchronized properties after setting value change mode to null",
+                component.getElement().getSynchronizedProperties()
+                        .count() == 0);
+        Assert.assertTrue(
+                "Component should not have synchronized property-events after setting value change mode to null",
+                component.getElement().getSynchronizedPropertyEvents()
+                        .count() == 0);
+
+    }
+
     private void setAndAssertValueChangeModeEager(
             ValueChangeModeComponent component) {
 
