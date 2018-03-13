@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
+
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -46,6 +47,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 public class FrontendDataProvider {
 
     private final boolean shouldBundle;
+    private final boolean shouldMinify;
     private final Map<String, Set<File>> fragments;
     private final Set<File> shellFileImports;
 
@@ -54,6 +56,8 @@ public class FrontendDataProvider {
      *
      * @param shouldBundle
      *            whether bundling data should be prepared
+     * @param shouldMinify
+     *            whether the output files should be minified
      * @param es6SourceDirectory
      *            the directory with original ES6 files, not {@code null}
      * @param annotationValuesExtractor
@@ -66,11 +70,13 @@ public class FrontendDataProvider {
      *            another list of fragments, if user preferred to specify them
      *            without external configuration file, not {@code null}
      */
-    public FrontendDataProvider(boolean shouldBundle, File es6SourceDirectory,
+    public FrontendDataProvider(boolean shouldBundle, boolean shouldMinify,
+            File es6SourceDirectory,
             AnnotationValuesExtractor annotationValuesExtractor,
             File fragmentConfigurationFile,
             Map<String, Set<String>> userDefinedFragments) {
         this.shouldBundle = shouldBundle;
+        this.shouldMinify = shouldMinify;
         fragments = shouldBundle
                 ? resolveFragmentFiles(es6SourceDirectory,
                         fragmentConfigurationFile, userDefinedFragments)
@@ -89,6 +95,17 @@ public class FrontendDataProvider {
      */
     public boolean shouldBundle() {
         return shouldBundle;
+    }
+
+    /**
+     * Gets the information whether should the plugin minify the output files or
+     * not.
+     *
+     * @return {@code true} if minification should be performed, {@code false}
+     *         otherwise
+     */
+    public boolean shouldMinify() {
+        return shouldMinify;
     }
 
     /**

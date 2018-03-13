@@ -17,7 +17,6 @@ package com.vaadin.flow.component.combobox;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -42,7 +41,7 @@ import com.vaadin.flow.shared.Registration;
 @Tag("vaadin-combo-box-dropdown")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-dropdown.html")
 public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDropdown<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * This property is synchronized automatically from client side when a
@@ -255,7 +254,7 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
         return getElement()
                 .addPropertyChangeListener("opened",
                         event -> listener.onComponentEvent(
-                                new OpenedChangeEvent<R>(get(),
+                                new OpenedChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -286,7 +285,7 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
         return getElement()
                 .addPropertyChangeListener("template",
                         event -> listener.onComponentEvent(
-                                new TemplateChangeEvent<R>(get(),
+                                new TemplateChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 }

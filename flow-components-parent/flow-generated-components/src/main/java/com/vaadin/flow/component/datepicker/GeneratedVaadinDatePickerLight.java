@@ -17,7 +17,6 @@ package com.vaadin.flow.component.datepicker;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -89,7 +88,7 @@ import com.vaadin.flow.shared.Registration;
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-light.html")
 public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * <p>
@@ -747,8 +746,8 @@ public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDa
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return getElement()
                 .addPropertyChangeListener("value",
-                        event -> listener
-                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                        event -> listener.onComponentEvent(
+                                new ValueChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -779,7 +778,7 @@ public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDa
         return getElement()
                 .addPropertyChangeListener("opened",
                         event -> listener.onComponentEvent(
-                                new OpenedChangeEvent<R>(get(),
+                                new OpenedChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 }

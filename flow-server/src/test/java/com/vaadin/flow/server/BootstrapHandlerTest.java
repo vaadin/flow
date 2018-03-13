@@ -1,7 +1,6 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -48,6 +47,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -74,7 +74,10 @@ public class BootstrapHandlerTest {
     @StyleSheet("context://eager-relative.css")
     @StyleSheet("eager.css")
     @HtmlImport("eager.html")
-    private class TestUI extends UI {
+    protected static class TestUI extends UI {
+
+        public TestUI() {
+        }
 
         @Override
         protected void init(VaadinRequest request) {
@@ -1285,6 +1288,70 @@ public class BootstrapHandlerTest {
 
         checkInlinedScript(head, "es6-collections.js", false);
         checkInlinedScript(head, "babel-helpers.min.js", false);
+    }
+
+    @Test // UIInitListeners
+    public void uiInitialization_allRegisteredListenersAreNotified() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        AtomicReference<UI> uiReference = new AtomicReference<>();
+
+        Registration registration = service.addUIInitListener(
+                event -> Assert.assertTrue("Atomic reference was not empty.",
+                        uiReference.compareAndSet(null, event.getUI())));
+        final BootstrapContext context = bootstrapHandler.createAndInitUI(
+                TestUI.class, createVaadinRequest(), response, session);
+
+        Assert.assertEquals("Event UI didn't match initialized UI instance.",
+                context.getUI(), uiReference.get());
+
+        // unregister listener
+        registration.remove();
+
+        AtomicReference<UI> secondListenerReference = new AtomicReference<>();
+        service.addUIInitListener(event -> Assert.assertTrue(
+                "Atomic reference did not contain previous UI.",
+                uiReference.compareAndSet(context.getUI(), event.getUI())));
+        service.addUIInitListener(event -> Assert.assertTrue(
+                "Atomic reference was not empty.",
+                secondListenerReference.compareAndSet(null, event.getUI())));
+
+        final BootstrapContext secondInit = bootstrapHandler.createAndInitUI(
+                TestUI.class, createVaadinRequest(), response, session);
+
+        Assert.assertEquals("Event UI didn't match initialized UI instance.",
+                secondInit.getUI(), uiReference.get());
+        Assert.assertEquals(
+                "Second event UI didn't match initialized UI instance.",
+                secondInit.getUI(), secondListenerReference.get());
+    }
+
+    @Test // UIInitListeners
+    public void uiInitialization_changingListenersOnEventWorks() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+
+        AtomicReference<UI> uiReference = new AtomicReference<>();
+
+        Registration registration = service.addUIInitListener(
+                event -> service.addUIInitListener(laterEvent -> uiReference
+                        .compareAndSet(null, laterEvent.getUI())));
+        bootstrapHandler.createAndInitUI(TestUI.class, createVaadinRequest(),
+                response, session);
+
+        Assert.assertEquals("Event UI didn't match initialized UI instance.",
+                null, uiReference.get());
+
+        // unregister listener
+        registration.remove();
+
+        service.addUIInitListener(event -> registration.remove());
+
+        final BootstrapContext secondInit = bootstrapHandler.createAndInitUI(
+                TestUI.class, createVaadinRequest(), response, session);
+
+        Assert.assertEquals("Event UI didn't match initialized UI instance.",
+                secondInit.getUI(), uiReference.get());
     }
 
     private void assertStringEquals(String message, String expected,

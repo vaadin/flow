@@ -17,7 +17,6 @@ package com.vaadin.flow.component.listbox;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -67,7 +66,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 @Tag("vaadin-list-box")
 @HtmlImport("frontend://bower_components/vaadin-list-box/src/vaadin-list-box.html")
 public abstract class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     protected void focus() {
         getElement().callFunction("focus");

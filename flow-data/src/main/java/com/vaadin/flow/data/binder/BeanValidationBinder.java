@@ -25,14 +25,18 @@ import com.vaadin.flow.data.validator.BeanValidator;
 import com.vaadin.flow.internal.BeanUtil;
 
 /**
+ * Binder that uses reflection based on the provided bean type to resolve bean
+ * properties. The Binder automatically adds BeanValidator which validates beans
+ * using JSR-303 specification. It assumes that JSR-303 bean validation
+ * implementation is present on the classpath.
+ * 
  * @author Vaadin Ltd
  * @see Binder
+ * @see BeanValidator
  * @see HasValue
  *
  * @param <BEAN>
  *            the bean type
- *
- * @since 8.0
  */
 public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
 
@@ -100,7 +104,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
             PropertyDefinition<BEAN, ?> definition) {
         Class<?> actualBeanType = findBeanType(beanType, definition);
         BeanValidator validator = new BeanValidator(actualBeanType,
-                definition.getName());
+                definition.getTopLevelName());
         if (requiredConfigurator != null) {
             configureRequired(binding, definition, validator);
         }
@@ -136,7 +140,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
         BeanDescriptor descriptor = validator.getJavaxBeanValidator()
                 .getConstraintsForClass(propertyHolderType);
         PropertyDescriptor propertyDescriptor = descriptor
-                .getConstraintsForProperty(definition.getName());
+                .getConstraintsForProperty(definition.getTopLevelName());
         if (propertyDescriptor == null) {
             return;
         }

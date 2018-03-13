@@ -325,7 +325,7 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
         return getElement()
                 .addPropertyChangeListener("checked",
                         event -> listener.onComponentEvent(
-                                new CheckedChangeEvent<R>(get(),
+                                new CheckedChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -354,8 +354,8 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
     protected Registration addIndeterminateChangeListener(
             ComponentEventListener<IndeterminateChangeEvent<R>> listener) {
         return getElement().addPropertyChangeListener("indeterminate",
-                event -> listener
-                        .onComponentEvent(new IndeterminateChangeEvent<R>(get(),
+                event -> listener.onComponentEvent(
+                        new IndeterminateChangeEvent<R>((R) this,
                                 event.isUserOriginated())));
     }
 }

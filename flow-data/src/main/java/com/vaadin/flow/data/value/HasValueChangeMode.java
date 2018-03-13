@@ -17,6 +17,7 @@
 package com.vaadin.flow.data.value;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.dom.Element;
 
@@ -38,7 +39,7 @@ import com.vaadin.flow.dom.Element;
  * @author Vaadin Ltd.
  */
 public interface HasValueChangeMode<C extends Component, V>
-        extends HasValue<C, V> {
+        extends HasValue<C, V>, HasElement {
 
     /**
      * Gets current value change mode of the component.

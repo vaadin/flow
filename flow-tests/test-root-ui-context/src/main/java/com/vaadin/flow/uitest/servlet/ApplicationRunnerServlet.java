@@ -366,7 +366,9 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                                     .value()) {
                                 initParameters.put(entry.name(), entry.value());
                             }
-
+                            initParameters.put(VaadinSession.UI_PARAMETER,
+                                    getApplicationRunnerApplicationClassName(
+                                            request.get()));
                             configuration = new DefaultDeploymentConfiguration(
                                     servlet.getClass(), initParameters,
                                     this::scanForResources);

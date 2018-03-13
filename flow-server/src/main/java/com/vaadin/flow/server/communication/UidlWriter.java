@@ -214,8 +214,7 @@ public class UidlWriter implements Serializable {
                 .filter(string -> !string.isEmpty()).map(Charset::forName)
                 .orElse(StandardCharsets.UTF_8);
 
-        try (InputStream inlineResourceStream = getInlineResourceStream(url,
-                currentRequest);
+        try (InputStream inlineResourceStream = getInlineResourceStream(url);
                 BufferedReader bufferedReader = new BufferedReader(
                         new InputStreamReader(inlineResourceStream,
                                 requestCharset))) {
@@ -227,10 +226,9 @@ public class UidlWriter implements Serializable {
         }
     }
 
-    private static InputStream getInlineResourceStream(String url,
-            HttpServletRequest currentRequest) {
+    private static InputStream getInlineResourceStream(String url) {
         String resolvedPath = VaadinServlet.getCurrent().resolveResource(url);
-        InputStream stream = currentRequest.getServletContext()
+        InputStream stream = VaadinService.getCurrent()
                 .getResourceAsStream(resolvedPath);
 
         if (stream == null) {
