@@ -19,14 +19,17 @@ package com.vaadin.flow.server;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,6 +80,8 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -1382,12 +1387,25 @@ public abstract class VaadinService implements Serializable {
     public boolean isUIActive(UI ui) {
         if (ui.isClosing()) {
             return false;
-        } else {
-            long now = System.currentTimeMillis();
-            int timeout = 1000 * getHeartbeatTimeout();
-            return timeout < 0 || now
-                    - ui.getInternals().getLastHeartbeatTimestamp() < timeout;
         }
+
+        // Check for long running tasks
+        Lock lockInstance = ui.getSession().getLockInstance();
+        if (lockInstance instanceof ReentrantLock
+                && ((ReentrantLock) lockInstance).hasQueuedThreads()) {
+                /*
+                 * Someone is trying to access the session. Leaving all UIs
+                 * alive for now. A possible kill decision will be made at a
+                 * later time when the session access has ended.
+                 */
+                return true;
+        }
+
+        // Check timeout
+        long now = System.currentTimeMillis();
+        int timeout = 1000 * getHeartbeatTimeout();
+        return timeout < 0 || now
+                - ui.getInternals().getLastHeartbeatTimestamp() < timeout;
     }
 
     /**
@@ -2182,4 +2200,29 @@ public abstract class VaadinService implements Serializable {
         UIInitEvent initEvent = new UIInitEvent(ui, this);
         uiInitListeners.forEach(listener -> listener.uiInit(initEvent));
     }
+
+    /**
+     * Returns a URL to the resource that is mapped to the given path.
+     * <p>
+     * The path must begin with a <tt>/</tt>.
+     *
+     * @param path
+     *            a <code>String</code> specifying the path to the resource
+     *
+     * @return the resource located at the named path, or <code>null</code> if
+     *         there is no resource at that path
+     */
+    public abstract URL getResource(String path);
+
+    /**
+     * Returns the resource located at the named path as an
+     * <code>InputStream</code> object.
+     *
+     * @param path
+     *            a <code>String</code> specifying the path to the resource
+     *
+     * @return the <code>InputStream</code> returned to the servlet, or
+     *         <code>null</code> if no resource exists at the specified path
+     */
+    public abstract InputStream getResourceAsStream(String path);
 }

@@ -15,16 +15,14 @@
  */
 package com.vaadin.flow.server.webjar;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
@@ -109,27 +107,6 @@ public class WebJarServer implements Serializable {
         responseWriter.writeResponseContents(webJarPath, resourceUrl, request,
                 response);
         return true;
-    }
-
-    /**
-     * Check if a file is existent in a WebJar.
-     *
-     * @param filePathInContext
-     *            servlet context path for file
-     * @param servletContext
-     *            servlet context
-     * @return true if file is found else false
-     * @throws IOException
-     *             if response population fails
-     */
-    public boolean hasWebJarResource(String filePathInContext,
-            ServletContext servletContext) throws IOException {
-        Optional<String> webJarPath = getWebJarResourcePath(filePathInContext);
-        if (!webJarPath.isPresent()) {
-            return false;
-        }
-
-        return servletContext.getResource(webJarPath.get()) != null;
     }
 
     /**

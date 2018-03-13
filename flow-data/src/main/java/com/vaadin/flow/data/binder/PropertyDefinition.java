@@ -110,19 +110,4 @@ public interface PropertyDefinition<T, V> extends Serializable {
     default boolean isSubProperty() {
         return getParent() != null;
     }
-
-    /**
-     * Gets the full name of this property. For sub-properties this means the
-     * full path from the property set to this property, with dot-separated
-     * parent properties, eg. "property.subProperty".
-     * 
-     * @return the full property name, not {@code null}
-     */
-    default String getFullName() {
-        if (getParent() != null) {
-            return getParent().getFullName() + '.' + getName();
-        } else {
-            return getName();
-        }
-    }
 }

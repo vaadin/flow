@@ -55,7 +55,6 @@ public class BundleFilterInitializerTest {
     }
 
     private ServiceInitEvent event;
-    private ServletContext context;
 
     private Consumer<DependencyFilter> dependencyFilterAddHandler = dependency -> {
     };
@@ -68,11 +67,9 @@ public class BundleFilterInitializerTest {
         event = Mockito.mock(ServiceInitEvent.class);
         VaadinServletService service = Mockito.mock(VaadinServletService.class);
         VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
-        context = Mockito.mock(ServletContext.class);
 
         Mockito.when(event.getSource()).thenReturn(service);
         Mockito.when(service.getServlet()).thenReturn(servlet);
-        Mockito.when(servlet.getServletContext()).thenReturn(context);
 
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(new DefaultDeploymentConfiguration(
@@ -93,11 +90,11 @@ public class BundleFilterInitializerTest {
         Mockito.doAnswer(invocation -> {
             return inputStreamProducer
                     .apply(invocation.getArgumentAt(0, String.class));
-        }).when(context).getResourceAsStream("/frontend-es6/vaadin-flow-bundle-manifest.json");
+        }).when(service).getResourceAsStream("/frontend-es6/vaadin-flow-bundle-manifest.json");
         Mockito.doAnswer(invocation -> {
             return resourceProducer
                     .apply(invocation.getArgumentAt(0, String.class));
-        }).when(context).getResource(Mockito.anyString());
+        }).when(service).getResource(Mockito.anyString());
     }
 
     @Test(expected = UncheckedIOException.class)
