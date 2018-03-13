@@ -544,14 +544,6 @@ public class ComponentGenerator {
                 javaClass.addInterface(clazz);
             }
         });
-
-        // boolean componentSupplierAdded = interfaces.stream()
-        // .filter(ComponentSupplier.class::isAssignableFrom).count() > 0;
-        //
-        // if (!componentSupplierAdded) {
-        // javaClass.addInterface(ComponentSupplier.class.getName()
-        // + GENERIC_TYPE_DECLARATION);
-        // }
     }
 
     private void generateGettersAndSetters(ComponentMetadata metadata,
@@ -868,8 +860,6 @@ public class ComponentGenerator {
                     }
                     javaClass.addInterface(HasValue.class.getName() + "<"
                             + GENERIC_TYPE + ", " + javaType.getName() + ">");
-                    // javaClass.removeImport(ComponentSupplier.class);
-                    // javaClass.removeInterface(ComponentSupplier.class);
                     method.addAnnotation(Override.class);
 
                     method.setBody(ComponentGeneratorUtils

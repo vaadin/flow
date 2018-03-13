@@ -32,7 +32,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <V>
  *            the value type
  */
-public interface HasValue<C extends Component, V> {
+public interface HasValue<C extends Component, V> extends HasElement {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -150,7 +150,7 @@ public interface HasValue<C extends Component, V> {
      */
     default Registration addValueChangeListener(
             ValueChangeListener<C, V> listener) {
-        return ((C) this).getElement().addPropertyChangeListener(
+        return this.getElement().addPropertyChangeListener(
                 getClientValuePropertyName(),
                 event -> listener
                         .onComponentEvent(new ValueChangeEvent<>((C) this,
@@ -241,7 +241,7 @@ public interface HasValue<C extends Component, V> {
      *            read-only mode or not
      */
     default void setReadOnly(boolean readOnly) {
-        ((C) this).getElement().setProperty("readonly", readOnly);
+        this.getElement().setProperty("readonly", readOnly);
     }
 
     /**
@@ -251,7 +251,7 @@ public interface HasValue<C extends Component, V> {
      *         not.
      */
     default boolean isReadOnly() {
-        return ((C) this).getElement().getProperty("readonly", false);
+        return this.getElement().getProperty("readonly", false);
     }
 
     /**
@@ -264,7 +264,7 @@ public interface HasValue<C extends Component, V> {
      *            <code>false</code> if not
      */
     default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-        ((C) this).getElement().setProperty("required",
+        this.getElement().setProperty("required",
                 requiredIndicatorVisible);
     }
 
@@ -274,6 +274,6 @@ public interface HasValue<C extends Component, V> {
      * @return <code>true</code> if visible, <code>false</code> if not
      */
     default boolean isRequiredIndicatorVisible() {
-        return ((C) this).getElement().getProperty("required", false);
+        return this.getElement().getProperty("required", false);
     }
 }
