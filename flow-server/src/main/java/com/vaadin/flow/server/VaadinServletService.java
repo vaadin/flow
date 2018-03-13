@@ -17,6 +17,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -160,6 +161,16 @@ public class VaadinServletService extends VaadinService {
 
     private static final Logger getLogger() {
         return LoggerFactory.getLogger(VaadinServletService.class.getName());
+    }
+
+    @Override
+    public URL getResource(String path) {
+        return getServlet().getResource(path);
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String path) {
+        return getServlet().getResourceAsStream(path);
     }
 
     @Override

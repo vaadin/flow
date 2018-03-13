@@ -22,12 +22,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -818,8 +820,7 @@ public abstract class VaadinService implements Serializable {
      * @throws ServiceException
      */
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
-            boolean requestCanCreateSession)
-            throws SessionExpiredException {
+            boolean requestCanCreateSession) throws SessionExpiredException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
@@ -1066,7 +1067,8 @@ public abstract class VaadinService implements Serializable {
     /**
      * Sets the given Vaadin service as the current service.
      *
-     * @param service the service to set
+     * @param service
+     *            the service to set
      */
     public static void setCurrent(VaadinService service) {
         CurrentInstance.set(VaadinService.class, service);
@@ -2171,4 +2173,29 @@ public abstract class VaadinService implements Serializable {
     public RouterInterface getRouter() {
         return router;
     }
+
+    /**
+     * Returns a URL to the resource that is mapped to the given path.
+     * <p>
+     * The path must begin with a <tt>/</tt>.
+     *
+     * @param path
+     *            a <code>String</code> specifying the path to the resource
+     *
+     * @return the resource located at the named path, or <code>null</code> if
+     *         there is no resource at that path
+     */
+    public abstract URL getResource(String path);
+
+    /**
+     * Returns the resource located at the named path as an
+     * <code>InputStream</code> object.
+     *
+     * @param path
+     *            a <code>String</code> specifying the path to the resource
+     *
+     * @return the <code>InputStream</code> returned to the servlet, or
+     *         <code>null</code> if no resource exists at the specified path
+     */
+    public abstract InputStream getResourceAsStream(String path);
 }
