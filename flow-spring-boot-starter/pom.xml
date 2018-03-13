@@ -32,12 +32,8 @@
 
     <repositories>
         <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
+            <id>vaadin-prereleases</id>
+            <url>https://maven.vaadin.com/vaadin-prereleases</url>
         </repository>
     </repositories>
 
@@ -49,8 +45,8 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-html-components</artifactId>
-            <version>${project.version}</version>
+            <artifactId>vaadin-core</artifactId>
+            <version>10.0.0.beta2</version>
         </dependency>
 
         <!-- Spring -->
