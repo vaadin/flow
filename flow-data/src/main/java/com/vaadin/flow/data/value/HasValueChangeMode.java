@@ -57,7 +57,7 @@ public interface HasValueChangeMode<C extends Component, V>
      *            synchronization
      */
     default void setValueChangeMode(ValueChangeMode valueChangeMode) {
-        Element element = get().getElement();
+        Element element = getElement();
 
         element.removeSynchronizedPropertyEvent(
                 getClientPropertyChangeEventName());
