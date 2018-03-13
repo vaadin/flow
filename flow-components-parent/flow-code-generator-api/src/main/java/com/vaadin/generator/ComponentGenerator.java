@@ -142,18 +142,17 @@ public class ComponentGenerator {
     }
 
     /**
-     * Set whether the generator should use fluent setters - setters that return
+     * Set whether the generator should use fluent Methods - methods that return
      * the own object so it's possible to use method chaining.
      * <p>
-     * By default, fluentSetters is <code>true</code>.
      *
-     * @param fluentSetters
+     * @param fluentMethods
      *            <code>true</code> to enable fluent setters, <code>false</code>
      *            to disable them.
      * @return this
      */
-    public ComponentGenerator withFluentSetters(boolean fluentSetters) {
-        this.fluentMethod = fluentSetters;
+    public ComponentGenerator withFluentMethods(boolean fluentMethods) {
+        this.fluentMethod = fluentMethods;
         return this;
     }
 
