@@ -17,7 +17,6 @@ package com.vaadin.flow.component.notification;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -49,7 +48,7 @@ Your work has been saved
 @Tag("vaadin-notification")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public abstract class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * <p>
@@ -203,7 +202,7 @@ public abstract class GeneratedVaadinNotification<R extends GeneratedVaadinNotif
         return getElement()
                 .addPropertyChangeListener("opened",
                         event -> listener.onComponentEvent(
-                                new OpenedChangeEvent<R>(get(),
+                                new OpenedChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 }

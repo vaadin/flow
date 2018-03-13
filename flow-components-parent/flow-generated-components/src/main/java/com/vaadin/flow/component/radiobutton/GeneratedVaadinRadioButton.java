@@ -281,7 +281,7 @@ public abstract class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioB
         return getElement()
                 .addPropertyChangeListener("checked",
                         event -> listener.onComponentEvent(
-                                new CheckedChangeEvent<R>(get(),
+                                new CheckedChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 }

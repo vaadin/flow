@@ -17,7 +17,6 @@ package com.vaadin.flow.component.combobox;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -85,7 +84,7 @@ import com.vaadin.flow.component.EventData;
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-light.html")
 public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * <p>
@@ -797,8 +796,8 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
     protected Registration addSelectedItemChangeListener(
             ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
         return getElement().addPropertyChangeListener("selectedItem",
-                event -> listener
-                        .onComponentEvent(new SelectedItemChangeEvent<R>(get(),
+                event -> listener.onComponentEvent(
+                        new SelectedItemChangeEvent<R>((R) this,
                                 event.isUserOriginated())));
     }
 
@@ -828,8 +827,8 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return getElement()
                 .addPropertyChangeListener("value",
-                        event -> listener
-                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                        event -> listener.onComponentEvent(
+                                new ValueChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -860,7 +859,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
         return getElement()
                 .addPropertyChangeListener("opened",
                         event -> listener.onComponentEvent(
-                                new OpenedChangeEvent<R>(get(),
+                                new OpenedChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -891,7 +890,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
         return getElement()
                 .addPropertyChangeListener("filter",
                         event -> listener.onComponentEvent(
-                                new FilterChangeEvent<R>(get(),
+                                new FilterChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -922,7 +921,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
         return getElement()
                 .addPropertyChangeListener("invalid",
                         event -> listener.onComponentEvent(
-                                new InvalidChangeEvent<R>(get(),
+                                new InvalidChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 }

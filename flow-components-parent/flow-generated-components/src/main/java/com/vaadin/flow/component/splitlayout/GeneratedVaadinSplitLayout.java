@@ -18,7 +18,6 @@ package com.vaadin.flow.component.splitlayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasClickListeners;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -186,13 +185,12 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.SplitLayoutElement#4.0.0-beta1",
+        "WebComponent: Vaadin.SplitLayoutElement#4.0.0-beta2",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-split-layout")
 @HtmlImport("frontend://bower_components/vaadin-split-layout/src/vaadin-split-layout.html")
 public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
-        extends Component
-        implements HasStyle, HasClickListeners<R>, ComponentSupplier<R> {
+        extends Component implements HasStyle, HasClickListeners<R> {
 
     /**
      * <p>
@@ -293,7 +291,7 @@ public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitL
             component.getElement().setAttribute("slot", "primary");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -315,7 +313,7 @@ public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitL
             component.getElement().setAttribute("slot", "secondary");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**

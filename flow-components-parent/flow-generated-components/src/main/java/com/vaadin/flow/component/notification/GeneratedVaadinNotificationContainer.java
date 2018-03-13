@@ -17,7 +17,6 @@ package com.vaadin.flow.component.notification;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -37,7 +36,7 @@ import com.vaadin.flow.dom.Element;
 @Tag("vaadin-notification-container")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVaadinNotificationContainer<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * <p>
@@ -90,7 +89,7 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
             component.getElement().setAttribute("slot", "top-stretch");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -112,7 +111,7 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
             component.getElement().setAttribute("slot", "top-start");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -134,7 +133,7 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
             component.getElement().setAttribute("slot", "top-center");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -156,7 +155,7 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
             component.getElement().setAttribute("slot", "top-end");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -178,7 +177,7 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
             component.getElement().setAttribute("slot", "middle");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -200,7 +199,7 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
             component.getElement().setAttribute("slot", "bottom-start");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -222,7 +221,7 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
             component.getElement().setAttribute("slot", "bottom-center");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -244,7 +243,7 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
             component.getElement().setAttribute("slot", "bottom-end");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -266,7 +265,7 @@ public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVa
             component.getElement().setAttribute("slot", "bottom-stretch");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**

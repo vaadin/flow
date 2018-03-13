@@ -17,7 +17,6 @@ package com.vaadin.flow.component.upload;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -118,7 +117,7 @@ import com.vaadin.flow.dom.Element;
 @Tag("vaadin-upload")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload.html")
 public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * <p>
@@ -1250,8 +1249,8 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
             ComponentEventListener<FilesChangeEvent<R>> listener) {
         return getElement()
                 .addPropertyChangeListener("files",
-                        event -> listener
-                                .onComponentEvent(new FilesChangeEvent<R>(get(),
+                        event -> listener.onComponentEvent(
+                                new FilesChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -1281,7 +1280,7 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
             ComponentEventListener<MaxFilesReachedChangeEvent<R>> listener) {
         return getElement().addPropertyChangeListener("maxFilesReached",
                 event -> listener.onComponentEvent(
-                        new MaxFilesReachedChangeEvent<R>(get(),
+                        new MaxFilesReachedChangeEvent<R>((R) this,
                                 event.isUserOriginated())));
     }
 
@@ -1304,7 +1303,7 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
             component.getElement().setAttribute("slot", "add-button");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -1326,7 +1325,7 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
             component.getElement().setAttribute("slot", "drop-label-icon");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -1348,7 +1347,7 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
             component.getElement().setAttribute("slot", "drop-label");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -1370,7 +1369,7 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
             component.getElement().setAttribute("slot", "file-list");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**

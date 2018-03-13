@@ -17,7 +17,6 @@ package com.vaadin.flow.component.upload;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -145,7 +144,7 @@ import com.vaadin.flow.shared.Registration;
 @Tag("vaadin-upload-file")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload-file.html")
 public abstract class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * This property is not synchronized automatically from the client side, so

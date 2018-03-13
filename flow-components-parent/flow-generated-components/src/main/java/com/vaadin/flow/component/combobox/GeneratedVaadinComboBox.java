@@ -881,8 +881,8 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return getElement()
                 .addPropertyChangeListener("value",
-                        event -> listener
-                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                        event -> listener.onComponentEvent(
+                                new ValueChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -913,7 +913,7 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
         return getElement()
                 .addPropertyChangeListener("opened",
                         event -> listener.onComponentEvent(
-                                new OpenedChangeEvent<R>(get(),
+                                new OpenedChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -944,7 +944,7 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
         return getElement()
                 .addPropertyChangeListener("filter",
                         event -> listener.onComponentEvent(
-                                new FilterChangeEvent<R>(get(),
+                                new FilterChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -975,7 +975,7 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
         return getElement()
                 .addPropertyChangeListener("invalid",
                         event -> listener.onComponentEvent(
-                                new InvalidChangeEvent<R>(get(),
+                                new InvalidChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -998,7 +998,7 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**

@@ -187,7 +187,7 @@ public abstract class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -209,7 +209,7 @@ public abstract class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
             component.getElement().setAttribute("slot", "suffix");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**

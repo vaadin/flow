@@ -763,8 +763,8 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return getElement()
                 .addPropertyChangeListener("value",
-                        event -> listener
-                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                        event -> listener.onComponentEvent(
+                                new ValueChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -795,7 +795,7 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
         return getElement()
                 .addPropertyChangeListener("invalid",
                         event -> listener.onComponentEvent(
-                                new InvalidChangeEvent<R>(get(),
+                                new InvalidChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -818,7 +818,7 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
@@ -840,7 +840,7 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
             component.getElement().setAttribute("slot", "suffix");
             getElement().appendChild(component.getElement());
         }
-        return get();
+        return (R) this;
     }
 
     /**
