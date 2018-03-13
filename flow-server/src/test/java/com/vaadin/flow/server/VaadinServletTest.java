@@ -71,8 +71,6 @@ public class VaadinServletTest {
         context = Mockito.mock(ServletContext.class);
         factory = Mockito.mock(VaadinUriResolverFactory.class);
 
-        context = Mockito.mock(ServletContext.class);
-
         Mockito.when(session.getAttribute(VaadinUriResolverFactory.class))
                 .thenReturn(factory);
 

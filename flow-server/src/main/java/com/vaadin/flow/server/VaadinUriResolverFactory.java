@@ -17,8 +17,6 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
-import javax.servlet.ServletContext;
-
 import com.vaadin.flow.shared.VaadinUriResolver;
 
 /**
@@ -54,7 +52,7 @@ public interface VaadinUriResolverFactory extends Serializable {
 
     /**
      * Resolves the {@code path} to the path which can be used by a
-     * {@link ServletContext} to get a resource content.
+     * {@link javax.servlet.ServletContext} to get a resource content.
      * <p>
      * The factory method {@link #getUriResolver(VaadinRequest)} is used to get
      * URI resolver which resolves the {@code path}. This path works on the
@@ -62,8 +60,8 @@ public interface VaadinUriResolverFactory extends Serializable {
      * (the class {@link VaadinUriResolver} is a shared class between client and
      * server, so it cannot contain any server-side specific logic). But it
      * requires additional logic on the server side to be able to use it with
-     * the {@link ServletContext#getResource(String)} or
-     * {@link ServletContext#getResourceAsStream(String)} methods. This logic is
+     * the {@link javax.servlet.ServletContext#getResource(String)} or
+     * {@link javax.servlet.ServletContext#getResourceAsStream(String)} methods. This logic is
      * implemented in this method so it can be reused on the server-side in
      * various places.
      *

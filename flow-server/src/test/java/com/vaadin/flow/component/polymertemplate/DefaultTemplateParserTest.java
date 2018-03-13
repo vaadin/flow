@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertThat;
-
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -27,9 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -37,16 +36,21 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplateTest.ModelClass;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DependencyFilter;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.server.WrappedHttpSession;
@@ -55,7 +59,9 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertThat;
 
 @NotThreadSafe
 public class DefaultTemplateParserTest {
@@ -82,17 +88,23 @@ public class DefaultTemplateParserTest {
 
     }
 
-    private ServletContext context;
-
+    @Mock
+    private ServletContext servletContext;
+    @Mock
+    private VaadinServlet servlet;
+    @Mock
     private VaadinUriResolver resolver;
-
-    private VaadinService service;
+    @Mock
+    private VaadinServletService service;
+    private VaadinUriResolverFactory factory;
 
     @Before
-    public void setUp() {
+    public void setUp(){
+        MockitoAnnotations.initMocks(this);
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         VaadinSession session = Mockito.mock(VaadinSession.class);
-        service = Mockito.mock(VaadinService.class);
+        factory = (VaadinUriResolverFactory) vaadinRequest -> resolver;
+        Mockito.when(session.getAttribute(VaadinUriResolverFactory.class)).thenReturn(factory);
 
         Mockito.when(service.getDependencyFilters())
                 .thenReturn(Collections.emptyList());
@@ -102,7 +114,19 @@ public class DefaultTemplateParserTest {
         HttpSession httpSession = Mockito.mock(HttpSession.class);
         Mockito.when(wrappedSession.getHttpSession()).thenReturn(httpSession);
 
-        resolver = Mockito.mock(VaadinUriResolver.class);
+        servlet = new VaadinServlet() {
+            @Override
+            protected VaadinServletService createServletService()
+                    throws ServletException, ServiceException {
+                return service;
+            }
+
+            @Override
+            public ServletContext getServletContext() {
+                return servletContext;
+            }
+        };
+        Mockito.when(service.getServlet()).thenReturn(servlet);
 
         Mockito.when(resolver.resolveVaadinUri("/bar.html"))
                 .thenReturn("bar.html");
@@ -111,24 +135,17 @@ public class DefaultTemplateParserTest {
         Mockito.when(resolver.resolveVaadinUri("/bundle.html"))
                 .thenReturn("bundle.html");
 
-        VaadinUriResolverFactory factory = rqst -> resolver;
-        Mockito.when(session.getAttribute(VaadinUriResolverFactory.class))
-                .thenReturn(factory);
-
-        context = Mockito.mock(ServletContext.class);
-        Mockito.when(httpSession.getServletContext()).thenReturn(context);
-
         Mockito.when(request.getWrappedSession()).thenReturn(wrappedSession);
         Mockito.when(request.getServletPath()).thenReturn("");
 
-        Mockito.when(context.getResourceAsStream("/bar.html")).thenReturn(
+        Mockito.when(servletContext.getResourceAsStream("/bar.html")).thenReturn(
                 new ByteArrayInputStream("<dom-module id='bar'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
-        Mockito.when(context.getResourceAsStream("/bar1.html")).thenReturn(
+        Mockito.when(servletContext.getResourceAsStream("/bar1.html")).thenReturn(
                 new ByteArrayInputStream("<dom-module id='foo'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
 
-        Mockito.when(context.getResourceAsStream("/bundle.html"))
+        Mockito.when(servletContext.getResourceAsStream("/bundle.html"))
                 .thenReturn(getBundle(), getBundle(), getBundle());
 
         CurrentInstance.set(VaadinRequest.class, request);
@@ -162,7 +179,7 @@ public class DefaultTemplateParserTest {
         Mockito.when(resolver.resolveVaadinUri("/bar.html"))
                 .thenReturn("/foo.html");
 
-        Mockito.when(context.getResourceAsStream("/foo.html")).thenReturn(
+        Mockito.when(servletContext.getResourceAsStream("/foo.html")).thenReturn(
                 new ByteArrayInputStream("<dom-module id='foo'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
 
@@ -196,11 +213,11 @@ public class DefaultTemplateParserTest {
 
         Mockito.when(request.getServletPath()).thenReturn("/run/");
 
-        Mockito.when(context.getResourceAsStream("/run/./../bar.html"))
+        Mockito.when(servletContext.getResourceAsStream("/run/./../bar.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "<dom-module id='bar'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
-        Mockito.when(context.getResourceAsStream("/run/./../bar1.html"))
+        Mockito.when(servletContext.getResourceAsStream("/run/./../bar1.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "<dom-module id='foo'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
@@ -222,11 +239,11 @@ public class DefaultTemplateParserTest {
 
         Mockito.when(request.getServletPath()).thenReturn("/run/");
 
-        Mockito.when(context.getResourceAsStream("/run/./../bar.html"))
+        Mockito.when(servletContext.getResourceAsStream("/run/./../bar.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "<dom-module id='bar'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
-        Mockito.when(context.getResourceAsStream("/run/./../bar1.html"))
+        Mockito.when(servletContext.getResourceAsStream("/run/./../bar1.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "<dom-module id='foo'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
@@ -238,13 +255,13 @@ public class DefaultTemplateParserTest {
 
         // The double slash should be ignored e.g. `/run//./..` should become
         // `/run/./..`
-        Mockito.verify(context).getResourceAsStream("/run/./../bar.html");
-        Mockito.verify(context).getResourceAsStream("/run/./../bar1.html");
+        Mockito.verify(servletContext).getResourceAsStream("/run/./../bar.html");
+        Mockito.verify(servletContext).getResourceAsStream("/run/./../bar1.html");
     }
 
     @Test
     public void defaultParser_removesComments() {
-        Mockito.when(context.getResourceAsStream("/bar.html"))
+        Mockito.when(servletContext.getResourceAsStream("/bar.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "<!-- comment1 --><dom-module id='foo'><!-- comment2 --></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
@@ -272,7 +289,7 @@ public class DefaultTemplateParserTest {
 
     @Test(expected = IllegalStateException.class)
     public void defaultParser_templateResourceIsNotFound_throws() {
-        Mockito.when(context.getResourceAsStream("/bar1.html"))
+        Mockito.when(servletContext.getResourceAsStream("/bar1.html"))
                 .thenReturn(null);
 
         DefaultTemplateParser.getInstance()

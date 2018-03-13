@@ -40,7 +40,6 @@ public class HtmlDependencyParserTest {
 
     private VaadinSession session;
     private VaadinServlet servlet;
-    private ServletContext context;
     private VaadinServletService service;
 
     @Before
@@ -54,9 +53,6 @@ public class HtmlDependencyParserTest {
         session = Mockito.mock(VaadinSession.class);
         CurrentInstance.set(VaadinSession.class, session);
 
-        context = Mockito.mock(ServletContext.class);
-
-        Mockito.when(servlet.getServletContext()).thenReturn(context);
         Mockito.when(session.hasLock()).thenReturn(true);
     }
 
@@ -71,7 +67,7 @@ public class HtmlDependencyParserTest {
 
         Mockito.when(servlet.resolveResource("frontend://foo.html"))
                 .thenReturn("foo.html");
-        Mockito.when(context.getResourceAsStream("foo.html")).thenReturn(
+        Mockito.when(service.getResourceAsStream("foo.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
@@ -97,34 +93,40 @@ public class HtmlDependencyParserTest {
                 + "<link rel='import' href='/absolute.html'>";
         InputStream stream = new ByteArrayInputStream(
                 importContent.getBytes(StandardCharsets.UTF_8));
-        Mockito.when(context.getResourceAsStream(resolvedRoot))
+        Mockito.when(servlet.getResourceAsStream(resolvedRoot))
                 .thenReturn(stream);
 
         Mockito.when(servlet.resolveResource("frontend://baz/relative1.html"))
                 .thenReturn("baz/relative1.html");
-        Mockito.when(context.getResourceAsStream("baz/relative1.html"))
+        Mockito.when(service.getResourceAsStream("baz/relative1.html"))
                 .thenReturn(new ByteArrayInputStream(
                         "".getBytes(StandardCharsets.UTF_8)));
 
         Mockito.when(servlet.resolveResource("frontend://relative2.html"))
                 .thenReturn("relative2.html");
-        Mockito.when(context.getResourceAsStream("relative2.html")).thenReturn(
+        Mockito.when(service.getResourceAsStream("relative2.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Mockito.when(
                 servlet.resolveResource("frontend://baz/sub/relative3.html"))
                 .thenReturn("relative3.html");
-        Mockito.when(context.getResourceAsStream("relative3.html")).thenReturn(
+        Mockito.when(service.getResourceAsStream("relative3.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Mockito.when(servlet.resolveResource("/absolute.html"))
                 .thenReturn("absolute.html");
-        Mockito.when(context.getResourceAsStream("absolute.html")).thenReturn(
+        Mockito.when(service.getResourceAsStream("absolute.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Collection<String> dependencies = parser.parseDependencies();
 
         Assert.assertEquals(5, dependencies.size());
+
+        Mockito.verify(servlet).getResourceAsStream(resolvedRoot);
+        Mockito.verify(servlet).getResourceAsStream("baz/relative1.html");
+        Mockito.verify(servlet).getResourceAsStream("relative2.html");
+        Mockito.verify(servlet).getResourceAsStream("relative3.html");
+        Mockito.verify(servlet).getResourceAsStream("absolute.html");
 
         Assert.assertTrue("Dependencies parser doesn't return the root URI",
                 dependencies.contains(root));
@@ -132,10 +134,10 @@ public class HtmlDependencyParserTest {
                 "Dependencies parser doesn't return the simple relative URI (same parent)",
                 dependencies.contains("baz/relative1.html"));
         Assert.assertTrue(
-                "Dependencies parser doesn't return the realtive URI which is located in the parent folder",
+                "Dependencies parser doesn't return the relative URI which is located in the parent folder",
                 dependencies.contains("relative2.html"));
         Assert.assertTrue(
-                "Dependencies parser doesn't return the realtive URI which is located sub folder",
+                "Dependencies parser doesn't return the relative URI which is located sub folder",
                 dependencies.contains("baz/sub/relative3.html"));
         Assert.assertTrue("Dependencies parser doesn't return the absolute URI",
                 dependencies.contains("/absolute.html"));
@@ -151,11 +153,11 @@ public class HtmlDependencyParserTest {
         String importContent = "<link rel='import' href='relative.html'>";
         InputStream stream = new ByteArrayInputStream(
                 importContent.getBytes(StandardCharsets.UTF_8));
-        Mockito.when(context.getResourceAsStream(root)).thenReturn(stream);
+        Mockito.when(servlet.getResourceAsStream(root)).thenReturn(stream);
 
         Mockito.when(servlet.resolveResource("frontend://relative.html"))
                 .thenReturn("relative.html");
-        Mockito.when(context.getResourceAsStream("relative.html")).thenReturn(
+        Mockito.when(service.getResourceAsStream("relative.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Collection<String> dependencies = parser.parseDependencies();
@@ -180,7 +182,7 @@ public class HtmlDependencyParserTest {
         String importContent = "<link rel='import' href='relative.html'>";
         InputStream stream = new ByteArrayInputStream(
                 importContent.getBytes(StandardCharsets.UTF_8));
-        Mockito.when(context.getResourceAsStream(resolvedRoot))
+        Mockito.when(servlet.getResourceAsStream(resolvedRoot))
                 .thenReturn(stream);
 
         String resolvedRelative = "baz/bar/relative.html";
@@ -192,9 +194,9 @@ public class HtmlDependencyParserTest {
         InputStream relativeContent = new ByteArrayInputStream(
                 "<link rel='import' href='relative1.html'>"
                         .getBytes(StandardCharsets.UTF_8));
-        Mockito.when(context.getResourceAsStream(resolvedRelative))
+        Mockito.when(servlet.getResourceAsStream(resolvedRelative))
                 .thenReturn(relativeContent);
-        Mockito.when(context.getResourceAsStream("relative1.html")).thenReturn(
+        Mockito.when(service.getResourceAsStream("relative1.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Collection<String> dependencies = parser.parseDependencies();
@@ -207,7 +209,7 @@ public class HtmlDependencyParserTest {
                 "Dependencies parser doesn't return the simple relative URI (same parent)",
                 dependencies.contains("relative.html"));
         Assert.assertTrue(
-                "Dependencies parser doesn't return the realtive URI which is located in the parent folder",
+                "Dependencies parser doesn't return the relative URI which is located in the parent folder",
                 dependencies.contains("relative1.html"));
     }
 
@@ -223,12 +225,12 @@ public class HtmlDependencyParserTest {
         String importContent = "<link rel='import' href='relative.html'>";
         InputStream stream = new ByteArrayInputStream(
                 importContent.getBytes(StandardCharsets.UTF_8));
-        Mockito.when(context.getResourceAsStream(resolvedRoot))
+        Mockito.when(servlet.getResourceAsStream(resolvedRoot))
                 .thenReturn(stream);
 
         Mockito.when(servlet.resolveResource("frontend://relative.html"))
                 .thenReturn("relative.html");
-        Mockito.when(context.getResourceAsStream("relative.html")).thenReturn(
+        Mockito.when(service.getResourceAsStream("relative.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         HtmlDependenciesCache cache = new HtmlDependenciesCache();
@@ -238,7 +240,7 @@ public class HtmlDependencyParserTest {
         Collection<String> dependencies = parser.parseDependencies();
 
         Assert.assertEquals(2, dependencies.size());
-        Mockito.verify(context).getResourceAsStream(resolvedRoot);
+        Mockito.verify(servlet).getResourceAsStream(resolvedRoot);
 
         // call one more time
         dependencies = parser.parseDependencies();
@@ -246,7 +248,7 @@ public class HtmlDependencyParserTest {
         Assert.assertEquals(1, dependencies.size());
         // and there shouldn't be one more call for reading the content of the
         // import
-        Mockito.verify(context).getResourceAsStream(resolvedRoot);
+        Mockito.verify(servlet).getResourceAsStream(resolvedRoot);
     }
 
 }

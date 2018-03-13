@@ -1,6 +1,9 @@
 package com.vaadin.flow.server.webjar;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import java.lang.reflect.Field;
 import java.net.URL;
 
 import org.junit.Assert;
@@ -10,6 +13,9 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 
 public class WebJarServerTest {
 
@@ -18,7 +24,8 @@ public class WebJarServerTest {
 
     private WebJarServer webJarServer;
 
-    private ServletContext context;
+//    private ServletContext context;
+    private VaadinServlet servlet;
 
     private String baseUrl = "/.";
     private String upStep = "/..";
@@ -31,10 +38,31 @@ public class WebJarServerTest {
         Mockito.when(configuration.getDevelopmentFrontendPrefix())
                 .thenReturn(Constants.FRONTEND_URL_DEV_DEFAULT);
 
-        webJarServer = new WebJarServer(configuration);
-        context = Mockito.mock(ServletContext.class);
+        VaadinServletService servletService = Mockito.mock(VaadinServletService.class);
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        servlet = new VaadinServlet() {
+            @Override
+            protected VaadinServletService createServletService()
+                    throws ServletException, ServiceException {
+                return servletService;
+            }
 
-        Mockito.when(context.getResource(GRID_WEBJAR))
+            @Override
+            public ServletContext getServletContext() {
+                return servletContext;
+            }
+        };
+        Mockito.when(servletService.getDeploymentConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.areWebJarsEnabled()).thenReturn(true);
+        servlet.init(Mockito.mock(ServletConfig.class));
+        Field webJarServerField = VaadinServlet.class
+                .getDeclaredField("webJarServer");
+        webJarServerField.setAccessible(true);
+        webJarServer = (WebJarServer) webJarServerField.get(servlet);
+        //        webJarServer = new WebJarServer(configuration);
+//        context = Mockito.mock(ServletContext.class);
+
+        Mockito.when(servletContext.getResource(GRID_WEBJAR))
                 .thenReturn(new URL("http://localhost:8080" + GRID_DEPENDENCY));
     }
 
@@ -42,7 +70,7 @@ public class WebJarServerTest {
     public void test_webjar_resolves_without_any_baseurl() throws Exception {
         String value = GRID_DEPENDENCY;
 
-        boolean foundComponent = webJarServer.hasWebJarResource(value, context);
+        boolean foundComponent = servlet.getResource(webJarServer.getWebJarResourcePath(value).get()) != null;
 
         Assert.assertTrue(
                 "Expected webJarServer to find fixed component for value: "
@@ -54,8 +82,7 @@ public class WebJarServerTest {
     public void test_webjar_resolves_for_baseurl() throws Exception {
         String value = GRID_DEPENDENCY;
 
-        boolean foundComponent = webJarServer.hasWebJarResource(baseUrl + value,
-                context);
+        boolean foundComponent = servlet.getResource(webJarServer.getWebJarResourcePath(baseUrl + value).get()) != null;
 
         Assert.assertTrue(
                 "Expected webJarServer to find fixed component for value: "
@@ -69,13 +96,13 @@ public class WebJarServerTest {
         String value = GRID_DEPENDENCY;
 
         Assert.assertTrue("No match found for /.." + value,
-                webJarServer.hasWebJarResource(upStep + value, context));
+                servlet.getResource(webJarServer.getWebJarResourcePath(upStep + value).get()) != null);
 
-        Assert.assertTrue("No match found for /./.." + value, webJarServer
-                .hasWebJarResource(baseUrl + upStep + value, context));
+        Assert.assertTrue("No match found for /./.." + value, servlet.getResource(webJarServer
+                .getWebJarResourcePath(baseUrl + upStep + value).get()) != null);
 
-        Assert.assertTrue("No match found for /./../.." + value, webJarServer
-                .hasWebJarResource(baseUrl + upStep + upStep + value, context));
+        Assert.assertTrue("No match found for /./../.." + value, servlet.getResource(webJarServer
+                .getWebJarResourcePath(baseUrl + upStep + upStep + value).get()) != null);
     }
 
     @Test
@@ -83,10 +110,10 @@ public class WebJarServerTest {
         String value = "/wrong" + GRID_DEPENDENCY;
 
         Assert.assertFalse("Match found for path starting with '/wrong'",
-                webJarServer.hasWebJarResource(value, context));
+                webJarServer.getWebJarResourcePath(value).isPresent());
 
         Assert.assertFalse("Match found for path starting with '/./wrong'",
-                webJarServer.hasWebJarResource(baseUrl + value, context));
+                webJarServer.getWebJarResourcePath(baseUrl + value).isPresent());
     }
 
     @Test
@@ -94,6 +121,6 @@ public class WebJarServerTest {
         String value = "/no/match" + baseUrl + GRID_DEPENDENCY;
 
         Assert.assertFalse("Match found for path starting with '/no/match/.'",
-                webJarServer.hasWebJarResource(value, context));
+                webJarServer.getWebJarResourcePath(value).isPresent());
     }
 }

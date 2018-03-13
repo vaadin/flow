@@ -126,7 +126,6 @@ public class StaticFileServerTest implements Serializable {
     }
 
     private OverrideableStaticFileServer fileServer;
-    private ServletContext servletContext;
     private HttpServletRequest request;
     private HttpServletResponse response;
     private Map<String, String> headers;
@@ -139,11 +138,9 @@ public class StaticFileServerTest implements Serializable {
 
     @Before
     public void setUp() throws IOException {
-        servletContext = Mockito.mock(ServletContext.class);
         fileServer = new OverrideableStaticFileServer(service);
         request = Mockito.mock(HttpServletRequest.class);
         response = Mockito.mock(HttpServletResponse.class);
-        Mockito.when(request.getServletContext()).thenReturn(servletContext);
         // No header == getDateHeader returns -1 (Mockito default is 0)
         Mockito.when(request.getDateHeader(Matchers.anyString()))
                 .thenReturn(-1L);
@@ -258,7 +255,7 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isResourceRequest() throws Exception {
         setupRequestURI("", "/static", "/file.png");
-        Mockito.when(servletContext.getResource("/static/file.png"))
+        Mockito.when(service.getResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
         Assert.assertTrue(fileServer.isStaticResourceRequest(request));
     }
@@ -266,7 +263,7 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isResourceRequestWithContextPath() throws Exception {
         setupRequestURI("/foo", "/static", "/file.png");
-        Mockito.when(servletContext.getResource("/static/file.png"))
+        Mockito.when(service.getResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
         Assert.assertTrue(fileServer.isStaticResourceRequest(request));
     }
@@ -274,14 +271,14 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isNotResourceRequest() throws Exception {
         setupRequestURI("", "", null);
-        Mockito.when(servletContext.getResource("/")).thenReturn(null);
+        Mockito.when(service.getResource("/")).thenReturn(null);
         Assert.assertFalse(fileServer.isStaticResourceRequest(request));
     }
 
     @Test
     public void isNotResourceRequestWithContextPath() throws Exception {
         setupRequestURI("/context", "", "/");
-        Mockito.when(servletContext.getResource("/"))
+        Mockito.when(service.getResource("/"))
                 .thenReturn(new URL("file", "", -1,
                         "flow/flow-tests/non-root-context-test/src/main/webapp/",
                         new URLStreamHandler() {
@@ -438,10 +435,13 @@ public class StaticFileServerTest implements Serializable {
 
     @Test
     public void serveStaticResource() throws IOException {
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        Mockito.when(request.getServletContext()).thenReturn(servletContext);
+
         setupRequestURI("", "/some", "/file.js");
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
-        Mockito.when(servletContext.getResource("/some/file.js")).thenReturn(
+        Mockito.when(service.getResource("/some/file.js")).thenReturn(
                 createFileURLWithDataAndLength("/some/file.js", fileData));
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
@@ -461,7 +461,7 @@ public class StaticFileServerTest implements Serializable {
 
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
-        Mockito.when(servletContext.getResource("/some/file.js"))
+        Mockito.when(service.getResource("/some/file.js"))
                 .thenReturn(createFileURLWithDataAndLength("/some/file.js",
                         fileData, fileModified));
 
