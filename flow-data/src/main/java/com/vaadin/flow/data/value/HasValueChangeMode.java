@@ -56,20 +56,21 @@ public interface HasValueChangeMode<C extends Component, V>
         Objects.requireNonNull(valueChangeMode,
                 "New valueChangeMode should not be null");
         Element element = get().getElement();
+
+        element.removeSynchronizedPropertyEvent(
+                getClientPropertyChangeEventName());
+        element.removeSynchronizedPropertyEvent("blur");
+        element.removeSynchronizedPropertyEvent("change");
+
         switch (valueChangeMode) {
         case EAGER:
-            element.removeSynchronizedPropertyEvent("blur");
             element.synchronizeProperty(getClientValuePropertyName(),
                     getClientPropertyChangeEventName());
             break;
         case ON_BLUR:
-            element.removeSynchronizedPropertyEvent(
-                    getClientPropertyChangeEventName());
             element.synchronizeProperty(getClientValuePropertyName(), "blur");
             break;
         case ON_CHANGE:
-            element.removeSynchronizedPropertyEvent(
-                getClientPropertyChangeEventName());
             element.synchronizeProperty(getClientValuePropertyName(), "change");
             break;
         default:
