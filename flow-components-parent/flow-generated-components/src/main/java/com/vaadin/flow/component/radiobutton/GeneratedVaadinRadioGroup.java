@@ -17,7 +17,6 @@ package com.vaadin.flow.component.radiobutton;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -73,7 +72,7 @@ import com.vaadin.flow.shared.Registration;
 @Tag("vaadin-radio-group")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-group.html")
 public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * <p>
@@ -128,8 +127,8 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return getElement()
                 .addPropertyChangeListener("value",
-                        event -> listener
-                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                        event -> listener.onComponentEvent(
+                                new ValueChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 }

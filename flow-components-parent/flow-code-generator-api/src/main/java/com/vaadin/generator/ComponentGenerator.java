@@ -33,9 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -46,10 +43,12 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ComponentSupplier;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.HasComponents;
@@ -107,7 +106,7 @@ public class ComponentGenerator {
     private String licenseNote;
     private String frontendDirectory = "bower_components/";
     // https://github.com/vaadin/flow/issues/2370
-    private boolean fluentSetters;
+    private boolean fluentMethod;
 
     private boolean protectedMethods;
     private boolean abstractClass;
@@ -143,18 +142,17 @@ public class ComponentGenerator {
     }
 
     /**
-     * Set whether the generator should use fluent setters - setters that return
+     * Set whether the generator should use fluent Methods - methods that return
      * the own object so it's possible to use method chaining.
      * <p>
-     * By default, fluentSetters is <code>true</code>.
      *
-     * @param fluentSetters
+     * @param fluentMethods
      *            <code>true</code> to enable fluent setters, <code>false</code>
      *            to disable them.
      * @return this
      */
-    public ComponentGenerator withFluentSetters(boolean fluentSetters) {
-        this.fluentSetters = fluentSetters;
+    public ComponentGenerator withFluentMethods(boolean fluentMethods) {
+        this.fluentMethod = fluentMethods;
         return this;
     }
 
@@ -545,14 +543,6 @@ public class ComponentGenerator {
                 javaClass.addInterface(clazz);
             }
         });
-
-        boolean componentSupplierAdded = interfaces.stream()
-                .filter(ComponentSupplier.class::isAssignableFrom).count() > 0;
-
-        if (!componentSupplierAdded) {
-            javaClass.addInterface(ComponentSupplier.class.getName()
-                    + GENERIC_TYPE_DECLARATION);
-        }
     }
 
     private void generateGettersAndSetters(ComponentMetadata metadata,
@@ -621,7 +611,10 @@ public class ComponentGenerator {
                         "<a href=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot\">MDN page about slots</a>")
                 .addTagValue(JAVADOC_SEE,
                         "<a href=\"https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element\">Spec website about slots</a>");
-        addFluentReturnToMethod(method);
+
+        if (fluentMethod) {
+            addFluentReturnToMethod(method);
+        }
     }
 
     private void generateRemovers(JavaClassSource javaClass,
@@ -869,8 +862,6 @@ public class ComponentGenerator {
                     }
                     javaClass.addInterface(HasValue.class.getName() + "<"
                             + GENERIC_TYPE + ", " + javaType.getName() + ">");
-                    javaClass.removeImport(ComponentSupplier.class);
-                    javaClass.removeInterface(ComponentSupplier.class);
                     method.addAnnotation(Override.class);
 
                     method.setBody(ComponentGeneratorUtils
@@ -1080,7 +1071,7 @@ public class ComponentGenerator {
             method.getJavaDoc().addTagValue(JAVADOC_PARAM,
                     "property the property to set");
 
-            if (fluentSetters) {
+            if (fluentMethod) {
                 addFluentReturnToMethod(method);
             }
 
@@ -1124,7 +1115,7 @@ public class ComponentGenerator {
                         String.format("%s the %s value to set", parameterName,
                                 setterType.getSimpleName()));
 
-                if (fluentSetters) {
+                if (fluentMethod) {
                     addFluentReturnToMethod(method);
                 }
 
@@ -1133,7 +1124,7 @@ public class ComponentGenerator {
                     preventSettingTheSameValue(javaClass, parameterName,
                             method);
                     if (setterType.isPrimitive()) {
-                        implementHasValueSetterWithPimitiveType(javaClass,
+                        implementHasValueSetterWithPrimitiveType(javaClass,
                                 property, method, setterType, parameterName);
                     } else if (!nullable) {
                         method.setBody(String.format(
@@ -1154,7 +1145,7 @@ public class ComponentGenerator {
      * Note that for double, an overload setter with {@link Number} is also
      * created, to allow the developer to call the setValue method using int.
      */
-    private void implementHasValueSetterWithPimitiveType(
+    private void implementHasValueSetterWithPrimitiveType(
             JavaClassSource javaClass, ComponentPropertyData property,
             MethodSource<JavaClassSource> method, Class<?> setterType,
             String parameterName) {
@@ -1187,7 +1178,7 @@ public class ComponentGenerator {
                     overloadMethod);
             preventNullArgument(javaClass, parameterName, overloadMethod);
 
-            if (fluentSetters) {
+            if (fluentMethod) {
                 addFluentReturnToMethod(overloadMethod);
             }
         }
@@ -1210,7 +1201,7 @@ public class ComponentGenerator {
 
     private void addFluentReturnToMethod(MethodSource<JavaClassSource> method) {
         method.setReturnType(GENERIC_TYPE);
-        method.setBody(method.getBody() + "return get();");
+        method.setBody(method.getBody() + "return (R) this;");
         method.getJavaDoc().addTagValue(JAVADOC_RETURN,
                 "this instance, for method chaining");
     }
@@ -1380,7 +1371,7 @@ public class ComponentGenerator {
                             .replace(PROPERTY_CHANGE_EVENT_POSTFIX, ""));
             method.setBody(String.format(
                     "return getElement().addPropertyChangeListener(\"%s\", "
-                            + "event -> listener.onComponentEvent(new %s<%s>(get(), event.isUserOriginated())));",
+                            + "event -> listener.onComponentEvent(new %s<%s>((R) this, event.isUserOriginated())));",
                     propertyNameBeforeRenaming, eventClass.getName(),
                     eventClass.getTypeVariables().get(0).getName()));
         } else {
@@ -1542,7 +1533,7 @@ public class ComponentGenerator {
     private JavaClassSource generateNestedPojo(JavaClassSource javaClass,
             ComponentObjectType type, String nameHint, String description) {
         JavaClassSource nestedClass = new NestedClassGenerator().withType(type)
-                .withFluentSetters(fluentSetters).withNameHint(nameHint)
+                .withFluentSetters(fluentMethod).withNameHint(nameHint)
                 .build();
 
         if (javaClass.getNestedType(nestedClass.getName()) != null) {

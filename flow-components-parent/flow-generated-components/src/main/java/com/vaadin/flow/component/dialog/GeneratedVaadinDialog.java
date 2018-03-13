@@ -17,7 +17,6 @@ package com.vaadin.flow.component.dialog;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -55,7 +54,7 @@ import com.vaadin.flow.shared.Registration;
 @Tag("vaadin-dialog")
 @HtmlImport("frontend://bower_components/vaadin-dialog/src/vaadin-dialog.html")
 public abstract class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * <p>
@@ -117,7 +116,7 @@ public abstract class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
         return getElement()
                 .addPropertyChangeListener("opened",
                         event -> listener.onComponentEvent(
-                                new OpenedChangeEvent<R>(get(),
+                                new OpenedChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 }
