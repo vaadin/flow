@@ -22,22 +22,12 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class MyThemeIT extends ChromeBrowserTest {
+public class HtmlParserThemeTemplateIT extends ChromeBrowserTest {
 
     @Test
-    public void loadBaseComponent() {
+    public void themeComponentShouldLoadForTemplate() {
         getDriver().get(getRootURL()
-                + "/view/com.vaadin.flow.uitest.ui.theme.MyComponentView");
-
-        WebElement element = findElement(By.tagName("my-component"));
-        Assert.assertFalse(
-                findInShadowRoot(element, By.id("component")).isEmpty());
-    }
-
-    @Test
-    public void loadThemeComponent() {
-        getDriver().get(getRootURL()
-                + "/view/com.vaadin.flow.uitest.ui.theme.MyThemeComponentView");
+                + "/view/com.vaadin.flow.uitest.ui.theme.HtmlParserThemeTemplateView");
 
         Assert.assertTrue(
                 findElement(By.id("theme-component")).isDisplayed());

@@ -19,6 +19,7 @@ package com.vaadin.flow.data.value;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.dom.Element;
 
@@ -37,7 +38,7 @@ import com.vaadin.flow.dom.Element;
  * @author Vaadin Ltd.
  */
 public interface HasValueChangeMode<C extends Component, V>
-        extends HasValue<C, V> {
+        extends HasValue<C, V>, HasElement {
 
     /**
      * Gets current value change mode of the component.
@@ -55,7 +56,7 @@ public interface HasValueChangeMode<C extends Component, V>
     default void setValueChangeMode(ValueChangeMode valueChangeMode) {
         Objects.requireNonNull(valueChangeMode,
                 "New valueChangeMode should not be null");
-        Element element = get().getElement();
+        Element element = getElement();
         switch (valueChangeMode) {
         case EAGER:
             element.removeSynchronizedPropertyEvent("blur");

@@ -31,7 +31,7 @@ import com.vaadin.flow.shared.Registration;
  *            the value type
  * @author Vaadin Ltd.
  */
-public interface HasValue<C extends Component, V> extends ComponentSupplier<C> {
+public interface HasValue<C extends Component, V> extends HasElement {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -263,7 +263,7 @@ public interface HasValue<C extends Component, V> extends ComponentSupplier<C> {
      *            read-only mode or not
      */
     default void setReadOnly(boolean readOnly) {
-        get().getElement().setProperty("readonly", readOnly);
+        getElement().setProperty("readonly", readOnly);
     }
 
     /**
@@ -273,7 +273,7 @@ public interface HasValue<C extends Component, V> extends ComponentSupplier<C> {
      *         not.
      */
     default boolean isReadOnly() {
-        return get().getElement().getProperty("readonly", false);
+        return getElement().getProperty("readonly", false);
     }
 
     /**
@@ -286,7 +286,8 @@ public interface HasValue<C extends Component, V> extends ComponentSupplier<C> {
      *            <code>false</code> if not
      */
     default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-        get().getElement().setProperty("required", requiredIndicatorVisible);
+        getElement().setProperty("required",
+                requiredIndicatorVisible);
     }
 
     /**
@@ -295,7 +296,7 @@ public interface HasValue<C extends Component, V> extends ComponentSupplier<C> {
      * @return <code>true</code> if visible, <code>false</code> if not
      */
     default boolean isRequiredIndicatorVisible() {
-        return get().getElement().getProperty("required", false);
+        return getElement().getProperty("required", false);
     }
 
 }
