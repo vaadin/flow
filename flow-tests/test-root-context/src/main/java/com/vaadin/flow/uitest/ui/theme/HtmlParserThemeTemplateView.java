@@ -23,7 +23,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.theme.Theme;
 
 @Tag("parser-template")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/custom-theme/HtmlParserThemeTemplate.html")
+@HtmlImport("com/vaadin/flow/uitest/ui/custom-theme/HtmlParserThemeTemplate.html")
 @Route(value = "com.vaadin.flow.uitest.ui.theme.HtmlParserThemeTemplateView")
 @Theme(MyTheme.class)
 public class HtmlParserThemeTemplateView
