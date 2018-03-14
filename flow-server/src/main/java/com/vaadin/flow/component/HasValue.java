@@ -32,7 +32,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <V>
  *            the value type
  */
-public interface HasValue<C extends Component, V> extends HasElement {
+public interface HasValue<C extends Component, V> {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -42,8 +42,7 @@ public interface HasValue<C extends Component, V> extends HasElement {
      * @param <V>
      *            the value type
      */
-    class ValueChangeEvent<C extends Component, V>
-    extends ComponentEvent<C> {
+    class ValueChangeEvent<C extends Component, V> extends ComponentEvent<C> {
 
         private final V oldValue;
         private final V value;
@@ -101,8 +100,8 @@ public interface HasValue<C extends Component, V> extends HasElement {
      * @see Registration
      */
     @FunctionalInterface
-    interface ValueChangeListener<C extends Component, V> extends
-            ComponentEventListener<ValueChangeEvent<C, V>> {
+    interface ValueChangeListener<C extends Component, V>
+            extends ComponentEventListener<ValueChangeEvent<C, V>> {
 
         /**
          * Invoked when this listener receives a value change event from an
@@ -141,6 +140,27 @@ public interface HasValue<C extends Component, V> extends HasElement {
     V getValue();
 
     /**
+     * Returns the component instance this {@code HasValue} is bound to.
+     * <p>
+     * By default, expects the {@code HasValue} to also implement
+     * {@link Component}. If that is not the case, this method should be
+     * overridden to return the {@link Component} instance.
+     * 
+     * @return the component instance this {@code HasValue} is bound to
+     */
+    default C getComponent() {
+        try {
+            C component = (C) this;
+            return component;
+        } catch (ClassCastException cce) {
+            throw new ClassCastException(String.format(
+                    "The class {0} implementing {1} does not implement {2}. It should override the getComponent() method to return the component instance the {1} is bound to. Original message: {3}",
+                    getClass().getName(), HasValue.class.getName(),
+                    Component.class.getName(), cce.getMessage()));
+        }
+    }
+
+    /**
      * Adds a value change listener. The listener is called when the value of
      * this {@code HasValue} is changed either by the user or programmatically.
      *
@@ -150,11 +170,10 @@ public interface HasValue<C extends Component, V> extends HasElement {
      */
     default Registration addValueChangeListener(
             ValueChangeListener<C, V> listener) {
-        return getElement().addPropertyChangeListener(
+        return getComponent().getElement().addPropertyChangeListener(
                 getClientValuePropertyName(),
-                event -> listener
-                        .onComponentEvent(new ValueChangeEvent<>((C) this,
-                        this, (V) event.getOldValue(),
+                event -> listener.onComponentEvent(new ValueChangeEvent<>(
+                        getComponent(), this, (V) event.getOldValue(),
                         event.isUserOriginated())));
     }
 
@@ -241,7 +260,7 @@ public interface HasValue<C extends Component, V> extends HasElement {
      *            read-only mode or not
      */
     default void setReadOnly(boolean readOnly) {
-        getElement().setProperty("readonly", readOnly);
+        getComponent().getElement().setProperty("readonly", readOnly);
     }
 
     /**
@@ -251,7 +270,7 @@ public interface HasValue<C extends Component, V> extends HasElement {
      *         not.
      */
     default boolean isReadOnly() {
-        return getElement().getProperty("readonly", false);
+        return getComponent().getElement().getProperty("readonly", false);
     }
 
     /**
@@ -264,7 +283,7 @@ public interface HasValue<C extends Component, V> extends HasElement {
      *            <code>false</code> if not
      */
     default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-        getElement().setProperty("required",
+        getComponent().getElement().setProperty("required",
                 requiredIndicatorVisible);
     }
 
@@ -274,6 +293,6 @@ public interface HasValue<C extends Component, V> extends HasElement {
      * @return <code>true</code> if visible, <code>false</code> if not
      */
     default boolean isRequiredIndicatorVisible() {
-        return getElement().getProperty("required", false);
+        return getComponent().getElement().getProperty("required", false);
     }
 }
