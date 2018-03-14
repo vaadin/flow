@@ -151,14 +151,8 @@ public class Router implements RouterInterface {
 
                 NavigationHandler handler = new NavigationStateRenderer(
                         newState);
-                if (notNavigatingToSameLocation(location,
-                        ui.getInternals().getLastHandledLocation())) {
-                    ui.getInternals().setLastHandledNavigation(location);
-                    return handler.handle(navigationEvent);
-                }
-            }
-
-            if (!location.getPath().isEmpty()) {
+                return handler.handle(navigationEvent);
+            } else if (!location.getPath().isEmpty()) {
                 Location slashToggledLocation = location.toggleTrailingSlash();
                 NavigationState slashToggledState = getRouteResolver().resolve(
                         new ResolveRequest(this, slashToggledLocation));
@@ -179,8 +173,6 @@ public class Router implements RouterInterface {
                     exception.getMessage());
 
             return navigateToExceptionView(ui, location, errorParameter);
-        } finally {
-            ui.getInternals().clearLastHandledNavigation();
         }
     }
 
@@ -203,15 +195,6 @@ public class Router implements RouterInterface {
             throw new RuntimeException(errorParameter.getCustomMessage(),
                     errorParameter.getException());
         }
-    }
-
-    private boolean notNavigatingToSameLocation(Location location,
-            Location lastHandledNavigation) {
-        if (lastHandledNavigation != null) {
-            return !location.getPathWithQueryParameters()
-                    .equals(lastHandledNavigation.getPathWithQueryParameters());
-        }
-        return true;
     }
 
     @Override

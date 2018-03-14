@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -156,7 +157,7 @@ public class UIInternals implements Serializable {
 
     private final Set<Integer> sentTemplateIds = new HashSet<>();
 
-    private Location lastHandledNavigation = null;
+    private AtomicReference<Location> latestNavigation = new AtomicReference<>();
 
     private ContinueNavigationAction continueNavigationAction = null;
 
@@ -841,7 +842,7 @@ public class UIInternals implements Serializable {
      * @return location if navigated during active navigation or {@code null}
      */
     public Location getLastHandledLocation() {
-        return lastHandledNavigation;
+        return latestNavigation.get();
     }
 
     /**
@@ -851,7 +852,23 @@ public class UIInternals implements Serializable {
      *            last location navigated to
      */
     public void setLastHandledNavigation(Location location) {
-        lastHandledNavigation = location;
+        latestNavigation.set(location);
+    }
+
+    /**
+     * Check if we have navigated to this location on this roundtrip.
+     * 
+     * @param location
+     *            location we are navigating to
+     * @return true if the last navigation location {@code ==} location
+     */
+    public boolean notNavigatingToSameLocation(Location location) {
+        Location lastHandledNavigation = getLastHandledLocation();
+        if (lastHandledNavigation != null) {
+            return !location.getPathWithQueryParameters()
+                    .equals(lastHandledNavigation.getPathWithQueryParameters());
+        }
+        return true;
     }
 
     /**

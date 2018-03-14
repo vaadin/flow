@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,8 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletResponse;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -62,7 +57,10 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -652,6 +650,16 @@ public class RouterTest extends RoutingTestBase {
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText(EXCEPTION_TEXT);
             return HttpServletResponse.SC_NOT_FOUND;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class FailingErrorHandler extends Component
+            implements HasErrorParameter<RuntimeException> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<RuntimeException> parameter) {
+            throw new RuntimeException(parameter.getException());
         }
     }
 
@@ -2021,6 +2029,40 @@ public class RouterTest extends RoutingTestBase {
         ui.navigate("redirect/loop");
 
         Assert.assertEquals("Expected two events", 2, eventCollector.size());
+    }
+
+    @Test
+    public void exception_while_navigating_should_succeed_and_clear_last_handled()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(FailOnException.class));
+
+        ui.navigate("exception");
+
+        Assert.assertNull("Last handled location should have been cleared",
+                ui.getInternals().getLastHandledLocation());
+    }
+
+    @Test
+    public void exception_in_exception_handler_while_navigating_should_clear_last_handled()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(FailOnException.class));
+        router.getRegistry().setErrorNavigationTargets(
+                Collections.singleton(FailingErrorHandler.class));
+
+        boolean exceptionCaught = false;
+        try {
+            ui.navigate("exception");
+        } catch (Exception re) {
+            exceptionCaught = true;
+            Assert.assertNull(
+                    "Last handled location should have been cleared even though navigation failed",
+                    ui.getInternals().getLastHandledLocation());
+        }
+
+        Assert.assertTrue("No runtime exception was thrown from navigation",
+                exceptionCaught);
     }
 
     @Test
