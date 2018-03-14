@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.data.value;
 
+import com.vaadin.flow.component.HasValue;
+
 /**
  * All possible value change modes that can be set for any component extending
  * {@link HasValueChangeMode}. Depending on the mode used, the component's
@@ -24,7 +26,11 @@ package com.vaadin.flow.data.value;
  * @author Vaadin Ltd.
  */
 public enum ValueChangeMode {
-    /** Syncs the value to the server each time it's changed on the client. */
+    /**
+     * Syncs the value to the server each time it's changed on the client. The
+     * event that triggers the synchronization is defined by
+     * {@link HasValue#getClientPropertyChangeEventName()}.
+     */
     EAGER,
 
     /**
@@ -36,4 +42,14 @@ public enum ValueChangeMode {
      *      event description</a>
      */
     ON_BLUR,
+
+    /**
+     * Syncs the value to the server on {@code change} event, i.e. when the
+     * component value is committed.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/Events/change"> Change
+     *      event description</a>
+     */
+    ON_CHANGE,
 }
