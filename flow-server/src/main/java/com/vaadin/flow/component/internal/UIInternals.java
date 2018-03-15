@@ -156,7 +156,7 @@ public class UIInternals implements Serializable {
 
     private final Set<Integer> sentTemplateIds = new HashSet<>();
 
-    private Location latestNavigation = null;
+    private Location lastHandledNavigation = null;
 
     private ContinueNavigationAction continueNavigationAction = null;
 
@@ -841,7 +841,7 @@ public class UIInternals implements Serializable {
      * @return location if navigated during active navigation or {@code null}
      */
     public Location getLastHandledLocation() {
-        return latestNavigation;
+        return lastHandledNavigation;
     }
 
     /**
@@ -851,7 +851,7 @@ public class UIInternals implements Serializable {
      *            last location navigated to
      */
     public void setLastHandledNavigation(Location location) {
-        latestNavigation = location;
+        lastHandledNavigation = location;
     }
 
     /**
