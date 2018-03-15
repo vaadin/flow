@@ -862,7 +862,6 @@ public class UIInternals implements Serializable {
      * @return true if the last navigation location {@code ==} location
      */
     public boolean notNavigatingToSameLocation(Location location) {
-        Location lastHandledNavigation = getLastHandledLocation();
         if (lastHandledNavigation != null) {
             return !location.getPathWithQueryParameters()
                     .equals(lastHandledNavigation.getPathWithQueryParameters());
