@@ -59,6 +59,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -735,13 +736,27 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("loop")
     @Tag(Tag.DIV)
-    public static class LoopByReroute extends Component
+    public static class LoopByUINavigate extends Component
             implements BeforeEnterObserver {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             eventCollector.add("Loop");
             UI.getCurrent().navigate("loop");
+        }
+    }
+
+    @Route("loop")
+    @Tag(Tag.DIV)
+    public static class LoopOnRouterNavigate extends Component
+            implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            eventCollector.add("Loop");
+            UI ui = UI.getCurrent();
+            ui.getRouter().get().navigate(ui, new Location("loop"),
+                    NavigationTrigger.PROGRAMMATIC);
         }
     }
 
@@ -2007,28 +2022,63 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void repeatedly_navigating_to_same_ur_through_ui_navigateTo_should_not_loop()
+    public void repeatedly_navigating_to_same_ur_through_ui_navigate_should_not_loop()
             throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(
-                Stream.of(LoopByReroute.class).collect(Collectors.toSet()));
+                Collections.singleton(LoopByUINavigate.class));
 
         ui.navigate("loop");
 
-        Assert.assertEquals("Expected only one request to loop", 1,
+        Assert.assertEquals("Expected only one request", 1,
                 eventCollector.size());
+        Assert.assertNull("Last handled location should have been cleared",
+                ui.getInternals().getLastHandledLocation());
     }
 
     @Test
-    public void navigateTo_should_not_loop()
+    public void ui_navigate_should_not_loop()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(LoopByReroute.class, RedirectToLoopByReroute.class)
+        router.getRegistry().setNavigationTargets(
+                Stream.of(LoopByUINavigate.class, RedirectToLoopByReroute.class)
                         .collect(Collectors.toSet()));
 
         ui.navigate("redirect/loop");
 
         Assert.assertEquals("Expected two events", 2, eventCollector.size());
+        Assert.assertNull("Last handled location should have been cleared",
+                ui.getInternals().getLastHandledLocation());
+    }
+
+    @Test
+    public void ui_navigate_should_only_have_one_history_marking_on_loop()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(LoopByUINavigate.class));
+
+        ui.navigate("loop");
+
+        long historyInvocations = ui.getInternals()
+                .dumpPendingJavaScriptInvocations().stream().filter(js -> js
+                        .getExpression().startsWith("history.pushState"))
+                .count();
+        assertEquals(1, historyInvocations);
+
+        Assert.assertNull("Last handled location should have been cleared",
+                ui.getInternals().getLastHandledLocation());
+    }
+
+    @Test
+    public void router_navigate_should_not_loop()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(LoopOnRouterNavigate.class));
+
+        ui.navigate("loop");
+
+        Assert.assertEquals("Expected only one request", 1,
+                eventCollector.size());
+        Assert.assertNull("Last handled location should have been cleared",
+                ui.getInternals().getLastHandledLocation());
     }
 
     @Test
