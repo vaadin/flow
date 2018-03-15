@@ -86,10 +86,11 @@ public class RouteNotFoundError extends Component
     private String getRoutes(BeforeEnterEvent event) {
         List<RouteData> routes = event.getSource().getRegistry()
                 .getRegisteredRoutes();
-        routes.sort(
-                (route1, route2) -> route1.getUrl().compareTo(route2.getUrl()));
 
-        return routes.stream().map(this::routeToHtml).map(Element::outerHtml)
+        return routes.stream()
+                .sorted((route1, route2) -> route1.getUrl()
+                        .compareTo(route2.getUrl()))
+                .map(this::routeToHtml).map(Element::outerHtml)
                 .collect(Collectors.joining());
     }
 
