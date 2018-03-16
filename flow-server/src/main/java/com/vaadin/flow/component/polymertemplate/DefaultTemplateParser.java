@@ -73,8 +73,8 @@ public final class DefaultTemplateParser implements TemplateParser {
     }
 
     @Override
-    public Element getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
-            String tag) {
+    public TemplateData getTemplateContent(
+            Class<? extends PolymerTemplate<?>> clazz, String tag) {
         VaadinServlet servlet = VaadinServlet.getCurrent();
 
         boolean logEnabled = LOG_CACHE.get(clazz).compareAndSet(false, true);
@@ -120,7 +120,7 @@ public final class DefaultTemplateParser implements TemplateParser {
                 }
 
                 if (templateElement != null) {
-                    return templateElement;
+                    return new TemplateData(url, templateElement);
 
                 }
             } catch (IOException exception) {

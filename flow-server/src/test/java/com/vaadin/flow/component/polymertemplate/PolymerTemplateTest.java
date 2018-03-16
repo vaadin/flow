@@ -16,6 +16,12 @@
 
 package com.vaadin.flow.component.polymertemplate;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -29,9 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,6 +46,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.HasCurrentService;
@@ -58,12 +63,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class PolymerTemplateTest extends HasCurrentService {
@@ -85,10 +85,11 @@ public class PolymerTemplateTest extends HasCurrentService {
         }
 
         @Override
-        public Element getTemplateContent(
+        public TemplateData getTemplateContent(
                 Class<? extends PolymerTemplate<?>> clazz, String tag) {
             callCount++;
-            return Jsoup.parse(templateProducer.apply(tag));
+            return new TemplateData("",
+                    Jsoup.parse(templateProducer.apply(tag)));
         }
     }
 
@@ -185,11 +186,12 @@ public class PolymerTemplateTest extends HasCurrentService {
             extends PolymerTemplate<ModelClass> {
 
         public BundledTemplateInTemplate() {
-            super((clazz, tag) -> Jsoup.parse("<dom-module id='child-template'>"
-                    + "<template><ffs></template></dom-module>"
-                    + "<dom-module id='ffs'><template></template></dom-module>"
-                    + "<dom-module id='" + tag
-                    + "'><template><div><ffs></div><span></span><child-template></template></dom-module>"));
+            super((clazz, tag) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='child-template'>"
+                            + "<template><ffs></template></dom-module>"
+                            + "<dom-module id='ffs'><template></template></dom-module>"
+                            + "<dom-module id='" + tag
+                            + "'><template><div><ffs></div><span></span><child-template></template></dom-module>")));
         }
 
     }
@@ -202,8 +204,10 @@ public class PolymerTemplateTest extends HasCurrentService {
         private TemplateChild child;
 
         public TemplateInjectTemplate() {
-            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
-                    + "'><template><child-template id='child'></template></dom-module>"));
+            super((clazz,
+                    tag) -> new TemplateData("", Jsoup.parse("<dom-module id='"
+                            + tag
+                            + "'><template><child-template id='child'></template></dom-module>")));
         }
 
     }
@@ -213,10 +217,10 @@ public class PolymerTemplateTest extends HasCurrentService {
             extends PolymerTemplate<ModelClass> {
 
         public TemplateWithChildInDomRepeat() {
-            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
-                    + "'><template><div>"
-                    + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
-                    + "</div></template></dom-module>"));
+            super((clazz, tag) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='" + tag + "'><template><div>"
+                            + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
+                            + "</div></template></dom-module>")));
         }
 
     }
@@ -275,8 +279,9 @@ public class PolymerTemplateTest extends HasCurrentService {
         private com.vaadin.flow.dom.Element label;
 
         public IdElementTemplate() {
-            this((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
-                    + "'><label id='labelId'></dom-module>"));
+            this((clazz, tag) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='" + tag
+                            + "'><label id='labelId'></dom-module>")));
         }
 
         IdElementTemplate(TemplateParser parser) {
@@ -288,8 +293,9 @@ public class PolymerTemplateTest extends HasCurrentService {
     private static class IdWrongElementTemplate extends IdElementTemplate {
 
         public IdWrongElementTemplate() {
-            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
-                    + "'><div id='foo'></dom-module>"));
+            super((clazz, tag) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='" + tag
+                            + "'><div id='foo'></dom-module>")));
         }
 
     }
@@ -536,7 +542,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         TemplateParser parser = new TemplateParser() {
 
             @Override
-            public Element getTemplateContent(
+            public TemplateData getTemplateContent(
                     Class<? extends PolymerTemplate<?>> clazz, String tag) {
                 String content;
                 parserCallCount.incrementAndGet();
@@ -550,7 +556,7 @@ public class PolymerTemplateTest extends HasCurrentService {
                             + "<child-template id='bar'></child-template> <ffs></ffs>"
                             + "</template></dom-module>";
                 }
-                return Jsoup.parse(content);
+                return new TemplateData("", Jsoup.parse(content));
             }
         };
 

@@ -13,18 +13,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.ComponentTest.TracksAttachDetach;
 import com.vaadin.flow.component.CompositeNestedTest.TestLayout;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -51,8 +44,8 @@ public class CompositeTest {
     public static class MyTemplate extends PolymerTemplate<TemplateModel> {
 
         public MyTemplate() {
-            super((clazz, tag) -> Jsoup
-                    .parse("<dom-module id='div'></dom-module>"));
+            super((clazz, tag) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='div'></dom-module>")));
         }
     }
 

@@ -39,16 +39,12 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.RepeatIndex;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ComponentMapping;
-import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.internal.nodefeature.NodeFeature;
-import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
-import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
@@ -73,8 +69,8 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
             extends PolymerTemplate<TemplateModel> {
 
         CorrectAnnotationUsage() {
-            super((clazz, tag) -> Jsoup
-                    .parse("<dom-module id='polymer'></dom-module>"));
+            super((clazz, tag) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='polymer'></dom-module>")));
         }
 
         @EventHandler

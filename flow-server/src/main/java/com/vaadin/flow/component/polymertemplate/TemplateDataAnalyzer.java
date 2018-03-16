@@ -36,6 +36,7 @@ import org.jsoup.select.Elements;
 import org.jsoup.select.NodeVisitor;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.startup.CustomElementRegistry;
 
@@ -67,6 +68,7 @@ class TemplateDataAnalyzer {
     private final Set<String> notInjectableElementIds = new HashSet<>();
 
     private org.jsoup.nodes.Element templateRoot;
+    private String htmlImportUri;
 
     /**
      * Three argument consumer.
@@ -176,7 +178,10 @@ class TemplateDataAnalyzer {
      * @return the template data
      */
     ParserData parseTemplate() {
-        templateRoot = parser.getTemplateContent(templateClass, tag);
+        TemplateData templateData = parser.getTemplateContent(templateClass,
+                tag);
+        templateRoot = templateData.getTemplateElement();
+        htmlImportUri = templateData.getHtmlImportUri();
         Elements templates = templateRoot.getElementsByTag("template");
         for (org.jsoup.nodes.Element element : templates) {
             org.jsoup.nodes.Element parent = element.parent();
@@ -210,15 +215,17 @@ class TemplateDataAnalyzer {
         if (notInjectableElementIds.contains(id)) {
             throw new IllegalStateException(String.format(
                     "Class '%s' contains field '%s' annotated with @Id('%s'). "
-                            + "Corresponding element was found in a sub template, for which injection is not supported",
-                    templateClass.getName(), field.getName(), id));
+                            + "Corresponding element was found in a sub template, "
+                            + "for which injection is not supported. The template URI is '%s'",
+                    templateClass.getName(), field.getName(), id,
+                    htmlImportUri));
         }
 
         if (!addTagName(id, field).isPresent()) {
             throw new IllegalStateException(String.format(
                     "There is no element with "
-                            + "id='%s' in the template file. Cannot map it using @%s",
-                    id, Id.class.getSimpleName()));
+                            + "id='%s' in the template file '%s'. Cannot map it using @%s",
+                    id, htmlImportUri, Id.class.getSimpleName()));
         }
     }
 
@@ -275,9 +282,10 @@ class TemplateDataAnalyzer {
         if (CustomElementRegistry.getInstance()
                 .isRegisteredCustomElement(tag)) {
             if (isInsideTemplate(element, templateRoot)) {
-                throw new IllegalStateException("Couldn't parse the template: "
-                        + "sub-templates are not supported. Sub-template found: \n"
-                        + element);
+                throw new IllegalStateException(String.format(
+                        "Couldn't parse the template '%s': "
+                                + "sub-templates are not supported. Sub-template found: \n",
+                        htmlImportUri, element.toString()));
             }
 
             String id = element.hasAttr("id") ? element.attr("id") : null;
