@@ -18,6 +18,8 @@ package com.vaadin.flow.router;
 import javax.servlet.ServletException;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -478,6 +480,31 @@ public class RouterLinkTest extends HasCurrentService {
         triggerNavigationEvent(router, link, "bar");
         Assert.assertFalse(
                 link.getElement().getThemeList().contains("highlight"));
+    }
+
+    @Test
+    public void testRouterLinkQueryParameters()
+            throws InvalidRouteConfigurationException {
+
+        registry.setNavigationTargets(Stream.of(FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router(
+                registry);
+
+        RouterLink link = new RouterLink(router, "Foo",
+                FooNavigationTarget.class);
+
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("foo", "bar");
+        QueryParameters params = QueryParameters.simple(paramMap);
+        link.setQueryParameters(params);
+        String href = link.getHref();
+        Assert.assertEquals("foo?foo=bar", href);
+
+        link.setQueryParameters(null);
+        href = link.getHref();
+        Assert.assertEquals("foo", href);
     }
 
     @Rule
