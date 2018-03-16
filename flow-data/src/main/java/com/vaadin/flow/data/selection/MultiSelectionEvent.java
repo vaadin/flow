@@ -35,7 +35,7 @@ import com.vaadin.flow.component.HasValue;
  *            the type of the selected item
  */
 public class MultiSelectionEvent<C extends Component, T> extends
-        HasValue.ValueChangeEvent<C, Set<T>> implements SelectionEvent<T> {
+        HasValue.ValueChangeEvent<C, Set<T>> implements SelectionEvent<C, T> {
 
     /**
      * Creates a new multi selection change event in a component.
