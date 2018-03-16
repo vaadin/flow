@@ -60,6 +60,8 @@ public class RouterLink extends Component
     private HighlightAction<RouterLink> highlightAction = HighlightActions
             .toggleAttribute("highlight");
 
+    private QueryParameters queryParameters;
+
     /**
      * Creates a new empty router link.
      */
@@ -223,7 +225,7 @@ public class RouterLink extends Component
             Class<? extends Component> navigationTarget) {
         validateRouteParameters(router, navigationTarget);
         String url = router.getUrl(navigationTarget);
-        HREF.set(this, url);
+        HREF.set(this, appendQueryParameters(url));
     }
 
     /**
@@ -245,7 +247,7 @@ public class RouterLink extends Component
             Class<? extends C> navigationTarget, T parameter) {
         validateRouteParameters(router, navigationTarget);
         String url = router.getUrl(navigationTarget, parameter);
-        HREF.set(this, url);
+        HREF.set(this, appendQueryParameters(url));
     }
 
     private void validateRouteParameters(com.vaadin.flow.router.Router router,
@@ -318,6 +320,45 @@ public class RouterLink extends Component
      */
     public String getHref() {
         return HREF.get(this);
+    }
+
+    /**
+     * Gets the {@link QueryParameters} of this link.
+     *
+     * @see #setQueryParameters(QueryParameters)
+     *
+     * @return an optional of {@link QueryParameters}, or an empty optional if
+     *         there are no query parameters set
+     */
+    public Optional<QueryParameters> getQueryParameters() {
+        return Optional.ofNullable(queryParameters);
+    }
+
+    /**
+     * Sets the {@link QueryParameters} of this link.
+     * <p>
+     * The query string will be generated from
+     * {@link QueryParameters#getQueryString()} and will be appended to the
+     * {@code href} attribute of this link.
+     *
+     * @param queryParameters
+     *            the query parameters object, or {@code null} to remove
+     *            existing query parameters
+     */
+    public void setQueryParameters(QueryParameters queryParameters) {
+        this.queryParameters = queryParameters;
+        HREF.set(this, appendQueryParameters(getHref()));
+    }
+
+    private String appendQueryParameters(String href) {
+        int startOfQuery = href.indexOf('?');
+        if (startOfQuery >= 0) {
+            href = href.substring(0, startOfQuery);
+        }
+        if (queryParameters != null) {
+            href += '?' + queryParameters.getQueryString();
+        }
+        return href;
     }
 
     /**
