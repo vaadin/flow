@@ -1,14 +1,17 @@
 package com.vaadin.flow.component;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -34,9 +37,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class UITest {
 
@@ -141,6 +141,12 @@ public class UITest {
 
         assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
+    }
+
+    @Test
+    public void scrollAttribute() {
+        UI ui = new UI();
+        Assert.assertNull(ui.getElement().getAttribute("scroll"));
     }
 
     @Test
