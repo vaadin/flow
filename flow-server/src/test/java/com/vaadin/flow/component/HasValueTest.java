@@ -14,10 +14,11 @@
 
 package com.vaadin.flow.component;
 
-import org.junit.Assert;
-import org.junit.Test;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.router.RouterLink;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class HasValueTest {
 
@@ -25,7 +26,7 @@ public class HasValueTest {
 
         @Override
         public void setValue(String value) {
-
+            getComponent().getElement().setProperty(getClientValuePropertyName(), value);
         }
 
         @Override
@@ -56,5 +57,16 @@ public class HasValueTest {
     @Test(expected = ClassCastException.class)
     public void testGetComponent_notComponent_throwsAnException() {
         new HasValueNotComponent().getComponent();
+    }
+
+    @Test
+    public void testAddValueChangeListener_defaultImplementation_usesGetComponentAsSource() {
+        HasValueComponent component = new HasValueComponent();
+        AtomicReference<Component> sourceReference = new AtomicReference<>();
+
+        component.addValueChangeListener(event -> sourceReference.set(event.getSource()));
+        component.setValue("foobar");
+
+        Assert.assertEquals("Incorrect event source",component, sourceReference.get());
     }
 }
