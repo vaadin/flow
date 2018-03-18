@@ -18,7 +18,6 @@ package com.vaadin.flow.router;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -52,6 +51,8 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
+import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
+import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -69,8 +70,6 @@ public class RouterTest extends RoutingTestBase {
 
     private static final String DYNAMIC_TITLE = "I am dynamic!";
     public static final String EXCEPTION_WRAPPER_MESSAGE = "There was an exception while trying to navigate to '%s' with the exception message '%s'";
-
-    private static List<String> eventCollector = new ArrayList<>(0);
 
     private UI ui;
 
@@ -95,20 +94,24 @@ public class RouterTest extends RoutingTestBase {
     @Route("foo")
     @Tag(Tag.DIV)
     public static class FooNavigationTarget extends Component {
+
     }
 
     @Route("foo/bar")
     @Tag(Tag.DIV)
     public static class FooBarNavigationTarget extends Component
             implements BeforeEnterObserver, BeforeLeaveObserver {
+
+        private static List<BeforeEvent> events = new ArrayList<>();
+
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            eventCollector.add("FooBar ACTIVATING");
+            events.add(event);
         }
 
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
-            eventCollector.add("FooBar DEACTIVATING");
+            events.add(event);
         }
     }
 
@@ -116,9 +119,12 @@ public class RouterTest extends RoutingTestBase {
     @Tag(Tag.DIV)
     public static class EnteringNavigationTarget extends Component
             implements BeforeEnterObserver {
+
+        private static List<BeforeEvent> events = new ArrayList<>();
+
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            eventCollector.add("EnterListener got event");
+            events.add(event);
         }
     }
 
@@ -126,9 +132,12 @@ public class RouterTest extends RoutingTestBase {
     @Tag(Tag.DIV)
     public static class LeavingNavigationTarget extends Component
             implements BeforeLeaveObserver {
+
+        private static List<BeforeEvent> events = new ArrayList<>();
+
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
-            eventCollector.add("LeaveListener got event");
+            events.add(event);
         }
     }
 
@@ -139,9 +148,11 @@ public class RouterTest extends RoutingTestBase {
         public static class Enter extends Component
                 implements BeforeEnterObserver {
 
+            private static List<BeforeEvent> events = new ArrayList<>();
+
             @Override
             public void beforeEnter(BeforeEnterEvent event) {
-                eventCollector.add("EnterListener got event");
+                events.add(event);
             }
         }
 
@@ -149,25 +160,28 @@ public class RouterTest extends RoutingTestBase {
         public static class Leave extends Component
                 implements BeforeLeaveObserver {
 
+            private static List<BeforeEvent> events = new ArrayList<>();
+
             @Override
             public void beforeLeave(BeforeLeaveEvent event) {
-                eventCollector.add("LeaveListener got event");
+                events.add(event);
             }
         }
 
         @Tag(Tag.DIV)
         public static class Before extends Component
                 implements BeforeEnterObserver, BeforeLeaveObserver {
+
+            private static List<BeforeEvent> events = new ArrayList<>();
+
             @Override
             public void beforeEnter(BeforeEnterEvent event) {
-                eventCollector.add(
-                        "BeforeNavigation got event with state ACTIVATING");
+                events.add(event);
             }
 
             @Override
             public void beforeLeave(BeforeLeaveEvent event) {
-                eventCollector.add(
-                        "BeforeNavigation got event with state DEACTIVATING");
+                events.add(event);
             }
         }
 
@@ -181,9 +195,12 @@ public class RouterTest extends RoutingTestBase {
     @Tag(Tag.DIV)
     public static class ReroutingNavigationTarget extends Component
             implements BeforeEnterObserver {
+
+        private static List<BeforeEvent> events = new ArrayList<>();
+
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            eventCollector.add("Redirecting");
+            events.add(event);
             event.rerouteTo(new NavigationStateBuilder()
                     .withTarget(FooBarNavigationTarget.class).build());
         }
@@ -199,17 +216,19 @@ public class RouterTest extends RoutingTestBase {
     public static class RouteWithParameter extends Component
             implements BeforeEnterObserver, HasUrlParameter<String> {
 
-        private String param;
+        private static String param;
+
+        private static List<BeforeEvent> events = new ArrayList<>();
 
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
-            eventCollector.add("Received param: " + parameter);
+            events.add(event);
             param = parameter;
         }
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            eventCollector.add("Stored parameter: " + param);
+            events.add(event);
         }
     }
 
@@ -218,18 +237,20 @@ public class RouterTest extends RoutingTestBase {
     public static class RouteWithMultipleParameters extends Component
             implements BeforeEnterObserver, HasUrlParameter<String> {
 
-        private String param;
+        private static String param;
+
+        private static List<BeforeEvent> events = new ArrayList<>();
 
         @Override
         public void setParameter(BeforeEvent event,
                 @WildcardParameter String parameter) {
-            eventCollector.add("Received param: " + parameter);
+            events.add(event);
             param = parameter;
         }
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            eventCollector.add("Stored parameter: " + param);
+            events.add(event);
         }
     }
 
@@ -248,10 +269,15 @@ public class RouterTest extends RoutingTestBase {
     public static class OptionalParameter extends Component
             implements HasUrlParameter<String> {
 
+        private static List<BeforeEvent> events = new ArrayList<>();
+
+        private static String param;
+
         @Override
         public void setParameter(BeforeEvent event,
                 @com.vaadin.flow.router.OptionalParameter String parameter) {
-            eventCollector.add(parameter == null ? "No parameter" : parameter);
+            events.add(event);
+            param = parameter;
         }
     }
 
@@ -260,10 +286,15 @@ public class RouterTest extends RoutingTestBase {
     public static class UnsupportedWildParameter extends Component
             implements HasUrlParameter<Integer> {
 
+        private static List<BeforeEvent> events = new ArrayList<>();
+
+        private static Integer param;
+
         @Override
         public void setParameter(BeforeEvent event,
                 @WildcardParameter Integer parameter) {
-            eventCollector.add("With parameter: " + parameter);
+            events.add(event);
+            param = parameter;
         }
     }
 
@@ -272,10 +303,15 @@ public class RouterTest extends RoutingTestBase {
     public static class WildParameter extends Component
             implements HasUrlParameter<String> {
 
+        private static List<BeforeEvent> events = new ArrayList<>();
+
+        private static String param;
+
         @Override
         public void setParameter(BeforeEvent event,
                 @WildcardParameter String parameter) {
-            eventCollector.add("With parameter: " + parameter);
+            events.add(event);
+            param = parameter;
         }
     }
 
@@ -284,9 +320,14 @@ public class RouterTest extends RoutingTestBase {
     public static class WildHasParameter extends Component
             implements HasUrlParameter<String> {
 
+        private static List<BeforeEvent> events = new ArrayList<>();
+
+        private static String param;
+
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
-            eventCollector.add("Parameter: " + parameter);
+            events.add(event);
+            param = parameter;
         }
     }
 
@@ -295,9 +336,14 @@ public class RouterTest extends RoutingTestBase {
     public static class IntegerParameter extends Component
             implements HasUrlParameter<Integer> {
 
+        private static List<BeforeEvent> events = new ArrayList<>();
+
+        private static Integer param;
+
         @Override
         public void setParameter(BeforeEvent event, Integer parameter) {
-            eventCollector.add("Parameter: " + parameter);
+            events.add(event);
+            param = parameter;
         }
     }
 
@@ -306,9 +352,14 @@ public class RouterTest extends RoutingTestBase {
     public static class LongParameter extends Component
             implements HasUrlParameter<Long> {
 
+        private static List<BeforeEvent> events = new ArrayList<>();
+
+        private static Long param;
+
         @Override
         public void setParameter(BeforeEvent event, Long parameter) {
-            eventCollector.add("Parameter: " + parameter);
+            events.add(event);
+            param = parameter;
         }
     }
 
@@ -317,9 +368,14 @@ public class RouterTest extends RoutingTestBase {
     public static class BooleanParameter extends Component
             implements HasUrlParameter<Boolean> {
 
+        private static List<BeforeEvent> events = new ArrayList<>();
+
+        private static Boolean param;
+
         @Override
         public void setParameter(BeforeEvent event, Boolean parameter) {
-            eventCollector.add("Parameter: " + parameter);
+            events.add(event);
+            param = parameter;
         }
     }
 
@@ -480,23 +536,29 @@ public class RouterTest extends RoutingTestBase {
     @Tag(Tag.DIV)
     private static class AfterNavigation extends Component
             implements AfterNavigationObserver {
+
+        private static List<EventObject> events = new ArrayList<>();
+
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
-            eventCollector.add("Event after navigation");
+            events.add(event);
         }
     }
 
     @Tag(Tag.DIV)
     private static class BeforeNavigation extends Component
             implements BeforeEnterObserver, BeforeLeaveObserver {
+
+        private static List<EventObject> events = new ArrayList<>();
+
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            eventCollector.add("Event before navigation");
+            events.add(event);
         }
 
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
-            eventCollector.add("Event before navigation");
+            events.add(event);
         }
     }
 
@@ -569,10 +631,15 @@ public class RouterTest extends RoutingTestBase {
     public static class WildRootParameter extends Component
             implements HasUrlParameter<String> {
 
+        private static List<EventObject> events = new ArrayList<>();
+
+        private static String param;
+
         @Override
         public void setParameter(BeforeEvent event,
                 @WildcardParameter String parameter) {
-            eventCollector.add("With parameter: " + parameter);
+            events.add(event);
+            param = parameter;
         }
     }
 
@@ -581,10 +648,15 @@ public class RouterTest extends RoutingTestBase {
     public static class OptionalRootParameter extends Component
             implements HasUrlParameter<String> {
 
+        private static List<EventObject> events = new ArrayList<>();
+
+        private static String param;
+
         @Override
         public void setParameter(BeforeEvent event,
                 @com.vaadin.flow.router.OptionalParameter String parameter) {
-            eventCollector.add(parameter == null ? "No parameter" : parameter);
+            events.add(event);
+            param = parameter;
         }
     }
 
@@ -593,19 +665,28 @@ public class RouterTest extends RoutingTestBase {
     public static class RootParameter extends Component
             implements HasUrlParameter<String> {
 
+        private static List<EventObject> events = new ArrayList<>();
+
+        private static String param;
+
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
-            eventCollector.add(parameter);
+            events.add(event);
+            param = parameter;
         }
     }
 
     public static class ErrorTarget extends RouteNotFoundError
             implements BeforeEnterObserver {
 
+        private static List<EventObject> events = new ArrayList<>();
+
+        private static String message;
+
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            eventCollector.add("Redirected to error view, showing message: "
-                    + ((Html) getChildren().findFirst().get()).getInnerHtml());
+            events.add(event);
+            message = ((Html) getChildren().findFirst().get()).getInnerHtml();
         }
     }
 
@@ -694,7 +775,7 @@ public class RouterTest extends RoutingTestBase {
     public static class RerouteToErrorWithMessage extends Component
             implements BeforeEnterObserver, HasUrlParameter<String> {
 
-        String message;
+        private String message;
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
@@ -711,11 +792,12 @@ public class RouterTest extends RoutingTestBase {
     public static class IllegalTarget extends Component
             implements HasErrorParameter<IllegalArgumentException> {
 
+        private static List<EventObject> events = new ArrayList<>();
+
         @Override
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<IllegalArgumentException> parameter) {
-            eventCollector
-                    .add("Error location: " + event.getLocation().getPath());
+            events.add(event);
             if (parameter.hasCustomMessage()) {
                 getElement().setText(parameter.getCustomMessage());
             } else {
@@ -730,9 +812,11 @@ public class RouterTest extends RoutingTestBase {
     public static class LoopByReroute extends Component
             implements BeforeEnterObserver {
 
+        private static List<EventObject> events = new ArrayList<>();
+
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            eventCollector.add("Loop");
+            events.add(event);
             UI.getCurrent().navigate("loop");
         }
     }
@@ -742,9 +826,11 @@ public class RouterTest extends RoutingTestBase {
     public static class RedirectToLoopByReroute extends Component
             implements BeforeEnterObserver {
 
+        private static List<EventObject> events = new ArrayList<>();
+
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            eventCollector.add("Redirect");
+            events.add(event);
             UI.getCurrent().navigate("loop");
         }
     }
@@ -754,10 +840,12 @@ public class RouterTest extends RoutingTestBase {
     public static class PostponingForeverNavigationTarget extends Component
             implements BeforeLeaveObserver {
 
+        private static List<EventObject> events = new ArrayList<>();
+
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
             event.postpone();
-            eventCollector.add("Postponed");
+            events.add(event);
         }
     }
 
@@ -766,12 +854,15 @@ public class RouterTest extends RoutingTestBase {
     public static class PostponingAndResumingNavigationTarget extends Component
             implements BeforeLeaveObserver {
 
+        private static List<EventObject> events = new ArrayList<>();
+
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
             ContinueNavigationAction action = event.postpone();
-            eventCollector.add("Postponed");
-            sleepThenRun(100, action);
+            events.add(event);
+            action.proceed();
         }
+
     }
 
     @Route("postpone")
@@ -781,16 +872,15 @@ public class RouterTest extends RoutingTestBase {
 
         private int counter = 0;
 
+        private static List<BeforeLeaveEvent> events = new ArrayList<>();
+
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
             counter++;
             if (counter < 2) {
-                ContinueNavigationAction action = event.postpone();
-                eventCollector.add("Postponed");
-                sleepThenRun(50, action);
-            } else {
-                eventCollector.add("Not postponing anymore");
+                event.postpone();
             }
+            events.add(event);
         }
     }
 
@@ -798,14 +888,16 @@ public class RouterTest extends RoutingTestBase {
     public static class ChildListener extends Component
             implements BeforeEnterObserver, BeforeLeaveObserver {
 
+        private static List<EventObject> events = new ArrayList<>();
+
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            eventCollector.add("ChildListener notified");
+            events.add(event);
         }
 
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
-            eventCollector.add("ChildListener notified");
+            events.add(event);
         }
     }
 
@@ -814,15 +906,17 @@ public class RouterTest extends RoutingTestBase {
     public static class PostponingAndResumingCompoundNavigationTarget
             extends Component implements BeforeLeaveObserver {
 
+        private static List<BeforeLeaveEvent> events = new ArrayList<>();
+        private static ContinueNavigationAction postpone;
+
         public PostponingAndResumingCompoundNavigationTarget() {
             getElement().appendChild(new ChildListener().getElement());
         }
 
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
-            ContinueNavigationAction action = event.postpone();
-            eventCollector.add("Postponed");
-            sleepThenRun(100, action);
+            postpone = event.postpone();
+            events.add(event);
         }
     }
 
@@ -836,28 +930,6 @@ public class RouterTest extends RoutingTestBase {
             event.postpone().proceed();
         }
 
-    }
-
-    static void sleepThenRun(int millis, ContinueNavigationAction action) {
-        UI ui = UI.getCurrent();
-        new Thread(() -> {
-            ui.getSession().lock();
-            UI.setCurrent(ui);
-            try {
-                Thread.sleep(millis);
-            } catch (InterruptedException e) {
-                fail("Resuming thread was interrupted");
-            }
-            eventCollector.add("Resuming");
-            try {
-                action.proceed();
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            } finally {
-                ui.getSession().unlock();
-            }
-            UI.setCurrent(null);
-        }).start();
     }
 
     @Route("toNotFound")
@@ -888,10 +960,11 @@ public class RouterTest extends RoutingTestBase {
     public static class Translations extends Component
             implements LocaleChangeObserver {
 
+        private static List<LocaleChangeEvent> events = new ArrayList<>();
+
         @Override
         public void localeChange(LocaleChangeEvent event) {
-            eventCollector.add("Received locale change event for locale: "
-                    + event.getLocale().getDisplayName());
+            events.add(event);
         }
     }
 
@@ -946,7 +1019,6 @@ public class RouterTest extends RoutingTestBase {
             IllegalArgumentException, IllegalAccessException {
         super.init();
         ui = new RouterTestUI(router);
-        eventCollector.clear();
         ui.getSession().lock();
         ui.getSession().setConfiguration(configuration);
 
@@ -1049,7 +1121,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void test_before_navigation_event_is_triggered()
+    public void before_navigation_event_is_triggered()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
                 .setNavigationTargets(Stream.of(RootNavigationTarget.class,
@@ -1059,7 +1131,9 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
+                FooBarNavigationTarget.events.size());
+        Assert.assertEquals("Unexpected event type", BeforeEnterEvent.class,
+                FooBarNavigationTarget.events.get(0).getClass());
     }
 
     @Test
@@ -1076,20 +1150,21 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("BeforeEnterObserver should have fired.", 1,
-                eventCollector.size());
-        Assert.assertEquals("EnterListener got event", eventCollector.get(0));
+                EnteringNavigationTarget.events.size());
 
         router.navigate(ui, new Location("leavingTarget"),
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("No leave or enter target should have fired.", 1,
-                eventCollector.size());
+                EnteringNavigationTarget.events.size());
+
+        Assert.assertEquals("No leave or enter target should have fired.", 0,
+                LeavingNavigationTarget.events.size());
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("BeforeLeaveObserver should have fired", 2,
-                eventCollector.size());
-        Assert.assertEquals("LeaveListener got event", eventCollector.get(1));
+        Assert.assertEquals("BeforeLeaveObserver should have fired", 1,
+                LeavingNavigationTarget.events.size());
     }
 
     @Test
@@ -1106,28 +1181,29 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("combined"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(
-                "BeforeNavigationObserver and BeforeEnterObserver should have fired.",
-                2, eventCollector.size());
-        Assert.assertEquals("EnterListener got event", eventCollector.get(0));
-        Assert.assertEquals("BeforeNavigation got event with state ACTIVATING",
-                eventCollector.get(1));
+        Assert.assertEquals("BeforeEnterObserver should have fired.", 1,
+                Enter.events.size());
+
+        Assert.assertEquals("BeforeNavigationObserver should have fired.", 1,
+                CombinedObserverTarget.Before.events.size());
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(
-                "BeforeNavigationObserver and BeforeLeaveObserver target should have fired.",
-                4, eventCollector.size());
+        Assert.assertEquals("BeforeLeaveObserver target should have fired.", 1,
+                Leave.events.size());
 
-        Assert.assertEquals("LeaveListener got event", eventCollector.get(2));
         Assert.assertEquals(
-                "BeforeNavigation got event with state DEACTIVATING",
-                eventCollector.get(3));
+                "BeforeNavigationObserver target should have fired.", 2,
+                CombinedObserverTarget.Before.events.size());
+
+        Assert.assertEquals("LeaveListener got event", BeforeLeaveEvent.class,
+                CombinedObserverTarget.Before.events.get(1).getClass());
     }
 
     @Test
-    public void test_before_navigation_event_is_triggered_for_attach_and_detach()
+    public void before_navigation_event_is_triggered_for_attach_and_detach()
             throws InvalidRouteConfigurationException {
+        FooBarNavigationTarget.events.clear();
         router.getRegistry()
                 .setNavigationTargets(Stream.of(RootNavigationTarget.class,
                         FooNavigationTarget.class, FooBarNavigationTarget.class)
@@ -1136,19 +1212,22 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(0));
+                FooBarNavigationTarget.events.size());
+        Assert.assertEquals(BeforeEnterEvent.class,
+                FooBarNavigationTarget.events.get(0).getClass());
 
         router.navigate(ui, new Location("foo"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals("FooBar DEACTIVATING", eventCollector.get(1));
+                FooBarNavigationTarget.events.size());
+        Assert.assertEquals(BeforeLeaveEvent.class,
+                FooBarNavigationTarget.events.get(1).getClass());
     }
 
     @Test
     public void reroute_on_before_navigation_event()
             throws InvalidRouteConfigurationException {
+        FooBarNavigationTarget.events.clear();
         router.getRegistry().setNavigationTargets(Stream
                 .of(RootNavigationTarget.class, ReroutingNavigationTarget.class,
                         FooBarNavigationTarget.class)
@@ -1159,35 +1238,45 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("reroute"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                ReroutingNavigationTarget.events.size());
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                FooBarNavigationTarget.events.size());
 
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
 
-        Assert.assertEquals("Redirecting", eventCollector.get(0));
-        Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(1));
+        Assert.assertEquals(BeforeEnterEvent.class,
+                ReroutingNavigationTarget.events.get(0).getClass());
+        Assert.assertEquals(BeforeEnterEvent.class,
+                FooBarNavigationTarget.events.get(0).getClass());
     }
 
     @Test
     public void before_and_after_event_fired_in_correct_order()
             throws InvalidRouteConfigurationException {
+        AfterNavigation.events.clear();
+        BeforeNavigation.events.clear();
         router.getRegistry().setNavigationTargets(
                 Stream.of(NavigationEvents.class).collect(Collectors.toSet()));
 
         router.navigate(ui, new Location("navigationEvents"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
-                "Event before navigation", eventCollector.get(0));
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                AfterNavigation.events.size());
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                BeforeNavigation.events.size());
         Assert.assertEquals("After navigation event was wrong.",
-                "Event after navigation", eventCollector.get(1));
+                BeforeEnterEvent.class,
+                BeforeNavigation.events.get(0).getClass());
     }
 
     @Test
     public void after_event_not_fired_on_detach()
             throws InvalidRouteConfigurationException {
+        AfterNavigation.events.clear();
+        BeforeNavigation.events.clear();
         router.getRegistry()
                 .setNavigationTargets(Stream
                         .of(NavigationEvents.class, FooNavigationTarget.class)
@@ -1196,20 +1285,22 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("navigationEvents"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
-                "Event before navigation", eventCollector.get(0));
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                AfterNavigation.events.size());
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                BeforeNavigation.events.size());
         Assert.assertEquals("After navigation event was wrong.",
-                "Event after navigation", eventCollector.get(1));
+                BeforeEnterEvent.class,
+                BeforeNavigation.events.get(0).getClass());
 
         router.navigate(ui, new Location("foo"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 3,
-                eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
-                "Event before navigation", eventCollector.get(2));
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                BeforeNavigation.events.size());
+        Assert.assertEquals("After navigation event was wrong.",
+                BeforeLeaveEvent.class,
+                BeforeNavigation.events.get(1).getClass());
     }
 
     @Test
@@ -1258,6 +1349,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_with_url_parameter()
             throws InvalidRouteConfigurationException {
+        RouteWithParameter.events.clear();
         router.getRegistry()
                 .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
                         RouteWithParameter.class, RerouteToRouteWithParam.class)
@@ -1267,9 +1359,9 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
-                "Stored parameter: hello", eventCollector.get(1));
+                RouteWithParameter.events.size());
+        Assert.assertEquals("Before navigation event was wrong.", "hello",
+                RouteWithParameter.param);
     }
 
     @Test
@@ -1328,9 +1420,9 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
+                RouteWithMultipleParameters.events.size());
         Assert.assertEquals("Before navigation event was wrong.",
-                "Stored parameter: this/must/work", eventCollector.get(1));
+                "this/must/work", RouteWithMultipleParameters.param);
     }
 
     @Test
@@ -1401,8 +1493,9 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void test_route_precedence_when_one_has_parameter()
+    public void route_precedence_when_one_has_parameter()
             throws InvalidRouteConfigurationException {
+        RouteWithParameter.events.clear();
         router.getRegistry()
                 .setNavigationTargets(Stream
                         .of(RouteWithParameter.class, StaticParameter.class)
@@ -1414,9 +1507,9 @@ public class RouterTest extends RoutingTestBase {
 
         // Expectation of 2 events is due to parameter and BeforeNavigation
         Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
-                "Stored parameter: param", eventCollector.get(1));
+                RouteWithParameter.events.size());
+        Assert.assertEquals("Before navigation event was wrong.", "param",
+                RouteWithParameter.param);
 
         router.navigate(ui, new Location("param/static"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1426,8 +1519,9 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void test_optional_parameter_gets_parameter()
+    public void optional_parameter_gets_parameter()
             throws InvalidRouteConfigurationException {
+        OptionalParameter.events.clear();
         router.getRegistry().setNavigationTargets(
                 Stream.of(OptionalParameter.class).collect(Collectors.toSet()));
 
@@ -1435,14 +1529,16 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
+                OptionalParameter.events.size());
         Assert.assertEquals("Before navigation event was wrong.", "parameter",
-                eventCollector.get(0));
+                OptionalParameter.param);
     }
 
     @Test
-    public void test_optional_parameter_matches_no_parameter()
+    public void optional_parameter_matches_no_parameter()
             throws InvalidRouteConfigurationException {
+        OptionalParameter.events.clear();
+        OptionalParameter.param = null;
         router.getRegistry().setNavigationTargets(
                 Stream.of(OptionalParameter.class).collect(Collectors.toSet()));
 
@@ -1450,9 +1546,9 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.",
-                "No parameter", eventCollector.get(0));
+                OptionalParameter.events.size());
+        Assert.assertNull("Before navigation event was wrong.",
+                OptionalParameter.param);
     }
 
     @Test
@@ -1501,6 +1597,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void navigating_to_route_with_wildcard_parameter()
             throws InvalidRouteConfigurationException {
+        WildParameter.events.clear();
+        WildParameter.param = null;
         router.getRegistry().setNavigationTargets(
                 Stream.of(WildParameter.class).collect(Collectors.toSet()));
 
@@ -1508,30 +1606,32 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "With parameter: ",
-                eventCollector.get(0));
+                WildParameter.events.size());
+        Assert.assertEquals("Parameter should be empty", "",
+                WildParameter.param);
 
         router.navigate(ui, new Location("wild/single"),
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
-                "With parameter: single", eventCollector.get(1));
+                WildParameter.events.size());
+        Assert.assertEquals("Parameter should be empty", "single",
+                WildParameter.param);
 
         router.navigate(ui, new Location("wild/multi/part/parameter"),
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 3,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
-                "With parameter: multi/part/parameter", eventCollector.get(2));
+                WildParameter.events.size());
+        Assert.assertEquals("Parameter should be empty", "multi/part/parameter",
+                WildParameter.param);
     }
 
     @Test
     public void route_with_wildcard_parameter_should_be_last_hit()
             throws InvalidRouteConfigurationException {
+        WildParameter.events.clear();
+        WildParameter.param = null;
         router.getRegistry().setNavigationTargets(
                 Stream.of(WildParameter.class, WildHasParameter.class,
                         WildNormal.class).collect(Collectors.toSet()));
@@ -1540,23 +1640,23 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 0,
-                eventCollector.size());
+                WildHasParameter.events.size());
 
         router.navigate(ui, new Location("wild/parameter"),
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "Parameter: parameter",
-                eventCollector.get(0));
+                WildHasParameter.events.size());
+        Assert.assertEquals("Parameter should be empty", "parameter",
+                WildHasParameter.param);
 
         router.navigate(ui, new Location("wild/multi/part/parameter"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
-                "With parameter: multi/part/parameter", eventCollector.get(1));
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                WildParameter.events.size());
+        Assert.assertEquals("Parameter should be empty", "multi/part/parameter",
+                WildParameter.param);
 
     }
 
@@ -1588,23 +1688,25 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void root_navigation_target_with_wildcard_parameter()
             throws InvalidRouteConfigurationException {
+        WildRootParameter.events.clear();
+        WildRootParameter.param = null;
         router.getRegistry().setNavigationTargets(
                 Stream.of(WildRootParameter.class).collect(Collectors.toSet()));
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "With parameter: ",
-                eventCollector.get(0));
+                WildRootParameter.events.size());
+        Assert.assertEquals("Parameter should be empty", "",
+                WildRootParameter.param);
 
         router.navigate(ui, new Location("my/wild"),
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
-                "With parameter: my/wild", eventCollector.get(1));
+                WildRootParameter.events.size());
+        Assert.assertEquals("Parameter should be empty", "my/wild",
+                WildRootParameter.param);
 
         Assert.assertEquals("", router.getUrl(WildRootParameter.class));
         Assert.assertEquals("wild",
@@ -1624,17 +1726,17 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "No parameter",
-                eventCollector.get(0));
+                OptionalRootParameter.events.size());
+        Assert.assertNull("Parameter should be empty",
+                OptionalRootParameter.param);
 
         router.navigate(ui, new Location("optional"),
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
+                OptionalRootParameter.events.size());
         Assert.assertEquals("Parameter should be empty", "optional",
-                eventCollector.get(1));
+                OptionalRootParameter.param);
 
         Assert.assertEquals("", router.getUrl(OptionalRootParameter.class));
         Assert.assertEquals("optional",
@@ -1648,6 +1750,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void root_navigation_target_with_required_parameter()
             throws InvalidRouteConfigurationException {
+        RootParameter.events.clear();
         router.getRegistry().setNavigationTargets(
                 Stream.of(RootParameter.class).collect(Collectors.toSet()));
 
@@ -1655,12 +1758,13 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(
                 "Has url with required parameter should not match to \"\"", 0,
-                eventCollector.size());
+                RootParameter.events.size());
     }
 
     @Test
     public void reroute_on_hasParameter_step()
             throws InvalidRouteConfigurationException {
+        RootParameter.events.clear();
         router.getRegistry().setNavigationTargets(
                 Stream.of(RootParameter.class, RedirectOnSetParam.class)
                         .collect(Collectors.toSet()));
@@ -1669,13 +1773,13 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
+                RootParameter.events.size());
         Assert.assertEquals("Parameter should be empty", "hello",
-                eventCollector.get(0));
+                RootParameter.param);
     }
 
     @Test
-    public void test_has_url_with_supported_parameters_navigation()
+    public void has_url_with_supported_parameters_navigation()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
                 .setNavigationTargets(Stream
@@ -1686,27 +1790,27 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("integer/5"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "Parameter: 5",
-                eventCollector.get(0));
+                IntegerParameter.events.size());
+        Assert.assertEquals("Parameter should be empty", 5,
+                IntegerParameter.param.intValue());
 
         router.navigate(ui, new Location("long/5"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "Parameter: 5",
-                eventCollector.get(1));
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                LongParameter.events.size());
+        Assert.assertEquals("Parameter should be empty", 5,
+                LongParameter.param.longValue());
 
         router.navigate(ui, new Location("boolean/true"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 3,
-                eventCollector.size());
-        Assert.assertEquals("Parameter should be empty", "Parameter: true",
-                eventCollector.get(2));
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                BooleanParameter.events.size());
+        Assert.assertEquals("Parameter should be empty", true,
+                BooleanParameter.param);
     }
 
     @Test
-    public void test_getUrl_for_has_url_with_supported_parameters()
+    public void getUrl_for_has_url_with_supported_parameters()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
                 .setNavigationTargets(Stream
@@ -1777,6 +1881,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void redirect_to_routeNotFound_error_view_when_no_route_found()
             throws InvalidRouteConfigurationException {
+        ErrorTarget.events.clear();
         router.getRegistry().setNavigationTargets(Stream
                 .of(FooNavigationTarget.class).collect(Collectors.toSet()));
         router.getRegistry().setErrorNavigationTargets(
@@ -1789,9 +1894,9 @@ public class RouterTest extends RoutingTestBase {
                 HttpServletResponse.SC_NOT_FOUND, result);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
+                ErrorTarget.events.size());
 
-        String errorMessage = eventCollector.get(0);
+        String errorMessage = ErrorTarget.message;
         Assert.assertTrue(errorMessage.contains(
                 String.format("Could not navigate to '%s'", locationString)));
         Assert.assertTrue(errorMessage.contains(
@@ -1929,6 +2034,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_to_error_with_custom_message_message_is_used()
             throws InvalidRouteConfigurationException {
+        IllegalTarget.events.clear();
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(RerouteToErrorWithMessage.class));
         router.getRegistry().setErrorNavigationTargets(
@@ -1949,10 +2055,11 @@ public class RouterTest extends RoutingTestBase {
                 visibleComponent.get().getElement().getText());
 
         Assert.assertEquals("Expected only one event message from error view",
-                1, eventCollector.size());
+                1, IllegalTarget.events.size());
+        BeforeEnterEvent event = (BeforeEnterEvent) IllegalTarget.events.get(0);
         Assert.assertEquals("Parameter should be empty",
-                "Error location: beforeToError/message/CustomMessage",
-                eventCollector.get(0));
+                "beforeToError/message/CustomMessage",
+                event.getLocation().getPath());
 
     }
 
@@ -2001,18 +2108,21 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void repeatedly_navigating_to_same_ur_through_ui_navigateTo_should_not_loop()
             throws InvalidRouteConfigurationException {
+        LoopByReroute.events.clear();
         router.getRegistry().setNavigationTargets(
                 Stream.of(LoopByReroute.class).collect(Collectors.toSet()));
 
         ui.navigate("loop");
 
         Assert.assertEquals("Expected only one request to loop", 1,
-                eventCollector.size());
+                LoopByReroute.events.size());
     }
 
     @Test
     public void navigateTo_should_not_loop()
             throws InvalidRouteConfigurationException {
+        LoopByReroute.events.clear();
+        RedirectToLoopByReroute.events.clear();
         router.getRegistry()
                 .setNavigationTargets(Stream
                         .of(LoopByReroute.class, RedirectToLoopByReroute.class)
@@ -2020,12 +2130,17 @@ public class RouterTest extends RoutingTestBase {
 
         ui.navigate("redirect/loop");
 
-        Assert.assertEquals("Expected two events", 2, eventCollector.size());
+        Assert.assertEquals("Expected one events", 1,
+                LoopByReroute.events.size());
+        Assert.assertEquals("Expected onve events", 1,
+                RedirectToLoopByReroute.events.size());
     }
 
     @Test
     public void postpone_then_resume_on_before_navigation_event()
             throws InvalidRouteConfigurationException, InterruptedException {
+        RootNavigationTarget.events.clear();
+        PostponingAndResumingNavigationTarget.events.clear();
         router.getRegistry()
                 .setNavigationTargets(Stream
                         .of(RootNavigationTarget.class,
@@ -2034,33 +2149,34 @@ public class RouterTest extends RoutingTestBase {
 
         int status1 = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
-        int status2 = router.navigate(ui, new Location(""),
-                NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("First transition failed",
                 HttpServletResponse.SC_OK, status1);
-        Assert.assertEquals("Second transition failed",
-                HttpServletResponse.SC_OK, status2);
         Assert.assertEquals(PostponingAndResumingNavigationTarget.class,
                 getUIComponent());
 
-        // Must unlock here so the proceed thread started in the second
-        // navigation has a chance to perform its operation while this thread is
-        // sleeping
-        ui.getSession().unlock();
-        Thread.sleep(200);
-        ui.getSession().lock();
+        Assert.assertEquals("Expected event amount was wrong", 0,
+                PostponingAndResumingNavigationTarget.events.size());
+
+        int status2 = router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
 
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals("Postponed", eventCollector.get(0));
-        Assert.assertEquals("Resuming", eventCollector.get(1));
+        Assert.assertEquals(
+                "Expected event in the first target amount was wrong", 1,
+                PostponingAndResumingNavigationTarget.events.size());
+        Assert.assertEquals(
+                "Expected event amount in the last target was wrong", 1,
+                RootNavigationTarget.events.size());
     }
 
     @Test
     public void postpone_forever_on_before_navigation_event()
             throws InvalidRouteConfigurationException {
+        RootNavigationTarget.events.clear();
+        PostponingAndResumingNavigationTarget.events.clear();
         router.getRegistry()
                 .setNavigationTargets(Stream
                         .of(RootNavigationTarget.class,
@@ -2069,23 +2185,31 @@ public class RouterTest extends RoutingTestBase {
 
         int status1 = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
-        int status2 = router.navigate(ui, new Location(""),
-                NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("First transition failed",
                 HttpServletResponse.SC_OK, status1);
-        Assert.assertEquals("Second transition failed",
-                HttpServletResponse.SC_OK, status2);
         Assert.assertEquals(PostponingForeverNavigationTarget.class,
                 getUIComponent());
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals("Postponed", eventCollector.get(0));
+
+        int status2 = router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
+
+        Assert.assertEquals(PostponingForeverNavigationTarget.class,
+                getUIComponent());
+        Assert.assertEquals("Expected event amount in the target was wrong", 1,
+                PostponingForeverNavigationTarget.events.size());
+
+        Assert.assertEquals("Expected event amount in the root was wrong", 0,
+                RootNavigationTarget.events.size());
     }
 
     @Test
     public void postpone_obsoleted_by_new_navigation_transition()
             throws InvalidRouteConfigurationException, InterruptedException {
+        FooBarNavigationTarget.events.clear();
+        FooBarNavigationTarget.events.clear();
         router.getRegistry().setNavigationTargets(Stream
                 .of(FooNavigationTarget.class, FooBarNavigationTarget.class,
                         PostponingFirstTimeNavigationTarget.class)
@@ -2095,30 +2219,32 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
         int status2 = router.navigate(ui, new Location("foo"),
                 NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                PostponingFirstTimeNavigationTarget.events.size());
+        BeforeLeaveEvent event = PostponingFirstTimeNavigationTarget.events
+                .get(0);
+
         int status3 = router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("First transition failed",
                 HttpServletResponse.SC_OK, status1);
+        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+
+        event.postpone().proceed();
+
         Assert.assertEquals("Second transition failed",
                 HttpServletResponse.SC_OK, status2);
         Assert.assertEquals("Third transition failed",
                 HttpServletResponse.SC_OK, status3);
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
-
-        ui.getSession().unlock();
-
-        Thread.sleep(200);
-
-        ui.getSession().lock();
 
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
-        Assert.assertEquals("Expected event amount was wrong", 4,
-                eventCollector.size());
-        Assert.assertEquals("Postponed", eventCollector.get(0));
-        Assert.assertEquals("Not postponing anymore", eventCollector.get(1));
-        Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(2));
-        Assert.assertEquals("Resuming", eventCollector.get(3));
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                PostponingFirstTimeNavigationTarget.events.size());
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                FooBarNavigationTarget.events.size());
     }
 
     @Test // 3384
@@ -2146,51 +2272,51 @@ public class RouterTest extends RoutingTestBase {
 
         int status1 = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
-        int status2 = router.navigate(ui, new Location(""),
-                NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("First transition failed",
                 HttpServletResponse.SC_OK, status1);
-        Assert.assertEquals("Second transition failed",
-                HttpServletResponse.SC_OK, status2);
         Assert.assertEquals(PostponingAndResumingCompoundNavigationTarget.class,
                 getUIComponent());
 
-        // Must unlock here so the proceed thread started in the second
-        // navigation has a chance to perform its operation while this thread is
-        // sleeping
-        ui.getSession().unlock();
-        Thread.sleep(200);
-        ui.getSession().lock();
+        int status2 = router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
+
+        Assert.assertNotNull(
+                PostponingAndResumingCompoundNavigationTarget.postpone);
+
+        PostponingAndResumingCompoundNavigationTarget.postpone.proceed();
 
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
-        Assert.assertEquals("Expected event amount was wrong", 4,
-                eventCollector.size());
-        Assert.assertEquals("ChildListener notified", eventCollector.get(0));
-        Assert.assertEquals("Postponed", eventCollector.get(1));
-        Assert.assertEquals("Resuming", eventCollector.get(2));
-        Assert.assertEquals("ChildListener notified", eventCollector.get(3));
+        Assert.assertEquals(1,
+                PostponingAndResumingCompoundNavigationTarget.events.size());
+        Assert.assertEquals(2, ChildListener.events.size());
+        Assert.assertEquals(BeforeEnterEvent.class,
+                ChildListener.events.get(0).getClass());
+        Assert.assertEquals(BeforeLeaveEvent.class,
+                ChildListener.events.get(1).getClass());
     }
 
     @Test
     public void navigation_should_fire_locale_change_observer()
             throws InvalidRouteConfigurationException {
+        Translations.events.clear();
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(Translations.class));
 
         ui.navigate("");
 
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals(
-                "Received locale change event for locale: "
-                        + Locale.getDefault().getDisplayName(),
-                eventCollector.get(0));
+                Translations.events.size());
+        Assert.assertEquals(Locale.getDefault(),
+                Translations.events.get(0).getLocale());
     }
 
     @Test
     public void away_navigation_should_not_inform_observer()
             throws InvalidRouteConfigurationException, InterruptedException {
+        Translations.events.clear();
         router.getRegistry().setNavigationTargets(
                 Stream.of(FooNavigationTarget.class, Translations.class)
                         .collect(Collectors.toSet()));
@@ -2198,16 +2324,14 @@ public class RouterTest extends RoutingTestBase {
         ui.navigate("");
 
         Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals(
-                "Received locale change event for locale: "
-                        + Locale.getDefault().getDisplayName(),
-                eventCollector.get(0));
+                Translations.events.size());
+        Assert.assertEquals(Locale.getDefault(),
+                Translations.events.get(0).getLocale());
 
         ui.navigate("foo");
 
         Assert.assertEquals("Recorded event amount should have stayed the same",
-                1, eventCollector.size());
+                1, Translations.events.size());
     }
 
     @Test // 3424
