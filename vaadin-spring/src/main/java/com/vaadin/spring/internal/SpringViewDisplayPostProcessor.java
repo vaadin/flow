@@ -17,10 +17,13 @@ package com.vaadin.spring.internal;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -53,37 +56,51 @@ public class SpringViewDisplayPostProcessor implements BeanPostProcessor,
     private ConfigurableListableBeanFactory beanFactory;
 
     private BeanNameGenerator beanNameGenerator = new DefaultBeanNameGenerator();
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(SpringViewDisplayPostProcessor.class);
 
     @Override
     public Object postProcessAfterInitialization(final Object bean,
             String beanName) throws BeansException {
+
         final Class<?> clazz = bean.getClass();
         if (!Component.class.isAssignableFrom(clazz)
                 && !ViewDisplay.class.isAssignableFrom(clazz)) {
             return bean;
         }
-        if (beanFactory != null) {
-            BeanDefinition beanDefinition = beanFactory
-                    .getMergedBeanDefinition(beanName);
-            // ideally would check beanDefinition.getScope() for UI scope, but
-            // scope is not always available
 
-            // look for annotations on factory methods
-            if (beanDefinition.getSource() instanceof StandardMethodMetadata) {
-                StandardMethodMetadata metadata = (StandardMethodMetadata) beanDefinition
-                        .getSource();
-                Map<String, Object> annotationAttributes = metadata
-                        .getAnnotationAttributes(
-                                SpringViewDisplay.class.getName());
-                if (annotationAttributes != null) {
-                    registerSpringViewDisplayBean(beanName);
+        if (beanFactory != null) {
+            try {
+                BeanDefinition beanDefinition = beanFactory
+                        .getMergedBeanDefinition(beanName);
+                // ideally would check beanDefinition.getScope() for UI scope,
+                // but scope is not always available
+
+                // look for annotations on factory methods
+                if (beanDefinition
+                        .getSource() instanceof StandardMethodMetadata) {
+                    StandardMethodMetadata metadata = (StandardMethodMetadata) beanDefinition
+                            .getSource();
+                    Map<String, Object> annotationAttributes = metadata
+                            .getAnnotationAttributes(
+                                    SpringViewDisplay.class.getName());
+                    if (annotationAttributes != null) {
+                        registerSpringViewDisplayBean(beanName);
+                    }
                 }
+            } catch (NoSuchBeanDefinitionException e) {
+                // ignore for fixing #231
+                LOGGER.warn(
+                        "No bean definition found for bean [{}] with name [{}] in [{}]",
+                        bean, beanName, this);
+
             }
         }
         // look for annotations on classes
         if (clazz.isAnnotationPresent(SpringViewDisplay.class)) {
             registerSpringViewDisplayBean(clazz);
         }
+
         return bean;
     }
 
