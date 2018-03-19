@@ -106,7 +106,6 @@ public class UI extends Component
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
-        getElement().setAttribute("scroll", "auto");
         getElement().getClassList()
                 .add(ApplicationConstants.GENERATED_BODY_CLASSNAME);
     }
