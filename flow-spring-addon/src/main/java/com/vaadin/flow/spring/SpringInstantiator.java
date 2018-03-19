@@ -36,8 +36,7 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 public class SpringInstantiator extends DefaultInstantiator {
 
     private ApplicationContext context;
-    private VaadinService service;
-    AtomicBoolean infoLogger = new AtomicBoolean(true);
+    private AtomicBoolean loggerEnable = new AtomicBoolean(true);
 
     /**
      * Creates a new spring instantiator instance.
@@ -67,11 +66,13 @@ public class SpringInstantiator extends DefaultInstantiator {
         if (beansCount == 1) {
             return context.getBean(I18NProvider.class);
         } else {
-            if (infoLogger.compareAndSet(true, false)) {
-            LoggerFactory.getLogger(SpringInstantiator.class.getName()).info(
+            if (loggerEnable.get() == true) {
+                LoggerFactory.getLogger(SpringInstantiator.class.getName())
+                        .info(
                     "The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
                             + "falling back to the default behavior",
                                 I18NProvider.class.getSimpleName(), beansCount);
+                loggerEnable.set(false);
             }
             return super.getI18NProvider();
         }
