@@ -176,6 +176,8 @@ public class UIInternals implements Serializable {
     private static final Pattern componentSource = Pattern
             .compile(".*/src/vaadin-([\\w\\-]*).html");
 
+    private byte[] lastProcessedMessageHash = null;
+
     /**
      * Creates a new instance for the given UI.
      *
@@ -198,7 +200,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Gets the last processed server message id.
-     *
+     * <p>
      * Used internally for communication tracking.
      *
      * @return lastProcessedServerMessageId the id of the last processed server
@@ -209,16 +211,35 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Sets the last processed server message id.
+     * Gets the hash of the last processed message from the client.
+     * <p>
+     * The hash is set through
+     * {@link #setLastProcessedClientToServerId(int, byte[])}.
+     * <p>
+     * Used internally for communication tracking.
      *
+     * @return the hash as a byte array, or <code>null</code> if no hash has
+     *         been set
+     */
+    public byte[] getLastProcessedMessageHash() {
+        return lastProcessedMessageHash;
+    }
+
+    /**
+     * Sets the last processed server message id.
+     * <p>
      * Used internally for communication tracking.
      *
      * @param lastProcessedClientToServerId
      *            the id of the last processed server message
+     * @param lastProcessedMessageHash
+     *            the hash of the message
      */
     public void setLastProcessedClientToServerId(
-            int lastProcessedClientToServerId) {
+            int lastProcessedClientToServerId,
+            byte[] lastProcessedMessageHash) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
+        this.lastProcessedMessageHash = lastProcessedMessageHash;
     }
 
     /**

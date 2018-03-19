@@ -21,6 +21,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.rpc.AttachExistingElementRpcHandler;
@@ -124,8 +126,7 @@ public class ServerRpcHandler implements Serializable {
                 clientToServerMessageId = (int) json
                         .getNumber(ApplicationConstants.CLIENT_TO_SERVER_ID);
             } else {
-                getLogger()
-                        .warn("Server message without client id received");
+                getLogger().warn("Server message without client id received");
                 clientToServerMessageId = -1;
             }
             invocations = json.getArray(ApplicationConstants.RPC_INVOCATIONS);
@@ -250,10 +251,17 @@ public class ServerRpcHandler implements Serializable {
             throw new InvalidUIDLSecurityKeyException();
         }
 
+        String hashMessage = changeMessage;
+        if (hashMessage.length() > 64 * 1024) {
+            hashMessage = changeMessage.substring(0, 64 * 1024);
+        }
+        byte[] messageHash = MessageDigestUtil.sha256(hashMessage);
+
         int expectedId = ui.getInternals().getLastProcessedClientToServerId()
                 + 1;
-        if (rpcRequest.getClientToServerId() != -1
-                && rpcRequest.getClientToServerId() != expectedId) {
+        int requestId = rpcRequest.getClientToServerId();
+
+        if (requestId != -1 && requestId != expectedId) {
             // Invalid message id, skip RPC processing but force a full
             // re-synchronization of the client as it might have not received
             // the previous response (e.g. due to a bad connection)
@@ -264,27 +272,40 @@ public class ServerRpcHandler implements Serializable {
             // it would only get an empty response (because the dirty flags have
             // been cleared on the server) and would be out of sync
 
-            // FIXME Implement resync
-
-            if (rpcRequest.getClientToServerId() < expectedId) {
-                // Just a duplicate message due to a bad connection or similar
-                // It has already been handled by the server so it is safe to
-                // ignore
-                getLogger()
-                        .debug("Ignoring old message from the client. Expected: {}, got: {}",
-                            expectedId, rpcRequest.getClientToServerId());
+            String message;
+            if (requestId == expectedId - 1 && Arrays.equals(messageHash,
+                    ui.getInternals().getLastProcessedMessageHash())) {
+                /*
+                 * Last message was received again. This indicates that this
+                 * situation is most likely triggered by a timeout or such
+                 * causing a message to be resent.
+                 */
+                message = "Confirmed duplicate message from the client.";
             } else {
-                getLogger().warn(
-                        "Unexpected message id from the client. Expected: {}, got: {}",
-                                expectedId,
-                                rpcRequest.getClientToServerId());
+                message = "Unexpected message id from the client.";
             }
 
+            /*
+             * If the reason for ending up here is intermittent, then we should
+             * just issue a full resync since we cannot know the state of the
+             * client engine.
+             *
+             * There are reasons to believe that there are deterministic issues
+             * that trigger this condition, and we'd like to collect more data
+             * to uncover anything such before actually implementing the resync
+             * that would thus hide most symptoms of the actual root cause bugs.
+             */
+            String messageStart = changeMessage;
+            if (messageStart.length() > 1000) {
+                messageStart = messageStart.substring(0, 1000);
+            }
             throw new UnsupportedOperationException(
-                    "FIXME: Implement resync and call it above");
+                    message + " Expected sync id: " + expectedId + ", got "
+                            + requestId + ". Message start: " + messageStart);
         } else {
             // Message id ok, process RPCs
-            ui.getInternals().setLastProcessedClientToServerId(expectedId);
+            ui.getInternals().setLastProcessedClientToServerId(expectedId,
+                    messageHash);
             handleInvocations(ui, rpcRequest.getRpcInvocationsData());
         }
 
