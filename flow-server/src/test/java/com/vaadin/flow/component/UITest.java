@@ -146,7 +146,10 @@ public class UITest {
     @Test
     public void scrollAttribute() {
         UI ui = new UI();
-        Assert.assertNull(ui.getElement().getAttribute("scroll"));
+        Assert.assertNull(
+                "'scroll' attribute shouldn't be set for the "
+                        + "UI element which represents 'body' tag",
+                ui.getElement().getAttribute("scroll"));
     }
 
     @Test
