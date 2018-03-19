@@ -214,11 +214,11 @@ class TemplateDataAnalyzer {
         String id = idAnnotation.get().value();
         if (notInjectableElementIds.contains(id)) {
             throw new IllegalStateException(String.format(
-                    "Class '%s' contains field '%s' annotated with @Id('%s'). "
+                    "Class '%s' whose template URI is '%s' contains field '%s' annotated with @Id('%s'). "
                             + "Corresponding element was found in a sub template, "
-                            + "for which injection is not supported. The template URI is '%s'",
-                    templateClass.getName(), field.getName(), id,
-                    htmlImportUri));
+                            + "for which injection is not supported.",
+                    templateClass.getName(), htmlImportUri, field.getName(),
+                    id));
         }
 
         if (!addTagName(id, field).isPresent()) {
@@ -284,7 +284,7 @@ class TemplateDataAnalyzer {
             if (isInsideTemplate(element, templateRoot)) {
                 throw new IllegalStateException(String.format(
                         "Couldn't parse the template '%s': "
-                                + "sub-templates are not supported. Sub-template found: \n",
+                                + "sub-templates are not supported. Sub-template found: %n'%s'",
                         htmlImportUri, element.toString()));
             }
 
