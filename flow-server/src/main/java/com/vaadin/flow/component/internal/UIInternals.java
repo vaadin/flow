@@ -661,7 +661,7 @@ public class UIInternals implements Serializable {
             Element rootElement = root.getElement();
 
             if (!uiElement.equals(rootElement.getParent())) {
-                uiElement.removeAllChildren();
+                removeServerSideChildrenFromUI(uiElement);
                 rootElement.removeFromParent();
                 uiElement.appendChild(rootElement);
             }
@@ -741,9 +741,20 @@ public class UIInternals implements Serializable {
         Element rootElement = root.getElement();
 
         if (!uiElement.equals(rootElement.getParent())) {
-            uiElement.removeAllChildren();
+            removeServerSideChildrenFromUI(uiElement);
             rootElement.removeFromParent();
             uiElement.appendChild(rootElement);
+        }
+    }
+
+    /*
+     * Removes only the server-side children of the UI. This is needed because
+     * otherwise client-side-only elements, such as the {@code noscript} element
+     * and the loading indicator would also be removed.
+     */
+    private void removeServerSideChildrenFromUI(Element ui) {
+        while (ui.getChildCount() > 0) {
+            ui.removeChild(0);
         }
     }
 
