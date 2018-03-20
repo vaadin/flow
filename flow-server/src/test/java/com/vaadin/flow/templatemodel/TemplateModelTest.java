@@ -20,6 +20,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.internal.ReflectTools;
@@ -249,8 +250,8 @@ public class TemplateModelTest extends HasCurrentService {
     public static class EmptyDivTemplate<M extends TemplateModel>
             extends PolymerTemplate<M> {
         public EmptyDivTemplate() {
-            super((clazz, tag) -> Jsoup
-                    .parse("<dom-module id='div'></dom-module>"));
+            super((clazz, tag) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='div'></dom-module>")));
         }
 
     }
