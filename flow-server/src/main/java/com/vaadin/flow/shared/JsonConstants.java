@@ -73,6 +73,11 @@ public class JsonConstants implements Serializable {
     public static final String CHANGE_TYPE_REMOVE = "remove";
 
     /**
+     * Change type for list clear changes.
+     */
+    public static final String CHANGE_TYPE_CLEAR = "clear";
+
+    /**
      * Key holding the feature of a change.
      */
     public static final String CHANGE_FEATURE = "feat";

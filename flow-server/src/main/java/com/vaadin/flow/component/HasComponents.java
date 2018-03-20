@@ -68,7 +68,8 @@ public interface HasComponents extends HasElement {
     /**
      * Removes all contents from this component, this includes child components,
      * text content as well as child elements that have been added directly to
-     * this component using the {@link Element} API.
+     * this component using the {@link Element} API. it also removes the
+     * children that were added only at the client-side.
      */
     default void removeAll() {
         getElement().removeAllChildren();

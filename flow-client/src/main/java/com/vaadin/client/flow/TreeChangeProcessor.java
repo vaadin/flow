@@ -123,6 +123,9 @@ public class TreeChangeProcessor {
         case JsonConstants.CHANGE_TYPE_DETACH:
             processDetachChange(node);
             break;
+        case JsonConstants.CHANGE_TYPE_CLEAR:
+            processClearChange(change, node);
+            break;
         default:
             assert false : "Unsupported change type: " + type;
         }
@@ -222,5 +225,11 @@ public class TreeChangeProcessor {
         } else {
             list.splice(index, remove);
         }
+    }
+
+    private static void processClearChange(JsonObject change, StateNode node) {
+        int nsId = (int) change.getNumber(JsonConstants.CHANGE_FEATURE);
+        NodeList list = node.getList(nsId);
+        list.clear();
     }
 }

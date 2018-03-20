@@ -33,6 +33,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.AbstractListChange;
 import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.ListAddChange;
+import com.vaadin.flow.internal.change.ListClearChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
@@ -307,8 +308,10 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
                 // by the index
                 ((ListAddChange<T>) change).getNewItems()
                         .forEach(item -> indices.put(item, i));
+            } else if (change instanceof ListClearChange<?>) {
+                allChanges.add(change);
             } else {
-                assert false : "AbstractListChange has only two subtypes: add and remove";
+                assert false : "AbstractListChange has only three subtypes: add, remove and clear";
             }
             index++;
         }
@@ -364,12 +367,15 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     }
 
     /**
-     * Removes all items.
+     * Removes all nodes, including those not known by the server.
      */
     protected void clear() {
-        while (size() > 0) {
-            remove(0);
+        if (values != null) {
+            values.clear();
+            values = null;
         }
+
+        addChange(new ListClearChange<T>(this));
     }
 
     /**
