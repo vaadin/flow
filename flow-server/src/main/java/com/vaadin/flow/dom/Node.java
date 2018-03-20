@@ -323,7 +323,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     }
 
     /**
-     * Removes all child elements.
+     * Removes all child elements, including elements only present at the
+     * client-side.
      *
      * @return this element
      */

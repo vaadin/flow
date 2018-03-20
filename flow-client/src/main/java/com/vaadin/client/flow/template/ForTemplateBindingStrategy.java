@@ -124,7 +124,7 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
                     }
 
                     onSplice(new ListSpliceEvent(childList, 0,
-                            JsCollections.array(), currentChildren));
+                            JsCollections.array(), currentChildren, false));
                 });
             }
         }

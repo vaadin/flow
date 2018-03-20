@@ -18,8 +18,11 @@ package com.vaadin.client.flow.binding;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -34,6 +37,7 @@ import com.vaadin.client.flow.collection.JsMap.ForEachCallback;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.dom.DomApi;
+import com.vaadin.client.flow.dom.DomElement;
 import com.vaadin.client.flow.dom.DomElement.DomTokenList;
 import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
@@ -56,7 +60,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -274,7 +277,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -284,7 +287,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-
+    
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -938,23 +941,36 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void handleChildrenSplice(ListSpliceEvent event,
             BindingContext context) {
-        JsArray<?> remove = event.getRemove();
-        for (int i = 0; i < remove.length(); i++) {
-            StateNode childNode = (StateNode) remove.get(i);
-            Node child = childNode.getDomNode();
 
-            assert child != null : "Can't find element to remove";
-
-            if (DomApi.wrap(child).getParentNode() == context.htmlNode) {
-                DomApi.wrap(context.htmlNode).removeChild(child);
-            }
+        Node htmlNode = context.htmlNode;
+        if (event.isClear()) {
             /*
-             * If the client-side element is not inside the parent the server
-             * thought it should be (because of client-side-only DOM changes),
-             * nothing is done at this point. If the server appends the element
-             * to a new parent, that will override the client DOM in the code
-             * below.
+             * When a full clear event is fired, all nodes must be removed,
+             * including the nodes the server doesn't know about.
              */
+            DomElement wrap = DomApi.wrap(htmlNode);
+            while (wrap.getFirstChild() != null) {
+                wrap.removeChild(wrap.getFirstChild());
+            }
+        } else {
+            JsArray<?> remove = event.getRemove();
+            for (int i = 0; i < remove.length(); i++) {
+                StateNode childNode = (StateNode) remove.get(i);
+                Node child = childNode.getDomNode();
+
+                assert child != null : "Can't find element to remove";
+
+                if (DomApi.wrap(child).getParentNode() == htmlNode) {
+                    DomApi.wrap(htmlNode).removeChild(child);
+                }
+                /*
+                 * If the client-side element is not inside the parent the
+                 * server thought it should be (because of client-side-only DOM
+                 * changes), nothing is done at this point. If the server
+                 * appends the element to a new parent, that will override the
+                 * client DOM in the code below.
+                 */
+            }
         }
 
         JsArray<?> add = event.getAdd();

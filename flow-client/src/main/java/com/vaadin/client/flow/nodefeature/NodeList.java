@@ -136,7 +136,18 @@ public class NodeList extends NodeFeature implements ReactiveValue {
     public void splice(int index, int remove) {
         JsArray<Object> removed = values.splice(index, remove);
         eventRouter.fireEvent(new ListSpliceEvent(this, index, removed,
-                JsCollections.array()));
+                JsCollections.array(), false));
+    }
+
+    /**
+     * Removes all the nodes from the list. This causes a
+     * {@link ListSpliceEvent} to be fired, with
+     * {@link ListSpliceEvent#isClear()} as <code>true</code>.
+     */
+    public void clear() {
+        JsArray<Object> removed = values.splice(0, values.length());
+        eventRouter.fireEvent(new ListSpliceEvent(this, 0, removed,
+                JsCollections.array(), true));
     }
 
     /**
@@ -155,7 +166,8 @@ public class NodeList extends NodeFeature implements ReactiveValue {
         @SuppressWarnings("unchecked")
         JsArray<Object> addObject = (JsArray<Object>) add;
         JsArray<Object> removed = values.spliceArray(index, remove, addObject);
-        eventRouter.fireEvent(new ListSpliceEvent(this, index, removed, add));
+        eventRouter.fireEvent(
+                new ListSpliceEvent(this, index, removed, add, false));
     }
 
     @Override
