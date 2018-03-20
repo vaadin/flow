@@ -76,6 +76,9 @@ public class PackageForProductionMojo extends AbstractMojo {
     @Parameter(property = "bundle", defaultValue = "true", required = true)
     private boolean bundle;
 
+    @Parameter(property = "minify", defaultValue = "true", required = true)
+    private boolean minify;
+
     @Parameter(property = "bundleConfiguration", defaultValue = "${project.basedir}/bundle-configuration.json")
     private File bundleConfiguration;
 
@@ -100,21 +103,32 @@ public class PackageForProductionMojo extends AbstractMojo {
     @Override
     public void execute() {
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
-                bundle, transpileEs6SourceDirectory, new AnnotationValuesExtractor(getProjectClassPathUrls()), bundleConfiguration, getFragmentsData(fragments));
+                bundle, minify, transpileEs6SourceDirectory,
+                new AnnotationValuesExtractor(getProjectClassPathUrls()),
+                bundleConfiguration, getFragmentsData(fragments));
         FrontendToolsManager frontendToolsManager = new FrontendToolsManager(
-                transpileWorkingDirectory, es5OutputDirectoryName, es6OutputDirectoryName, frontendDataProvider);
-        new TranspilationStep(frontendToolsManager, getProxyConfig(), nodeVersion, yarnVersion).transpileFiles(transpileEs6SourceDirectory, transpileOutputDirectory, skipEs5);
+                transpileWorkingDirectory, es5OutputDirectoryName,
+                es6OutputDirectoryName, frontendDataProvider);
+        new TranspilationStep(frontendToolsManager, getProxyConfig(),
+                nodeVersion, yarnVersion).transpileFiles(
+                        transpileEs6SourceDirectory, transpileOutputDirectory,
+                        skipEs5);
     }
 
-    private Map<String, Set<String>> getFragmentsData(List<Fragment> mavenFragments) {
-        return Optional.ofNullable(mavenFragments).orElse(Collections.emptyList()).stream()
-                .peek(this::verifyFragment)
-                .collect(Collectors.toMap(Fragment::getName, Fragment::getFiles));
+    private Map<String, Set<String>> getFragmentsData(
+            List<Fragment> mavenFragments) {
+        return Optional.ofNullable(mavenFragments)
+                .orElse(Collections.emptyList()).stream()
+                .peek(this::verifyFragment).collect(Collectors
+                        .toMap(Fragment::getName, Fragment::getFiles));
     }
 
     private void verifyFragment(Fragment fragment) {
-        if (fragment.getName() == null || fragment.getFiles() == null || fragment.getFiles().isEmpty()) {
-            throw new IllegalArgumentException(String.format("Each fragment definition should have a name and list of files to include defined. Got incorrect definition: '%s'", fragment));
+        if (fragment.getName() == null || fragment.getFiles() == null
+                || fragment.getFiles().isEmpty()) {
+            throw new IllegalArgumentException(String.format(
+                    "Each fragment definition should have a name and list of files to include defined. Got incorrect definition: '%s'",
+                    fragment));
         }
     }
 
@@ -123,12 +137,12 @@ public class PackageForProductionMojo extends AbstractMojo {
         try {
             runtimeClasspathElements = project.getRuntimeClasspathElements();
         } catch (DependencyResolutionRequiredException e) {
-            throw new IllegalStateException(String.format("Failed to retrieve runtime classpath elements from project '%s'", project), e);
+            throw new IllegalStateException(String.format(
+                    "Failed to retrieve runtime classpath elements from project '%s'",
+                    project), e);
         }
-        return runtimeClasspathElements.stream()
-                .map(File::new)
-                .map(FlowPluginFileUtils::convertToUrl)
-                .toArray(URL[]::new);
+        return runtimeClasspathElements.stream().map(File::new)
+                .map(FlowPluginFileUtils::convertToUrl).toArray(URL[]::new);
     }
 
     private ProxyConfig getProxyConfig() {
@@ -137,28 +151,24 @@ public class PackageForProductionMojo extends AbstractMojo {
         }
         return new ProxyConfig(getMavenProxies().stream()
                 .filter(Proxy::isActive)
-                .map(proxy -> decrypter.decrypt(new DefaultSettingsDecryptionRequest(proxy)))
-                .map(SettingsDecryptionResult::getProxy)
-                .map(this::createProxy)
+                .map(proxy -> decrypter
+                        .decrypt(new DefaultSettingsDecryptionRequest(proxy)))
+                .map(SettingsDecryptionResult::getProxy).map(this::createProxy)
                 .collect(Collectors.toList()));
     }
 
     private List<Proxy> getMavenProxies() {
         if (session == null || session.getSettings() == null
-                || session.getSettings().getProxies() == null || session.getSettings().getProxies().isEmpty()) {
+                || session.getSettings().getProxies() == null
+                || session.getSettings().getProxies().isEmpty()) {
             return Collections.emptyList();
         }
         return session.getSettings().getProxies();
     }
 
     private ProxyConfig.Proxy createProxy(Proxy proxy) {
-        return new ProxyConfig.Proxy(
-                proxy.getId(),
-                proxy.getProtocol(),
-                proxy.getHost(),
-                proxy.getPort(),
-                proxy.getUsername(),
-                proxy.getPassword(),
-                proxy.getNonProxyHosts());
+        return new ProxyConfig.Proxy(proxy.getId(), proxy.getProtocol(),
+                proxy.getHost(), proxy.getPort(), proxy.getUsername(),
+                proxy.getPassword(), proxy.getNonProxyHosts());
     }
 }

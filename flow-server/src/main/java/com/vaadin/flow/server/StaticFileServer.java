@@ -15,17 +15,16 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -66,24 +65,22 @@ public class StaticFileServer implements Serializable {
      */
     public boolean isStaticResourceRequest(HttpServletRequest request) {
         URL resource;
-        try {
-            String requestFilename = getRequestFilename(request);
-            if (requestFilename.endsWith("/")) {
-                // Directories are not static resources although
-                // servletContext.getResource will return a URL for them, at
-                // least with Jetty
-                return false;
-            }
-            if (requestFilename.startsWith(
-                    "/" + ApplicationConstants.VAADIN_STATIC_FILES_PATH)) {
-                // The path is reserved for internal static resources only
-                // We rather serve 404 than let it fall through
-                return true;
-            }
-            resource = request.getServletContext().getResource(requestFilename);
-        } catch (MalformedURLException e) {
+
+        String requestFilename = getRequestFilename(request);
+        if (requestFilename.endsWith("/")) {
+            // Directories are not static resources although
+            // servletContext.getResource will return a URL for them, at
+            // least with Jetty
             return false;
         }
+        if (requestFilename.startsWith(
+                "/" + ApplicationConstants.VAADIN_STATIC_FILES_PATH)) {
+            // The path is reserved for internal static resources only
+            // We rather serve 404 than let it fall through
+            return true;
+        }
+        resource = service.getResource(requestFilename);
+
         return resource != null;
     }
 
@@ -104,7 +101,7 @@ public class StaticFileServer implements Serializable {
     public boolean serveStaticResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         String filenameWithPath = getRequestFilename(request);
-        URL resourceUrl = request.getServletContext()
+        URL resourceUrl = service
                 .getResource(filenameWithPath);
 
         if (resourceUrl == null) {
@@ -126,8 +123,8 @@ public class StaticFileServer implements Serializable {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
             return true;
         }
-        responseWriter.writeResponseContents(filenameWithPath, resourceUrl, request,
-                response);
+        responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
+                request, response);
         return true;
     }
 
@@ -172,8 +169,7 @@ public class StaticFileServer implements Serializable {
                     }
                 }
             } catch (IOException e) {
-                getLogger().warn(
-                        "Error closing URLConnection input stream", e);
+                getLogger().warn("Error closing URLConnection input stream", e);
             }
         }
         return -1L;
@@ -291,8 +287,7 @@ public class StaticFileServer implements Serializable {
             }
         } catch (Exception e) {
             // Failed to parse header.
-            getLogger().trace("Unable to parse If-Modified-Since",
-                    e);
+            getLogger().trace("Unable to parse If-Modified-Since", e);
         }
         return false;
     }

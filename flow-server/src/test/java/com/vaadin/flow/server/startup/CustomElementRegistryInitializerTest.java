@@ -36,6 +36,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.TemplateParser;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -43,8 +44,6 @@ import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.CustomElementRegistry;
-import com.vaadin.flow.server.startup.CustomElementRegistryInitializer;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -55,8 +54,9 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
-    private static final TemplateParser TEST_PARSER = (clazz, tag) -> Jsoup
-            .parse("<dom-module id='" + tag + "'></dom-module>");
+    private static final TemplateParser TEST_PARSER = (clazz,
+            tag) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='" + tag + "'></dom-module>"));
 
     private CustomElementRegistryInitializer customElementRegistryInitializer;
 

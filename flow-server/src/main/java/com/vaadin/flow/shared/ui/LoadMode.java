@@ -37,6 +37,21 @@ import com.vaadin.flow.component.dependency.StyleSheet;
  * @author Vaadin Ltd.
  */
 public enum LoadMode {
+    /*
+     * Implementation note: the order of the enums is from "more eager" to
+     * laziest. This is due to being able to easily using the more eager load
+     * mode when duplicate dependencies are loaded with different load modes.
+     * (#3677)
+     */
+    /**
+     * Forced the dependency to be inlined in the body of the html page,
+     * removing the requirement to have additional roundtrips to fetch the
+     * script.
+     * <p>
+     * It is guaranteed that all {@link LoadMode#INLINE} dependencies are loaded
+     * before any {@link LoadMode#LAZY} dependency.
+     */
+    INLINE,
     /**
      * Forces the dependency being loaded before the initial page load. This
      * mode is suitable for situation when the application cannot start without
@@ -54,14 +69,6 @@ public enum LoadMode {
      * It is guaranteed that all {@link LoadMode#EAGER} dependencies are loaded
      * before any {@link LoadMode#LAZY} dependency.
      */
-    LAZY,
+    LAZY
 
-    /**
-     * Forced the dependency to be inlined in the body of the html page,
-     * removing the requirement to have additional roundtrips to fetch the script.
-     * <p>
-     * It is guaranteed that all {@link LoadMode#INLINE} dependencies are loaded
-     * before any {@link LoadMode#LAZY} dependency.
-     */
-    INLINE
 }

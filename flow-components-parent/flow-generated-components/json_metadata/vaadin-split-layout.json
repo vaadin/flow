@@ -2,7 +2,7 @@
   "name": "Vaadin.SplitLayoutElement",
   "tag": "vaadin-split-layout",
   "baseUrl": "vaadin-split-layout/src/vaadin-split-layout.html",
-  "version": "4.0.0-beta1",
+  "version": "4.0.0-beta2",
   "properties": [
     {
       "name": "orientation",

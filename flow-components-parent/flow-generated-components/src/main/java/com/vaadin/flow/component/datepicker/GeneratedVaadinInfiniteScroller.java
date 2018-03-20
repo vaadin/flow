@@ -17,7 +17,6 @@ package com.vaadin.flow.component.datepicker;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -31,7 +30,7 @@ import elemental.json.JsonArray;
 @Tag("vaadin-infinite-scroller")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-infinite-scroller.html")
 public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteScroller<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * This property is not synchronized automatically from the client side, so

@@ -33,7 +33,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.TemplateParser;
-import com.vaadin.flow.server.startup.CustomElements;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 /**
@@ -103,8 +103,9 @@ public class CustomElementsTest {
         return clazz.getAnnotation(Tag.class).value();
     }
 
-    private static final TemplateParser TEST_PARSER = (clazz, tag) -> Jsoup
-            .parse("<dom-module id='" + tag + "'></dom-module>");
+    private static final TemplateParser TEST_PARSER = (clazz,
+            tag) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='" + tag + "'></dom-module>"));
 
     @Tag("custom-element")
     private static class CustomElement extends PolymerTemplate<TemplateModel> {

@@ -21,10 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.template.angular.AngularTemplate;
-
 /**
- * Defines the id of an element to map to inside a {@link AngularTemplate}.
+ * Defines the id of an element to map to inside a {@link PolymerTemplate}.
  *
  * @author Vaadin Ltd
  */

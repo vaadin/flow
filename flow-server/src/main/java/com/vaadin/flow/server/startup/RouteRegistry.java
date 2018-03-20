@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +29,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,7 +173,8 @@ public class RouteRegistry implements Serializable {
 
             Collections.sort(registeredRoutes);
 
-            routeData.compareAndSet(null, registeredRoutes);
+            routeData.compareAndSet(null,
+                    Collections.unmodifiableList(registeredRoutes));
         }
 
         return routeData.get();

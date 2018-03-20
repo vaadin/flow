@@ -17,7 +17,6 @@ package com.vaadin.flow.component.datepicker;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -32,7 +31,7 @@ import com.vaadin.flow.shared.Registration;
 @Tag("vaadin-month-calendar")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-month-calendar.html")
 public abstract class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * <p>
@@ -301,8 +300,8 @@ public abstract class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMont
     protected Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
         return getElement().addPropertyChangeListener("selectedDate",
-                event -> listener
-                        .onComponentEvent(new SelectedDateChangeEvent<R>(get(),
+                event -> listener.onComponentEvent(
+                        new SelectedDateChangeEvent<R>((R) this,
                                 event.isUserOriginated())));
     }
 }

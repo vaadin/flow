@@ -17,7 +17,6 @@ package com.vaadin.flow.component.formlayout;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -140,7 +139,7 @@ import elemental.json.JsonObject;
 @Tag("vaadin-form-layout")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-layout.html")
 public abstract class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * <p>

@@ -157,7 +157,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  * <p>
  * See <a href=
- * "https://vaadin.com/elements/vaadin-text-field/html-api/elements/Vaadin.TextFieldElement"
+ * "https://vaadin.com/components/vaadin-text-field/html-api/elements/Vaadin.TextFieldElement"
  * >{@code <vaadin-text-field>} documentation</a> for the text field parts.
  * </p>
  * <p>
@@ -220,7 +220,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxElement#4.0.0-beta3",
+        "WebComponent: Vaadin.ComboBoxElement#4.0.0-beta4",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box.html")
@@ -881,8 +881,8 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return getElement()
                 .addPropertyChangeListener("value",
-                        event -> listener
-                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                        event -> listener.onComponentEvent(
+                                new ValueChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -913,7 +913,7 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
         return getElement()
                 .addPropertyChangeListener("opened",
                         event -> listener.onComponentEvent(
-                                new OpenedChangeEvent<R>(get(),
+                                new OpenedChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -944,7 +944,7 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
         return getElement()
                 .addPropertyChangeListener("filter",
                         event -> listener.onComponentEvent(
-                                new FilterChangeEvent<R>(get(),
+                                new FilterChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -975,7 +975,7 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
         return getElement()
                 .addPropertyChangeListener("invalid",
                         event -> listener.onComponentEvent(
-                                new InvalidChangeEvent<R>(get(),
+                                new InvalidChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -991,14 +991,12 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToPrefix(Component... components) {
+    protected void addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
         }
-        return get();
     }
 
     /**

@@ -167,6 +167,7 @@ public class FrontendToolsManager {
                 .put("{es5_configuration_name}", es5OutputDirectoryName)
                 .put("{es6_configuration_name}", es6OutputDirectoryName)
                 .put("{bundle}", Boolean.toString(frontendDataProvider.shouldBundle()))
+                .put("{minify}", Boolean.toString(frontendDataProvider.shouldMinify()))
                 .put("{shell_file}", frontendDataProvider.createShellFile(workingDirectory))
                 .put("{fragment_files}", combineFilePathsIntoString(frontendDataProvider.createFragmentFiles(workingDirectory)));
         createFileFromTemplateResource("gulpfile.js", gulpFileParameters.build());

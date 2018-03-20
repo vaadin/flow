@@ -15,29 +15,28 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
-import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.ui.Dependency.Type;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
 public class DependencyListTest {
@@ -206,13 +205,48 @@ public class DependencyListTest {
         deps.add(new Dependency(Type.JAVASCRIPT, foo, LoadMode.EAGER));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void addSameDependencyInDifferentModes() {
+    @Test
+    public void addSameDependencyInDifferentModes_usesMostEagerLoadMode() {
+        testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.EAGER,
+                LoadMode.EAGER);
+        testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.LAZY,
+                LoadMode.EAGER);
+        testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.INLINE,
+                LoadMode.INLINE);
+
+        testAddingDuplicateDependencies(LoadMode.LAZY, LoadMode.EAGER,
+                LoadMode.EAGER);
+        testAddingDuplicateDependencies(LoadMode.LAZY, LoadMode.LAZY,
+                LoadMode.LAZY);
+        testAddingDuplicateDependencies(LoadMode.LAZY, LoadMode.INLINE,
+                LoadMode.INLINE);
+
+        testAddingDuplicateDependencies(LoadMode.INLINE, LoadMode.EAGER,
+                LoadMode.INLINE);
+        testAddingDuplicateDependencies(LoadMode.INLINE, LoadMode.LAZY,
+                LoadMode.INLINE);
+        testAddingDuplicateDependencies(LoadMode.INLINE, LoadMode.INLINE,
+                LoadMode.INLINE);
+
+    }
+
+    private void testAddingDuplicateDependencies(LoadMode first,
+            LoadMode second, LoadMode expected) {
+
         String url = "foo/bar.js";
         Type type = Type.JAVASCRIPT;
 
-        deps.add(new Dependency(type, url, LoadMode.EAGER));
-        deps.add(new Dependency(type, url, LoadMode.LAZY));
+        // need to clear so that there is no leftovers
+        deps = new DependencyList();
+        deps.add(new Dependency(type, url, first));
+        deps.add(new Dependency(type, url, second));
+
+        Collection<Dependency> pendingSendToClient = deps
+                .getPendingSendToClient();
+        assertEquals("Expected to have only one dependency", 1,
+                pendingSendToClient.size());
+        assertEquals("Wrong load mode resolved", pendingSendToClient.iterator().next().getLoadMode(),
+                expected);
     }
 
     @Test

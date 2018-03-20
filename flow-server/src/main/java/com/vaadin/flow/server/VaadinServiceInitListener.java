@@ -21,7 +21,7 @@ import java.util.ServiceLoader;
 
 /**
  * Listener for {@link VaadinService} initialization events. The listener can
- * add listeners and request handlers the service.
+ * add listeners and request handlers to the service.
  * <p>
  * Listener instances are by default discovered and instantiated using
  * {@link ServiceLoader}. This means that all implementations must have a

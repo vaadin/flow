@@ -24,8 +24,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContext;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
@@ -39,11 +37,9 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinUriResolverFactory;
-import com.vaadin.flow.server.WrappedHttpSession;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 
@@ -77,14 +73,9 @@ public final class DefaultTemplateParser implements TemplateParser {
     }
 
     @Override
-    public Element getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
-            String tag) {
-        VaadinRequest request = VaadinService.getCurrentRequest();
-        WrappedHttpSession session = (WrappedHttpSession) request
-                .getWrappedSession();
-        assert session != null;
-
-        ServletContext context = session.getHttpSession().getServletContext();
+    public TemplateData getTemplateContent(
+            Class<? extends PolymerTemplate<?>> clazz, String tag) {
+        VaadinServlet servlet = VaadinServlet.getCurrent();
 
         boolean logEnabled = LOG_CACHE.get(clazz).compareAndSet(false, true);
 
@@ -108,13 +99,13 @@ public final class DefaultTemplateParser implements TemplateParser {
             }
 
             String url = dependency.getUrl();
-            String path = resolvePath(request, url);
+            String path = servlet.resolveResource(url);
 
             if (logEnabled) {
                 getLogger().debug("Html import path '{}' is resolved to '{}'",
                         url, path);
             }
-            try (InputStream content = context.getResourceAsStream(path)) {
+            try (InputStream content = servlet.getResourceAsStream(path)) {
                 if (content == null) {
                     throw new IllegalStateException(
                             String.format("Can't find resource '%s' "
@@ -129,7 +120,7 @@ public final class DefaultTemplateParser implements TemplateParser {
                 }
 
                 if (templateElement != null) {
-                    return templateElement;
+                    return new TemplateData(url, templateElement);
 
                 }
             } catch (IOException exception) {
@@ -148,14 +139,6 @@ public final class DefaultTemplateParser implements TemplateParser {
                 + "method getTemplateContent() which should return an element "
                 + "representing the content of the template file", tag,
                 HtmlImport.class.getSimpleName()));
-    }
-
-    private static String resolvePath(VaadinRequest request, String path) {
-        VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
-                .getAttribute(VaadinUriResolverFactory.class);
-        assert uriResolverFactory != null;
-
-        return uriResolverFactory.toServletContextPath(request, path);
     }
 
     private static Element parseHtmlImport(InputStream content, String path,

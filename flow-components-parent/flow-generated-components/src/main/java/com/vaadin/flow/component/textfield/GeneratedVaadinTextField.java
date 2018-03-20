@@ -143,7 +143,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#2.0.0-beta1",
+        "WebComponent: Vaadin.TextFieldElement#2.0.0-beta3",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-field.html")
@@ -881,8 +881,8 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
             ComponentEventListener<ValueChangeEvent<R>> listener) {
         return getElement()
                 .addPropertyChangeListener("value",
-                        event -> listener
-                                .onComponentEvent(new ValueChangeEvent<R>(get(),
+                        event -> listener.onComponentEvent(
+                                new ValueChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -913,7 +913,7 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
         return getElement()
                 .addPropertyChangeListener("invalid",
                         event -> listener.onComponentEvent(
-                                new InvalidChangeEvent<R>(get(),
+                                new InvalidChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
     }
 
@@ -929,14 +929,12 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToPrefix(Component... components) {
+    protected void addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
             getElement().appendChild(component.getElement());
         }
-        return get();
     }
 
     /**
@@ -951,14 +949,12 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
      * @see <a
      *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
      *      website about slots</a>
-     * @return this instance, for method chaining
      */
-    protected R addToSuffix(Component... components) {
+    protected void addToSuffix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "suffix");
             getElement().appendChild(component.getElement());
         }
-        return get();
     }
 
     /**

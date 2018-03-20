@@ -17,7 +17,6 @@ package com.vaadin.flow.component.datepicker;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ComponentSupplier;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -34,7 +33,7 @@ import com.vaadin.flow.shared.Registration;
 @Tag("vaadin-date-picker-overlay-content")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-overlay-content.html")
 public abstract class GeneratedVaadinDatePickerOverlayContent<R extends GeneratedVaadinDatePickerOverlayContent<R>>
-        extends Component implements HasStyle, ComponentSupplier<R> {
+        extends Component implements HasStyle {
 
     /**
      * <p>
@@ -377,8 +376,8 @@ public abstract class GeneratedVaadinDatePickerOverlayContent<R extends Generate
     protected Registration addSelectedDateChangeListener(
             ComponentEventListener<SelectedDateChangeEvent<R>> listener) {
         return getElement().addPropertyChangeListener("selectedDate",
-                event -> listener
-                        .onComponentEvent(new SelectedDateChangeEvent<R>(get(),
+                event -> listener.onComponentEvent(
+                        new SelectedDateChangeEvent<R>((R) this,
                                 event.isUserOriginated())));
     }
 
@@ -407,8 +406,8 @@ public abstract class GeneratedVaadinDatePickerOverlayContent<R extends Generate
     protected Registration addFocusedDateChangeListener(
             ComponentEventListener<FocusedDateChangeEvent<R>> listener) {
         return getElement().addPropertyChangeListener("focusedDate",
-                event -> listener
-                        .onComponentEvent(new FocusedDateChangeEvent<R>(get(),
+                event -> listener.onComponentEvent(
+                        new FocusedDateChangeEvent<R>((R) this,
                                 event.isUserOriginated())));
     }
 }

@@ -237,14 +237,11 @@ public class BootstrapHandlerDependenciesTest {
         service = Mockito
                 .spy(new MockVaadinServletService(deploymentConfiguration));
 
-        ServletContext servletContextMock = mock(ServletContext.class);
-        when(servletContextMock.getResourceAsStream(anyString()))
+        when(service.getResourceAsStream(anyString()))
                 .thenAnswer(invocation -> new ByteArrayInputStream(
                         ((String) invocation.getArguments()[0]).getBytes()));
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
-        when(servletRequestMock.getServletContext())
-                .thenReturn(servletContextMock);
 
         VaadinServletRequest vaadinRequestMock = mock(
                 VaadinServletRequest.class);
@@ -293,10 +290,10 @@ public class BootstrapHandlerDependenciesTest {
                 new UIWithMethods_BothBothInlineAndEagerTest(),
                 new UIAnnotated_BothLazyAndInlineTest(),
                 new UIWithMethods_BothBothLazyAndInlineTest())
-                .forEach(this::checkUiWithException);
+                .forEach(this::checkUiWithNoException);
     }
 
-    private void checkUiWithException(UI ui) {
+    private void checkUiWithNoException(UI ui) {
         boolean exceptionCaught = false;
         try {
             testUis(doc -> {
@@ -304,10 +301,10 @@ public class BootstrapHandlerDependenciesTest {
         } catch (IllegalStateException expected) {
             exceptionCaught = true;
         } finally {
-            assertThat(
+            assertFalse(
                     "The exception was expected, but not thrown for ui "
                             + ui.getClass().getCanonicalName(),
-                    exceptionCaught, is(true));
+                    exceptionCaught);
         }
     }
 

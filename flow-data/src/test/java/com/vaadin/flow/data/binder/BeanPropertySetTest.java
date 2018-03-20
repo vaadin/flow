@@ -248,10 +248,10 @@ public class BeanPropertySetTest {
                 .getProperty(subPropertyFullName).get();
         Assert.assertEquals(
                 "Name of a sub-property should be the simple name of the property",
-                "firstName", subProperty.getName());
+                "firstName", subProperty.getTopLevelName());
         Assert.assertEquals(
                 "Full name of a sub-property should be the full property chain with parent properties",
-                subPropertyFullName, subProperty.getFullName());
+                subPropertyFullName, subProperty.getName());
     }
 
     @Test
@@ -270,6 +270,6 @@ public class BeanPropertySetTest {
         Assert.assertEquals(
                 "Parent property of \"father.son.father\" should be \"father.son\"",
                 "father.son", propertySet.getProperty("father.son.father").get()
-                        .getParent().getFullName());
+                        .getParent().getName());
     }
 }

@@ -18,6 +18,8 @@ package com.vaadin.flow.data.selection;
 import java.io.Serializable;
 import java.util.EventListener;
 
+import com.vaadin.flow.component.Component;
+
 /**
  * A listener for {@code SelectionEvent}.
  * <p>
@@ -28,11 +30,14 @@ import java.util.EventListener;
  *
  * @param <T>
  *            the type of the selected item
+ * @param <C>
+ *            the component type
  *
  * @see SelectionEvent
  */
 @FunctionalInterface
-public interface SelectionListener<T> extends Serializable, EventListener {
+public interface SelectionListener<C extends Component, T>
+        extends Serializable, EventListener {
 
     /**
      * Invoked when the selection has changed.
@@ -40,5 +45,5 @@ public interface SelectionListener<T> extends Serializable, EventListener {
      * @param event
      *            the selection event
      */
-    void selectionChange(SelectionEvent<T> event);
+    void selectionChange(SelectionEvent<C, T> event);
 }
