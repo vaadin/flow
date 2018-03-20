@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -29,6 +32,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+
+import com.vaadin.flow.server.Constants;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -68,11 +74,15 @@ public class SpringBootAutoConfiguration {
     @Bean
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean() {
         String mapping = configurationProperties.getUrlMapping();
+        Map<String, String> initParameters = new HashMap<>();
         if (RootMappedCondition.isRootMapping(mapping)) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+            initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
+                    mapping.replace("*", ""));
         }
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context), mapping);
+        registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());
         registration.setName(
@@ -99,4 +109,15 @@ public class SpringBootAutoConfiguration {
         registration.setName("dispatcher");
         return registration;
     }
+
+    /**
+     * Deploys JSR-356 websocket endpoints when Atmosphere is available.
+     *
+     * @return the server endpoint exporter which does the actual work.
+     */
+    @Bean
+    public ServerEndpointExporter websocketEndpointDeployer() {
+        return new VaadinWebsocketEndpointExporter();
+    }
+
 }
