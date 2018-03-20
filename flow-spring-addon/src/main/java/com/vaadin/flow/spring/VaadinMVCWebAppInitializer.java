@@ -16,6 +16,8 @@
 package com.vaadin.flow.spring;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
@@ -28,6 +30,8 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
+
+import com.vaadin.flow.server.Constants;
 
 /**
  * Abstract Vaadin Spring MVC {@link WebApplicationInitializer}.
@@ -57,12 +61,16 @@ public abstract class VaadinMVCWebAppInitializer
 
         String mapping = env
                 .getProperty(RootMappedCondition.URL_MAPPING_PROPERTY, "/*");
+        Map<String, String> initParameters = new HashMap<>();
         if (RootMappedCondition.isRootMapping(mapping)) {
             Dynamic dispatcherRegistration = servletContext
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+            initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
+                    mapping.replace("*", ""));
         }
+        registration.setInitParameters(initParameters);
         registration.addMapping(mapping);
         registration.setAsyncSupported(
                 Boolean.TRUE.toString().equals(env.getProperty(
