@@ -15,20 +15,15 @@
  */
 package com.vaadin.flow.router;
 
+import com.vaadin.flow.router.internal.AfterNavigationHandler;
+
 /**
- * Any {@code com.vaadin.ui.Component} implementing this interface will be informed when they
- * have been attached to the UI and all navigation tasks have resolved.
+ * Any {@code com.vaadin.ui.Component} implementing this interface will be
+ * informed when they have been attached to the UI and all navigation tasks have
+ * resolved.
  *
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface AfterNavigationObserver {
-
-    /**
-     * Method called after navigation has been executed.
-     * 
-     * @param event
-     *            after navigation event with event details
-     */
-    void afterNavigation(AfterNavigationEvent event);
+public interface AfterNavigationObserver extends AfterNavigationHandler {
 }

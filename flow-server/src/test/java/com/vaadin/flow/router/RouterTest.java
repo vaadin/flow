@@ -15,10 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,11 +24,11 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletResponse;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -59,11 +56,14 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -91,6 +91,19 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class AfterNavigationTarget extends Component
+            implements AfterNavigationObserver {
+
+        static List<String> events = new ArrayList<>();
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            events.add("AfterNavigation Observer");
+        }
+    }
+
     @Route("foo")
     @Tag(Tag.DIV)
     public static class FooNavigationTarget extends Component {
@@ -112,6 +125,23 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
             events.add(event);
+        }
+    }
+    @Route("manual")
+    @Tag(Tag.DIV)
+    public static class ManualNavigationTarget extends Component
+            implements BeforeEnterObserver, BeforeLeaveObserver {
+
+        private static List<String> events = new ArrayList<>();
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            events.add("Before enter");
+        }
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            events.add("Before leave");
         }
     }
 
@@ -203,6 +233,22 @@ public class RouterTest extends RoutingTestBase {
             events.add(event);
             event.rerouteTo(new NavigationStateBuilder()
                     .withTarget(FooBarNavigationTarget.class).build());
+        }
+    }
+
+    @Route("reroute")
+    @Tag(Tag.DIV)
+    public static class ReroutingOnLeaveNavigationTarget extends Component
+            implements BeforeLeaveObserver {
+        private static List<BeforeLeaveEvent> events = new ArrayList<>();
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            // Note possible loop problem with redirecting on beforeLeave!
+            if (events.isEmpty()) {
+                events.add(event);
+                event.rerouteTo(new NavigationStateBuilder()
+                        .withTarget(FooBarNavigationTarget.class).build());
+            }
         }
     }
 
@@ -1227,6 +1273,8 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_on_before_navigation_event()
             throws InvalidRouteConfigurationException {
         FooBarNavigationTarget.events.clear();
+        ReroutingNavigationTarget.events.clear();
+        RootNavigationTarget.events.clear();
         router.getRegistry().setNavigationTargets(Stream
                 .of(RootNavigationTarget.class, ReroutingNavigationTarget.class,
                         FooBarNavigationTarget.class)
@@ -2508,6 +2556,195 @@ public class RouterTest extends RoutingTestBase {
                         + AfterNavigationEvent.class.getSimpleName(),
                 AfterNavigationEvent.class,
                 AfterNavigationWithinSameParent.events.get(0).getClass());
+    }
+
+    @Test // #2754
+    public void manually_registered_listeners_should_fire_for_every_navigation()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
+                        FooNavigationTarget.class, FooBarNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        AtomicInteger leaveCount = new AtomicInteger(0);
+        AtomicInteger enterCount = new AtomicInteger(0);
+        AtomicInteger afterCount = new AtomicInteger(0);
+
+        ui.addBeforeLeaveListener(event -> leaveCount.incrementAndGet());
+        ui.addBeforeEnterListener(event -> enterCount.incrementAndGet());
+        ui.addAfterNavigationListener(event -> afterCount.incrementAndGet());
+
+        Assert.assertEquals(
+                "No event should have happened due to adding listener.", 0,
+                leaveCount.get());
+        Assert.assertEquals(
+                "No event should have happened due to adding listener.", 0,
+                enterCount.get());
+        Assert.assertEquals(
+                "No event should have happened due to adding listener.", 0,
+                afterCount.get());
+
+        router.navigate(ui, new Location("foo/bar"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("BeforeLeaveListener should have been invoked.", 1,
+                leaveCount.get());
+        Assert.assertEquals("BeforeEnterListener should have been invoked.", 1,
+                enterCount.get());
+        Assert.assertEquals("AfterNavigationListener should have been invoked.",
+                1, afterCount.get());
+
+        router.navigate(ui, new Location("foo"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("BeforeLeaveListener should have been invoked.", 2,
+                leaveCount.get());
+        Assert.assertEquals("BeforeEnterListener should have been invoked.", 2,
+                enterCount.get());
+        Assert.assertEquals("AfterNavigationListener should have been invoked.",
+                2, afterCount.get());
+    }
+
+    @Test // #2754
+    public void after_navigation_listener_is_only_invoked_once_for_redirect()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(ReroutingNavigationTarget.class,
+                                FooBarNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        AtomicInteger afterCount = new AtomicInteger(0);
+
+        ui.addAfterNavigationListener(event -> afterCount.incrementAndGet());
+
+        router.navigate(ui, new Location("reroute"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "AfterNavigationListener should have been invoked only after redirect.",
+                1, afterCount.get());
+    }
+
+    @Test // #2754
+    public void before_leave_listener_is_invoked_for_each_redirect()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(ReroutingNavigationTarget.class,
+                                FooBarNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        AtomicInteger leaveCount = new AtomicInteger(0);
+        ui.addBeforeLeaveListener(event -> leaveCount.incrementAndGet());
+
+        router.navigate(ui, new Location("reroute"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "BeforeLeaveListener should have been invoked for initial navigation and redirect.",
+                2, leaveCount.get());
+    }
+
+    @Test // #2754
+    public void before_enter_listener_is_invoked_for_each_redirect_when_redirecting_on_before_enter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(ReroutingNavigationTarget.class,
+                                FooBarNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        AtomicInteger enterCount = new AtomicInteger(0);
+        ui.addBeforeEnterListener(event -> enterCount.incrementAndGet());
+
+        router.navigate(ui, new Location("reroute"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "BeforeEnterListener should have been invoked for initial navigation and redirect.",
+                2, enterCount.get());
+    }
+
+    @Test // #2754
+    public void before_enter_listener_is_invoked_once_and_before_leave_twice_when_redirecting_on_before_leave()
+            throws InvalidRouteConfigurationException {
+        ReroutingOnLeaveNavigationTarget.events.clear();
+
+        router.getRegistry().setNavigationTargets(Stream
+                .of(ReroutingOnLeaveNavigationTarget.class,
+                        FooBarNavigationTarget.class, FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("reroute"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        AtomicInteger leaveCount = new AtomicInteger(0);
+        AtomicInteger enterCount = new AtomicInteger(0);
+        ui.addBeforeLeaveListener(event -> leaveCount.incrementAndGet());
+        ui.addBeforeEnterListener(event -> enterCount.incrementAndGet());
+
+        router.navigate(ui, new Location("foo"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "BeforeLeaveListener should have been invoked for initial navigation and redirect.",
+                2, leaveCount.get());
+        Assert.assertEquals(
+                "BeforeEnterListener should have been invoked for initial navigation and redirect.",
+                1, enterCount.get());
+    }
+
+    @Test // #2754
+    public void manual_before_listeners_are_fired_before_observers()
+            throws InvalidRouteConfigurationException {
+        ManualNavigationTarget.events.clear();
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(ManualNavigationTarget.class,
+                                FooNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        Registration beforeEnter = ui.addBeforeEnterListener(
+                event -> ManualNavigationTarget.events.add("Manual event"));
+
+        router.navigate(ui, new Location("manual"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("not enough events", 2, ManualNavigationTarget.events.size());
+
+        Assert.assertEquals("Manual event", ManualNavigationTarget.events.get(0));
+        Assert.assertEquals("Before enter", ManualNavigationTarget.events.get(1));
+
+        // Deactivate before enter and add beforeLeave listener
+        beforeEnter.remove();
+        ui.addBeforeLeaveListener(event -> ManualNavigationTarget.events.add("Manual event"));
+
+        router.navigate(ui, new Location("foo"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("not enough events", 4, ManualNavigationTarget.events.size());
+
+        Assert.assertEquals("Manual event", ManualNavigationTarget.events.get(2));
+        Assert.assertEquals("Before leave", ManualNavigationTarget.events.get(3));
+    }
+
+    @Test // #2754
+    public void manual_after_listener_is_fired_before_observer()
+            throws InvalidRouteConfigurationException {
+        AfterNavigationTarget.events.clear();
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(AfterNavigationTarget.class));
+
+        ui.addAfterNavigationListener(
+                event -> AfterNavigationTarget.events.add("Manual event"));
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("not enough events", 2, AfterNavigationTarget.events.size());
+
+        Assert.assertEquals("Manual event", AfterNavigationTarget.events.get(0));
+        Assert.assertEquals("AfterNavigation Observer", AfterNavigationTarget.events.get(1));
     }
 
     private Class<? extends Component> getUIComponent() {
