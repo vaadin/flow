@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -142,50 +143,62 @@ public class Router implements RouterInterface {
         assert location != null;
         assert trigger != null;
 
-        try {
-            NavigationState newState = getRouteResolver()
-                    .resolve(new ResolveRequest(this, location));
-            if (newState != null) {
-                NavigationEvent navigationEvent = new NavigationEvent(this,
-                        location, ui, trigger);
+        if (handleNavigationForLocation(ui, location)) {
+            ui.getInternals().setLastHandledNavigation(location);
 
-                NavigationHandler handler = new NavigationStateRenderer(
-                        newState);
-                if (notNavigatingToSameLocation(location,
-                        ui.getInternals().getLastHandledLocation())) {
-                    ui.getInternals().setLastHandledNavigation(location);
-                    return handler.handle(navigationEvent);
-                }
+            try {
+                return handleNavigation(ui, location, trigger);
+            } catch (Exception exception) {
+                return handleExceptionNavigation(ui, location, exception);
+            } finally {
+                ui.getInternals().clearLastHandledNavigation();
             }
-
-            if (!location.getPath().isEmpty()) {
-                Location slashToggledLocation = location.toggleTrailingSlash();
-                NavigationState slashToggledState = getRouteResolver().resolve(
-                        new ResolveRequest(this, slashToggledLocation));
-                if (slashToggledState != null) {
-                    NavigationEvent navigationEvent = new NavigationEvent(this,
-                            slashToggledLocation, ui, trigger);
-
-                    NavigationHandler handler = new InternalRedirectHandler(
-                            slashToggledLocation);
-                    return handler.handle(navigationEvent);
-                }
-            }
-
-            throw new NotFoundException(
-                    "Couldn't find route for '" + location.getPath() + "'");
-        } catch (Exception exception) {
-            ErrorParameter<?> errorParameter = new ErrorParameter<>(exception,
-                    exception.getMessage());
-
-            return navigateToExceptionView(ui, location, errorParameter);
-        } finally {
-            ui.getInternals().clearLastHandledNavigation();
         }
+        return HttpServletResponse.SC_NOT_MODIFIED;
     }
 
-    private int navigateToExceptionView(UI ui, Location location,
-            ErrorParameter<?> errorParameter) {
+    private boolean handleNavigationForLocation(UI ui, Location location) {
+        if (ui.getInternals().hasLastHandledLocation()) {
+            return !location.getPathWithQueryParameters()
+                    .equals(ui.getInternals().getLastHandledLocation()
+                            .getPathWithQueryParameters());
+        }
+        return true;
+    }
+
+    private int handleNavigation(UI ui, Location location,
+            NavigationTrigger trigger) {
+        NavigationState newState = getRouteResolver()
+                .resolve(new ResolveRequest(this, location));
+        if (newState != null) {
+            NavigationEvent navigationEvent = new NavigationEvent(this,
+                    location, ui, trigger);
+
+            NavigationHandler handler = new NavigationStateRenderer(newState);
+            return handler.handle(navigationEvent);
+        } else if (!location.getPath().isEmpty()) {
+            Location slashToggledLocation = location.toggleTrailingSlash();
+            NavigationState slashToggledState = getRouteResolver()
+                    .resolve(new ResolveRequest(this, slashToggledLocation));
+            if (slashToggledState != null) {
+                NavigationEvent navigationEvent = new NavigationEvent(this,
+                        slashToggledLocation, ui, trigger);
+
+                NavigationHandler handler = new InternalRedirectHandler(
+                        slashToggledLocation);
+                return handler.handle(navigationEvent);
+            }
+        }
+
+        throw new NotFoundException(
+                "Couldn't find route for '" + location.getPath() + "'");
+    }
+
+    private int handleExceptionNavigation(UI ui, Location location,
+            Exception exception) {
+        ErrorParameter<?> errorParameter = new ErrorParameter<>(exception,
+                exception.getMessage());
+
         Optional<Class<? extends Component>> navigationTarget = getRegistry()
                 .getErrorNavigationTarget(errorParameter.getException());
 
@@ -203,15 +216,6 @@ public class Router implements RouterInterface {
             throw new RuntimeException(errorParameter.getCustomMessage(),
                     errorParameter.getException());
         }
-    }
-
-    private boolean notNavigatingToSameLocation(Location location,
-            Location lastHandledNavigation) {
-        if (lastHandledNavigation != null) {
-            return !location.getPathWithQueryParameters()
-                    .equals(lastHandledNavigation.getPathWithQueryParameters());
-        }
-        return true;
     }
 
     @Override

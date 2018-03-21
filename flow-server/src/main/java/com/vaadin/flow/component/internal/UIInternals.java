@@ -944,6 +944,15 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Check if we have already started navigation to some location on this roundtrip.
+     *
+     * @return true if the last navigation location {@code !=} null
+     */
+    public boolean hasLastHandledLocation() {
+        return lastHandledNavigation != null;
+    }
+
+    /**
      * Clear latest handled navigation location.
      */
     public void clearLastHandledNavigation() {

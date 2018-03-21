@@ -63,6 +63,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 @NotThreadSafe
@@ -127,6 +128,7 @@ public class RouterTest extends RoutingTestBase {
             events.add(event);
         }
     }
+
     @Route("manual")
     @Tag(Tag.DIV)
     public static class ManualNavigationTarget extends Component
@@ -241,6 +243,7 @@ public class RouterTest extends RoutingTestBase {
     public static class ReroutingOnLeaveNavigationTarget extends Component
             implements BeforeLeaveObserver {
         private static List<BeforeLeaveEvent> events = new ArrayList<>();
+
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
             // Note possible loop problem with redirecting on beforeLeave!
@@ -781,6 +784,16 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Tag(Tag.DIV)
+    public static class FailingErrorHandler extends Component
+            implements HasErrorParameter<RuntimeException> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<RuntimeException> parameter) {
+            throw new RuntimeException(parameter.getException());
+        }
+    }
+
     @Route("exception")
     @Tag(Tag.DIV)
     public static class FailOnException extends Component
@@ -854,7 +867,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("loop")
     @Tag(Tag.DIV)
-    public static class LoopByReroute extends Component
+    public static class LoopByUINavigate extends Component
             implements BeforeEnterObserver {
 
         private static List<EventObject> events = new ArrayList<>();
@@ -863,6 +876,21 @@ public class RouterTest extends RoutingTestBase {
         public void beforeEnter(BeforeEnterEvent event) {
             events.add(event);
             UI.getCurrent().navigate("loop");
+        }
+    }
+
+    @Route("loop")
+    @Tag(Tag.DIV)
+    public static class LoopOnRouterNavigate extends Component
+            implements BeforeEnterObserver {
+        private static List<EventObject> events = new ArrayList<>();
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            events.add(event);
+            UI ui = UI.getCurrent();
+            ui.getRouter().get().navigate(ui, new Location("loop"),
+                    NavigationTrigger.PROGRAMMATIC);
         }
     }
 
@@ -2154,34 +2182,98 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void repeatedly_navigating_to_same_ur_through_ui_navigateTo_should_not_loop()
+    public void repeatedly_navigating_to_same_ur_through_ui_navigate_should_not_loop()
             throws InvalidRouteConfigurationException {
-        LoopByReroute.events.clear();
+        LoopByUINavigate.events.clear();
         router.getRegistry().setNavigationTargets(
-                Stream.of(LoopByReroute.class).collect(Collectors.toSet()));
+                Collections.singleton(LoopByUINavigate.class));
 
         ui.navigate("loop");
 
         Assert.assertEquals("Expected only one request to loop", 1,
-                LoopByReroute.events.size());
+                LoopByUINavigate.events.size());
+        Assert.assertNull("Last handled location should have been cleared",
+                ui.getInternals().getLastHandledLocation());
     }
 
     @Test
-    public void navigateTo_should_not_loop()
+    public void ui_navigate_should_not_loop()
             throws InvalidRouteConfigurationException {
-        LoopByReroute.events.clear();
+        LoopByUINavigate.events.clear();
         RedirectToLoopByReroute.events.clear();
         router.getRegistry()
                 .setNavigationTargets(Stream
-                        .of(LoopByReroute.class, RedirectToLoopByReroute.class)
+                        .of(LoopByUINavigate.class, RedirectToLoopByReroute.class)
                         .collect(Collectors.toSet()));
 
         ui.navigate("redirect/loop");
 
         Assert.assertEquals("Expected one events", 1,
-                LoopByReroute.events.size());
+                LoopByUINavigate.events.size());
         Assert.assertEquals("Expected onve events", 1,
                 RedirectToLoopByReroute.events.size());
+    }
+
+    @Test
+    public void ui_navigate_should_only_have_one_history_marking_on_loop()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(LoopByUINavigate.class));
+
+        ui.navigate("loop");
+
+        long historyInvocations = ui.getInternals()
+                .dumpPendingJavaScriptInvocations().stream().filter(js -> js
+                        .getExpression().startsWith("history.pushState"))
+                .count();
+        assertEquals(1, historyInvocations);
+
+        Assert.assertNull("Last handled location should have been cleared",
+                ui.getInternals().getLastHandledLocation());
+    }
+
+    @Test
+    public void router_navigate_should_not_loop()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(LoopOnRouterNavigate.class));
+
+        ui.navigate("loop");
+
+        Assert.assertEquals("Expected only one request", 1,
+                LoopOnRouterNavigate.events.size());
+        Assert.assertNull("Last handled location should have been cleared",
+                ui.getInternals().getLastHandledLocation());
+    }
+
+    @Test
+    public void exception_while_navigating_should_succeed_and_clear_last_handled()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(FailOnException.class));
+
+        ui.navigate("exception");
+
+        Assert.assertNull("Last handled location should have been cleared",
+                ui.getInternals().getLastHandledLocation());
+    }
+
+    @Test
+    public void exception_in_exception_handler_while_navigating_should_clear_last_handled()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(FailOnException.class));
+        router.getRegistry().setErrorNavigationTargets(
+                Collections.singleton(FailingErrorHandler.class));
+
+        try {
+            ui.navigate("exception");
+            Assert.fail("No runtime exception was thrown from navigation");
+        } catch (Exception re) {
+            Assert.assertNull(
+                    "Last handled location should have been cleared even though navigation failed",
+                    ui.getInternals().getLastHandledLocation());
+        }
     }
 
     @Test
@@ -2711,22 +2803,29 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("manual"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("not enough events", 2, ManualNavigationTarget.events.size());
+        Assert.assertEquals("not enough events", 2,
+                ManualNavigationTarget.events.size());
 
-        Assert.assertEquals("Manual event", ManualNavigationTarget.events.get(0));
-        Assert.assertEquals("Before enter", ManualNavigationTarget.events.get(1));
+        Assert.assertEquals("Manual event",
+                ManualNavigationTarget.events.get(0));
+        Assert.assertEquals("Before enter",
+                ManualNavigationTarget.events.get(1));
 
         // Deactivate before enter and add beforeLeave listener
         beforeEnter.remove();
-        ui.addBeforeLeaveListener(event -> ManualNavigationTarget.events.add("Manual event"));
+        ui.addBeforeLeaveListener(
+                event -> ManualNavigationTarget.events.add("Manual event"));
 
         router.navigate(ui, new Location("foo"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("not enough events", 4, ManualNavigationTarget.events.size());
+        Assert.assertEquals("not enough events", 4,
+                ManualNavigationTarget.events.size());
 
-        Assert.assertEquals("Manual event", ManualNavigationTarget.events.get(2));
-        Assert.assertEquals("Before leave", ManualNavigationTarget.events.get(3));
+        Assert.assertEquals("Manual event",
+                ManualNavigationTarget.events.get(2));
+        Assert.assertEquals("Before leave",
+                ManualNavigationTarget.events.get(3));
     }
 
     @Test // #2754
@@ -2741,10 +2840,13 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("not enough events", 2, AfterNavigationTarget.events.size());
+        Assert.assertEquals("not enough events", 2,
+                AfterNavigationTarget.events.size());
 
-        Assert.assertEquals("Manual event", AfterNavigationTarget.events.get(0));
-        Assert.assertEquals("AfterNavigation Observer", AfterNavigationTarget.events.get(1));
+        Assert.assertEquals("Manual event",
+                AfterNavigationTarget.events.get(0));
+        Assert.assertEquals("AfterNavigation Observer",
+                AfterNavigationTarget.events.get(1));
     }
 
     private Class<? extends Component> getUIComponent() {
