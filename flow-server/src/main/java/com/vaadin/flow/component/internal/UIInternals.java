@@ -944,18 +944,12 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Check if we have navigated to this location on this roundtrip.
-     * 
-     * @param location
-     *            location we are navigating to
-     * @return true if the last navigation location {@code ==} location
+     * Check if we have already started navigation to some location on this roundtrip.
+     *
+     * @return true if the last navigation location {@code !=} null
      */
-    public boolean notNavigatingToSameLocation(Location location) {
-        if (lastHandledNavigation != null) {
-            return !location.getPathWithQueryParameters()
-                    .equals(lastHandledNavigation.getPathWithQueryParameters());
-        }
-        return true;
+    public boolean hasLastHandledLocation() {
+        return lastHandledNavigation != null;
     }
 
     /**

@@ -142,8 +142,10 @@ public class Router implements RouterInterface {
         assert ui != null;
         assert location != null;
         assert trigger != null;
-        if (ui.getInternals().notNavigatingToSameLocation(location)) {
+
+        if (handleNavigationForLocation(ui, location)) {
             ui.getInternals().setLastHandledNavigation(location);
+
             try {
                 return handleNavigation(ui, location, trigger);
             } catch (Exception exception) {
@@ -153,6 +155,15 @@ public class Router implements RouterInterface {
             }
         }
         return HttpServletResponse.SC_NOT_MODIFIED;
+    }
+
+    private boolean handleNavigationForLocation(UI ui, Location location) {
+        if (ui.getInternals().hasLastHandledLocation()) {
+            return !location.getPathWithQueryParameters()
+                    .equals(ui.getInternals().getLastHandledLocation()
+                            .getPathWithQueryParameters());
+        }
+        return true;
     }
 
     private int handleNavigation(UI ui, Location location,

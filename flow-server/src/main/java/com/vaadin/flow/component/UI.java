@@ -704,7 +704,8 @@ public class UI extends Component
         }
 
         Location navigationLocation = new Location(location, queryParameters);
-        if (internals.notNavigatingToSameLocation(navigationLocation)) {
+        if (!internals.hasLastHandledLocation() || !navigationLocation.getPathWithQueryParameters()
+                .equals(internals.getLastHandledLocation().getPathWithQueryParameters())) {
             // Enable navigating back
             getPage().getHistory().pushState(null, navigationLocation);
         }
