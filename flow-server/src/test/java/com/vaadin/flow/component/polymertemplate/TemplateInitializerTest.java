@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.HasCurrentService;
@@ -90,15 +91,14 @@ public class TemplateInitializerTest extends HasCurrentService {
         String outsideTemplateElementId = OutsideTemplateClass.class
                 .getField("element").getAnnotation(Id.class).value();
 
-        templateParser = (clazz, tag) -> Jsoup.parse(String.format(
-                "<dom-module id='%s'><template>"
+        templateParser = (clazz, tag) -> new TemplateData("",
+                Jsoup.parse(String.format("<dom-module id='%s'><template>"
                         + "    <template><div id='%s'>Test</div></template>"
                         + "    <div id='%s'></div>"
                         + "    <div a='{{twoWay}}' b='{{invalid}} syntax' c='{{two.way}}'"
                         + "        d='{{invalidSyntax' e='{{withEvent::eventName}}' f='[[oneWay]]'></div>"
-                        + "</template></dom-module>",
-                parentTemplateId, inTemplateElementId,
-                outsideTemplateElementId));
+                        + "</template></dom-module>", parentTemplateId,
+                        inTemplateElementId, outsideTemplateElementId)));
     }
 
     @Test(expected = IllegalStateException.class)

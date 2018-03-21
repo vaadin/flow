@@ -15,24 +15,18 @@
  */
 package com.vaadin.flow.router.internal;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
@@ -130,8 +124,21 @@ public class NavigationStateRenderer implements NavigationHandler {
         BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
                 event, routeTargetType);
 
+        Deque<BeforeLeaveHandler> leaveHandlers;
+        if (postponed != null) {
+            leaveHandlers = postponed.getLeaveObservers();
+            if (!leaveHandlers.isEmpty()) {
+                postponed = null;
+            }
+        } else {
+            List<BeforeLeaveHandler> beforeLeaveHandlers = new ArrayList<>(
+                    ui.getNavigationListeners(BeforeLeaveHandler.class));
+            beforeLeaveHandlers.addAll(
+                    EventUtil.collectBeforeLeaveObservers(ui.getElement()));
+            leaveHandlers = new ArrayDeque<>(beforeLeaveHandlers);
+        }
         TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
-                beforeNavigationDeactivating, ui.getElement());
+                beforeNavigationDeactivating, leaveHandlers);
 
         if (transitionOutcome == TransitionOutcome.REROUTED) {
             return reroute(event, beforeNavigationDeactivating);
@@ -181,8 +188,12 @@ public class NavigationStateRenderer implements NavigationHandler {
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
 
+        List<BeforeEnterHandler> enterHandlers = new ArrayList<>(
+                ui.getNavigationListeners(BeforeEnterHandler.class));
+        enterHandlers.addAll(EventUtil.collectEnterObservers(componentInstance,
+                routerLayouts));
         transitionOutcome = executeBeforeEnterNavigation(
-                beforeNavigationActivating, componentInstance, routerLayouts);
+                beforeNavigationActivating, enterHandlers);
 
         if (TransitionOutcome.REROUTED.equals(transitionOutcome)) {
             return reroute(event, beforeNavigationActivating);
@@ -198,8 +209,14 @@ public class NavigationStateRenderer implements NavigationHandler {
                 chain);
 
         if (locationChangeEvent.getStatusCode() == HttpServletResponse.SC_OK) {
-            fireAfterNavigationListeners(componentInstance, routerLayouts,
-                    new AfterNavigationEvent(locationChangeEvent));
+            List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
+                    ui.getNavigationListeners(AfterNavigationHandler.class));
+            afterNavigationHandlers.addAll(
+                    EventUtil.collectAfterNavigationObservers(componentInstance,
+                            routerLayouts));
+            fireAfterNavigationListeners(
+                    new AfterNavigationEvent(locationChangeEvent),
+                    afterNavigationHandlers);
         }
 
         if (componentInstance instanceof RouteNotFoundError) {
@@ -224,17 +241,9 @@ public class NavigationStateRenderer implements NavigationHandler {
         ui.getInternals().setContinueNavigationAction(currentAction);
     }
 
-    private void fireAfterNavigationListeners(HasElement observersRoot,
-            List<? extends HasElement> elements, AfterNavigationEvent event) {
-        Stream<AfterNavigationObserver> observerRootDescendants = EventUtil
-                .collectAfterNavigationObservers(
-                        Collections.singletonList(observersRoot))
-                .stream();
-        Stream<AfterNavigationObserver> otherObservers = EventUtil
-                .getImplementingComponents(
-                        elements.stream().map(HasElement::getElement),
-                        AfterNavigationObserver.class);
-        Stream.concat(observerRootDescendants, otherObservers)
+    private void fireAfterNavigationListeners(AfterNavigationEvent event,
+            List<AfterNavigationHandler> afterNavigationHandlers) {
+        afterNavigationHandlers
                 .forEach(listener -> listener.afterNavigation(event));
     }
 
@@ -262,31 +271,21 @@ public class NavigationStateRenderer implements NavigationHandler {
      *
      * @param beforeNavigation
      *            navigation event sent to observers
-     * @param element
-     *            element for which to handle observers
+     * @param leaveHandlers
+     *            handlers for before leave event
      * @return result of observer events
      */
     private TransitionOutcome executeBeforeLeaveNavigation(
-            BeforeLeaveEvent beforeNavigation, Element element) {
-        Deque<BeforeLeaveObserver> leaveObservers;
-        if (postponed != null) {
-            leaveObservers = postponed.getLeaveObservers();
-            if (!leaveObservers.isEmpty()) {
-                postponed = null;
-            }
-        } else {
-            leaveObservers = new ArrayDeque<>(
-                    EventUtil.collectBeforeLeaveObservers(element));
-        }
-
-        while (!leaveObservers.isEmpty()) {
-            BeforeLeaveObserver listener = leaveObservers.remove();
+            BeforeLeaveEvent beforeNavigation,
+            Deque<BeforeLeaveHandler> leaveHandlers) {
+        while (!leaveHandlers.isEmpty()) {
+            BeforeLeaveHandler listener = leaveHandlers.remove();
             listener.beforeLeave(beforeNavigation);
 
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
             } else if (beforeNavigation.isPostponed()) {
-                postponed = Postpone.withLeaveObservers(leaveObservers);
+                postponed = Postpone.withLeaveObservers(leaveHandlers);
                 return TransitionOutcome.POSTPONED;
             }
         }
@@ -299,27 +298,16 @@ public class NavigationStateRenderer implements NavigationHandler {
      *
      * @param beforeNavigation
      *            navigation event sent to observers
-     * @param observersRoot
-     *            element which is used as a root to traverse for obeservers
-     * @param elements
-     *            elements for which to handle observers
+     * @param enterHandlers
+     *            handlers for before enter event
      * @return result of observer events
      */
     private TransitionOutcome executeBeforeEnterNavigation(
-            BeforeEnterEvent beforeNavigation, HasElement observersRoot,
-            List<? extends HasElement> elements) {
-        List<BeforeEnterObserver> enterObservers = Stream
-                .concat(EventUtil
-                        .collectBeforeEnterObservers(
-                                Collections.singletonList(observersRoot))
-                        .stream(),
-                        EventUtil.getImplementingComponents(
-                                elements.stream().map(HasElement::getElement),
-                                BeforeEnterObserver.class))
-                .collect(Collectors.toList());
+            BeforeEnterEvent beforeNavigation,
+            List<BeforeEnterHandler> enterHandlers) {
 
-        for (BeforeEnterObserver observer : enterObservers) {
-            observer.beforeEnter(beforeNavigation);
+        for (BeforeEnterHandler eventHandler : enterHandlers) {
+            eventHandler.beforeEnter(beforeNavigation);
 
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;

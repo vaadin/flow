@@ -17,6 +17,8 @@ package com.vaadin.flow.component.polymertemplate;
 
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
+
 /**
  * Template content parser.
  * <p>
@@ -32,15 +34,54 @@ import org.jsoup.nodes.Element;
 public interface TemplateParser {
 
     /**
-     * Gets a JSOUP {@link Element} representing the template content.
+     * Wrapper for the parsing result.
+     * <p>
+     * The data contains {@link HtmlImport} uri where the template is declared
+     * and its content as an {@link Element} instance.
+     *
+     * @author Vaadin Ltd
+     *
+     */
+    class TemplateData {
+
+        private final String htmlImportUri;
+        private final Element templateElement;
+
+        public TemplateData(String uri, Element element) {
+            htmlImportUri = uri;
+            templateElement = element;
+        }
+
+        /**
+         * Gets the {@link HtmlImport} uri where the template is declared.
+         *
+         * @return template uri
+         */
+        public String getHtmlImportUri() {
+            return htmlImportUri;
+        }
+
+        /**
+         * Gets the content of the template.
+         *
+         * @return the content of the template
+         */
+        public Element getTemplateElement() {
+            return templateElement;
+        }
+    }
+
+    /**
+     * Gets the template data which contains a JSOUP {@link Element}
+     * representing the template content and the template uri.
      *
      * @param clazz
      *            the template class
      * @param tag
      *            the template tag name
      *
-     * @return template content as an Element
+     * @return the template data
      */
-    Element getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
-                               String tag);
+    TemplateData getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
+            String tag);
 }

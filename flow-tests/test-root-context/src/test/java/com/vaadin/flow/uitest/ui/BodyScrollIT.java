@@ -13,20 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.router.internal.BeforeLeaveHandler;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-/**
- * Any {@code com.vaadin.ui.Component} implementing this interface will be
- * informed when they are being detached from the
- * {@link com.vaadin.flow.component.UI}.
- * <p>
- * During this phase there is the possibility to reroute to another navigation
- * target or to postpone the navigation (to for instance get user input).
- *
- * @author Vaadin Ltd
- */
-@FunctionalInterface
-public interface BeforeLeaveObserver extends BeforeLeaveHandler {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+public class BodyScrollIT extends ChromeBrowserTest {
+
+    @Test
+    public void noScrollAttributeForBody() {
+        open();
+
+        WebElement body = findElement(By.tagName("body"));
+        Assert.assertNull(body.getAttribute("scroll"));
+    }
 }

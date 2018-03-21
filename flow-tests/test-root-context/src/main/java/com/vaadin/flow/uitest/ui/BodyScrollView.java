@@ -13,20 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.router.internal.BeforeLeaveHandler;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-/**
- * Any {@code com.vaadin.ui.Component} implementing this interface will be
- * informed when they are being detached from the
- * {@link com.vaadin.flow.component.UI}.
- * <p>
- * During this phase there is the possibility to reroute to another navigation
- * target or to postpone the navigation (to for instance get user input).
- *
- * @author Vaadin Ltd
- */
-@FunctionalInterface
-public interface BeforeLeaveObserver extends BeforeLeaveHandler {
+@Route(value = "com.vaadin.flow.uitest.ui.BodyScrollView", layout = ViewTestLayout.class)
+public class BodyScrollView extends AbstractDivView {
+
+    public BodyScrollView() {
+        add(new Label("Check scroll attribute"));
+    }
+
 }

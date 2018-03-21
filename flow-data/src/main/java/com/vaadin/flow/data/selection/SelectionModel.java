@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -34,9 +35,10 @@ import com.vaadin.flow.shared.Registration;
  *
  * @param <T>
  *            the type of the items to select
+ * @param <C>
+ *            the component type
  */
-public interface SelectionModel<T>
-        extends Serializable {
+public interface SelectionModel<C extends Component, T> extends Serializable {
 
     /**
      * A selection model in which at most one item can be selected at a time.
@@ -44,8 +46,11 @@ public interface SelectionModel<T>
      *
      * @param <T>
      *            the type of the items to select
+     * @param <C>
+     *            the component type
      */
-    public interface Single<T> extends SelectionModel<T> {
+    public interface Single<C extends Component, T>
+            extends SelectionModel<C, T> {
 
         /**
          * Selects the given item. If another item was already selected, that
@@ -133,8 +138,11 @@ public interface SelectionModel<T>
      *
      * @param <T>
      *            the type of the items to select
+     * @param <C>
+     *            the component type
      */
-    public interface Multi<T> extends SelectionModel<T> {
+    public interface Multi<C extends Component, T>
+            extends SelectionModel<C, T> {
 
         /**
          * Adds the given item to the set of currently selected items.
@@ -291,5 +299,5 @@ public interface SelectionModel<T>
      *            the listener to add, not {@code null}
      * @return a registration handle for removing the listener
      */
-    Registration addSelectionListener(SelectionListener<T> listener);
+    Registration addSelectionListener(SelectionListener<C, T> listener);
 }

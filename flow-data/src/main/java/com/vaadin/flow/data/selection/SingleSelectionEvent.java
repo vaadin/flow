@@ -32,8 +32,8 @@ import com.vaadin.flow.component.HasValue;
  * @param <T>
  *            the type of the selected item
  */
-public class SingleSelectionEvent<C extends Component, T>
-        extends HasValue.ValueChangeEvent<C, T> implements SelectionEvent<T> {
+public class SingleSelectionEvent<C extends Component, T> extends
+        HasValue.ValueChangeEvent<C, T> implements SelectionEvent<C, T> {
 
     /**
      * Creates a new selection change event in a component.

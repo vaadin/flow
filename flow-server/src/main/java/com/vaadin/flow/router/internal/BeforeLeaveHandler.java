@@ -13,20 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.flow.router.internal;
 
-import com.vaadin.flow.router.internal.BeforeLeaveHandler;
+import com.vaadin.flow.router.BeforeLeaveEvent;
 
 /**
- * Any {@code com.vaadin.ui.Component} implementing this interface will be
- * informed when they are being detached from the
- * {@link com.vaadin.flow.component.UI}.
- * <p>
- * During this phase there is the possibility to reroute to another navigation
- * target or to postpone the navigation (to for instance get user input).
- *
- * @author Vaadin Ltd
+ * The base interface for every interface that handles {@link BeforeLeaveEvent}.
  */
 @FunctionalInterface
-public interface BeforeLeaveObserver extends BeforeLeaveHandler {
+public interface BeforeLeaveHandler {
+
+    /**
+     * Method called before navigation to detaching Component chain is made.
+     *
+     * @param event
+     *            before navigation event with event details
+     */
+    void beforeLeave(BeforeLeaveEvent event);
 }

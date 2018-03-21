@@ -24,6 +24,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
@@ -37,7 +38,8 @@ public class LazyLoadingTemplateView extends AbstractDivView {
     @Tag("lazy-widget")
     public static class LazyWidget extends PolymerTemplate<Message> {
         public LazyWidget() {
-            super((clazz, tag) -> Jsoup.parse(getTemplateContent()));
+            super((clazz, tag) -> new TemplateData("",
+                    Jsoup.parse(getTemplateContent())));
             getModel().setText("foo");
         }
 

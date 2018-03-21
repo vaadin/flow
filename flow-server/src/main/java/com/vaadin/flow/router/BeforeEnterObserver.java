@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.router;
 
+import com.vaadin.flow.router.internal.BeforeEnterHandler;
+
 /**
  * Any {@code com.vaadin.ui.Component} implementing this interface will be
- * informed when they are being attached to the UI.
+ * informed when they are being attached to the
+ * {@link com.vaadin.flow.component.UI}.
  * <p>
  * During this phase there is the possibility to reroute to another navigation
  * target.
@@ -25,13 +28,5 @@ package com.vaadin.flow.router;
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface BeforeEnterObserver {
-
-    /**
-     * Method called before navigation to attaching Component chain is made.
-     * 
-     * @param event
-     *            before navigation event with event details
-     */
-    void beforeEnter(BeforeEnterEvent event);
+public interface BeforeEnterObserver extends BeforeEnterHandler {
 }
