@@ -969,10 +969,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
 
-        PushMode pushMode = push.map(Push::value).orElseGet(context.getSession()
-                .getService().getDeploymentConfiguration()::getPushMode);
+        DeploymentConfiguration deploymentConfiguration = context.getSession()
+                .getService().getDeploymentConfiguration();
+        PushMode pushMode = push.map(Push::value)
+                .orElseGet(deploymentConfiguration::getPushMode);
         pushConfiguration.setPushMode(pushMode);
-
+        pushConfiguration.setPushUrl(deploymentConfiguration.getPushURL());
         push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
         // Set thread local here so it is available in init
