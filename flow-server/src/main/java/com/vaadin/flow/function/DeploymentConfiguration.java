@@ -113,6 +113,14 @@ public interface DeploymentConfiguration extends Serializable {
     PushMode getPushMode();
 
     /**
+     * Returns the URL that bidirectional ("push") client-server communication
+     * should use.
+     *
+     * @return The push URL to use
+     */
+    String getPushURL();
+
+    /**
      * Gets the properties configured for the deployment, e.g. as init
      * parameters to the servlet.
      *
