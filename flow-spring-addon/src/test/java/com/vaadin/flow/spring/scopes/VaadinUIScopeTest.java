@@ -43,6 +43,8 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class VaadinUIScopeTest extends AbstractScopeTest {
 
+    private UI ui;
+
     @Before
     public void tearDown() {
         VaadinSession.setCurrent(null);
@@ -194,6 +196,9 @@ public class VaadinUIScopeTest extends AbstractScopeTest {
         ui.doInit(null, 1);
 
         UI.setCurrent(ui);
+
+        // prevent UI from being GCed.
+        this.ui = ui;
         return ui;
     }
 }
