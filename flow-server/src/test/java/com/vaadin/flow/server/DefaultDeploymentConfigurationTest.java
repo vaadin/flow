@@ -15,19 +15,16 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.Objects;
-import java.util.Properties;
-
-import org.junit.Test;
-
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
-
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Objects;
+import java.util.Properties;
+
+import org.junit.Test;
 
 /**
  * Tests for {@link DefaultDeploymentConfiguration}
@@ -45,7 +42,7 @@ public class DefaultDeploymentConfigurationTest {
         System.setProperty(prop, value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 clazz, new Properties(), (base, consumer) -> {
-        });
+                });
         assertEquals(value, config.getSystemProperty(prop));
     }
 
@@ -82,13 +79,15 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void webComponentsBase_webjarsEnabled_webJarFileFound() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.DISABLE_WEBJARS, Boolean.FALSE.toString());
+        initParameters.setProperty(Constants.DISABLE_WEBJARS,
+                Boolean.FALSE.toString());
 
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 DefaultDeploymentConfigurationTest.class, initParameters,
                 (base, consumer) -> {
                     if (Objects.equals(base, "/")) {
-                        consumer.test("webjars/bower_components/webcomponentsjs/webcomponents-loader.js");
+                        consumer.test(
+                                "webjars/bower_components/webcomponentsjs/webcomponents-loader.js");
                     }
                 });
 
@@ -103,17 +102,20 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void webComponentsBase_webJarsDisabled_noPolyfillFound() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.DISABLE_WEBJARS, Boolean.TRUE.toString());
+        initParameters.setProperty(Constants.DISABLE_WEBJARS,
+                Boolean.TRUE.toString());
 
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 DefaultDeploymentConfigurationTest.class, initParameters,
                 (base, consumer) -> {
                     if (Objects.equals(base, "/")) {
-                        consumer.test("webjars/bower_components/webcomponentsjs/webcomponents-loader.js");
+                        consumer.test(
+                                "webjars/bower_components/webcomponentsjs/webcomponents-loader.js");
                     }
                 });
 
-        assertFalse("When webjars are disabled, no webjars paths should be used",
+        assertFalse(
+                "When webjars are disabled, no webjars paths should be used",
                 config.getWebComponentsPolyfillBase().isPresent());
     }
 
@@ -140,7 +142,8 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     /**
-     * @see <a href="https://github.com/vaadin/flow/issues/3142">https://github.com/vaadin/flow/issues/3142</a>
+     * @see <a href=
+     *      "https://github.com/vaadin/flow/issues/3142">https://github.com/vaadin/flow/issues/3142</a>
      */
     @Test
     public void testWebComponentsBase_defaultSetting_samePathRepeatedMultipleTimes() {
@@ -163,7 +166,8 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void testWebComponentsBase_explicitSetting() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "foo");
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_POLYFILL_BASE,
+                "foo");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -178,7 +182,8 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void testWebComponentsBase_explicitDisable() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "");
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_POLYFILL_BASE,
+                "");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -189,8 +194,8 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void booleanValueReadIgnoreTheCase_true() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
-                "tRUe");
+        initParameters.setProperty(
+                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "tRUe");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -202,8 +207,8 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void booleanValueReadIgnoreTheCase_false() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
-                "FaLsE");
+        initParameters.setProperty(
+                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "FaLsE");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -216,8 +221,8 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void booleanValueRead_emptyIsTrue() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
-                "");
+        initParameters.setProperty(
+                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -229,7 +234,8 @@ public class DefaultDeploymentConfigurationTest {
     @Test(expected = IllegalArgumentException.class)
     public void booleanValueRead_exceptionOnNonBooleanValue() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+        initParameters.setProperty(
+                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 "incorrectValue");
 
         createDeploymentConfig(initParameters);
@@ -238,16 +244,24 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void frontendPrefixes_developmentMode() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.FRONTEND_URL_ES5, "context://build/frontend-es5/");
-        initParameters.setProperty(Constants.FRONTEND_URL_ES6, "context://build/frontend-es6/");
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.FALSE.toString());
+        initParameters.setProperty(Constants.FRONTEND_URL_ES5,
+                "context://build/frontend-es5/");
+        initParameters.setProperty(Constants.FRONTEND_URL_ES6,
+                "context://build/frontend-es6/");
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+                Boolean.FALSE.toString());
 
-        DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
         String developmentPrefix = Constants.FRONTEND_URL_DEV_DEFAULT;
-        assertThat(String.format("In development mode, both es5 and es6 prefixes should be equal to '%s'", developmentPrefix),
-                config.getEs5FrontendPrefix(), is(developmentPrefix));
-        assertThat(String.format("In development mode, both es5 and es6 prefixes should be equal to '%s'", developmentPrefix),
-                config.getEs6FrontendPrefix(), is(developmentPrefix));
+        assertThat(String.format(
+                "In development mode, both es5 and es6 prefixes should be equal to '%s'",
+                developmentPrefix), config.getEs5FrontendPrefix(),
+                is(developmentPrefix));
+        assertThat(String.format(
+                "In development mode, both es5 and es6 prefixes should be equal to '%s'",
+                developmentPrefix), config.getEs6FrontendPrefix(),
+                is(developmentPrefix));
     }
 
     @Test
@@ -258,15 +272,20 @@ public class DefaultDeploymentConfigurationTest {
         Properties initParameters = new Properties();
         initParameters.setProperty(Constants.FRONTEND_URL_ES5, es5Prefix);
         initParameters.setProperty(Constants.FRONTEND_URL_ES6, es6Prefix);
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.TRUE.toString());
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+                Boolean.TRUE.toString());
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
 
-        assertThat(String.format("In production mode, es5 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_ES5),
-                config.getEs5FrontendPrefix(), is(es5Prefix));
-        assertThat(String.format("In production mode, es6 prefix should be equal to '%s' parameter value", Constants.FRONTEND_URL_ES6),
-                config.getEs6FrontendPrefix(), is(es6Prefix));
+        assertThat(String.format(
+                "In production mode, es5 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES5), config.getEs5FrontendPrefix(),
+                is(es5Prefix));
+        assertThat(String.format(
+                "In production mode, es6 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES6), config.getEs6FrontendPrefix(),
+                is(es6Prefix));
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(
@@ -276,4 +295,23 @@ public class DefaultDeploymentConfigurationTest {
                 (base, consumer) -> {
                 });
     }
+
+    @Test
+    public void defaultPushUrl() {
+        Properties initParameters = new Properties();
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertThat(config.getPushURL(), is(""));
+    }
+
+    @Test
+    public void pushUrl() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PUSH_URL, "foo");
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertThat(config.getPushURL(), is("foo"));
+    }
+
 }
