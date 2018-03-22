@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -32,9 +33,10 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.spring.SpringVaadinSession;
-import com.vaadin.flow.spring.scopes.AbstractScope;
 
 public abstract class AbstractScopeTest {
+
+    private VaadinSession session;
 
     public static class TestSession extends SpringVaadinSession {
 
@@ -42,6 +44,11 @@ public abstract class AbstractScopeTest {
             super(Mockito.mock(VaadinService.class));
         }
 
+    }
+
+    @After
+    public void clearSession() {
+        session = null;
     }
 
     @Test(expected = IllegalStateException.class)
@@ -130,6 +137,9 @@ public abstract class AbstractScopeTest {
 
         VaadinSession.setCurrent(session);
         when(session.hasLock()).thenReturn(true);
+
+        // keep a reference to the session so that it cannot be GCed.
+        this.session = session;
 
         return session;
     }

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,10 +44,18 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class VaadinUIScopeTest extends AbstractScopeTest {
 
+    private UI ui;
+
     @Before
     public void tearDown() {
         VaadinSession.setCurrent(null);
         UI.setCurrent(null);
+        ui = null;
+    }
+
+    @After
+    public void clearUI() {
+        ui = null;
     }
 
     @Test
@@ -194,6 +203,9 @@ public class VaadinUIScopeTest extends AbstractScopeTest {
         ui.doInit(null, 1);
 
         UI.setCurrent(ui);
+
+        // prevent UI from being GCed.
+        this.ui = ui;
         return ui;
     }
 }
