@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
@@ -253,6 +254,14 @@ public abstract class Component
      * <p>
      * The default implementation finds child components by traversing each
      * child {@link Element} tree.
+     * <p>
+     * If your component instance is injected via @{@link Id} annotation then
+     * its server side usage has some limitations which doesn't allow to get
+     * children initially declared only on the client side. I.e. this method
+     * returns only children added from the server side and doesn't return
+     * children declared in the template file.
+     *
+     * @see Id
      *
      * @return the child components of this component
      */
