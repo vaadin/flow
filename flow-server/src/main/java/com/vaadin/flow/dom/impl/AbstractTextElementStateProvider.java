@@ -194,8 +194,7 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void visit(StateNode node, NodeVisitor visitor,
-            boolean visitDescendants) {
+    public void visit(StateNode node, NodeVisitor visitor) {
         visitor.visit(ElementType.REGULAR, Element.get(node));
     }
 

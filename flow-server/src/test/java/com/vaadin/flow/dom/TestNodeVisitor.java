@@ -18,22 +18,20 @@ package com.vaadin.flow.dom;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.Node;
-import com.vaadin.flow.dom.NodeVisitor;
-import com.vaadin.flow.dom.ShadowRoot;
-
 class TestNodeVisitor implements NodeVisitor {
 
     Map<Node<?>, ElementType> visited = new HashMap<>();
+    boolean visitDescendants = true;
 
     @Override
-    public void visit(ElementType type, Element element) {
+    public boolean visit(ElementType type, Element element) {
         visited.put(element, type);
+        return visitDescendants;
     }
 
     @Override
-    public void visit(ShadowRoot root) {
+    public boolean visit(ShadowRoot root) {
         visited.put(root, null);
+        return visitDescendants;
     }
 }

@@ -26,10 +26,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.Node;
-import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
 import com.vaadin.flow.internal.NullOwner;
@@ -295,12 +291,13 @@ public class ShadowRootTest extends AbstractNodeTest {
     @Test
     public void visitOnlyNode_hasDescendants_nodeVisitedAndNoDescendantsVisited() {
         TestNodeVisitor visitor = new TestNodeVisitor();
+        visitor.visitDescendants = false;
 
         Map<Node<?>, ElementType> map = new HashMap<>();
 
         ShadowRoot subject = createHierarchy(map);
 
-        ShadowRootStateProvider.get().visit(subject.getNode(), visitor, false);
+        ShadowRootStateProvider.get().visit(subject.getNode(), visitor);
 
         Assert.assertEquals(1, visitor.visited.size());
         Assert.assertEquals(subject,
@@ -311,12 +308,13 @@ public class ShadowRootTest extends AbstractNodeTest {
     @Test
     public void visitOnlyNode_hasDescendants_nodeAndDescendatnsAreVisited() {
         TestNodeVisitor visitor = new TestNodeVisitor();
+        visitor.visitDescendants = true;
 
         Map<Node<?>, ElementType> map = new HashMap<>();
 
         ShadowRoot subject = createHierarchy(map);
 
-        ShadowRootStateProvider.get().visit(subject.getNode(), visitor, true);
+        ShadowRootStateProvider.get().visit(subject.getNode(), visitor);
 
         Assert.assertTrue(map.size() > 1);
 

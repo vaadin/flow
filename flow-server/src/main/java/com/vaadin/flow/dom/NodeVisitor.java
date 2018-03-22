@@ -61,15 +61,19 @@ public interface NodeVisitor {
      *            the element type
      * @param element
      *            the element to visit
+     * @return <code>true</code> to visit descendants, <code>false</code> to
+     *         stop traversal
      */
-    void visit(ElementType type, Element element);
+    boolean visit(ElementType type, Element element);
 
     /**
      * Visit the shadow {@code root}.
      *
      * @param root
      *            the shadow root to visit
+     * @return <code>true</code> to visit descendants, <code>false</code> to
+     *         stop traversal
      */
-    void visit(ShadowRoot root);
+    boolean visit(ShadowRoot root);
 
 }

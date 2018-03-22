@@ -79,13 +79,13 @@ public class BasicElementStateProviderTest {
     @Test
     public void visitOnlyNode_hasDescendants_nodeVisitedAndNoDescendantsVisited() {
         TestNodeVisitor visitor = new TestNodeVisitor();
+        visitor.visitDescendants = false;
 
         Map<Node<?>, ElementType> map = new HashMap<>();
 
         Element subject = createHierarchy(map);
 
-        BasicElementStateProvider.get().visit(subject.getNode(), visitor,
-                false);
+        BasicElementStateProvider.get().visit(subject.getNode(), visitor);
 
         Assert.assertEquals(1, visitor.visited.size());
         Assert.assertEquals(subject,
@@ -97,12 +97,13 @@ public class BasicElementStateProviderTest {
     @Test
     public void visitOnlyNode_hasDescendants_nodeAndDescendatnsAreVisited() {
         TestNodeVisitor visitor = new TestNodeVisitor();
+        visitor.visitDescendants = true;
 
         Map<Node<?>, ElementType> map = new HashMap<>();
 
         Element subject = createHierarchy(map);
 
-        BasicElementStateProvider.get().visit(subject.getNode(), visitor, true);
+        BasicElementStateProvider.get().visit(subject.getNode(), visitor);
 
         Assert.assertTrue(map.size() > 1);
 

@@ -168,19 +168,17 @@ public abstract class AbstractNodeStateProvider
      *            the visitor to apply
      */
     protected void visitDescendants(Node<?> node, NodeVisitor visitor) {
-        node.getChildren().forEach(child -> child.accept(visitor, true));
+        node.getChildren().forEach(child -> child.accept(visitor));
 
         node.getNode().getFeature(VirtualChildrenList.class).iterator()
-                .forEachRemaining(
-                        child -> acceptVirtualChild(child, visitor, true));
+                .forEachRemaining(child -> acceptVirtualChild(child, visitor));
     }
 
-    private void acceptVirtualChild(StateNode node, NodeVisitor visitor,
-            boolean visitDescendants) {
+    private void acceptVirtualChild(StateNode node, NodeVisitor visitor) {
         if (ShadowRoot.isShadowRoot(node)) {
-            ShadowRoot.get(node).accept(visitor, visitDescendants);
+            ShadowRoot.get(node).accept(visitor);
         } else {
-            Element.get(node).accept(visitor, visitDescendants);
+            Element.get(node).accept(visitor);
         }
     }
 

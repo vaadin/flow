@@ -346,36 +346,38 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void visit(StateNode node, NodeVisitor visitor,
-            boolean visitDescendants) {
+    public void visit(StateNode node, NodeVisitor visitor) {
         Element element = Element.get(node);
         ElementData data = node.getFeature(ElementData.class);
         JsonValue payload = data.getPayload();
 
+        boolean visitDescendants;
         if (payload instanceof JsonObject) {
             JsonObject object = (JsonObject) payload;
             String type = object.getString(NodeProperties.TYPE);
             if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
-                visitor.visit(NodeVisitor.ElementType.VIRTUAL, element);
+                visitDescendants = visitor
+                        .visit(NodeVisitor.ElementType.VIRTUAL, element);
             } else if (NodeProperties.INJECT_BY_ID.equals(type)
                     || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
-                visitor.visit(NodeVisitor.ElementType.VIRTUAL_ATTACHED,
-                        element);
+                visitDescendants = visitor.visit(
+                        NodeVisitor.ElementType.VIRTUAL_ATTACHED, element);
             } else {
-                assert false : "Unexpected payload type : " + type;
+                throw new IllegalStateException(
+                        "Unexpected payload type : " + type);
             }
         } else if (payload == null) {
-            visitor.visit(NodeVisitor.ElementType.REGULAR, element);
+            visitDescendants = visitor.visit(NodeVisitor.ElementType.REGULAR,
+                    element);
         } else {
-            assert false : "Unexpected payload in element data : "
-                    + payload.toJson();
+            throw new IllegalStateException(
+                    "Unexpected payload in element data : " + payload.toJson());
         }
 
         if (visitDescendants) {
             visitDescendants(element, visitor);
 
-            element.getShadowRoot()
-                    .ifPresent(root -> root.accept(visitor, visitDescendants));
+            element.getShadowRoot().ifPresent(root -> root.accept(visitor));
         }
     }
 

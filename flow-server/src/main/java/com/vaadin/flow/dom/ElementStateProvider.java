@@ -435,17 +435,14 @@ public interface ElementStateProvider extends Serializable {
 
     /**
      * Visit the {@code node} applying {@code visitor} to it and its descendants
-     * if {@code visitDescendants} is {@code true}.
+     * based on the return value from the visitor.
      *
      * @param node
      *            the node to visit
      * @param visitor
      *            the visitor to apply to the node
-     * @param visitDescendants
-     *            whether the {@code visitor} should be applied to the
-     *            {@code node} descendants
      */
-    void visit(StateNode node, NodeVisitor visitor, boolean visitDescendants);
+    void visit(StateNode node, NodeVisitor visitor);
 
     /**
      * Sets the {@code node} visibility.
