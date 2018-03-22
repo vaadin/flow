@@ -69,8 +69,7 @@ public class UITest {
         }
 
         @Override
-        public void visit(StateNode node, NodeVisitor visitor,
-                boolean visitDescendants) {
+        public void visit(StateNode node, NodeVisitor visitor) {
         }
     }
 

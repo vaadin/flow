@@ -199,10 +199,9 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void visit(StateNode node, NodeVisitor visitor,
-            boolean visitDescendants) {
+    public void visit(StateNode node, NodeVisitor visitor) {
         ShadowRoot shadowRoot = ShadowRoot.get(node);
-        visitor.visit(shadowRoot);
+        boolean visitDescendants = visitor.visit(shadowRoot);
 
         if (visitDescendants) {
             visitDescendants(shadowRoot, visitor);

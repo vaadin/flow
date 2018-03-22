@@ -46,13 +46,15 @@ public final class EventUtil {
         }
 
         @Override
-        public void visit(ElementType type, Element element) {
+        public boolean visit(ElementType type, Element element) {
             collector.add(element);
+            return true;
         }
 
         @Override
-        public void visit(ShadowRoot root) {
-            // Skip shadow root nodes
+        public boolean visit(ShadowRoot root) {
+            // Ignore shadow root nodes, but visit descendants
+            return true;
         }
 
     }
@@ -246,7 +248,7 @@ public final class EventUtil {
      */
     public static void inspectHierarchy(Element node,
             Collection<Element> descendants) {
-        node.accept(new DescendantsVisitor(descendants), true);
+        node.accept(new DescendantsVisitor(descendants));
     }
 
     private static Stream<Element> flattenDescendants(Element element) {
