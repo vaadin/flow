@@ -26,8 +26,8 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
 import com.vaadin.flow.templatemodel.ClientUpdateMode;
-import com.vaadin.flow.templatemodel.Convert;
-import com.vaadin.flow.templatemodel.ModelConverter;
+import com.vaadin.flow.templatemodel.Encode;
+import com.vaadin.flow.templatemodel.ModelEncoder;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -41,7 +41,7 @@ public class ConvertToBeanView
         @AllowClientUpdates(ClientUpdateMode.ALLOW)
         Date getDate();
 
-        @Convert(DateToBeanConverter.class)
+        @Encode(DateToBeanConverter.class)
         void setDate(Date date);
 
         void setMessage(String message);
@@ -82,10 +82,10 @@ public class ConvertToBeanView
     }
 
     public static class DateToBeanConverter
-            implements ModelConverter<Date, DateBean> {
+            implements ModelEncoder<Date, DateBean> {
 
         @Override
-        public DateBean toPresentation(Date modelValue) {
+        public DateBean encode(Date modelValue) {
             if (modelValue == null) {
                 return null;
             }

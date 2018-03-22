@@ -68,14 +68,14 @@ class PropertyMapBuilder {
 
         private BeanModelTypeProperty buildProperty(
                 PropertyFilter propertyFilter,
-                PathLookup<ModelConverter<?, ?>> outerConverters,
+                PathLookup<ModelEncoder<?, ?>> outerConverters,
                 PathLookup<ClientUpdateMode> outerClientModes) {
 
             PropertyFilter innerFilter = new PropertyFilter(propertyFilter,
                     propertyName, getExcludeFieldsFilter());
             String prefix = innerFilter.getPrefix();
 
-            PathLookup<ModelConverter<?, ?>> innerConverters = outerConverters
+            PathLookup<ModelEncoder<?, ?>> innerConverters = outerConverters
                     .compose(getModelConverters(), prefix);
             PathLookup<ClientUpdateMode> innerUpdateModes = outerClientModes
                     .compose(getClientUpdateModes(), prefix);
@@ -88,7 +88,7 @@ class PropertyMapBuilder {
         }
 
         private ModelType createModelType(PropertyFilter innerFilter,
-                PathLookup<ModelConverter<?, ?>> innerConverters,
+                PathLookup<ModelEncoder<?, ?>> innerConverters,
                 PathLookup<ClientUpdateMode> innerUpdateModes) {
             if (innerConverters.getItem(innerFilter.getPrefix()).isPresent()) {
                 return BeanModelType.getConvertedModelType(propertyType,
@@ -101,8 +101,8 @@ class PropertyMapBuilder {
             }
         }
 
-        private Map<String, ModelConverter<?, ?>> getModelConverters() {
-            return collectAnnotationsByPath(Convert.class, Convert::path,
+        private Map<String, ModelEncoder<?, ?>> getModelConverters() {
+            return collectAnnotationsByPath(Encode.class, Encode::path,
                     convert -> ReflectTools.createInstance(convert.value()),
                     "converters");
         }
@@ -152,7 +152,7 @@ class PropertyMapBuilder {
      *            special converters
      */
     PropertyMapBuilder(Class<?> javaType, PropertyFilter propertyFilter,
-            PathLookup<ModelConverter<?, ?>> converterLookup,
+            PathLookup<ModelEncoder<?, ?>> converterLookup,
             PathLookup<ClientUpdateMode> updateModeLookup) {
         assert javaType != null;
         assert propertyFilter != null;

@@ -29,32 +29,32 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             EmptyDivTemplate<TemplateWithConverters.TemplateModelWithConverters> {
 
         public interface TemplateModelWithConverters extends TemplateModel {
-            @Convert(value = LongToStringConverter.class)
+            @Encode(value = LongToStringConverter.class)
             void setLongValue(long longValue);
 
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
             long getLongValue();
 
-            @Convert(value = DateToStringConverter.class)
+            @Encode(value = DateToStringConverter.class)
             void setDate(Date date);
 
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
             Date getDate();
 
-            @Convert(value = DateToBeanWithStringConverter.class)
+            @Encode(value = DateToBeanWithStringConverter.class)
             void setDateString(Date date);
 
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
             Date getDateString();
 
-            @Convert(value = StringToBeanWithStringConverter.class)
+            @Encode(value = StringToBeanWithStringConverter.class)
             void setString(String string);
 
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
             String getString();
 
-            @Convert(value = LongToStringConverter.class, path = "longValue")
-            @Convert(value = DateToStringConverter.class, path = "date")
+            @Encode(value = LongToStringConverter.class, path = "longValue")
+            @Encode(value = DateToStringConverter.class, path = "date")
             void setTestBean(TestBean bean);
 
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
@@ -73,7 +73,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
         public interface TemplateModelWithIncompatibleConverter
                 extends TemplateModel {
 
-            @Convert(value = LongToStringConverter.class)
+            @Encode(value = LongToStringConverter.class)
             void setIntValue(int intValue);
         }
 
@@ -89,7 +89,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
         public interface TemplateModelWithConverterOnParameterizedType
                 extends TemplateModel {
 
-            @Convert(value = LongToStringConverter.class)
+            @Encode(value = LongToStringConverter.class)
             void setList(List<String> list);
         }
 
@@ -105,8 +105,8 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
         public interface TemplateModelWithSamePathInConverters
                 extends TemplateModel {
 
-            @Convert(value = LongToStringConverter.class, path = "same")
-            @Convert(value = LongToStringConverter.class, path = "same")
+            @Encode(value = LongToStringConverter.class, path = "same")
+            @Encode(value = LongToStringConverter.class, path = "same")
             void setLongValue(long longValue);
         }
 
@@ -121,8 +121,8 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
         public interface TemplateModelWithConverterOnConvertedType
                 extends TemplateModel {
 
-            @Convert(value = LongToBeanWithLongConverter.class)
-            @Convert(value = LongToStringConverter.class, path = "longValue")
+            @Encode(value = LongToBeanWithLongConverter.class)
+            @Encode(value = LongToStringConverter.class, path = "longValue")
             void setLongValue(long longValue);
 
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
@@ -140,7 +140,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
         public interface TemplateModelWithUnsupportedConverterModel
                 extends TemplateModel {
 
-            @Convert(value = UnsupportedModelConverter.class)
+            @Encode(value = UnsupportedModelConverter.class)
             void setString(String string);
         }
 
@@ -155,7 +155,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
         public interface TemplateModelWithConvertedReadOnlyBean
                 extends TemplateModel {
 
-            @Convert(value = LongToStringConverter.class, path = "id")
+            @Encode(value = LongToStringConverter.class, path = "id")
             void setReadOnlyBean(ReadOnlyBean readOnlyBean);
 
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
@@ -172,7 +172,7 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             extends EmptyDivTemplate<TemplateWithDate.TemplateModelWithDate> {
         public interface TemplateModelWithDate extends TemplateModel {
 
-            @Convert(value = DateToDateBeanConverter.class)
+            @Encode(value = DateToDateBeanConverter.class)
             void setDate(Date date);
 
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
@@ -189,8 +189,8 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             EmptyDivTemplate<TemplateWithListOfBeans.TemplateModelWithListOfBeans> {
         public interface TemplateModelWithListOfBeans extends TemplateModel {
 
-            @Convert(value = LongToStringConverter.class, path = "longValue")
-            @Convert(value = DateToStringConverter.class, path = "date")
+            @Encode(value = LongToStringConverter.class, path = "longValue")
+            @Encode(value = DateToStringConverter.class, path = "date")
             void setTestBeans(List<TestBean> testBeans);
 
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
@@ -204,43 +204,43 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class LongToStringConverter
-            implements ModelConverter<Long, String> {
+            implements ModelEncoder<Long, String> {
 
         @Override
-        public Class<Long> getModelType() {
+        public Class<Long> getDecodedType() {
             return long.class;
         }
 
         @Override
-        public String toPresentation(Long applicationValue) {
+        public String encode(Long applicationValue) {
             return applicationValue.toString();
         }
 
         @Override
-        public Long toModel(String modelValue) {
+        public Long decode(String modelValue) {
             return Long.parseLong(modelValue);
         }
     }
 
     public static class DateToStringConverter
-            implements ModelConverter<Date, String> {
+            implements ModelEncoder<Date, String> {
 
         @Override
-        public String toPresentation(Date applicationValue) {
+        public String encode(Date applicationValue) {
             return Long.toString(applicationValue.getTime());
         }
 
         @Override
-        public Date toModel(String modelValue) {
+        public Date decode(String modelValue) {
             return new Date(Long.valueOf(modelValue));
         }
     }
 
     public static class StringToBeanWithStringConverter
-            implements ModelConverter<String, BeanWithString> {
+            implements ModelEncoder<String, BeanWithString> {
 
         @Override
-        public BeanWithString toPresentation(String applicationValue) {
+        public BeanWithString encode(String applicationValue) {
             return new BeanWithString(applicationValue);
         }
 
@@ -251,15 +251,15 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class LongToBeanWithLongConverter
-            implements ModelConverter<Long, BeanWithLong> {
+            implements ModelEncoder<Long, BeanWithLong> {
 
         @Override
-        public Class<Long> getModelType() {
+        public Class<Long> getDecodedType() {
             return long.class;
         }
 
         @Override
-        public BeanWithLong toPresentation(Long applicationValue) {
+        public BeanWithLong encode(Long applicationValue) {
             return new BeanWithLong(applicationValue);
         }
 
@@ -270,10 +270,10 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class DateToBeanWithStringConverter
-            implements ModelConverter<Date, BeanWithString> {
+            implements ModelEncoder<Date, BeanWithString> {
 
         @Override
-        public BeanWithString toPresentation(Date applicationValue) {
+        public BeanWithString encode(Date applicationValue) {
             if (applicationValue == null) {
                 return null;
             }
@@ -291,29 +291,29 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
     }
 
     public static class UnsupportedModelConverter
-            implements ModelConverter<String, Long> {
+            implements ModelEncoder<String, Long> {
 
         @Override
-        public Class<Long> getPresentationType() {
+        public Class<Long> getEncodedType() {
             return long.class;
         }
 
         @Override
-        public Long toPresentation(String applicationValue) {
+        public Long encode(String applicationValue) {
             return Long.valueOf(applicationValue);
         }
 
         @Override
-        public String toModel(Long modelValue) {
+        public String decode(Long modelValue) {
             return modelValue.toString();
         }
     }
 
     public static class DateToDateBeanConverter
-            implements ModelConverter<Date, DateBean> {
+            implements ModelEncoder<Date, DateBean> {
 
         @Override
-        public DateBean toPresentation(Date applicationValue) {
+        public DateBean encode(Date applicationValue) {
             if (applicationValue == null) {
                 return null;
             }
@@ -461,32 +461,32 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
         public interface Model extends TemplateModel {
             void setLongValue(long longValue);
 
-            @Convert(value = LongToStringConverter.class)
+            @Encode(value = LongToStringConverter.class)
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
             long getLongValue();
 
             void setDate(Date date);
 
-            @Convert(value = DateToStringConverter.class)
+            @Encode(value = DateToStringConverter.class)
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
             Date getDate();
 
             void setDateString(Date date);
 
-            @Convert(value = DateToBeanWithStringConverter.class)
+            @Encode(value = DateToBeanWithStringConverter.class)
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
             Date getDateString();
 
             void setString(String string);
 
-            @Convert(value = StringToBeanWithStringConverter.class)
+            @Encode(value = StringToBeanWithStringConverter.class)
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
             String getString();
 
             void setTestBean(TestBean bean);
 
-            @Convert(value = LongToStringConverter.class, path = "longValue")
-            @Convert(value = DateToStringConverter.class, path = "date")
+            @Encode(value = LongToStringConverter.class, path = "longValue")
+            @Encode(value = DateToStringConverter.class, path = "date")
             @AllowClientUpdates(ClientUpdateMode.ALLOW)
             TestBean getTestBean();
         }
@@ -501,36 +501,36 @@ public class TemplateModelWithConvertersTest extends HasCurrentService {
             extends EmptyDivTemplate<SameConvertersOnAllMethods.Model> {
 
         public interface Model extends TemplateModel {
-            @Convert(value = LongToStringConverter.class)
+            @Encode(value = LongToStringConverter.class)
             void setLongValue(long longValue);
 
-            @Convert(value = LongToStringConverter.class)
+            @Encode(value = LongToStringConverter.class)
             long getLongValue();
 
-            @Convert(value = DateToStringConverter.class)
+            @Encode(value = DateToStringConverter.class)
             void setDate(Date date);
 
-            @Convert(value = DateToStringConverter.class)
+            @Encode(value = DateToStringConverter.class)
             Date getDate();
 
-            @Convert(value = DateToBeanWithStringConverter.class)
+            @Encode(value = DateToBeanWithStringConverter.class)
             void setDateString(Date date);
 
-            @Convert(value = DateToBeanWithStringConverter.class)
+            @Encode(value = DateToBeanWithStringConverter.class)
             Date getDateString();
 
-            @Convert(value = StringToBeanWithStringConverter.class)
+            @Encode(value = StringToBeanWithStringConverter.class)
             void setString(String string);
 
-            @Convert(value = StringToBeanWithStringConverter.class)
+            @Encode(value = StringToBeanWithStringConverter.class)
             String getString();
 
-            @Convert(value = LongToStringConverter.class, path = "longValue")
-            @Convert(value = DateToStringConverter.class, path = "date")
+            @Encode(value = LongToStringConverter.class, path = "longValue")
+            @Encode(value = DateToStringConverter.class, path = "date")
             void setTestBean(TestBean bean);
 
-            @Convert(value = LongToStringConverter.class, path = "longValue")
-            @Convert(value = DateToStringConverter.class, path = "date")
+            @Encode(value = LongToStringConverter.class, path = "longValue")
+            @Encode(value = DateToStringConverter.class, path = "date")
             TestBean getTestBean();
         }
 
