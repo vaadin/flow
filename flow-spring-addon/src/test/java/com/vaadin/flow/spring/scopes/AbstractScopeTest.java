@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -43,6 +44,11 @@ public abstract class AbstractScopeTest {
             super(Mockito.mock(VaadinService.class));
         }
 
+    }
+
+    @After
+    public void clearSession() {
+        session = null;
     }
 
     @Test(expected = IllegalStateException.class)

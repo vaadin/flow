@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +50,12 @@ public class VaadinUIScopeTest extends AbstractScopeTest {
     public void tearDown() {
         VaadinSession.setCurrent(null);
         UI.setCurrent(null);
+        ui = null;
+    }
+
+    @After
+    public void clearUI() {
+        ui = null;
     }
 
     @Test
