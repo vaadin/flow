@@ -212,13 +212,17 @@ class TemplateDataAnalyzer {
             return;
         }
         String id = idAnnotation.get().value();
+        boolean emptyValue = id.isEmpty();
+        if (emptyValue) {
+            id = field.getName();
+        }
         if (notInjectableElementIds.contains(id)) {
             throw new IllegalStateException(String.format(
-                    "Class '%s' whose template URI is '%s' contains field '%s' annotated with @Id('%s'). "
+                    "Class '%s' whose template URI is '%s' contains field '%s' annotated with @Id%s. "
                             + "Corresponding element was found in a sub template, "
                             + "for which injection is not supported.",
                     templateClass.getName(), htmlImportUri, field.getName(),
-                    id));
+                    emptyValue ? "" : "(\"" + id + "\")"));
         }
 
         if (!addTagName(id, field).isPresent()) {

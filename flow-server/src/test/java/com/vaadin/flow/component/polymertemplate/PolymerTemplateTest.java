@@ -16,12 +16,6 @@
 
 package com.vaadin.flow.component.polymertemplate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -35,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
@@ -63,7 +58,12 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import net.jcip.annotations.NotThreadSafe;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @NotThreadSafe
 public class PolymerTemplateTest extends HasCurrentService {
@@ -150,6 +150,27 @@ public class PolymerTemplateTest extends HasCurrentService {
         }
 
         IdChildTemplate(TestTemplateParser parser) {
+            super(parser);
+            this.parser = parser;
+        }
+
+    }
+
+    @Tag(TAG)
+    private static class IdWithNoValueChildTemplate
+            extends PolymerTemplate<ModelClass> {
+
+        @Id
+        private CustomComponent child;
+
+        private final TestTemplateParser parser;
+
+        public IdWithNoValueChildTemplate() {
+            this(new TestTemplateParser(tag -> "<dom-module id='" + tag
+                    + "'><template><div id='child'></template></dom-module>"));
+        }
+
+        IdWithNoValueChildTemplate(TestTemplateParser parser) {
             super(parser);
             this.parser = parser;
         }
@@ -755,7 +776,17 @@ public class PolymerTemplateTest extends HasCurrentService {
     @Test
     public void attachExistingComponent_elementIsCreatedAndSetAsVirtualChild() {
         IdChildTemplate template = new IdChildTemplate();
+        attachComponentAndVerifyChild(template, template.child);
+    }
 
+    @Test
+    public void attachExistingComponent_idWithNoValue_elementIsCreatedAndSetAsVirtualChild() {
+        IdWithNoValueChildTemplate template = new IdWithNoValueChildTemplate();
+        attachComponentAndVerifyChild(template, template.child);
+    }
+
+    private void attachComponentAndVerifyChild(PolymerTemplate<?> template,
+            CustomComponent templateChild) {
         VirtualChildrenList feature = template.getStateNode()
                 .getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();
@@ -767,16 +798,16 @@ public class PolymerTemplateTest extends HasCurrentService {
         String tag = child.getFeature(ElementData.class).getTag();
         assertEquals("div", tag);
 
-        assertNotNull(template.child);
-        assertEquals(child, template.child.getElement().getNode());
+        assertNotNull(templateChild);
+        assertEquals(child, templateChild.getElement().getNode());
 
-        assertTrue(template.child.getElement().getComponent().isPresent());
+        assertTrue(templateChild.getElement().getComponent().isPresent());
 
-        assertTrue(template.child.getElement().getComponent()
+        assertTrue(templateChild.getElement().getComponent()
                 .get() instanceof CustomComponent);
 
-        assertEquals(template.child,
-                template.child.getElement().getComponent().get());
+        assertEquals(templateChild,
+                templateChild.getElement().getComponent().get());
         assertElementData(child, NodeProperties.INJECT_BY_ID, "child");
     }
 
