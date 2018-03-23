@@ -29,8 +29,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 @EnableAuthorizationServer
 @Configuration
 @EnableWebSecurity
-public class TestServletInitializer
-        implements AuthorizationServerConfigurer {
+public class TestServletInitializer implements AuthorizationServerConfigurer {
 
     public static void main(String[] args) {
         SpringApplication.run(TestServletInitializer.class, args);
