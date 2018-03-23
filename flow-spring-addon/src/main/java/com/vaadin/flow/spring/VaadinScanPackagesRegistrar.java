@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -25,11 +26,11 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 
-import com.vaadin.flow.spring.annotation.VaadinScan;
+import com.vaadin.flow.spring.annotation.EnableVaadin;
 
 /**
  * Internal registrar for Vaadin scan packages settings.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -41,6 +42,7 @@ public class VaadinScanPackagesRegistrar
         private final List<String> scanPackages;
 
         private VaadinScanPackages(String[] scanPackages) {
+            assert scanPackages != null;
             this.scanPackages = Collections
                     .unmodifiableList(Arrays.asList(scanPackages));
         }
@@ -54,10 +56,9 @@ public class VaadinScanPackagesRegistrar
     @Override
     public void registerBeanDefinitions(AnnotationMetadata annotationMetadata,
             BeanDefinitionRegistry registry) {
-        String annotationName = VaadinScan.class.getName();
-        if (annotationMetadata.hasAnnotation(annotationName)) {
-            String[] packages = (String[]) annotationMetadata
-                    .getAnnotationAttributes(annotationName).get("value");
+        String[] packages = getPackages(annotationMetadata, EnableVaadin.class,
+                "value");
+        if (packages.length > 0) {
             GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
             beanDefinition.setBeanClass(VaadinScanPackages.class);
             beanDefinition.getConstructorArgumentValues()
@@ -66,6 +67,27 @@ public class VaadinScanPackagesRegistrar
             registry.registerBeanDefinition(VaadinScanPackages.class.getName(),
                     beanDefinition);
         }
+    }
+
+    private <T> T getPackages(Class<T> clazz,
+            AnnotationMetadata annotationMetadata,
+            Class<? extends Annotation> annotation, String getterName) {
+        String annotationName = annotation.getName();
+        if (annotationMetadata.hasAnnotation(annotationName)) {
+            return clazz.cast(annotationMetadata
+                    .getAnnotationAttributes(annotationName).get(getterName));
+        }
+        return null;
+    }
+
+    private String[] getPackages(AnnotationMetadata annotationMetadata,
+            Class<? extends Annotation> annotation, String getterName) {
+        String[] packages = getPackages(String[].class, annotationMetadata,
+                annotation, getterName);
+        if (packages == null) {
+            return new String[0];
+        }
+        return packages;
     }
 
 }

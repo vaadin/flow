@@ -26,13 +26,13 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 
-import com.vaadin.flow.spring.annotation.VaadinScan;
+import com.vaadin.flow.spring.annotation.EnableVaadin;
 
 @SpringBootApplication
 @EnableAuthorizationServer
 @Configuration
 @EnableWebSecurity
-@VaadinScan("com.vaadin.flow.spring.test")
+@EnableVaadin("com.vaadin.flow.spring.test")
 @ComponentScan("com.vaadin.flow.spring.test")
 public class TestServletInitializer implements AuthorizationServerConfigurer {
 

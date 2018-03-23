@@ -302,18 +302,22 @@ public class VaadinServletContextInitializer
     }
 
     private List<String> getDefaultPackages() {
+        List<String> packagesList = Collections.emptyList();
         if (appContext
                 .getBeanNamesForType(VaadinScanPackages.class).length > 0) {
             VaadinScanPackages packages = appContext
                     .getBean(VaadinScanPackages.class);
+            packagesList = packages.getScanPackages();
+
+        }
+        if (!packagesList.isEmpty()) {
             LoggerFactory.getLogger(VaadinServletContextInitializer.class)
                     .trace("Use explicitely configured packages for scan Vaadin types at startup {}",
-                            packages);
-            return packages.getScanPackages();
+                            packagesList);
         } else if (AutoConfigurationPackages.has(appContext)) {
-            return AutoConfigurationPackages.get(appContext);
+            packagesList = AutoConfigurationPackages.get(appContext);
         }
-        return Collections.emptyList();
+        return packagesList;
     }
 
 }
