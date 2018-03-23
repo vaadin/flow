@@ -201,6 +201,41 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         Assert.assertEquals(0, divs.size());
     }
 
+    @Test
+    public void addNodeToNestedContainer_clearParentContainer_allNodesAreRemoved() {
+        WebElement container = findInShadowRoot(root, By.id("nestedContainer"))
+                .get(0);
+
+        List<WebElement> divs = container.findElements(By.tagName("div"));
+        Assert.assertEquals(0, divs.size());
+
+        WebElement add = findInShadowRoot(root,
+                By.id("addChildToNestedContainer")).get(0);
+        String oldTtext = message.getText();
+        add.click();
+        waitForMessageToChange(oldTtext);
+        assertMessageEndsWith("Div 'Server div 1' attached.");
+
+        divs = container.findElements(By.tagName("div"));
+        Assert.assertEquals(1, divs.size());
+
+        WebElement clear = findInShadowRoot(root, By.id("clearContainer4"))
+                .get(0);
+        oldTtext = message.getText();
+        clear.click();
+        waitForMessageToChange(oldTtext);
+
+        /*
+         * Note that in this setup, the server-side components are not detached.
+         */
+        assertMessageEndsWith("Div 'containerWithContainer' cleared.");
+
+        container = findInShadowRoot(root, By.id("containerWithContainer"))
+                .get(0);
+        divs = container.findElements(By.tagName("div"));
+        Assert.assertEquals(0, divs.size());
+    }
+
     private void assertMessageEndsWith(String text) {
         Assert.assertThat(message.getText(), CoreMatchers.endsWith(text));
     }

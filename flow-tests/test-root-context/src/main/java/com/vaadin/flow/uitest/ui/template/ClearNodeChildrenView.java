@@ -44,6 +44,12 @@ public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
     @Id("containerWithSlottedChildren")
     private Div containerWithSlottedChildren;
 
+    @Id("containerWithContainer")
+    private Div containerWithContainer;
+
+    @Id("nestedContainer")
+    private Div nestedContainer;
+
     @Id("addChildToContainer1")
     private NativeButton addChildToContainer1;
 
@@ -62,6 +68,12 @@ public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
     @Id("clearContainer3")
     private NativeButton clearContainer3;
 
+    @Id("addChildToNestedContainer")
+    private NativeButton addChildToNestedContainer;
+
+    @Id("clearContainer4")
+    private NativeButton clearContainer4;
+
     @Id("addChildToSlot")
     private NativeButton addChildToSlot;
 
@@ -79,6 +91,8 @@ public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
                 event -> addDivTo(containerWithMixedChildren));
         addChildToContainer3.addClickListener(
                 event -> addDivTo(containerWithClientSideChildren));
+        addChildToNestedContainer
+                .addClickListener(event -> addDivTo(nestedContainer));
         addChildToSlot.addClickListener(event -> addDivTo(this));
         clearContainer1
                 .addClickListener(event -> clear(containerWithElementChildren,
@@ -89,6 +103,8 @@ public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
         clearContainer3.addClickListener(
                 event -> clear(containerWithClientSideChildren,
                         "containerWithClientSideChildren"));
+        clearContainer4.addClickListener(event -> clear(containerWithContainer,
+                "containerWithContainer"));
         clear.addClickListener(event -> clear(this, "root"));
     }
 

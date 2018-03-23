@@ -268,7 +268,6 @@ public class NodeListAddRemoveTest
         NodeChange nodeChange = changes.get(0);
         Assert.assertThat(nodeChange,
                 CoreMatchers.instanceOf(ListClearChange.class));
-        Assert.assertTrue(nodeChange instanceof ListClearChange);
     }
 
     private void verifyRemoved(List<NodeChange> changes, List<String> items,
