@@ -175,7 +175,7 @@ public class MapSyncRpcHandlerTest {
 
     private static JsonObject createSyncPropertyInvocation(Element element,
             String property, Serializable value) {
-        StateNode node = EventRpcHandlerTest.getInvocationNode(element);
+        StateNode node = element.getNode();
         // Copied from ServerConnector
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_NODE, node.getId());

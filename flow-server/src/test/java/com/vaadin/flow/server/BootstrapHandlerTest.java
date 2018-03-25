@@ -1,6 +1,11 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -13,6 +18,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
@@ -51,16 +58,9 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class BootstrapHandlerTest {
 
@@ -84,7 +84,6 @@ public class BootstrapHandlerTest {
             super.init(request);
             add(new Html("<div foo=bar>foobar</div>"));
             add(new Text("Hello world"));
-            add(new InlineTemplate("<div><script></script></div>"));
         }
 
     }

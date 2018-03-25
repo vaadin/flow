@@ -72,7 +72,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -485,7 +484,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Get all registered listeners for given navigation handler type.
-     * 
+     *
      * @param navigationHandler
      *            handler to get listeners for
      * @param <E>
@@ -842,38 +841,6 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Checks whether the given template node has already been sent to the
-     * client.
-     *
-     * @see #setTemplateSent(TemplateNode)
-     * @param node
-     *            the node to check, not <code>null</code>
-     * @return <code>true</code> if the template node has already been sent to
-     *         the client, <code>false</code> if the client does not know about
-     *         the template node
-     */
-    public boolean isTemplateSent(TemplateNode node) {
-        assert node != null;
-
-        return sentTemplateIds.contains(node.getId());
-    }
-
-    /**
-     * Marks the given template node as being sent to the client.
-     *
-     * @see #isTemplateSent(TemplateNode)
-     *
-     * @param node
-     *            the template node to set as sent, not <code>null</code>
-     */
-    public void setTemplateSent(TemplateNode node) {
-        assert node != null;
-        assert !isTemplateSent(node);
-
-        sentTemplateIds.add(node.getId());
-    }
-
-    /**
      * Returns the helper which handles loading of dependencies (css, js).
      *
      * @return the dependency list helper
@@ -955,7 +922,8 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Check if we have already started navigation to some location on this roundtrip.
+     * Check if we have already started navigation to some location on this
+     * roundtrip.
      *
      * @return true if the last navigation location {@code !=} null
      */

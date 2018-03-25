@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,9 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,12 +51,9 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
-import com.vaadin.flow.internal.nodefeature.TemplateMap;
 import com.vaadin.flow.router.legacy.HasChildView;
 import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.DependencyFilter;
@@ -70,7 +67,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.template.angular.TemplateNode;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -298,23 +294,8 @@ public class UidlWriter implements Serializable {
 
         stateTree.runExecutionsBeforeClientResponse();
 
-        Consumer<TemplateNode> templateEncoder = new Consumer<TemplateNode>() {
-            @Override
-            public void accept(TemplateNode templateNode) {
-                // Send to client if it's a new template
-                if (!uiInternals.isTemplateSent(templateNode)) {
-                    uiInternals.setTemplateSent(templateNode);
-                    templates.put(Integer.toString(templateNode.getId()),
-                            templateNode.toJson(this));
-                }
-            }
-        };
-
         Set<Class<? extends Component>> componentsWithDependencies = new LinkedHashSet<>();
         stateTree.collectChanges(change -> {
-            // Ensure new templates are sent to the client
-            runIfNewTemplateChange(change, templateEncoder);
-
             if (attachesComponent(change)) {
                 change.getNode().getFeature(ComponentMapping.class)
                         .getComponent()
@@ -365,20 +346,6 @@ public class UidlWriter implements Serializable {
             Collections.reverse(parentViewsAscending);
         }
         return parentViewsAscending;
-    }
-
-    private static void runIfNewTemplateChange(NodeChange change,
-            Consumer<TemplateNode> consumer) {
-        if (change instanceof MapPutChange) {
-            MapPutChange put = (MapPutChange) change;
-            if (put.getFeature() == TemplateMap.class
-                    && put.getKey().equals(NodeProperties.ROOT_TEMPLATE_ID)) {
-                Integer id = (Integer) put.getValue();
-                TemplateNode templateNode = TemplateNode.get(id.intValue());
-
-                consumer.accept(templateNode);
-            }
-        }
     }
 
     /**

@@ -16,9 +16,9 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -135,8 +135,7 @@ public class ModelMap extends NodeMap {
     private ModelMap getOrCreateModelMap(String key) {
         Serializable value = getValue(key);
         if (value == null) {
-            value = TemplateElementStateProvider
-                    .createSubModelNode(ModelMap.class);
+            value = createSubModelNode(ModelMap.class);
             setValue(key, value);
         }
 
@@ -158,8 +157,7 @@ public class ModelMap extends NodeMap {
     private ModelList getOrCreateModelList(String key) {
         Serializable value = getValue(key);
         if (value == null) {
-            value = TemplateElementStateProvider
-                    .createSubModelNode(ModelList.class);
+            value = createSubModelNode(ModelList.class);
             setValue(key, value);
         }
 
@@ -263,4 +261,21 @@ public class ModelMap extends NodeMap {
         return true;
     }
 
+    /**
+     * Creates a new state node with all features needed for a state node use as
+     * a sub model.
+     *
+     * @param modelFeature
+     *            the feature type to use for storing the model data, not
+     *            <code>null</code>
+     *
+     * @return a new state node, not <code>null</code>
+     */
+    private StateNode createSubModelNode(
+            Class<? extends NodeFeature> modelFeature) {
+        assert modelFeature == ModelMap.class
+                || modelFeature == ModelList.class;
+
+        return new StateNode(Collections.singletonList(modelFeature));
+    }
 }

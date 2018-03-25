@@ -19,8 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.template.angular.model.ModelDescriptor;
-import com.vaadin.flow.template.angular.model.TemplateModel;
 
 import elemental.json.JsonValue;
 
@@ -106,7 +104,7 @@ public interface ModelType extends Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("Supported types are: ");
         BasicModelType.TYPES.keySet()
-        .forEach(type -> sb.append(type.getSimpleName()).append(", "));
+                .forEach(type -> sb.append(type.getSimpleName()).append(", "));
         sb.append("Beans and Lists of Beans.");
         return sb.toString();
     }
