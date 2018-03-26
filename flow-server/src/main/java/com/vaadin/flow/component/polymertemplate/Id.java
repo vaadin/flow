@@ -31,9 +31,10 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Id {
     /**
-     * The id of the element to map to.
+     * The id of the element to map to. When empty, the name of the field is
+     * used instead.
      *
      * @return the id of the element to map to
      */
-    String value();
+    String value() default "";
 }
