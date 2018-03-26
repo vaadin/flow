@@ -47,12 +47,18 @@ import elemental.json.JsonArray;
  * markup should be loaded using the {@link HtmlImport @HtmlImport} annotation
  * and the components should be associated with the web component element using
  * the {@link Tag @Tag} annotation.
+ * <p>
+ * You may use {@link Id} annotation inside your template class for a field to
+ * reference an element inside your template via <b>id</b> attribute value. Note
+ * that the injected element will have functional limitations on the server
+ * side.
  *
  * @param <M>
  *            a model class that will be used for template data propagation
  *
  * @see HtmlImport
  * @see Tag
+ * @see Id
  *
  * @author Vaadin Ltd
  */
