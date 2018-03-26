@@ -397,7 +397,7 @@
     },
     {
       "name": "updateStyles",
-      "description": "When using the ShadyCSS scoping and custom property shim, causes all\nshimmed styles in this element (and its subtree) to be updated\nbased on current custom property values.\n\nThe optional parameter overrides inline custom property styles with an\nobject of properties where the keys are CSS properties, and the values\nare strings.\n\nExample: `this.updateStyles({'--color': 'blue'})`\n\nThese properties are retained unless a value of `null` is set.",
+      "description": "When using the ShadyCSS scoping and custom property shim, causes all\nshimmed styles in this element (and its subtree) to be updated\nbased on current custom property values.\n\nThe optional parameter overrides inline custom property styles with an\nobject of properties where the keys are CSS properties, and the values\nare strings.\n\nExample: `this.updateStyles({'--color': 'blue'})`\n\nThese properties are retained unless a value of `null` is set.\n\nNote: This function does not support updating CSS mixins.\nYou can not dynamically change the value of an `@apply`.",
       "parameters": [
         {
           "name": "properties",

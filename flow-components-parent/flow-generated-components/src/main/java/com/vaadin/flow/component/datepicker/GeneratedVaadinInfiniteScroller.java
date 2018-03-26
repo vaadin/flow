@@ -296,7 +296,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Target path to unlink.
      */
     @NotSupported
-    protected void unlinkPaths(JsonObject path) {
+    protected void unlinkPaths(String path) {
     }
 
     /**
@@ -319,7 +319,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Target path to unlink.
      */
     @NotSupported
-    protected void unlinkPaths(String path) {
+    protected void unlinkPaths(JsonObject path) {
     }
 
     /**
@@ -586,7 +586,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void pop(JsonObject path) {
+    protected void pop(String path) {
     }
 
     /**
@@ -613,7 +613,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void pop(String path) {
+    protected void pop(JsonObject path) {
     }
 
     /**
@@ -710,7 +710,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void shift(JsonObject path) {
+    protected void shift(String path) {
     }
 
     /**
@@ -737,7 +737,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void shift(String path) {
+    protected void shift(JsonObject path) {
     }
 
     /**
@@ -847,6 +847,10 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      * </p>
      * <p>
      * These properties are retained unless a value of {@code null} is set.
+     * </p>
+     * <p>
+     * Note: This function does not support updating CSS mixins. You can not
+     * dynamically change the value of an {@code @apply}.
      * </p>
      * <p>
      * This function is not supported by Flow because it returns a
