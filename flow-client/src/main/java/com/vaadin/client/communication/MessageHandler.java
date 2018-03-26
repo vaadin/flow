@@ -21,7 +21,6 @@ import java.util.EnumMap;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.DependencyLoader;
@@ -39,7 +38,6 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.client.flow.template.TemplateRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -370,12 +368,6 @@ public class MessageHandler {
             double processUidlStart = Duration.currentTimeMillis();
 
             JsonObject json = valueMap.cast();
-
-            if (json.hasKey("templates")) {
-                TemplateRegistry templates = registry.getTemplateRegistry();
-                JsonObject templatesJson = json.getObject("templates");
-                templates.importFromJson(templatesJson);
-            }
 
             if (json.hasKey("constants")) {
                 ConstantPool constantPool = registry.getConstantPool();

@@ -31,7 +31,6 @@ import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
-import com.vaadin.client.flow.template.TemplateRegistry;
 
 /**
  * A registry of singleton instances, such as {@link ServerRpcQueue}, which can
@@ -260,15 +259,6 @@ public class Registry {
     }
 
     /**
-     * Gets the {@link TemplateRegistry} singleton.
-     *
-     * @return the {@link TemplateRegistry} singleton
-     */
-    public TemplateRegistry getTemplateRegistry() {
-        return get(TemplateRegistry.class);
-    }
-
-    /**
      * Gets the {@link ResourceLoader} singleton.
      *
      * @return the {@link ResourceLoader} singleton
@@ -279,7 +269,7 @@ public class Registry {
 
     /**
      * Gets the {@link ConstantPool} singleton.
-     * 
+     *
      * @return the {@link ConstantPool} singleton
      */
     public ConstantPool getConstantPool() {
@@ -297,7 +287,7 @@ public class Registry {
 
     /**
      * Gets the {@link ExistingElementMap} singleton.
-     * 
+     *
      * @return the {@link ExistingElementMap} singleton
      */
     public ExistingElementMap getExistingElementMap() {
@@ -306,7 +296,7 @@ public class Registry {
 
     /**
      * Gets the {@link InitialPropertiesHandler} singleton.
-     * 
+     *
      * @return the {@link InitialPropertiesHandler} singleton
      */
     public InitialPropertiesHandler getInitialPropertiesHandler() {
