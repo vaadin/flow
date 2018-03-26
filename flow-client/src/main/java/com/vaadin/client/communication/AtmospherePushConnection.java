@@ -768,4 +768,15 @@ public class AtmospherePushConnection implements PushConnection {
         return transport;
     }
 
+    /**
+     * The default {@link PushConnectionFactory} implementation that provides
+     * {@link AtmospherePushConnection} instances.
+     */
+    static class Factory implements PushConnectionFactory {
+
+        @Override
+        public PushConnection create(Registry registry) {
+            return new AtmospherePushConnection(registry);
+        }
+    }
 }
