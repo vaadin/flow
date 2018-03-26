@@ -31,6 +31,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
@@ -53,6 +54,7 @@ import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.server.startup.ServletVerifier;
+import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
 
 /**
  * Servlet context initializer for Spring Boot Application.
@@ -164,9 +166,8 @@ public class VaadinServletContextInitializer
             Stream<Class<? extends Annotation>> annotations = getAnnotations()
                     .stream()
                     .map(annotation -> (Class<? extends Annotation>) annotation);
-            validateClasses(
-                    findByAnnotation(getCustomElementPackages(), annotations)
-                            .collect(Collectors.toList()));
+            validateClasses(findByAnnotation(getVerifiableAnnotationPackages(),
+                    annotations).collect(Collectors.toList()));
         }
 
         @Override
@@ -288,6 +289,10 @@ public class VaadinServletContextInitializer
         return getDefaultPackages();
     }
 
+    private Collection<String> getVerifiableAnnotationPackages() {
+        return getDefaultPackages();
+    }
+
     private Collection<String> getErrorParameterPackages() {
         return Stream
                 .concat(Stream
@@ -297,10 +302,22 @@ public class VaadinServletContextInitializer
     }
 
     private List<String> getDefaultPackages() {
-        if (AutoConfigurationPackages.has(appContext)) {
-            return AutoConfigurationPackages.get(appContext);
+        List<String> packagesList = Collections.emptyList();
+        if (appContext
+                .getBeanNamesForType(VaadinScanPackages.class).length > 0) {
+            VaadinScanPackages packages = appContext
+                    .getBean(VaadinScanPackages.class);
+            packagesList = packages.getScanPackages();
+
         }
-        return Collections.emptyList();
+        if (!packagesList.isEmpty()) {
+            LoggerFactory.getLogger(VaadinServletContextInitializer.class)
+                    .trace("Using explicitly configured packages for scan Vaadin types at startup {}",
+                            packagesList);
+        } else if (AutoConfigurationPackages.has(appContext)) {
+            packagesList = AutoConfigurationPackages.get(appContext);
+        }
+        return packagesList;
     }
 
 }
