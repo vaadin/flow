@@ -41,14 +41,6 @@ public final class NodeProperties {
      */
     public static final String SHADOW_ROOT = "shadowRoot";
     /**
-     * Key for {@link TemplateMap#getRootTemplate()}.
-     */
-    public static final String ROOT_TEMPLATE_ID = "root";
-    /**
-     * Key for {@link TemplateMap#getModelDescriptor()}.
-     */
-    public static final String MODEL_DESCRIPTOR = "descriptor";
-    /**
      * Key for {@link BasicTypeValue#getValue()}.
      */
     public static final String VALUE = "value";
