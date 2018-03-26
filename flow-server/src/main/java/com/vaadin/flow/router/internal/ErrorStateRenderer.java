@@ -15,23 +15,14 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorNavigationEvent;
-import com.vaadin.flow.router.EventUtil;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.RouterLayout;
 
@@ -40,11 +31,7 @@ import com.vaadin.flow.router.RouterLayout;
  *
  * @see HasErrorParameter
  */
-public class ErrorStateRenderer implements NavigationHandler {
-
-    private final NavigationState navigationState;
-    private static List<Integer> statusCodes = ReflectTools
-            .getConstantIntValues(HttpServletResponse.class);
+public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
 
     /**
      * Constructs a new state renderer for the given navigation state.
@@ -53,111 +40,28 @@ public class ErrorStateRenderer implements NavigationHandler {
      *            the navigation state handled by this instance
      */
     public ErrorStateRenderer(NavigationState navigationState) {
-        this.navigationState = navigationState;
-    }
-
-    /**
-     * Gets the component instance to use for the given type and the
-     * corresponding navigation event.
-     * <p>
-     * Override this method to control the creation of view instances.
-     * <p>
-     * By default always creates new instances.
-     *
-     * @param <T>
-     *            the route target type
-     * @param routeTargetType
-     *            the class of the route target component
-     * @param event
-     *            the navigation event that uses the route target
-     * @return an instance of the route target component
-     */
-    @SuppressWarnings("unchecked")
-    protected <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
-        UI ui = event.getUI();
-        Optional<HasElement> currentInstance = ui.getInternals()
-                .getActiveRouterTargetsChain().stream()
-                .filter(component -> component.getClass()
-                        .equals(routeTargetType))
-                .findAny();
-        return (T) currentInstance.orElseGet(() -> Instantiator.get(ui)
-                .createRouteTarget(routeTargetType, event));
+        super(navigationState);
     }
 
     @Override
     public int handle(NavigationEvent event) {
         assert event instanceof ErrorNavigationEvent : "Error handling needs ErrorNavigationEvent";
+        return super.handle(event);
 
-        UI ui = event.getUI();
-
-        Class<? extends Component> routeTargetType = navigationState
-                .getNavigationTarget();
-        List<Class<? extends RouterLayout>> routeLayoutTypes = getRouterLayoutTypes(
-                routeTargetType);
-
-        assert routeTargetType != null;
-        assert routeLayoutTypes != null;
-
-        RouterUtil.checkForDuplicates(routeTargetType, routeLayoutTypes);
-
-        Component componentInstance = getRouteTarget(routeTargetType, event);
-        List<HasElement> chain = new ArrayList<>();
-        chain.add(componentInstance);
-
-        for (Class<? extends RouterLayout> parentType : routeLayoutTypes) {
-            chain.add(getRouteTarget(parentType, event));
-        }
-
-        BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
-                event, routeTargetType);
-
-        int statusCode = ((HasErrorParameter) componentInstance)
-                .setErrorParameter(beforeNavigationActivating,
-                        ((ErrorNavigationEvent) event).getErrorParameter());
-
-        validateStatusCode(statusCode, routeTargetType);
-
-        @SuppressWarnings("unchecked")
-        List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
-                .subList(1, chain.size());
-
-        List<BeforeEnterHandler> beforeEnterandlers = new ArrayList<>(
-                ui.getNavigationListeners(BeforeEnterHandler.class));
-        beforeEnterandlers.addAll(EventUtil.collectEnterObservers(componentInstance,
-                routerLayouts));
-
-        beforeEnterandlers.forEach(
-                listener -> listener.beforeEnter(beforeNavigationActivating));
-
-        ui.getInternals().showRouteTarget(event.getLocation(), null,
-                componentInstance, routerLayouts);
-
-        RouterUtil.updatePageTitle(event, componentInstance);
-
-        AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
-                RouterUtil.createEvent(event, chain));
-
-
-        List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
-                ui.getNavigationListeners(AfterNavigationHandler.class));
-        afterNavigationHandlers.addAll(
-                EventUtil.collectAfterNavigationObservers(componentInstance,
-                        routerLayouts));
-        afterNavigationHandlers.forEach(
-                listener -> listener.afterNavigation(afterNavigationEvent));
-
-        return statusCode;
     }
 
-    private void validateStatusCode(int statusCode,
-            Class<? extends Component> targetClass) {
-        if (!statusCodes.contains(statusCode)) {
-            String msg = String.format(
-                    "Error state code must be a valid HttpServletResponse value. Received invalid value of '%s' for '%s'",
-                    statusCode, targetClass.getName());
-            throw new IllegalStateException(msg);
-        }
+    @Override
+    protected void notifyNavigationTarget(Component componentInstance,
+            NavigationEvent navigationEvent, BeforeEnterEvent beforeEnterEvent,
+            LocationChangeEvent locationChangeEvent) {
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        int statusCode = ((HasErrorParameter) componentInstance)
+
+                .setErrorParameter(beforeEnterEvent,
+                        ((ErrorNavigationEvent) navigationEvent)
+                                .getErrorParameter());
+
+        locationChangeEvent.setStatusCode(statusCode);
     }
 
     /**
@@ -171,10 +75,16 @@ public class ErrorStateRenderer implements NavigationHandler {
      * @return a list of parent {@link RouterLayout} types, not
      *         <code>null</code>
      */
+    @Override
     public List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> targetType) {
-        assert targetType == navigationState.getNavigationTarget();
+        assert targetType == getNavigationState().getNavigationTarget();
 
         return RouterUtil.getParentLayoutsForNonRouteTarget(targetType);
+    }
+
+    @Override
+    protected boolean eventActionsSupported() {
+        return false;
     }
 }
