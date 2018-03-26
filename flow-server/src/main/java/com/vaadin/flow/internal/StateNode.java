@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.change.NodeAttachChange;
@@ -636,7 +637,7 @@ public class StateNode implements Serializable {
      * @param command
      *            the command to run immediately or when the node is attached
      */
-    public void runWhenAttached(Consumer<UI> command) {
+    public void runWhenAttached(SerializableConsumer<UI> command) {
 
         if (isAttached()) {
             command.accept(getUI());
