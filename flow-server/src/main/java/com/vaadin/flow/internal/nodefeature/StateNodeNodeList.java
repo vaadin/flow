@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.internal.StateNode;
@@ -61,6 +63,20 @@ public abstract class StateNodeNodeList extends NodeList<StateNode> {
         StateNode removed = super.remove(index);
         detatchPotentialChild(removed);
         return removed;
+    }
+
+    @Override
+    protected void clear() {
+        int size = size();
+        List<StateNode> children = null;
+        if (size > 0) {
+            children = new ArrayList<>(size);
+            forEachChild(children::add);
+        }
+        super.clear();
+        if (size > 0) {
+            children.forEach(this::detatchPotentialChild);
+        }
     }
 
     @Override

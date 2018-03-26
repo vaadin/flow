@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.internal.change.ListAddChange;
+import com.vaadin.flow.internal.change.ListClearChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
-import com.vaadin.flow.internal.nodefeature.ElementClassList;
 
 public class NodeListAddRemoveTest
         extends AbstractNodeFeatureTest<ElementClassList> {
@@ -24,12 +25,12 @@ public class NodeListAddRemoveTest
 
     @Test
     public void testClear() {
-        List<String> items = resetToRemoveAfterAddCase();
+        resetToRemoveAfterAddCase();
 
         nodeList.clear();
         List<NodeChange> changes = collectChanges(nodeList);
-        Assert.assertEquals(4, changes.size());
-        verifyRemoved(changes, items, 0, 0, 0, 0);
+        Assert.assertEquals(1, changes.size());
+        verifyCleared(changes);
         Assert.assertEquals(0, nodeList.size());
     }
 
@@ -262,12 +263,20 @@ public class NodeListAddRemoveTest
         }
     }
 
+    private void verifyCleared(List<NodeChange> changes) {
+        Assert.assertEquals(1, changes.size());
+        NodeChange nodeChange = changes.get(0);
+        Assert.assertThat(nodeChange,
+                CoreMatchers.instanceOf(ListClearChange.class));
+    }
+
     private void verifyRemoved(List<NodeChange> changes, List<String> items,
             Integer... indexes) {
         Assert.assertTrue(changes.size() > 0);
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
-            Assert.assertTrue(nodeChange instanceof ListRemoveChange);
+            Assert.assertThat(nodeChange,
+                    CoreMatchers.instanceOf(ListRemoveChange.class));
             ListRemoveChange<?> change = (ListRemoveChange<?>) nodeChange;
             Assert.assertEquals(indexes[i].intValue(), change.getIndex());
             Assert.assertEquals(items.get(i), change.getRemovedItem());
@@ -278,7 +287,8 @@ public class NodeListAddRemoveTest
             Integer... indexes) {
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
-            Assert.assertTrue(nodeChange instanceof ListAddChange);
+            Assert.assertThat(nodeChange,
+                    CoreMatchers.instanceOf(ListAddChange.class));
             ListAddChange<?> change = (ListAddChange<?>) nodeChange;
             Assert.assertEquals(indexes[i].intValue(), change.getIndex());
             Assert.assertEquals(1, change.getNewItems().size());
