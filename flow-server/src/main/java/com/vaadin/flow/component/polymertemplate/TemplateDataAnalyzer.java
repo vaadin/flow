@@ -222,7 +222,9 @@ class TemplateDataAnalyzer {
                             + "Corresponding element was found in a sub template, "
                             + "for which injection is not supported.",
                     templateClass.getName(), htmlImportUri, field.getName(),
-                    emptyValue ? "" : "(\"" + id + "\")"));
+                    emptyValue
+                            ? " without value (so the name of the field should match the id of an element in the template)"
+                            : "(\"" + id + "\")"));
         }
 
         if (!addTagName(id, field).isPresent()) {
