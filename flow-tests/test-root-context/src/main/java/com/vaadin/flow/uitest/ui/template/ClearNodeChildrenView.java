@@ -16,12 +16,14 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -30,57 +32,75 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Tag("clear-node-children")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ClearNodeChildren.html")
 public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
-        implements HasComponents {
+        implements HasComponents, HasText {
 
-    @Id("containerWithElementChildren")
+    @Id
     private Div containerWithElementChildren;
 
-    @Id("containerWithMixedChildren")
+    @Id
     private Div containerWithMixedChildren;
 
-    @Id("containerWithClientSideChildren")
+    @Id
     private Div containerWithClientSideChildren;
 
-    @Id("containerWithSlottedChildren")
+    @Id
     private Div containerWithSlottedChildren;
 
-    @Id("containerWithContainer")
+    @Id
     private Div containerWithContainer;
 
-    @Id("nestedContainer")
+    @Id
     private Div nestedContainer;
 
-    @Id("addChildToContainer1")
+    @Id
     private NativeButton addChildToContainer1;
 
-    @Id("clearContainer1")
+    @Id
+    private NativeButton addTextNodeToContainer1;
+
+    @Id
     private NativeButton clearContainer1;
 
-    @Id("addChildToContainer2")
+    @Id
     private NativeButton addChildToContainer2;
 
-    @Id("clearContainer2")
+    @Id
     private NativeButton clearContainer2;
 
-    @Id("addChildToContainer3")
+    @Id
     private NativeButton addChildToContainer3;
 
-    @Id("clearContainer3")
+    @Id
     private NativeButton clearContainer3;
 
-    @Id("addChildToNestedContainer")
+    @Id
     private NativeButton addChildToNestedContainer;
 
-    @Id("clearContainer4")
+    @Id
     private NativeButton clearContainer4;
 
-    @Id("addChildToSlot")
+    @Id
     private NativeButton addChildToSlot;
 
-    @Id("clear")
+    @Id
     private NativeButton clear;
 
-    @Id("message")
+    @Id
+    private NativeButton setTextToContainer1;
+
+    @Id
+    private NativeButton setTextToContainer2;
+
+    @Id
+    private NativeButton setTextToContainer3;
+
+    @Id
+    private NativeButton setTextToContainer4;
+
+    @Id
+    private NativeButton setText;
+
+    @Id
     private Div message;
 
     public ClearNodeChildrenView() {
@@ -105,7 +125,26 @@ public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
                         "containerWithClientSideChildren"));
         clearContainer4.addClickListener(event -> clear(containerWithContainer,
                 "containerWithContainer"));
+        setTextToContainer1.addClickListener(event -> setTextTo(
+                containerWithElementChildren, "containerWithElementChildren"));
+        setTextToContainer2
+                .addClickListener(event -> setTextTo(containerWithMixedChildren,
+                        "containerWithMixedChildren"));
+        setTextToContainer3.addClickListener(
+                event -> setTextTo(containerWithClientSideChildren,
+                        "containerWithClientSideChildren"));
+        setTextToContainer4
+                .addClickListener(event -> setTextTo(containerWithContainer,
+                        "containerWithContainer"));
         clear.addClickListener(event -> clear(this, "root"));
+        setText.addClickListener(event -> setTextTo(this, "root"));
+
+        addTextNodeToContainer1.addClickListener(event -> {
+            Element text = Element.createText("Text node");
+            containerWithElementChildren.getElement().appendChild(text);
+            message.setText(
+                    "Added 'Text node' to div with id 'containerWithElementChildren'.");
+        });
     }
 
     private void addDivTo(HasComponents container) {
@@ -122,6 +161,12 @@ public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
     private void clear(HasComponents container, String id) {
         container.removeAll();
         message.setText(message.getText() + "\nDiv '" + id + "' cleared.");
+    }
+
+    private void setTextTo(HasText container, String id) {
+        container.setText("Hello World");
+        message.setText(message.getText() + "\nDiv '" + id + "' text set to '"
+                + container.getText() + "'.");
     }
 
 }

@@ -978,7 +978,10 @@ public class Element extends Node<Element> {
         } else {
             boolean hasText = !textContent.isEmpty();
             if (getChildCount() == 1 && getChild(0).isTextNode() && hasText) {
-                getChild(0).setText(textContent);
+                Element child = getChild(0);
+                child.setText(textContent);
+                removeAllChildren();
+                appendChild(child);
             } else {
                 removeAllChildren();
                 if (hasText) {
