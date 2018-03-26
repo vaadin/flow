@@ -35,7 +35,7 @@ import com.vaadin.flow.dom.Element;
  * <pre>
  * <code>
  * &#64;Tag("details")
- * public class Details extends PolymerTemplate<EditorModel>{
+ * public class Details extends PolymerTemplate&lt;EditorModel&gt;{
  *
  *      &#64;Id("name")
  *      private Div nestedDiv;

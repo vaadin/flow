@@ -50,7 +50,8 @@ import elemental.json.JsonArray;
  * <p>
  * You may use {@link Id} annotation inside your template class for a field to
  * reference an element inside your template via <b>id</b> attribute value. Note
- * that the injected element has some usage limitations on the server side.
+ * that the injected element will have functional limitations on the server
+ * side.
  *
  * @param <M>
  *            a model class that will be used for template data propagation

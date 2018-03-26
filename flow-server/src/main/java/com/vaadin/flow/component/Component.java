@@ -255,11 +255,10 @@ public abstract class Component
      * The default implementation finds child components by traversing each
      * child {@link Element} tree.
      * <p>
-     * If your component instance is injected via @{@link Id} annotation then
-     * its server side usage has some limitations which doesn't allow to get
-     * children initially declared only on the client side. I.e. this method
-     * returns only children added from the server side and doesn't return
-     * children declared in the template file.
+     * If the component is injected to a PolymerTemplate using the
+     * <code>@Id</code> annotation the getChildren method will only return
+     * children added from the server side and will not return any children
+     * declared in the template file.
      *
      * @see Id
      *
