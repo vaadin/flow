@@ -113,7 +113,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.UploadElement#4.0.0-beta1", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.UploadElement#4.0.0-beta2", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-upload")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload.html")
 public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>

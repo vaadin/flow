@@ -2,7 +2,7 @@
   "name": "Vaadin.UploadElement",
   "tag": "vaadin-upload",
   "baseUrl": "vaadin-upload/src/vaadin-upload.html",
-  "version": "4.0.0-beta1",
+  "version": "4.0.0-beta2",
   "properties": [
     {
       "name": "nodrop",
