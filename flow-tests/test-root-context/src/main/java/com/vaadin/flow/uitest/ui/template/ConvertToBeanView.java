@@ -97,7 +97,7 @@ public class ConvertToBeanView
         }
 
         @Override
-        public Date toModel(DateBean presentationValue) {
+        public Date decode(DateBean presentationValue) {
             if (presentationValue == null) {
                 return null;
             }
