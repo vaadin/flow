@@ -312,7 +312,7 @@ public class VaadinServletContextInitializer
         }
         if (!packagesList.isEmpty()) {
             LoggerFactory.getLogger(VaadinServletContextInitializer.class)
-                    .trace("Use explicitely configured packages for scan Vaadin types at startup {}",
+                    .trace("Using explicitly configured packages for scan Vaadin types at startup {}",
                             packagesList);
         } else if (AutoConfigurationPackages.has(appContext)) {
             packagesList = AutoConfigurationPackages.get(appContext);
