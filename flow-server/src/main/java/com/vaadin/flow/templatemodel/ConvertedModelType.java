@@ -24,7 +24,7 @@ import elemental.json.JsonValue;
 
 /**
  * A {@link ModelType} implementation that wraps a model type for performing
- * type conversions on together with a {@link ModelConverter}.
+ * type conversions on together with a {@link ModelEncoder}.
  *
  * @author Vaadin Ltd
  *
@@ -37,7 +37,7 @@ public class ConvertedModelType<A, M extends Serializable>
         implements ModelType {
 
     private final ModelType wrappedModelType;
-    private final ModelConverter<A, M> converter;
+    private final ModelEncoder<A, M> converter;
 
     /**
      * Creates a new ConvertedModelType from the given model type and converter.
@@ -47,7 +47,7 @@ public class ConvertedModelType<A, M extends Serializable>
      * @param converter
      *            the converter to use
      */
-    ConvertedModelType(ModelType modelType, ModelConverter<A, M> converter) {
+    ConvertedModelType(ModelType modelType, ModelEncoder<A, M> converter) {
         wrappedModelType = modelType;
         this.converter = converter;
     }
@@ -57,7 +57,7 @@ public class ConvertedModelType<A, M extends Serializable>
         @SuppressWarnings("unchecked")
         M wrappedApplicationValue = (M) wrappedModelType
                 .modelToApplication(modelValue);
-        return converter.toModel(wrappedApplicationValue);
+        return converter.decode(wrappedApplicationValue);
     }
 
     @Override
@@ -69,19 +69,19 @@ public class ConvertedModelType<A, M extends Serializable>
     public Serializable applicationToModel(Object applicationValue,
             PropertyFilter filter) {
         @SuppressWarnings("unchecked")
-        M convertedValue = converter.toPresentation((A) applicationValue);
+        M convertedValue = converter.encode((A) applicationValue);
         return wrappedModelType.applicationToModel(convertedValue, filter);
     }
 
     @Override
     public boolean accepts(Type applicationType) {
-        return converter.getModelType()
+        return converter.getDecodedType()
                 .isAssignableFrom((Class<?>) applicationType);
     }
 
     @Override
     public Type getJavaType() {
-        return converter.getModelType();
+        return converter.getDecodedType();
     }
 
     @Override

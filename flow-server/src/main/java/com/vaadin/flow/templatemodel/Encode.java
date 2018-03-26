@@ -23,42 +23,41 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines a ModelConverter on a template model property found through
+ * Defines a ModelEncoder on a template model property found through
  * {@link #path()}.
  * <p>
  * Use this annotation on setters in your {@link TemplateModel} class to perform
  * type conversions on properties.
  *
- * @see ModelConverter
+ * @see ModelEncoder
  *
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Repeatable(Convert.Container.class)
-public @interface Convert {
+@Repeatable(Encode.Container.class)
+public @interface Encode {
 
     /**
-     * The ModelConverter class to use for conversion of the property found
-     * through {{@link #path()}.
+     * The ModelEncoder class to use for encoding the property found through
+     * {{@link #path()}.
      *
-     * @return the ModelConverter class
+     * @return the ModelEncoder class
      */
-    Class<? extends ModelConverter<?, ?>> value();
+    Class<? extends ModelEncoder<?, ?>> value();
 
     /**
      * The dot separated path from the TemplateModel property to the value to
-     * apply conversion to. Empty string by default, which will apply conversion
+     * apply encoding to. Empty string by default, which will apply encoding
      * directly to the property.
      *
-     * @return the dot separated path to the bean property to convert, empty
+     * @return the dot separated path to the bean property to encode, empty
      *         string by default
      */
     String path() default "";
 
     /**
-     * Internal annotation to enable use of multiple {@link Convert}
-     * annotations.
+     * Internal annotation to enable use of multiple {@link Encode} annotations.
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
@@ -66,11 +65,10 @@ public @interface Convert {
     public @interface Container {
 
         /**
-         * Internally used to enable use of multiple {@link Convert}
-         * annotations.
+         * Internally used to enable use of multiple {@link Encode} annotations.
          *
-         * @return an array of the Convert annotations
+         * @return an array of the Encode annotations
          */
-        Convert[] value();
+        Encode[] value();
     }
 }

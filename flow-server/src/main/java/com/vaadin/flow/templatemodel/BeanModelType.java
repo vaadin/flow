@@ -120,7 +120,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     }
 
     private BeanModelType(Class<T> javaType, PropertyFilter propertyFilter,
-            PathLookup<ModelConverter<?, ?>> converterLookup,
+            PathLookup<ModelEncoder<?, ?>> converterLookup,
             PathLookup<ClientUpdateMode> clientUpdateLookup) {
         this(javaType,
                 new PropertyMapBuilder(javaType, propertyFilter,
@@ -154,7 +154,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     static ModelType getModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
             Class<?> declaringClass,
-            PathLookup<ModelConverter<?, ?>> converterLookup,
+            PathLookup<ModelEncoder<?, ?>> converterLookup,
             PathLookup<ClientUpdateMode> clientUpdateLookup) {
         if (propertyType instanceof Class<?>) {
             Class<?> propertyTypeClass = (Class<?>) propertyType;
@@ -183,7 +183,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     static ModelType getConvertedModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
             Class<?> declaringClass,
-            PathLookup<ModelConverter<?, ?>> converterLookup,
+            PathLookup<ModelEncoder<?, ?>> converterLookup,
             PathLookup<ClientUpdateMode> clientUpdateLookup) {
 
         if (!(propertyType instanceof Class<?>)) {
@@ -193,7 +193,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                     declaringClass.getSimpleName(), propertyName));
         }
 
-        Optional<ModelConverter<?, ?>> converterOptional = converterLookup
+        Optional<ModelEncoder<?, ?>> converterOptional = converterLookup
                 .getItem(propertyFilter.getPrefix());
         if (!converterOptional.isPresent()) {
             throw new IllegalStateException(
@@ -202,21 +202,21 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                             + "for the given PropertyFilter.");
         }
 
-        ModelConverter<?, ?> converter = converterOptional.get();
-        if (!converter.getModelType().equals(propertyType)) {
+        ModelEncoder<?, ?> converter = converterOptional.get();
+        if (!converter.getDecodedType().equals(propertyType)) {
             throw new InvalidTemplateModelException(String.format(
                     "Converter '%s' is incompatible with the type '%s'.",
                     converter.getClass().getName(),
                     propertyType.getTypeName()));
         }
 
-        if (isBean(converter.getPresentationType())) {
+        if (isBean(converter.getEncodedType())) {
             return new ConvertedModelType<>(new BeanModelType<>(
-                    converter.getPresentationType(), propertyFilter,
+                    converter.getEncodedType(), propertyFilter,
                     converterLookup, clientUpdateLookup), converter);
         } else {
             Optional<ModelType> maybeBasicModelType = BasicModelType
-                    .get(converter.getPresentationType());
+                    .get(converter.getEncodedType());
             if (maybeBasicModelType.isPresent()) {
                 return new ConvertedModelType<>(maybeBasicModelType.get(),
                         converter);
@@ -233,7 +233,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     private static ModelType getListModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
             Class<?> declaringClass,
-            PathLookup<ModelConverter<?, ?>> converterLookup,
+            PathLookup<ModelEncoder<?, ?>> converterLookup,
             PathLookup<ClientUpdateMode> clientUpdateLookup) {
         assert ListModelType.isList(propertyType);
         ParameterizedType pt = (ParameterizedType) propertyType;
