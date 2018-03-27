@@ -29,7 +29,9 @@ public class ExceptionStacktraceIT extends ChromeBrowserTest {
     public void loggerAbsenceWarningAndStacktrace() {
         open();
 
-        WebElement main = findElement(By.cssSelector("body > div"));
+        WebElement main = findElements(By.cssSelector("body > div")).stream()
+                .filter(element -> element.getAttribute("class").isEmpty())
+                .findFirst().get();
 
         Assert.assertFalse(
                 "There should be no warning about SLF4J absence because the test project should have slf4j bindings",

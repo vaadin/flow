@@ -291,28 +291,35 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         StateNode childNode = createChildNode("first");
 
-        // One client side element, insert at the very beginning
+        // With one client side element, insert at 0 will translate to index 1
         children.add(0, childNode);
 
+        // <div/><span>first</span>
         Reactive.flush();
 
         assertEquals(2, element.getChildElementCount());
 
         Element childElement = (Element) element.getChildren().at(0);
+        assertEquals("DIV", childElement.getTagName());
 
+        childElement = (Element) element.getChildren().at(1);
         assertEquals("SPAN", childElement.getTagName());
         assertEquals("first", childElement.getId());
 
         childNode = createChildNode("second", "a");
-        // Insert before the bound node and pure client side node at the very
-        // beginning
+        // Insert at the first position (which will be translated to after the
+        // client-side nodes)
         children.add(0, childNode);
+
+        // <div/><a>second</a><span>first</span>
         Reactive.flush();
 
         assertEquals(3, element.getChildElementCount());
 
         childElement = (Element) element.getChildren().at(0);
+        assertEquals("DIV", childElement.getTagName());
 
+        childElement = (Element) element.getChildren().at(1);
         assertEquals("A", childElement.getTagName());
         assertEquals("second", childElement.getId());
 
@@ -321,30 +328,63 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 (Element) element.getChildren().at(1));
 
         childNode = createChildNode("third", "h1");
-        // Insert at the first position.
+        // Insert at the second position.
         children.add(1, childNode);
+
+        // <div/><div/><a>second</a><h1>third</h1><span>first</span>
         Reactive.flush();
 
         assertEquals(element.getChildElementCount(), 5);
 
         childElement = (Element) element.getChildren().at(1);
+        assertEquals("DIV", childElement.getTagName());
 
+        childElement = (Element) element.getChildren().at(3);
         assertEquals("H1", childElement.getTagName());
         assertEquals("third", childElement.getId());
 
         childNode = createChildNode("fourth", "br");
         // Insert after the last bound node
         children.add(3, childNode);
+
+        // <div/><div/><a>second</a><h1>third</h1><span>first</span><br>fourth</br>
         Reactive.flush();
 
         assertEquals(6, element.getChildElementCount());
 
-        childElement = (Element) element.getChildren().at(4);
+        childElement = (Element) element.getChildren().at(5);
 
         // Element should be before the client side element and after the bound
         // node
         assertEquals("BR", childElement.getTagName());
         assertEquals("fourth", childElement.getId());
+    }
+
+    public void testInsertChildAfterExistingChildren() {
+        Element existingChild1 = Browser.getDocument().createElement("span");
+        Element existingChild2 = Browser.getDocument().createElement("span");
+        element.appendChild(existingChild1);
+        element.appendChild(existingChild2);
+
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        assertEquals(2, element.getChildElementCount());
+
+        StateNode childNode = createChildNode("first", "div");
+        children.add(0, childNode);
+
+        Reactive.flush();
+        assertEquals(3, element.getChildElementCount());
+
+        Element childElement = (Element) element.getChildren().at(0);
+        assertEquals("SPAN", childElement.getTagName());
+
+        childElement = (Element) element.getChildren().at(1);
+        assertEquals("SPAN", childElement.getTagName());
+
+        childElement = (Element) element.getChildren().at(2);
+        assertEquals("DIV", childElement.getTagName());
     }
 
     /**
@@ -376,12 +416,15 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         // check that order is the correct one
         Element childElement = (Element) children.at(0);
-        assertEquals("third", childElement.getId());
+        assertEquals("DIV", childElement.getTagName());
 
         childElement = (Element) children.at(1);
-        assertEquals("first", childElement.getId());
+        assertEquals("third", childElement.getId());
 
         childElement = (Element) children.at(2);
+        assertEquals("first", childElement.getId());
+
+        childElement = (Element) children.at(3);
         assertEquals("second", childElement.getId());
     }
 
