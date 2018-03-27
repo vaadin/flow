@@ -225,7 +225,7 @@ public class RouterLink extends Component
             Class<? extends Component> navigationTarget) {
         validateRouteParameters(router, navigationTarget);
         String url = router.getUrl(navigationTarget);
-        HREF.set(this, appendQueryParameters(url));
+        updateHref(url);
     }
 
     /**
@@ -247,7 +247,7 @@ public class RouterLink extends Component
             Class<? extends C> navigationTarget, T parameter) {
         validateRouteParameters(router, navigationTarget);
         String url = router.getUrl(navigationTarget, parameter);
-        HREF.set(this, appendQueryParameters(url));
+        updateHref(url);
     }
 
     private void validateRouteParameters(com.vaadin.flow.router.Router router,
@@ -347,18 +347,18 @@ public class RouterLink extends Component
      */
     public void setQueryParameters(QueryParameters queryParameters) {
         this.queryParameters = queryParameters;
-        HREF.set(this, appendQueryParameters(getHref()));
+        updateHref(getHref());
     }
 
-    private String appendQueryParameters(String href) {
-        int startOfQuery = href.indexOf('?');
+    private void updateHref(String url) {
+        int startOfQuery = url.indexOf('?');
         if (startOfQuery >= 0) {
-            href = href.substring(0, startOfQuery);
+            url = url.substring(0, startOfQuery);
         }
         if (queryParameters != null) {
-            href += '?' + queryParameters.getQueryString();
+            url += '?' + queryParameters.getQueryString();
         }
-        return href;
+        HREF.set(this, url);
     }
 
     /**
