@@ -976,21 +976,25 @@ public class Element extends Node<Element> {
         if (isTextNode()) {
             getStateProvider().setTextContent(getNode(), textContent);
         } else {
-            boolean hasText = !textContent.isEmpty();
-            if (getChildCount() == 1 && getChild(0).isTextNode() && hasText) {
-                Element child = getChild(0);
-                child.setText(textContent);
+            if (textContent.isEmpty()) {
                 removeAllChildren();
-                appendChild(child);
             } else {
-                removeAllChildren();
-                if (hasText) {
-                    appendChild(createText(textContent));
-                }
+                setTextContent(textContent);
             }
         }
 
         return this;
+    }
+
+    private void setTextContent(String textContent) {
+        Element child;
+        if (getChildCount() == 1 && getChild(0).isTextNode()) {
+            child = getChild(0).setText(textContent);
+        } else {
+            child = createText(textContent);
+        }
+        removeAllChildren();
+        appendChild(child);
     }
 
     /**
