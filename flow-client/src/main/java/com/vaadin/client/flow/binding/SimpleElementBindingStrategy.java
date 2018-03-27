@@ -986,8 +986,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         Node beforeRef;
         if (index == 0) {
-            // Insert at the first position
-            beforeRef = DomApi.wrap(context.htmlNode).getFirstChild();
+            // Insert at the first position after the client-side-only nodes
+            beforeRef = getFirstNodeMappedAsStateNode(nodeChildren,
+                    context.htmlNode);
         } else if (index <= nodeChildren.length() && index > 0) {
             StateNode previousSibling = getPreviousSibling(index, context);
             // Insert before the next sibling of the current node
@@ -1019,6 +1020,25 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             beforeRef = DomApi.wrap(childNode).getNextSibling();
         }
+    }
+
+    private static Node getFirstNodeMappedAsStateNode(
+            NodeList mappedNodeChildren, Node htmlNode) {
+
+        JsArray<Node> clientList = DomApi.wrap(htmlNode).getChildNodes();
+        for (int c = 0; c < clientList.length(); c++) {
+            Node clientNode = clientList.get(c);
+            for (int i = 0; i < mappedNodeChildren.length(); i++) {
+                Object object = mappedNodeChildren.get(i);
+                if (object instanceof StateNode) {
+                    StateNode stateNode = (StateNode) object;
+                    if (clientNode.equals(stateNode.getDomNode())) {
+                        return clientNode;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private StateNode getPreviousSibling(int index, BindingContext context) {
