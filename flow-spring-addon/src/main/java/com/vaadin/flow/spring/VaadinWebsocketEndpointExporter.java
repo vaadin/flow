@@ -51,4 +51,9 @@ public class VaadinWebsocketEndpointExporter extends ServerEndpointExporter {
         new JSR356WebsocketInitializer().init(getServletContext());
     }
 
+    @Override
+    public void afterPropertiesSet() {
+        // avoid call super method which may throw IllegalStateException
+    }
+
 }
