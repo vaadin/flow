@@ -143,8 +143,8 @@ public abstract class AbstractNavigationStateRenderer
             } else {
                 List<BeforeLeaveHandler> beforeLeaveHandlers = new ArrayList<>(
                         ui.getNavigationListeners(BeforeLeaveHandler.class));
-                beforeLeaveHandlers.addAll(
-                        EventUtil.collectBeforeLeaveObservers(ui.getElement()));
+                beforeLeaveHandlers
+                        .addAll(EventUtil.collectBeforeLeaveObservers(ui));
                 leaveHandlers = new ArrayDeque<>(beforeLeaveHandlers);
             }
             TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
@@ -189,8 +189,8 @@ public abstract class AbstractNavigationStateRenderer
 
         List<BeforeEnterHandler> enterHandlers = new ArrayList<>(
                 ui.getNavigationListeners(BeforeEnterHandler.class));
-        enterHandlers.addAll(EventUtil.collectEnterObservers(componentInstance,
-                routerLayouts));
+        enterHandlers.addAll(EventUtil.collectBeforeEnterObservers(
+                ui.getInternals().getActiveRouterTargetsChain(), chain));
         TransitionOutcome transitionOutcome = executeBeforeEnterNavigation(
                 beforeNavigationActivating, enterHandlers);
 
@@ -210,9 +210,8 @@ public abstract class AbstractNavigationStateRenderer
 
         List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
                 ui.getNavigationListeners(AfterNavigationHandler.class));
-        afterNavigationHandlers.addAll(
-                EventUtil.collectAfterNavigationObservers(componentInstance,
-                        routerLayouts));
+        afterNavigationHandlers
+                .addAll(EventUtil.collectAfterNavigationObservers(ui));
 
         fireAfterNavigationListeners(
                 new AfterNavigationEvent(locationChangeEvent),
