@@ -193,7 +193,7 @@ public class NodeListAddRemoveTest
     }
 
     @Test
-    public void removeOperationAfterDelete_addRemove_subsequentOoperationsAreNotAffected() {
+    public void removeOperationAfterDelete_addRemove_subsequentOperationsAreNotAffected() {
         List<String> items = resetToRemoveAfterAddCase();
 
         nodeList.add("foo");

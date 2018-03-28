@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.AbstractListChange;
@@ -137,6 +138,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     }
 
     private List<T> values;
+
+    private boolean isRemoveAllCalled;
 
     private boolean isPopulated;
 
@@ -284,10 +287,13 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
+        boolean hasRemoveAll = false;
+
         // This map contains items wrapped by AbstractListChanges as keys and
         // index in the following allChanges list as a value (it allows to get
         // AbstractListChange by the index)
         Map<Object, Integer> indices = new IdentityHashMap<>();
+
         // This list contains all changes in the tracker. These changes will be
         // modified: each "remove" change following by a corresponding "add"
         // will be replaced by null and "add" will be adjusted. Indeces in
@@ -309,14 +315,29 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
                 ((ListAddChange<T>) change).getNewItems()
                         .forEach(item -> indices.put(item, i));
             } else if (change instanceof ListClearChange<?>) {
+                hasRemoveAll = true;
+                allChanges.clear();
                 allChanges.add(change);
             } else {
                 assert false : "AbstractListChange has only three subtypes: add, remove and clear";
             }
             index++;
         }
-        List<AbstractListChange<T>> changes = allChanges.stream()
-                .filter(this::acceptChange).collect(Collectors.toList());
+
+        List<AbstractListChange<T>> changes;
+
+        if (isRemoveAllCalled && !hasRemoveAll) {
+            changes = Stream
+                    .concat(Stream.of(new ListClearChange<T>(this)),
+                            allChanges.stream())
+                    .filter(this::acceptChange).collect(Collectors.toList());
+        } else {
+            changes = allChanges.stream().filter(this::acceptChange)
+                    .collect(Collectors.toList());
+        }
+
+        isRemoveAllCalled = false;
+
         if (isPopulated) {
             changes.forEach(collector);
         } else {
@@ -375,6 +396,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             values = null;
         }
 
+        isRemoveAllCalled = true;
         addChange(new ListClearChange<T>(this));
     }
 

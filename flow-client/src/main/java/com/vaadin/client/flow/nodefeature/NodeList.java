@@ -50,6 +50,8 @@ public class NodeList extends NodeFeature implements ReactiveValue {
 
     private final JsArray<Object> values = JsCollections.array();
 
+    private boolean hasBeenCleared;
+
     private final ReactiveEventRouter<ListSpliceListener, ListSpliceEvent> eventRouter = new ReactiveEventRouter<ListSpliceListener, ListSpliceEvent>(
             this) {
         @Override
@@ -145,6 +147,7 @@ public class NodeList extends NodeFeature implements ReactiveValue {
      * {@link ListSpliceEvent#isClear()} as <code>true</code>.
      */
     public void clear() {
+        hasBeenCleared = true;
         JsArray<Object> removed = values.splice(0, values.length());
         eventRouter.fireEvent(new ListSpliceEvent(this, 0, removed,
                 JsCollections.array(), true));
@@ -228,4 +231,12 @@ public class NodeList extends NodeFeature implements ReactiveValue {
         values.forEach(callback);
     }
 
+    /**
+     * Returns {@code true} if the list instance has been cleared at some point.
+     *
+     * @return {@code true} if the list instance has been cleared
+     */
+    public boolean hasBeenCleared() {
+        return hasBeenCleared;
+    }
 }
