@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.router;
 
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,6 +30,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
@@ -38,7 +41,7 @@ import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-import static org.mockito.Mockito.when;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Test event util functionality.
@@ -102,7 +105,8 @@ public class EventUtilTest {
 
     @Test
     public void collectBeforeNavigationObserversFromElement() throws Exception {
-        Element node = new Element("root");
+        UI ui = UI.getCurrent();
+        Element node = ui.getElement();
         node.appendChild(new Element("main"), new Element("menu"));
         Element nested = new Element("nested");
         nested.appendChild(new Element("nested-child"),
@@ -112,7 +116,7 @@ public class EventUtilTest {
         Component.from(nested, LeaveObserver.class);
 
         List<BeforeLeaveObserver> beforeNavigationObservers = EventUtil
-                .collectBeforeLeaveObservers(node);
+                .collectBeforeLeaveObservers(ui);
 
         Assert.assertEquals("Wrong amount of listener instances found", 1,
                 beforeNavigationObservers.size());
@@ -121,7 +125,8 @@ public class EventUtilTest {
     @Test
     public void collectBeforeNavigationObserversFromElement_elementHasVirtualChildren()
             throws Exception {
-        Element node = new Element("root");
+        UI ui = UI.getCurrent();
+        Element node = ui.getElement();
         node.appendChild(new Element("main"), new Element("menu"));
         Element nested = new Element("nested");
         nested.appendVirtualChild(new Element("nested-child"),
@@ -136,7 +141,7 @@ public class EventUtilTest {
         Component.from(nested, LeaveObserver.class);
 
         List<BeforeLeaveObserver> beforeNavigationObservers = EventUtil
-                .collectBeforeLeaveObservers(node);
+                .collectBeforeLeaveObservers(ui);
 
         Assert.assertEquals("Wrong amount of listener instances found", 1,
                 beforeNavigationObservers.size());
@@ -146,7 +151,9 @@ public class EventUtilTest {
     public void collectBeforeNavigationObserversFromComponentList()
             throws Exception {
         Foo foo = new Foo();
-        foo.getElement().appendChild(new EnterObserver().getElement());
+        EnterObserver toBeDetached = new EnterObserver();
+        foo.getElement().appendChild(new EnterObserver().getElement(),
+                toBeDetached.getElement());
         Bar bar = new Bar();
 
         Element nested = new Element("nested");
@@ -155,30 +162,14 @@ public class EventUtilTest {
 
         bar.getElement().appendChild(new Foo().getElement(), nested);
 
+        EnterObserver toBeAttached = new EnterObserver();
+
+        Collection<? extends HasElement> oldChain = Arrays.asList(foo,
+                toBeDetached);
+        Collection<? extends HasElement> newChain = Arrays.asList(foo,
+                toBeAttached);
         List<BeforeEnterObserver> beforeNavigationObservers = EventUtil
-                .collectBeforeEnterObservers(Arrays.asList(foo, bar));
-
-        Assert.assertEquals("Wrong amount of listener instances found", 2,
-                beforeNavigationObservers.size());
-    }
-
-    @Test
-    public void collectBeforeNavigationObserversFromComponentList_elementHasVirtualChildren()
-            throws Exception {
-        Foo foo = new Foo();
-        foo.getElement().getStateProvider().appendVirtualChild(
-                foo.getElement().getNode(), new EnterObserver().getElement(),
-                NodeProperties.INJECT_BY_ID, "id");
-        Bar bar = new Bar();
-
-        Element nested = new Element("nested");
-        nested.appendVirtualChild(new Element("nested-child"),
-                new EnterObserver().getElement());
-
-        bar.getElement().appendChild(new Foo().getElement(), nested);
-
-        List<BeforeEnterObserver> beforeNavigationObservers = EventUtil
-                .collectBeforeEnterObservers(Arrays.asList(foo, bar));
+                .collectBeforeEnterObservers(oldChain, newChain);
 
         Assert.assertEquals("Wrong amount of listener instances found", 2,
                 beforeNavigationObservers.size());
@@ -196,9 +187,27 @@ public class EventUtilTest {
 
         List<Element> elements = new ArrayList<>();
 
-        EventUtil.inspectHierarchy(node, elements);
+        EventUtil.inspectHierarchy(node, elements, element -> true);
 
         Assert.assertEquals("Missing elements from list.", 6, elements.size());
+    }
+
+    @Test
+    public void inspectChildrenHierarchy_selective() throws Exception {
+        Element node = new Element("root");
+        node.appendChild(new Element("main"), new Element("menu"));
+        Element nested = new Element("nested");
+        nested.appendChild(new Element("nested-child"),
+                new Element("nested-child-2"));
+
+        node.appendChild(nested);
+
+        List<Element> elements = new ArrayList<>();
+
+        EventUtil.inspectHierarchy(node, elements,
+                element -> !nested.equals(element));
+
+        Assert.assertEquals("Missing elements from list.", 3, elements.size());
     }
 
     @Test
@@ -222,7 +231,7 @@ public class EventUtilTest {
 
         List<Element> elements = new ArrayList<>();
 
-        EventUtil.inspectHierarchy(node, elements);
+        EventUtil.inspectHierarchy(node, elements, element -> true);
 
         Assert.assertEquals("Missing elements from list.", 10, elements.size());
     }
@@ -240,7 +249,7 @@ public class EventUtilTest {
 
         List<Element> elements = new ArrayList<>();
 
-        EventUtil.inspectHierarchy(node, elements);
+        EventUtil.inspectHierarchy(node, elements, element -> true);
 
         List<BeforeEnterObserver> listenerComponents = EventUtil
                 .getImplementingComponents(elements.stream(),
@@ -266,7 +275,7 @@ public class EventUtilTest {
 
         List<Element> elements = new ArrayList<>();
 
-        EventUtil.inspectHierarchy(node, elements);
+        EventUtil.inspectHierarchy(node, elements, element -> true);
 
         List<BeforeEnterObserver> listenerComponents = EventUtil
                 .getImplementingComponents(elements.stream(),
