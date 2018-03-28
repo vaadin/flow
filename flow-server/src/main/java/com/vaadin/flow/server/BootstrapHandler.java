@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -65,12 +63,15 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.theme.AbstractTheme;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -307,6 +308,22 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             } else {
                 return AnnotationReader.getAnnotationsFor(
                         pageConfigurationHolder, annotationType);
+            }
+        }
+
+        /**
+         * Gets the {@link AbstractTheme} class associated with the
+         * pageConfigurationHolder of this context, if any.
+         * 
+         * @return the theme, or empty if none is found, or
+         *         pageConfigurationHolder is <code>null</code>
+         * @see UI#getThemeFor(Class)
+         */
+        protected Optional<Class<? extends AbstractTheme>> getTheme() {
+            if (pageConfigurationHolder == null) {
+                return Optional.empty();
+            } else {
+                return ui.getThemeFor(pageConfigurationHolder);
             }
         }
     }

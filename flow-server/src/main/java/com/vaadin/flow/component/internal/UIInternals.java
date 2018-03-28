@@ -75,7 +75,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.Theme;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -761,19 +760,15 @@ public class UIInternals implements Serializable {
     private void updateTheme(Component target, String path) {
         Class<? extends RouterLayout> topParentLayout = RouterUtil
                 .getTopParentLayout(target.getClass(), path);
-        Optional<Theme> themeAnnotation;
+        Optional<Class<? extends AbstractTheme>> themeClass;
         if (topParentLayout != null) {
-            themeAnnotation = AnnotationReader.getAnnotationFor(topParentLayout,
-                    Theme.class);
+            themeClass = ui.getThemeFor(topParentLayout);
         } else {
-            themeAnnotation = AnnotationReader
-                    .getAnnotationFor(target.getClass(), Theme.class);
+            themeClass = ui.getThemeFor(target.getClass());
         }
-        if (themeAnnotation.isPresent()) {
-            if (theme == null || !theme.getClass()
-                    .equals(themeAnnotation.get().value())) {
-                theme = ReflectTools
-                        .createInstance(themeAnnotation.get().value());
+        if (themeClass.isPresent()) {
+            if (theme == null || !theme.getClass().equals(themeClass.get())) {
+                theme = ReflectTools.createInstance(themeClass.get());
             }
         } else {
             theme = null;
@@ -781,7 +776,7 @@ public class UIInternals implements Serializable {
                     .getAnnotationFor(target.getClass(), NoTheme.class)
                     .isPresent()) {
                 getLogger().warn(
-                        "No @Theme defined for {}. See 'trace' level logs for exact components missing theming.",
+                        "No @Theme defined for {}. See 'trace' level logs for exactcomponents missing theming.",
                         target.getClass().getName());
             }
         }
@@ -955,7 +950,8 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Check if we have already started navigation to some location on this roundtrip.
+     * Check if we have already started navigation to some location on this
+     * roundtrip.
      *
      * @return true if the last navigation location {@code !=} null
      */

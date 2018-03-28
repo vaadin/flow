@@ -55,10 +55,15 @@ import com.vaadin.flow.server.ErrorHandlingCommand;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.NoTheme;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -656,6 +661,40 @@ public class UI extends Component
     }
 
     /**
+     * Gets the {@link AbstractTheme} class associated with the given navigation
+     * target, if any. The theme is defined by using the {@link Theme}
+     * annotation on the navigation target class.
+     * <p>
+     * If no {@link Theme} and {@link NoTheme} annotation are used, by default
+     * the {@code com.vaadin.flow.theme.lumo.Lumo} class is used (if present on
+     * the classpath).
+     * 
+     * @param navigationTarget
+     *            the navigation target class
+     * @return the associated AbstractTheme, or empty if none is defined and the
+     *         Lumo class is not in the classpath, or if the NoTheme annotation
+     *         is being used.
+     * @see RouteRegistry#getThemeFor(Class)
+     */
+    public Optional<Class<? extends AbstractTheme>> getThemeFor(
+            Class<?> navigationTarget) {
+        Optional<Router> router = getRouter();
+        if (router.isPresent()) {
+            return router.get().getRegistry().getThemeFor(navigationTarget);
+        }
+
+        if (getSession().getService() instanceof VaadinServletService) {
+            RouteRegistry registry = RouteRegistry.getInstance(
+                    ((VaadinServletService) getSession().getService())
+                            .getServlet().getServletContext());
+            if (registry != null) {
+                return registry.getThemeFor(navigationTarget);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.
      * <p>
@@ -704,8 +743,10 @@ public class UI extends Component
         }
 
         Location navigationLocation = new Location(location, queryParameters);
-        if (!internals.hasLastHandledLocation() || !navigationLocation.getPathWithQueryParameters()
-                .equals(internals.getLastHandledLocation().getPathWithQueryParameters())) {
+        if (!internals.hasLastHandledLocation()
+                || !navigationLocation.getPathWithQueryParameters()
+                        .equals(internals.getLastHandledLocation()
+                                .getPathWithQueryParameters())) {
             // Enable navigating back
             getPage().getHistory().pushState(null, navigationLocation);
         }
