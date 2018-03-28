@@ -53,7 +53,7 @@ public class VaadinWebsocketEndpointExporter extends ServerEndpointExporter {
 
     @Override
     public void afterPropertiesSet() {
-
+        // avoid call super method which may throw IllegalStateException
     }
 
 }
