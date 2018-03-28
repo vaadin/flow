@@ -408,6 +408,37 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertNull(childElement.getParentElement());
     }
 
+    public void testClearChildren() {
+        element.appendChild(Browser.getDocument().createAnchorElement());
+        element.appendChild(Browser.getDocument().createHRElement());
+
+        StateNode childNode = createChildNode("foo");
+        children.add(0, childNode);
+
+        children.clear();
+
+        childNode = createChildNode("bar");
+        children.add(0, childNode);
+
+        Binder.bind(node, element);
+
+        assertEquals(1, element.getChildElementCount());
+        Element childElement = element.getFirstElementChild();
+
+        assertEquals("span",
+                childElement.getTagName().toLowerCase(Locale.ENGLISH));
+
+        Reactive.flush();
+        assertEquals("bar", childElement.getAttribute("id"));
+
+        children.splice(0, 1);
+
+        Reactive.flush();
+
+        assertEquals(0, element.getChildElementCount());
+        assertNull(childElement.getParentElement());
+    }
+
     public void testRemoveChildPosition() {
         Binder.bind(node, element);
 
@@ -686,15 +717,15 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     private native void polyfillStyleSetProperty(Element element)/*-{
-         // This polyfills just enough to make the tests pass and nothing else
-         element.style.__proto__.setProperty = function(key,value) {
-             var newValue = element.getAttribute("style");
-             if (!newValue) newValue = "";
-             else if (!newValue.endsWith(";")) newValue +=";"
+                                                                 // This polyfills just enough to make the tests pass and nothing else
+                                                                 element.style.__proto__.setProperty = function(key,value) {
+                                                                 var newValue = element.getAttribute("style");
+                                                                 if (!newValue) newValue = "";
+                                                                 else if (!newValue.endsWith(";")) newValue +=";"
 
-             element.setAttribute("style", newValue + key+": "+value+";");
-         };
-         }-*/;
+                                                                 element.setAttribute("style", newValue + key+": "+value+";");
+                                                                 };
+                                                                 }-*/;
 
     public void testAddStylesAfterUnbind() {
         polyfillStyleSetProperty(element);
