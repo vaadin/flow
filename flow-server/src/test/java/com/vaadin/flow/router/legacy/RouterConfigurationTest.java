@@ -28,24 +28,17 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.legacy.DefaultErrorView;
-import com.vaadin.flow.router.legacy.HasChildView;
-import com.vaadin.flow.router.legacy.PageTitleGenerator;
-import com.vaadin.flow.router.legacy.Resolver;
-import com.vaadin.flow.router.legacy.Router;
-import com.vaadin.flow.router.legacy.RouterConfiguration;
-import com.vaadin.flow.router.legacy.View;
-import com.vaadin.flow.router.legacy.ViewRenderer;
 import com.vaadin.flow.router.legacy.ViewRendererTest.AnotherParentView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.AnotherTestView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.ErrorView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.ParentView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.TestView;
+import com.vaadin.tests.util.MockUI;
 
 public class RouterConfigurationTest {
     @Test
@@ -243,7 +236,7 @@ public class RouterConfigurationTest {
 
     @Test
     public void testParentViewsWithoutParent() {
-        UI ui = new UI();
+        UI ui = new MockUI();
 
         Router router = new Router();
 
@@ -267,7 +260,7 @@ public class RouterConfigurationTest {
 
     @Test
     public void testParentViewsWithParent() {
-        UI ui = new UI();
+        UI ui = new MockUI();
 
         Router router = new Router();
 
@@ -574,8 +567,8 @@ public class RouterConfigurationTest {
         router.reconfigure(c -> c.setRoute("*", ParentView.class));
         int statusCode = router.getConfiguration()
                 .resolveRoute(new Location("")).get()
-                .handle(new NavigationEvent(router, new Location(""), new UI(),
-                        NavigationTrigger.PROGRAMMATIC));
+                .handle(new NavigationEvent(router, new Location(""),
+                        new MockUI(), NavigationTrigger.PROGRAMMATIC));
 
         Assert.assertEquals(HttpServletResponse.SC_OK, statusCode);
     }
@@ -584,8 +577,8 @@ public class RouterConfigurationTest {
     public void defaultErrorHandlerStatusCode() {
         Router router = new Router();
         int statusCode = router.getConfiguration().getErrorHandler()
-                .handle(new NavigationEvent(router, new Location(""), new UI(),
-                        NavigationTrigger.PROGRAMMATIC));
+                .handle(new NavigationEvent(router, new Location(""),
+                        new MockUI(), NavigationTrigger.PROGRAMMATIC));
 
         Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
     }
@@ -597,8 +590,8 @@ public class RouterConfigurationTest {
             c.setErrorView(ParentView.class);
         });
         int statusCode = router.getConfiguration().getErrorHandler()
-                .handle(new NavigationEvent(router, new Location(""), new UI(),
-                        NavigationTrigger.PROGRAMMATIC));
+                .handle(new NavigationEvent(router, new Location(""),
+                        new MockUI(), NavigationTrigger.PROGRAMMATIC));
 
         Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
     }

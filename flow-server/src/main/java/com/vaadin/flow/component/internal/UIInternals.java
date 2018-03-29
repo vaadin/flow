@@ -473,6 +473,7 @@ public class UIInternals implements Serializable {
 
     private <E> Registration addNavigationListener(Class<E> navigationHandler,
             E listener) {
+        session.checkHasLock();
         List<E> list = (List<E>) listeners.computeIfAbsent(navigationHandler,
                 key -> new ArrayList<>());
         list.add(listener);
@@ -503,6 +504,7 @@ public class UIInternals implements Serializable {
      */
     public ExecutionCanceler addJavaScriptInvocation(
             JavaScriptInvocation invocation) {
+        session.checkHasLock();
         pendingJsInvocations.add(invocation);
         return () -> pendingJsInvocations.remove(invocation);
     }
