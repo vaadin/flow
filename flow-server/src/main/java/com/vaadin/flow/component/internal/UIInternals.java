@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -161,8 +160,6 @@ public class UIInternals implements Serializable {
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
 
     private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
-
-    private final Set<Integer> sentTemplateIds = new HashSet<>();
 
     private Location lastHandledNavigation = null;
 

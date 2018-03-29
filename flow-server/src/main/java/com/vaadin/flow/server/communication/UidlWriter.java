@@ -129,9 +129,8 @@ public class UidlWriter implements Serializable {
         }
 
         JsonArray stateChanges = Json.createArray();
-        JsonObject templates = Json.createObject();
 
-        encodeChanges(ui, stateChanges, templates);
+        encodeChanges(ui, stateChanges);
 
         populateDependencies(response, session,
                 uiInternals.getDependencyList());
@@ -142,9 +141,6 @@ public class UidlWriter implements Serializable {
         }
         if (stateChanges.length() != 0) {
             response.put("changes", stateChanges);
-        }
-        if (templates.keys().length > 0) {
-            response.put("templates", templates);
         }
 
         List<JavaScriptInvocation> executeJavaScriptList = uiInternals
@@ -283,12 +279,9 @@ public class UidlWriter implements Serializable {
      *            the UI
      * @param stateChanges
      *            a JSON array to put state changes into
-     * @param templates
-     *            a JSON object to put new template nodes into
      * @see StateTree#runExecutionsBeforeClientResponse()
      */
-    private void encodeChanges(UI ui, JsonArray stateChanges,
-            JsonObject templates) {
+    private void encodeChanges(UI ui, JsonArray stateChanges) {
         UIInternals uiInternals = ui.getInternals();
         StateTree stateTree = uiInternals.getStateTree();
 
