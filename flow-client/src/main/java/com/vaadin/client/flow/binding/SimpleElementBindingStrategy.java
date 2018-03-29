@@ -18,11 +18,8 @@ package com.vaadin.client.flow.binding;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -60,6 +57,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -276,7 +274,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -286,7 +284,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-    
+
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -726,6 +724,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private EventRemover bindChildren(BindingContext context) {
         NodeList children = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
+        if (children.hasBeenCleared()) {
+            removeAllChildren(context.htmlNode);
+        }
 
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
@@ -940,17 +941,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void handleChildrenSplice(ListSpliceEvent event,
             BindingContext context) {
-
         Node htmlNode = context.htmlNode;
         if (event.isClear()) {
             /*
              * When a full clear event is fired, all nodes must be removed,
              * including the nodes the server doesn't know about.
              */
-            DomElement wrap = DomApi.wrap(htmlNode);
-            while (wrap.getFirstChild() != null) {
-                wrap.removeChild(wrap.getFirstChild());
-            }
+            removeAllChildren(htmlNode);
         } else {
             JsArray<?> remove = event.getRemove();
             for (int i = 0; i < remove.length(); i++) {
@@ -975,6 +972,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsArray<?> add = event.getAdd();
         if (!add.isEmpty()) {
             addChildren(event.getIndex(), context, add);
+        }
+    }
+
+    private void removeAllChildren(Node htmlNode) {
+        DomElement wrap = DomApi.wrap(htmlNode);
+        while (wrap.getFirstChild() != null) {
+            wrap.removeChild(wrap.getFirstChild());
         }
     }
 

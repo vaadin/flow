@@ -8,9 +8,12 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.change.ListClearChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
+import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
 public class NodeListAddRemoveTest
@@ -193,7 +196,7 @@ public class NodeListAddRemoveTest
     }
 
     @Test
-    public void removeOperationAfterDelete_addRemove_subsequentOoperationsAreNotAffected() {
+    public void removeOperationAfterDelete_addRemove_subsequentOperationsAreNotAffected() {
         List<String> items = resetToRemoveAfterAddCase();
 
         nodeList.add("foo");
@@ -230,6 +233,70 @@ public class NodeListAddRemoveTest
         Assert.assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
 
         verifyRemoved(changes, Arrays.asList(items.get(index - 1)), index - 1);
+    }
+
+    @Test
+    public void clear_collectChanges_allPreviousEventsAreRemoved() {
+        List<String> items = resetToRemoveAfterAddCase();
+
+        int index = items.size();
+
+        nodeList.add("foo");
+        nodeList.add("bar");
+        nodeList.remove(index);
+
+        nodeList.clear();
+
+        nodeList.add("baz");
+
+        List<NodeChange> changes = collectChanges(nodeList);
+
+        Assert.assertEquals(2, changes.size());
+        Assert.assertThat(changes.get(0),
+                CoreMatchers.instanceOf(ListClearChange.class));
+        Assert.assertThat(changes.get(1),
+                CoreMatchers.instanceOf(ListAddChange.class));
+
+        Assert.assertEquals(1, nodeList.size());
+        Assert.assertEquals("baz", nodeList.get(0));
+    }
+
+    @Test
+    public void clear_collectChanges_resetChangeTracker_clearEventIsCollected() {
+        resetToRemoveAfterAddCase();
+
+        nodeList.add("foo");
+
+        nodeList.clear();
+
+        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        // attach the feature node to the tree
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        nodeList.add("bar");
+
+        List<NodeChange> changes = new ArrayList<>();
+        // this call will remove the clear change which has happened before
+        // attach, but it should still be collected
+        nodeList.getNode().collectChanges(changes::add);
+
+        Assert.assertEquals(3, changes.size());
+        Assert.assertThat(changes.get(0),
+                CoreMatchers.instanceOf(NodeAttachChange.class));
+        Assert.assertThat(changes.get(1),
+                CoreMatchers.instanceOf(ListClearChange.class));
+        Assert.assertThat(changes.get(2),
+                CoreMatchers.instanceOf(ListAddChange.class));
+
+        nodeList.add("baz");
+
+        changes.clear();
+        nodeList.getNode().collectChanges(changes::add);
+        // Now there is not anymore clear change (so the previous one is not
+        // preserved)
+        Assert.assertEquals(1, changes.size());
+        Assert.assertTrue(changes.get(0) instanceof ListAddChange<?>);
     }
 
     private List<String> addOriginalItems(int numberOfOriginalItems) {

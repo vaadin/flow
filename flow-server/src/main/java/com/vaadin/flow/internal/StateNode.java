@@ -339,7 +339,7 @@ public class StateNode implements Serializable {
      * <p>
      * This is used internally by the state tree when processing
      * beforeClientResponse callbacks.
-     * 
+     *
      * @return <code>true</code> if the node has a initialized client side and
      *         <code>false</code> if the client side is not initialized yet
      */
