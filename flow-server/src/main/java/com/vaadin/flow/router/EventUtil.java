@@ -17,8 +17,9 @@ package com.vaadin.flow.router;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,15 +41,21 @@ public final class EventUtil {
     private static class DescendantsVisitor implements NodeVisitor {
 
         private final Collection<Element> collector;
+        private Predicate<Element> filter;
 
-        DescendantsVisitor(Collection<Element> collector) {
+        DescendantsVisitor(Collection<Element> collector,
+                Predicate<Element> filter) {
             this.collector = collector;
+            this.filter = filter;
         }
 
         @Override
         public boolean visit(ElementType type, Element element) {
-            collector.add(element);
-            return true;
+            boolean include = filter.test(element);
+            if (include) {
+                collector.add(element);
+            }
+            return include;
         }
 
         @Override
@@ -63,97 +70,68 @@ public final class EventUtil {
     }
 
     /**
-     * Collect enterObservers for root instance and elements in list.
+     * Collect before enter observer instances based on what will be attached
+     * when a new view chain is applied. Because components in the new chain
+     * might still have children that will yet be detached, the old chain is
+     * also needed in order to exclude anything that is only in the old chain
+     * but missing from the new chain.
      *
-     * @param observersRoot
-     *            element which is used as a root to traverse for observers
-     * @param elements
-     *            elements for which to handle observers
+     * @param oldChain
+     *            the view chain prior to the navigation
+     * @param newChain
+     *            the view chain after the navigation
+     *
      * @return list of found BeforeEnterObservers
      */
-    public static List<BeforeEnterObserver> collectEnterObservers(
-            HasElement observersRoot, List<? extends HasElement> elements) {
-        Stream<BeforeEnterObserver> observerRootDescendants = EventUtil
-                .collectBeforeEnterObservers(
-                        Collections.singletonList(observersRoot))
-                .stream();
-        Stream<BeforeEnterObserver> otherObservers = EventUtil
-                .getImplementingComponents(
-                        elements.stream().map(HasElement::getElement),
-                        BeforeEnterObserver.class);
-        return Stream.concat(observerRootDescendants, otherObservers)
-                .collect(Collectors.toList());
+    public static List<BeforeEnterObserver> collectBeforeEnterObservers(
+            Collection<? extends HasElement> oldChain,
+            Collection<? extends HasElement> newChain) {
+
+        Set<Element> chainRootElements = Stream
+                .concat(oldChain.stream(), newChain.stream())
+                .map(HasElement::getElement).collect(Collectors.toSet());
+
+        return newChain.stream().flatMap(chainRoot -> {
+            Element chainRootElement = chainRoot.getElement();
+
+            Predicate<Element> currentRootAndNonRoots = element -> {
+                return element.equals(chainRootElement)
+                        || !chainRootElements.contains(element);
+            };
+
+            return getImplementingComponents(
+                    flattenDescendants(chainRootElement,
+                            currentRootAndNonRoots),
+                    BeforeEnterObserver.class);
+        }).collect(Collectors.toList());
     }
 
     /**
      * Collect all Components implementing {@link BeforeLeaveObserver} connected
-     * to the given element tree.
+     * to the given UI.
      *
-     * @param element
-     *            element to search from
+     * @param ui
+     *            UI to search from
      * @return navigation listeners
      */
-    public static List<BeforeLeaveObserver> collectBeforeLeaveObservers(
-            Element element) {
-        return getImplementingComponents(flattenDescendants(element),
+    public static List<BeforeLeaveObserver> collectBeforeLeaveObservers(UI ui) {
+        return getImplementingComponents(flattenDescendants(ui.getElement()),
                 BeforeLeaveObserver.class).collect(Collectors.toList());
     }
 
     /**
-     * Collect all Components implementing {@link BeforeEnterObserver} connected
-     * to the tree of all given Components in list.
-     *
-     * @param components
-     *            components to search
-     * @return navigation listeners
-     */
-    public static List<BeforeEnterObserver> collectBeforeEnterObservers(
-            List<HasElement> components) {
-        Stream<Element> elements = components.stream().flatMap(
-                component -> flattenDescendants(component.getElement()));
-
-        return getImplementingComponents(elements, BeforeEnterObserver.class)
-                .collect(Collectors.toList());
-    }
-
-    /**
      * Collect all Components implementing {@link AfterNavigationObserver} that
-     * are found in the trees of given Components.
+     * are found in the given UI.
      *
-     * @param components
-     *            components to search
+     * @param ui
+     *            UI to search from
      * @return after navigation listeners
      */
     public static List<AfterNavigationObserver> collectAfterNavigationObservers(
-            List<HasElement> components) {
-        Stream<Element> elements = components.stream().flatMap(
-                component -> flattenDescendants(component.getElement()));
-
-        return getImplementingComponents(elements,
+            UI ui) {
+        return getImplementingComponents(flattenDescendants(ui.getElement()),
                 AfterNavigationObserver.class).collect(Collectors.toList());
-    }
 
-    /**
-     * Collect afterNavigationObservers for root instance and elements in list.
-     *
-     * @param observersRoot
-     *            element which is used as a root to traverse for observers
-     * @param elements
-     *            elements for which to handle observers
-     * @return list of found AfterNavigationObservers
-     */
-    public static List<AfterNavigationObserver> collectAfterNavigationObservers(
-            HasElement observersRoot, List<? extends HasElement> elements) {
-        Stream<AfterNavigationObserver> observerRootDescendants = EventUtil
-                .collectAfterNavigationObservers(
-                        Collections.singletonList(observersRoot))
-                .stream();
-        Stream<AfterNavigationObserver> otherObservers = EventUtil
-                .getImplementingComponents(
-                        elements.stream().map(HasElement::getElement),
-                        AfterNavigationObserver.class);
-        return Stream.concat(observerRootDescendants, otherObservers)
-                .collect(Collectors.toList());
     }
 
     /**
@@ -245,15 +223,23 @@ public final class EventUtil {
      *            start node to collect child elements from
      * @param descendants
      *            a collector of descendants to fill
+     * @param filter
+     *            predicate to check whether a given element and its descendants
+     *            should be included
      */
     public static void inspectHierarchy(Element node,
-            Collection<Element> descendants) {
-        node.accept(new DescendantsVisitor(descendants));
+            Collection<Element> descendants, Predicate<Element> filter) {
+        node.accept(new DescendantsVisitor(descendants, filter));
     }
 
     private static Stream<Element> flattenDescendants(Element element) {
+        return flattenDescendants(element, item -> true);
+    }
+
+    private static Stream<Element> flattenDescendants(Element element,
+            Predicate<Element> recursionPredicate) {
         Collection<Element> descendants = new ArrayList<>();
-        inspectHierarchy(element, descendants);
+        inspectHierarchy(element, descendants, recursionPredicate);
         return descendants.stream();
     }
 }
