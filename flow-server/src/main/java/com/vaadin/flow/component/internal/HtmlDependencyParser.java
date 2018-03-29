@@ -68,7 +68,7 @@ public class HtmlDependencyParser {
      *            HTML import uri
      */
     public HtmlDependencyParser(String uri) {
-        this.root = uri;
+        root = uri;
     }
 
     Collection<String> parseDependencies() {
@@ -97,14 +97,13 @@ public class HtmlDependencyParser {
             return;
         }
 
-        assert session.hasLock();
+        session.checkHasLock();
         HtmlDependenciesCache cache = session
                 .getAttribute(HtmlDependenciesCache.class);
         if (cache == null) {
             cache = new HtmlDependenciesCache();
             session.setAttribute(HtmlDependenciesCache.class, cache);
         }
-
 
         String resolvedPath = servlet.resolveResource(path);
 

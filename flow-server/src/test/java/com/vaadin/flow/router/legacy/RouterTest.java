@@ -38,11 +38,6 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.flow.router.legacy.DefaultErrorView;
-import com.vaadin.flow.router.legacy.ImmutableRouterConfiguration;
-import com.vaadin.flow.router.legacy.Resolver;
-import com.vaadin.flow.router.legacy.Router;
-import com.vaadin.flow.router.legacy.RouterConfiguration;
 import com.vaadin.flow.router.legacy.ViewRendererTest.ErrorView;
 import com.vaadin.flow.router.legacy.ViewRendererTest.TestView;
 import com.vaadin.flow.server.MockServletConfig;
@@ -50,13 +45,14 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.tests.util.MockUI;
 
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouterTest {
 
-    public static class RouterTestUI extends UI {
+    public static class RouterTestUI extends MockUI {
         final Router router;
 
         public RouterTestUI() {

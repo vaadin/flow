@@ -541,7 +541,7 @@ public class UI extends Component
         if (session == null) {
             throw new UIDetachedException("Cannot push a detached UI");
         }
-        assert session.hasLock();
+        session.checkHasLock();
 
         if (!getPushConfiguration().getPushMode().isEnabled()) {
             throw new IllegalStateException("Push not enabled");

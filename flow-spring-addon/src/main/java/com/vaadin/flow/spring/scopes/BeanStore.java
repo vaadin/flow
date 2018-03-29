@@ -50,7 +50,7 @@ class BeanStore {
      *            a vaadin session
      */
     BeanStore(VaadinSession session) {
-        assert session.hasLock();
+        session.checkHasLock();
         this.session = session;
     }
 
@@ -102,7 +102,7 @@ class BeanStore {
     }
 
     Void doDestroy() {
-        assert session.hasLock();
+        session.checkHasLock();
         for (Runnable destructionCallback : destructionCallbacks.values()) {
             try {
                 destructionCallback.run();

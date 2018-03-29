@@ -31,6 +31,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -242,6 +243,7 @@ public class StateTree implements NodeOwner {
     @Override
     public void markAsDirty(StateNode node) {
         assert node.getOwner() == this;
+        checkHasLock();
 
         dirtyNodes.add(node);
     }
@@ -304,6 +306,7 @@ public class StateTree implements NodeOwner {
      */
     public ExecutionRegistration beforeClientResponse(StateNode context,
             SerializableConsumer<ExecutionContext> execution) {
+        checkHasLock();
         assert context != null : "The 'context' parameter can not be null";
         assert execution != null : "The 'execution' parameter can not be null";
 
@@ -353,5 +356,14 @@ public class StateTree implements NodeOwner {
         pendingExecutionNodes = new HashSet<>();
 
         return flushed;
+    }
+
+    private void checkHasLock() {
+        if (ui != null) {
+            VaadinSession session = ui.getSession();
+            if (session != null) {
+                session.checkHasLock();
+            }
+        }
     }
 }
