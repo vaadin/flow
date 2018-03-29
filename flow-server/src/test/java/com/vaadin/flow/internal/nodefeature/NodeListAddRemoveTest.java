@@ -252,8 +252,10 @@ public class NodeListAddRemoveTest
         List<NodeChange> changes = collectChanges(nodeList);
 
         Assert.assertEquals(2, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof ListClearChange<?>);
-        Assert.assertTrue(changes.get(1) instanceof ListAddChange<?>);
+        Assert.assertThat(changes.get(0),
+                CoreMatchers.instanceOf(ListClearChange.class));
+        Assert.assertThat(changes.get(1),
+                CoreMatchers.instanceOf(ListAddChange.class));
 
         Assert.assertEquals(1, nodeList.size());
         Assert.assertEquals("baz", nodeList.get(0));
@@ -280,9 +282,12 @@ public class NodeListAddRemoveTest
         nodeList.getNode().collectChanges(changes::add);
 
         Assert.assertEquals(3, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof NodeAttachChange);
-        Assert.assertTrue(changes.get(1) instanceof ListClearChange<?>);
-        Assert.assertTrue(changes.get(2) instanceof ListAddChange<?>);
+        Assert.assertThat(changes.get(0),
+                CoreMatchers.instanceOf(NodeAttachChange.class));
+        Assert.assertThat(changes.get(1),
+                CoreMatchers.instanceOf(ListClearChange.class));
+        Assert.assertThat(changes.get(2),
+                CoreMatchers.instanceOf(ListAddChange.class));
 
         nodeList.add("baz");
 
