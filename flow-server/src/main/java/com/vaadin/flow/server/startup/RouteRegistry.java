@@ -61,16 +61,22 @@ import com.vaadin.flow.theme.Theme;
  */
 public class RouteRegistry implements Serializable {
 
-    private static final Class<? extends AbstractTheme> LUMO_CLASS_IF_AVAILABLE;
-    static {
+    private static final Class<? extends AbstractTheme> LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
+
+    private static final Class<? extends AbstractTheme> loadLumoClassIfAvailable() {
         Class<? extends AbstractTheme> theme = null;
         try {
             theme = (Class<? extends AbstractTheme>) Class
                     .forName("com.vaadin.flow.theme.lumo.Lumo");
         } catch (ClassNotFoundException e) {
             // ignore, the Lumo class is not available in the classpath
+            Logger logger = LoggerFactory
+                    .getLogger(RouteRegistry.class.getName());
+            logger.trace(
+                    "Lumo theme is not present in the classpath. The application will not use any default theme.",
+                    e);
         }
-        LUMO_CLASS_IF_AVAILABLE = theme;
+        return theme;
     }
 
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
@@ -557,17 +563,33 @@ public class RouteRegistry implements Serializable {
      * 
      * @param navigationTarget
      *            the navigation target class
+     * @param path
+     *            the resolved route path so we can determine what the rendered
+     *            target is for
      * @return the associated AbstractTheme, or empty if none is defined and the
      *         Lumo class is not in the classpath, or if the NoTheme annotation
      *         is being used.
      */
     public Optional<Class<? extends AbstractTheme>> getThemeFor(
+            Class<?> navigationTarget, String path) {
+        Class<? extends RouterLayout> topParentLayout = RouterUtil
+                .getTopParentLayout(navigationTarget, path);
+        Class<? extends AbstractTheme> themeClass;
+        if (topParentLayout != null) {
+            themeClass = getThemeFor(topParentLayout);
+        } else {
+            themeClass = getThemeFor(navigationTarget);
+        }
+
+        return Optional.ofNullable(themeClass);
+    }
+
+    private Class<? extends AbstractTheme> getThemeFor(
             Class<?> navigationTarget) {
         if (routeThemes.get() != null
                 && routeThemes.get().containsKey(navigationTarget)) {
-            return Optional.ofNullable(routeThemes.get().get(navigationTarget));
+            return routeThemes.get().get(navigationTarget);
         }
-        return Optional
-                .ofNullable(findThemeForNavigationTarget(navigationTarget));
+        return findThemeForNavigationTarget(navigationTarget);
     }
 }

@@ -62,7 +62,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.router.legacy.HasChildView;
 import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.VaadinRequest;
@@ -758,14 +757,9 @@ public class UIInternals implements Serializable {
     }
 
     private void updateTheme(Component target, String path) {
-        Class<? extends RouterLayout> topParentLayout = RouterUtil
-                .getTopParentLayout(target.getClass(), path);
-        Optional<Class<? extends AbstractTheme>> themeClass;
-        if (topParentLayout != null) {
-            themeClass = ui.getThemeFor(topParentLayout);
-        } else {
-            themeClass = ui.getThemeFor(target.getClass());
-        }
+        Optional<Class<? extends AbstractTheme>> themeClass = ui
+                .getThemeFor(target.getClass(), path);
+
         if (themeClass.isPresent()) {
             if (theme == null || !theme.getClass().equals(themeClass.get())) {
                 theme = ReflectTools.createInstance(themeClass.get());
