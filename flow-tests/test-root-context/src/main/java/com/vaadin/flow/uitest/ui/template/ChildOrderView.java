@@ -61,11 +61,17 @@ public class ChildOrderView extends PolymerTemplate<TemplateModel> {
     public ChildOrderView() {
         setId("root");
 
-        Div childOnConstructor = new Div();
-        childOnConstructor.setText(
+        Div childOnConstructor1 = new Div();
+        childOnConstructor1.setText(
                 "Server child " + (containerWithElementAddedOnConstructor
                         .getElement().getChildCount() + 1));
-        containerWithElementAddedOnConstructor.add(childOnConstructor);
+        containerWithElementAddedOnConstructor.add(childOnConstructor1);
+
+        Div childOnConstructor2 = new Div();
+        childOnConstructor2.setText(
+                "Server child " + (containerWithElementAddedOnConstructor
+                        .getElement().getChildCount() + 1));
+        containerWithElementAddedOnConstructor.add(childOnConstructor2);
 
         addChildToContainer1.addClickListener(event -> {
             Div div = new Div();

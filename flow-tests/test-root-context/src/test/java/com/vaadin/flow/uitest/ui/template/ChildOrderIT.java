@@ -192,7 +192,8 @@ public class ChildOrderIT extends ChromeBrowserTest {
         WebElement container = findInShadowRoot(root,
                 By.id("containerWithElementAddedOnConstructor")).get(0);
 
-        assertNodeOrder(container, "Client child", "Server child 1");
+        assertNodeOrder(container, "Client child", "Server child 1",
+                "Server child 2");
     }
 
     private void clickAndWaitForContainerToChange(WebElement container,
