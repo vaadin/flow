@@ -15,12 +15,17 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.http.HttpServletResponse;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EventObject;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -28,7 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,10 +67,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -613,6 +616,12 @@ public class RouterTest extends RoutingTestBase {
     @RoutePrefix("parent")
     @Tag(Tag.DIV)
     public static class RouteParent extends Component implements RouterLayout {
+        private final RouterLink loneLink = new RouterLink("lone",
+                LoneRoute.class);
+
+        public RouteParent() {
+            getElement().appendChild(loneLink.getElement());
+        }
     }
 
     @Route(value = "after-navigation-child", layout = RouteParent.class)
@@ -1099,6 +1108,7 @@ public class RouterTest extends RoutingTestBase {
 
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
+        Mockito.when(service.getRouter()).thenReturn(router);
 
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
     }
@@ -1114,10 +1124,8 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void basic_navigation() throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        FooNavigationTarget.class, FooBarNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RootNavigationTarget.class,
+                FooNavigationTarget.class, FooBarNavigationTarget.class);
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
@@ -1134,8 +1142,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void page_title_set_from_annotation()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(NavigationTargetWithTitle.class));
+        setNavigationTargets(NavigationTargetWithTitle.class);
         router.navigate(ui, new Location("navigation-target-with-title"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Custom Title", ui.getInternals().getTitle());
@@ -1144,8 +1151,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void page_title_not_set_from_annotation_in_parent()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(ChildWithoutTitle.class));
+        setNavigationTargets(ChildWithoutTitle.class);
 
         router.navigate(ui, new Location("parent-with-title/child"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1156,8 +1162,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void page_title_set_dynamically()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(NavigationTargetWithDynamicTitle.class));
+        setNavigationTargets(NavigationTargetWithDynamicTitle.class);
 
         router.navigate(ui,
                 new Location("navigation-target-with-dynamic-title"),
@@ -1170,8 +1175,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void page_title_set_dynamically_from_url_parameter()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(Collections
-                .singleton(NavigationTargetWithDynamicTitleFromUrl.class));
+        setNavigationTargets(NavigationTargetWithDynamicTitleFromUrl.class);
 
         router.navigate(ui, new Location("url/hello"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1183,8 +1187,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void page_title_set_dynamically_from_event_handler()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(Collections.singleton(
-                NavigationTargetWithDynamicTitleFromNavigation.class));
+        setNavigationTargets(
+                NavigationTargetWithDynamicTitleFromNavigation.class);
 
         router.navigate(ui, new Location("url"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1196,10 +1200,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void before_navigation_event_is_triggered()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        FooNavigationTarget.class, FooBarNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RootNavigationTarget.class,
+                FooNavigationTarget.class, FooBarNavigationTarget.class);
 
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1212,12 +1214,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void leave_and_enter_listeners_only_receive_correct_state()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(LeavingNavigationTarget.class,
-                                EnteringNavigationTarget.class,
-                                RootNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(LeavingNavigationTarget.class,
+                EnteringNavigationTarget.class, RootNavigationTarget.class);
 
         router.navigate(ui, new Location("enteringTarget"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1243,11 +1241,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void leave_navigate_and_enter_listeners_execute_in_correct_order()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(CombinedObserverTarget.class,
-                                RootNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(CombinedObserverTarget.class,
+                RootNavigationTarget.class);
 
         // Observer execution order should be BeforeNavigation before
         // EnterListener, but BeforeLeave before BeforeNavigation
@@ -1277,10 +1272,8 @@ public class RouterTest extends RoutingTestBase {
     public void before_navigation_event_is_triggered_for_attach_and_detach()
             throws InvalidRouteConfigurationException {
         FooBarNavigationTarget.events.clear();
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        FooNavigationTarget.class, FooBarNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RootNavigationTarget.class,
+                FooNavigationTarget.class, FooBarNavigationTarget.class);
 
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1303,10 +1296,8 @@ public class RouterTest extends RoutingTestBase {
         FooBarNavigationTarget.events.clear();
         ReroutingNavigationTarget.events.clear();
         RootNavigationTarget.events.clear();
-        router.getRegistry().setNavigationTargets(Stream
-                .of(RootNavigationTarget.class, ReroutingNavigationTarget.class,
-                        FooBarNavigationTarget.class)
-                .collect(Collectors.toSet()));
+        setNavigationTargets(RootNavigationTarget.class,
+                ReroutingNavigationTarget.class, FooBarNavigationTarget.class);
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
@@ -1331,8 +1322,7 @@ public class RouterTest extends RoutingTestBase {
     public void before_and_after_event_fired_in_correct_order()
             throws InvalidRouteConfigurationException {
         NavigationEvents.events.clear();
-        router.getRegistry().setNavigationTargets(
-                Stream.of(NavigationEvents.class).collect(Collectors.toSet()));
+        setNavigationTargets(NavigationEvents.class);
 
         router.navigate(ui, new Location("navigationEvents"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1353,10 +1343,7 @@ public class RouterTest extends RoutingTestBase {
     public void after_event_not_fired_on_detach()
             throws InvalidRouteConfigurationException {
         NavigationEvents.events.clear();
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(NavigationEvents.class, FooNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(NavigationEvents.class, FooNavigationTarget.class);
 
         router.navigate(ui, new Location("navigationEvents"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1380,10 +1367,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void basic_url_resolving()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        FooNavigationTarget.class, FooBarNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RootNavigationTarget.class,
+                FooNavigationTarget.class, FooBarNavigationTarget.class);
 
         Assert.assertEquals("", router.getUrl(RootNavigationTarget.class));
         Assert.assertEquals("foo", router.getUrl(FooNavigationTarget.class));
@@ -1394,9 +1379,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void nested_layouts_url_resolving()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Stream.of(RouteChild.class, LoneRoute.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RouteChild.class, LoneRoute.class);
 
         Assert.assertEquals("parent/child", router.getUrl(RouteChild.class));
         Assert.assertEquals("single", router.getUrl(LoneRoute.class));
@@ -1405,11 +1388,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void layout_with_url_parameter_url_resolving()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(GreetingNavigationTarget.class,
-                                OtherGreetingNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(GreetingNavigationTarget.class,
+                OtherGreetingNavigationTarget.class);
 
         Assert.assertEquals("greeting/my_param",
                 router.getUrl(GreetingNavigationTarget.class, "my_param"));
@@ -1424,10 +1404,8 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_with_url_parameter()
             throws InvalidRouteConfigurationException {
         RouteWithParameter.events.clear();
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        RouteWithParameter.class, RerouteToRouteWithParam.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(GreetingNavigationTarget.class,
+                RouteWithParameter.class, RerouteToRouteWithParam.class);
 
         router.navigate(ui, new Location("redirect/to/param"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1441,12 +1419,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_fails_with_no_url_parameter()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(GreetingNavigationTarget.class,
-                                ParameterRouteNoParameter.class,
-                                RerouteToRouteWithParam.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(GreetingNavigationTarget.class,
+                ParameterRouteNoParameter.class, RerouteToRouteWithParam.class);
         String locationString = "redirect/to/param";
 
         int result = router.navigate(ui, new Location(locationString),
@@ -1464,10 +1438,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_fails_with_faulty_url_parameter()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        RouteWithParameter.class, FailRerouteWithParam.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(GreetingNavigationTarget.class,
+                RouteWithParameter.class, FailRerouteWithParam.class);
 
         String locationString = "fail/param";
         router.navigate(ui, new Location(locationString),
@@ -1483,12 +1455,9 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_with_multiple_url_parameters()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(GreetingNavigationTarget.class,
-                                RouteWithMultipleParameters.class,
-                                RerouteToRouteWithMultipleParams.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(GreetingNavigationTarget.class,
+                RouteWithMultipleParameters.class,
+                RerouteToRouteWithMultipleParams.class);
 
         router.navigate(ui, new Location("redirect/to/params"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1502,12 +1471,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_fails_with_faulty_url_parameters()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(GreetingNavigationTarget.class,
-                                RouteWithMultipleParameters.class,
-                                FailRerouteWithParams.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(GreetingNavigationTarget.class,
+                RouteWithMultipleParameters.class, FailRerouteWithParams.class);
         String locationString = "fail/params";
 
         int result = router.navigate(ui, new Location(locationString),
@@ -1525,12 +1490,9 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_with_multiple_url_parameters_fails_to_parameterless_target()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(GreetingNavigationTarget.class,
-                                ParameterRouteNoParameter.class,
-                                RerouteToRouteWithMultipleParams.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(GreetingNavigationTarget.class,
+                ParameterRouteNoParameter.class,
+                RerouteToRouteWithMultipleParams.class);
         String locationString = "redirect/to/params";
 
         int result = router.navigate(ui, new Location(locationString),
@@ -1548,10 +1510,9 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_with_multiple_url_parameters_fails_to_single_parameter_target()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(Stream
-                .of(GreetingNavigationTarget.class, RouteWithParameter.class,
-                        RerouteToRouteWithMultipleParams.class)
-                .collect(Collectors.toSet()));
+        setNavigationTargets(GreetingNavigationTarget.class,
+                RouteWithParameter.class,
+                RerouteToRouteWithMultipleParams.class);
         String locationString = "redirect/to/params";
 
         int result = router.navigate(ui, new Location(locationString),
@@ -1570,10 +1531,7 @@ public class RouterTest extends RoutingTestBase {
     public void route_precedence_when_one_has_parameter()
             throws InvalidRouteConfigurationException {
         RouteWithParameter.events.clear();
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(RouteWithParameter.class, StaticParameter.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RouteWithParameter.class, StaticParameter.class);
 
         router.navigate(ui, new Location("param/param"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1596,8 +1554,7 @@ public class RouterTest extends RoutingTestBase {
     public void optional_parameter_gets_parameter()
             throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
-        router.getRegistry().setNavigationTargets(
-                Stream.of(OptionalParameter.class).collect(Collectors.toSet()));
+        setNavigationTargets(OptionalParameter.class);
 
         router.navigate(ui, new Location("optional/parameter"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1613,8 +1570,7 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         OptionalParameter.param = null;
-        router.getRegistry().setNavigationTargets(
-                Stream.of(OptionalParameter.class).collect(Collectors.toSet()));
+        setNavigationTargets(OptionalParameter.class);
 
         router.navigate(ui, new Location("optional"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1628,11 +1584,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void correctly_return_route_with_one_base_route_with_optionals()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(RouteWithParameter.class,
-                                ParameterRouteNoParameter.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RouteWithParameter.class,
+                ParameterRouteNoParameter.class);
 
         router.navigate(ui, new Location("param/parameter"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1650,10 +1603,8 @@ public class RouterTest extends RoutingTestBase {
                 OptionalParameter.class.getName(),
                 OptionalParameter.class.getName()));
 
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(OptionalParameter.class, OptionalNoParameter.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(OptionalParameter.class,
+                OptionalNoParameter.class);
 
     }
 
@@ -1661,8 +1612,7 @@ public class RouterTest extends RoutingTestBase {
     public void navigateToRoot_errorCode_dontRedirect()
             throws InvalidRouteConfigurationException {
 
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(FooNavigationTarget.class));
+        setNavigationTargets(FooNavigationTarget.class);
 
         Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, router.navigate(
                 ui, new Location(""), NavigationTrigger.PROGRAMMATIC));
@@ -1673,8 +1623,7 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         WildParameter.events.clear();
         WildParameter.param = null;
-        router.getRegistry().setNavigationTargets(
-                Stream.of(WildParameter.class).collect(Collectors.toSet()));
+        setNavigationTargets(WildParameter.class);
 
         router.navigate(ui, new Location("wild"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1706,9 +1655,8 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         WildParameter.events.clear();
         WildParameter.param = null;
-        router.getRegistry().setNavigationTargets(
-                Stream.of(WildParameter.class, WildHasParameter.class,
-                        WildNormal.class).collect(Collectors.toSet()));
+        setNavigationTargets(WildParameter.class, WildHasParameter.class,
+                WildNormal.class);
 
         router.navigate(ui, new Location("wild"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1737,9 +1685,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void url_resolves_correctly_for_optional_and_wild_parameters()
             throws InvalidRouteConfigurationException, NotFoundException {
-        router.getRegistry().setNavigationTargets(
-                Stream.of(OptionalParameter.class, WildParameter.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(OptionalParameter.class, WildParameter.class);
 
         Assert.assertEquals(
                 "Optional value should be able to return even without any parameters",
@@ -1764,8 +1710,7 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         WildRootParameter.events.clear();
         WildRootParameter.param = null;
-        router.getRegistry().setNavigationTargets(
-                Stream.of(WildRootParameter.class).collect(Collectors.toSet()));
+        setNavigationTargets(WildRootParameter.class);
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
@@ -1796,8 +1741,7 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         OptionalRootParameter.events.clear();
         OptionalRootParameter.param = null;
-        router.getRegistry().setNavigationTargets(Stream
-                .of(OptionalRootParameter.class).collect(Collectors.toSet()));
+        setNavigationTargets(OptionalRootParameter.class);
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
@@ -1827,8 +1771,7 @@ public class RouterTest extends RoutingTestBase {
     public void root_navigation_target_with_required_parameter()
             throws InvalidRouteConfigurationException {
         RootParameter.events.clear();
-        router.getRegistry().setNavigationTargets(
-                Stream.of(RootParameter.class).collect(Collectors.toSet()));
+        setNavigationTargets(RootParameter.class);
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
@@ -1841,9 +1784,7 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_on_hasParameter_step()
             throws InvalidRouteConfigurationException {
         RootParameter.events.clear();
-        router.getRegistry().setNavigationTargets(
-                Stream.of(RootParameter.class, RedirectOnSetParam.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RootParameter.class, RedirectOnSetParam.class);
 
         router.navigate(ui, new Location("param/reroute/hello"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1857,11 +1798,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void has_url_with_supported_parameters_navigation()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(IntegerParameter.class, LongParameter.class,
-                                BooleanParameter.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(IntegerParameter.class, LongParameter.class,
+                BooleanParameter.class);
 
         router.navigate(ui, new Location("integer/5"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1888,11 +1826,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void getUrl_for_has_url_with_supported_parameters()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(IntegerParameter.class, LongParameter.class,
-                                BooleanParameter.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(IntegerParameter.class, LongParameter.class,
+                BooleanParameter.class);
 
         Assert.assertEquals("integer/5",
                 router.getUrl(IntegerParameter.class, 5));
@@ -1906,9 +1841,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void default_wildcard_support_only_for_string()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(UnsupportedWildParameter.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(UnsupportedWildParameter.class);
 
         String locationString = "usupported/wildcard/3/4/1";
         int result = router.navigate(ui, new Location(locationString),
@@ -1933,8 +1866,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void unparsable_url_parameter()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(LongParameter.class));
+        setNavigationTargets(LongParameter.class);
 
         String locationString = "long/unsupportedParam";
         int result = router.navigate(ui, new Location(locationString),
@@ -1958,10 +1890,8 @@ public class RouterTest extends RoutingTestBase {
     public void redirect_to_routeNotFound_error_view_when_no_route_found()
             throws InvalidRouteConfigurationException {
         ErrorTarget.events.clear();
-        router.getRegistry().setNavigationTargets(Stream
-                .of(FooNavigationTarget.class).collect(Collectors.toSet()));
-        router.getRegistry().setErrorNavigationTargets(
-                Collections.singleton(ErrorTarget.class));
+        setNavigationTargets(FooNavigationTarget.class);
+        setErrorNavigationTargets(ErrorTarget.class);
 
         String locationString = "error";
         int result = router.navigate(ui, new Location(locationString),
@@ -1982,8 +1912,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void exception_during_navigation_is_caught_and_show_in_internalServerError()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(FailOnException.class));
+        setNavigationTargets(FailOnException.class);
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1994,9 +1923,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void fail_for_multiple_of_the_same_class()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setErrorNavigationTargets(
-                Stream.of(ErrorTarget.class, RouteNotFoundError.class)
-                        .collect(Collectors.toSet()));
+        setErrorNavigationTargets(ErrorTarget.class, RouteNotFoundError.class);
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2015,20 +1942,14 @@ public class RouterTest extends RoutingTestBase {
         expectedEx.expectMessage(startsWith(
                 "Only one target for an exception should be defined. Found "));
 
-        router.getRegistry()
-                .setErrorNavigationTargets(Stream
-                        .of(NonExtendingNotFoundTarget.class,
-                                DuplicateNotFoundTarget.class)
-                        .collect(Collectors.toSet()));
+        setErrorNavigationTargets(NonExtendingNotFoundTarget.class,
+                DuplicateNotFoundTarget.class);
     }
 
     @Test
     public void custom_exception_target_should_override_default_ones() {
-        router.getRegistry()
-                .setErrorNavigationTargets(Stream
-                        .of(NonExtendingNotFoundTarget.class,
-                                RouteNotFoundError.class)
-                        .collect(Collectors.toSet()));
+        setErrorNavigationTargets(NonExtendingNotFoundTarget.class,
+                RouteNotFoundError.class);
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2045,9 +1966,8 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void custom_exception_target_is_used() {
-        router.getRegistry().setErrorNavigationTargets(
-                Stream.of(CustomNotFoundTarget.class, RouteNotFoundError.class)
-                        .collect(Collectors.toSet()));
+        setErrorNavigationTargets(CustomNotFoundTarget.class,
+                RouteNotFoundError.class);
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2062,10 +1982,12 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void error_target_has_parent_layout() {
-        router.getRegistry().setErrorNavigationTargets(
-                Stream.of(ErrorTargetWithParent.class, RouteNotFoundError.class)
-                        .collect(Collectors.toSet()));
+    public void error_target_has_parent_layout()
+            throws InvalidRouteConfigurationException {
+        // Needed for the router link in the parent used by the error views
+        setNavigationTargets(LoneRoute.class);
+        setErrorNavigationTargets(ErrorTargetWithParent.class,
+                RouteNotFoundError.class);
 
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2077,20 +1999,18 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(RouteParent.class, parenComponent.getClass());
 
-        Assert.assertEquals("Expected only one child component", 1,
-                parenComponent.getChildren().count());
-        Assert.assertEquals("Error target should have been the only child.",
-                ErrorTargetWithParent.class,
-                parenComponent.getChildren().findFirst().get().getClass());
+        List<Class<?>> childClasses = parenComponent.getChildren()
+                .map(Object::getClass).collect(Collectors.toList());
+        Assert.assertEquals(
+                Arrays.asList(RouterLink.class, ErrorTargetWithParent.class),
+                childClasses);
     }
 
     @Test
     public void reroute_to_error_opens_expected_error_target()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(RerouteToError.class));
-        router.getRegistry().setErrorNavigationTargets(
-                Collections.singleton(IllegalTarget.class));
+        setNavigationTargets(RerouteToError.class);
+        setErrorNavigationTargets(IllegalTarget.class);
 
         int result = router.navigate(ui,
                 new Location("beforeToError/exception"),
@@ -2111,10 +2031,8 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_to_error_with_custom_message_message_is_used()
             throws InvalidRouteConfigurationException {
         IllegalTarget.events.clear();
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(RerouteToErrorWithMessage.class));
-        router.getRegistry().setErrorNavigationTargets(
-                Collections.singleton(IllegalTarget.class));
+        setNavigationTargets(RerouteToErrorWithMessage.class);
+        setErrorNavigationTargets(IllegalTarget.class);
 
         int result = router.navigate(ui,
                 new Location("beforeToError/message/CustomMessage"),
@@ -2142,9 +2060,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_to_error_from_has_param()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Stream.of(RedirectToNotFoundInHasParam.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RedirectToNotFoundInHasParam.class);
 
         int result = router.navigate(ui, new Location("toNotFound/error"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2157,10 +2073,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void faulty_error_response_code_should_throw_exception()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(RerouteToError.class));
-        router.getRegistry().setErrorNavigationTargets(
-                Collections.singleton(FaultyErrorView.class));
+        setNavigationTargets(RerouteToError.class);
+        setErrorNavigationTargets(FaultyErrorView.class);
 
         String location = "beforeToError/exception";
         int result = router.navigate(ui, new Location(location),
@@ -2185,8 +2099,7 @@ public class RouterTest extends RoutingTestBase {
     public void repeatedly_navigating_to_same_ur_through_ui_navigate_should_not_loop()
             throws InvalidRouteConfigurationException {
         LoopByUINavigate.events.clear();
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(LoopByUINavigate.class));
+        setNavigationTargets(LoopByUINavigate.class);
 
         ui.navigate("loop");
 
@@ -2201,10 +2114,8 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         LoopByUINavigate.events.clear();
         RedirectToLoopByReroute.events.clear();
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(LoopByUINavigate.class, RedirectToLoopByReroute.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(LoopByUINavigate.class,
+                RedirectToLoopByReroute.class);
 
         ui.navigate("redirect/loop");
 
@@ -2217,8 +2128,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void ui_navigate_should_only_have_one_history_marking_on_loop()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(LoopByUINavigate.class));
+        setNavigationTargets(LoopByUINavigate.class);
 
         ui.navigate("loop");
 
@@ -2235,8 +2145,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void router_navigate_should_not_loop()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(LoopOnRouterNavigate.class));
+        setNavigationTargets(LoopOnRouterNavigate.class);
 
         ui.navigate("loop");
 
@@ -2249,8 +2158,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void exception_while_navigating_should_succeed_and_clear_last_handled()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(FailOnException.class));
+        setNavigationTargets(FailOnException.class);
 
         ui.navigate("exception");
 
@@ -2261,10 +2169,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void exception_in_exception_handler_while_navigating_should_clear_last_handled()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(FailOnException.class));
-        router.getRegistry().setErrorNavigationTargets(
-                Collections.singleton(FailingErrorHandler.class));
+        setNavigationTargets(FailOnException.class);
+        setErrorNavigationTargets(FailingErrorHandler.class);
 
         try {
             ui.navigate("exception");
@@ -2281,11 +2187,8 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException, InterruptedException {
         RootNavigationTarget.events.clear();
         PostponingAndResumingNavigationTarget.events.clear();
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(RootNavigationTarget.class,
-                                PostponingAndResumingNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RootNavigationTarget.class,
+                PostponingAndResumingNavigationTarget.class);
 
         int status1 = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2317,11 +2220,8 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         RootNavigationTarget.events.clear();
         PostponingAndResumingNavigationTarget.events.clear();
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(RootNavigationTarget.class,
-                                PostponingForeverNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RootNavigationTarget.class,
+                PostponingForeverNavigationTarget.class);
 
         int status1 = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2350,10 +2250,9 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException, InterruptedException {
         FooBarNavigationTarget.events.clear();
         FooBarNavigationTarget.events.clear();
-        router.getRegistry().setNavigationTargets(Stream
-                .of(FooNavigationTarget.class, FooBarNavigationTarget.class,
-                        PostponingFirstTimeNavigationTarget.class)
-                .collect(Collectors.toSet()));
+        setNavigationTargets(FooNavigationTarget.class,
+                FooBarNavigationTarget.class,
+                PostponingFirstTimeNavigationTarget.class);
 
         int status1 = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2390,8 +2289,7 @@ public class RouterTest extends RoutingTestBase {
     @Test // 3384
     public void theme_is_gotten_from_the_super_class()
             throws InvalidRouteConfigurationException, Exception {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(ExtendingView.class));
+        setNavigationTargets(ExtendingView.class);
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
@@ -2405,10 +2303,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void postpone_then_resume_with_multiple_listeners()
             throws InvalidRouteConfigurationException, InterruptedException {
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        PostponingAndResumingCompoundNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RootNavigationTarget.class,
+                PostponingAndResumingCompoundNavigationTarget.class);
 
         int status1 = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2442,8 +2338,7 @@ public class RouterTest extends RoutingTestBase {
     public void navigation_should_fire_locale_change_observer()
             throws InvalidRouteConfigurationException {
         Translations.events.clear();
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(Translations.class));
+        setNavigationTargets(Translations.class);
 
         ui.navigate("");
 
@@ -2457,9 +2352,7 @@ public class RouterTest extends RoutingTestBase {
     public void away_navigation_should_not_inform_observer()
             throws InvalidRouteConfigurationException, InterruptedException {
         Translations.events.clear();
-        router.getRegistry().setNavigationTargets(
-                Stream.of(FooNavigationTarget.class, Translations.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(FooNavigationTarget.class, Translations.class);
 
         ui.navigate("");
 
@@ -2477,9 +2370,7 @@ public class RouterTest extends RoutingTestBase {
     @Test // 3424
     public void route_as_parent_layout_handles_as_expected()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Stream.of(BaseLayout.class, SubLayout.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(BaseLayout.class, SubLayout.class);
 
         ui.navigate("base");
         Assert.assertEquals(MainLayout.class, getUIComponent());
@@ -2515,14 +2406,14 @@ public class RouterTest extends RoutingTestBase {
     public void getUrl_throws_for_required_parameter()
             throws InvalidRouteConfigurationException {
         expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(String.format(
-                "Navigation target '%s' requires a parameter and can not be resolved. "
-                        + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
-                        + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
-                        + "instead",
-                RouteWithParameter.class.getName()));
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(RouteWithParameter.class));
+        expectedEx
+                .expectMessage(String.format(
+                        "Navigation target '%s' requires a parameter and can not be resolved. "
+                                + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
+                                + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
+                                + "instead",
+                        RouteWithParameter.class.getName()));
+        setNavigationTargets(RouteWithParameter.class);
 
         router.getUrl(RouteWithParameter.class);
     }
@@ -2530,11 +2421,8 @@ public class RouterTest extends RoutingTestBase {
     @Test // 3519
     public void getUrl_returns_url_if_parameter_is_wildcard_or_optional()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(RouteWithMultipleParameters.class,
-                                OptionalParameter.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RouteWithMultipleParameters.class,
+                OptionalParameter.class);
 
         String url = router.getUrl(RouteWithMultipleParameters.class);
 
@@ -2552,10 +2440,9 @@ public class RouterTest extends RoutingTestBase {
     @Test // 3519
     public void getUrlBase_returns_url_without_parameter_even_for_required_parameters()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(Stream
-                .of(RouteWithParameter.class, RouteWithMultipleParameters.class,
-                        OptionalParameter.class, FooNavigationTarget.class)
-                .collect(Collectors.toSet()));
+        setNavigationTargets(RouteWithParameter.class,
+                RouteWithMultipleParameters.class, OptionalParameter.class,
+                FooNavigationTarget.class);
 
         Assert.assertEquals("Required parameter didn't match url base.",
                 RouteWithParameter.class.getAnnotation(Route.class).value(),
@@ -2576,11 +2463,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void proceedRightAfterPostpone_navigationIsDone()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(ProceedRightAfterPospone.class,
-                                RootNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(ProceedRightAfterPospone.class,
+                RootNavigationTarget.class);
 
         RootNavigationTarget.events.clear();
 
@@ -2599,9 +2483,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void navaigateWithinOneParent_oneLeaveEventOneEnterEvent()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Stream.of(RouteChild.class, LoneRoute.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(RouteChild.class, LoneRoute.class);
 
         router.navigate(ui, new Location("parent/child"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2621,11 +2503,8 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void navaigateWithinOneParent_oneAfterNavigationEventOneEventOnly()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(AfterNavigationChild.class,
-                                AfterNavigationWithinSameParent.class)
-                        .collect(Collectors.toSet()));
+        setNavigationTargets(AfterNavigationChild.class,
+                AfterNavigationWithinSameParent.class, LoneRoute.class);
 
         router.navigate(ui, new Location("parent/after-navigation-child"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -2648,6 +2527,32 @@ public class RouterTest extends RoutingTestBase {
                         + AfterNavigationEvent.class.getSimpleName(),
                 AfterNavigationEvent.class,
                 AfterNavigationWithinSameParent.events.get(0).getClass());
+    }
+
+    @Test
+    public void routerLinkInParent_updatesWhenNavigating()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(LoneRoute.class, RouteChild.class);
+
+        ui.navigate(router.getUrl(LoneRoute.class));
+
+        RouteParent routeParent = (RouteParent) ui.getInternals()
+                .getActiveRouterTargetsChain().get(1);
+        RouterLink loneLink = routeParent.loneLink;
+
+        Assert.assertTrue("Link should be attached",
+                loneLink.getUI().isPresent());
+        Assert.assertTrue(
+                "Link should be highlighted when navigated to link target",
+                loneLink.getElement().hasAttribute("highlight"));
+
+        ui.navigate(router.getUrl(RouteChild.class));
+
+        Assert.assertTrue("Link should be attached",
+                loneLink.getUI().isPresent());
+        Assert.assertFalse(
+                "Link should not be highlighted when navigated to other target",
+                loneLink.getElement().hasAttribute("highlight"));
     }
 
     @Test // #2754
@@ -2847,6 +2752,19 @@ public class RouterTest extends RoutingTestBase {
                 AfterNavigationTarget.events.get(0));
         Assert.assertEquals("AfterNavigation Observer",
                 AfterNavigationTarget.events.get(1));
+    }
+
+    private void setNavigationTargets(
+            Class<? extends Component>... navigationTargets)
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                new HashSet<>(Arrays.asList(navigationTargets)));
+    }
+
+    private void setErrorNavigationTargets(
+            Class<? extends Component>... errorNavigationTargets) {
+        router.getRegistry().setErrorNavigationTargets(
+                new HashSet<>(Arrays.asList(errorNavigationTargets)));
     }
 
     private Class<? extends Component> getUIComponent() {
