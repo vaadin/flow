@@ -21,7 +21,6 @@ import java.util.Locale;
 
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.PolymerUtils;
-import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
@@ -30,8 +29,6 @@ import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.client.flow.template.TemplateRegistry;
-import com.vaadin.client.flow.template.TestElementTemplateNode;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
@@ -686,15 +683,15 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     private native void polyfillStyleSetProperty(Element element)/*-{
-         // This polyfills just enough to make the tests pass and nothing else
-         element.style.__proto__.setProperty = function(key,value) {
-             var newValue = element.getAttribute("style");
-             if (!newValue) newValue = "";
-             else if (!newValue.endsWith(";")) newValue +=";"
-
-             element.setAttribute("style", newValue + key+": "+value+";");
-         };
-         }-*/;
+                                                                 // This polyfills just enough to make the tests pass and nothing else
+                                                                 element.style.__proto__.setProperty = function(key,value) {
+                                                                 var newValue = element.getAttribute("style");
+                                                                 if (!newValue) newValue = "";
+                                                                 else if (!newValue.endsWith(";")) newValue +=";"
+                                                                 
+                                                                 element.setAttribute("style", newValue + key+": "+value+";");
+                                                                 };
+                                                                 }-*/;
 
     public void testAddStylesAfterUnbind() {
         polyfillStyleSetProperty(element);
@@ -712,44 +709,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
         assertEquals("color: red;", element.getAttribute("style"));
-    }
-
-    public void testAddTemplateChild() {
-        final int templateId = 43;
-        TestElementTemplateNode templateNode = TestElementTemplateNode
-                .create("child");
-
-        TemplateRegistry templates = new TemplateRegistry();
-
-        templates.register(templateId, templateNode);
-
-        Registry registry = new Registry() {
-            {
-                set(TemplateRegistry.class, templates);
-                set(ExistingElementMap.class, new ExistingElementMap());
-            }
-        };
-
-        StateTree stateTree = new StateTree(registry);
-
-        StateNode templateStateNode = new StateNode(345, stateTree);
-        templateStateNode.getMap(NodeFeatures.TEMPLATE)
-                .getProperty(NodeProperties.ROOT_TEMPLATE_ID)
-                .setValue(Double.valueOf(templateId));
-
-        StateNode parentElementNode = new StateNode(94, stateTree);
-        parentElementNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.TAG).setValue("div");
-        parentElementNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0,
-                templateStateNode);
-
-        Element element = Browser.getDocument().createElement("div");
-        Binder.bind(parentElementNode, element);
-
-        Reactive.flush();
-
-        assertEquals(1, element.getChildElementCount());
-        assertEquals("CHILD", element.getFirstElementChild().getTagName());
     }
 
     public void testAttachExistingElement() {

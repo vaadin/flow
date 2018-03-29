@@ -20,52 +20,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.ComponentTest.TestComponent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.TemplateElementStateProviderTest;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.server.communication.rpc.EventRpcHandler;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.template.angular.AngularTemplate;
-import com.vaadin.flow.template.angular.InlineTemplate;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-/**
- * @author Vaadin Ltd
- *
- */
 public class EventRpcHandlerTest {
-
-    @Test
-    public void templateRootElementEventListener() throws Exception {
-        UI ui = new UI();
-        AngularTemplate t = new InlineTemplate("<root><child></child></root>");
-        Element element = t.getElement();
-        ui.add(t);
-        AtomicInteger invoked = new AtomicInteger(0);
-        element.addEventListener("test-event", e -> {
-            invoked.incrementAndGet();
-        });
-        sendElementEvent(element, ui, "test-event", null);
-        Assert.assertEquals(1, invoked.get());
-    }
-
-    @Test
-    public void templateChildElementEventListener() throws Exception {
-        UI ui = new UI();
-        AngularTemplate t = new InlineTemplate("<root><child></child></root>");
-        Element element = t.getElement().getChild(0);
-        ui.add(t);
-        AtomicInteger invoked = new AtomicInteger(0);
-        element.addEventListener("test-event", e -> {
-            invoked.incrementAndGet();
-        });
-        sendElementEvent(element, ui, "test-event", null);
-        Assert.assertEquals(1, invoked.get());
-    }
 
     @Test
     public void testElementEventNoData() throws Exception {
@@ -97,14 +61,9 @@ public class EventRpcHandlerTest {
         Assert.assertEquals(123, invocationData.get());
     }
 
-    public static StateNode getInvocationNode(Element element) {
-        return TemplateElementStateProviderTest.getOverrideNode(element)
-                .orElse(element.getNode());
-    }
-
     private static JsonObject createElementEventInvocation(Element element,
             String eventType, JsonObject eventData) {
-        StateNode node = getInvocationNode(element);
+        StateNode node = element.getNode();
         // Copied from ServerConnector
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_NODE, node.getId());

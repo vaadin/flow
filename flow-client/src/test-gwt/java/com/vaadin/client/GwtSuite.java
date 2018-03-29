@@ -16,7 +16,6 @@ import com.vaadin.client.flow.collection.GwtJsSetTest;
 import com.vaadin.client.flow.collection.GwtJsWeakMapTest;
 import com.vaadin.client.flow.dom.GwtDomApiTest;
 import com.vaadin.client.flow.dom.GwtPolymerApiImplTest;
-import com.vaadin.client.flow.template.GwtTemplateBinderTest;
 import com.vaadin.client.flow.util.GwtNativeFunctionTest;
 
 import junit.framework.Test;
@@ -41,7 +40,6 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtNativeFunctionTest.class);
         suite.addTestSuite(GwtRouterLinkHandlerTest.class);
         suite.addTestSuite(GwtDefaultReconnectDialogTest.class);
-        suite.addTestSuite(GwtTemplateBinderTest.class);
         suite.addTestSuite(GwtStateNodeTest.class);
         suite.addTestSuite(GwtStateTreeTest.class);
         suite.addTestSuite(GwtDomApiTest.class);

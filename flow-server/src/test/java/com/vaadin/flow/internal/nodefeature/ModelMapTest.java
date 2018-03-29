@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.Collections;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ModelList;
-import com.vaadin.flow.internal.nodefeature.ModelMap;
 
 public class ModelMapTest {
     private StateNode rootModelNode;
@@ -30,8 +29,8 @@ public class ModelMapTest {
 
     @Before
     public void setup() {
-        rootModelNode = TemplateElementStateProvider
-                .createSubModelNode(ModelMap.class);
+        rootModelNode = new StateNode(
+                Collections.singletonList(ModelMap.class));
         rootMap = ModelMap.get(rootModelNode);
     }
 

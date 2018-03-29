@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -45,7 +44,6 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
-import com.vaadin.flow.internal.nodefeature.ParentGeneratorHolder;
 import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
@@ -55,7 +53,6 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.internal.nodefeature.VisibilityData;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.template.angular.AbstractControlTemplateNode;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -83,10 +80,10 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             ElementListenerMap.class, ElementClassList.class,
             ElementStylePropertyMap.class, SynchronizedPropertiesList.class,
             SynchronizedPropertyEventsList.class, ComponentMapping.class,
-            ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
-            ClientDelegateHandlers.class, PolymerEventListenerMap.class,
-            ShadowRootData.class, AttachExistingElementFeature.class,
-            VirtualChildrenList.class, VisibilityData.class };
+            PolymerServerEventHandlers.class, ClientDelegateHandlers.class,
+            PolymerEventListenerMap.class, ShadowRootData.class,
+            AttachExistingElementFeature.class, VirtualChildrenList.class,
+            VisibilityData.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -209,14 +206,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         StateNode parentNode = node.getParent();
         if (parentNode == null) {
             return null;
-        }
-
-        // Parent finding for all different state providers eventually delegate
-        // here, so we can do shared magic here
-        Optional<AbstractControlTemplateNode> parentGenerator = node
-                .getFeature(ParentGeneratorHolder.class).getParentGenerator();
-        if (parentGenerator.isPresent()) {
-            return parentGenerator.get().getParentElement(node);
         }
 
         return super.getParent(node);

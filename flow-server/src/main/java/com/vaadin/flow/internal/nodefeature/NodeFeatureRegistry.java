@@ -70,12 +70,7 @@ public class NodeFeatureRegistry {
         registerFeature(SynchronizedPropertyEventsList.class,
                 SynchronizedPropertyEventsList::new);
         registerFeature(ComponentMapping.class, ComponentMapping::new);
-        registerFeature(TemplateMap.class, TemplateMap::new);
         registerFeature(ModelMap.class, ModelMap::new);
-        registerFeature(TemplateOverridesMap.class, TemplateOverridesMap::new);
-        registerFeature(OverrideElementData.class, OverrideElementData::new);
-        registerFeature(ParentGeneratorHolder.class,
-                ParentGeneratorHolder::new);
         registerFeature(ModelList.class, ModelList::new);
         registerFeature(PolymerServerEventHandlers.class,
                 PolymerServerEventHandlers::new);
