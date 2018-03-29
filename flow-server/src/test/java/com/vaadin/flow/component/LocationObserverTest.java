@@ -25,10 +25,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.Route;
@@ -38,8 +34,8 @@ import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 public class LocationObserverTest {
@@ -77,7 +73,7 @@ public class LocationObserverTest {
         private static VaadinSession createMockSession() {
             MockVaadinServletService service = new MockVaadinServletService();
             service.init();
-            return new MockVaadinSession(service);
+            return new AlwaysLockedVaadinSession(service);
         }
 
         @Override

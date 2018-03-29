@@ -33,14 +33,7 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.legacy.DefaultErrorView;
-import com.vaadin.flow.router.legacy.DefaultPageTitleGenerator;
-import com.vaadin.flow.router.legacy.HasChildView;
-import com.vaadin.flow.router.legacy.LocationChangeEvent;
-import com.vaadin.flow.router.legacy.PageTitleGenerator;
-import com.vaadin.flow.router.legacy.Router;
-import com.vaadin.flow.router.legacy.View;
-import com.vaadin.flow.router.legacy.ViewRenderer;
+import com.vaadin.tests.util.MockUI;
 
 public class ViewRendererTest {
 
@@ -140,7 +133,7 @@ public class ViewRendererTest {
     }
 
     private final Router router = new Router();
-    private final UI ui = new UI();
+    private final UI ui = new MockUI();
     private final NavigationEvent dummyEvent = new NavigationEvent(router,
             new Location(""), ui, NavigationTrigger.PROGRAMMATIC);
 

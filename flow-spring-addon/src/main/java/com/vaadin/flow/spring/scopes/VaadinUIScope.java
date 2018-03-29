@@ -53,7 +53,7 @@ public class VaadinUIScope extends AbstractScope {
         private final Map<Integer, BeanStore> uiStores;
 
         private UIStoreWrapper(VaadinSession session) {
-            assert session.hasLock();
+            session.checkHasLock();
             uiStores = new HashMap<>();
             this.session = session;
             if (session instanceof SpringVaadinSession) {
@@ -68,7 +68,7 @@ public class VaadinUIScope extends AbstractScope {
 
         @Override
         public void onComponentEvent(DetachEvent event) {
-            assert session.hasLock();
+            session.checkHasLock();
             UI ui = event.getUI();
             BeanStore beanStore = uiStores.remove(ui.getUIId());
             if (beanStore != null) {

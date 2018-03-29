@@ -37,6 +37,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 public class UITest {
 
@@ -120,7 +121,7 @@ public class UITest {
             service.getRouter().reconfigure(c -> {
             });
 
-            MockVaadinSession session = new MockVaadinSession(service);
+            MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
             ui.getInternals().setSession(session);
 
@@ -289,6 +290,10 @@ public class UITest {
         initUI(ui, "", null);
 
         ui.getSession().access(() -> ui.getInternals().setSession(null));
+
+        // Unlock to run pending access tasks
+        ui.getSession().unlock();
+
         assertEquals(1, events.size());
         assertEquals(ui, events.get(0).getSource());
     }
