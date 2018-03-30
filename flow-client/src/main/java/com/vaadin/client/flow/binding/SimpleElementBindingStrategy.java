@@ -18,8 +18,11 @@ package com.vaadin.client.flow.binding;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -57,7 +60,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -274,7 +276,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -284,7 +286,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-
+    
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -989,8 +991,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         Node beforeRef;
         if (index == 0) {
-            // Insert at the first position
-            beforeRef = DomApi.wrap(context.htmlNode).getFirstChild();
+            // Insert at the first position after the client-side-only nodes
+            beforeRef = getFirstNodeMappedAsStateNode(nodeChildren,
+                    context.htmlNode);
         } else if (index <= nodeChildren.length() && index > 0) {
             StateNode previousSibling = getPreviousSibling(index, context);
             // Insert before the next sibling of the current node
@@ -1022,6 +1025,22 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             beforeRef = DomApi.wrap(childNode).getNextSibling();
         }
+    }
+
+    private static Node getFirstNodeMappedAsStateNode(
+            NodeList mappedNodeChildren, Node htmlNode) {
+
+        JsArray<Node> clientList = DomApi.wrap(htmlNode).getChildNodes();
+        for (int i = 0; i < clientList.length(); i++) {
+            Node clientNode = clientList.get(i);
+            for (int j = 0; j < mappedNodeChildren.length(); j++) {
+                StateNode stateNode = (StateNode) mappedNodeChildren.get(j);
+                if (clientNode.equals(stateNode.getDomNode())) {
+                    return clientNode;
+                }
+            }
+        }
+        return null;
     }
 
     private StateNode getPreviousSibling(int index, BindingContext context) {
