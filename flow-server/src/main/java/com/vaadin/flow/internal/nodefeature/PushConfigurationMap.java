@@ -119,13 +119,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
             return null;
         }
 
-        Transport tr = Transport
-                .getByIdentifier(getParameters().get(TRANSPORT_KEY).toString());
-        if (tr == Transport.WEBSOCKET && contains(ALWAYS_USE_XHR_TO_SERVER)) {
-            return Transport.WEBSOCKET_XHR;
-        } else {
-            return tr;
-        }
+        return Transport.getByIdentifier(getParameters().get(FALLBACK_TRANSPORT_KEY).toString());
     }
 
     @Override
