@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.PushConfigurator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -971,11 +972,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         DeploymentConfiguration deploymentConfiguration = context.getSession()
                 .getService().getDeploymentConfiguration();
-        PushMode pushMode = push.map(Push::value)
-                .orElseGet(deploymentConfiguration::getPushMode);
-        pushConfiguration.setPushMode(pushMode);
+        PushConfigurator pushConfigurator = push.map(p -> ReflectTools.createInstance(p.configurator()))
+            .map(PushConfigurator.class::cast)
+            .orElseGet(() -> (cfg, ann) -> cfg.setPushMode(deploymentConfiguration.getPushMode()));
+        pushConfigurator.configurePush(pushConfiguration, push.orElse(null));
         pushConfiguration.setPushUrl(deploymentConfiguration.getPushURL());
-        push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
         // Set thread local here so it is available in init
         UI.setCurrent(ui);

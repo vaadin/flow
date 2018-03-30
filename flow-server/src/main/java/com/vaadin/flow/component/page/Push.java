@@ -21,7 +21,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.component.PushConfigurator;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.communication.DefaultPushConfigurator;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
@@ -55,5 +57,14 @@ public @interface Push {
      * @return the transport type to use
      */
     Transport transport() default Transport.WEBSOCKET;
+
+    /**
+     * Returns the push configurator type to use to initialize push channel settings.
+     * The default configurator is {@link DefaultPushConfigurator}.
+     *
+     * @return the push configurator type to use.
+     * @since
+     */
+    Class<? extends PushConfigurator> configurator() default DefaultPushConfigurator.class;
 
 }

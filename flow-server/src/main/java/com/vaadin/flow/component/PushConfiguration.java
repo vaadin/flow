@@ -18,10 +18,13 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Objects;
 
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
@@ -161,6 +164,36 @@ public interface PushConfiguration extends Serializable {
      */
     String getPushUrl();
 
+    /**
+     * Applies the given {@code pushConnectionFactory} if this instance
+     * implements {@link WithConnectionFactory}.
+     *
+     * @since
+     * @param pushConnectionFactory The push connection factory
+     */
+    default void applyConnectionFactoryIfPossible(SerializableFunction<UI, PushConnection> pushConnectionFactory) {
+        if (this instanceof WithConnectionFactory) {
+            ((WithConnectionFactory) this).setPushConnectionFactory(pushConnectionFactory);
+        }
+    }
+
+    /**
+     * Interface to be implemented by {@link PushConfiguration} classes
+     * that wishes to delegate the creation of {@link PushConnection}
+     * to an external component.
+     *
+     * @since
+     */
+    interface WithConnectionFactory {
+
+        /**
+         * Sets the factory that will be used to create new instances of {@link PushConnection}.
+         *
+         * @param factory the factory that will be used to create new instances of {@link PushConnection}
+         */
+        void setPushConnectionFactory(SerializableFunction<UI, PushConnection> factory);
+    }
+
 }
 
 /**
@@ -168,11 +201,13 @@ public interface PushConfiguration extends Serializable {
  *
  * @author Vaadin Ltd
  */
-class PushConfigurationImpl implements PushConfiguration {
+class PushConfigurationImpl implements PushConfiguration, PushConfiguration.WithConnectionFactory {
     private UI ui;
+    private SerializableFunction<UI, PushConnection> pushConnectionFactory;
 
     PushConfigurationImpl(UI ui) {
         this.ui = ui;
+        this.pushConnectionFactory = AtmospherePushConnection::new;
         getPushConfigurationMap().setTransport(Transport.WEBSOCKET_XHR);
         getPushConfigurationMap().setFallbackTransport(Transport.LONG_POLLING);
         getPushConfigurationMap().setPushMode(PushMode.DISABLED);
@@ -217,7 +252,7 @@ class PushConfigurationImpl implements PushConfiguration {
                 // The push connection is initially in a disconnected state;
                 // the client will establish the connection
                 ui.getInternals()
-                        .setPushConnection(new AtmospherePushConnection(ui));
+                    .setPushConnection(pushConnectionFactory.apply(ui));
             }
             // Nothing to do here if disabling push;
             // the client will close the connection
@@ -270,4 +305,10 @@ class PushConfigurationImpl implements PushConfiguration {
         return getPushConfigurationMap().getParameterNames();
     }
 
+    @Override
+    public void setPushConnectionFactory(SerializableFunction<UI, PushConnection> pushConnectionFactory) {
+        this.pushConnectionFactory = Objects.requireNonNull(
+            pushConnectionFactory, "Push connection factory must not be null"
+        );
+    }
 }
