@@ -96,7 +96,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ProgressBarElement#1.0.0-beta1",
+        "WebComponent: Vaadin.ProgressBarElement#1.0.0-beta2",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-progress-bar")
 @HtmlImport("frontend://bower_components/vaadin-progress-bar/src/vaadin-progress-bar.html")
