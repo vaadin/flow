@@ -71,7 +71,7 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
      * {@code otherIntrospector} to use its reflections tools.
      *
      * @param fileFactory
-     *            file factory to produce a file on the fielsystem by the given
+     *            file factory to produce a file on the filesystem by the given
      *            URL
      * @param otherIntrospector
      *            another introspector whose reflection tools will be reused to
@@ -173,7 +173,18 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
         }
         return themedComponents.size() == 1
                 ? themedComponents.keySet().iterator().next()
-                : null;
+                : loadLumoThemeClassIfAvailable();
+    }
+
+    private Class<? extends AbstractTheme> loadLumoThemeClassIfAvailable() {
+        try {
+            return loadClassInProjectClassLoader(
+                    "com.vaadin.flow.theme.lumo.Lumo");
+        } catch (IllegalStateException e) {
+            LOGGER.trace("Lumo class was not found in the project classpath",
+                    e);
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
