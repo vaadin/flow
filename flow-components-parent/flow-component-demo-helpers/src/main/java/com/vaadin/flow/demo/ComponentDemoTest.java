@@ -16,10 +16,10 @@
 package com.vaadin.flow.demo;
 
 import org.junit.Before;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
 
 /**
  * Base class for the integration tests of component demos.
@@ -39,8 +39,8 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
     @Before
     public void openDemoPageAndCheckForErrors() {
         open();
-        waitForElementPresent(By.tagName("div"));
-        layout = findElement(By.tagName("div"));
+        waitForElementPresent(By.className("demo-view"));
+        layout = findElement(By.className("demo-view"));
         checkLogsForErrors();
     }
 }
