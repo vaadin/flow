@@ -81,7 +81,6 @@ public class RouteRegistry implements Serializable {
 
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
-    private final AtomicReference<Map<Class<? extends Component>, Class<? extends AbstractTheme>>> routeThemes = new AtomicReference<>();
     private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
     private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
 
@@ -482,10 +481,28 @@ public class RouteRegistry implements Serializable {
             throw new IllegalStateException(
                     "Route registry has been already initialized");
         }
-        if (!routeThemes.compareAndSet(null,
-                Collections.unmodifiableMap(routeThemesMap))) {
-            throw new IllegalStateException(
-                    "Route registry has been already initialized");
+    }
+
+    private void addRoute(Map<String, RouteTarget> routesMap,
+            Class<? extends Component> navigationTarget,
+            Collection<String> aliases)
+            throws InvalidRouteConfigurationException {
+        Logger logger = LoggerFactory.getLogger(RouteRegistry.class.getName());
+        for (String alias : aliases) {
+            RouteTarget routeTarget;
+            if (routesMap.containsKey(alias)) {
+                routeTarget = routesMap.get(alias);
+                routeTarget.addRoute(navigationTarget);
+            } else {
+                logger.debug(
+                        "Registering route '{}' to navigation target '{}'.",
+                        alias, navigationTarget.getName());
+
+                routeTarget = new RouteTarget(navigationTarget);
+                routesMap.put(alias, routeTarget);
+            }
+            routeTarget.setThemeFor(navigationTarget,
+                    findThemeForNavigationTarget(navigationTarget));
         }
     }
 
@@ -505,24 +522,6 @@ public class RouteRegistry implements Serializable {
         }
 
         return null;
-    }
-
-    private void addRoute(Map<String, RouteTarget> routesMap,
-            Class<? extends Component> navigationTarget,
-            Collection<String> aliases)
-            throws InvalidRouteConfigurationException {
-        Logger logger = LoggerFactory.getLogger(RouteRegistry.class.getName());
-        for (String alias : aliases) {
-            if (routesMap.containsKey(alias)) {
-                routesMap.get(alias).addRoute(navigationTarget);
-            } else {
-                logger.debug(
-                        "Registering route '{}' to navigation target '{}'.",
-                        alias, navigationTarget.getName());
-
-                routesMap.put(alias, new RouteTarget(navigationTarget));
-            }
-        }
     }
 
     /**
@@ -586,9 +585,14 @@ public class RouteRegistry implements Serializable {
 
     private Class<? extends AbstractTheme> getThemeFor(
             Class<?> navigationTarget) {
-        if (routeThemes.get() != null
-                && routeThemes.get().containsKey(navigationTarget)) {
-            return routeThemes.get().get(navigationTarget);
+
+        if (targetRoutes.get() != null
+                && targetRoutes.get().containsKey(navigationTarget)) {
+            String route = targetRoutes.get().get(navigationTarget);
+            RouteTarget routeTarget = routes.get().get(route);
+            if (routeTarget != null) {
+                return routeTarget.getThemeFor(navigationTarget);
+            }
         }
         return findThemeForNavigationTarget(navigationTarget);
     }

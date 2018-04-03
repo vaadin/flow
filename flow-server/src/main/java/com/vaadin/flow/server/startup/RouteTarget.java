@@ -16,7 +16,9 @@
 package com.vaadin.flow.server.startup;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -24,6 +26,7 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Route target holder that handles getting the correct type of has parameter
@@ -34,6 +37,7 @@ public class RouteTarget implements Serializable {
     private Class<? extends Component> parameter;
     private Class<? extends Component> optionalParameter;
     private Class<? extends Component> wildCardParameter;
+    private Map<Class<?>, Class<? extends AbstractTheme>> routeThemes;
 
     /**
      * Create a new Route target holder.
@@ -155,5 +159,36 @@ public class RouteTarget implements Serializable {
                 OptionalParameter.class)
                 || ParameterDeserializer.isAnnotatedParameter(target,
                         WildcardParameter.class);
+    }
+
+    /**
+     * Sets the theme used by this RouteTarget for a given navigation target.
+     * 
+     * @param target
+     *            navigation target
+     * @param theme
+     *            theme class to be used when the navigation target is used
+     */
+    public void setThemeFor(Class<?> target,
+            Class<? extends AbstractTheme> theme) {
+        if (routeThemes == null) {
+            routeThemes = new HashMap<>();
+        }
+        routeThemes.put(target, theme);
+    }
+
+    /**
+     * Gets the theme that should be used for the given navigation target.
+     * 
+     * @param target
+     *            navigation target
+     * @return theme class to be used when the navigation target is used, or
+     *         <code>null</code> if no theme was set for it
+     */
+    public Class<? extends AbstractTheme> getThemeFor(Class<?> target) {
+        if (routeThemes == null) {
+            return null;
+        }
+        return routeThemes.get(target);
     }
 }
