@@ -557,7 +557,7 @@ public class UI extends Component
          */
         session.getService().runPendingAccessTasks(session);
 
-        if (!getInternals().getStateTree().hasDirtyNodes()) {
+        if (!getInternals().isDirty()) {
             // Do not push if there is nothing to push
             return;
         }
