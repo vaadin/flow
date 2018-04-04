@@ -208,6 +208,13 @@ public class BootstrapHandlerTest {
 
     @Route("")
     @Tag(Tag.DIV)
+    @BodySize(height = "10px", width = "20px")
+    @StyleSheet("bodysize.css")
+    public static class BodySizeAnnotatedAndCss extends Component {
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
     @Viewport("width=device-width")
     public static class RootNavigationTarget extends Component {
     }
@@ -728,6 +735,44 @@ public class BootstrapHandlerTest {
                 "The first style tag should start with body style from @BodySize",
                 styleTag.get().toString().startsWith(
                         "<style type=\"text/css\">body {height:10px;width:20px;margin:0;}"));
+    }
+
+    @Test
+    public void css_body_size_overrides_annotated_body_size()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(BodySizeAnnotatedAndCss.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+
+        Optional<Element> styleTag = allElements.stream()
+                .filter(element -> element.tagName().equals("style"))
+                .findFirst();
+
+        Assert.assertTrue("Expected a style element in head.",
+                styleTag.isPresent());
+
+        Assert.assertTrue(
+                "The first style tag should start with body style from @BodySize",
+                styleTag.get().toString().startsWith(
+                        "<style type=\"text/css\">body {height:10px;width:20px;margin:0;}"));
+
+        Optional<Element> cssImportTag = allElements.stream().filter(
+                element -> element.attr("href").contains("bodysize.css"))
+                .findFirst();
+
+        Assert.assertTrue("Expected import for bodysize.css in head.",
+                cssImportTag.isPresent());
+
+        Assert.assertTrue(
+                "Styles defined with @BodySize should be imported before css-files in the head,"
+                        + " so that body size defined in css overrides the annotated values.",
+                allElements.indexOf(styleTag.get()) < allElements
+                        .indexOf(cssImportTag.get()));
     }
 
     @Test // 3749
