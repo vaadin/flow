@@ -677,7 +677,7 @@ public class UI extends Component
      * @return the associated AbstractTheme, or empty if none is defined and the
      *         Lumo class is not in the classpath, or if the NoTheme annotation
      *         is being used.
-     * @see RouteRegistry#getThemeFor(Class)
+     * @see RouteRegistry#getThemeFor(Class, String)
      */
     public Optional<Class<? extends AbstractTheme>> getThemeFor(
             Class<?> navigationTarget, String path) {
