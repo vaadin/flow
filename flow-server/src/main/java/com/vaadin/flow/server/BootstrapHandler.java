@@ -320,11 +320,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @see UI#getThemeFor(Class, String)
          */
         protected Optional<Class<? extends AbstractTheme>> getTheme() {
-            if (pageConfigurationHolder == null) {
-                return Optional.empty();
-            } else {
-                return ui.getThemeFor(pageConfigurationHolder, null);
-            }
+            return ui.getThemeFor(pageConfigurationHolder, null);
         }
     }
 

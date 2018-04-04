@@ -62,16 +62,27 @@ import com.vaadin.flow.theme.Theme;
 public class RouteRegistry implements Serializable {
 
     private static final Class<? extends AbstractTheme> LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
+    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
+            .of(RouteNotFoundError.class, InternalServerError.class)
+            .collect(Collectors.toSet());
 
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
     private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
 
-    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
-            .of(RouteNotFoundError.class, InternalServerError.class)
-            .collect(Collectors.toSet());
+    /**
+     * Creates a new uninitialized route registry.
+     */
+    protected RouteRegistry() {
+    }
 
+    /**
+     * Loads the Lumo theme class from the classpath if it is available.
+     * 
+     * @return the Lumo theme class, or <code>null</code> if it is not available
+     *         in the classpath
+     */
     private static final Class<? extends AbstractTheme> loadLumoClassIfAvailable() {
         Class<? extends AbstractTheme> theme = null;
         try {
@@ -86,12 +97,6 @@ public class RouteRegistry implements Serializable {
                     e);
         }
         return theme;
-    }
-
-    /**
-     * Creates a new uninitialized route registry.
-     */
-    protected RouteRegistry() {
     }
 
     /**
@@ -504,6 +509,10 @@ public class RouteRegistry implements Serializable {
     private Class<? extends AbstractTheme> findThemeForNavigationTarget(
             Class<?> navigationTarget, String path) {
 
+        if (navigationTarget == null) {
+            return LUMO_CLASS_IF_AVAILABLE;
+        }
+
         Class<? extends RouterLayout> topParentLayout = RouterUtil
                 .getTopParentLayout(navigationTarget, path);
 
@@ -573,16 +582,23 @@ public class RouteRegistry implements Serializable {
     public Optional<Class<? extends AbstractTheme>> getThemeFor(
             Class<?> navigationTarget, String path) {
 
-        if (targetRoutes.get() != null
-                && targetRoutes.get().containsKey(navigationTarget)) {
-            String route = targetRoutes.get().get(navigationTarget);
-            RouteTarget routeTarget = routes.get().get(route);
+        if (navigationTarget != null && navigationTargetsInitialized()) {
+            RouteTarget routeTarget = null;
+            if (path != null) {
+                routeTarget = routes.get().get(path);
+            }
+            Map<Class<? extends Component>, String> targetRoutesMap = targetRoutes
+                    .get();
+            if (routeTarget == null
+                    && targetRoutesMap.containsKey(navigationTarget)) {
+                String routePath = targetRoutesMap.get(navigationTarget);
+                routeTarget = routes.get().get(routePath);
+            }
             if (routeTarget != null) {
                 return Optional
                         .ofNullable(routeTarget.getThemeFor(navigationTarget));
             }
         }
-
         return Optional.ofNullable(
                 findThemeForNavigationTarget(navigationTarget, path));
     }
