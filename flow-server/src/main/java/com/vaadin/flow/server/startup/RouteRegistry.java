@@ -68,6 +68,10 @@ public class RouteRegistry implements Serializable {
     private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
     private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
 
+    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
+            .of(RouteNotFoundError.class, InternalServerError.class)
+            .collect(Collectors.toSet());
+
     private static final Class<? extends AbstractTheme> loadLumoClassIfAvailable() {
         Class<? extends AbstractTheme> theme = null;
         try {
@@ -83,10 +87,6 @@ public class RouteRegistry implements Serializable {
         }
         return theme;
     }
-
-    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
-            .of(RouteNotFoundError.class, InternalServerError.class)
-            .collect(Collectors.toSet());
 
     /**
      * Creates a new uninitialized route registry.
@@ -459,12 +459,12 @@ public class RouteRegistry implements Serializable {
                         navigationTarget.getName()));
             }
 
-            Set<String> aliases = new HashSet<>();
-            String route = getNavigationRoute(navigationTarget, aliases);
-            aliases.add(route);
+            Set<String> paths = new HashSet<>();
+            String route = getNavigationRoute(navigationTarget, paths);
+            paths.add(route);
 
             targetRoutesMap.put(navigationTarget, route);
-            addRoute(routesMap, targetRoutesMap, navigationTarget, aliases);
+            addRoute(routesMap, targetRoutesMap, navigationTarget, paths);
         }
         if (!routes.compareAndSet(null,
                 Collections.unmodifiableMap(routesMap))) {
@@ -481,34 +481,30 @@ public class RouteRegistry implements Serializable {
     private void addRoute(Map<String, RouteTarget> routesMap,
             Map<Class<? extends Component>, String> targetRoutesMap,
             Class<? extends Component> navigationTarget,
-            Collection<String> aliases)
+            Collection<String> paths)
             throws InvalidRouteConfigurationException {
         Logger logger = LoggerFactory.getLogger(RouteRegistry.class.getName());
-        for (String alias : aliases) {
+        for (String path : paths) {
             RouteTarget routeTarget;
-            if (routesMap.containsKey(alias)) {
-                routeTarget = routesMap.get(alias);
+            if (routesMap.containsKey(path)) {
+                routeTarget = routesMap.get(path);
                 routeTarget.addRoute(navigationTarget);
             } else {
                 logger.debug(
                         "Registering route '{}' to navigation target '{}'.",
-                        alias, navigationTarget.getName());
+                        path, navigationTarget.getName());
 
                 routeTarget = new RouteTarget(navigationTarget);
-                routesMap.put(alias, routeTarget);
+                routesMap.put(path, routeTarget);
             }
             routeTarget.setThemeFor(navigationTarget,
-                    findThemeForNavigationTarget(targetRoutesMap,
-                            navigationTarget));
+                    findThemeForNavigationTarget(navigationTarget, path));
         }
     }
 
     private Class<? extends AbstractTheme> findThemeForNavigationTarget(
-            Map<Class<? extends Component>, String> targetRoutesMap,
-            Class<?> navigationTarget) {
+            Class<?> navigationTarget, String path) {
 
-        String path = targetRoutesMap == null ? null
-                : targetRoutesMap.get(navigationTarget);
         Class<? extends RouterLayout> topParentLayout = RouterUtil
                 .getTopParentLayout(navigationTarget, path);
 
@@ -568,12 +564,15 @@ public class RouteRegistry implements Serializable {
      * 
      * @param navigationTarget
      *            the navigation target class
+     * @param path
+     *            the resolved route path so we can determine what the rendered
+     *            target is for
      * @return the associated AbstractTheme, or empty if none is defined and the
      *         Lumo class is not in the classpath, or if the NoTheme annotation
      *         is being used.
      */
     public Optional<Class<? extends AbstractTheme>> getThemeFor(
-            Class<?> navigationTarget) {
+            Class<?> navigationTarget, String path) {
 
         if (targetRoutes.get() != null
                 && targetRoutes.get().containsKey(navigationTarget)) {
@@ -585,7 +584,7 @@ public class RouteRegistry implements Serializable {
             }
         }
 
-        return Optional.ofNullable(findThemeForNavigationTarget(
-                targetRoutes.get(), navigationTarget));
+        return Optional.ofNullable(
+                findThemeForNavigationTarget(navigationTarget, path));
     }
 }
