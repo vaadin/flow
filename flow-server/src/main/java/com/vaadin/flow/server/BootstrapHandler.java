@@ -323,7 +323,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (pageConfigurationHolder == null) {
                 return Optional.empty();
             } else {
-                return ui.getThemeFor(pageConfigurationHolder, null);
+                return ui.getThemeFor(pageConfigurationHolder);
             }
         }
     }

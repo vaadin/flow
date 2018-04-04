@@ -63,6 +63,11 @@ public class RouteRegistry implements Serializable {
 
     private static final Class<? extends AbstractTheme> LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
 
+    private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
+    private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
+    private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
+    private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
+
     private static final Class<? extends AbstractTheme> loadLumoClassIfAvailable() {
         Class<? extends AbstractTheme> theme = null;
         try {
@@ -78,11 +83,6 @@ public class RouteRegistry implements Serializable {
         }
         return theme;
     }
-
-    private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
-    private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
-    private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
-    private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
 
     private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
             .of(RouteNotFoundError.class, InternalServerError.class)
@@ -201,8 +201,7 @@ public class RouteRegistry implements Serializable {
         return routeData.get();
     }
 
-    private Class<? extends RouterLayout> getParentLayout(
-            Class<? extends Component> target) {
+    private Class<? extends RouterLayout> getParentLayout(Class<?> target) {
         return AnnotationReader.getAnnotationFor(target, Route.class)
                 .map(Route::layout).orElse(null);
     }
@@ -452,7 +451,6 @@ public class RouteRegistry implements Serializable {
             throws InvalidRouteConfigurationException {
         Map<String, RouteTarget> routesMap = new HashMap<>();
         Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
-        Map<Class<? extends Component>, Class<? extends AbstractTheme>> routeThemesMap = new HashMap<>();
         for (Class<? extends Component> navigationTarget : navigationTargets) {
             if (!navigationTarget.isAnnotationPresent(Route.class)) {
                 throw new InvalidRouteConfigurationException(String.format(
@@ -466,10 +464,7 @@ public class RouteRegistry implements Serializable {
             aliases.add(route);
 
             targetRoutesMap.put(navigationTarget, route);
-            routeThemesMap.put(navigationTarget,
-                    findThemeForNavigationTarget(navigationTarget));
-
-            addRoute(routesMap, navigationTarget, aliases);
+            addRoute(routesMap, targetRoutesMap, navigationTarget, aliases);
         }
         if (!routes.compareAndSet(null,
                 Collections.unmodifiableMap(routesMap))) {
@@ -484,6 +479,7 @@ public class RouteRegistry implements Serializable {
     }
 
     private void addRoute(Map<String, RouteTarget> routesMap,
+            Map<Class<? extends Component>, String> targetRoutesMap,
             Class<? extends Component> navigationTarget,
             Collection<String> aliases)
             throws InvalidRouteConfigurationException {
@@ -502,21 +498,31 @@ public class RouteRegistry implements Serializable {
                 routesMap.put(alias, routeTarget);
             }
             routeTarget.setThemeFor(navigationTarget,
-                    findThemeForNavigationTarget(navigationTarget));
+                    findThemeForNavigationTarget(targetRoutesMap,
+                            navigationTarget));
         }
     }
 
     private Class<? extends AbstractTheme> findThemeForNavigationTarget(
+            Map<Class<? extends Component>, String> targetRoutesMap,
             Class<?> navigationTarget) {
 
+        String path = targetRoutesMap == null ? null
+                : targetRoutesMap.get(navigationTarget);
+        Class<? extends RouterLayout> topParentLayout = RouterUtil
+                .getTopParentLayout(navigationTarget, path);
+
+        Class<?> target = topParentLayout == null ? navigationTarget
+                : topParentLayout;
+
         Optional<Theme> themeAnnotation = AnnotationReader
-                .getAnnotationFor(navigationTarget, Theme.class);
+                .getAnnotationFor(target, Theme.class);
 
         if (themeAnnotation.isPresent()) {
             return themeAnnotation.get().value();
         }
 
-        if (!AnnotationReader.getAnnotationFor(navigationTarget, NoTheme.class)
+        if (!AnnotationReader.getAnnotationFor(target, NoTheme.class)
                 .isPresent()) {
             return LUMO_CLASS_IF_AVAILABLE;
         }
@@ -562,28 +568,11 @@ public class RouteRegistry implements Serializable {
      * 
      * @param navigationTarget
      *            the navigation target class
-     * @param path
-     *            the resolved route path so we can determine what the rendered
-     *            target is for
      * @return the associated AbstractTheme, or empty if none is defined and the
      *         Lumo class is not in the classpath, or if the NoTheme annotation
      *         is being used.
      */
     public Optional<Class<? extends AbstractTheme>> getThemeFor(
-            Class<?> navigationTarget, String path) {
-        Class<? extends RouterLayout> topParentLayout = RouterUtil
-                .getTopParentLayout(navigationTarget, path);
-        Class<? extends AbstractTheme> themeClass;
-        if (topParentLayout != null) {
-            themeClass = getThemeFor(topParentLayout);
-        } else {
-            themeClass = getThemeFor(navigationTarget);
-        }
-
-        return Optional.ofNullable(themeClass);
-    }
-
-    private Class<? extends AbstractTheme> getThemeFor(
             Class<?> navigationTarget) {
 
         if (targetRoutes.get() != null
@@ -591,9 +580,12 @@ public class RouteRegistry implements Serializable {
             String route = targetRoutes.get().get(navigationTarget);
             RouteTarget routeTarget = routes.get().get(route);
             if (routeTarget != null) {
-                return routeTarget.getThemeFor(navigationTarget);
+                return Optional
+                        .ofNullable(routeTarget.getThemeFor(navigationTarget));
             }
         }
-        return findThemeForNavigationTarget(navigationTarget);
+
+        return Optional.ofNullable(findThemeForNavigationTarget(
+                targetRoutes.get(), navigationTarget));
     }
 }

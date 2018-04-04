@@ -671,16 +671,13 @@ public class UI extends Component
      * 
      * @param navigationTarget
      *            the navigation target class
-     * @param path
-     *            the resolved route path so we can determine what the rendered
-     *            target is for
      * @return the associated AbstractTheme, or empty if none is defined and the
      *         Lumo class is not in the classpath, or if the NoTheme annotation
      *         is being used.
      * @see RouteRegistry#getThemeFor(Class)
      */
     public Optional<Class<? extends AbstractTheme>> getThemeFor(
-            Class<?> navigationTarget, String path) {
+            Class<?> navigationTarget) {
 
         RouteRegistry registry = null;
         Optional<Router> router = getRouter();
@@ -692,7 +689,7 @@ public class UI extends Component
                             .getServlet().getServletContext());
         }
         if (registry != null) {
-            return registry.getThemeFor(navigationTarget, path);
+            return registry.getThemeFor(navigationTarget);
         }
         return Optional.empty();
     }

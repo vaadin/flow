@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.router.internal;
 
+import javax.servlet.http.HttpServletResponse;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -200,8 +200,7 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         ui.getInternals().showRouteTarget(event.getLocation(),
-                navigationState.getResolvedPath(), componentInstance,
-                routerLayouts);
+                componentInstance, routerLayouts);
 
         RouterUtil.updatePageTitle(event, componentInstance);
 
