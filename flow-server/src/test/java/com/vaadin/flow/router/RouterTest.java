@@ -570,8 +570,8 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public Optional<RouterInterface> getRouterInterface() {
-            return Optional.of(router);
+        public Router getRouter() {
+            return router;
         }
 
     }
@@ -898,7 +898,7 @@ public class RouterTest extends RoutingTestBase {
         public void beforeEnter(BeforeEnterEvent event) {
             events.add(event);
             UI ui = UI.getCurrent();
-            ui.getRouter().get().navigate(ui, new Location("loop"),
+            ui.getRouter().navigate(ui, new Location("loop"),
                     NavigationTrigger.PROGRAMMATIC);
         }
     }
@@ -2406,13 +2406,12 @@ public class RouterTest extends RoutingTestBase {
     public void getUrl_throws_for_required_parameter()
             throws InvalidRouteConfigurationException {
         expectedEx.expect(IllegalArgumentException.class);
-        expectedEx
-                .expectMessage(String.format(
-                        "Navigation target '%s' requires a parameter and can not be resolved. "
-                                + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
-                                + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
-                                + "instead",
-                        RouteWithParameter.class.getName()));
+        expectedEx.expectMessage(String.format(
+                "Navigation target '%s' requires a parameter and can not be resolved. "
+                        + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
+                        + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
+                        + "instead",
+                RouteWithParameter.class.getName()));
         setNavigationTargets(RouteWithParameter.class);
 
         router.getUrl(RouteWithParameter.class);

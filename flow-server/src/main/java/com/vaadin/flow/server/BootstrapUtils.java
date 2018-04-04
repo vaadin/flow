@@ -119,9 +119,8 @@ class BootstrapUtils {
             assert pathInfo.startsWith("/");
             pathInfo = pathInfo.substring(1);
         }
-        Optional<Router> router = ui.getRouter();
-        NavigationEvent navigationEvent = new NavigationEvent(
-                router.isPresent() ? router.get() : null,
+        Router router = ui.getRouter();
+        NavigationEvent navigationEvent = new NavigationEvent(router,
                 new Location(pathInfo,
                         QueryParameters.full(request.getParameterMap())),
                 ui, NavigationTrigger.PAGE_LOAD);
@@ -286,7 +285,7 @@ class BootstrapUtils {
     /**
      * Finds the class on on which page configuration annotation should be
      * defined.
-     * 
+     *
      * @param ui
      *            the UI for which to do the lookup, not <code>null</code>
      * @param request
@@ -299,10 +298,8 @@ class BootstrapUtils {
         assert ui != null;
         assert request != null;
 
-        return ui.getRouter()
-                .flatMap(router -> router.resolveNavigationTarget(
-                        request.getPathInfo(), request.getParameterMap()))
-                .map(navigationState -> {
+        return ui.getRouter().resolveNavigationTarget(request.getPathInfo(),
+                request.getParameterMap()).map(navigationState -> {
                     Class<? extends RouterLayout> parentLayout = RouterUtil
                             .getTopParentLayout(
                                     navigationState.getNavigationTarget(),

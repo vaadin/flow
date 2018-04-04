@@ -27,7 +27,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -54,8 +53,6 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
-import com.vaadin.flow.router.legacy.HasChildView;
-import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.SystemMessages;
@@ -313,32 +310,11 @@ public class UidlWriter implements Serializable {
     private void addComponentHierarchy(UI ui,
             Set<Class<? extends Component>> hierarchyStorage,
             Component component) {
-        getParentViews(ui, component).stream().map(
-                newClass -> newClass.<Component> asSubclass(Component.class))
-                .forEach(hierarchyStorage::add);
         hierarchyStorage.add(component.getClass());
         if (component instanceof Composite) {
             addComponentHierarchy(ui, hierarchyStorage,
-                    ((Composite) component).getContent());
+                    ((Composite<?>) component).getContent());
         }
-    }
-
-    private List<Class<? extends HasChildView>> getParentViews(UI ui,
-            Component component) {
-        if (!ui.getRouterInterface().isPresent()
-                || !(component instanceof View)) {
-            return Collections.emptyList();
-        }
-        List<Class<? extends HasChildView>> parentViewsAscending = ui
-                .getRouterInterface().get().getConfiguration()
-                .getParentViewsAscending(
-                        component.getClass().asSubclass(View.class))
-                .filter(Component.class::isAssignableFrom)
-                .collect(Collectors.toCollection(ArrayList::new));
-        if (parentViewsAscending.size() > 1) {
-            Collections.reverse(parentViewsAscending);
-        }
-        return parentViewsAscending;
     }
 
     /**

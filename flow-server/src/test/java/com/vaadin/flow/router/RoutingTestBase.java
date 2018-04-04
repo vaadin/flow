@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.Optional;
-
 import org.junit.Before;
 
 import com.vaadin.flow.component.Component;
@@ -74,8 +72,8 @@ public class RoutingTestBase {
         }
 
         @Override
-        public Optional<RouterInterface> getRouterInterface() {
-            return Optional.of(router);
+        public Router getRouter() {
+            return router;
         }
     }
 

@@ -15,8 +15,20 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +39,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -42,9 +56,8 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.flow.router.legacy.HasChildView;
-import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinResponse;
@@ -54,6 +67,9 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinUriResolverFactory;
+import com.vaadin.flow.server.communication.UidlWriterTest.BaseClass;
+import com.vaadin.flow.server.communication.UidlWriterTest.ParentClass;
+import com.vaadin.flow.server.communication.UidlWriterTest.SuperParentClass;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -64,19 +80,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class UidlWriterTest {
@@ -172,24 +176,17 @@ public class UidlWriterTest {
 
     @Tag("base")
     @HtmlImport("2.html")
-    public static class BaseClass extends Component implements View {
+    public static class BaseClass extends Component {
     }
 
     @Tag("parent")
     @HtmlImport("1.html")
-    public static class ParentClass extends Component implements HasChildView {
-        @Override
-        public void setChildView(View childView) {
-        }
+    public static class ParentClass extends Component {
     }
 
     @Tag("super-parent")
     @HtmlImport("0.html")
-    public static class SuperParentClass extends Component
-            implements HasChildView {
-        @Override
-        public void setChildView(View childView) {
-        }
+    public static class SuperParentClass extends Component {
     }
 
     private VaadinUriResolverFactory factory;
@@ -456,7 +453,7 @@ public class UidlWriterTest {
             RouterInterface router = new com.vaadin.flow.router.legacy.Router();
 
             @Override
-            public RouterInterface getRouter() {
+            public Router getRouter() {
                 return router;
             }
 

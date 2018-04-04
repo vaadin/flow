@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.Location;
@@ -117,10 +118,14 @@ public class UITest {
             VaadinService service = servlet.getService();
             service.setCurrentInstances(request, response);
 
-            service.getRouter().reconfigure(c -> {
-            });
-
             MockVaadinSession session = new MockVaadinSession(service);
+
+            DeploymentConfiguration config = Mockito
+                    .mock(DeploymentConfiguration.class);
+            Mockito.when(config.isProductionMode()).thenReturn(false);
+
+            session.lock();
+            session.setConfiguration(config);
 
             ui.getInternals().setSession(session);
 

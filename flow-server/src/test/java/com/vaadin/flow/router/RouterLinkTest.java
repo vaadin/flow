@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.ServletException;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +22,8 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletException;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,8 +35,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.HasCurrentService;
-import com.vaadin.flow.router.legacy.Router;
-import com.vaadin.flow.router.legacy.RouterTest.RouterTestUI;
 import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.router.legacy.ViewRendererTest.TestView;
 import com.vaadin.flow.server.Constants;
@@ -47,6 +44,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
+
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouterLinkTest extends HasCurrentService {
@@ -103,37 +102,6 @@ public class RouterLinkTest extends HasCurrentService {
         String url = RouterLink.buildUrl(router, TestView.class, "asdf");
 
         Assert.assertEquals("foo/asdf", url);
-    }
-
-    @Test
-    public void buildEmptyUrlWithRouter() {
-        Router router = new Router();
-        router.reconfigure(c -> c.setRoute("", TestView.class));
-
-        String url = RouterLink.buildUrl(router, TestView.class);
-
-        Assert.assertEquals("", url);
-
-        RouterLink link = new RouterLink(router, "Home", TestView.class);
-        Assert.assertEquals("", link.getHref());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void buildUrlWithRouter_noRoutes() {
-        Router router = new Router();
-
-        RouterLink.buildUrl(router, TestView.class, "asdf");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void buildUrlWithRouter_multipleRoutes() {
-        Router router = new Router();
-        router.reconfigure(c -> {
-            c.setRoute("foo/{bar}", TestView.class);
-            c.setRoute("another/route", TestView.class);
-        });
-
-        RouterLink.buildUrl(router, TestView.class, "asdf");
     }
 
     @Test

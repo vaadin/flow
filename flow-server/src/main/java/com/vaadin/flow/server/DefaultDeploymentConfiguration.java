@@ -319,11 +319,6 @@ public class DefaultDeploymentConfiguration
         return initParameters;
     }
 
-    @Override
-    public boolean isUsingNewRouting() {
-        return usingNewRouting;
-    }
-
     /**
      * Log a warning if Vaadin is not running in production mode.
      */

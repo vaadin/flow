@@ -52,7 +52,7 @@ public class AfterNavigationEvent extends EventObject {
 
     /**
      * Get the active chain that we have after navigation.
-     * 
+     *
      * @return unmodifiable list of active view chain
      */
     public List<HasElement> getActiveChain() {
@@ -60,7 +60,7 @@ public class AfterNavigationEvent extends EventObject {
     }
 
     @Override
-    public RouterInterface getSource() {
-        return (RouterInterface) super.getSource();
+    public Router getSource() {
+        return (Router) super.getSource();
     }
 }

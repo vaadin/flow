@@ -19,21 +19,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -81,8 +75,8 @@ public class LocationObserverTest {
         }
 
         @Override
-        public Optional<RouterInterface> getRouterInterface() {
-            return Optional.of(router);
+        public Router getRouter() {
+            return router;
         }
 
         @Override

@@ -40,9 +40,4 @@ public abstract class AbstractDeploymentConfiguration
         return getStringProperty("ClassLoader", null);
     }
 
-    @Override
-    public String getRouterConfiguratorClassName() {
-        return getStringProperty(
-                Constants.SERVLET_PARAMETER_ROUTER_CONFIGURATOR, null);
-    }
 }

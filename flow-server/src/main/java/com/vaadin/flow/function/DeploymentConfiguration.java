@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
-import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -221,14 +220,6 @@ public interface DeploymentConfiguration extends Serializable {
     String getUIClassName();
 
     /**
-     * Gets the {@link RouterConfigurator} class configuration option value.
-     *
-     * @return the router configurator class name
-     *
-     */
-    String getRouterConfiguratorClassName();
-
-    /**
      * Gets class loader configuration option value.
      *
      * @return the configured class loader name
@@ -280,17 +271,6 @@ public interface DeploymentConfiguration extends Serializable {
                 ? getStringProperty(Constants.FRONTEND_URL_ES5,
                         Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
-    }
-
-    /**
-     * Whether to use the new annotation based routing implementation instead of
-     * the old routing implementation that relies on a
-     * {@link RouterConfigurator}.
-     *
-     * @return whether to use the new annotation based routing implementation
-     */
-    default boolean isUsingNewRouting() {
-        return true;
     }
 
     /**

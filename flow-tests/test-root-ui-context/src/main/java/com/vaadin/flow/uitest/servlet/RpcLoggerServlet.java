@@ -45,7 +45,7 @@ import elemental.json.JsonObject;
  *
  */
 @WebServlet(asyncSupported = true, urlPatterns = { "/rpc/*" })
-@VaadinServletConfiguration(ui = RPCLoggerUI.class, productionMode = false, usingNewRouting = false)
+@VaadinServletConfiguration(ui = RPCLoggerUI.class, productionMode = false)
 public class RpcLoggerServlet extends VaadinServlet {
 
     @Override

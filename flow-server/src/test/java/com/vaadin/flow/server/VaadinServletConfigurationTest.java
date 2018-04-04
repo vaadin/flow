@@ -26,10 +26,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletConfiguration;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.MockUIContainingServlet.ServletInUI;
 
 public class VaadinServletConfigurationTest {
@@ -70,8 +66,10 @@ public class VaadinServletConfigurationTest {
         final int expectedInt = 1111;
 
         Properties servletInitParams = new Properties();
-        servletInitParams.setProperty("sendUrlsAsParameters", Boolean.toString(expectedBoolean));
-        servletInitParams.setProperty("heartbeatInterval", Integer.toString(expectedInt));
+        servletInitParams.setProperty("sendUrlsAsParameters",
+                Boolean.toString(expectedBoolean));
+        servletInitParams.setProperty("heartbeatInterval",
+                Integer.toString(expectedInt));
 
         TestServlet servlet = new TestServlet();
         servlet.init(new MockServletConfig(servletInitParams));
@@ -79,7 +77,8 @@ public class VaadinServletConfigurationTest {
                 .getDeploymentConfiguration();
 
         // Values from servlet init params take precedence
-        Assert.assertEquals(expectedBoolean, configuration.isSendUrlsAsParameters());
+        Assert.assertEquals(expectedBoolean,
+                configuration.isSendUrlsAsParameters());
         Assert.assertEquals(expectedInt, configuration.getHeartbeatInterval());
 
         // Other params are as defined in the annotation
@@ -104,7 +103,7 @@ class TestServlet extends VaadinServlet {
 
 }
 
-@VaadinServletConfiguration(productionMode = true, usingNewRouting = false)
+@VaadinServletConfiguration(productionMode = true)
 class MissingConfigurationServlet extends VaadinServlet {
     // Should have either ui or routerConfigurator defined
 }
