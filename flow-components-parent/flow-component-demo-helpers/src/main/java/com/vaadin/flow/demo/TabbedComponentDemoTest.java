@@ -42,8 +42,8 @@ public abstract class TabbedComponentDemoTest extends ComponentDemoTest {
             testPath = testPath + (testPath.endsWith("/") ? tab : "/" + tab);
         }
         getDriver().get(testPath);
-        waitForElementPresent(By.tagName("div"));
-        layout = findElement(By.tagName("div"));
+        waitForElementPresent(By.className("demo-view"));
+        layout = findElement(By.className("demo-view"));
         checkLogsForErrors();
     }
 
