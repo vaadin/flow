@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,8 +31,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +51,9 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.NoTheme;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Registry for holding navigation target components found on servlet
@@ -58,19 +61,42 @@ import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
  */
 public class RouteRegistry implements Serializable {
 
+    private static final Class<? extends AbstractTheme> LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
+    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
+            .of(RouteNotFoundError.class, InternalServerError.class)
+            .collect(Collectors.toSet());
+
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
     private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
 
-    private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
-            .of(RouteNotFoundError.class, InternalServerError.class)
-            .collect(Collectors.toSet());
-
     /**
      * Creates a new uninitialized route registry.
      */
     protected RouteRegistry() {
+    }
+
+    /**
+     * Loads the Lumo theme class from the classpath if it is available.
+     * 
+     * @return the Lumo theme class, or <code>null</code> if it is not available
+     *         in the classpath
+     */
+    private static final Class<? extends AbstractTheme> loadLumoClassIfAvailable() {
+        Class<? extends AbstractTheme> theme = null;
+        try {
+            theme = (Class<? extends AbstractTheme>) Class
+                    .forName("com.vaadin.flow.theme.lumo.Lumo");
+        } catch (ClassNotFoundException e) {
+            // ignore, the Lumo class is not available in the classpath
+            Logger logger = LoggerFactory
+                    .getLogger(RouteRegistry.class.getName());
+            logger.trace(
+                    "Lumo theme is not present in the classpath. The application will not use any default theme.",
+                    e);
+        }
+        return theme;
     }
 
     /**
@@ -180,8 +206,7 @@ public class RouteRegistry implements Serializable {
         return routeData.get();
     }
 
-    private Class<? extends RouterLayout> getParentLayout(
-            Class<? extends Component> target) {
+    private Class<? extends RouterLayout> getParentLayout(Class<?> target) {
         return AnnotationReader.getAnnotationFor(target, Route.class)
                 .map(Route::layout).orElse(null);
     }
@@ -439,13 +464,12 @@ public class RouteRegistry implements Serializable {
                         navigationTarget.getName()));
             }
 
-            Set<String> aliases = new HashSet<>();
-            String route = getNavigationRoute(navigationTarget, aliases);
-            aliases.add(route);
+            Set<String> paths = new HashSet<>();
+            String route = getNavigationRoute(navigationTarget, paths);
+            paths.add(route);
 
             targetRoutesMap.put(navigationTarget, route);
-
-            addRoute(routesMap, navigationTarget, aliases);
+            addRoute(routesMap, navigationTarget, paths);
         }
         if (!routes.compareAndSet(null,
                 Collections.unmodifiableMap(routesMap))) {
@@ -461,20 +485,53 @@ public class RouteRegistry implements Serializable {
 
     private void addRoute(Map<String, RouteTarget> routesMap,
             Class<? extends Component> navigationTarget,
-            Collection<String> aliases)
+            Collection<String> paths)
             throws InvalidRouteConfigurationException {
         Logger logger = LoggerFactory.getLogger(RouteRegistry.class.getName());
-        for (String alias : aliases) {
-            if (routesMap.containsKey(alias)) {
-                routesMap.get(alias).addRoute(navigationTarget);
+        for (String path : paths) {
+            RouteTarget routeTarget;
+            if (routesMap.containsKey(path)) {
+                routeTarget = routesMap.get(path);
+                routeTarget.addRoute(navigationTarget);
             } else {
                 logger.debug(
                         "Registering route '{}' to navigation target '{}'.",
-                        alias, navigationTarget.getName());
+                        path, navigationTarget.getName());
 
-                routesMap.put(alias, new RouteTarget(navigationTarget));
+                routeTarget = new RouteTarget(navigationTarget);
+                routesMap.put(path, routeTarget);
             }
+            routeTarget.setThemeFor(navigationTarget,
+                    findThemeForNavigationTarget(navigationTarget, path));
         }
+    }
+
+    private Class<? extends AbstractTheme> findThemeForNavigationTarget(
+            Class<?> navigationTarget, String path) {
+
+        if (navigationTarget == null) {
+            return LUMO_CLASS_IF_AVAILABLE;
+        }
+
+        Class<? extends RouterLayout> topParentLayout = RouterUtil
+                .getTopParentLayout(navigationTarget, path);
+
+        Class<?> target = topParentLayout == null ? navigationTarget
+                : topParentLayout;
+
+        Optional<Theme> themeAnnotation = AnnotationReader
+                .getAnnotationFor(target, Theme.class);
+
+        if (themeAnnotation.isPresent()) {
+            return themeAnnotation.get().value();
+        }
+
+        if (!AnnotationReader.getAnnotationFor(target, NoTheme.class)
+                .isPresent()) {
+            return LUMO_CLASS_IF_AVAILABLE;
+        }
+
+        return null;
     }
 
     /**
@@ -502,5 +559,47 @@ public class RouteRegistry implements Serializable {
      */
     public boolean hasRoutes() {
         return navigationTargetsInitialized() && !routes.get().isEmpty();
+    }
+
+    /**
+     * Gets the {@link AbstractTheme} class associated with the given navigation
+     * target, if any. The theme is defined by using the {@link Theme}
+     * annotation on the navigation target class.
+     * <p>
+     * If no {@link Theme} and {@link NoTheme} annotation are used, by default
+     * the {@code com.vaadin.flow.theme.lumo.Lumo} class is used (if present on
+     * the classpath).
+     * 
+     * @param navigationTarget
+     *            the navigation target class
+     * @param path
+     *            the resolved route path so we can determine what the rendered
+     *            target is for
+     * @return the associated AbstractTheme, or empty if none is defined and the
+     *         Lumo class is not in the classpath, or if the NoTheme annotation
+     *         is being used.
+     */
+    public Optional<Class<? extends AbstractTheme>> getThemeFor(
+            Class<?> navigationTarget, String path) {
+
+        if (navigationTarget != null && navigationTargetsInitialized()) {
+            RouteTarget routeTarget = null;
+            if (path != null) {
+                routeTarget = routes.get().get(path);
+            }
+            Map<Class<? extends Component>, String> targetRoutesMap = targetRoutes
+                    .get();
+            if (routeTarget == null
+                    && targetRoutesMap.containsKey(navigationTarget)) {
+                String routePath = targetRoutesMap.get(navigationTarget);
+                routeTarget = routes.get().get(routePath);
+            }
+            if (routeTarget != null) {
+                return Optional
+                        .ofNullable(routeTarget.getThemeFor(navigationTarget));
+            }
+        }
+        return Optional.ofNullable(
+                findThemeForNavigationTarget(navigationTarget, path));
     }
 }

@@ -61,7 +61,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.router.legacy.HasChildView;
 import com.vaadin.flow.router.legacy.View;
 import com.vaadin.flow.server.VaadinRequest;
@@ -73,7 +72,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.Theme;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -672,11 +670,11 @@ public class UIInternals implements Serializable {
      * @param viewLocation
      *            the location of the route target relative to the servlet
      *            serving the UI, not <code>null</code>
+     * @param target
+     *            the component to show, not <code>null</code>
      * @param path
      *            the resolved route path so we can determine what the rendered
      *            target is for
-     * @param target
-     *            the component to show, not <code>null</code>
      * @param layouts
      *            the parent layouts
      */
@@ -755,21 +753,12 @@ public class UIInternals implements Serializable {
     }
 
     private void updateTheme(Component target, String path) {
-        Class<? extends RouterLayout> topParentLayout = RouterUtil
-                .getTopParentLayout(target.getClass(), path);
-        Optional<Theme> themeAnnotation;
-        if (topParentLayout != null) {
-            themeAnnotation = AnnotationReader.getAnnotationFor(topParentLayout,
-                    Theme.class);
-        } else {
-            themeAnnotation = AnnotationReader
-                    .getAnnotationFor(target.getClass(), Theme.class);
-        }
-        if (themeAnnotation.isPresent()) {
-            if (theme == null || !theme.getClass()
-                    .equals(themeAnnotation.get().value())) {
-                theme = ReflectTools
-                        .createInstance(themeAnnotation.get().value());
+        Optional<Class<? extends AbstractTheme>> themeClass = ui
+                .getThemeFor(target.getClass(), path);
+
+        if (themeClass.isPresent()) {
+            if (theme == null || !theme.getClass().equals(themeClass.get())) {
+                theme = ReflectTools.createInstance(themeClass.get());
             }
         } else {
             theme = null;
@@ -777,7 +766,7 @@ public class UIInternals implements Serializable {
                     .getAnnotationFor(target.getClass(), NoTheme.class)
                     .isPresent()) {
                 getLogger().warn(
-                        "No @Theme defined for {}. See 'trace' level logs for exact components missing theming.",
+                        "No @Theme defined for {}. See 'trace' level logs for exactcomponents missing theming.",
                         target.getClass().getName());
             }
         }
