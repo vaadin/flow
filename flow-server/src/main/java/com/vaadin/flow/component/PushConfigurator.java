@@ -29,7 +29,7 @@ import com.vaadin.flow.component.page.Push;
 public interface PushConfigurator {
 
     /**
-     * Configure initial settings on {@link PushConfiguration}
+     * Configure initial settings on {@link PushConfiguration}.
      *
      * @param configuration push channel configuration
      * @param pushSetting initial push settings
