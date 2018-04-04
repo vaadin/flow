@@ -317,7 +317,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * 
          * @return the theme, or empty if none is found, or
          *         pageConfigurationHolder is <code>null</code>
-         * @see UI#getThemeFor(Class, String)
+         * @see UI#getThemeFor(Class)
          */
         protected Optional<Class<? extends AbstractTheme>> getTheme() {
             if (pageConfigurationHolder == null) {
