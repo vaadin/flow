@@ -24,6 +24,12 @@ import java.lang.annotation.Target;
 
 /**
  * Defines the body size that will be added to the HTML of the host pages.
+ * <p>
+ * If no {@code @BodySize} has been defined, the default values
+ * {@code height:100vh} and {@code width:100vw} will be used, so the body will
+ * fill the entire viewport. If you don't want any size to be set for the body,
+ * or if you want to define the values in CSS, you must use an empty
+ * {@code @BodySize} annotation to disable the default values.
  *
  * @author Vaadin Ltd
  */

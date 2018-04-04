@@ -147,20 +147,24 @@ class BootstrapUtils {
      *            the bootstrap context
      * @return the content value string for body size style element
      */
-    static Optional<String> getBodySizeContent(
+    static String getBodySizeContent(
             BootstrapHandler.BootstrapContext context) {
-        return context.getPageConfigurationAnnotation(BodySize.class)
-                .map(BootstrapUtils::composeBodySizeString);
-    }
 
-    private static String composeBodySizeString(BodySize bodySize) {
+        Optional<BodySize> bodySize = context
+                .getPageConfigurationAnnotation(BodySize.class);
+
+        // Set full size by default if @BodySize is not used
+        String height = bodySize.map(BodySize::height).orElse("100vh");
+        String width = bodySize.map(BodySize::width).orElse("100vw");
+
         StringBuilder bodyString = new StringBuilder();
+
         bodyString.append("body {");
-        if (!bodySize.height().isEmpty()) {
-            bodyString.append("height:").append(bodySize.height()).append(";");
+        if (!height.isEmpty()) {
+            bodyString.append("height:").append(height).append(";");
         }
-        if (!bodySize.width().isEmpty()) {
-            bodyString.append("width:").append(bodySize.width()).append(";");
+        if (!width.isEmpty()) {
+            bodyString.append("width:").append(width).append(";");
         }
         bodyString.append("margin:0;");
         bodyString.append("}");
@@ -226,11 +230,10 @@ class BootstrapUtils {
                 .getResourceAsStream(file);
 
         if (stream == null) {
-            throw new IllegalStateException(
-                    String.format(
-                            "File '%s' for inline resource is not available through "
-                                    + "the servlet context class loader.",
-                            file));
+            throw new IllegalStateException(String.format(
+                    "File '%s' for inline resource is not available through "
+                            + "the servlet context class loader.",
+                    file));
         }
         return stream;
     }

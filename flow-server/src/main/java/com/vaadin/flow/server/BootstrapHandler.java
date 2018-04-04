@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -71,6 +69,8 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -602,8 +602,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 CSS_TYPE_ATTRIBUTE_VALUE);
         // Add any body style that is defined for the application using
         // @BodySize
-        String bodySizeContent = BootstrapUtils.getBodySizeContent(context)
-                .orElse("body {margin:0;}");
+        String bodySizeContent = BootstrapUtils.getBodySizeContent(context);
         styles.appendText(bodySizeContent);
         // Basic reconnect dialog style just to make it visible and outside of
         // normal flow
