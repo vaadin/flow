@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -155,6 +157,30 @@ public class AnnotationReader {
     }
 
     /**
+     * Gets a value from an annotation for a class. If the annotation is not
+     * present on the target class, its super classes and implemented interfaces
+     * are also searched for the annotation.
+     *
+     * @param <A>
+     *            the annotation type
+     * @param <T>
+     *            the annotation value type
+     * @param clazz
+     *            the class from which the annotation should be found
+     * @param annotationType
+     *            the annotation type to look for
+     * @param valueExtractor
+     *            the function for extracting the value from the annotation if
+     *            an annotation is present
+     * @return an <code>Optional</code> annotation value
+     */
+    public static <A extends Annotation, T> Optional<T> getAnnotationValueFor(
+            Class<?> clazz, Class<A> annotationType,
+            Function<A, T> valueExtractor) {
+        return getAnnotationFor(clazz, annotationType).map(valueExtractor);
+    }
+
+    /**
      * Helper to get annotations for a class by searching recursively the class
      * and all its super classes and implemented interfaces and their parent
      * interfaces.
@@ -198,6 +224,38 @@ public class AnnotationReader {
         }
 
         return annotations;
+    }
+
+    /**
+     * Gets values from annotations for a class by searching recursively the
+     * class and all its super classes and implemented interfaces and their
+     * parent interfaces.
+     * <p>
+     * The values in the stream are ordered top-down according to the class
+     * hierarchy. For each hierarchy level, the values from annotations of
+     * interfaces implemented at that level are on the list before the values
+     * from annotations of the class itself.
+     * <p>
+     * NOTE: the stream may contain duplicates
+     *
+     * @param <A>
+     *            the annotation type
+     * @param <T>
+     *            the annotation value type
+     * @param clazz
+     *            the class from which the annotation should be found
+     * @param annotationType
+     *            the annotation type to look for
+     * @param valueExtractor
+     *            the function for extracting the value from any found
+     *            annotation
+     * @return a list containing all the annotations found
+     */
+    public static <A extends Annotation, T> Stream<T> getAnnotationValuesFor(
+            Class<?> clazz, Class<A> annotationType,
+            Function<A, T> valueExtractor) {
+        return getAnnotationsFor(clazz, annotationType).stream()
+                .map(valueExtractor);
     }
 
 }

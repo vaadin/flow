@@ -26,10 +26,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 
 /**
- * Marks that a component should load all the dependencies for another
- * component.
+ * Marks that an annotated component implicitly uses another component. This
+ * will ensure that any dependencies of the used component are also loaded. For
+ * {@link PolymerTemplate} implementations, used components will also be
+ * instantiated if an element with the corresponding {@link Tag @Tag} value is
+ * defined in the template.
  * <p>
  * Marking class A with <code>@Uses(B.class)</code> will ensure all
  * {@link StyleSheet}, {@link HtmlImport}, {@link JavaScript} dependencies for

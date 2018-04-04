@@ -99,7 +99,7 @@ public abstract class Component
         if (elementToMapTo.get() != null) {
             mapToElement(tagName);
         } else {
-            Element e = new Element(tagName, false);
+            Element e = new Element(tagName);
             setElement(this, e);
         }
     }

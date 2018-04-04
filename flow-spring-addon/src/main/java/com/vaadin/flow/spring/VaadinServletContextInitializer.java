@@ -42,16 +42,13 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.startup.AbstractAnnotationValidator;
-import com.vaadin.flow.server.startup.AbstractCustomElementRegistryInitializer;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
-import com.vaadin.flow.server.startup.CustomElementRegistry;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
@@ -97,30 +94,6 @@ public class VaadinServletContextInitializer
             } catch (InvalidRouteConfigurationException e) {
                 throw new IllegalStateException(e);
             }
-        }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent sce) {
-            // no need to do anything
-        }
-
-    }
-
-    private class CustomElementServletContextListener
-            extends AbstractCustomElementRegistryInitializer
-            implements ServletContextListener {
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public void contextInitialized(ServletContextEvent event) {
-            CustomElementRegistry registry = CustomElementRegistry
-                    .getInstance();
-            if (registry.isInitialized()) {
-                return;
-            }
-
-            registry.setCustomElements(filterCustomElements(
-                    findByAnnotation(getCustomElementPackages(), Tag.class)));
         }
 
         @Override
@@ -221,14 +194,6 @@ public class VaadinServletContextInitializer
             // value
             servletContext
                     .addListener(new ErrorParameterServletContextListener());
-        }
-
-        CustomElementRegistry elementRegistry = CustomElementRegistry
-                .getInstance();
-        if (!elementRegistry.isInitialized()) {
-            // Same thing: don't rely on isInitialized() negative return value
-            servletContext
-                    .addListener(new CustomElementServletContextListener());
         }
 
         servletContext
