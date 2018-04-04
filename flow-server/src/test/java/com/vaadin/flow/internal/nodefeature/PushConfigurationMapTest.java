@@ -45,6 +45,27 @@ public class PushConfigurationMapTest
     }
 
     @Test
+    public void fallbackTransportLongPolling() {
+        ns.setFallbackTransport(Transport.LONG_POLLING);
+        Assert.assertEquals(Transport.LONG_POLLING.getIdentifier(),
+            ns.getParameter("fallbackTransport"));
+        Assert.assertEquals(Transport.LONG_POLLING, ns.getFallbackTransport());
+    }
+
+    @Test
+    public void fallbackTransportWebsocket() {
+        ns.setFallbackTransport(Transport.WEBSOCKET);
+        Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
+            ns.getParameter("fallbackTransport"));
+        Assert.assertEquals(Transport.WEBSOCKET, ns.getFallbackTransport());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fallbackTransportWebsocketXHR() {
+        ns.setFallbackTransport(Transport.WEBSOCKET_XHR);
+    }
+
+    @Test
     public void parameterNames() {
         ns.setParameter("foo", "bar");
         Assert.assertArrayEquals(new String[] { "foo" },
