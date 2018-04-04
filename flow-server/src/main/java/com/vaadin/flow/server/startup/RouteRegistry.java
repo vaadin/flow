@@ -464,7 +464,7 @@ public class RouteRegistry implements Serializable {
             paths.add(route);
 
             targetRoutesMap.put(navigationTarget, route);
-            addRoute(routesMap, targetRoutesMap, navigationTarget, paths);
+            addRoute(routesMap, navigationTarget, paths);
         }
         if (!routes.compareAndSet(null,
                 Collections.unmodifiableMap(routesMap))) {
@@ -479,7 +479,6 @@ public class RouteRegistry implements Serializable {
     }
 
     private void addRoute(Map<String, RouteTarget> routesMap,
-            Map<Class<? extends Component>, String> targetRoutesMap,
             Class<? extends Component> navigationTarget,
             Collection<String> paths)
             throws InvalidRouteConfigurationException {
