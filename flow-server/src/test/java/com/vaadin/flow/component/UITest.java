@@ -1,22 +1,24 @@
 package com.vaadin.flow.component;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.page.History;
@@ -31,7 +33,10 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinRequest;
@@ -40,6 +45,18 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 
 public class UITest {
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class RootNavigationTarget extends Component {
+
+    }
+
+    @Route("foo/bar")
+    @Tag(Tag.DIV)
+    public static class FooBarNavigationTarget extends Component {
+
+    }
 
     private static class AttachableComponent extends Component {
         public AttachableComponent() {
@@ -86,16 +103,20 @@ public class UITest {
         assertEquals("body", ui.getElement().getTag());
     }
 
-    private static UI createAndInitTestUI(String initialLocation) {
-        UI ui = new UI();
+    private static UI createTestUI() {
+        UI ui = new UI() {
+            @Override
+            public void doInit(VaadinRequest request, int uiId) {
 
-        initUI(ui, initialLocation, null);
+            }
+        };
 
         return ui;
     }
 
     private static void initUI(UI ui, String initialLocation,
-            ArgumentCaptor<Integer> statusCodeCaptor) {
+            ArgumentCaptor<Integer> statusCodeCaptor)
+            throws InvalidRouteConfigurationException {
         try {
             VaadinRequest request = Mockito.mock(VaadinRequest.class);
             VaadinResponse response = Mockito.mock(VaadinResponse.class);
@@ -109,10 +130,7 @@ public class UITest {
             }
             Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
-            Properties initParams = new Properties();
-            initParams.setProperty(
-                    Constants.SERVLET_PARAMETER_USING_NEW_ROUTING, "false");
-            ServletConfig servletConfig = new MockServletConfig(initParams);
+            ServletConfig servletConfig = new MockServletConfig();
             VaadinServlet servlet = new VaadinServlet();
             servlet.init(servletConfig);
             VaadinService service = servlet.getService();
@@ -129,7 +147,13 @@ public class UITest {
 
             ui.getInternals().setSession(session);
 
+            ui.getRouter().getRegistry().setNavigationTargets(
+                    new HashSet<>(Arrays.asList(RootNavigationTarget.class,
+                            FooBarNavigationTarget.class)));
+
             ui.doInit(request, 0);
+
+            session.unlock();
 
             if (statusCodeCaptor != null) {
                 Mockito.verify(response).setStatus(statusCodeCaptor.capture());
@@ -137,14 +161,6 @@ public class UITest {
         } catch (ServletException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Test
-    public void testInitialLocation() {
-        UI ui = createAndInitTestUI("foo/bar");
-
-        assertEquals("foo/bar",
-                ui.getInternals().getActiveViewLocation().getPath());
     }
 
     @Test
@@ -157,44 +173,62 @@ public class UITest {
     }
 
     @Test
-    public void locationAfterServerNavigation() {
-        UI ui = createAndInitTestUI("");
+    public void testInitialLocation()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        assertEquals("", ui.getInternals().getActiveViewLocation().getPath());
+    }
+
+    @Test
+    public void locationAfterServerNavigation()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
 
         ui.navigate("foo/bar");
 
         assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
+        List<HasElement> chain = ui.getInternals()
+                .getActiveRouterTargetsChain();
+        Assert.assertEquals(1, chain.size());
+        Assert.assertThat(chain.get(0),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
     }
 
-    private boolean requestHandled;
-
     @Test
-    public void navigateWithParameters() {
-        requestHandled = false;
+    public void navigateWithParameters_delegateToRouter() {
         final String route = "params";
-        UI ui = createAndInitTestUI(route);
+        Router router = Mockito.mock(Router.class);
+        UI ui = new UI() {
+            @Override
+            public com.vaadin.flow.router.Router getRouter() {
+                return router;
+            }
+        };
         QueryParameters params = QueryParameters
                 .simple(Collections.singletonMap("test", "indeed"));
 
-        ui.getRouterInterface().get()
-                .reconfigure(c -> c.setRoute(route, event -> {
-                    assertEquals(params.getParameters(), event.getLocation()
-                            .getQueryParameters().getParameters());
-                    requestHandled = true;
-                    return HttpServletResponse.SC_OK;
-                }));
+        ArgumentCaptor<Location> location = ArgumentCaptor
+                .forClass(Location.class);
 
         ui.navigate(route, params);
 
-        assertEquals(route,
-                ui.getInternals().getActiveViewLocation().getPath());
-        assertTrue("Request with QueryParameters was not handled.",
-                requestHandled);
+        Mockito.verify(router).navigate(Matchers.eq(ui), location.capture(),
+                Matchers.eq(NavigationTrigger.PROGRAMMATIC));
+
+        Location value = location.getValue();
+        Assert.assertEquals(route, value.getPath());
+        Assert.assertEquals(params, value.getQueryParameters());
     }
 
     @Test
-    public void locationAfterClientNavigation() {
-        UI ui = createAndInitTestUI("");
+    public void locationAfterClientNavigation()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
 
         History history = ui.getPage().getHistory();
 
@@ -207,22 +241,8 @@ public class UITest {
     }
 
     @Test
-    public void testInvalidNavigationTargets() {
-        String[] invalidTargets = { null, "/foo", "foo/bar/.." };
-        for (String invalidTarget : invalidTargets) {
-            UI ui = createAndInitTestUI("");
-            try {
-                ui.navigate(invalidTarget);
-                Assert.fail("Navigation target should cause exception: "
-                        + invalidTarget);
-            } catch (IllegalArgumentException expected) {
-                // All is fine
-            }
-        }
-    }
-
-    @Test
-    public void testUiInitWithConfiguredRouter_noRouteMatches_404ViewAndCodeReturned() {
+    public void testUiInitWithConfiguredRouter_noRouteMatches_404ViewAndCodeReturned()
+            throws InvalidRouteConfigurationException {
         UI ui = new UI() {
             @Override
             protected void init(VaadinRequest request) {
@@ -233,9 +253,12 @@ public class UITest {
         ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor
                 .forClass(Integer.class);
 
-        initUI(ui, "", statusCodeCaptor);
+        initUI(ui, "baz", statusCodeCaptor);
 
-        Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
+        Assert.assertEquals(1, ui.getChildren().count());
+        Optional<Component> errorComponent = ui.getChildren().findFirst();
+        Assert.assertThat(errorComponent.get(),
+                CoreMatchers.instanceOf(RouteNotFoundError.class));
         Assert.assertFalse(
                 ui.getElement().getTextRecursively().contains("UI.init"));
         assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
@@ -276,7 +299,8 @@ public class UITest {
     }
 
     @Test
-    public void setSession_attachEventIsFired() {
+    public void setSession_attachEventIsFired()
+            throws InvalidRouteConfigurationException {
         UI ui = new UI();
         List<AttachEvent> events = new ArrayList<>();
         ui.addAttachListener(events::add);
@@ -287,8 +311,9 @@ public class UITest {
     }
 
     @Test
-    public void unsetSession_dettachEventIsFired() {
-        UI ui = new UI();
+    public void unsetSession_dettachEventIsFired()
+            throws InvalidRouteConfigurationException {
+        UI ui = createTestUI();
         List<DetachEvent> events = new ArrayList<>();
         ui.addDetachListener(events::add);
         initUI(ui, "", null);
@@ -300,7 +325,7 @@ public class UITest {
 
     @Test
     public void beforeClientResponse_regularOrder() {
-        UI ui = createAndInitTestUI("");
+        UI ui = createTestUI();
         Component rootComponent = new AttachableComponent();
         ui.add(rootComponent);
 
@@ -323,7 +348,7 @@ public class UITest {
 
     @Test
     public void beforeClientResponse_withInnerRunnables() {
-        UI ui = createAndInitTestUI("");
+        UI ui = createTestUI();
         Component rootComponent = new AttachableComponent();
         ui.add(rootComponent);
 
@@ -350,7 +375,7 @@ public class UITest {
 
     @Test
     public void beforeClientResponse_withUnattachedNodes() {
-        UI ui = createAndInitTestUI("");
+        UI ui = createTestUI();
         Component rootComponent = new AttachableComponent();
         ui.add(rootComponent);
         Component emptyComponent = new AttachableComponent();
@@ -374,7 +399,7 @@ public class UITest {
 
     @Test
     public void beforeClientResponse_withAttachedNodesDuringExecution() {
-        UI ui = createAndInitTestUI("");
+        UI ui = createTestUI();
         Component rootComponent = new AttachableComponent();
         ui.add(rootComponent);
         AttachableComponent emptyComponent1 = new AttachableComponent();
@@ -409,7 +434,7 @@ public class UITest {
 
     @Test
     public void beforeClientResponse_withReattachedNodes() {
-        UI ui = createAndInitTestUI("");
+        UI ui = createTestUI();
         Component root = new AttachableComponent();
         ui.add(root);
         ui.getInternals().getStateTree().collectChanges(change -> {
