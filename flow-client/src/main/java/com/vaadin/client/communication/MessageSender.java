@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.communication;
 
+import com.google.gwt.core.client.GWT;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -42,6 +43,7 @@ public class MessageSender {
     private PushConnection push;
 
     private final Registry registry;
+    private final PushConnectionFactory pushConnectionFactory;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -51,6 +53,7 @@ public class MessageSender {
      */
     public MessageSender(Registry registry) {
         this.registry = registry;
+        this.pushConnectionFactory = GWT.create(PushConnectionFactory.class);
     }
 
     /**
@@ -165,7 +168,7 @@ public class MessageSender {
      */
     public void setPushEnabled(boolean enabled) {
         if (enabled && push == null) {
-            push = new AtmospherePushConnection(registry);
+            push = pushConnectionFactory.create(registry);
         } else if (!enabled && push != null && push.isActive()) {
             push.disconnect(() -> {
                 push = null;

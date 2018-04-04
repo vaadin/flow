@@ -37,6 +37,11 @@
 		<when-type-is class="com.vaadin.client.communication.PushConnection" />
 	</replace-with>
 
+	<replace-with
+		class="com.vaadin.client.communication.AtmospherePushConnection$Factory">
+		<when-type-is class="com.vaadin.client.communication.PushConnectionFactory" />
+	</replace-with>
+
 	<!-- Set vaadin.profiler to true to include profiling support in the module -->
 	<define-property name="vaadin.profiler" values="true,false" />
 	<set-property name="vaadin.profiler" value="false" />
