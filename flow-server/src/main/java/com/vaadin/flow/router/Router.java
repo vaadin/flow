@@ -71,6 +71,16 @@ public class Router {
         routeResolver = new DefaultRouteResolver();
     }
 
+    /**
+     * Enables navigation for a new UI instance. This initializes the UI content
+     * based on the location used for loading the UI and sets up the UI to be
+     * updated when the user navigates to some other location.
+     *
+     * @param ui
+     *            the UI that navigation should be set up for
+     * @param initRequest
+     *            the Vaadin request that bootstraps the provided UI
+     */
     public void initializeUI(UI ui, VaadinRequest initRequest) {
         Location location = getLocationForRequest(initRequest.getPathInfo(),
                 initRequest.getParameterMap());
@@ -127,6 +137,26 @@ public class Router {
         return Optional.ofNullable(resolve);
     }
 
+    /**
+     * Navigates the given UI to the given location.
+     * <p>
+     * This method just shows the given {@code location} on the page and doesn't
+     * update the browser location (and page history). Use the
+     * {@link UI#navigate(String, QueryParameters)} method if you want to update
+     * the browser location as well.
+     *
+     * @see UI#navigate(String)
+     * @see UI#navigate(String, QueryParameters)
+     *
+     * @param ui
+     *            the UI to update, not <code>null</code>
+     * @param location
+     *            the location to navigate to, not <code>null</code>
+     * @param trigger
+     *            the type of user action that triggered this navigation, not
+     *            <code>null</code>
+     * @return the HTTP status code resulting from the navigation
+     */
     public int navigate(UI ui, Location location, NavigationTrigger trigger) {
         assert ui != null;
         assert location != null;
