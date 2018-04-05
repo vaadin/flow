@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.swing.text.View;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -40,8 +38,7 @@ import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 
 /**
- * Abstract base class for flow TestBench tests, which are based on a
- * {@link View} class.
+ * Abstract base class for flow TestBench tests.
  */
 @RunOnHub
 @BrowserFactory(DefaultBrowserFactory.class)
