@@ -125,7 +125,7 @@ public class LocationChangeEvent extends EventObject {
      * Gets first parameter that corresponds to specified {@code parameterName}.
      * If there are multiple parameters corresponding to the same
      * {@code parameterName}, the first one will be returned. To access all
-     * parameters, use {@link .LocationChangeEvent#getQueryParameters()} method.
+     * parameters, use {@link LocationChangeEvent#getQueryParameters()} method.
      *
      * @param parameterName
      *            the name of a parameter to get
