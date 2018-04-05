@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -239,73 +235,6 @@ public class RouterLink extends Component
             url += '?' + queryParameters.getQueryString();
         }
         HREF.set(this, url);
-    }
-
-    /**
-     * Creates a URL for a route by populating placeholder and wildcard slots
-     * with the given parameter values. The slots are populated starting from
-     * the beginning of the route. The number of parameters must match the
-     * number of slots in the route.
-     *
-     * @param route
-     *            the route to use, not <code>null</code>
-     * @param parameters
-     *            the parameter values to set in the route
-     * @return a URL with all placeholder and wildcard slots populated
-     */
-    public static String buildUrl(String route, String... parameters) {
-        assert route != null;
-        assert parameters != null;
-
-        List<String> urlSegments = getUrlSegments(route, parameters);
-        return new Location(urlSegments).getPath();
-    }
-
-    private static List<String> getUrlSegments(String route,
-            String... parameters) {
-        Iterator<String> parametersIterator = Arrays.asList(parameters)
-                .iterator();
-
-        Location location = new Location(route);
-
-        List<String> urlSegments = new ArrayList<>(
-                location.getSegments().size());
-
-        while (true) {
-            String firstSegment = location.getFirstSegment();
-            if ("*".equals(firstSegment)) {
-                if (parametersIterator.hasNext()) {
-                    urlSegments.add(parametersIterator.next());
-                } else {
-                    urlSegments.add("");
-                }
-            } else if (firstSegment.startsWith("{")
-                    && firstSegment.endsWith("}")) {
-                if (!parametersIterator.hasNext()) {
-                    throw new IllegalArgumentException(route
-                            + " has more placeholders than the number of given parameters: "
-                            + Arrays.toString(parameters));
-                }
-                urlSegments.add(parametersIterator.next());
-            } else {
-                urlSegments.add(firstSegment);
-            }
-
-            Optional<Location> maybeSubLocation = location.getSubLocation();
-            if (maybeSubLocation.isPresent()) {
-                location = maybeSubLocation.get();
-            } else {
-                break;
-            }
-        }
-
-        if (parametersIterator.hasNext()) {
-            throw new IllegalArgumentException(route
-                    + " has fewer placeholders than the number of given parameters: "
-                    + Arrays.toString(parameters));
-        }
-
-        return urlSegments;
     }
 
     private Router getRouter() {

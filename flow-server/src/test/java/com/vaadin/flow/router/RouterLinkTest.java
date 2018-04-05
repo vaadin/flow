@@ -80,43 +80,6 @@ public class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void buildUrlWithoutParameters() {
-        String url = RouterLink.buildUrl("foo/bar");
-
-        Assert.assertEquals("foo/bar", url);
-    }
-
-    @Test
-    public void buildUrlWithParameters() {
-        String url = RouterLink.buildUrl("{foo}/bar/*", "param1",
-                "param2/param3");
-
-        Assert.assertEquals("param1/bar/param2/param3", url);
-    }
-
-    @Test
-    public void buildUrlWithEmptyWildcard() {
-        String url = RouterLink.buildUrl("{foo}/bar/*", "param1", "");
-        Assert.assertEquals("param1/bar/", url);
-    }
-
-    @Test
-    public void buildUrlWithOmittedWildcard() {
-        String url = RouterLink.buildUrl("{foo}/bar/*", "param1");
-        Assert.assertEquals("param1/bar/", url);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void buildUrlWithTooFewParameters() {
-        RouterLink.buildUrl("{foo}/bar/{baz}", "param1");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void buildUrlWithTooManyParameters() {
-        RouterLink.buildUrl("{foo}/bar/*", "param1", "param2", "param3");
-    }
-
-    @Test
     public void createRouterLink_implicitCurrentVaadinServiceRouter() {
         // This method sets mock VaadinService instance which returns
         // Router from the UI.
