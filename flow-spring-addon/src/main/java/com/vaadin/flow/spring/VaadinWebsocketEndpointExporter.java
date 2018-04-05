@@ -34,7 +34,7 @@ public class VaadinWebsocketEndpointExporter extends ServerEndpointExporter {
             return;
         }
 
-        if (getServerContainer() != null) {
+        if (getServerContainer() == null) {
             // ServerContainer (i.e. the websocket server provided by Jetty,
             // Tomcat etc) can be null at this point when running in a real
             // server (as opposed to embedded). At least Jetty uses a
