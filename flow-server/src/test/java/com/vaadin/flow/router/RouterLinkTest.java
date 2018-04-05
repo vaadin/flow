@@ -20,8 +20,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -341,15 +339,8 @@ public class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void testRouterLinkQueryParameters()
+    public void routerLinkQueryParameters()
             throws InvalidRouteConfigurationException {
-
-        registry.setNavigationTargets(Stream.of(FooNavigationTarget.class)
-                .collect(Collectors.toSet()));
-
-        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router(
-                registry);
-
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
 

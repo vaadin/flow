@@ -40,6 +40,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -54,8 +55,12 @@ public class BootstrapHandlerDependenciesTest {
         @Override
         public Router getRouter() {
             Router router = Mockito.mock(Router.class);
+            RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+            Mockito.when(registry.getThemeFor(Mockito.any(), Mockito.any()))
+                    .thenReturn(Optional.empty());
             Mockito.when(router.resolveNavigationTarget(Mockito.any(),
                     Mockito.any())).thenReturn(Optional.empty());
+            Mockito.when(router.getRegistry()).thenReturn(registry);
             return router;
         }
     }
