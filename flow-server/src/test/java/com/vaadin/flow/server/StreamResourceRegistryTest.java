@@ -25,18 +25,14 @@ import java.util.Optional;
 
 import javax.servlet.ServletException;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.StreamRegistration;
-import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.StreamResourceRegistry;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.internal.CurrentInstance;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -62,9 +58,14 @@ public class StreamResourceRegistryTest {
         };
     }
 
+    @After
+    public void tearDown() {
+        CurrentInstance.clearAll();
+    }
+
     @Test
     public void registerResource_registrationResultCanBeFound() {
-        StreamResourceRegistry registry = session.getResourceRegistry();
+        StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
@@ -86,7 +87,7 @@ public class StreamResourceRegistryTest {
 
     @Test
     public void unregisterResource_resourceIsRemoved() {
-        StreamResourceRegistry registry = session.getResourceRegistry();
+        StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
@@ -109,7 +110,7 @@ public class StreamResourceRegistryTest {
 
     @Test
     public void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
-        StreamResourceRegistry registry = session.getResourceRegistry();
+        StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         StreamResource resource1 = new StreamResource("name",
                 () -> makeEmptyStream());
@@ -133,7 +134,7 @@ public class StreamResourceRegistryTest {
 
     @Test
     public void getResourceUrlIsEncoded() throws UnsupportedEncodingException {
-        StreamResourceRegistry registry = session.getResourceRegistry();
+        StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
         StreamResource resource = new StreamResource("a?b=c d&e",
                 () -> makeEmptyStream());
