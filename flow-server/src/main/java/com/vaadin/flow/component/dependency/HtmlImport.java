@@ -24,7 +24,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponents;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
@@ -69,7 +68,6 @@ public @interface HtmlImport {
      * absolute URL to refer to files outside the frontend directory.
      *
      * @return a html file URL
-     * @see WebComponents
      */
     String value();
 

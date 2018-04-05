@@ -49,7 +49,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.WebComponents;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
@@ -667,10 +666,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static void appendWebComponentsPolyfills(Element head,
             BootstrapContext context) {
-        Optional<WebComponents> webComponents = AnnotationReader
-                .getAnnotationFor(context.getUI().getClass(),
-                        WebComponents.class);
-
         DeploymentConfiguration config = context.getSession()
                 .getConfiguration();
 
@@ -681,9 +676,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
         assert webComponentsPolyfillBase.endsWith("/");
 
-        boolean loadEs5Adapter = config.getBooleanProperty(
-                Constants.LOAD_ES5_ADAPTERS,
-                webComponents.map(WebComponents::loadEs5Adapter).orElse(true));
+        boolean loadEs5Adapter = config
+                .getBooleanProperty(Constants.LOAD_ES5_ADAPTERS, true);
         if (loadEs5Adapter
                 && !context.getSession().getBrowser().isEs6Supported()) {
             // This adapter is required since lots of our current customers use
