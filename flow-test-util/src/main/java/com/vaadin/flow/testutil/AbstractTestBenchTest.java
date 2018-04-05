@@ -27,11 +27,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.swing.text.View;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-import com.vaadin.flow.router.legacy.View;
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunOnHub;
