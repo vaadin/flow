@@ -90,9 +90,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <testbench.version>6.0.0.beta5</testbench.version>
-        <!-- Jetty 9.3.8/9.3.9 causes the build to fail with 'address already
-            in use' -->
-        <jetty.version>9.3.7.v20160115</jetty.version>
+        <jetty.version>9.4.9.v20180320</jetty.version>
 
         <!-- Frontend -->
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
