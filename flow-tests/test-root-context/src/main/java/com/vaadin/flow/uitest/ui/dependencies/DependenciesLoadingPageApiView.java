@@ -20,28 +20,28 @@ public class DependenciesLoadingPageApiView
         super();
         Page page = UI.getCurrent().getPage();
         page.addJavaScript(
-                "frontend:///com/vaadin/flow/uitest/ui/dependencies/inline.js",
+                "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.js",
                 LoadMode.INLINE);
         page.addStyleSheet(
-                "frontend:///com/vaadin/flow/uitest/ui/dependencies/inline.css",
+                "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.css",
                 LoadMode.INLINE);
         page.addHtmlImport(
-                "frontend:///com/vaadin/flow/uitest/ui/dependencies/inline.html",
+                "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.html",
                 LoadMode.INLINE);
         page.addJavaScript(
-                "frontend:///com/vaadin/flow/uitest/ui/dependencies/lazy.js",
+                "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.js",
                 LoadMode.LAZY);
         page.addStyleSheet(
-                "frontend:///com/vaadin/flow/uitest/ui/dependencies/lazy.css",
+                "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.css",
                 LoadMode.LAZY);
         page.addHtmlImport(
-                "frontend:///com/vaadin/flow/uitest/ui/dependencies/lazy.html",
+                "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.html",
                 LoadMode.LAZY);
         page.addJavaScript(
-                "frontend:///com/vaadin/flow/uitest/ui/dependencies/eager.js");
+                "frontend://com/vaadin/flow/uitest/ui/dependencies/eager.js");
         page.addStyleSheet(
-                "frontend:///com/vaadin/flow/uitest/ui/dependencies/eager.css");
+                "frontend://com/vaadin/flow/uitest/ui/dependencies/eager.css");
         page.addHtmlImport(
-                "frontend:///com/vaadin/flow/uitest/ui/dependencies/eager.html");
+                "frontend://com/vaadin/flow/uitest/ui/dependencies/eager.html");
     }
 }
