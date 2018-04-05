@@ -47,11 +47,12 @@ import com.vaadin.flow.dom.Element;
 @Documented
 public @interface EventData {
     /**
-     * The identifier used in
-     * {@link Element#addEventListener(String, DomEventListener, String...)} to
-     * identify the event data.
+     * A JavaScript expression that will be evaluated to collect data when an
+     * event is handled.
      *
-     * @return the identifier to use for fetching event data
+     * @see Element#addEventListener(String, DomEventListener, String...)
+     *
+     * @return the expression to use for fetching event data
      */
     String value();
 }
