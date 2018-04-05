@@ -22,7 +22,8 @@
         <module>test-servlet</module>
         <module>test-spring-boot</module>
         <module>test-spring-boot-scan</module>
-        <module>test-spring-war</module>
+        <!-- See https://github.com/vaadin/flow/issues/3791. The module is disabled for a while-->
+        <!--module>test-spring-war</module-->
         <module>test-spring</module>
         <module>test-spring-common</module>
     </modules>
