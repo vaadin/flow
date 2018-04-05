@@ -13,6 +13,11 @@
     <name>Flow component demo helpers</name>
     <description>Includes a server and a base view for creating component demos</description>
 
+    <properties>
+        <!-- Components need the downgraded version until -->
+        <!-- https://github.com/eclipse/jetty.project/issues/2372 is released  -->
+        <jetty.version>9.3.7.v20160115</jetty.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
