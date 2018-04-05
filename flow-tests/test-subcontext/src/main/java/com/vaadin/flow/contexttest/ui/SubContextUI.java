@@ -4,7 +4,6 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 
 public class SubContextUI extends DependencyUI {
@@ -15,7 +14,8 @@ public class SubContextUI extends DependencyUI {
     @WebServlet(urlPatterns = {
             "/SubContext/*" }, name = "AnotherServlet", asyncSupported = true)
     @VaadinServletConfiguration(ui = SubContextUI.class, productionMode = false)
-    public static class SubContextServlet extends VaadinServlet {
+    public static class SubContextServlet extends NoRouterServlet {
+
     }
 
     @Override

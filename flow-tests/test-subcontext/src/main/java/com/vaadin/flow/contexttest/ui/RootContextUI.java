@@ -19,7 +19,6 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 
 public class RootContextUI extends DependencyUI {
@@ -30,7 +29,7 @@ public class RootContextUI extends DependencyUI {
     @WebServlet(urlPatterns = {
             "/*" }, name = "UIServlet", asyncSupported = true)
     @VaadinServletConfiguration(ui = RootContextUI.class, productionMode = false)
-    public static class Servlet extends VaadinServlet {
+    public static class Servlet extends NoRouterServlet {
     }
 
     @Override
