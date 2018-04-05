@@ -614,8 +614,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 CSS_TYPE_ATTRIBUTE_VALUE);
         // Add any body style that is defined for the application using
         // @BodySize
-        String bodySizeContent = BootstrapUtils.getBodySizeContent(context)
-                .orElse("body {margin:0;}");
+        String bodySizeContent = BootstrapUtils.getBodySizeContent(context);
         styles.appendText(bodySizeContent);
         // Basic reconnect dialog style just to make it visible and outside of
         // normal flow
