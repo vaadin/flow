@@ -20,12 +20,13 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
 
 /**
  * @author Vaadin Ltd
@@ -38,15 +39,17 @@ public class RPCLoggerIT extends ChromeBrowserTest {
             throws URISyntaxException, InterruptedException {
         open();
 
-        findElement(By.tagName("button")).click();
+        WebElement button = findElement(By.tagName("button"));
+        new Actions(getDriver()).moveToElement(button).click().build()
+                .perform();
         // button click -> one log item with type event and required node
         List<WebElement> logs = findElements(By.className("log"));
         Assert.assertEquals(1, logs.size());
-        Assert.assertEquals("Node is 4",
+        Assert.assertEquals("Node is 5",
                 logs.get(0).findElement(By.className("node")).getText());
         String json = logs.get(0).findElement(By.className("json")).getText();
         Assert.assertTrue(json.contains("\"type\":\"event\""));
-        Assert.assertTrue(json.contains("\"node\":4"));
+        Assert.assertTrue(json.contains("\"node\":5"));
 
         WebElement input = findElement(By.tagName("input"));
         input.sendKeys("foo");
@@ -55,18 +58,18 @@ public class RPCLoggerIT extends ChromeBrowserTest {
         // node
         logs = findElements(By.className("log"));
         Assert.assertEquals(2, logs.size());
-        Assert.assertEquals("Node is 5",
+        Assert.assertEquals("Node is 3",
                 logs.get(1).findElement(By.className("node")).getText());
         json = logs.get(1).findElement(By.className("json")).getText();
         Assert.assertTrue(json.contains("\"type\":\"mSync\""));
         Assert.assertTrue(json
                 .contains("\"feature\":" + NodeFeatures.ELEMENT_PROPERTIES));
-        Assert.assertTrue(json.contains("\"node\":5"));
+        Assert.assertTrue(json.contains("\"node\":3"));
         Assert.assertTrue(json.contains("\"value\":\"foo\""));
     }
 
     @Override
     protected String getTestPath() {
-        return "/rpc/" + RPCLoggerUI.class.getCanonicalName();
+        return "/rpc/rpc-logger";
     }
 }

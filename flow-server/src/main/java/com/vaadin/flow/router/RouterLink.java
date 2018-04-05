@@ -30,6 +30,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -256,16 +257,7 @@ public class RouterLink extends Component
         assert route != null;
         assert parameters != null;
 
-        Iterator<String> parametersIterator = Arrays.asList(parameters)
-                .iterator();
         List<String> urlSegments = getUrlSegments(route, parameters);
-
-        if (parametersIterator.hasNext()) {
-            throw new IllegalArgumentException(route
-                    + " has fewer placeholders than the number of given parameters: "
-                    + Arrays.toString(parameters));
-        }
-
         return new Location(urlSegments).getPath();
     }
 
@@ -306,6 +298,13 @@ public class RouterLink extends Component
                 break;
             }
         }
+
+        if (parametersIterator.hasNext()) {
+            throw new IllegalArgumentException(route
+                    + " has fewer placeholders than the number of given parameters: "
+                    + Arrays.toString(parameters));
+        }
+
         return urlSegments;
     }
 
@@ -314,6 +313,14 @@ public class RouterLink extends Component
         if (getElement().getNode().isAttached()) {
             StateTree tree = (StateTree) getElement().getNode().getOwner();
             router = tree.getUI().getRouter();
+        }
+        if (router == null) {
+            router = VaadinService.getCurrent().getRouter();
+        }
+        if (router == null) {
+            throw new IllegalStateException(
+                    "Implicit router instance is not available. "
+                            + "Use overloaded method with explicit router parameter.");
         }
         return router;
     }

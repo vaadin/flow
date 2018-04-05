@@ -30,13 +30,11 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.communication.ServerRpcHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.rpc.RpcInvocationHandler;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.uitest.ui.RPCLoggerUI;
 
 import elemental.json.JsonObject;
 
@@ -45,7 +43,6 @@ import elemental.json.JsonObject;
  *
  */
 @WebServlet(asyncSupported = true, urlPatterns = { "/rpc/*" })
-@VaadinServletConfiguration(ui = RPCLoggerUI.class, productionMode = false)
 public class RpcLoggerServlet extends VaadinServlet {
 
     @Override

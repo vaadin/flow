@@ -91,21 +91,11 @@ public class VaadinServletConfigurationTest {
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
     }
 
-    @Test(expected = ServletException.class)
-    public void testMissingConfiguration() throws Exception {
-        MissingConfigurationServlet servlet = new MissingConfigurationServlet();
-        servlet.init(new MockServletConfig());
-    }
 }
 
 @VaadinServletConfiguration(productionMode = true, ui = MockUIContainingServlet.class, closeIdleSessions = true, heartbeatInterval = 1234)
 class TestServlet extends VaadinServlet {
 
-}
-
-@VaadinServletConfiguration(productionMode = true)
-class MissingConfigurationServlet extends VaadinServlet {
-    // Should have either ui or routerConfigurator defined
 }
 
 @VaadinServletConfiguration(productionMode = true, ui = MockUIContainingServlet.class)

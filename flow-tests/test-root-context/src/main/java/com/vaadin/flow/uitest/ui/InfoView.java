@@ -109,8 +109,6 @@ public class InfoView extends Div {
         header("Deployment configuration");
         info("Heartbeat interval",
                 deploymentConfiguration.getHeartbeatInterval());
-        info("Router configurator class",
-                deploymentConfiguration.getRouterConfiguratorClassName());
         info("UI class", deploymentConfiguration.getUIClassName());
         info("Close idle sessions",
                 deploymentConfiguration.isCloseIdleSessions());
