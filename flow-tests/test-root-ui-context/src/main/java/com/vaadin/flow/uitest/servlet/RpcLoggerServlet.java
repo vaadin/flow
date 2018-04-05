@@ -38,10 +38,6 @@ import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 
-/**
- * @author Vaadin Ltd
- *
- */
 @WebServlet(asyncSupported = true, urlPatterns = { "/rpc/*" })
 public class RpcLoggerServlet extends VaadinServlet {
 
