@@ -689,7 +689,7 @@ public class UI extends Component
      * the browser location (and page history).
      *
      * @see #navigate(String, QueryParameters)
-     * @see RouterInterface#navigate(UI, Location, NavigationTrigger)
+     * @see Router#navigate(UI, Location, NavigationTrigger)
      *
      * @param location
      *            the location to navigate to, not {@code null}
@@ -707,7 +707,7 @@ public class UI extends Component
      * the browser location (and page history).
      *
      * @see #navigate(String)
-     * @see RouterInterface#navigate(UI, Location, NavigationTrigger)
+     * @see Router#navigate(UI, Location, NavigationTrigger)
      *
      * @param location
      *            the location to navigate to, not {@code null}

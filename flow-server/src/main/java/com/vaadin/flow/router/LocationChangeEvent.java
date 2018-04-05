@@ -113,7 +113,7 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Gets the query parameters used for navigation. If only the first value of
      * parameter list is important, please use
-     * {@link com.vaadin.flow.router.legacy.LocationChangeEvent#getQueryParameter(String)}
+     * {@link LocationChangeEvent#getQueryParameter(String)}
      *
      * @return the query parameters, not {@code null}
      */
@@ -125,9 +125,7 @@ public class LocationChangeEvent extends EventObject {
      * Gets first parameter that corresponds to specified {@code parameterName}.
      * If there are multiple parameters corresponding to the same
      * {@code parameterName}, the first one will be returned. To access all
-     * parameters, use
-     * {@link com.vaadin.flow.router.legacy.LocationChangeEvent#getQueryParameters()}
-     * method.
+     * parameters, use {@link .LocationChangeEvent#getQueryParameters()} method.
      *
      * @param parameterName
      *            the name of a parameter to get
