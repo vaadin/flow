@@ -138,8 +138,7 @@ public class ThemeUrlResolverTest {
     @Test
     public void themeTranslationCache_somethingIsCachedInProductionMode()
             throws Exception {
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(true);
+        mocks.setProductionMode(true);
         String path = "theme/custom/button.html";
         Mockito.when(servlet.getResource("/" + path))
                 .thenReturn(new URL("http://theme/custom/button.html"));
@@ -157,8 +156,7 @@ public class ThemeUrlResolverTest {
     @Test
     public void themeTranslationCache_somethingIsNotCachedWithoutProductionMode()
             throws Exception {
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(false);
+        mocks.setProductionMode(false);
 
         String path = "/theme/custom/button.html";
 

@@ -56,10 +56,10 @@ public class BundleFilterInitializerTest {
         mocks = new MockServletServiceSessionSetup();
         event = Mockito.mock(ServiceInitEvent.class);
         Mockito.when(event.getSource()).thenReturn(mocks.getService());
-        Mockito.when(mocks.getDeploymentConfiguration().isProductionMode())
-                .thenReturn(true);
-        Mockito.when(mocks.getDeploymentConfiguration().getEs6FrontendPrefix())
-                .thenReturn(Constants.FRONTEND_URL_ES6_DEFAULT_VALUE);
+        mocks.setProductionMode(true);
+        mocks.getDeploymentConfiguration().setApplicationOrSystemProperty(
+                Constants.FRONTEND_URL_ES6,
+                Constants.FRONTEND_URL_ES6_DEFAULT_VALUE);
 
         Mockito.doAnswer(invocation -> {
             dependencyFilterAddHandler.accept(

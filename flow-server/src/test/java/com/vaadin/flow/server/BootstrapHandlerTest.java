@@ -9,7 +9,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -30,7 +29,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -54,6 +52,7 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.VaadinUriResolver;
@@ -336,23 +335,26 @@ public class BootstrapHandlerTest {
     private BootstrapContext context;
     private VaadinRequest request;
     private VaadinSession session;
-    private MockVaadinServletService service;
+    private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration;
     private WebBrowser browser;
+    private VaadinServlet servlet;
+    private MockServletServiceSessionSetup mocks;
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
+        mocks = new MockServletServiceSessionSetup();
         TestRouteRegistry routeRegistry = new TestRouteRegistry();
 
         BootstrapHandler.clientEngineFile = "foobar";
         testUI = new TestUI();
 
-        deploymentConfiguration = new MockDeploymentConfiguration("test/");
+        deploymentConfiguration = mocks.getDeploymentConfiguration();
 
-        service = Mockito
-                .spy(new MockVaadinServletService(deploymentConfiguration));
-        Mockito.when(service.getRouteRegistry()).thenReturn(routeRegistry);
-        Mockito.when(service.getRouter()).thenReturn(new Router(routeRegistry) {
+        servlet = mocks.getServlet();
+        service = mocks.getService();
+        service.setRouteRegistry(routeRegistry);
+        service.setRouter(new Router(routeRegistry) {
             @Override
             public void initializeUI(UI ui, VaadinRequest initRequest) {
                 // Skip initial navigation during UI.init if no routes have been
@@ -363,16 +365,10 @@ public class BootstrapHandlerTest {
             }
         });
 
-        session = Mockito.spy(new MockVaadinSession(service));
-        session.lock();
-        session.setConfiguration(deploymentConfiguration);
+        session = mocks.getSession();
         testUI.getInternals().setSession(session);
 
-        browser = Mockito.mock(WebBrowser.class);
-
-        Mockito.when(browser.isEs6Supported()).thenReturn(false);
-        Mockito.when(session.getBrowser()).thenReturn(browser);
-        CurrentInstance.setCurrent(session);
+        mocks.setBrowserEs6(false);
     }
 
     @After
@@ -387,7 +383,6 @@ public class BootstrapHandlerTest {
 
     private void initUI(UI ui, VaadinRequest request) {
         this.request = request;
-        service.init();
 
         ui.doInit(request, 0);
         context = new BootstrapContext(request, null, session, ui);
@@ -402,7 +397,6 @@ public class BootstrapHandlerTest {
         service.getRouteRegistry().setNavigationTargets(navigationTargets);
 
         this.request = request;
-        service.init();
 
         ui.doInit(request, 0);
         context = new BootstrapContext(request, null, session, ui);
@@ -1103,21 +1097,16 @@ public class BootstrapHandlerTest {
 
     @Test
     public void testBootstrapListener() throws ServiceException {
-        List<BootstrapListener> listeners = new ArrayList<>(3);
         AtomicReference<VaadinUriResolver> resolver = new AtomicReference<>();
-        listeners.add(evt -> evt.getDocument().head().getElementsByTag("script")
-                .remove());
-        listeners.add(evt -> {
+        service.addBootstrapListener(evt -> evt.getDocument().head()
+                .getElementsByTag("script").remove());
+        service.addBootstrapListener(evt -> {
             resolver.set(evt.getUriResolver());
             evt.getDocument().head().appendElement("script").attr("src",
                     "testing.1");
         });
-        listeners.add(evt -> evt.getDocument().head().appendElement("script")
-                .attr("src", "testing.2"));
-
-        Mockito.when(service.createInstantiator())
-                .thenReturn(new MockInstantiator(event -> listeners
-                        .forEach(event::addBootstrapListener)));
+        service.addBootstrapListener(evt -> evt.getDocument().head()
+                .appendElement("script").attr("src", "testing.2"));
 
         initUI(testUI);
 
@@ -1137,7 +1126,8 @@ public class BootstrapHandlerTest {
     @Test
     public void useDependencyFilters_removeDependenciesAndAddNewOnes()
             throws ServiceException {
-        List<DependencyFilter> filters = new ArrayList<>(5);
+        List<DependencyFilter> filters = (List<DependencyFilter>) service
+                .getDependencyFilters();
         filters.add((list, context) -> {
             list.clear(); // remove everything
             return list;
@@ -1163,10 +1153,6 @@ public class BootstrapHandlerTest {
                     "imported-by-filter.css", LoadMode.EAGER));
             return list;
         });
-
-        Mockito.when(service.createInstantiator())
-                .thenReturn(new MockInstantiator(
-                        event -> filters.forEach(event::addDependencyFilter)));
 
         initUI(testUI);
 
@@ -1208,7 +1194,7 @@ public class BootstrapHandlerTest {
 
     @Test
     public void frontendProtocol_productionMode_es5Url() {
-        deploymentConfiguration.setProductionMode(true);
+        mocks.setProductionMode(true);
         initUI(testUI);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
@@ -1228,7 +1214,7 @@ public class BootstrapHandlerTest {
     @Test
     public void frontendProtocol_productionMode_useDifferentUrlsForEs5AndEs6() {
         initUI(testUI);
-        deploymentConfiguration.setProductionMode(true);
+        mocks.setProductionMode(true);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
@@ -1247,7 +1233,7 @@ public class BootstrapHandlerTest {
     @Test
     public void frontendProtocol_notInProductionMode_useDefaultFrontend() {
         initUI(testUI);
-        deploymentConfiguration.setProductionMode(false);
+        mocks.setProductionMode(false);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
 
@@ -1274,7 +1260,7 @@ public class BootstrapHandlerTest {
         String es5Prefix = "bar/es5/";
         deploymentConfiguration.setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES5, es5Prefix);
-        deploymentConfiguration.setProductionMode(true);
+        mocks.setProductionMode(true);
         initUI(testUI);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
@@ -1295,7 +1281,7 @@ public class BootstrapHandlerTest {
         deploymentConfiguration.setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES6, es6Prefix);
         initUI(testUI);
-        deploymentConfiguration.setProductionMode(true);
+        mocks.setProductionMode(true);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
@@ -1312,7 +1298,7 @@ public class BootstrapHandlerTest {
     @Test
     public void frontendProtocol_notInProductionModeAndWithProperties_useProperties() {
         initUI(testUI);
-        deploymentConfiguration.setProductionMode(false);
+        mocks.setProductionMode(false);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
 
@@ -1342,8 +1328,7 @@ public class BootstrapHandlerTest {
         initUI(testUI);
 
         SystemMessages messages = Mockito.mock(SystemMessages.class);
-        Mockito.when(service.getSystemMessages(Matchers.any(Locale.class),
-                Matchers.any(VaadinRequest.class))).thenReturn(messages);
+        service.setSystemMessagesProvider(info -> messages);
         Mockito.when(messages.isSessionExpiredNotificationEnabled())
                 .thenReturn(true);
         Mockito.when(session.getSession())
@@ -1367,8 +1352,8 @@ public class BootstrapHandlerTest {
 
     @Test
     public void es6NotSupported_webcomponentsPolyfillBasePresent_polyfillsLoaded() {
-        Mockito.when(browser.isEs6Supported()).thenReturn(false);
-
+        mocks.setBrowserEs6(false);
+        mocks.getServlet().setResourceFoundOverride(r -> true);
         Element head = initTestUI();
 
         checkInlinedScript(head, "es6-collections.js", true);
@@ -1377,7 +1362,7 @@ public class BootstrapHandlerTest {
 
     @Test
     public void es6IsSupported_noPolyfillsLoaded() {
-        Mockito.when(browser.isEs6Supported()).thenReturn(true);
+        mocks.setBrowserEs6(true);
 
         Element head = initTestUI();
 

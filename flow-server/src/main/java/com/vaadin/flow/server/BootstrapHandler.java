@@ -669,19 +669,21 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         DeploymentConfiguration config = context.getSession()
                 .getConfiguration();
 
-        String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
-                .orElse(null);
-        if (webComponentsPolyfillBase == null) {
+        String webcomponentsLoaderUrl = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
+        VaadinServlet servlet = ((VaadinServletService) context.getSession()
+                .getService()).getServlet();
+        String location = servlet.resolveResource(webcomponentsLoaderUrl);
+        if (location == null) {
+            // No webcomponents polyfill, load nothing
             return;
         }
-        assert webComponentsPolyfillBase.endsWith("/");
 
         boolean loadEs5Adapter = config
                 .getBooleanProperty(Constants.LOAD_ES5_ADAPTERS, true);
         if (loadEs5Adapter
                 && !context.getSession().getBrowser().isEs6Supported()) {
-            // This adapter is required since lots of our current customers use
-            // polymer-cli to transpile sources,
+            // This adapter is required since lots of our current customers
+            // use polymer-cli to transpile sources,
             // this tool adds babel-helpers dependency into each file, see:
             // https://github.com/Polymer/polymer-cli/blob/master/src/build/build.ts#L64
             // and
@@ -689,10 +691,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendChild(createInlineJavaScriptElement(BABEL_HELPERS_JS));
         }
 
-        head.appendChild(createJavaScriptElement(
-                context.getUriResolver().resolveVaadinUri(
-                        webComponentsPolyfillBase + "webcomponents-loader.js"),
-                false));
+        String resolvedUrl = context.getUriResolver()
+                .resolveVaadinUri(webcomponentsLoaderUrl);
+        head.appendChild(createJavaScriptElement(resolvedUrl, false));
+
     }
 
     private static Element createInlineJavaScriptElement(
