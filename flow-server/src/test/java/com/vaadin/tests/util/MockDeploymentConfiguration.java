@@ -130,9 +130,4 @@ public class MockDeploymentConfiguration
         return sendUrlsAsParameters;
     }
 
-    @Override
-    public Optional<String> getWebComponentsPolyfillBase() {
-        return Optional.ofNullable(webComponentsPolyfillBase);
-    }
-
 }
