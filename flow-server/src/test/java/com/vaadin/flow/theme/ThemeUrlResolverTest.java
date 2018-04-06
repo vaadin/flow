@@ -30,7 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
 import com.vaadin.flow.server.VaadinRequest;
@@ -49,7 +48,6 @@ public class ThemeUrlResolverTest {
 
     private MockServletServiceSessionSetup mocks;
     private TestVaadinServlet servlet;
-    private DeploymentConfiguration deploymentConfiguration;
 
     @Before
     public void init() throws Exception {
@@ -60,7 +58,6 @@ public class ThemeUrlResolverTest {
 
         mocks = new MockServletServiceSessionSetup();
         servlet = mocks.getServlet();
-        deploymentConfiguration = mocks.getDeploymentConfiguration();
         Properties initParameters = new Properties();
         ServletContext servletContext = mocks.getServletContext();
         Mockito.when(servletContext.getInitParameterNames()).thenReturn(
@@ -138,8 +135,7 @@ public class ThemeUrlResolverTest {
     @Test
     public void themeTranslationCache_somethingIsCachedInProductionMode()
             throws Exception {
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(true);
+        mocks.setProductionMode(true);
         String path = "theme/custom/button.html";
         Mockito.when(servlet.getResource("/" + path))
                 .thenReturn(new URL("http://theme/custom/button.html"));
@@ -157,8 +153,6 @@ public class ThemeUrlResolverTest {
     @Test
     public void themeTranslationCache_somethingIsNotCachedWithoutProductionMode()
             throws Exception {
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(false);
 
         String path = "/theme/custom/button.html";
 

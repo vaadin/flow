@@ -733,4 +733,14 @@ public class VaadinServlet extends HttpServlet {
     public InputStream getResourceAsStream(String path) {
         return getServletContext().getResourceAsStream(path);
     }
+
+    /**
+     * Gets the web jar server.
+     *
+     * @return the web jar server or <code>null</code> if no web jar server is
+     *         used
+     */
+    protected WebJarServer getWebJarServer() {
+        return webJarServer;
+    }
 }
