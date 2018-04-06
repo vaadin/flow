@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.router.legacy;
+package com.vaadin.flow.router;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

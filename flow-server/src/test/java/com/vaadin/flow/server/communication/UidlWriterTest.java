@@ -15,20 +15,36 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -42,11 +58,14 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.JsonUtils;
-import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.flow.router.legacy.HasChildView;
-import com.vaadin.flow.router.legacy.View;
+import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.DependencyFilter;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
@@ -64,19 +83,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class UidlWriterTest {
@@ -172,24 +179,20 @@ public class UidlWriterTest {
 
     @Tag("base")
     @HtmlImport("2.html")
-    public static class BaseClass extends Component implements View {
+    @Route(value = "", layout = ParentClass.class)
+    public static class BaseClass extends Component {
     }
 
     @Tag("parent")
     @HtmlImport("1.html")
-    public static class ParentClass extends Component implements HasChildView {
-        @Override
-        public void setChildView(View childView) {
-        }
+    @ParentLayout(SuperParentClass.class)
+    public static class ParentClass extends Component implements RouterLayout {
     }
 
     @Tag("super-parent")
     @HtmlImport("0.html")
     public static class SuperParentClass extends Component
-            implements HasChildView {
-        @Override
-        public void setChildView(View childView) {
-        }
+            implements RouterLayout {
     }
 
     private VaadinUriResolverFactory factory;
@@ -223,7 +226,8 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void testComponentDependencies() {
+    public void componentDependencies()
+            throws InvalidRouteConfigurationException {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
@@ -236,7 +240,8 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void testComponentInterfaceDependencies() {
+    public void testComponentInterfaceDependencies()
+            throws InvalidRouteConfigurationException {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
 
@@ -277,7 +282,8 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void checkAllTypesOfDependencies() {
+    public void checkAllTypesOfDependencies()
+            throws InvalidRouteConfigurationException {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
@@ -351,7 +357,8 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void checkAllTypesOfDependencies_uriResolverResolvesFrontendProtocol() {
+    public void checkAllTypesOfDependencies_uriResolverResolvesFrontendProtocol()
+            throws InvalidRouteConfigurationException {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
@@ -376,7 +383,9 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void parentViewDependenciesAreAddedFirst() {
+    @Ignore("See https://github.com/vaadin/flow/issues/3822")
+    public void parentViewDependenciesAreAddedFirst()
+            throws InvalidRouteConfigurationException {
         UI ui = initializeUIForDependenciesTest(new UI());
         UidlWriter uidlWriter = new UidlWriter();
         ui.add(new BaseClass());
@@ -444,7 +453,9 @@ public class UidlWriterTest {
                 containsInAnyOrder(Dependency.Type.values()));
     }
 
-    private UI initializeUIForDependenciesTest(UI ui) {
+    @SuppressWarnings("serial")
+    private UI initializeUIForDependenciesTest(UI ui)
+            throws InvalidRouteConfigurationException {
         ServletContext context = Mockito.mock(ServletContext.class);
         VaadinServletService service = new VaadinServletService(
                 new VaadinServlet() {
@@ -453,28 +464,31 @@ public class UidlWriterTest {
                         return context;
                     }
                 }, new MockDeploymentConfiguration()) {
-            RouterInterface router = new com.vaadin.flow.router.legacy.Router();
-
-            @Override
-            public RouterInterface getRouter() {
-                return router;
-            }
 
             @Override
             public Iterable<DependencyFilter> getDependencyFilters() {
                 return Collections.emptyList();
             }
+
+            @Override
+            protected List<RequestHandler> createRequestHandlers()
+                    throws ServiceException {
+                return Collections.emptyList();
+            }
         };
 
-        service.getRouter().reconfigure(conf -> {
-            conf.setRoute("", BaseClass.class);
-            conf.setParentView(BaseClass.class, ParentClass.class);
-            conf.setParentView(ParentClass.class, SuperParentClass.class);
-        });
+        try {
+            service.init();
+        } catch (ServiceException e) {
+            throw new RuntimeException(e);
+        }
 
         MockVaadinSession session = new MockVaadinSession(service);
         session.lock();
         ui.getInternals().setSession(session);
+
+        ui.getRouter().getRegistry().setNavigationTargets(
+                new HashSet<>(Arrays.asList(BaseClass.class)));
 
         when(service.getResourceAsStream(anyString()))
                 .thenAnswer(invocation -> new ByteArrayInputStream(
@@ -514,7 +528,7 @@ public class UidlWriterTest {
 
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
-        assertEquals(15, dependenciesMap.size());
+        assertEquals(17, dependenciesMap.size());
 
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
@@ -550,6 +564,9 @@ public class UidlWriterTest {
         assertDependency(CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
 
         assertDependency("0.html", HTML_TYPE_NAME, dependenciesMap);
+        // parent router layouts
+        assertDependency("1.html", HTML_TYPE_NAME, dependenciesMap);
+        assertDependency("2.html", HTML_TYPE_NAME, dependenciesMap);
     }
 
     private Map<String, JsonObject> getDependenciesMap(JsonObject response) {

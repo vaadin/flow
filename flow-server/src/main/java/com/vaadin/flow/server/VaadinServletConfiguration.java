@@ -25,8 +25,6 @@ import java.util.function.Function;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.legacy.RouterConfigurator;
 
 /**
  * Annotation for configuring subclasses of {@link VaadinServlet}. For a
@@ -81,15 +79,6 @@ public @interface VaadinServletConfiguration {
     Class<? extends UI> ui() default UI.class;
 
     /**
-     * Gets the {@link RouterConfigurator} class to use for configuring the
-     * {@link Router}.
-     *
-     * @return the router configurator class
-     */
-    @InitParameterName(Constants.SERVLET_PARAMETER_ROUTER_CONFIGURATOR)
-    Class<? extends RouterConfigurator> routerConfigurator() default RouterConfigurator.class;
-
-    /**
      * The number of seconds between heartbeat requests of a UI, or a
      * non-positive number if heartbeat is disabled. The default value is 300
      * seconds, i.e. 5 minutes.
@@ -115,13 +104,4 @@ public @interface VaadinServletConfiguration {
     @InitParameterName(Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS)
     boolean closeIdleSessions() default DefaultDeploymentConfiguration.DEFAULT_CLOSE_IDLE_SESSIONS;
 
-    /**
-     * Whether to use the new annotation based routing implementation instead of
-     * the old routing implementation that relies on a
-     * {@link RouterConfigurator}. The default value is {@code false}.
-     *
-     * @return whether to use the new annotation based routing implementation
-     */
-    @InitParameterName(Constants.SERVLET_PARAMETER_USING_NEW_ROUTING)
-    boolean usingNewRouting() default true;
 }

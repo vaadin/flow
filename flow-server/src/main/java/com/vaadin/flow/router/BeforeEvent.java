@@ -71,7 +71,7 @@ public abstract class BeforeEvent extends EventObject {
      * @param ui
      *            the UI related to the navigation
      */
-    public BeforeEvent(RouterInterface router, NavigationTrigger trigger,
+    public BeforeEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget, UI ui) {
         super(router);
 
@@ -106,8 +106,8 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     @Override
-    public RouterInterface getSource() {
-        return (RouterInterface) super.getSource();
+    public Router getSource() {
+        return (Router) super.getSource();
     }
 
     /**
@@ -334,7 +334,7 @@ public abstract class BeforeEvent extends EventObject {
 
     /**
      * Gets the UI this navigation takes place inside.
-     * 
+     *
      * @return the related UI instance
      */
     public UI getUI() {

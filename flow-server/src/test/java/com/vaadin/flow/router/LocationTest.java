@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router.legacy;
+package com.vaadin.flow.router;
 
 import static org.junit.Assert.assertEquals;
 

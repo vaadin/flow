@@ -33,8 +33,7 @@ import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.flow.router.legacy.ImmutableRouterConfiguration;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.spring.SpringVaadinSession;
@@ -189,14 +188,9 @@ public class VaadinUIScopeTest extends AbstractScopeTest {
     private UI mockUI() {
         VaadinSession session = mockSession();
 
-        RouterInterface routerIface = mock(RouterInterface.class);
+        Router router = mock(Router.class);
         VaadinService service = session.getService();
-        when(service.getRouter()).thenReturn(routerIface);
-
-        ImmutableRouterConfiguration config = mock(
-                ImmutableRouterConfiguration.class);
-        when(routerIface.getConfiguration()).thenReturn(config);
-        when(config.isConfigured()).thenReturn(false);
+        when(service.getRouter()).thenReturn(router);
 
         UI ui = new UI();
         ui.getInternals().setSession(session);

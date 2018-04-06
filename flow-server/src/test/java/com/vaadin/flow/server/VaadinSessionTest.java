@@ -38,9 +38,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.SlowTests;
@@ -68,6 +70,13 @@ public class VaadinSessionTest {
     private VaadinServletRequest vaadinRequest;
     private UI ui;
     private Lock httpSessionLock;
+
+    private static class TestUI extends UI {
+        @Override
+        public Router getRouter() {
+            return Mockito.mock(Router.class);
+        }
+    }
 
     @Before
     public void setup() throws Exception {
@@ -117,7 +126,7 @@ public class VaadinSessionTest {
         session = new VaadinSession(mockService);
         mockService.storeSession(session, mockWrappedSession);
 
-        ui = new UI();
+        ui = new TestUI();
         vaadinRequest = new VaadinServletRequest(
                 EasyMock.createMock(HttpServletRequest.class), mockService) {
             @Override
@@ -150,6 +159,7 @@ public class VaadinSessionTest {
             public Map<String, String[]> getParameterMap() {
                 return new HashMap<>();
             }
+
         };
 
         ui.getInternals().setSession(session);

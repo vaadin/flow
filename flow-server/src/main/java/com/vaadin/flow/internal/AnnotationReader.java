@@ -28,8 +28,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.legacy.View;
 
 /**
  * Helper class for reading annotation data.
@@ -39,20 +37,6 @@ public class AnnotationReader {
 
     private AnnotationReader() {
         // Utility class with only static methods
-    }
-
-    /**
-     * Returns the title for the given class, specified with
-     * {@link PageTitle @PageTitle} annotation.
-     *
-     * @param viewWithTitle
-     *            the class with the title
-     * @return the page title or an empty optional if no annotation present
-     */
-    public static Optional<String> getPageTitle(
-            Class<? extends View> viewWithTitle) {
-        return getAnnotationFor(viewWithTitle, PageTitle.class)
-                .map(PageTitle::value);
     }
 
     /**

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.http.HttpServletResponse;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +27,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -36,9 +38,6 @@ import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.InternalRedirectHandler;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.ResolveRequest;
-import com.vaadin.flow.router.legacy.ImmutableRouterConfiguration;
-import com.vaadin.flow.router.legacy.RouterConfiguration;
-import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -52,18 +51,11 @@ import com.vaadin.flow.server.startup.RouteRegistry;
  *
  * @see Route
  */
-public class Router implements RouterInterface {
+public class Router implements Serializable {
 
     private static final Pattern PARAMETER_PATTREN = Pattern
             .compile("/\\{[\\s\\S]*}");
     private RouteResolver routeResolver;
-
-    private final RouterConfiguration configuration = new RouterConfiguration() {
-        @Override
-        public boolean isConfigured() {
-            return registry.hasRoutes();
-        }
-    };
 
     private final RouteRegistry registry;
 
@@ -80,7 +72,16 @@ public class Router implements RouterInterface {
         routeResolver = new DefaultRouteResolver();
     }
 
-    @Override
+    /**
+     * Enables navigation for a new UI instance. This initializes the UI content
+     * based on the location used for loading the UI and sets up the UI to be
+     * updated when the user navigates to some other location.
+     *
+     * @param ui
+     *            the UI that navigation should be set up for
+     * @param initRequest
+     *            the Vaadin request that bootstraps the provided UI
+     */
     public void initializeUI(UI ui, VaadinRequest initRequest) {
         Location location = getLocationForRequest(initRequest.getPathInfo(),
                 initRequest.getParameterMap());
@@ -137,7 +138,26 @@ public class Router implements RouterInterface {
         return Optional.ofNullable(resolve);
     }
 
-    @Override
+    /**
+     * Navigates the given UI to the given location.
+     * <p>
+     * This method just shows the given {@code location} on the page and doesn't
+     * update the browser location (and page history). Use the
+     * {@link UI#navigate(String, QueryParameters)} method if you want to update
+     * the browser location as well.
+     *
+     * @see UI#navigate(String)
+     * @see UI#navigate(String, QueryParameters)
+     *
+     * @param ui
+     *            the UI to update, not <code>null</code>
+     * @param location
+     *            the location to navigate to, not <code>null</code>
+     * @param trigger
+     *            the type of user action that triggered this navigation, not
+     *            <code>null</code>
+     * @return the HTTP status code resulting from the navigation
+     */
     public int navigate(UI ui, Location location, NavigationTrigger trigger) {
         assert ui != null;
         assert location != null;
@@ -218,16 +238,6 @@ public class Router implements RouterInterface {
         }
     }
 
-    @Override
-    public void reconfigure(RouterConfigurator configurator) {
-        // NO-OP
-    }
-
-    @Override
-    public ImmutableRouterConfiguration getConfiguration() {
-        return configuration;
-    }
-
     private RouteResolver getRouteResolver() {
         return routeResolver;
     }
@@ -237,7 +247,7 @@ public class Router implements RouterInterface {
      * <p>
      * Note! If the navigation target has a url parameter that is required then
      * this method will throw and IllegalArgumentException.
-     * 
+     *
      * @param navigationTarget
      *            navigation target to get url for
      * @return url for the navigation target
@@ -263,14 +273,15 @@ public class Router implements RouterInterface {
 
     /**
      * Return the url base without any url parameters.
-     * 
+     *
      * @param navigationTarget
      *            navigation target to get url for
      * @return url base without url parameters
      */
     public String getUrlBase(Class<? extends Component> navigationTarget) {
         String routeString = getUrlForTarget(navigationTarget);
-        return trimRouteString(PARAMETER_PATTREN.matcher(routeString).replaceAll(""));
+        return trimRouteString(
+                PARAMETER_PATTREN.matcher(routeString).replaceAll(""));
     }
 
     /**
@@ -401,14 +412,13 @@ public class Router implements RouterInterface {
                 .collect(Collectors.toList());
     }
 
-    @Override
     public RouteRegistry getRegistry() {
         return registry;
     }
 
     /**
      * Get all available routes.
-     * 
+     *
      * @return RouteData for all registered routes
      */
     public List<RouteData> getRoutes() {
@@ -418,7 +428,7 @@ public class Router implements RouterInterface {
 
     /**
      * Get all available routes collected by parent layout.
-     * 
+     *
      * @return map of parent url to route
      */
     public Map<Class<? extends RouterLayout>, List<RouteData>> getRoutesByParent() {

@@ -16,9 +16,8 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +26,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +46,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +60,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.FaviconHandler;
@@ -79,7 +78,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -185,7 +183,7 @@ public abstract class VaadinService implements Serializable {
      */
     private boolean initialized = false;
 
-    private RouterInterface router;
+    private Router router;
 
     private Instantiator instantiator;
 
@@ -266,20 +264,7 @@ public abstract class VaadinService implements Serializable {
 
         DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
 
-        if (deploymentConf.isUsingNewRouting()) {
-            router = new Router(getRouteRegistry());
-        } else {
-            router = new com.vaadin.flow.router.legacy.Router();
-            String routerConfiguratorClassName = deploymentConf
-                    .getRouterConfiguratorClassName();
-            if (routerConfiguratorClassName != null && !RouterConfigurator.class
-                    .getName().equals(routerConfiguratorClassName)) {
-                // Configure router if we have a non-default configurator type
-
-                configureRouter(routerConfiguratorClassName);
-            }
-        }
-
+        router = new Router(getRouteRegistry());
         initialized = true;
     }
 
@@ -289,36 +274,6 @@ public abstract class VaadinService implements Serializable {
      * @return the route registry to use, not <code>null</code>
      */
     protected abstract RouteRegistry getRouteRegistry();
-
-    private void configureRouter(String configuratorClassName)
-            throws ServiceException {
-        try {
-            Class<?> configuratorClass = Class.forName(configuratorClassName,
-                    true, getClassLoader());
-            if (!RouterConfigurator.class.isAssignableFrom(configuratorClass)) {
-                throw new IllegalStateException(
-                        "The defined router configurator class "
-                                + configuratorClassName + " does not implement "
-                                + RouterConfigurator.class.getName());
-            }
-
-            if (configuratorClass.getDeclaringClass() != null
-                    && !Modifier.isStatic(configuratorClass.getModifiers())) {
-                throw new ServiceException("Configurator class "
-                        + configuratorClassName
-                        + " cannot be a non-static inner class. "
-                        + "If an inner class is used, it must be static.");
-            }
-
-            RouterConfigurator configurator = (RouterConfigurator) ReflectTools
-                    .createInstance(configuratorClass);
-
-            getRouter().reconfigure(configurator);
-        } catch (ClassNotFoundException e) {
-            throw new ServiceException(
-                    "Could not find router class " + configuratorClassName, e);
-        }
-    }
 
     /**
      * Called during initialization to add the request handlers for the service.
@@ -354,7 +309,7 @@ public abstract class VaadinService implements Serializable {
      * custom service.
      *
      * @return an instantiator to use, not <code>null</code>
-     * 
+     *
      * @throws ServiceException
      *             if there are multiple applicable instantiators
      *
@@ -2182,13 +2137,13 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the router, not <code>null</code>
      */
-    public RouterInterface getRouter() {
+    public Router getRouter() {
         return router;
     }
 
     /**
      * Fire UI initialization event to all registered {@link UIInitListener}s.
-     * 
+     *
      * @param ui
      *            the initialized {@link UI}
      */

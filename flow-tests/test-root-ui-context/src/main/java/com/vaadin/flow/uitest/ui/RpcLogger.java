@@ -15,19 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class RPCLoggerUI extends UI {
+@Route("rpc-logger")
+public class RpcLogger extends Div {
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public RpcLogger() {
         NativeButton button = new NativeButton("Click Me");
         button.addClickListener(event -> {
         });

@@ -43,7 +43,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.router.legacy.RouterConfigurator;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.VaadinServletConfiguration.InitParameterName;
 import com.vaadin.flow.server.webjar.WebJarServer;
@@ -124,15 +123,6 @@ public class VaadinServlet extends HttpServlet {
         if (optionalConfigAnnotation.isPresent()) {
             VaadinServletConfiguration configuration = optionalConfigAnnotation
                     .get();
-            if (configuration.ui() == UI.class
-                    && configuration
-                            .routerConfigurator() == RouterConfigurator.class
-                    && !configuration.usingNewRouting()) {
-                throw new ServletException(String.format(
-                        "At least one of 'ui' and 'routerConfigurator' must be defined in @%s if 'usingNewRouting' is false",
-                        VaadinServletConfiguration.class.getSimpleName()));
-            }
-
             Method[] methods = VaadinServletConfiguration.class
                     .getDeclaredMethods();
             for (Method method : methods) {
@@ -746,7 +736,7 @@ public class VaadinServlet extends HttpServlet {
     /**
      * Returns a URL to the resource that is mapped to the given path. The path
      * must begin with a <tt>/</tt>.
-     * 
+     *
      * @param path
      *            the path to the resource
      * @return the resource located at the named path, or <code>null</code> if
@@ -765,7 +755,7 @@ public class VaadinServlet extends HttpServlet {
     /**
      * Returns the resource located at the named path as an
      * <code>InputStream</code> object.
-     * 
+     *
      * @param path
      *            the path to the resource
      * @return the <code>InputStream</code> returned to the servlet, or

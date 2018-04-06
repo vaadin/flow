@@ -51,7 +51,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @param ui
      *            the UI related to the navigation
      */
-    public BeforeEnterEvent(RouterInterface router, NavigationTrigger trigger,
+    public BeforeEnterEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget, UI ui) {
         super(router, trigger, location, navigationTarget, ui);
     }

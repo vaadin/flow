@@ -31,7 +31,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-import com.vaadin.flow.router.legacy.View;
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunOnHub;
@@ -39,8 +38,7 @@ import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 
 /**
- * Abstract base class for flow TestBench tests, which are based on a
- * {@link View} class.
+ * Abstract base class for flow TestBench tests.
  */
 @RunOnHub
 @BrowserFactory(DefaultBrowserFactory.class)

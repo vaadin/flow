@@ -34,8 +34,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -44,8 +42,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SystemMessages;
@@ -224,8 +229,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                     // Ignore as this is expected for many packages
                 } catch (Exception e2) {
                     // TODO: handle exception
-                    getLogger().debug(
-                            "Failed to find application class {}. {}", pkg, baseName, e2);
+                    getLogger().debug("Failed to find application class {}. {}",
+                            pkg, baseName, e2);
                 }
                 if (appClass != null) {
                     return appClass;
@@ -238,7 +243,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     }
 
     private Logger getLogger() {
-        return LoggerFactory.getLogger(ApplicationRunnerServlet.class.getName());
+        return LoggerFactory
+                .getLogger(ApplicationRunnerServlet.class.getName());
     }
 
     @Override
@@ -261,12 +267,28 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                 new ProxyDeploymentConfiguration(originalConfiguration));
     }
 
+    @SuppressWarnings("serial")
     @Override
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
             throws ServiceException {
-        VaadinServletService service = super.createServletService(
-                deploymentConfiguration);
+        // service doesn't use router actually. UI class is responsible to show
+        // and update the content by itself with only root route available
+        VaadinServletService service = new VaadinServletService(this,
+                deploymentConfiguration) {
+            @Override
+            public Router getRouter() {
+                Router router = new Router(getRouteRegistry()) {
+                    @Override
+                    public int navigate(UI ui, Location location,
+                            NavigationTrigger trigger) {
+                        return HttpServletResponse.SC_OK;
+                    }
+                };
+                return router;
+            }
+        };
+        service.init();
 
         final SystemMessagesProvider provider = service
                 .getSystemMessagesProvider();

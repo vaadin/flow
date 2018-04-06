@@ -1,34 +1,5 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import net.jcip.annotations.NotThreadSafe;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
-import com.vaadin.flow.shared.VaadinUriResolver;
-import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
-
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.either;
@@ -44,9 +15,55 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.shared.VaadinUriResolver;
+import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import net.jcip.annotations.NotThreadSafe;
+
 @NotThreadSafe
 public class BootstrapHandlerDependenciesTest {
     private static final String BOOTSTRAP_SCRIPT_CONTENTS = "//<![CDATA[\n";
+
+    private static class TestUI extends UI {
+        @Override
+        public Router getRouter() {
+            Router router = Mockito.mock(Router.class);
+            RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+            Mockito.when(registry.getThemeFor(Mockito.any(), Mockito.any()))
+                    .thenReturn(Optional.empty());
+            Mockito.when(router.resolveNavigationTarget(Mockito.any(),
+                    Mockito.any())).thenReturn(Optional.empty());
+            Mockito.when(router.getRegistry()).thenReturn(registry);
+            return router;
+        }
+    }
 
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
@@ -59,10 +76,10 @@ public class BootstrapHandlerDependenciesTest {
     @StyleSheet("context://eager-relative.css")
     @StyleSheet("eager.css")
     @HtmlImport("eager.html")
-    private static class UIAnnotated_LoadingOrderTest extends UI {
+    private static class UIAnnotated_LoadingOrderTest extends TestUI {
     }
 
-    private static class UIWithMethods_LoadingOrderTest extends UI {
+    private static class UIWithMethods_LoadingOrderTest extends TestUI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("lazy.js", LoadMode.LAZY);
@@ -80,10 +97,10 @@ public class BootstrapHandlerDependenciesTest {
 
     @JavaScript(value = "new.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "new.js")
-    private static class UIAnnotated_BothLazyAndEagerTest extends UI {
+    private static class UIAnnotated_BothLazyAndEagerTest extends TestUI {
     }
 
-    private static class UIWithMethods_BothBothLazyAndEagerTest extends UI {
+    private static class UIWithMethods_BothBothLazyAndEagerTest extends TestUI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("new.js", LoadMode.LAZY);
@@ -93,10 +110,11 @@ public class BootstrapHandlerDependenciesTest {
 
     @JavaScript(value = "new.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "new.js", loadMode = LoadMode.INLINE)
-    private static class UIAnnotated_BothLazyAndInlineTest extends UI {
+    private static class UIAnnotated_BothLazyAndInlineTest extends TestUI {
     }
 
-    private static class UIWithMethods_BothBothLazyAndInlineTest extends UI {
+    private static class UIWithMethods_BothBothLazyAndInlineTest
+            extends TestUI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("new.js", LoadMode.LAZY);
@@ -106,10 +124,11 @@ public class BootstrapHandlerDependenciesTest {
 
     @JavaScript(value = "new.js", loadMode = LoadMode.INLINE)
     @JavaScript(value = "new.js")
-    private static class UIAnnotated_BothInlineAndEagerTest extends UI {
+    private static class UIAnnotated_BothInlineAndEagerTest extends TestUI {
     }
 
-    private static class UIWithMethods_BothBothInlineAndEagerTest extends UI {
+    private static class UIWithMethods_BothBothInlineAndEagerTest
+            extends TestUI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("new.js", LoadMode.INLINE);
@@ -123,7 +142,7 @@ public class BootstrapHandlerDependenciesTest {
     @StyleSheet("2.css")
     @HtmlImport("1.html")
     @HtmlImport("2.html")
-    private static class UIAnnotated_ImportOrderTest_Eager extends UI {
+    private static class UIAnnotated_ImportOrderTest_Eager extends TestUI {
     }
 
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
@@ -132,7 +151,7 @@ public class BootstrapHandlerDependenciesTest {
     @StyleSheet(value = "2.css", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "1.html", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "2.html", loadMode = LoadMode.LAZY)
-    private static class UIAnnotated_ImportOrderTest_Lazy extends UI {
+    private static class UIAnnotated_ImportOrderTest_Lazy extends TestUI {
     }
 
     @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
@@ -141,10 +160,10 @@ public class BootstrapHandlerDependenciesTest {
     @StyleSheet(value = "2.css", loadMode = LoadMode.INLINE)
     @HtmlImport(value = "1.html", loadMode = LoadMode.INLINE)
     @HtmlImport(value = "2.html", loadMode = LoadMode.INLINE)
-    private static class UIAnnotated_ImportOrderTest_Inline extends UI {
+    private static class UIAnnotated_ImportOrderTest_Inline extends TestUI {
     }
 
-    private static class UIWithMethods_ImportOrderTest_Eager extends UI {
+    private static class UIWithMethods_ImportOrderTest_Eager extends TestUI {
         @Override
         public void init(VaadinRequest request) {
             getPage().addJavaScript("1.js");
@@ -156,7 +175,7 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
-    private static class UIWithMethods_ImportOrderTest_Lazy extends UI {
+    private static class UIWithMethods_ImportOrderTest_Lazy extends TestUI {
         @Override
         public void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.LAZY);
@@ -168,7 +187,7 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
-    private static class UIWithMethods_ImportOrderTest_Inline extends UI {
+    private static class UIWithMethods_ImportOrderTest_Inline extends TestUI {
         @Override
         public void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.INLINE);
@@ -183,10 +202,11 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "2.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
-    private static class UIAnnotated_DuplicateDependencies_Lazy extends UI {
+    private static class UIAnnotated_DuplicateDependencies_Lazy extends TestUI {
     }
 
-    private static class UIWithMethods_DuplicateDependencies_Lazy extends UI {
+    private static class UIWithMethods_DuplicateDependencies_Lazy
+            extends TestUI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.LAZY);
@@ -198,10 +218,12 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
     @JavaScript(value = "2.js", loadMode = LoadMode.INLINE)
     @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
-    private static class UIAnnotated_DuplicateDependencies_Inline extends UI {
+    private static class UIAnnotated_DuplicateDependencies_Inline
+            extends TestUI {
     }
 
-    private static class UIWithMethods_DuplicateDependencies_Inline extends UI {
+    private static class UIWithMethods_DuplicateDependencies_Inline
+            extends TestUI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.INLINE);
@@ -213,10 +235,12 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript("1.js")
     @JavaScript("2.js")
     @JavaScript("1.js")
-    private static class UIAnnotated_DuplicateDependencies_Eager extends UI {
+    private static class UIAnnotated_DuplicateDependencies_Eager
+            extends TestUI {
     }
 
-    private static class UIWithMethods_DuplicateDependencies_Eager extends UI {
+    private static class UIWithMethods_DuplicateDependencies_Eager
+            extends TestUI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js");
@@ -260,7 +284,8 @@ public class BootstrapHandlerDependenciesTest {
         VaadinUriResolverFactory factory = Mockito
                 .mock(VaadinUriResolverFactory.class);
 
-        VaadinUriResolver vaadinUriResolver = Mockito.mock(VaadinUriResolver.class);
+        VaadinUriResolver vaadinUriResolver = Mockito
+                .mock(VaadinUriResolver.class);
 
         Mockito.when(factory.getUriResolver(Mockito.any()))
                 .thenReturn(vaadinUriResolver);

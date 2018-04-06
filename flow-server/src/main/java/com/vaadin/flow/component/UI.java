@@ -47,7 +47,6 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
@@ -55,7 +54,6 @@ import com.vaadin.flow.server.ErrorHandlingCommand;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.startup.RouteRegistry;
@@ -201,8 +199,7 @@ public class UI extends Component
         init(request);
 
         // Use router if it's active
-        getRouterInterface()
-                .ifPresent(router -> router.initializeUI(this, request));
+        getRouter().initializeUI(this, request);
     }
 
     /**
@@ -668,7 +665,7 @@ public class UI extends Component
      * If no {@link Theme} and {@link NoTheme} annotation are used, by default
      * the {@code com.vaadin.flow.theme.lumo.Lumo} class is used (if present on
      * the classpath).
-     * 
+     *
      * @param navigationTarget
      *            the navigation target class
      * @param path
@@ -681,20 +678,7 @@ public class UI extends Component
      */
     public Optional<Class<? extends AbstractTheme>> getThemeFor(
             Class<?> navigationTarget, String path) {
-
-        RouteRegistry registry = null;
-        Optional<Router> router = getRouter();
-        if (router.isPresent()) {
-            registry = router.get().getRegistry();
-        } else if (getSession().getService() instanceof VaadinServletService) {
-            registry = RouteRegistry.getInstance(
-                    ((VaadinServletService) getSession().getService())
-                            .getServlet().getServletContext());
-        }
-        if (registry != null) {
-            return registry.getThemeFor(navigationTarget, path);
-        }
-        return Optional.empty();
+        return getRouter().getRegistry().getThemeFor(navigationTarget, path);
     }
 
     /**
@@ -705,7 +689,7 @@ public class UI extends Component
      * the browser location (and page history).
      *
      * @see #navigate(String, QueryParameters)
-     * @see RouterInterface#navigate(UI, Location, NavigationTrigger)
+     * @see Router#navigate(UI, Location, NavigationTrigger)
      *
      * @param location
      *            the location to navigate to, not {@code null}
@@ -723,7 +707,7 @@ public class UI extends Component
      * the browser location (and page history).
      *
      * @see #navigate(String)
-     * @see RouterInterface#navigate(UI, Location, NavigationTrigger)
+     * @see Router#navigate(UI, Location, NavigationTrigger)
      *
      * @param location
      *            the location to navigate to, not {@code null}
@@ -740,11 +724,6 @@ public class UI extends Component
                     "Query parameters may not be null");
         }
 
-        if (!getRouterInterface().isPresent()) {
-            throw new IllegalStateException(
-                    "Can't navigate when UI has no router");
-        }
-
         Location navigationLocation = new Location(location, queryParameters);
         if (!internals.hasLastHandledLocation()
                 || !navigationLocation.getPathWithQueryParameters()
@@ -753,42 +732,17 @@ public class UI extends Component
             // Enable navigating back
             getPage().getHistory().pushState(null, navigationLocation);
         }
-        getRouterInterface().get().navigate(this, navigationLocation,
+        getRouter().navigate(this, navigationLocation,
                 NavigationTrigger.PROGRAMMATIC);
     }
 
     /**
-     * Gets the router used for navigating in this UI, if the router was active
-     * when this UI was initialized.
+     * Gets the router used for navigating in this UI.
      *
-     * @return an optional router, or an empty {@code Optional} if this UI was
-     *         initialized without a router or with the old router
-     *         implementation
+     * @return a router
      */
-    public Optional<Router> getRouter() {
-        RouterInterface router = internals.getRouter();
-        if (router instanceof Router) {
-            return Optional.of((Router) router);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Gets the router interface used for navigating in this UI, if the router
-     * was active when this UI was initialized.
-     *
-     * @deprecated This method works as a bridge between the two different
-     *             router implementations and will be removed once the old
-     *             router implementation is removed.
-     * @return an optional router, or an empty {@code Optional} if this UI was
-     *         initialized without a router
-     */
-    @Deprecated
-    public Optional<RouterInterface> getRouterInterface() {
-        // XXX When removing this, also remove mention of the old router from
-        // the javadoc for getRouter()
-        return Optional.ofNullable(internals.getRouter());
+    public Router getRouter() {
+        return internals.getRouter();
     }
 
     /**
@@ -858,7 +812,7 @@ public class UI extends Component
      * going to be attached.
      * <p>
      * Listeners will be executed before any found observers.
-     * 
+     *
      * @param listener
      *            the before enter listener
      * @return handler to remove the event listener
@@ -872,7 +826,7 @@ public class UI extends Component
      * Add a listener that will be informed when old components are detached.
      * <p>
      * Listeners will be executed before any found observers.
-     * 
+     *
      * @param listener
      *            the before leave listener
      * @return handler to remove the event listener
@@ -887,7 +841,7 @@ public class UI extends Component
      * attached and all navigation tasks have resolved.
      * <p>
      * Listeners will be executed before any found observers.
-     * 
+     *
      * @param listener
      *            the after navigation listener
      * @return handler to remove the event listener

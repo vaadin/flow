@@ -19,7 +19,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
-import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.flow.router.Router;
 
 /**
  * Handles navigation by redirecting the user to some location in the
@@ -44,7 +44,7 @@ public class InternalRedirectHandler implements NavigationHandler {
     @Override
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
-        RouterInterface router = event.getSource();
+        Router router = event.getSource();
 
         ui.getPage().getHistory().replaceState(null, target);
 

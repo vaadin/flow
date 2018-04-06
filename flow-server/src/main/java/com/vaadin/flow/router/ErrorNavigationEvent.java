@@ -41,9 +41,8 @@ public class ErrorNavigationEvent extends NavigationEvent {
      * @param errorParameter
      *            parameter containing navigation error information
      */
-    public ErrorNavigationEvent(RouterInterface router, Location location,
-            UI ui, NavigationTrigger trigger,
-            ErrorParameter<?> errorParameter) {
+    public ErrorNavigationEvent(Router router, Location location, UI ui,
+            NavigationTrigger trigger, ErrorParameter<?> errorParameter) {
         super(router, location, ui, trigger);
 
         this.errorParameter = errorParameter;

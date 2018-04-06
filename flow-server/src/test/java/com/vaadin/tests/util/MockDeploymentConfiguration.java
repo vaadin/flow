@@ -43,7 +43,6 @@ public class MockDeploymentConfiguration
         return !productionMode;
     }
 
-
     public void setProductionMode(boolean productionMode) {
         this.productionMode = productionMode;
     }
@@ -116,9 +115,11 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue, Function<String, T> converter) {
+    public <T> T getApplicationOrSystemProperty(String propertyName,
+            T defaultValue, Function<String, T> converter) {
         if (applicationOrSystemProperty.containsKey(propertyName)) {
-            return converter.apply(applicationOrSystemProperty.get(propertyName));
+            return converter
+                    .apply(applicationOrSystemProperty.get(propertyName));
         } else {
             return defaultValue;
         }
@@ -132,11 +133,6 @@ public class MockDeploymentConfiguration
     @Override
     public Optional<String> getWebComponentsPolyfillBase() {
         return Optional.ofNullable(webComponentsPolyfillBase);
-    }
-
-    @Override
-    public boolean isUsingNewRouting() {
-        return true;
     }
 
 }

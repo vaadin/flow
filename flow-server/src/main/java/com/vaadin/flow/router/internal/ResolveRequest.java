@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.flow.router.Router;
 
 /**
  * An object used to encapsulate data used in resolving routing requests.
@@ -28,7 +28,7 @@ import com.vaadin.flow.router.RouterInterface;
  */
 public class ResolveRequest implements Serializable {
 
-    private final RouterInterface router;
+    private final Router router;
     private final Location location;
 
     /**
@@ -39,7 +39,7 @@ public class ResolveRequest implements Serializable {
      * @param location
      *            the location to resolve, not {@code null}
      */
-    public ResolveRequest(RouterInterface router, Location location) {
+    public ResolveRequest(Router router, Location location) {
         Objects.requireNonNull(router, "router cannot be null");
         Objects.requireNonNull(location, "location cannot be null");
         this.router = router;
@@ -51,7 +51,7 @@ public class ResolveRequest implements Serializable {
      *
      * @return the router this request originates from
      */
-    public RouterInterface getRouter() {
+    public Router getRouter() {
         return router;
     }
 
