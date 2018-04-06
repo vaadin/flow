@@ -646,13 +646,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         DeploymentConfiguration config = context.getSession()
                 .getConfiguration();
 
-        String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
-                .orElse(null);
-        if (webComponentsPolyfillBase == null) {
-            return;
-        }
-        assert webComponentsPolyfillBase.endsWith("/");
-
         boolean loadEs5Adapter = config
                 .getBooleanProperty(Constants.LOAD_ES5_ADAPTERS, true);
         if (loadEs5Adapter
@@ -666,10 +659,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendChild(createInlineJavaScriptElement(BABEL_HELPERS_JS));
         }
 
-        head.appendChild(createJavaScriptElement(
-                context.getUriResolver().resolveVaadinUri(
-                        webComponentsPolyfillBase + "webcomponents-loader.js"),
-                false));
+        String webcomponentsLoaderUrl = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
+        VaadinServlet servlet = ((VaadinServletService) context.getSession()
+                .getService()).getServlet();
+        String location = servlet.resolveResource(webcomponentsLoaderUrl);
+        if (location != null) {
+            String resolvedUrl = context.getUriResolver()
+                    .resolveVaadinUri(webcomponentsLoaderUrl);
+            head.appendChild(createJavaScriptElement(resolvedUrl, false));
+        }
+
     }
 
     private static Element createInlineJavaScriptElement(

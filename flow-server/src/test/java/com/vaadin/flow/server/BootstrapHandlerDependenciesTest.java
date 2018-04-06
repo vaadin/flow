@@ -343,7 +343,7 @@ public class BootstrapHandlerDependenciesTest {
             jsElements.removeIf(element -> {
                 String jsUrl = element.attr("src");
                 return jsUrl.isEmpty() || jsUrl.contains("es6-collections.js")
-                        || jsUrl.contains("webcomponents-lite.js");
+                        || jsUrl.contains("webcomponents-loader.js");
             });
 
             assertEquals(

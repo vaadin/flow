@@ -228,15 +228,6 @@ public interface DeploymentConfiguration extends Serializable {
     String getClassLoaderName();
 
     /**
-     * Gets the location from which the Web Components polyfill is loaded.
-     * Should end in an <code>/</code>.
-     *
-     * @return the Web Components polyfill URI, or an empty optional if no
-     *         polyfill should be loaded
-     */
-    Optional<String> getWebComponentsPolyfillBase();
-
-    /**
      * Gets the URL from which frontend resources should be loaded during
      * development, unless explicitly configured to use the production es6 and
      * es5 URLs.
