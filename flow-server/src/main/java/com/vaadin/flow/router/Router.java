@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +51,7 @@ import com.vaadin.flow.server.startup.RouteRegistry;
  *
  * @see Route
  */
-public class Router {
+public class Router implements Serializable {
 
     private static final Pattern PARAMETER_PATTREN = Pattern
             .compile("/\\{[\\s\\S]*}");
