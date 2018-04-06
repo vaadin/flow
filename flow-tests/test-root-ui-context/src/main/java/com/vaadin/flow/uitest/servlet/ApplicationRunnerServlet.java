@@ -252,7 +252,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             Properties initParameters) {
         // Get the original configuration from the super class
         final DeploymentConfiguration originalConfiguration = new DefaultDeploymentConfiguration(
-                getClass(), initParameters, this::scanForResources) {
+                getClass(), initParameters) {
             @Override
             public String getUIClassName() {
                 return getApplicationRunnerApplicationClassName(request.get());
@@ -392,8 +392,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                                     getApplicationRunnerApplicationClassName(
                                             request.get()));
                             configuration = new DefaultDeploymentConfiguration(
-                                    servlet.getClass(), initParameters,
-                                    this::scanForResources);
+                                    servlet.getClass(), initParameters);
                         } else {
                             configuration = originalConfiguration;
                         }
