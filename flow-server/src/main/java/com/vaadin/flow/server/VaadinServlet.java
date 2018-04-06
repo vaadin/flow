@@ -20,14 +20,10 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -233,29 +229,7 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
-        return new DefaultDeploymentConfiguration(getClass(), initParameters,
-                this::scanForResources);
-    }
-
-    protected void scanForResources(String basePath,
-            Predicate<String> consumer) {
-        Deque<String> queue = new ArrayDeque<>();
-        queue.add(basePath);
-
-        ServletContext context = getServletContext();
-        int prefixLength = basePath.length();
-
-        while (!queue.isEmpty()) {
-            String path = queue.removeLast();
-            boolean visit = consumer.test(path.substring(prefixLength));
-
-            if (visit && path.endsWith("/")) {
-                Set<String> resourcePaths = context.getResourcePaths(path);
-                if (resourcePaths != null) {
-                    queue.addAll(resourcePaths);
-                }
-            }
-        }
+        return new DefaultDeploymentConfiguration(getClass(), initParameters);
     }
 
     /**
@@ -690,7 +664,20 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
-    boolean isResourceFound(String resolvedUrl) {
+    /**
+     * Checks if the given resource is available.
+     * <p>
+     * Checks the servlet context and webjars for the resource.
+     * <p>
+     * If this method returns <code>true</code>, is is safe to assume that the
+     * browser can load the given resource using the given URL.
+     *
+     * @param resolvedUrl
+     *            the path to check
+     * @return <code>true</code> if the resource is found, <code>false</code>
+     *         otherwise
+     */
+    public boolean isResourceFound(String resolvedUrl) {
         return isInServletContext(resolvedUrl) || isInWebJar(resolvedUrl);
     }
 
