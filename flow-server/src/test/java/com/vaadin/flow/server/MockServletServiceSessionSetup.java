@@ -2,7 +2,6 @@ package com.vaadin.flow.server;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
 
@@ -96,7 +95,7 @@ public class MockServletServiceSessionSetup {
         }
 
         @Override
-        boolean isResourceFound(String resolvedUrl) {
+        public boolean isResourceFound(String resolvedUrl) {
             if (resourceFoundOverride != null) {
                 return resourceFoundOverride.apply(resolvedUrl);
             }
@@ -133,8 +132,6 @@ public class MockServletServiceSessionSetup {
 
     public MockServletServiceSessionSetup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(deploymentConfiguration.getWebComponentsPolyfillBase())
-                .thenReturn(Optional.empty());
         Mockito.when(deploymentConfiguration.getEs5FrontendPrefix())
                 .thenReturn(Constants.FRONTEND_URL_DEV_DEFAULT);
         Mockito.when(deploymentConfiguration.getEs6FrontendPrefix())

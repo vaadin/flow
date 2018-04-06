@@ -41,8 +41,7 @@ public class DefaultDeploymentConfigurationTest {
         String prop = "prop";
         System.setProperty(prop, value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                clazz, new Properties(), (base, consumer) -> {
-                });
+                clazz, new Properties());
         assertEquals(value, config.getSystemProperty(prop));
     }
 
@@ -55,141 +54,11 @@ public class DefaultDeploymentConfigurationTest {
                         + '.' + prop,
                 value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties(),
-                (base, consumer) -> {
-                });
+                DefaultDeploymentConfigurationTest.class, new Properties()
+                );
         assertEquals(value, config.getSystemProperty(prop));
     }
 
-    @Test
-    public void webComponentsBase_defaultSetting_fileFound() {
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties(),
-                (base, consumer) -> consumer.test(
-                        "bower_components/webcomponentsjs/webcomponents-loader.js"));
-
-        String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
-                .orElseThrow(() -> new AssertionError(
-                        "Unexpected: did not find any webcomponents polyfill"));
-
-        assertEquals("frontend://bower_components/webcomponentsjs/",
-                webComponentsPolyfillBase);
-    }
-
-    @Test
-    public void webComponentsBase_webjarsEnabled_webJarFileFound() {
-        Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.DISABLE_WEBJARS,
-                Boolean.FALSE.toString());
-
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, initParameters,
-                (base, consumer) -> {
-                    if (Objects.equals(base, "/")) {
-                        consumer.test(
-                                "webjars/bower_components/webcomponentsjs/webcomponents-loader.js");
-                    }
-                });
-
-        String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
-                .orElseThrow(() -> new AssertionError(
-                        "Unexpected: did not find any webcomponents polyfill"));
-
-        assertEquals("context://webjars/bower_components/webcomponentsjs/",
-                webComponentsPolyfillBase);
-    }
-
-    @Test
-    public void webComponentsBase_webJarsDisabled_noPolyfillFound() {
-        Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.DISABLE_WEBJARS,
-                Boolean.TRUE.toString());
-
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, initParameters,
-                (base, consumer) -> {
-                    if (Objects.equals(base, "/")) {
-                        consumer.test(
-                                "webjars/bower_components/webcomponentsjs/webcomponents-loader.js");
-                    }
-                });
-
-        assertFalse(
-                "When webjars are disabled, no webjars paths should be used",
-                config.getWebComponentsPolyfillBase().isPresent());
-    }
-
-    @Test
-    public void testWebComponentsBase_defaultSetting_fileMissing() {
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties(),
-                (base, consumer) -> {
-                });
-
-        assertFalse(config.getWebComponentsPolyfillBase().isPresent());
-    }
-
-    @Test
-    public void testWebComponentsBase_defaultSetting_multipleFiles() {
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties(),
-                (base, consumer) -> {
-                    consumer.test("foo/webcomponents-lite.js");
-                    consumer.test("bar/webcomponents-lite.js");
-                });
-
-        assertFalse(config.getWebComponentsPolyfillBase().isPresent());
-    }
-
-    /**
-     * @see <a href=
-     *      "https://github.com/vaadin/flow/issues/3142">https://github.com/vaadin/flow/issues/3142</a>
-     */
-    @Test
-    public void testWebComponentsBase_defaultSetting_samePathRepeatedMultipleTimes() {
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties(),
-                (base, consumer) -> {
-                    int numberOfVisits = 0;
-                    while (consumer.test("foo//")) {
-                        numberOfVisits++;
-                        if (numberOfVisits > 2) {
-                            throw new AssertionError(
-                                    "Should not visit the same path twice");
-                        }
-                    }
-                });
-
-        assertFalse(config.getWebComponentsPolyfillBase().isPresent());
-    }
-
-    @Test
-    public void testWebComponentsBase_explicitSetting() {
-        Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_POLYFILL_BASE,
-                "foo");
-
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-
-        String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
-                .orElseThrow(() -> new AssertionError(
-                        "Unexpected: did not find any webcomponents polyfill"));
-
-        assertEquals("foo", webComponentsPolyfillBase);
-    }
-
-    @Test
-    public void testWebComponentsBase_explicitDisable() {
-        Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_POLYFILL_BASE,
-                "");
-
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-
-        assertFalse(config.getWebComponentsPolyfillBase().isPresent());
-    }
 
     @Test
     public void booleanValueReadIgnoreTheCase_true() {
@@ -291,9 +160,7 @@ public class DefaultDeploymentConfigurationTest {
     private DefaultDeploymentConfiguration createDeploymentConfig(
             Properties initParameters) {
         return new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, initParameters,
-                (base, consumer) -> {
-                });
+                DefaultDeploymentConfigurationTest.class, initParameters);
     }
 
     @Test

@@ -367,6 +367,7 @@ public class BootstrapHandlerTest {
         session.lock();
         session.setConfiguration(deploymentConfiguration);
         testUI.getInternals().setSession(session);
+        VaadinSession.setCurrent(session);
 
         browser = Mockito.mock(WebBrowser.class);
 
