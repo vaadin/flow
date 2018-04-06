@@ -228,4 +228,14 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     public boolean isVisible(StateNode node) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public void setEnabled(StateNode node, boolean enabled) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isEnabled(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
 }

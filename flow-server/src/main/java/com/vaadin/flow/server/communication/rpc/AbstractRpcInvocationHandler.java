@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.EnabledData;
 import com.vaadin.flow.internal.nodefeature.VisibilityData;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -56,14 +57,17 @@ public abstract class AbstractRpcInvocationHandler
         if (node.hasFeature(VisibilityData.class)) {
             invokeRpc = node.getFeature(VisibilityData.class).isVisible();
         }
+        if(node.hasFeature(EnabledData.class)) {
+            invokeRpc = invokeRpc && node.getFeature(EnabledData.class).isEnabled();
+        }
         if (invokeRpc) {
             return handleNode(node, invocationJson);
         } else {
             // ignore RPC requests from the client side for the nodes that are
-            // invisible
-            LoggerFactory.getLogger(AbstractRpcInvocationHandler.class).warn(
+            // invisible or disabled
+            LoggerFactory.getLogger(AbstractRpcInvocationHandler.class).trace(
                     "RPC request for invocation handler '{}' is recieved from "
-                            + "the client side for concealed node id='{}'",
+                            + "the client side for inactive node id='{}'",
                     getClass().getName(), node.getId());
         }
         return Optional.empty();

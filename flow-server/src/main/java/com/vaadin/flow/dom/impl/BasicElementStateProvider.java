@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
+import com.vaadin.flow.internal.nodefeature.EnabledData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
@@ -83,7 +84,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             PolymerServerEventHandlers.class, ClientDelegateHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
             AttachExistingElementFeature.class, VirtualChildrenList.class,
-            VisibilityData.class };
+            VisibilityData.class, EnabledData.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -380,6 +381,18 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     public boolean isVisible(StateNode node) {
         assert node.hasFeature(VisibilityData.class);
         return node.getFeature(VisibilityData.class).isVisible();
+    }
+
+    @Override
+    public void setEnabled(StateNode node, boolean enabled) {
+        assert node.hasFeature(EnabledData.class);
+        node.getFeature(EnabledData.class).setEnabled(enabled);
+    }
+
+    @Override
+    public boolean isEnabled(StateNode node) {
+        assert node.hasFeature(EnabledData.class);
+        return node.getFeature(EnabledData.class).isEnabled();
     }
 
     @Override

@@ -71,6 +71,11 @@ public final class NodeProperties {
      */
     public static final String VISIBLE = "visible";
 
+    /**
+     * Key for {@link EnabledData#isEnabled()}.
+     */
+    public static final String ENABLED = "enabled";
+
     /** Key for id property. */
     public static final String ID = "id";
 

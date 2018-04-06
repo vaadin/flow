@@ -1420,6 +1420,27 @@ public class Element extends Node<Element> {
         return getStateProvider().isVisible(getNode());
     }
 
+    /**
+     * Sets the enabled state of the element.
+     * 
+     * @param enabled
+     *            the enabled state
+     * @return the element
+     */
+    public Element setEnabled(boolean enabled) {
+        getStateProvider().setEnabled(getNode(), enabled);
+        return getSelf();
+    }
+
+    /**
+     * Get the enabled state of the element.
+     * 
+     * @return {@code true} if node is enabled, {@code false} otherwise
+     */
+    public boolean isEnabled() {
+        return getStateProvider().isEnabled(getNode());
+    }
+
     @Override
     protected Element getSelf() {
         return this;

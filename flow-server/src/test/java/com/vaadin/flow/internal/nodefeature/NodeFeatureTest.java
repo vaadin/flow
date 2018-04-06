@@ -96,6 +96,7 @@ public class NodeFeatureTest {
         expectedIds.put(VirtualChildrenList.class,
                 NodeFeatures.VIRTUAL_CHILDREN);
         expectedIds.put(VisibilityData.class, NodeFeatures.VISIBILITY_DATA);
+        expectedIds.put(EnabledData.class, NodeFeatures.ENABLED_DATA);
 
         return expectedIds;
     }

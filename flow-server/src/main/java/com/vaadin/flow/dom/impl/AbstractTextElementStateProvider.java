@@ -208,4 +208,14 @@ public abstract class AbstractTextElementStateProvider
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void setEnabled(StateNode node, boolean enabled) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isEnabled(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
+
 }
