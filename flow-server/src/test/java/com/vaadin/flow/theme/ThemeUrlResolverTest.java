@@ -15,34 +15,30 @@
  */
 package com.vaadin.flow.theme;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import static org.junit.Assert.assertEquals;
+
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletContext;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.server.webjar.WebJarServer;
-import com.vaadin.flow.shared.VaadinUriResolver;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static org.junit.Assert.assertEquals;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Test resolving the theme url through
@@ -51,22 +47,9 @@ import static org.junit.Assert.assertEquals;
 @NotThreadSafe
 public class ThemeUrlResolverTest {
 
-    VaadinServlet servlet;
-
-    @Mock
-    VaadinSession session;
-    @Mock
-    VaadinRequest request;
-    @Mock
-    VaadinUriResolverFactory uriResolverFactory;
-    @Mock
-    VaadinUriResolver vaadinUriResolver;
-    @Mock
-    ServletConfig servletConfig;
-    @Mock
-    ServletContext servletContext;
-
-    MockDeploymentConfiguration mockDeploymentConfiguration = new MockDeploymentConfiguration();
+    private MockServletServiceSessionSetup mocks;
+    private TestVaadinServlet servlet;
+    private DeploymentConfiguration deploymentConfiguration;
 
     @Before
     public void init() throws Exception {
@@ -75,20 +58,12 @@ public class ThemeUrlResolverTest {
         assert VaadinRequest
                 .getCurrent() == null : "Required no current vaadin request.";
 
-        MockitoAnnotations.initMocks(this);
-
-        servlet = new VaadinServlet() {
-            @Override
-            protected DeploymentConfiguration createDeploymentConfiguration()
-                    throws ServletException {
-                return mockDeploymentConfiguration;
-            }
-        };
-
+        mocks = new MockServletServiceSessionSetup();
+        servlet = mocks.getServlet();
+        deploymentConfiguration = mocks.getDeploymentConfiguration();
         Properties initParameters = new Properties();
-        Mockito.when(servletConfig.getServletContext())
-                .thenReturn(servletContext);
-        Mockito.when(servletConfig.getInitParameterNames()).thenReturn(
+        ServletContext servletContext = mocks.getServletContext();
+        Mockito.when(servletContext.getInitParameterNames()).thenReturn(
                 (Enumeration<String>) initParameters.propertyNames());
         Mockito.when(servletContext.getInitParameterNames()).thenReturn(
                 (Enumeration<String>) initParameters.propertyNames());
@@ -96,24 +71,11 @@ public class ThemeUrlResolverTest {
         Mockito.when(servletContext.getResource(Mockito.anyString()))
                 .thenAnswer(
                         i -> new URL("http://localhost" + i.getArguments()[0]));
-
-        servlet.init(servletConfig);
-
-        Mockito.when(session.getAttribute(VaadinUriResolverFactory.class))
-                .thenReturn(uriResolverFactory);
-        Mockito.when(uriResolverFactory.getUriResolver(Mockito.any()))
-                .thenReturn(vaadinUriResolver);
-        Mockito.when(vaadinUriResolver.resolveVaadinUri(Mockito.anyString()))
-                .thenAnswer(i -> i.getArguments()[0]);
-
-        VaadinSession.setCurrent(session);
-        CurrentInstance.set(VaadinRequest.class, request);
     }
 
     @After
     public void teardown() {
-        VaadinSession.setCurrent(null);
-        CurrentInstance.set(VaadinRequest.class, null);
+        mocks.cleanup();
     }
 
     AbstractTheme theme = new AbstractTheme() {
@@ -143,8 +105,7 @@ public class ThemeUrlResolverTest {
 
     @Test
     public void no_file_resolves_original_url() throws Exception {
-        String path = "theme/custom/button.html";
-        Mockito.when(servlet.getResource("/" + path)).thenReturn(null);
+        servlet.setResourceFoundOverride(resource -> false);
 
         String urlTranslation = servlet.getUrlTranslation(theme,
                 "src/button.html");
@@ -177,7 +138,8 @@ public class ThemeUrlResolverTest {
     @Test
     public void themeTranslationCache_somethingIsCachedInProductionMode()
             throws Exception {
-        mockDeploymentConfiguration.setProductionMode(true);
+        Mockito.when(deploymentConfiguration.isProductionMode())
+                .thenReturn(true);
         String path = "theme/custom/button.html";
         Mockito.when(servlet.getResource("/" + path))
                 .thenReturn(new URL("http://theme/custom/button.html"));
@@ -195,23 +157,24 @@ public class ThemeUrlResolverTest {
     @Test
     public void themeTranslationCache_somethingIsNotCachedWithoutProductionMode()
             throws Exception {
-        mockDeploymentConfiguration.setProductionMode(false);
+        Mockito.when(deploymentConfiguration.isProductionMode())
+                .thenReturn(false);
 
-        String path = "theme/custom/button.html";
-        Mockito.when(servlet.getResource("/" + path))
-                .thenReturn(new URL("http://theme/custom/button.html"));
+        String path = "/theme/custom/button.html";
+
+        servlet.setResourceFoundOverride(resource -> resource.equals(path));
 
         // Prime the cache
         String urlTranslation = servlet.getUrlTranslation(theme,
-                "src/button.html");
+                "/src/button.html");
         // Sanity check
-        assertEquals("Translation should be used", "theme/custom/button.html",
+        assertEquals("Translation should be used", "/theme/custom/button.html",
                 urlTranslation);
 
-        Mockito.when(servlet.getResource("/" + path)).thenReturn(null);
+        servlet.setResourceFoundOverride(resource -> false);
 
-        urlTranslation = servlet.getUrlTranslation(theme, "src/button.html");
-        assertEquals("Result should be computed again", "src/button.html",
+        urlTranslation = servlet.getUrlTranslation(theme, "/src/button.html");
+        assertEquals("Result should be computed again", "/src/button.html",
                 urlTranslation);
     }
 
