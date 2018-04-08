@@ -176,6 +176,8 @@ public class UIInternals implements Serializable {
 
     private byte[] lastProcessedMessageHash = null;
 
+    private String contextRootRelativePath;
+
     /**
      * Creates a new instance for the given UI.
      *
@@ -868,7 +870,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Checks if there are changes waiting to be sent to the client side.
-     * 
+     *
      * @return <code>true</code> if there are pending changes,
      *         <code>false</code> otherwise
      */
@@ -876,4 +878,24 @@ public class UIInternals implements Serializable {
         return getStateTree().isDirty()
                 || !getPendingJavaScriptInvocations().isEmpty();
     }
+
+    /**
+     * Sets the relative path from the UI (servlet) path to the context root.
+     *
+     * @param contextRootRelativePath
+     *            the relative path from servlet to context root
+     */
+    public void setContextRoot(String contextRootRelativePath) {
+        this.contextRootRelativePath = contextRootRelativePath;
+    }
+
+    /**
+     * Gets the relative path from the UI (servlet) path to the context root.
+     *
+     * @return the relative path from servlet to context root
+     */
+    public String getContextRootRelativePath() {
+        return contextRootRelativePath;
+    }
+
 }

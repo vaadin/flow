@@ -111,6 +111,10 @@ public class DependencyLoaderTest {
         {
             set(ResourceLoader.class, mockResourceLoader);
             set(URIResolver.class, new URIResolver(this));
+            ApplicationConfiguration appConf = new ApplicationConfiguration();
+            appConf.setContextRootUrl("../");
+            appConf.setFrontendRootUrl("/frontend/");
+            set(ApplicationConfiguration.class, appConf);
         }
     };
 
@@ -141,7 +145,6 @@ public class DependencyLoaderTest {
     @Test
     public void loadHtml() {
         String TEST_URL = "http://foo.bar/baz.html";
-
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
                         LoadMode.EAGER).toJson()));
@@ -174,10 +177,8 @@ public class DependencyLoaderTest {
     public void loadFrontendDependency() {
         String TEST_URL = "frontend://my-component.html";
 
-        ApplicationConfiguration config = new ApplicationConfiguration();
-
-        registry.set(ApplicationConfiguration.class, config);
-        config.setFrontendRootUrl("http://someplace.com/es6/");
+        registry.getApplicationConfiguration()
+                .setFrontendRootUrl("http://someplace.com/es6/");
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
@@ -193,9 +194,8 @@ public class DependencyLoaderTest {
     public void loadFrontendDependencyWithContext() {
         String TEST_URL = "frontend://my-component.html";
 
-        ApplicationConfiguration config = new ApplicationConfiguration();
-
-        registry.set(ApplicationConfiguration.class, config);
+        ApplicationConfiguration config = registry
+                .getApplicationConfiguration();
         config.setFrontendRootUrl("context://es6/");
         config.setContextRootUrl("http://someplace.com/");
 
