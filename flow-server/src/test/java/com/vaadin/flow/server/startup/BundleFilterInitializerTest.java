@@ -19,29 +19,23 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Properties;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.ServiceInitEvent;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
@@ -58,49 +52,49 @@ public class BundleFilterInitializerTest {
 
     private Consumer<DependencyFilter> dependencyFilterAddHandler = dependency -> {
     };
-    private CheckedFunction<String, InputStream, IOException> inputStreamProducer;
-    private CheckedFunction<String, URL, MalformedURLException> resourceProducer = str -> new URL(
-            "http://some/test/url");
+    private Function<String, InputStream> inputStreamProducer;
+
+    private MockServletServiceSessionSetup mocks;
 
     @Before
-    public void init() throws MalformedURLException {
+    public void init() throws Exception {
+        mocks = new MockServletServiceSessionSetup();
         event = Mockito.mock(ServiceInitEvent.class);
-        VaadinServletService service = Mockito.mock(VaadinServletService.class);
-        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
-
-        Mockito.when(event.getSource()).thenReturn(service);
-        Mockito.when(service.getServlet()).thenReturn(servlet);
-
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(new DefaultDeploymentConfiguration(
-                        BundleFilterInitializerTest.class, new Properties(),
-                        (base, consumer) -> {
-                        }) {
-                    @Override
-                    public boolean isProductionMode() {
-                        return true;
-                    }
-                });
+        Mockito.when(event.getSource()).thenReturn(mocks.getService());
+        Mockito.when(mocks.getDeploymentConfiguration().isProductionMode())
+                .thenReturn(true);
+        Mockito.when(mocks.getDeploymentConfiguration().getEs6FrontendPrefix())
+                .thenReturn(Constants.FRONTEND_URL_ES6_DEFAULT_VALUE);
 
         Mockito.doAnswer(invocation -> {
             dependencyFilterAddHandler.accept(
                     invocation.getArgumentAt(0, DependencyFilter.class));
             return null;
         }).when(event).addDependencyFilter(Mockito.any(DependencyFilter.class));
-        Mockito.doAnswer(invocation -> {
-            return inputStreamProducer
-                    .apply(invocation.getArgumentAt(0, String.class));
-        }).when(service).getResourceAsStream("/frontend-es6/vaadin-flow-bundle-manifest.json");
-        Mockito.doAnswer(invocation -> {
-            return resourceProducer
-                    .apply(invocation.getArgumentAt(0, String.class));
-        }).when(service).getResource(Mockito.anyString());
+
+        mocks.getServlet().setResourceFoundOverride(resource -> true);
+        mocks.getService().setResourceAsStreamOverride(resource -> {
+            if ("/frontend-es6/vaadin-flow-bundle-manifest.json"
+                    .equals(resource)) {
+                return inputStreamProducer.apply(resource);
+            } else {
+                return null;
+            }
+        });
     }
 
     @Test(expected = UncheckedIOException.class)
     public void fail_to_load_bundle_manifest() {
-        inputStreamProducer = str -> {
-            throw new IOException();
+        inputStreamProducer = new Function<String, InputStream>() {
+            @Override
+            public InputStream apply(String str) {
+                return new InputStream() {
+                    @Override
+                    public int read() throws IOException {
+                        throw new IOException("Intentionally failed");
+                    }
+                };
+            }
         };
         new BundleFilterInitializer().serviceInit(event);
     }
@@ -126,10 +120,11 @@ public class BundleFilterInitializerTest {
         String manifestString = getBasicTestBundleString();
         inputStreamProducer = str -> getTestBundleManifestStream(
                 manifestString);
-        resourceProducer = str -> null;
+        mocks.getServlet().setResourceFoundOverride(resource -> resource
+                .equals("/frontend-es6/vaadin-flow-bundle-manifest.json"));
         new BundleFilterInitializer().serviceInit(event);
     }
-    
+
     @Test
     public void null_bundle_manifest_stream_no_dependency_filter_added() {
         inputStreamProducer = str -> null;
@@ -171,12 +166,7 @@ public class BundleFilterInitializerTest {
     }
 
     private InputStream getTestBundleManifestStream(String manifestString) {
-        try {
-            return new ByteArrayInputStream(
-                    manifestString.getBytes(StandardCharsets.UTF_8.name()));
-        } catch (UnsupportedEncodingException e) {
-            Assert.fail("manifestString does not have proper encoding.");
-        }
-        return null;
+        return new ByteArrayInputStream(
+                manifestString.getBytes(StandardCharsets.UTF_8));
     }
 }
