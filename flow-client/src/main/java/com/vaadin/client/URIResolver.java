@@ -37,7 +37,11 @@ public class URIResolver extends VaadinUriResolver {
         this.registry = registry;
     }
 
-    @Override
+    public String resolveVaadinUri(String uri) {
+        return super.resolveVaadinUri(uri, getFrontendRootUrl(),
+                getContextRootUrl());
+    }
+
     protected String getContextRootUrl() {
         String root = registry.getApplicationConfiguration()
                 .getContextRootUrl();
@@ -45,7 +49,6 @@ public class URIResolver extends VaadinUriResolver {
         return root;
     }
 
-    @Override
     protected String getFrontendRootUrl() {
         String root = registry.getApplicationConfiguration()
                 .getFrontendRootUrl();

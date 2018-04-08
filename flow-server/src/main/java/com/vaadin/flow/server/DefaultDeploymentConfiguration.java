@@ -430,7 +430,8 @@ public class DefaultDeploymentConfiguration
             excludedDirectories.add("webjars/");
         }
 
-        Optional<String> frontendDirectoryPath = getFrontendDirectoryPath();
+        Optional<String> frontendDirectoryPath = Optional
+                .ofNullable("/frontend");
         Set<String> frontendDirectoryPolyfills = frontendDirectoryPath
                 .map(searchBase -> locatePolyfills(resourceScanner, searchBase,
                         excludedDirectories))
@@ -449,32 +450,6 @@ public class DefaultDeploymentConfiguration
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
                     frontendDirectoryPolyfills);
         }
-    }
-
-    private Optional<String> getFrontendDirectoryPath() {
-        VaadinUriResolver uriResolver = new VaadinUriResolver() {
-            @Override
-            protected String getContextRootUrl() {
-                // ServletContext.getResource expects a leading slash
-                return CONTEXT_ROOT_PATH;
-            }
-
-            @Override
-            protected String getFrontendRootUrl() {
-                return getEs6FrontendPrefix();
-            }
-        };
-        String scanBase = uriResolver.resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-        if (!scanBase.startsWith(CONTEXT_ROOT_PATH)) {
-            String message = formatDefaultPolyfillMessage(String.format(
-                    "Cannot automatically find the %s polyfill because the property "
-                            + "'%s' value is not absolute (doesn't start with '/')",
-                    WEB_COMPONENTS_LOADER_JS_NAME, Constants.FRONTEND_URL_ES6));
-            getLogger().warn(message);
-            return Optional.empty();
-        }
-        return Optional.of(scanBase);
     }
 
     private Set<String> locatePolyfills(

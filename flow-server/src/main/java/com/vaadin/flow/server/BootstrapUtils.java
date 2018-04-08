@@ -47,6 +47,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
+import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -271,9 +272,9 @@ class BootstrapUtils {
         return themeContents;
     }
 
-    private static String createImportLink(VaadinUriResolver resolver,
-            String href) {
-        String resolvedLink = resolver.resolveVaadinUri(href);
+    private static String createImportLink(
+            BootstrapUriResolver bootstrapUriResolver, String href) {
+        String resolvedLink = bootstrapUriResolver.resolveVaadinUri(href);
         return "<link rel=\"import\" href=\"" + resolvedLink + "\">";
 
     }
