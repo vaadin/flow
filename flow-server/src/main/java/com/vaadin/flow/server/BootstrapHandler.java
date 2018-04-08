@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -69,8 +71,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -129,7 +129,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private String appId;
         private PushMode pushMode;
         private JsonObject applicationParameters;
-        private VaadinUriResolver uriResolver;
+        private BootstrapUriResolver uriResolver;
 
         /**
          * Creates a new context instance using the given parameters.
@@ -252,10 +252,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *
          * @return the URI resolver
          */
-        public VaadinUriResolver getUriResolver() {
+        public BootstrapUriResolver getUriResolver() {
             if (uriResolver == null) {
-                uriResolver = new BootstrapUriResolver(getRequest(),
-                        getSession());
+                uriResolver = new BootstrapUriResolver(getUI());
             }
 
             return uriResolver;
@@ -313,7 +312,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         /**
          * Gets the {@link AbstractTheme} class associated with the
          * pageConfigurationHolder of this context, if any.
-         * 
+         *
          * @return the theme, or empty if none is found, or
          *         pageConfigurationHolder is <code>null</code>
          * @see UI#getThemeFor(Class, String)
@@ -326,49 +325,54 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     /**
      * The URI resolver used in the bootstrap process.
      */
-    private static class BootstrapUriResolver extends VaadinUriResolver {
-        private final VaadinSession session;
-        private final VaadinRequest request;
-        private final String es6FrontendPrefix;
-        private final String es5FrontendPrefix;
+    public static class BootstrapUriResolver extends VaadinUriResolver {
+        private String frontendRootUrl;
+        private String servletPathToContextRoot;
 
         /**
          * Creates a new bootstrap resolver based on the given request and
          * session.
          *
-         * @param request
-         *            the Vaadin/HTTP request
-         * @param session
-         *            the current session
+         * @param ui
+         *            the ui to resolve for
          */
-        protected BootstrapUriResolver(VaadinRequest request,
-                VaadinSession session) {
-            this.session = session;
-            this.request = request;
-
+        protected BootstrapUriResolver(UI ui) {
+            servletPathToContextRoot = ui.getInternals()
+                    .getContextRootRelativePath();
+            VaadinSession session = ui.getSession();
             DeploymentConfiguration config = session.getConfiguration();
-            es6FrontendPrefix = config.getEs6FrontendPrefix();
-            es5FrontendPrefix = config.getEs5FrontendPrefix();
-        }
-
-        @Override
-        protected String getContextRootUrl() {
-            String root = getApplicationParameters(request, session)
-                    .getString(ApplicationConstants.CONTEXT_ROOT_URL);
-            assert root.endsWith("/");
-            return root;
-        }
-
-        @Override
-        protected String getFrontendRootUrl() {
-            String root;
             if (session.getBrowser().isEs6Supported()) {
-                root = es6FrontendPrefix;
+                frontendRootUrl = config.getEs6FrontendPrefix();
             } else {
-                root = es5FrontendPrefix;
+                frontendRootUrl = config.getEs5FrontendPrefix();
             }
-            assert root.endsWith("/");
-            return root;
+            assert frontendRootUrl.endsWith("/");
+            assert servletPathToContextRoot.endsWith("/");
+        }
+
+        /**
+         * Translates a Vaadin URI to a URL that can be loaded by the browser.
+         * The following URI schemes are supported:
+         * <ul>
+         * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code>
+         * - resolves to the application context root</li>
+         * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code>
+         * - resolves to the build path where web components were compiled.
+         * Browsers supporting ES6 can receive different, more optimized files
+         * than browsers that only support ES5.</li>
+         * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
+         * resolves to the base URI of the page</li>
+         * </ul>
+         * Any other URI protocols, such as <code>http://</code> or
+         * <code>https://</code> are passed through this method unmodified.
+         *
+         * @param uri
+         *            the URI to resolve
+         * @return the resolved URI
+         */
+        public String resolveVaadinUri(String uri) {
+            return super.resolveVaadinUri(uri, frontendRootUrl,
+                    servletPathToContextRoot);
         }
 
     }
@@ -378,12 +382,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinResponse response) throws IOException {
         // Find UI class
         Class<? extends UI> uiClass = getUIClass(request);
-
-        if (session.getAttribute(VaadinUriResolverFactory.class) == null) {
-            session.setAttribute(VaadinUriResolverFactory.class,
-                    vaadinRequest -> new BootstrapUriResolver(vaadinRequest,
-                            session));
-        }
 
         BootstrapContext context = createAndInitUI(uiClass, request, response,
                 session);
@@ -556,7 +554,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static List<Element> inlineDependenciesInHead(Element head,
-            VaadinUriResolver uriResolver, LoadMode loadMode,
+            BootstrapUriResolver uriResolver, LoadMode loadMode,
             JsonArray dependencies) {
         List<Element> dependenciesToInlineInBody = new ArrayList<>();
 
@@ -718,8 +716,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return createJavaScriptElement(sourceUrl, true);
     }
 
-    private static Element createDependencyElement(VaadinUriResolver resolver,
-            LoadMode loadMode, JsonObject dependency, Dependency.Type type) {
+    private static Element createDependencyElement(
+            BootstrapUriResolver resolver, LoadMode loadMode,
+            JsonObject dependency, Dependency.Type type) {
         boolean inlineElement = loadMode == LoadMode.INLINE;
         String url = dependency.hasKey(Dependency.KEY_URL)
                 ? resolver.resolveVaadinUri(
@@ -964,6 +963,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
         UI ui = ReflectTools.createInstance(uiClass);
+        ui.getInternals().setContextRoot(
+                ServletHelper.getContextRootRelativePath(request) + "/");
+
         PushConfiguration pushConfiguration = ui.getPushConfiguration();
 
         ui.getInternals().setSession(session);
