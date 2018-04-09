@@ -67,9 +67,14 @@ public final class NodeProperties {
     public static final String TEMPLATE_IN_TEMPLATE = "subTemplate";
 
     /**
-     * Key for {@link VisibilityData#isVisible()}.
+     * Key for {@link ElementData#isVisible()}.
      */
     public static final String VISIBLE = "visible";
+
+    /**
+     * Key for {@link ElementData#isEnabled()}.
+     */
+    public static final String ENABLED = "enabled";
 
     /** Key for id property. */
     public static final String ID = "id";

@@ -315,10 +315,10 @@ public class StateTree {
      * @return {@code true} is the node is visible, {@code false} otherwise
      */
     public boolean isVisible(StateNode node) {
-        if (!node.hasFeature(NodeFeatures.VISIBILITY_DATA)) {
+        if (!node.hasFeature(NodeFeatures.ELEMENT_DATA)) {
             return true;
         }
-        NodeMap visibilityMap = node.getMap(NodeFeatures.VISIBILITY_DATA);
+        NodeMap visibilityMap = node.getMap(NodeFeatures.ELEMENT_DATA);
         Boolean visibility = (Boolean) visibilityMap
                 .getProperty(NodeProperties.VISIBLE).getValue();
 

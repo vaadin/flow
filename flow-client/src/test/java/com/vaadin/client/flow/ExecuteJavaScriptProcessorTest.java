@@ -321,7 +321,7 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        node.getMap(NodeFeatures.VISIBILITY_DATA)
+        node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(true);
 
@@ -342,7 +342,7 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        node.getMap(NodeFeatures.VISIBILITY_DATA)
+        node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(false);
 
@@ -401,7 +401,7 @@ public class ExecuteJavaScriptProcessorTest {
 
         StateNode node = new StateNode(37, registry.getStateTree());
 
-        node.getMap(NodeFeatures.VISIBILITY_DATA)
+        node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(true);
 
