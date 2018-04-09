@@ -50,10 +50,26 @@ import com.vaadin.flow.dom.Element;
  */
 public interface HasEnabled extends HasElement {
 
+    /**
+     * Sets the UI object explicitly disabled or enabled.
+     *
+     * @param enabled
+     *            if {@code false} then explicitly disables the object, if
+     *            {@code true} then enables the object so that its state depends
+     *            on parent
+     */
     default void setEnabled(boolean enabled) {
         getElement().getNode().setEnabled(enabled);
     }
 
+    /**
+     * Returns whether the object is enabled or disabled.
+     * <p>
+     * Object may be enabled by itself by but if its ascendant is disabled then
+     * it's considered as (implicitly) disabled.
+     *
+     * @return eanbled state of the object
+     */
     default boolean isEnabled() {
         if (getElement().getNode().isEnabled()) {
             Element parent = getElement().getParent();
