@@ -19,6 +19,7 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,8 +27,6 @@ import org.junit.Test;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
-import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -58,21 +57,23 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     }
 
     @Test
-    public void collectChanges_setTagOnly_onlyOneChange() {
+    public void collectChanges_setTagOnly_onlyOneChanges() {
         elementData.setTag("foo");
         List<NodeChange> changes = new ArrayList<>();
         elementData.collectChanges(changes::add);
 
         Assert.assertEquals(1, changes.size());
         Assert.assertTrue(changes.get(0) instanceof MapPutChange);
+
         MapPutChange change = (MapPutChange) changes.get(0);
+
         Assert.assertEquals(NodeProperties.TAG, change.getKey());
         Assert.assertEquals(elementData.getNode(), change.getNode());
         Assert.assertEquals("foo", change.getValue());
     }
 
     @Test
-    public void collectChanges_setPayloadOnly_onlyOneChange() {
+    public void collectChanges_setPayloadOnly_onlyOneChanges() {
         JsonObject object = Json.createObject();
         elementData.setPayload(object);
         List<NodeChange> changes = new ArrayList<>();
@@ -81,6 +82,7 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
         Assert.assertEquals(1, changes.size());
         Assert.assertTrue(changes.get(0) instanceof MapPutChange);
         MapPutChange change = (MapPutChange) changes.get(0);
+
         Assert.assertEquals(NodeProperties.PAYLOAD, change.getKey());
         Assert.assertEquals(elementData.getNode(), change.getNode());
         Assert.assertEquals(object, change.getValue());
@@ -99,14 +101,23 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
         Assert.assertTrue(changes.get(0) instanceof MapPutChange);
         Assert.assertTrue(changes.get(1) instanceof MapPutChange);
 
-        MapPutChange change = (MapPutChange) changes.get(0);
+        MapPutChange change = getChange(changes, NodeProperties.TAG);
         Assert.assertEquals(NodeProperties.TAG, change.getKey());
         Assert.assertEquals(elementData.getNode(), change.getNode());
         Assert.assertEquals("foo", change.getValue());
 
-        change = (MapPutChange) changes.get(1);
+        change = getChange(changes, NodeProperties.PAYLOAD);
         Assert.assertEquals(NodeProperties.PAYLOAD, change.getKey());
         Assert.assertEquals(elementData.getNode(), change.getNode());
         Assert.assertEquals(object, change.getValue());
+    }
+
+    private MapPutChange getChange(List<NodeChange> changes, String key) {
+        Optional<MapPutChange> keyFound = changes.stream()
+                .filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(chang -> chang.getKey().equals(key)).findFirst();
+        Assert.assertTrue("No " + key + " change found", keyFound.isPresent());
+        return keyFound.get();
     }
 }

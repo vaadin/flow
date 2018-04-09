@@ -52,7 +52,7 @@ public class AbstractRpcInvocationHandlerTest {
     private TestRpcInvocationHandler handler = new TestRpcInvocationHandler();
 
     @Test
-    public void handleVisibleNode_nodeIsHandled() {
+    public void handleVisibleAndEnabledNode_nodeIsHandled() {
         UI ui = new UI();
 
         Element element = createRpcInvocationData(ui, null);
@@ -65,6 +65,15 @@ public class AbstractRpcInvocationHandlerTest {
         UI ui = new UI();
 
         createRpcInvocationData(ui, elem -> elem.setVisible(false));
+
+        Assert.assertNull(handler.node);
+    }
+
+    @Test
+    public void handleDisabledNode_nodeIsNotHandled() {
+        UI ui = new UI();
+
+        createRpcInvocationData(ui, elem -> elem.setEnabled(false));
 
         Assert.assertNull(handler.node);
     }

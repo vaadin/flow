@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -226,13 +227,18 @@ public class StateTreeTest {
         StateNodeTest.setParent(node2, node1);
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals("Should be two changes.", 2, changes.size());
+        Assert.assertEquals("Should be three changes.", 2, changes.size());
         Assert.assertTrue("First change should re-attach the node.",
                 changes.get(0) instanceof NodeAttachChange);
-        Assert.assertTrue("Second change should re-put the value.",
+        Assert.assertTrue("Second change should put the tag or payload value.",
                 changes.get(1) instanceof MapPutChange);
 
-        MapPutChange nodeChange = (MapPutChange) changes.get(1);
+        Optional<MapPutChange> tagFound = changes.stream()
+                .filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(chang -> chang.getKey().equals("tag")).findFirst();
+        Assert.assertTrue("No tag change found", tagFound.isPresent());
+        MapPutChange nodeChange = tagFound.get();
         Assert.assertEquals(ElementData.class, nodeChange.getFeature());
         Assert.assertEquals("tag", nodeChange.getKey());
         Assert.assertEquals("foo", nodeChange.getValue());

@@ -26,6 +26,7 @@ import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.nodefeature.MapProperty;
+import com.vaadin.client.flow.nodefeature.NodeFeature;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
@@ -1361,7 +1362,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testBindInvisibleNode() {
-        node.getMap(NodeFeatures.VISIBILITY_DATA)
+        node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBLE).setValue(false);
 
         Binder.bind(node, element);
@@ -1373,6 +1374,49 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Binder.bind(node, element);
 
         assertNull(element.getAttribute("hidden"));
+    }
+
+    public void testBindDisabledElement_elementIsBound_elementstaysBoundWhenEnabled() {
+        setEnabled(false);
+
+        setTag();
+
+        StateNode childNode = createChildNode("child");
+        children.add(0, childNode);
+
+        properties.getProperty("foo").setValue("bar");
+
+        node.setDomNode(element);
+
+        List<Integer> list = Arrays.asList(0);
+        node.addDomNodeSetListener(node -> {
+            list.set(0, list.get(0) + 1);
+            return false;
+        });
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals(Integer.valueOf(0), list.get(0));
+
+        assertEquals(1, element.getChildElementCount());
+        assertTrue(element.getFirstElementChild().getTagName()
+                .equalsIgnoreCase(childNode.getMap(NodeFeatures.ELEMENT_DATA)
+                        .getProperty(NodeProperties.TAG).getValue()
+                        .toString()));
+        assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
+
+        setEnabled(true);
+
+        Reactive.flush();
+
+        assertEquals(1, element.getChildren().length());
+        assertTrue(element.getFirstElementChild().getTagName()
+                .equalsIgnoreCase(childNode.getMap(NodeFeatures.ELEMENT_DATA)
+                        .getProperty(NodeProperties.TAG).getValue()
+                        .toString()));
+        assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
     }
 
     public void testBindInvisibleElement_elementIsNotBound_elementBecomesBoundWhenVisible() {
@@ -1595,7 +1639,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     public void testSimpleElementBindingStrategy_regularElement_needsBind() {
         assertFalse(SimpleElementBindingStrategy.needsRebind(node));
 
-        node.getMap(NodeFeatures.VISIBILITY_DATA)
+        node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(false);
 
@@ -1605,7 +1649,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     public void testSimpleElementBindingStrategy_elementWithoutFeature_needsBind() {
         StateNode emptyNode = new StateNode(45, tree);
         // self control
-        assertFalse(emptyNode.hasFeature(NodeFeatures.VISIBILITY_DATA));
+        assertFalse(emptyNode.hasFeature(NodeFeatures.ELEMENT_DATA));
 
         assertFalse(SimpleElementBindingStrategy.needsRebind(node));
     }
@@ -1676,9 +1720,15 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     private void setVisible(boolean visible) {
-        NodeMap map = node.getMap(NodeFeatures.VISIBILITY_DATA);
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
         MapProperty visibility = map.getProperty(NodeProperties.VISIBLE);
         visibility.setValue(visible);
+    }
+
+    private void setEnabled(boolean enabled) {
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
+        MapProperty enabledState = map.getProperty(NodeProperties.ENABLED);
+        enabledState.setValue(enabled);
     }
 
     private Element createAndAppendElementToShadowRoot(Element shadowRoot,

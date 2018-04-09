@@ -253,7 +253,7 @@ public class StateTreeTest {
 
     @Test
     public void isVisible_nodeHasFeatureAndVisibleValue_nodeIsVisible() {
-        node.getMap(NodeFeatures.VISIBILITY_DATA)
+        node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBLE).setValue(true);
         Assert.assertTrue(tree.isVisible(node));
     }
@@ -261,13 +261,13 @@ public class StateTreeTest {
     @Test
     public void isVisible_nodeHasFeatureAndNoValue_nodeIsVisible() {
         // initialize the feature
-        node.getMap(NodeFeatures.VISIBILITY_DATA);
+        node.getMap(NodeFeatures.ELEMENT_DATA);
         Assert.assertTrue(tree.isVisible(node));
     }
 
     @Test
     public void isVisible_nodeHasFeatureAndNotVisibleValue_nodeIsNotVisible() {
-        node.getMap(NodeFeatures.VISIBILITY_DATA)
+        node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBLE).setValue(false);
         Assert.assertFalse(tree.isVisible(node));
     }

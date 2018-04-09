@@ -25,22 +25,23 @@ public class VisibilityDataTest {
 
     @Test
     public void setVisible() {
-        StateNode node = new StateNode(VisibilityData.class);
-        VisibilityData data = node.getFeature(VisibilityData.class);
+        StateNode node = new StateNode(ElementData.class);
+        ElementData data = node.getFeature(ElementData.class);
 
-        Assert.assertNull(data.getValue());
+        Assert.assertNull(data.get(NodeProperties.VISIBLE));
         Assert.assertTrue(data.isVisible());
 
-        data.setValue(true);
+        data.put(NodeProperties.VISIBLE, true);
         Assert.assertTrue(data.isVisible());
 
-        data.setValue(false);
+        data.put(NodeProperties.VISIBLE, false);
         Assert.assertFalse(data.isVisible());
     }
 
     @Test
     public void allowsChanges_delegateToIsVisible() {
-        VisibilityData data = Mockito.mock(VisibilityData.class);
+        ElementData data = Mockito.mock(ElementData.class);
+        Mockito.when(data.isEnabled()).thenReturn(true);
 
         Mockito.doCallRealMethod().when(data).allowsChanges();
 

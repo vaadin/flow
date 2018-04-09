@@ -17,15 +17,8 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
 
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.change.EmptyChange;
-import com.vaadin.flow.internal.change.MapPutChange;
-import com.vaadin.flow.internal.change.NodeChange;
 
 import elemental.json.JsonValue;
 
@@ -34,7 +27,7 @@ import elemental.json.JsonValue;
  *
  * @author Vaadin Ltd
  */
-public class ElementData extends NodeValue<Serializable[]> {
+public class ElementData extends NodeMap {
 
     /**
      * Creates a new element data map for the given node.
@@ -47,11 +40,6 @@ public class ElementData extends NodeValue<Serializable[]> {
         super(node);
     }
 
-    @Override
-    protected String getKey() {
-        return NodeProperties.TAG;
-    }
-
     /**
      * Sets the tag name of the element.
      *
@@ -59,10 +47,7 @@ public class ElementData extends NodeValue<Serializable[]> {
      *            the tag name
      */
     public void setTag(String tag) {
-        Serializable[] value = new Serializable[2];
-        value[0] = tag;
-        value[1] = getPayload();
-        setValue(value);
+        put(NodeProperties.TAG, tag);
     }
 
     /**
@@ -71,7 +56,7 @@ public class ElementData extends NodeValue<Serializable[]> {
      * @return the tag name
      */
     public String getTag() {
-        return getValue() == null ? null : (String) getValue()[0];
+        return getOrDefault(NodeProperties.TAG, null);
     }
 
     /**
@@ -81,10 +66,23 @@ public class ElementData extends NodeValue<Serializable[]> {
      *            the payload data
      */
     public void setPayload(JsonValue payload) {
-        Serializable[] value = new Serializable[2];
-        value[0] = getTag();
-        value[1] = payload;
-        setValue(value);
+        put(NodeProperties.PAYLOAD, payload);
+    }
+
+    public void setEnabled(boolean enabled) {
+        put(NodeProperties.ENABLED, enabled);
+    }
+
+    public void setVisible(boolean visible) {
+        put(NodeProperties.VISIBLE, visible);
+    }
+
+    public boolean isVisible() {
+        return !Boolean.FALSE.equals(get(NodeProperties.VISIBLE));
+    }
+
+    public boolean isEnabled() {
+        return !Boolean.FALSE.equals(get(NodeProperties.ENABLED));
     }
 
     /**
@@ -93,35 +91,12 @@ public class ElementData extends NodeValue<Serializable[]> {
      * @return the payload data of the element
      */
     public JsonValue getPayload() {
-        Serializable[] value = getValue();
-        return value == null ? null : (JsonValue) value[1];
+        Serializable value = get(NodeProperties.PAYLOAD);
+        return value == null ? null : (JsonValue) value;
     }
 
     @Override
-    public void collectChanges(Consumer<NodeChange> collector) {
-        List<NodeChange> changes = new ArrayList<>(1);
-        super.collectChanges(changes::add);
-
-        Serializable[] previousValue;
-        Serializable tracker = getNode().getChangeTracker(this, () -> null);
-
-        if (tracker instanceof Serializable[]) {
-            previousValue = (Serializable[]) tracker;
-        } else {
-            previousValue = new Serializable[2];
-        }
-
-        NodeChange change = changes.get(0);
-        if (change instanceof MapPutChange) {
-            if (!Objects.equals(previousValue[0], getTag())) {
-                collector.accept(new MapPutChange(this, getKey(), getTag()));
-            }
-            if (!Objects.equals(previousValue[1], getPayload())) {
-                collector.accept(new MapPutChange(this, NodeProperties.PAYLOAD,
-                        getPayload()));
-            }
-        } else if (change instanceof EmptyChange) {
-            collector.accept(change);
-        }
+    public boolean allowsChanges() {
+        return isVisible();
     }
 }
