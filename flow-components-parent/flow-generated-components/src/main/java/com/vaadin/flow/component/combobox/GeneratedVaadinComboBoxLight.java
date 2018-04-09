@@ -414,12 +414,13 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
      * <p>
      * The selected item from the {@code items} array.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'selected-item-changed' event happens.
      * </p>
      * 
      * @return the {@code selectedItem} property from the webcomponent
      */
+    @Synchronize(property = "selectedItem", value = "selected-item-changed")
     protected JsonObject getSelectedItemJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("selectedItem");
     }

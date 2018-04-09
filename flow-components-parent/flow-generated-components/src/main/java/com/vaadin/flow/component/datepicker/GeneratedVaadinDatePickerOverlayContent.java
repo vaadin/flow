@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
@@ -42,12 +43,13 @@ public abstract class GeneratedVaadinDatePickerOverlayContent<R extends Generate
      * <p>
      * The value for this element.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'selected-date-changed' event happens.
      * </p>
      * 
      * @return the {@code selectedDate} property from the webcomponent
      */
+    @Synchronize(property = "selectedDate", value = "selected-date-changed")
     protected JsonObject getSelectedDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("selectedDate");
     }
@@ -74,12 +76,13 @@ public abstract class GeneratedVaadinDatePickerOverlayContent<R extends Generate
      * <p>
      * Date value which is focused using keyboard.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'focused-date-changed' event happens.
      * </p>
      * 
      * @return the {@code focusedDate} property from the webcomponent
      */
+    @Synchronize(property = "focusedDate", value = "focused-date-changed")
     protected JsonObject getFocusedDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("focusedDate");
     }

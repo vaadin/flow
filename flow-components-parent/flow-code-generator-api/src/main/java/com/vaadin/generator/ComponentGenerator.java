@@ -33,6 +33,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -43,9 +46,6 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -968,13 +968,15 @@ public class ComponentGenerator {
         // inspecting the event list
         String synchronizationDescription = "";
 
-        if (containsChangedEventForProperty(property.getName(), events)) {
+        String eventName = ComponentGeneratorUtils
+                .convertCamelCaseToHyphens(property.getName()) + "-changed";
+        if (containsEvent(eventName, events)) {
             method.addAnnotation(Synchronize.class)
                     .setStringValue("property", property.getName())
-                    .setStringValue(property.getName() + "-changed");
+                    .setStringValue(eventName);
 
             synchronizationDescription = "This property is synchronized automatically from client side when a '"
-                    + property.getName() + "-changed' event happens.";
+                    + eventName + "' event happens.";
         } else {
             synchronizationDescription = "This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.";
         }
@@ -990,12 +992,12 @@ public class ComponentGenerator {
                 + property.getName() + "} property from the webcomponent");
     }
 
-    private boolean containsChangedEventForProperty(String property,
+    private boolean containsEvent(String eventName,
             List<ComponentEventData> events) {
         if (events == null) {
             return false;
         }
-        String eventName = property + "-changed";
+
         return events.stream().map(ComponentEventData::getName)
                 .anyMatch(name -> name.equals(eventName));
     }
@@ -1533,8 +1535,7 @@ public class ComponentGenerator {
     private JavaClassSource generateNestedPojo(JavaClassSource javaClass,
             ComponentObjectType type, String nameHint, String description) {
         JavaClassSource nestedClass = new NestedClassGenerator().withType(type)
-                .withFluentSetters(fluentMethod).withNameHint(nameHint)
-                .build();
+                .withFluentSetters(fluentMethod).withNameHint(nameHint).build();
 
         if (javaClass.getNestedType(nestedClass.getName()) != null) {
             throw new ComponentGenerationException("Duplicated nested class: \""

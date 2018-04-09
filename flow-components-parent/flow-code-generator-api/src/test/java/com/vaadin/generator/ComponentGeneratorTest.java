@@ -350,7 +350,7 @@ public class ComponentGeneratorTest {
     @Test
     public void generateClassWithPropertyChangeEvent_propertyChangeListenerUsedInsteadOfDomEvent() {
         ComponentEventData eventData = new ComponentEventData();
-        eventData.setName("something-changed");
+        eventData.setName("some-property-changed");
         eventData.setDescription("Property change event.");
         componentMetadata.setEvents(Collections.singletonList(eventData));
 
@@ -362,14 +362,14 @@ public class ComponentGeneratorTest {
 
         Assert.assertThat("Custom event class was not found.", generatedClass,
                 containsString(
-                        "public static class SomethingChangeEvent<R extends MyComponent<R>> extends ComponentEvent<R> {"));
+                        "public static class SomePropertyChangeEvent<R extends MyComponent<R>> extends ComponentEvent<R> {"));
 
         Assert.assertFalse("DomEvent should not be used for property changes",
                 generatedClass.contains("@DomEvent"));
 
         // Using matcher as the formatter may cut the method.
         Pattern pattern = Pattern.compile(
-                "addSomethingChangeListener\\((\\w?)(\\s*?)ComponentEventListener<SomethingChangeEvent<R>> listener\\)");
+                "addSomePropertyChangeListener\\((\\w?)(\\s*?)ComponentEventListener<SomePropertyChangeEvent<R>> listener\\)");
         Matcher matcher = pattern.matcher(generatedClass);
         Assert.assertTrue("Couldn't find correct listener for event.",
                 matcher.find());
@@ -377,7 +377,7 @@ public class ComponentGeneratorTest {
         Assert.assertThat(
                 "Event should be propagated to a property change listener",
                 StringUtils.deleteWhitespace(generatedClass), containsString(
-                        "getElement().addPropertyChangeListener(\"something\","));
+                        "getElement().addPropertyChangeListener(\"someProperty\","));
 
         Assert.assertFalse("DomEvent imported even without dom-events",
                 generatedClass
@@ -538,7 +538,7 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void componentContainsNotifiedProperty_generatedListenerUsesComponentAsEventSource(){
+    public void componentContainsNotifiedProperty_generatedListenerUsesComponentAsEventSource() {
         generator.withProtectedMethods(true);
 
         ComponentPropertyData property = new ComponentPropertyData();
@@ -546,8 +546,7 @@ public class ComponentGeneratorTest {
         property.setType(Collections.singleton(ComponentBasicType.STRING));
         property.setNotify(true);
 
-        componentMetadata
-                .setProperties(Collections.singletonList(property));
+        componentMetadata.setProperties(Collections.singletonList(property));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -588,12 +587,12 @@ public class ComponentGeneratorTest {
     @Test
     public void classContainsGetterAndRelatedChangeEvent_getterContainsSynchronizeAnnotation() {
         ComponentPropertyData property = new ComponentPropertyData();
-        property.setName("someproperty");
+        property.setName("someProperty");
         property.setType(Collections.singleton(ComponentBasicType.STRING));
         componentMetadata.setProperties(Collections.singletonList(property));
 
         ComponentEventData event = new ComponentEventData();
-        event.setName("someproperty-changed");
+        event.setName("some-property-changed");
         componentMetadata.setEvents(Collections.singletonList(event));
 
         String generatedClass = generator.generateClass(componentMetadata,
@@ -603,10 +602,10 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         Assert.assertTrue(
-                "Wrong getter definition. It should contains @Synchronize(property = \"somepropery\", value = \"someproperty-changed\")",
+                "Wrong getter definition. It should contains @Synchronize(property = \"somePropery\", value = \"some-property-changed\")",
                 generatedClass.contains(
-                        "@Synchronize(property = \"someproperty\", value = \"someproperty-changed\") "
-                                + "public String getSomeproperty() {"));
+                        "@Synchronize(property = \"someProperty\", value = \"some-property-changed\") "
+                                + "public String getSomeProperty() {"));
     }
 
     @Test
