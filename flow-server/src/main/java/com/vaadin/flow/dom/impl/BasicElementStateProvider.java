@@ -42,7 +42,6 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.internal.nodefeature.EnabledData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
@@ -51,7 +50,6 @@ import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
-import com.vaadin.flow.internal.nodefeature.VisibilityData;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
 
@@ -83,8 +81,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             SynchronizedPropertyEventsList.class, ComponentMapping.class,
             PolymerServerEventHandlers.class, ClientDelegateHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
-            AttachExistingElementFeature.class, VirtualChildrenList.class,
-            VisibilityData.class, EnabledData.class };
+            AttachExistingElementFeature.class, VirtualChildrenList.class};
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -373,26 +370,26 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public void setVisible(StateNode node, boolean visible) {
-        assert node.hasFeature(VisibilityData.class);
-        node.getFeature(VisibilityData.class).setVisible(visible);
+        assert node.hasFeature(ElementData.class);
+        node.getFeature(ElementData.class).setVisible(visible);
     }
 
     @Override
     public boolean isVisible(StateNode node) {
-        assert node.hasFeature(VisibilityData.class);
-        return node.getFeature(VisibilityData.class).isVisible();
+        assert node.hasFeature(ElementData.class);
+        return node.getFeature(ElementData.class).isVisible();
     }
 
     @Override
     public void setEnabled(StateNode node, boolean enabled) {
-        assert node.hasFeature(EnabledData.class);
-        node.getFeature(EnabledData.class).setEnabled(enabled);
+        assert node.hasFeature(ElementData.class);
+        node.getFeature(ElementData.class).setEnabled(enabled);
     }
 
     @Override
     public boolean isEnabled(StateNode node) {
-        assert node.hasFeature(EnabledData.class);
-        return node.getFeature(EnabledData.class).isEnabled();
+        assert node.hasFeature(ElementData.class);
+        return node.getFeature(ElementData.class).isEnabled();
     }
 
     @Override

@@ -22,8 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.EnabledData;
-import com.vaadin.flow.internal.nodefeature.VisibilityData;
+import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
@@ -54,11 +53,9 @@ public abstract class AbstractRpcInvocationHandler
         }
 
         boolean invokeRpc = true;
-        if (node.hasFeature(VisibilityData.class)) {
-            invokeRpc = node.getFeature(VisibilityData.class).isVisible();
-        }
-        if(node.hasFeature(EnabledData.class)) {
-            invokeRpc = invokeRpc && node.getFeature(EnabledData.class).isEnabled();
+        if (node.hasFeature(ElementData.class)) {
+            ElementData feature = node.getFeature(ElementData.class);
+            invokeRpc = feature.isVisible() && feature.isEnabled();
         }
         if (invokeRpc) {
             return handleNode(node, invocationJson);

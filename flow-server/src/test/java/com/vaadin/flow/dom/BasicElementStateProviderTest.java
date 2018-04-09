@@ -11,9 +11,7 @@ import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.internal.nodefeature.EnabledData;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
-import com.vaadin.flow.internal.nodefeature.VisibilityData;
 import com.vaadin.flow.server.VaadinRequest;
 
 public class BasicElementStateProviderTest {
@@ -118,17 +116,17 @@ public class BasicElementStateProviderTest {
         Element element = ElementFactory.createDiv();
 
         Assert.assertTrue(
-                element.getNode().getFeature(VisibilityData.class).isVisible());
+                element.getNode().getFeature(ElementData.class).isVisible());
 
         BasicElementStateProvider.get().setVisible(element.getNode(), true);
 
         Assert.assertTrue(
-                element.getNode().getFeature(VisibilityData.class).isVisible());
+                element.getNode().getFeature(ElementData.class).isVisible());
 
         BasicElementStateProvider.get().setVisible(element.getNode(), false);
 
         Assert.assertFalse(
-                element.getNode().getFeature(VisibilityData.class).isVisible());
+                element.getNode().getFeature(ElementData.class).isVisible());
 
     }
 
@@ -137,17 +135,17 @@ public class BasicElementStateProviderTest {
         Element element = ElementFactory.createDiv();
 
         Assert.assertTrue("Element should be enabled by default.",
-                element.getNode().getFeature(EnabledData.class).isEnabled());
+                element.getNode().getFeature(ElementData.class).isEnabled());
 
         BasicElementStateProvider.get().setEnabled(element.getNode(), true);
 
         Assert.assertTrue("Enabling element should keep element enabled",
-                element.getNode().getFeature(EnabledData.class).isEnabled());
+                element.getNode().getFeature(ElementData.class).isEnabled());
 
         BasicElementStateProvider.get().setEnabled(element.getNode(), false);
 
         Assert.assertFalse("Setting enabled to false should disable element",
-                element.getNode().getFeature(EnabledData.class).isEnabled());
+                element.getNode().getFeature(ElementData.class).isEnabled());
 
     }
 

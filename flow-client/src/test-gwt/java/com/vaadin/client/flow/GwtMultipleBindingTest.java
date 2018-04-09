@@ -70,7 +70,7 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
         @Override
         public NodeMap getMap(int id) {
             if (id != NodeFeatures.ELEMENT_DATA
-                    && id != NodeFeatures.VISIBILITY_DATA && isBound) {
+                    && id != NodeFeatures.ELEMENT_DATA && isBound) {
                 fail();
             }
             return super.getMap(id);

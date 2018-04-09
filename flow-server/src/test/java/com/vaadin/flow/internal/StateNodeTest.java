@@ -46,9 +46,7 @@ import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementClassList;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.internal.nodefeature.EnabledData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
-import com.vaadin.flow.internal.nodefeature.VisibilityData;
 import com.vaadin.flow.shared.Registration;
 
 public class StateNodeTest {
@@ -428,6 +426,17 @@ public class StateNodeTest {
                     return super.toString();
                 }
             }
+
+            @Override
+            public boolean hasFeature(
+                    Class<? extends NodeFeature> featureType) {
+                // Inform that we don't have ElementData so that PropertyMap
+                // doesn't try to initialize an element for our test state node
+                if (featureType.isAssignableFrom(ElementData.class)) {
+                    return false;
+                }
+                return super.hasFeature(featureType);
+            }
         };
     }
 
@@ -550,9 +559,9 @@ public class StateNodeTest {
     @Test
     public void collectChanges_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
         StateNode stateNode = createTestNode("Active node",
-                ElementPropertyMap.class, VisibilityData.class);
+                ElementPropertyMap.class, ElementData.class);
 
-        VisibilityData visibility = stateNode.getFeature(VisibilityData.class);
+        ElementData visibility = stateNode.getFeature(ElementData.class);
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
 
@@ -562,25 +571,25 @@ public class StateNodeTest {
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
                 stateNode);
 
-        assertCollectChanges_initiallyEnabled(stateNode, properties,
+        assertCollectChanges_initiallyActiveNode(stateNode, properties,
                 isVisible -> {
                     visibility.setVisible(isVisible);
                     stateNode.updateActiveState();
-                }, () -> stateNode.getFeature(VisibilityData.class).isVisible(), VisibilityData.class);
+                }, () -> stateNode.getFeature(ElementData.class).isVisible());
     }
 
     @Test
     public void collectChanges_inactivateViaParent_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
         StateNode stateNode = createTestNode("Active node",
-                ElementPropertyMap.class, VisibilityData.class);
+                ElementPropertyMap.class, ElementData.class);
 
         StateNode parent = createTestNode("Parent node",
-                ElementPropertyMap.class, VisibilityData.class,
+                ElementPropertyMap.class, ElementData.class,
                 ElementChildrenList.class);
 
         parent.getFeature(ElementChildrenList.class).add(0, stateNode);
 
-        VisibilityData visibility = parent.getFeature(VisibilityData.class);
+        ElementData visibility = parent.getFeature(ElementData.class);
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
 
@@ -589,11 +598,11 @@ public class StateNodeTest {
         // attach the node to be able to get changes
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
 
-        assertCollectChanges_initiallyEnabled(stateNode, properties,
+        assertCollectChanges_initiallyActiveNode(stateNode, properties,
                 isVisible -> {
                     visibility.setVisible(isVisible);
                     parent.updateActiveState();
-                }, () -> stateNode.getFeature(VisibilityData.class).isVisible(), VisibilityData.class);
+                }, () -> stateNode.getFeature(ElementData.class).isVisible());
     }
 
     @Test
@@ -602,7 +611,7 @@ public class StateNodeTest {
 
         StateNode stateNode = element.getNode();
 
-        VisibilityData visibility = stateNode.getFeature(VisibilityData.class);
+        ElementData visibility = stateNode.getFeature(ElementData.class);
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
 
@@ -612,11 +621,12 @@ public class StateNodeTest {
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
                 stateNode);
 
-        assertCollectChanges_initiallyInactive(stateNode, properties,
+        assertCollectChanges_initiallyInactiveNode(stateNode, properties,
                 isVisible -> {
                     visibility.setVisible(isVisible);
                     stateNode.updateActiveState();
-                }, () -> stateNode.getFeature(VisibilityData.class).isVisible(), VisibilityData.class);
+                }, () -> stateNode.getFeature(ElementData.class).isVisible(),
+                "visible");
     }
 
     @Test
@@ -626,12 +636,12 @@ public class StateNodeTest {
         StateNode stateNode = element.getNode();
 
         StateNode parent = createTestNode("Parent node",
-                ElementPropertyMap.class, VisibilityData.class,
+                ElementPropertyMap.class, ElementData.class,
                 ElementChildrenList.class);
 
         parent.getFeature(ElementChildrenList.class).add(0, stateNode);
 
-        VisibilityData visibility = parent.getFeature(VisibilityData.class);
+        ElementData visibility = parent.getFeature(ElementData.class);
 
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
@@ -641,15 +651,17 @@ public class StateNodeTest {
         // attach the node to be able to get changes
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
 
-        assertCollectChanges_initiallyInactive(stateNode, properties,
+        assertCollectChanges_initiallyInactiveNode(stateNode, properties,
                 isVisible -> {
                     visibility.setVisible(isVisible);
                     parent.updateActiveState();
-                }, () -> stateNode.getFeature(VisibilityData.class).isVisible(), VisibilityData.class);
+                }, () -> stateNode.getFeature(ElementData.class).isVisible(),
+                "visible");
     }
 
-    private void assertCollectChanges_initiallyInactive(StateNode stateNode,
-            ElementPropertyMap properties, Consumer<Boolean> activityUpdater, Supplier<Boolean> stateSupplier, Class<?> dataClass) {
+    private void assertCollectChanges_initiallyInactiveNode(StateNode stateNode,
+            ElementPropertyMap properties, Consumer<Boolean> activityUpdater,
+            Supplier<Boolean> stateSupplier, String eventKey) {
         activityUpdater.accept(false);
 
         // activity updater may modify active state of the node itself or its
@@ -675,33 +687,34 @@ public class StateNodeTest {
             tree.dirtyNodes.contains(stateNode);
         }
 
-        Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
+        Assert.assertEquals(visibilityChanged ? 4 : 3, changes.size());
         // node is attached event
         Assert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
-        // tag update (ElementData is reported feature) and possible active state
-        // update
-        Assert.assertThat(changes.get(1),
-                CoreMatchers.instanceOf(MapPutChange.class));
-
-        MapPutChange change = (MapPutChange) changes.get(1);
-        MapPutChange tagChange;
-        if (visibilityChanged) {
-            Assert.assertThat(changes.get(2),
-                    CoreMatchers.instanceOf(MapPutChange.class));
-            tagChange = change.getFeature().equals(ElementData.class) ? change
-                    : (MapPutChange) changes.get(2);
-            change = tagChange.equals(change) ? (MapPutChange) changes.get(2)
-                    : change;
-        } else {
-            tagChange = (MapPutChange) changes.get(1);
-        }
-
+        // tag update (ElementData is reported feature) and possible active
+        // state update
+        Optional<MapPutChange> tagFound = changes.stream()
+                .filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(chang -> chang.getKey().equals("tag")).findFirst();
+        Assert.assertTrue("No tag change found", tagFound.isPresent());
+        MapPutChange tagChange = tagFound.get();
         Assert.assertEquals(Element.get(stateNode).getTag(),
                 tagChange.getValue());
 
+        Optional<MapPutChange> eventFound = changes.stream()
+                .filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(chang -> chang.getKey().equals(eventKey)).findFirst();
+        MapPutChange activityChange = null;
+
+
         if (visibilityChanged) {
-            Assert.assertEquals(Boolean.FALSE, change.getValue());
+            Assert.assertTrue(
+                    "Missing event change even though active state changed",
+                    eventFound.isPresent());
+            activityChange = eventFound.get();
+            Assert.assertEquals(Boolean.FALSE, activityChange.getValue());
         }
 
         changes.clear();
@@ -722,8 +735,8 @@ public class StateNodeTest {
 
         Optional<MapPutChange> visibilityChange = changes.stream()
                 .filter(MapPutChange.class::isInstance)
-                .map(MapPutChange.class::cast).filter(chang -> chang
-                        .getFeature().equals(dataClass))
+                .map(MapPutChange.class::cast)
+                .filter(chang -> chang.getFeature().equals(ElementData.class))
                 .findFirst();
 
         if (visibilityChanged) {
@@ -742,9 +755,9 @@ public class StateNodeTest {
 
         changes.remove(fooUpdate.get());
 
-        change = (MapPutChange) changes.get(0);
-        Assert.assertEquals("foo", change.getValue());
-        Assert.assertEquals("baz", change.getKey());
+        activityChange = (MapPutChange) changes.get(0);
+        Assert.assertEquals("foo", activityChange.getValue());
+        Assert.assertEquals("baz", activityChange.getKey());
 
         // Don't make any changes, check that there are no changes collected
         changes.clear();
@@ -753,8 +766,9 @@ public class StateNodeTest {
         Assert.assertEquals(0, changes.size());
     }
 
-    private void assertCollectChanges_initiallyEnabled(StateNode stateNode,
-            ElementPropertyMap properties, Consumer<Boolean> activityUpdater, Supplier<Boolean> stateSupplier, Class<?> dataClass) {
+    private void assertCollectChanges_initiallyActiveNode(StateNode stateNode,
+            ElementPropertyMap properties, Consumer<Boolean> activityUpdater,
+            Supplier<Boolean> stateSupplier) {
 
         // check that normal flow works as it should (without any inactivity)
         properties.setProperty("foo", "bar");
@@ -800,7 +814,7 @@ public class StateNodeTest {
             Assert.assertThat(changes.get(0),
                     CoreMatchers.instanceOf(MapPutChange.class));
             change = (MapPutChange) changes.get(0);
-            Assert.assertEquals(dataClass, change.getFeature());
+            Assert.assertEquals(ElementData.class, change.getFeature());
         } else {
             // the target node should be marked as dirty because it's active
             // but its parent is inactive
@@ -825,7 +839,7 @@ public class StateNodeTest {
         MapPutChange propertyChange;
 
         if (visibilityChanged) {
-            MapPutChange visibilityChange = dataClass
+            MapPutChange visibilityChange = ElementData.class
                     .equals(change.getFeature()) ? change
                             : (MapPutChange) changes.get(1);
             propertyChange = change.equals(visibilityChange)
@@ -846,13 +860,12 @@ public class StateNodeTest {
         Assert.assertEquals(0, changes.size());
     }
 
-
     @Test
     public void collectChanges_initiallyActiveElement_sendOnlyDisallowFeatureChangesWhenDisabled() {
         StateNode stateNode = createTestNode("Active node",
-                ElementPropertyMap.class, EnabledData.class);
+                ElementPropertyMap.class, ElementData.class);
 
-        EnabledData enabled = stateNode.getFeature(EnabledData.class);
+        ElementData enabled = stateNode.getFeature(ElementData.class);
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
 
@@ -862,25 +875,25 @@ public class StateNodeTest {
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
                 stateNode);
 
-        assertCollectChanges_initiallyEnabled(stateNode, properties,
+        assertCollectChanges_initiallyActiveNode(stateNode, properties,
                 isEnabled -> {
                     enabled.setEnabled(isEnabled);
                     stateNode.updateActiveState();
-                }, () -> stateNode.getFeature(EnabledData.class).isEnabled(), EnabledData.class);
+                }, () -> stateNode.getFeature(ElementData.class).isEnabled());
     }
 
     @Test
     public void collectChanges_inactivateViaParent_initiallyActiveElement_sendOnlyDisallowFeatureChangesWhenDisabled() {
         StateNode stateNode = createTestNode("Active node",
-                ElementPropertyMap.class, EnabledData.class);
+                ElementPropertyMap.class, ElementData.class);
 
         StateNode parent = createTestNode("Parent node",
-                ElementPropertyMap.class, EnabledData.class,
+                ElementPropertyMap.class, ElementData.class,
                 ElementChildrenList.class);
 
         parent.getFeature(ElementChildrenList.class).add(0, stateNode);
 
-        EnabledData enabled = parent.getFeature(EnabledData.class);
+        ElementData enabled = parent.getFeature(ElementData.class);
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
 
@@ -889,11 +902,11 @@ public class StateNodeTest {
         // attach the node to be able to get changes
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
 
-        assertCollectChanges_initiallyEnabled(stateNode, properties,
+        assertCollectChanges_initiallyActiveNode(stateNode, properties,
                 isEnabled -> {
                     enabled.setEnabled(isEnabled);
                     parent.updateActiveState();
-                }, () -> stateNode.getFeature(EnabledData.class).isEnabled(), EnabledData.class);
+                }, () -> stateNode.getFeature(ElementData.class).isEnabled());
     }
 
     @Test
@@ -902,7 +915,7 @@ public class StateNodeTest {
 
         StateNode stateNode = element.getNode();
 
-        EnabledData enabled = stateNode.getFeature(EnabledData.class);
+        ElementData enabled = stateNode.getFeature(ElementData.class);
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
 
@@ -912,11 +925,12 @@ public class StateNodeTest {
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
                 stateNode);
 
-        assertCollectChanges_initiallyInactive(stateNode, properties,
+        assertCollectChanges_initiallyInactiveNode(stateNode, properties,
                 isEnabled -> {
                     enabled.setEnabled(isEnabled);
                     stateNode.updateActiveState();
-                }, () -> stateNode.getFeature(EnabledData.class).isEnabled(), EnabledData.class);
+                }, () -> stateNode.getFeature(ElementData.class).isEnabled(),
+                "enabled");
     }
 
     @Test
@@ -926,12 +940,12 @@ public class StateNodeTest {
         StateNode stateNode = element.getNode();
 
         StateNode parent = createTestNode("Parent node",
-                ElementPropertyMap.class, EnabledData.class,
+                ElementPropertyMap.class, ElementData.class,
                 ElementChildrenList.class);
 
         parent.getFeature(ElementChildrenList.class).add(0, stateNode);
 
-        EnabledData enabled = parent.getFeature(EnabledData.class);
+        ElementData enabled = parent.getFeature(ElementData.class);
 
         ElementPropertyMap properties = stateNode
                 .getFeature(ElementPropertyMap.class);
@@ -941,10 +955,11 @@ public class StateNodeTest {
         // attach the node to be able to get changes
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
 
-        assertCollectChanges_initiallyInactive(stateNode, properties,
+        assertCollectChanges_initiallyInactiveNode(stateNode, properties,
                 isEnabled -> {
                     enabled.setEnabled(isEnabled);
                     parent.updateActiveState();
-                }, () -> stateNode.getFeature(EnabledData.class).isEnabled(), EnabledData.class);
+                }, () -> stateNode.getFeature(ElementData.class).isEnabled(),
+                "enabled");
     }
 }

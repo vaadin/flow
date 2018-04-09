@@ -1361,7 +1361,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testBindInvisibleNode() {
-        node.getMap(NodeFeatures.VISIBILITY_DATA)
+        node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBLE).setValue(false);
 
         Binder.bind(node, element);
@@ -1595,7 +1595,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     public void testSimpleElementBindingStrategy_regularElement_needsBind() {
         assertFalse(SimpleElementBindingStrategy.needsRebind(node));
 
-        node.getMap(NodeFeatures.VISIBILITY_DATA)
+        node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(false);
 
@@ -1605,7 +1605,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     public void testSimpleElementBindingStrategy_elementWithoutFeature_needsBind() {
         StateNode emptyNode = new StateNode(45, tree);
         // self control
-        assertFalse(emptyNode.hasFeature(NodeFeatures.VISIBILITY_DATA));
+        assertFalse(emptyNode.hasFeature(NodeFeatures.ELEMENT_DATA));
 
         assertFalse(SimpleElementBindingStrategy.needsRebind(node));
     }
@@ -1676,7 +1676,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     private void setVisible(boolean visible) {
-        NodeMap map = node.getMap(NodeFeatures.VISIBILITY_DATA);
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
         MapProperty visibility = map.getProperty(NodeProperties.VISIBLE);
         visibility.setValue(visible);
     }

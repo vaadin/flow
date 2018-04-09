@@ -520,7 +520,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         Element element = (Element) context.htmlNode;
 
         NodeMap visibilityData = context.node
-                .getMap(NodeFeatures.VISIBILITY_DATA);
+                .getMap(NodeFeatures.ELEMENT_DATA);
         // Store the current "hidden" value to restore it when the element
         // becomes visible
 
@@ -531,7 +531,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .setValue(isVisible(context.node));
         updateVisibility(listeners, context, computationsCollection,
                 nodeFactory);
-        return context.node.getMap(NodeFeatures.VISIBILITY_DATA)
+        return context.node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBLE)
                 .addChangeListener(event -> updateVisibility(listeners, context,
                         computationsCollection, nodeFactory));
@@ -549,7 +549,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 + context.node.getId() + " is not an Element";
 
         NodeMap visibilityData = context.node
-                .getMap(NodeFeatures.VISIBILITY_DATA);
+                .getMap(NodeFeatures.ELEMENT_DATA);
 
         Element element = (Element) context.htmlNode;
 
@@ -604,7 +604,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
      *         later on
      */
     public static boolean needsRebind(StateNode node) {
-        if (!node.hasFeature(NodeFeatures.VISIBILITY_DATA)) {
+        if (!node.hasFeature(NodeFeatures.ELEMENT_DATA)) {
             // If there is no VISIBILITY_DATA feature then the node doesn't need
             // re-bind
             return false;
@@ -613,7 +613,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
          * Absence of value or "true" means that the node doesn't need re-bind.
          * So only "false" means "needs re-bind".
          */
-        return Boolean.FALSE.equals(node.getMap(NodeFeatures.VISIBILITY_DATA)
+        return Boolean.FALSE.equals(node.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .getValue());
     }

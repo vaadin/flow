@@ -141,16 +141,6 @@ public final class NodeFeatures {
      */
     public static final int VIRTUAL_CHILDREN = 25;
 
-    /**
-     * Id for {@link VisibilityData}.
-     */
-    public static final int VISIBILITY_DATA = 26;
-
-    /**
-     * Id for {@link EnabledData}
-     */
-    public static final int ENABLED_DATA = 27;
-
     private NodeFeatures() {
         // Only static
     }
