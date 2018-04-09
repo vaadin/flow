@@ -59,7 +59,7 @@ public interface HasEnabled extends HasElement {
      *            on parent
      */
     default void setEnabled(boolean enabled) {
-        getElement().getNode().setEnabled(enabled);
+        getElement().setEnabled(enabled);
     }
 
     /**
@@ -71,16 +71,16 @@ public interface HasEnabled extends HasElement {
      * @return eanbled state of the object
      */
     default boolean isEnabled() {
-        if (getElement().getNode().isEnabled()) {
-            Element parent = getElement().getParent();
-            while (parent != null) {
-                if (parent instanceof HasEnabled) {
-                    return ((HasEnabled) parent).isEnabled();
-                }
-                parent = parent.getParent();
-            }
-            return true;
+        if (!getElement().isEnabled()) {
+            return false;
         }
-        return false;
+        Element parent = getElement().getParent();
+        while (parent != null) {
+            if (!parent.isEnabled()) {
+                return false;
+            }
+            parent = parent.getParent();
+        }
+        return true;
     }
 }
