@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -74,12 +75,13 @@ public abstract class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMont
      * <p>
      * A {@code Date} object for the currently selected date.
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'selected-date-changed' event happens.
      * </p>
      * 
      * @return the {@code selectedDate} property from the webcomponent
      */
+    @Synchronize(property = "selectedDate", value = "selected-date-changed")
     protected JsonObject getSelectedDateJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("selectedDate");
     }

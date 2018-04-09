@@ -423,12 +423,13 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      * <p>
      * Specifies if the maximum number of files have been uploaded
      * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'max-files-reached-changed' event happens.
      * </p>
      * 
      * @return the {@code maxFilesReached} property from the webcomponent
      */
+    @Synchronize(property = "maxFilesReached", value = "max-files-reached-changed")
     protected boolean isMaxFilesReachedBoolean() {
         return getElement().getProperty("maxFilesReached", false);
     }
