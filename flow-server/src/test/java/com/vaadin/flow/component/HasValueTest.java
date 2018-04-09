@@ -16,23 +16,32 @@ package com.vaadin.flow.component;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.vaadin.flow.router.RouterLink;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.router.RouterLink;
+
 public class HasValueTest {
 
-    private class HasValueComponent extends RouterLink implements HasValue<RouterLink, String> {
+    private class HasValueComponent extends RouterLink
+            implements HasValue<RouterLink, String> {
 
         @Override
         public void setValue(String value) {
-            getComponent().getElement().setProperty(getClientValuePropertyName(), value);
+            getComponent().getElement()
+                    .setProperty(getClientValuePropertyName(), value);
         }
 
         @Override
         public String getValue() {
             return getElement().getProperty(getClientValuePropertyName(),
                     getEmptyValue());
+        }
+
+        @Override
+        public Element getElement() {
+            return super.getElement();
         }
     }
 
@@ -45,6 +54,11 @@ public class HasValueTest {
 
         @Override
         public String getValue() {
+            return null;
+        }
+
+        @Override
+        public Element getElement() {
             return null;
         }
     }
@@ -61,7 +75,8 @@ public class HasValueTest {
     @Test
     public void testGetComponent_hasValueIsComponent_defaultWorks() {
         HasValueComponent hasValueComponent = new HasValueComponent();
-        Assert.assertEquals("invalid component type", hasValueComponent, hasValueComponent.getComponent());
+        Assert.assertEquals("invalid component type", hasValueComponent,
+                hasValueComponent.getComponent());
     }
 
     @Test(expected = ClassCastException.class)
@@ -74,11 +89,14 @@ public class HasValueTest {
         HasValueComponent component = new HasValueComponent();
         AtomicReference<Component> sourceReference = new AtomicReference<>();
 
-        component.addValueChangeListener(event -> sourceReference.set(event.getSource()));
+        component.addValueChangeListener(
+                event -> sourceReference.set(event.getSource()));
         component.setValue("foobar");
 
-        Assert.assertEquals("Incorrect event source",component, sourceReference.get());
+        Assert.assertEquals("Incorrect event source", component,
+                sourceReference.get());
     }
+
     @Test
     public void testValueChangeListener_valueChangedFromServer_triggersEvent() {
         component = new HasValueComponent();
