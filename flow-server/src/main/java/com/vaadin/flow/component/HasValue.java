@@ -31,7 +31,7 @@ import com.vaadin.flow.shared.Registration;
  *            the value type
  * @author Vaadin Ltd.
  */
-public interface HasValue<C extends Component, V> {
+public interface HasValue<C extends Component, V> extends HasEnabled {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -98,8 +98,8 @@ public interface HasValue<C extends Component, V> {
      * @see Registration
      */
     @FunctionalInterface
-    interface ValueChangeListener<C extends Component, V> extends
-            ComponentEventListener<ValueChangeEvent<C, V>> {
+    interface ValueChangeListener<C extends Component, V>
+            extends ComponentEventListener<ValueChangeEvent<C, V>> {
 
         /**
          * Invoked when this listener receives a value change event from an
@@ -145,7 +145,7 @@ public interface HasValue<C extends Component, V> {
      * The default implementation expects the {@code HasValue} to also extend
      * {@link Component}. If that is not the case, this method should be
      * overridden to return the correct {@link Component} instance.
-     * 
+     *
      * @return the component instance, never {@code null}
      */
     default C getComponent() {
@@ -194,8 +194,9 @@ public interface HasValue<C extends Component, V> {
                     } else {
                         oldValue = propertyChangeEventValue;
                     }
-                    listener.onComponentEvent(new ValueChangeEvent<>(getComponent(),
-                            this, oldValue, event.isUserOriginated()));
+                    listener.onComponentEvent(
+                            new ValueChangeEvent<>(getComponent(), this,
+                                    oldValue, event.isUserOriginated()));
 
                 });
     }

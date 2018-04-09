@@ -30,7 +30,7 @@ import com.vaadin.flow.dom.Element;
  *
  * @author Vaadin Ltd
  */
-public interface HasComponents extends HasElement {
+public interface HasComponents extends HasElement, HasEnabled {
     /**
      * Adds the given components as children of this component.
      *
