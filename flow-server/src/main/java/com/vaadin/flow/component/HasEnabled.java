@@ -68,7 +68,7 @@ public interface HasEnabled extends HasElement {
      * Object may be enabled by itself by but if its ascendant is disabled then
      * it's considered as (implicitly) disabled.
      *
-     * @return eanbled state of the object
+     * @return enabled state of the object
      */
     default boolean isEnabled() {
         if (!getElement().isEnabled()) {
