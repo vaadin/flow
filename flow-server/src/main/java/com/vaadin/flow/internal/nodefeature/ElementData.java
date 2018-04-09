@@ -104,6 +104,6 @@ public class ElementData extends NodeMap {
 
     @Override
     public boolean allowsChanges() {
-        return isVisible() && isEnabled();
+        return isVisible();
     }
 }

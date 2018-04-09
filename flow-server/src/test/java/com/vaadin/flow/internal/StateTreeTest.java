@@ -227,14 +227,11 @@ public class StateTreeTest {
         StateNodeTest.setParent(node2, node1);
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals("Should be three changes.", 3, changes.size());
+        Assert.assertEquals("Should be three changes.", 2, changes.size());
         Assert.assertTrue("First change should re-attach the node.",
                 changes.get(0) instanceof NodeAttachChange);
         Assert.assertTrue("Second change should put the tag or payload value.",
                 changes.get(1) instanceof MapPutChange);
-        Assert.assertTrue(
-                "Third change should re-put the tag or payload value.",
-                changes.get(2) instanceof MapPutChange);
 
         Optional<MapPutChange> tagFound = changes.stream()
                 .filter(MapPutChange.class::isInstance)
