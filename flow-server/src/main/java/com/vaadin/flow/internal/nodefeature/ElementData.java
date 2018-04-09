@@ -17,15 +17,8 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
 
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.change.EmptyChange;
-import com.vaadin.flow.internal.change.MapPutChange;
-import com.vaadin.flow.internal.change.NodeChange;
 
 import elemental.json.JsonValue;
 
