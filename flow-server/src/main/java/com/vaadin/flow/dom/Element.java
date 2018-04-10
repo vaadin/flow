@@ -1429,6 +1429,14 @@ public class Element extends Node<Element> {
      */
     public Element setEnabled(boolean enabled) {
         getStateProvider().setEnabled(getNode(), enabled);
+
+        Optional<Component> component = getComponent();
+        if (component.isPresent()) {
+            component.get().onEnabledStateChange(enabled);
+            component.get().getChildren()
+                    .forEach(child -> child.onEnabledStateChange(
+                            enabled ? child.getElement().isEnabled() : false));
+        }
         return getSelf();
     }
 
