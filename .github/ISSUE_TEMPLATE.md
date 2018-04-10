@@ -1,7 +1,10 @@
-Please use a summary of the form: When <something> I want <something> so that <something>
+Only use GitHub issues for bugs and feature requests.   
+For general support from the community, see https://vaadin.com/forum
 
-For example, write 
-"When writing/modifying a template I want the framework to auto-update the template so that I do not have to restart the server and waste time"
-instead of 
-"Template should auto-reload!"
+NOTE: Issues concerning certain component should go to the corresponding components repository.
 
+To make sure we can quickly validate and fix the bug, please provide as much as possible of the following information:
+- Description of the bug
+- Minimal reproducible example
+- Expected behavior
+- Actual behavior
