@@ -865,4 +865,15 @@ public class UIInternals implements Serializable {
     public Router getRouter() {
         return getSession().getService().getRouter();
     }
+
+    /**
+     * Checks if there are changes waiting to be sent to the client side.
+     * 
+     * @return <code>true</code> if there are pending changes,
+     *         <code>false</code> otherwise
+     */
+    public boolean isDirty() {
+        return getStateTree().isDirty()
+                || !getPendingJavaScriptInvocations().isEmpty();
+    }
 }

@@ -338,7 +338,7 @@ public class StateTree implements NodeOwner {
     }
 
     private List<StateTree.BeforeClientResponseEntry> flushCallbacks() {
-        if (pendingExecutionNodes.isEmpty()) {
+        if (!hasCallbacks()) {
             return Collections.emptyList();
         }
 
@@ -353,5 +353,19 @@ public class StateTree implements NodeOwner {
         pendingExecutionNodes = new HashSet<>();
 
         return flushed;
+    }
+
+    private boolean hasCallbacks() {
+        return !pendingExecutionNodes.isEmpty();
+    }
+
+    /**
+     * Checks if there are changes waiting to be sent to the client side.
+     * 
+     * @return <code>true</code> if there are pending changes,
+     *         <code>false</code> otherwise
+     */
+    public boolean isDirty() {
+        return hasDirtyNodes() || hasCallbacks();
     }
 }
