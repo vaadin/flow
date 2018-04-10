@@ -696,6 +696,7 @@ public class Element extends Node<Element> {
      */
     public Registration addPropertyChangeListener(String name,
             PropertyChangeListener listener) {
+        System.out.println("lol");
         return getStateProvider().addPropertyChangeListener(getNode(), name,
                 listener);
     }
