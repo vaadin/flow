@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -196,19 +197,9 @@ public class UidlWriter implements Serializable {
     }
 
     private static String getDependencyContents(String url) {
-        HttpServletRequest currentRequest = ((VaadinServletRequest) VaadinService
-                .getCurrentRequest()).getHttpServletRequest();
-        Charset requestCharset = Optional
-                .ofNullable(currentRequest.getCharacterEncoding())
-                .filter(string -> !string.isEmpty()).map(Charset::forName)
-                .orElse(StandardCharsets.UTF_8);
-
-        try (InputStream inlineResourceStream = getInlineResourceStream(url);
-                BufferedReader bufferedReader = new BufferedReader(
-                        new InputStreamReader(inlineResourceStream,
-                                requestCharset))) {
-            return bufferedReader.lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
+        try (InputStream inlineResourceStream = getInlineResourceStream(url)) {
+            return IOUtils.toString(inlineResourceStream,
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalStateException(String
                     .format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
