@@ -607,14 +607,20 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Get the validated theme url for given string import. Result will be
-     * cached for future use if production mode is enabled.
+     * For the given HtmlImport url value, check against the given Theme if
+     * there exists such a file that the HtmlImport url should load the themed
+     * resource instead of the defined given resource.
+     * <p>
+     * This will return the validated themed resource url if the resource exists
+     * or the original url if a file for the translated one can not be found.
+     * <p>
+     * Result will be cached for future use if production mode is enabled.
      *
      * @param theme
-     *            Theme to resolve url translation for
+     *            Theme to use for translating url with
      * @param urlToTranslate
-     *            url value to translate
-     * @return translated url path
+     *            HtmlImport url that may be rewritten to reflect a themed resource
+     * @return theme resource url if resource exists or original url
      */
     public String getUrlTranslation(AbstractTheme theme,
             String urlToTranslate) {
