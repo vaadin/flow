@@ -501,4 +501,15 @@ public abstract class Component
         return getElement().isVisible();
     }
 
+    /**
+     * Handle component enable state when the enabled state changes.
+     * <p>
+     * By default this sets or removes the 'disabled' attribute from the
+     * element. This can be overridden to have custom handling.
+     * 
+     * @param enabled the new enabled state of the component
+     */
+    public void onEnabledStateChange(boolean enabled) {
+        getElement().setAttribute("disabled", !enabled);
+    }
 }

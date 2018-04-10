@@ -43,7 +43,6 @@ public class EnabledView extends Div {
                 });
         updateStyle.setId("updateProperty");
         updateStyle.getElement().setEnabled(false);
-        updateStyle.setClassName("disabled");
 
         NativeButton updateEnableButton = new NativeButton(
                 "Change enable state for buttons", event -> {
