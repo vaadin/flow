@@ -43,7 +43,8 @@ public class AbstractRpcInvocationHandlerTest {
         }
 
         @Override
-        protected Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
+        protected Optional<Runnable> handleNode(StateNode node,
+                JsonObject invocationJson) {
             this.node = node;
             return Optional.empty();
         }
@@ -65,15 +66,6 @@ public class AbstractRpcInvocationHandlerTest {
         UI ui = new UI();
 
         createRpcInvocationData(ui, elem -> elem.setVisible(false));
-
-        Assert.assertNull(handler.node);
-    }
-
-    @Test
-    public void handleDisabledNode_nodeIsNotHandled() {
-        UI ui = new UI();
-
-        createRpcInvocationData(ui, elem -> elem.setEnabled(false));
 
         Assert.assertNull(handler.node);
     }

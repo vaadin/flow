@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import com.vaadin.flow.dom.Element;
-
 /**
  * A generic interface for components and other user interface objects that may
  * be enabled or disabled.
@@ -71,16 +69,6 @@ public interface HasEnabled extends HasElement {
      * @return enabled state of the object
      */
     default boolean isEnabled() {
-        if (!getElement().isEnabled()) {
-            return false;
-        }
-        Element parent = getElement().getParent();
-        while (parent != null) {
-            if (!parent.isEnabled()) {
-                return false;
-            }
-            parent = parent.getParent();
-        }
-        return true;
+        return getElement().isEnabled();
     }
 }

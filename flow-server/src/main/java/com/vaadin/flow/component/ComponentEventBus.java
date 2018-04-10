@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
@@ -138,8 +139,8 @@ public class ComponentEventBus implements Serializable {
             return;
         }
 
-        ComponentEventBusUtil.getDomEventType(eventType)
-        .ifPresent(e -> addDomTrigger(eventType, e));
+        ComponentEventBusUtil.handleDomEventType(eventType, (domEventType,
+                mode) -> addDomTrigger(eventType, domEventType, mode));
     }
 
     /**
@@ -151,12 +152,15 @@ public class ComponentEventBus implements Serializable {
      *            the component event type
      * @param domEventType
      *            the DOM event type
+     * @param mode
+     *            controls RPC communication from the client side to the server
+     *            side when the element is disabled, not {@code null}
      */
     private void addDomTrigger(Class<? extends ComponentEvent<?>> eventType,
-            String domEventType) {
+            String domEventType, DisabledUpdateMode mode) {
         assert eventType != null;
         assert !componentEventData.containsKey(eventType)
-        || componentEventData.get(eventType).domEventRemover == null;
+                || componentEventData.get(eventType).domEventRemover == null;
 
         if (domEventType == null || domEventType.isEmpty()) {
             throw new IllegalArgumentException(
@@ -174,7 +178,7 @@ public class ComponentEventBus implements Serializable {
         // This needs to be an anonymous class and not a lambda because of
         // https://github.com/vaadin/flow/issues/575
         Registration remover = element.addEventListener(domEventType,
-                event -> handleDomEvent(eventType, event), eventData);
+                event -> handleDomEvent(eventType, event), mode, eventData);
         componentEventData.computeIfAbsent(eventType,
                 t -> new ComponentEventData()).domEventRemover = remover;
     }
@@ -237,8 +241,8 @@ public class ComponentEventBus implements Serializable {
         }
         if (listeners.isEmpty()) {
             // No more listeners for this event type
-            ComponentEventBusUtil.getDomEventType(eventType)
-            .ifPresent(e -> unregisterDomEvent(eventType, e));
+            ComponentEventBusUtil.handleDomEventType(eventType, (domeEventType,
+                    mode) -> unregisterDomEvent(eventType, domeEventType));
             componentEventData.remove(eventType);
         }
     }
@@ -326,7 +330,7 @@ public class ComponentEventBus implements Serializable {
             throw new IllegalArgumentException(
                     "Unable to create an event object of type "
                             + eventType.getName(),
-                            e);
+                    e);
         }
     }
 }

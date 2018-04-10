@@ -22,10 +22,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
@@ -44,8 +44,8 @@ public class ElementListenersTest
 
         AtomicInteger eventCount = new AtomicInteger();
 
-        Registration handle = ns.add("foo",
-                e -> eventCount.incrementAndGet(), new String[0]);
+        Registration handle = ns.add("foo", e -> eventCount.incrementAndGet(),
+                DisabledUpdateMode.ONLY_WHEN_ENABLED, new String[0]);
 
         Assert.assertEquals(0, eventCount.get());
 
@@ -68,7 +68,8 @@ public class ElementListenersTest
     public void testEventNameInClientData() {
         Assert.assertFalse(ns.contains("foo"));
 
-        Registration handle = ns.add("foo", noOp, new String[0]);
+        Registration handle = ns.add("foo", noOp,
+                DisabledUpdateMode.ONLY_WHEN_ENABLED, new String[0]);
 
         Assert.assertEquals(0, getExpressions("foo").size());
 
@@ -79,25 +80,25 @@ public class ElementListenersTest
 
     @Test
     public void testAddAndRemoveEventData() {
-        ns.add("eventType", noOp, new String[] { "data1", "data2" });
+        ns.add("eventType", noOp, DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                new String[] { "data1", "data2" });
 
         Set<String> expressions = getExpressions("eventType");
         Assert.assertTrue(expressions.contains("data1"));
         Assert.assertTrue(expressions.contains("data2"));
         Assert.assertFalse(expressions.contains("data3"));
 
-        Registration handle = ns.add("eventType",
-                new DomEventListener() {
-                    /*
-                     * Can't use the existing noOp instance since there would
-                     * then not be any listeners left after calling remove()
-                     */
+        Registration handle = ns.add("eventType", new DomEventListener() {
+            /*
+             * Can't use the existing noOp instance since there would then not
+             * be any listeners left after calling remove()
+             */
 
-                    @Override
-                    public void handleEvent(DomEvent event) {
-                        // no op
-                    }
-                }, new String[] { "data3" });
+            @Override
+            public void handleEvent(DomEvent event) {
+                // no op
+            }
+        }, DisabledUpdateMode.ONLY_WHEN_ENABLED, new String[] { "data3" });
 
         expressions = getExpressions("eventType");
         Assert.assertTrue(expressions.contains("data1"));
@@ -118,7 +119,7 @@ public class ElementListenersTest
         ns.add("foo", e -> {
             Assert.assertNull(eventDataReference.get());
             eventDataReference.set(e.getEventData());
-        }, new String[0]);
+        }, DisabledUpdateMode.ONLY_WHEN_ENABLED, new String[0]);
 
         Assert.assertNull(eventDataReference.get());
 

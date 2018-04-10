@@ -55,7 +55,7 @@ public abstract class AbstractRpcInvocationHandler
         boolean invokeRpc = true;
         if (node.hasFeature(ElementData.class)) {
             ElementData feature = node.getFeature(ElementData.class);
-            invokeRpc = feature.isVisible() && feature.isEnabled();
+            invokeRpc = feature.isVisible();
         }
         if (invokeRpc) {
             return handleNode(node, invocationJson);
@@ -73,7 +73,7 @@ public abstract class AbstractRpcInvocationHandler
     /**
      * Handle the RPC data {@code invocationJson} using target {@code node} as a
      * context.
-     * 
+     *
      * @param node
      *            node to handle invocation with, not {@code null}
      * @param invocationJson

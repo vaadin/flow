@@ -199,13 +199,17 @@ public interface ElementStateProvider extends Serializable {
      *            the event type
      * @param listener
      *            the listener
+     * @param mode
+     *            controls RPC communication from the client side to the server
+     *            side when the element is disabled, not {@code null}
      * @param eventDataExpressions
      *            the event data expressions
      *
      * @return a handle for removing the listener
      */
     Registration addEventListener(StateNode node, String eventType,
-            DomEventListener listener, String[] eventDataExpressions);
+            DomEventListener listener, DisabledUpdateMode mode,
+            String[] eventDataExpressions);
 
     /**
      * Gets the value of the given property.
@@ -475,10 +479,29 @@ public interface ElementStateProvider extends Serializable {
 
     /**
      * Get the enabled state of the {@code StateNode}.
-     * 
+     *
      * @param node
      *            the node containing the data
      * @return {@code true} if node is enabled else {@code false}
      */
     boolean isEnabled(StateNode node);
+
+    /**
+     * Makes the property synchronized from the client side to the server.
+     * <p>
+     * The events which trigger synchronization are defined using
+     * {@link #getSynchronizedPropertyEvents(StateNode)}.
+     *
+     * @see #getSynchronizedPropertyEvents(StateNode)
+     * @see #getSynchronizedProperties(StateNode)
+     * @param node
+     *            the node containing the data
+     * @param property
+     *            the property to synchronize
+     * @param mode
+     *            controls RPC from the client side to the server side when the
+     *            element is disabled, not {@code null}
+     */
+    void addSynchronizedProperty(StateNode node, String property,
+            DisabledUpdateMode mode);
 }
