@@ -1442,11 +1442,21 @@ public class Element extends Node<Element> {
 
     /**
      * Get the enabled state of the element.
+     * <p>
+     * Object may be enabled by itself by but if its ascendant is disabled then
+     * it's considered as (implicitly) disabled.
      * 
      * @return {@code true} if node is enabled, {@code false} otherwise
      */
     public boolean isEnabled() {
-        return getStateProvider().isEnabled(getNode());
+        if (!getStateProvider().isEnabled(getNode())) {
+            return false;
+        }
+        Element parent = getParent();
+        if (parent != null) {
+            return parent.isEnabled();
+        }
+        return true;
     }
 
     @Override

@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,14 +27,6 @@ import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
-import com.vaadin.flow.dom.ClassList;
-import com.vaadin.flow.dom.DomEvent;
-import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.Node;
-import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -53,7 +46,6 @@ import com.vaadin.tests.util.TestUtil;
 import elemental.json.Json;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ElementTest extends AbstractNodeTest {
@@ -2285,6 +2277,26 @@ public class ElementTest extends AbstractNodeTest {
 
         Assert.assertNull(child.getParent());
         Assert.assertEquals(element, child.getParentNode());
+    }
+
+    @Test
+    public void parentIsDisabled_childIsDisabled() {
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+
+        parent.appendChild(child);
+
+        Assert.assertTrue("Parent should be enabled", parent.isEnabled());
+        Assert.assertTrue("Child should be enabled", child.isEnabled());
+
+        parent.setEnabled(false);
+
+        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
+        Assert.assertFalse("Child should be disabled", child.isEnabled());
+
+        child.removeFromParent();
+
+        Assert.assertTrue("Child should be enabled", child.isEnabled());
     }
 
     @Override
