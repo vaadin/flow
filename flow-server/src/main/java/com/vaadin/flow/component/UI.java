@@ -549,6 +549,8 @@ public class UI extends Component
             throw new IllegalStateException("Push not enabled");
         }
 
+        // asdf asdf asdf
+
         PushConnection pushConnection = getInternals().getPushConnection();
         assert pushConnection != null;
 
