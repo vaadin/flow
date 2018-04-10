@@ -27,7 +27,7 @@ package com.vaadin.flow.dom;
  * @author Vaadin Ltd
  *
  */
-public enum AllowDisabledUpdate {
+public enum DisabledUpdateMode {
     /**
      * If used then updates from the client side are allowed even for disabled
      * element.

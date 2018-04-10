@@ -298,7 +298,6 @@ public abstract class Component
     @Override
     public <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener) {
-
         return getEventBus().addListener(eventType, listener);
     }
 

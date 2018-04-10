@@ -16,8 +16,10 @@
 package com.vaadin.flow.component;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component.MapToExistingElement;
@@ -29,6 +31,7 @@ import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.SynchronizedPropertyInfo;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
@@ -292,18 +295,19 @@ public class ComponentUtil {
     }
 
     /**
-     * Gets the name of the synchronized properties defined declaratively for
-     * the given class.
+     * Gets the synchronized properties defined declaratively for the given
+     * class with their RPC update mode.
      *
      * @param componentClass
      *            the component class to check
      * @return the synchronized properties defined declaratively for the class
      */
-    public static Stream<String> getSynchronizedProperties(
+    public static Map<String, DisabledUpdateMode> getSynchronizedProperties(
             Class<? extends Component> componentClass) {
         Collection<SynchronizedPropertyInfo> infos = componentMetaDataCache
                 .get(componentClass).getSynchronizedProperties();
-        return infos.stream().map(info -> info.getProperty());
+        return infos.stream().collect(Collectors.toMap(
+                info -> info.getProperty(), info -> info.getUpdateMode()));
     }
 
     /**

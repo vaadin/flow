@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.ClassList;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
@@ -81,7 +82,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             SynchronizedPropertyEventsList.class, ComponentMapping.class,
             PolymerServerEventHandlers.class, ClientDelegateHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
-            AttachExistingElementFeature.class, VirtualChildrenList.class};
+            AttachExistingElementFeature.class, VirtualChildrenList.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -211,11 +212,12 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public Registration addEventListener(StateNode node, String eventType,
-            DomEventListener listener, String[] eventDataExpressions) {
+            DomEventListener listener, DisabledUpdateMode mode,
+            String[] eventDataExpressions) {
         ElementListenerMap listeners = node
                 .getFeature(ElementListenerMap.class);
 
-        return listeners.add(eventType, listener, eventDataExpressions);
+        return listeners.add(eventType, listener, mode, eventDataExpressions);
     }
 
     /**
@@ -378,6 +380,12 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     public boolean isVisible(StateNode node) {
         assert node.hasFeature(ElementData.class);
         return node.getFeature(ElementData.class).isVisible();
+    }
+
+    @Override
+    public void addSynchronizedProperty(StateNode node, String property,
+            DisabledUpdateMode mode) {
+        node.getFeature(SynchronizedPropertiesList.class).add(property, mode);
     }
 
     @Override

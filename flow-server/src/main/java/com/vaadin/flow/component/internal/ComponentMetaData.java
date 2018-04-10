@@ -33,6 +33,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -96,11 +97,14 @@ public class ComponentMetaData {
      */
     public static class SynchronizedPropertyInfo {
         private final String property;
+        private final DisabledUpdateMode mode;
         private final String[] eventNames;
 
-        SynchronizedPropertyInfo(String property, String[] eventNames) {
+        SynchronizedPropertyInfo(String property, String[] eventNames,
+                DisabledUpdateMode mode) {
             this.property = property;
             this.eventNames = eventNames;
+            this.mode = mode;
         }
 
         public String getProperty() {
@@ -109,6 +113,10 @@ public class ComponentMetaData {
 
         public Stream<String> getEventNames() {
             return Stream.of(eventNames);
+        }
+
+        public DisabledUpdateMode getUpdateMode() {
+            return mode;
         }
     }
 
@@ -262,8 +270,8 @@ public class ComponentMetaData {
             }
 
             String[] eventNames = annotation.value();
-            infos.put(method.getName(),
-                    new SynchronizedPropertyInfo(propertyName, eventNames));
+            infos.put(method.getName(), new SynchronizedPropertyInfo(
+                    propertyName, eventNames, annotation.allowUpdates()));
         }
     }
 

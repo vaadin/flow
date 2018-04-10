@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.ClassList;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
@@ -117,7 +118,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public Registration addEventListener(StateNode node, String eventType,
-            DomEventListener listener, String[] eventDataExpressions) {
+            DomEventListener listener, DisabledUpdateMode mode,
+            String[] eventDataExpressions) {
         throw new UnsupportedOperationException();
     }
 
@@ -174,6 +176,12 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public Set<String> getSynchronizedProperties(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void addSynchronizedProperty(StateNode node, String property,
+            DisabledUpdateMode mode) {
         throw new UnsupportedOperationException();
     }
 

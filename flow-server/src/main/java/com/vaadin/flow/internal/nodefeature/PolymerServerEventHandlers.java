@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
@@ -27,6 +26,7 @@ import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.ModelItem;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.RepeatIndex;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -64,8 +64,13 @@ public class PolymerServerEventHandlers
     }
 
     @Override
-    protected Class<? extends Annotation> getHandlerAnnotation() {
+    protected Class<? extends EventHandler> getHandlerAnnotation() {
         return EventHandler.class;
+    }
+
+    @Override
+    protected DisabledUpdateMode getUpdateMode(Method method) {
+        return method.getAnnotation(getHandlerAnnotation()).value();
     }
 
     private void checkParameterTypeAndAnnotation(Method method,
