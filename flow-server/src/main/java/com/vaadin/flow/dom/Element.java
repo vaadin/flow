@@ -517,6 +517,42 @@ public class Element extends Node<Element> {
      *            the type of event to listen to, not <code>null</code>
      * @param listener
      *            the listener to add, not <code>null</code>
+     * @param eventDataExpressions
+     *            definitions for data that should be passed back to the server
+     *            together with the event
+     * @return a handle that can be used for removing the listener
+     */
+    public Registration addEventListener(String eventType,
+            DomEventListener listener, String... eventDataExpressions) {
+        return addEventListener(eventType, listener,
+                DisabledUpdateMode.ONLY_WHEN_ENABLED, eventDataExpressions);
+    }
+
+    /**
+     * Adds an event listener and event data expressions for the given event
+     * type.
+     * <p>
+     * When an event is fired in the browser, custom JavaScript expressions
+     * defined in the <code>eventDataExpressions</code> parameter are evaluated
+     * to extract data that is sent back to the server. The expression is
+     * evaluated in a context where <code>element</code> refers to this element
+     * and <code>event</code> refers to the fired event. The result of the
+     * evaluation is available in {@link DomEvent#getEventData()} with the
+     * expression as the key in the JSON object. An expression might be e.g.
+     *
+     * <ul>
+     * <li><code>element.value</code> the get the value of an input element for
+     * a change event.
+     * <li><code>event.button === 0</code> to get true for click events
+     * triggered by the primary mouse button.
+     * </ul>
+     * <p>
+     * Event listeners are triggered in the order they are registered.
+     *
+     * @param eventType
+     *            the type of event to listen to, not <code>null</code>
+     * @param listener
+     *            the listener to add, not <code>null</code>
      * @param mode
      *            controls RPC communication from the client side to the server
      *            side when the element is disabled, not {@code null}
