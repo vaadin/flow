@@ -220,6 +220,12 @@ public class ComponentUtil {
         if (component.hasListener(AttachEvent.class)) {
             component.getEventBus().fireEvent(attachEvent);
         }
+        // inform component about onEnabledState if new state differs from
+        // internal state
+        if (component instanceof HasEnabled && component.getElement()
+                .isEnabled() != component.getElement().getNode().isEnabled()) {
+            informEnabledState(component, component.getElement().isEnabled());
+        }
     }
 
     /**
@@ -240,6 +246,27 @@ public class ComponentUtil {
         if (component.hasListener(DetachEvent.class)) {
             component.getEventBus().fireEvent(detachEvent);
         }
+        // inform component about onEnabledState if parent and child states
+        // differ.
+        if (component instanceof HasEnabled && component.getElement()
+                .isEnabled() != component.getElement().getNode().isEnabled()) {
+            informEnabledState(component,
+                    component.getElement().getNode().isEnabled());
+        }
+    }
+
+    /**
+     * Inform the component and its children about the enabled state on
+     * detach/attach.
+     *
+     * @param component
+     *            component to inform enabled state to.
+     */
+    private static void informEnabledState(Component component,
+            boolean enabled) {
+        component.onEnabledStateChanged(enabled);
+        component.getChildren().forEach(child -> child.onEnabledStateChanged(
+                enabled ? child.getElement().isEnabled() : false));
     }
 
     /**
