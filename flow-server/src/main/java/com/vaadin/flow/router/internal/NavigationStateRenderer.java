@@ -70,23 +70,22 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         Optional<List<String>> urlParameters = navigationState
                 .getUrlParameters();
         if (urlParameters.isPresent()) {
-            final Object deserializedParameter;
+            Object deserializedParameter = null;
             try {
                 deserializedParameter = ParameterDeserializer
                         .deserializeUrlParameters(routeTargetType,
                                 urlParameters.get());
 
-                @SuppressWarnings("unchecked")
-                HasUrlParameter<Object> hasUrlParameter = (HasUrlParameter<Object>) componentInstance;
-
-                hasUrlParameter.setParameter(beforeEnterEvent,
-                        deserializedParameter);
             } catch (Exception e) {
                 beforeEnterEvent.rerouteToError(NotFoundException.class,
                         String.format(
                                 "Failed to parse url parameter, exception: %s",
                                 e));
             }
+            @SuppressWarnings("unchecked")
+            HasUrlParameter<Object> hasUrlParameter = (HasUrlParameter<Object>) componentInstance;
+            hasUrlParameter.setParameter(beforeEnterEvent,
+                    deserializedParameter);
         }
     }
 
