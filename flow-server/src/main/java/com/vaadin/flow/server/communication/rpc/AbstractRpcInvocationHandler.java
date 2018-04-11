@@ -52,11 +52,7 @@ public abstract class AbstractRpcInvocationHandler
             return Optional.empty();
         }
 
-        boolean invokeRpc = true;
-        if (node.hasFeature(ElementData.class)) {
-            ElementData feature = node.getFeature(ElementData.class);
-            invokeRpc = feature.isVisible() && feature.isEnabled();
-        }
+        boolean invokeRpc = isVisibleAndEnabled(node);
         if (invokeRpc) {
             return handleNode(node, invocationJson);
         } else {
@@ -68,6 +64,22 @@ public abstract class AbstractRpcInvocationHandler
                     getClass().getName(), node.getId());
         }
         return Optional.empty();
+    }
+
+    private boolean isVisibleAndEnabled(StateNode node) {
+        if (node.hasFeature(ElementData.class)) {
+            ElementData feature = node.getFeature(ElementData.class);
+            boolean visibleAndEnabled = feature.isVisible()
+                    && feature.isEnabled();
+            if (!visibleAndEnabled) {
+                return false;
+            }
+        }
+        StateNode parent = node.getParent();
+        if (parent != null) {
+            return isVisibleAndEnabled(parent);
+        }
+        return true;
     }
 
     /**
