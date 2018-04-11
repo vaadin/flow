@@ -55,7 +55,7 @@ public abstract class AbstractRpcInvocationHandler
         boolean invokeRpc = true;
         if (node.hasFeature(ElementData.class)) {
             ElementData feature = node.getFeature(ElementData.class);
-            invokeRpc = feature.isVisible() && feature.isEnabled();
+            invokeRpc = feature.isVisible() && node.isEnabled();
         }
         if (invokeRpc) {
             return handleNode(node, invocationJson);

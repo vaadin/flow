@@ -83,6 +83,7 @@ public class StateNode implements Serializable {
     private boolean isInitialChanges = true;
 
     private ArrayList<StateTree.BeforeClientResponseEntry> beforeClientResponseEntries;
+    private boolean enabled = true;
 
     /**
      * Creates a state node with the given feature types.
@@ -797,4 +798,11 @@ public class StateNode implements Serializable {
         return () -> localEntries.remove(entry);
     }
 
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
 }

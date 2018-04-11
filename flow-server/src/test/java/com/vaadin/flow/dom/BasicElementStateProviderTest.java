@@ -130,25 +130,6 @@ public class BasicElementStateProviderTest {
 
     }
 
-    @Test // 3806
-    public void setEnabled() {
-        Element element = ElementFactory.createDiv();
-
-        Assert.assertTrue("Element should be enabled by default.",
-                element.getNode().getFeature(ElementData.class).isEnabled());
-
-        BasicElementStateProvider.get().setEnabled(element.getNode(), true);
-
-        Assert.assertTrue("Enabling element should keep element enabled",
-                element.getNode().getFeature(ElementData.class).isEnabled());
-
-        BasicElementStateProvider.get().setEnabled(element.getNode(), false);
-
-        Assert.assertFalse("Setting enabled to false should disable element",
-                element.getNode().getFeature(ElementData.class).isEnabled());
-
-    }
-
     private Element createHierarchy(Map<Node<?>, ElementType> map) {
         Element root = ElementFactory.createDiv();
 

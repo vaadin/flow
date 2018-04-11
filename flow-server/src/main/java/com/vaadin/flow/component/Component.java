@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 
@@ -507,9 +508,12 @@ public abstract class Component
      * By default this sets or removes the 'disabled' attribute from the
      * element. This can be overridden to have custom handling.
      * 
-     * @param enabled the new enabled state of the component
+     * @param enabled
+     *            the new enabled state of the component
      */
     public void onEnabledStateChange(boolean enabled) {
-        getElement().setAttribute("disabled", !enabled);
+        if (getElement().getNode().hasFeature(ElementData.class)) {
+            getElement().setAttribute("disabled", !enabled);
+        }
     }
 }

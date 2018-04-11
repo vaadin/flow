@@ -381,18 +381,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void setEnabled(StateNode node, boolean enabled) {
-        assert node.hasFeature(ElementData.class);
-        node.getFeature(ElementData.class).setEnabled(enabled);
-    }
-
-    @Override
-    public boolean isEnabled(StateNode node) {
-        assert node.hasFeature(ElementData.class);
-        return node.getFeature(ElementData.class).isEnabled();
-    }
-
-    @Override
     protected Node<?> getNode(StateNode node) {
         assert supports(node);
         return Element.get(node);

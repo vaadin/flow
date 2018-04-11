@@ -69,20 +69,23 @@ public class ElementData extends NodeMap {
         put(NodeProperties.PAYLOAD, payload);
     }
 
-    public void setEnabled(boolean enabled) {
-        put(NodeProperties.ENABLED, enabled);
-    }
-
+    /**
+     * Set the visibility of the element.
+     * 
+     * @param visible
+     *            is the element visible or hidden
+     */
     public void setVisible(boolean visible) {
         put(NodeProperties.VISIBLE, visible);
     }
 
+    /**
+     * Get element visibility.
+     * 
+     * @return Element is visible by default
+     */
     public boolean isVisible() {
         return !Boolean.FALSE.equals(get(NodeProperties.VISIBLE));
-    }
-
-    public boolean isEnabled() {
-        return !Boolean.FALSE.equals(get(NodeProperties.ENABLED));
     }
 
     /**
