@@ -89,11 +89,12 @@ public class VaadinServlet extends HttpServlet {
             throw new ServletException("Could not initialize VaadinServlet", e);
         }
 
-        staticFileServer = new StaticFileServer(servletService);
+        DeploymentConfiguration deploymentConfiguration = servletService
+                .getDeploymentConfiguration();
+        staticFileServer = new StaticFileServer(this, deploymentConfiguration);
 
-        if (servletService.getDeploymentConfiguration().areWebJarsEnabled()) {
-            webJarServer = new WebJarServer(
-                    servletService.getDeploymentConfiguration());
+        if (deploymentConfiguration.areWebJarsEnabled()) {
+            webJarServer = new WebJarServer(deploymentConfiguration);
         }
         servletContextResolver = new ServletContextUriResolver();
         // Sets current service even though there are no request and response
