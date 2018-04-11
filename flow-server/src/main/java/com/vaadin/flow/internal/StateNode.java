@@ -803,13 +803,6 @@ public class StateNode implements Serializable {
     }
 
     public boolean isEnabled() {
-        if (!enabled) {
-            return false;
-        }
-        StateNode parent = getParent();
-        if (parent != null) {
-            return parent.isEnabled();
-        }
-        return true;
+        return enabled;
     }
 }
