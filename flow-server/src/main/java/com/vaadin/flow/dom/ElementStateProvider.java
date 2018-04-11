@@ -463,22 +463,4 @@ public interface ElementStateProvider extends Serializable {
      */
     boolean isVisible(StateNode node);
 
-    /**
-     * Enables or disables the {@link StateNode}.
-     *
-     * @param node
-     *            the node containing the data
-     * @param enabled
-     *            if the node should be enabled
-     */
-    void setEnabled(StateNode node, boolean enabled);
-
-    /**
-     * Get the enabled state of the {@code StateNode}.
-     * 
-     * @param node
-     *            the node containing the data
-     * @return {@code true} if node is enabled else {@code false}
-     */
-    boolean isEnabled(StateNode node);
 }

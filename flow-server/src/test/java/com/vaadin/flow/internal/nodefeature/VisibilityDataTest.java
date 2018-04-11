@@ -41,7 +41,6 @@ public class VisibilityDataTest {
     @Test
     public void allowsChanges_delegateToIsVisible() {
         ElementData data = Mockito.mock(ElementData.class);
-        Mockito.when(data.isEnabled()).thenReturn(true);
 
         Mockito.doCallRealMethod().when(data).allowsChanges();
 

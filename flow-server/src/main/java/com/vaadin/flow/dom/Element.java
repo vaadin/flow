@@ -1428,7 +1428,7 @@ public class Element extends Node<Element> {
      * @return the element
      */
     public Element setEnabled(boolean enabled) {
-        getStateProvider().setEnabled(getNode(), enabled);
+        getNode().setEnabled(enabled);
 
         Optional<Component> component = getComponent();
         if (component.isPresent()) {
@@ -1449,14 +1449,7 @@ public class Element extends Node<Element> {
      * @return {@code true} if node is enabled, {@code false} otherwise
      */
     public boolean isEnabled() {
-        if (!getStateProvider().isEnabled(getNode())) {
-            return false;
-        }
-        Element parent = getParent();
-        if (parent != null) {
-            return parent.isEnabled();
-        }
-        return true;
+        return getNode().isEnabled();
     }
 
     @Override
