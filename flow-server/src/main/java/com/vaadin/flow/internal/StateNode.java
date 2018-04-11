@@ -690,6 +690,20 @@ public class StateNode implements Serializable {
         setInactive(getDisalowFeatures().count() != 0);
     }
 
+    /**
+     * Checks whether the node is active.
+     * <p>
+     * Inactive node should not participate in any RPC communication.
+     *
+     * @return {@code true} if the node is inactive
+     */
+    public boolean isInactive() {
+        if (isInactiveSelf || getParent() == null) {
+            return isInactiveSelf;
+        }
+        return getParent().isInactive();
+    }
+
     private Stream<NodeFeature> getDisalowFeatures() {
         return getFeatures().values().stream()
                 .filter(feature -> !feature.allowsChanges());
@@ -697,13 +711,6 @@ public class StateNode implements Serializable {
 
     private void setInactive(boolean inactive) {
         isInactiveSelf = inactive;
-    }
-
-    private boolean isInactive() {
-        if (isInactiveSelf || getParent() == null) {
-            return isInactiveSelf;
-        }
-        return getParent().isInactive();
     }
 
     /**

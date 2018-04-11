@@ -21,19 +21,12 @@ import java.util.stream.Collectors;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
-import com.vaadin.flow.dom.ClassList;
-import com.vaadin.flow.dom.DomEvent;
-import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.Node;
-import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -2285,6 +2278,44 @@ public class ElementTest extends AbstractNodeTest {
 
         Assert.assertNull(child.getParent());
         Assert.assertEquals(element, child.getParentNode());
+    }
+
+    @Test
+    public void syncProperty_delegateTo3ArgsMethod() {
+        Element element = Mockito.mock(Element.class);
+
+        Mockito.doCallRealMethod().when(element)
+                .synchronizeProperty(Mockito.anyString(), Mockito.anyString());
+        element.synchronizeProperty("foo", "bar");
+
+        Mockito.verify(element).synchronizeProperty("foo", "bar",
+                DisabledUpdateMode.ONLY_WHEN_ENABLED);
+    }
+
+    @Test
+    public void addSyncProperty_delegateTo2ArgsMethod() {
+        Element element = Mockito.mock(Element.class);
+
+        Mockito.doCallRealMethod().when(element)
+                .addSynchronizedProperty(Mockito.anyString());
+        element.addSynchronizedProperty("foo");
+
+        Mockito.verify(element).addSynchronizedProperty("foo",
+                DisabledUpdateMode.ONLY_WHEN_ENABLED);
+    }
+
+    @Test
+    public void addEventListener_delegateTo3ArgsMethod() {
+        Element element = Mockito.mock(Element.class);
+
+        Mockito.doCallRealMethod().when(element)
+                .addEventListener(Mockito.anyString(), Mockito.any());
+
+        DomEventListener listener = Mockito.mock(DomEventListener.class);
+        element.addEventListener("foo", listener);
+
+        Mockito.verify(element).addEventListener("foo", listener,
+                DisabledUpdateMode.ONLY_WHEN_ENABLED);
     }
 
     @Override

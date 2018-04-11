@@ -62,10 +62,14 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void handleInvisibleNode_nodeIsNotHandled() {
+    public void handleInactiveNode_nodeIsNotHandled() {
         UI ui = new UI();
 
-        createRpcInvocationData(ui, elem -> elem.setVisible(false));
+        createRpcInvocationData(ui, elem -> {
+            elem.setVisible(false);
+            elem.getNode().updateActiveState();
+
+        });
 
         Assert.assertNull(handler.node);
     }
