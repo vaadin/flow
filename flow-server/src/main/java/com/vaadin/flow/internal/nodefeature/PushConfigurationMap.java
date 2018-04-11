@@ -18,10 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.Collection;
 
 import com.vaadin.flow.component.PushConfiguration;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
