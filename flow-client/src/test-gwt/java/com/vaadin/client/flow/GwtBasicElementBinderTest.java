@@ -1376,49 +1376,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertNull(element.getAttribute("hidden"));
     }
 
-    public void testBindDisabledElement_elementIsBound_elementstaysBoundWhenEnabled() {
-        setEnabled(false);
-
-        setTag();
-
-        StateNode childNode = createChildNode("child");
-        children.add(0, childNode);
-
-        properties.getProperty("foo").setValue("bar");
-
-        node.setDomNode(element);
-
-        List<Integer> list = Arrays.asList(0);
-        node.addDomNodeSetListener(node -> {
-            list.set(0, list.get(0) + 1);
-            return false;
-        });
-
-        Binder.bind(node, element);
-
-        Reactive.flush();
-
-        assertEquals(Integer.valueOf(0), list.get(0));
-
-        assertEquals(1, element.getChildElementCount());
-        assertTrue(element.getFirstElementChild().getTagName()
-                .equalsIgnoreCase(childNode.getMap(NodeFeatures.ELEMENT_DATA)
-                        .getProperty(NodeProperties.TAG).getValue()
-                        .toString()));
-        assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
-
-        setEnabled(true);
-
-        Reactive.flush();
-
-        assertEquals(1, element.getChildren().length());
-        assertTrue(element.getFirstElementChild().getTagName()
-                .equalsIgnoreCase(childNode.getMap(NodeFeatures.ELEMENT_DATA)
-                        .getProperty(NodeProperties.TAG).getValue()
-                        .toString()));
-        assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
-    }
-
     public void testBindInvisibleElement_elementIsNotBound_elementBecomesBoundWhenVisible() {
         setVisible(false);
 
@@ -1723,12 +1680,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
         MapProperty visibility = map.getProperty(NodeProperties.VISIBLE);
         visibility.setValue(visible);
-    }
-
-    private void setEnabled(boolean enabled) {
-        NodeMap map = node.getMap(NodeFeatures.ELEMENT_DATA);
-        MapProperty enabledState = map.getProperty(NodeProperties.ENABLED);
-        enabledState.setValue(enabled);
     }
 
     private Element createAndAppendElementToShadowRoot(Element shadowRoot,
