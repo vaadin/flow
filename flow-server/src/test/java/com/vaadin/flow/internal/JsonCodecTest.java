@@ -28,9 +28,6 @@ import org.junit.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 import elemental.json.Json;
@@ -110,16 +107,15 @@ public class JsonCodecTest {
     public void encodeWithTypeInfo_attachedElement() {
         Element element = ElementFactory.createDiv();
 
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
                 element.getNode());
 
         JsonValue json = JsonCodec.encodeWithTypeInfo(element);
 
-        assertJsonEquals(
-                JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                        Json.create(element.getNode().getId())),
-                json);
+        assertJsonEquals(JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+                Json.create(element.getNode().getId())), json);
     }
 
     @Test

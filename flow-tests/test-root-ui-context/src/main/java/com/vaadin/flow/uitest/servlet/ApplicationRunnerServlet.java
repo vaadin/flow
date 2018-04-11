@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -51,6 +52,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SystemMessages;
@@ -357,8 +359,21 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                 String name = ApplicationRunnerServlet.class.getName()
                         + ".deploymentConfiguration";
                 try {
-                    session.lock();
-                    configuration = (DeploymentConfiguration) session
+                    session.getLockInstance().lock();
+
+                    /*
+                     * Read attribute using reflection to bypass
+                     * VaadinSesison.getAttribute which would cause an infinite
+                     * loop when checking the production mode setting for
+                     * determining whether to check that the session is locked.
+                     */
+                    Field attributesField = VaadinSession.class
+                            .getDeclaredField("attributes");
+                    attributesField.setAccessible(true);
+                    Attributes sessionAttributes = (Attributes) attributesField
+                            .get(session);
+
+                    configuration = (DeploymentConfiguration) sessionAttributes
                             .getAttribute(name);
 
                     if (configuration == null) {
@@ -397,10 +412,10 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                             configuration = originalConfiguration;
                         }
 
-                        session.setAttribute(name, configuration);
+                        sessionAttributes.setAttribute(name, configuration);
                     }
                 } finally {
-                    session.unlock();
+                    session.getLockInstance().unlock();
                 }
 
                 CurrentInstance.set(DeploymentConfiguration.class,

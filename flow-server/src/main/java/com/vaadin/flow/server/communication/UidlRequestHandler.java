@@ -149,7 +149,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     private ServerRpcHandler getRpcHandler(VaadinSession session) {
-        assert session.hasLock();
+        session.checkHasLock();
         if (rpcHandler == null) {
             rpcHandler = createRpcHandler();
         }

@@ -214,7 +214,7 @@ class PushConfigurationImpl implements PushConfiguration {
                     "Cannot set the push mode for a detached UI");
         }
 
-        assert session.hasLock();
+        session.checkHasLock();
 
         if (pushMode.isEnabled()
                 && !session.getService().ensurePushAvailable()) {

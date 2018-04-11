@@ -85,15 +85,15 @@ public class StreamResourceRegistry implements Serializable {
      * needed anymore. Note that it is the developer's responsibility to
      * unregister resources. Otherwise resources won't be garbage collected
      * until the session expires which causes memory leak.
-     * 
+     *
      * @param resource
      *            stream resource to register
      * @return registration handler
      */
     public StreamRegistration registerResource(
             AbstractStreamResource resource) {
-        assert session
-                .hasLock() : "Session needs to be locked when registering stream resources.";
+        session.checkHasLock(
+                "Session needs to be locked when registering stream resources.");
         StreamRegistration registration = new Registration(this,
                 resource.getId(), resource.getName());
         res.put(registration.getResourceUri(), resource);
@@ -102,7 +102,7 @@ public class StreamResourceRegistry implements Serializable {
 
     /**
      * Unregister a stream receiver resource.
-     * 
+     *
      * @param resource
      *            stream receiver resource to unregister
      */
@@ -146,13 +146,13 @@ public class StreamResourceRegistry implements Serializable {
      *         been registered with this URI
      */
     public Optional<AbstractStreamResource> getResource(URI uri) {
-        assert session.hasLock();
+        session.checkHasLock();
         return Optional.ofNullable(res.get(uri));
     }
 
     /**
      * Get a registered resource of given type.
-     * 
+     *
      * @param type
      *            resource class type
      * @param uri
@@ -164,11 +164,12 @@ public class StreamResourceRegistry implements Serializable {
      */
     public <T extends AbstractStreamResource> Optional<T> getResource(
             Class<T> type, URI uri) {
-        assert session.hasLock();
+        session.checkHasLock();
         AbstractStreamResource abstractStreamResource = res.get(uri);
         if (abstractStreamResource != null
-                && type.isAssignableFrom(abstractStreamResource.getClass()))
+                && type.isAssignableFrom(abstractStreamResource.getClass())) {
             return Optional.of((T) abstractStreamResource);
+        }
         return Optional.empty();
     }
 }

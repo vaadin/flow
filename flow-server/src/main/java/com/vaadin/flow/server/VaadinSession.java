@@ -61,6 +61,8 @@ import com.vaadin.flow.shared.communication.PushMode;
  */
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
+    private static final String SESSION_NOT_LOCKED_MESSAGE = "Cannot access state in VaadinSession or UI without locking the session.";
+
     /**
      * The name of the parameter that is by default used in e.g. web.xml to
      * define the name of the default {@link UI} class.
@@ -159,7 +161,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                             + "This might happen if a session is deserialized but never used before it expires.");
         } else if (VaadinService.getCurrentRequest() != null
                 && getCurrent() == this) {
-            assert hasLock();
+            checkHasLock();
             // Ignore if the session is being moved to a different backing
             // session or if GAEVaadinServlet is doing its normal cleanup.
             if (getAttribute(
@@ -186,7 +188,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return the web browser object
      */
     public WebBrowser getBrowser() {
-        assert hasLock();
+        checkHasLock();
         return browser;
     }
 
@@ -195,7 +197,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *         milliseconds.
      */
     public long getCumulativeRequestDuration() {
-        assert hasLock();
+        checkHasLock();
         return cumulativeRequestDuration;
     }
 
@@ -207,7 +209,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            The time spent in the last request, in milliseconds.
      */
     public void setLastRequestDuration(long time) {
-        assert hasLock();
+        checkHasLock();
         lastRequestDuration = time;
         cumulativeRequestDuration += time;
     }
@@ -217,7 +219,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *         milliseconds.
      */
     public long getLastRequestDuration() {
-        assert hasLock();
+        checkHasLock();
         return lastRequestDuration;
     }
 
@@ -230,7 +232,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      */
     public void setLastRequestTimestamp(long timestamp) {
-        assert hasLock();
+        checkHasLock();
         lastRequestTimestamp = timestamp;
     }
 
@@ -241,7 +243,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *         the epoch.
      */
     public long getLastRequestTimestamp() {
-        assert hasLock();
+        checkHasLock();
         return lastRequestTimestamp;
     }
 
@@ -297,7 +299,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     public void setConfiguration(DeploymentConfiguration configuration) {
-        assert hasLock();
+        checkHasLock();
         if (configuration == null) {
             throw new IllegalArgumentException("Can not set to null");
         }
@@ -311,7 +313,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return the deployment configuration
      */
     public DeploymentConfiguration getConfiguration() {
-        assert hasLock();
+        checkHasLock();
         return configuration;
     }
 
@@ -324,7 +326,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return the locale of this session.
      */
     public Locale getLocale() {
-        assert hasLock();
+        checkHasLock();
         return locale;
     }
 
@@ -339,7 +341,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      */
     public void setLocale(Locale locale) {
-        assert hasLock();
+        checkHasLock();
         this.locale = locale;
     }
 
@@ -349,7 +351,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return the current error handler
      */
     public ErrorHandler getErrorHandler() {
-        assert hasLock();
+        checkHasLock();
         return errorHandler;
     }
 
@@ -360,7 +362,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the new error handler
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
-        assert hasLock();
+        checkHasLock();
         this.errorHandler = errorHandler;
     }
 
@@ -380,7 +382,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @since 7.0
      */
     public void addRequestHandler(RequestHandler handler) {
-        assert hasLock();
+        checkHasLock();
         requestHandlers.addFirst(handler);
     }
 
@@ -393,7 +395,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @since 7.0
      */
     public void removeRequestHandler(RequestHandler handler) {
-        assert hasLock();
+        checkHasLock();
         requestHandlers.remove(handler);
     }
 
@@ -411,7 +413,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @since 7.0
      */
     public Collection<RequestHandler> getRequestHandlers() {
-        assert hasLock();
+        checkHasLock();
         return Collections.unmodifiableCollection(requestHandlers);
     }
 
@@ -470,7 +472,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @since 7.0
      */
     public Collection<UI> getUIs() {
-        assert hasLock();
+        checkHasLock();
         return Collections.unmodifiableCollection(uIs.values());
     }
 
@@ -484,7 +486,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return The UI with the given id or null if not found
      */
     public UI getUIById(int uiId) {
-        assert hasLock();
+        checkHasLock();
         return uIs.get(uiId);
     }
 
@@ -497,6 +499,40 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public boolean hasLock() {
         ReentrantLock l = ((ReentrantLock) getLockInstance());
         return l.isHeldByCurrentThread();
+    }
+
+    /**
+     * Potentially checks whether this session is currently locked by the
+     * current thread, and fails with the given message if not.
+     * <p>
+     * When production mode is enabled, the check is only done if assertions are
+     * also enabled. This is done to avoid the small performance impact of
+     * continuously checking the lock status. The check is always done when
+     * production mode is not enabled.
+     *
+     * @param message
+     *            the error message to include when failing if the check is done
+     *            and the session is not locked
+     */
+    public void checkHasLock(String message) {
+        if (configuration == null || configuration.isProductionMode()) {
+            assert hasLock() : message;
+        } else if (!hasLock()) {
+            throw new IllegalStateException(message);
+        }
+    }
+
+    /**
+     * Potentially checks whether this session is currently locked by the
+     * current thread, and fails with a standard error message if not.
+     * <p>
+     * When production mode is enabled, the check is only done if assertions are
+     * also enabled. This is done to avoid the small performance impact of
+     * continuously checking the lock status. The check is always done when
+     * production mode is not enabled.
+     */
+    public void checkHasLock() {
+        checkHasLock(SESSION_NOT_LOCKED_MESSAGE);
     }
 
     /**
@@ -525,7 +561,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the UI to remove
      */
     public void removeUI(UI ui) {
-        assert hasLock() : "Session is locked";
+        checkHasLock();
         assert UI.getCurrent() != null : "Current UI cannot be null";
         assert ui != null : "Removed UI cannot be null";
         assert UI.getCurrent().getUIId() == ui.getUIId() : "UIs don't match";
@@ -609,7 +645,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see UI#push()
      */
     public void unlock() {
-        assert hasLock();
+        checkHasLock();
         boolean ultimateRelease = false;
         try {
             /*
@@ -666,7 +702,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            remove a previous association.
      */
     public void setAttribute(String name, Object value) {
-        assert hasLock();
+        checkHasLock();
         attributes.setAttribute(name, value);
     }
 
@@ -693,7 +729,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the type of the stored value
      */
     public <T> void setAttribute(Class<T> type, T value) {
-        assert hasLock();
+        checkHasLock();
         attributes.setAttribute(type, value);
     }
 
@@ -710,7 +746,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *         it has been set to null.
      */
     public Object getAttribute(String name) {
-        assert hasLock();
+        checkHasLock();
         return attributes.getAttribute(name);
     }
 
@@ -736,7 +772,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *         it has been set to null.
      */
     public <T> T getAttribute(Class<T> type) {
-        assert hasLock();
+        checkHasLock();
         return attributes.getAttribute(type);
     }
 
@@ -746,7 +782,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return a unique UI id
      */
     public int getNextUIid() {
-        assert hasLock();
+        checkHasLock();
         return nextUIId++;
     }
 
@@ -757,7 +793,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the initialized UI to add.
      */
     public void addUI(UI ui) {
-        assert hasLock();
+        checkHasLock();
         if (ui.getUIId() == -1) {
             throw new IllegalArgumentException(
                     "Can not add an UI that has not been initialized.");
@@ -787,7 +823,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      */
     public void close() {
-        assert hasLock();
+        checkHasLock();
         state = VaadinSessionState.CLOSING;
     }
 
@@ -798,7 +834,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return the current state
      */
     public VaadinSessionState getState() {
-        assert hasLock();
+        checkHasLock();
         return state;
     }
 
@@ -811,7 +847,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the new state
      */
     protected void setState(VaadinSessionState state) {
-        assert hasLock();
+        checkHasLock();
         assert isValidChange(state) : "Invalid session state change "
                 + this.state + "->" + state;
 
@@ -944,7 +980,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return the csrf token string
      */
     public String getCsrfToken() {
-        assert hasLock();
+        checkHasLock();
         return csrfToken;
     }
 
@@ -955,7 +991,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return the push connection identifier string
      */
     public String getPushId() {
-        assert hasLock();
+        checkHasLock();
         return pushId;
     }
 

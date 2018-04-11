@@ -188,7 +188,7 @@ public class UIInternals implements Serializable {
      */
     public UIInternals(UI ui) {
         this.ui = ui;
-        stateTree = new StateTree(ui, getRootNodeFeatures());
+        stateTree = new StateTree(this, getRootNodeFeatures());
     }
 
     /**
@@ -460,6 +460,7 @@ public class UIInternals implements Serializable {
 
     private <E> Registration addNavigationListener(Class<E> navigationHandler,
             E listener) {
+        session.checkHasLock();
         List<E> list = (List<E>) listeners.computeIfAbsent(navigationHandler,
                 key -> new ArrayList<>());
         list.add(listener);
@@ -490,6 +491,7 @@ public class UIInternals implements Serializable {
      */
     public ExecutionCanceler addJavaScriptInvocation(
             JavaScriptInvocation invocation) {
+        session.checkHasLock();
         pendingJsInvocations.add(invocation);
         return () -> pendingJsInvocations.remove(invocation);
     }
@@ -909,4 +911,12 @@ public class UIInternals implements Serializable {
         return contextRootRelativePath;
     }
 
+    /**
+     * Gets the UI that this instance belongs to.
+     *
+     * @return the UI instance.
+     */
+    public UI getUI() {
+        return ui;
+    }
 }

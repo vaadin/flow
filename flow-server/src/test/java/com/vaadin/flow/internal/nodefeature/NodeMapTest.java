@@ -32,9 +32,6 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
-import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
-import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.internal.nodefeature.NodeMap;
 import com.vaadin.flow.server.Command;
 
 import elemental.json.Json;
@@ -331,7 +328,8 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
 
     @Test
     public void put_sameValue_hasNoEffect() {
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
         StateNode child = new StateNode();
 
         AtomicBoolean listenerIsCalled = new AtomicBoolean();
