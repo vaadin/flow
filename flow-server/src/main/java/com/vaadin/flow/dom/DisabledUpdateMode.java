@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
+import com.vaadin.flow.component.HasEnabled;
+
 /**
  * Controls RPC communication from the client side to the server side respecting
  * enabled state.
