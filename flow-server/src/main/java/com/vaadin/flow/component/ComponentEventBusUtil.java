@@ -223,7 +223,7 @@ public class ComponentEventBusUtil {
 
     /**
      * Applies the handler to extracts
-     * {@link com.vaadin.flow.component.DomEvent} annotation parameters if
+     * {@link com.vaadin.flow.component.DomEvent} annotation parameters if the
      * annotation presents.
      * <p>
      * The handler is not invoked if there is no annotation for the given

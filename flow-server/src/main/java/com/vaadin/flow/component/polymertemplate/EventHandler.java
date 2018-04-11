@@ -38,8 +38,8 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 public @interface EventHandler {
 
     /**
-     * Controls RPC for the method from the client side to the server side when
-     * the element is disabled.
+     * Controls event handling for the method from the client side to the server
+     * side when the element is disabled.
      *
      * @return the property update mode for disabled element
      */

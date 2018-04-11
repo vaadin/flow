@@ -161,6 +161,7 @@ public class ComponentEventBus implements Serializable {
         assert eventType != null;
         assert !componentEventData.containsKey(eventType)
                 || componentEventData.get(eventType).domEventRemover == null;
+        assert mode != null;
 
         if (domEventType == null || domEventType.isEmpty()) {
             throw new IllegalArgumentException(

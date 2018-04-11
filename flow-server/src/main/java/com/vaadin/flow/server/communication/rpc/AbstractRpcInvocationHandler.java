@@ -58,10 +58,10 @@ public abstract class AbstractRpcInvocationHandler
                     "RPC request for invocation handler '{}' is recieved from "
                             + "the client side for inactive node id='{}'",
                     getClass().getName(), node.getId());
+            return Optional.empty();
         } else {
             return handleNode(node, invocationJson);
         }
-        return Optional.empty();
     }
 
     /**

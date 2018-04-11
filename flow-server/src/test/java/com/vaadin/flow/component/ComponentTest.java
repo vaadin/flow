@@ -66,7 +66,7 @@ public class ComponentTest {
     }
 
     @com.vaadin.flow.component.DomEvent("foo")
-    public static class TestDomEvent extends ComponentEvent {
+    public static class TestDomEvent extends ComponentEvent<Component> {
 
         public TestDomEvent(Component source, boolean fromClient) {
             super(source, fromClient);
@@ -75,7 +75,7 @@ public class ComponentTest {
     }
 
     @com.vaadin.flow.component.DomEvent(value = "foo", allowUpdates = DisabledUpdateMode.ALWAYS)
-    public static class EnabledDomEvent extends ComponentEvent {
+    public static class EnabledDomEvent extends ComponentEvent<Component> {
         public EnabledDomEvent(Component source, boolean fromClient) {
             super(source, fromClient);
         }
@@ -1141,7 +1141,7 @@ public class ComponentTest {
         TestDiv div = new TestDiv();
 
         AtomicInteger count = new AtomicInteger();
-        div.addListener(TestDomEvent.class, event -> count.incrementAndGet());
+        div.addListener(TestDomEvent.class, vent -> count.incrementAndGet());
         div.getElement().getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(createEvent("foo", div));
 
@@ -1154,7 +1154,7 @@ public class ComponentTest {
         div.getElement().setEnabled(false);
 
         AtomicInteger count = new AtomicInteger();
-        div.addListener(TestDomEvent.class, event -> count.incrementAndGet());
+        div.addListener(TestDomEvent.class, vent -> count.incrementAndGet());
         div.getElement().getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(createEvent("foo", div));
 

@@ -97,13 +97,12 @@ public class PublishedServerEventHandlerRpcHandler
                             + "there is no component available for the target node");
         }
 
-        boolean isEnabled = true;
+        boolean execute = true;
         if (BasicElementStateProvider.get().supports(node)) {
-            isEnabled = Element.get(node).isEnabled();
+            execute = Element.get(node).isEnabled();
         }
 
-        boolean execute = isEnabled;
-        if (!isEnabled) {
+        if (!execute) {
             ClientDelegateHandlers clientDelegate = node
                     .getFeature(ClientDelegateHandlers.class);
             PolymerServerEventHandlers eventHandlers = node
