@@ -15,7 +15,9 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.shared.GWT;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
+import com.google.gwt.core.client.JavaScriptException;
 
 import elemental.client.Browser;
 
@@ -27,6 +29,12 @@ import elemental.client.Browser;
  */
 public final class Console {
     private static boolean shouldLogToBrowserConsole;
+    
+    @FunctionalInterface
+    // Runnable that can throw
+    private interface DeferWithoutEntryTask {
+        void run() throws Exception;
+    }
 
     private Console() {
     }
@@ -121,5 +129,54 @@ public final class Console {
             System.err.println(message);
         }
     }
+
+    /**
+     * Logs the stacktrace of an exception to the browser console. Logging is
+     * done asynchronously since that approach allows reporting it with highest
+     * possible fidelity.
+     *
+     * @param exception
+     *            the exception for which
+     */
+    public static void reportStacktrace(Exception exception) {
+        if (GWT.isScript()) {
+            if (shouldLogToBrowserConsole) {
+                doReportStacktrace(exception);
+            }
+        } else {
+            exception.printStackTrace();
+        }
+    }
+
+    private static void doReportStacktrace(Exception exception) {
+        // Defer without $entry to bypass some of GWT's exception handling
+        deferWithoutEntry(() -> {
+            // Bypass regular exception reporting
+            UncaughtExceptionHandler originalHandler = GWT
+                    .getUncaughtExceptionHandler();
+            GWT.setUncaughtExceptionHandler(
+                    ignore -> GWT.setUncaughtExceptionHandler(originalHandler));
+
+            // Throw in the appropriate way
+            if (exception instanceof JavaScriptException) {
+                // Throw originally thrown instance through JS
+                jsThrow(((JavaScriptException) exception).getThrown());
+            } else {
+                throw exception;
+            }
+        });
+    }
+
+    private static native void jsThrow(Object exception)
+    /*-{
+      throw exception;
+    }-*/;
+
+    private static native void deferWithoutEntry(DeferWithoutEntryTask task)
+    /*-{
+      $wnd.setTimeout(function() {
+        task.@DeferWithoutEntryTask::run()();
+      }, 0);
+    }-*/;
 
 }
