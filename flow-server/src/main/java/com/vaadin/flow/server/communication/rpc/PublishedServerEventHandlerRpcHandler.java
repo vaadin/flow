@@ -102,7 +102,7 @@ public class PublishedServerEventHandlerRpcHandler
             isEnabled = Element.get(node).isEnabled();
         }
 
-        boolean execute = true;
+        boolean execute = isEnabled;
         if (!isEnabled) {
             ClientDelegateHandlers clientDelegate = node
                     .getFeature(ClientDelegateHandlers.class);
@@ -113,7 +113,7 @@ public class PublishedServerEventHandlerRpcHandler
                         clientDelegate.getDisabledUpdateMode(methodName));
             }
             if (eventHandlers.hasHandler(methodName)) {
-                execute = DisabledUpdateMode.ALWAYS.equals(
+                execute = execute || DisabledUpdateMode.ALWAYS.equals(
                         eventHandlers.getDisabledUpdateMode(methodName));
             }
         }

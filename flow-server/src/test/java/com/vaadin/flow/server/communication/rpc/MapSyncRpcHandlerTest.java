@@ -22,7 +22,9 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
@@ -165,6 +167,55 @@ public class MapSyncRpcHandlerTest {
 
         Assert.assertNotSame(anotherNode, testPropertyValue);
         Assert.assertTrue(testPropertyValue instanceof JsonValue);
+    }
+
+    @Test
+    public void disabledElement_updateDisallowed_updateIsNotDone()
+            throws Exception {
+        Element element = ElementFactory.createDiv();
+        UI ui = new UI();
+        ui.getElement().appendChild(element);
+
+        element.setEnabled(false);
+        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
+                DisabledUpdateMode.ONLY_WHEN_ENABLED);
+
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
+
+        Assert.assertNotEquals(NEW_VALUE,
+                element.getPropertyRaw(TEST_PROPERTY));
+    }
+
+    @Test
+    public void disabledElement_updateIsAllowed_updateIsDone()
+            throws Exception {
+        Element element = ElementFactory.createDiv();
+        UI ui = new UI();
+        ui.getElement().appendChild(element);
+
+        element.setEnabled(false);
+        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
+                DisabledUpdateMode.ALWAYS);
+
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
+
+        Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
+    }
+
+    @Test
+    public void implicitlyDisabledElement_updateIsAllowed_updateIsDone()
+            throws Exception {
+        Element element = ElementFactory.createDiv();
+        UI ui = new UI();
+        ui.getElement().appendChild(element);
+
+        ui.setEnabled(false);
+        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
+                DisabledUpdateMode.ALWAYS);
+
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
+
+        Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
     }
 
     private static void sendSynchronizePropertyEvent(Element element, UI ui,

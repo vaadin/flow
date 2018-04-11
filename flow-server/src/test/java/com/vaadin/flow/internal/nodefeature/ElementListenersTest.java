@@ -40,7 +40,7 @@ public class ElementListenersTest
     private ElementListenerMap ns = createFeature();
 
     @Test
-    public void testAddedListenerGetsEvent() {
+    public void addedListenerGetsEvent() {
 
         AtomicInteger eventCount = new AtomicInteger();
 
@@ -60,12 +60,8 @@ public class ElementListenersTest
         Assert.assertEquals(1, eventCount.get());
     }
 
-    private static DomEvent createEvent(String type) {
-        return new DomEvent(new Element("fake"), type, Json.createObject());
-    }
-
     @Test
-    public void testEventNameInClientData() {
+    public void eventNameInClientData() {
         Assert.assertFalse(ns.contains("foo"));
 
         Registration handle = ns.add("foo", noOp,
@@ -79,7 +75,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testAddAndRemoveEventData() {
+    public void addAndRemoveEventData() {
         ns.add("eventType", noOp, DisabledUpdateMode.ONLY_WHEN_ENABLED,
                 new String[] { "data1", "data2" });
 
@@ -114,7 +110,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testEventDataInEvent() {
+    public void eventDataInEvent() {
         AtomicReference<JsonObject> eventDataReference = new AtomicReference<>();
         ns.add("foo", e -> {
             Assert.assertNull(eventDataReference.get());
@@ -134,7 +130,57 @@ public class ElementListenersTest
         Assert.assertEquals("true", capturedJson.get("baz").toJson());
     }
 
+    @Test
+    public void disabledElement_listenerDoesntReceiveEvent() {
+        AtomicInteger eventCount = new AtomicInteger();
+
+        ns.add("foo", e -> eventCount.incrementAndGet(),
+                DisabledUpdateMode.ONLY_WHEN_ENABLED, new String[0]);
+
+        Assert.assertEquals(0, eventCount.get());
+        DomEvent event = createEvent("foo");
+        event.getSource().setEnabled(false);
+        ns.fireEvent(event);
+        Assert.assertEquals(0, eventCount.get());
+    }
+
+    @Test
+    public void implicitlyDisabledElement_listenerDoesntReceiveEvent() {
+        AtomicInteger eventCount = new AtomicInteger();
+
+        ns.add("foo", e -> eventCount.incrementAndGet(),
+                DisabledUpdateMode.ONLY_WHEN_ENABLED, new String[0]);
+
+        Assert.assertEquals(0, eventCount.get());
+        DomEvent event = createEvent("foo");
+
+        Element parent = new Element("parent");
+        parent.appendChild(event.getSource());
+        parent.setEnabled(false);
+
+        ns.fireEvent(event);
+        Assert.assertEquals(0, eventCount.get());
+    }
+
+    @Test
+    public void disabledElement_listenerWithAlwaysUpdateModeReceivesEvent() {
+        AtomicInteger eventCount = new AtomicInteger();
+
+        ns.add("foo", e -> eventCount.incrementAndGet(),
+                DisabledUpdateMode.ALWAYS, new String[0]);
+
+        Assert.assertEquals(0, eventCount.get());
+        DomEvent event = createEvent("foo");
+        event.getSource().setEnabled(false);
+        ns.fireEvent(event);
+        Assert.assertEquals(1, eventCount.get());
+    }
+
     private Set<String> getExpressions(String name) {
         return ns.getExpressions(name);
+    }
+
+    private static DomEvent createEvent(String type) {
+        return new DomEvent(new Element("fake"), type, Json.createObject());
     }
 }

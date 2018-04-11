@@ -15,38 +15,74 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import org.jsoup.nodes.Element;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ClientDelegate;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
-import com.vaadin.flow.server.communication.rpc.PublishedServerEventHandlerRpcHandler;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
+import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import net.jcip.annotations.NotThreadSafe;
 
-/**
- * @author Vaadin Ltd
- *
- */
+@NotThreadSafe
 public class PublishedServerEventHandlerRpcHandlerTest {
 
+    private VaadinService service;
+
     @Tag("a")
-    public static class ComponentWithMethod extends Component {
+    public static class ComponentWithMethod
+            extends PolymerTemplate<TemplateModel> {
 
         private boolean isInvoked;
 
-        protected void intMethod(int i) {
+        ComponentWithMethod() {
+            super((clazz, tag) -> new TemplateData("", new Element("a")));
+        }
 
+        protected void intMethod(int i) {
         }
 
         @EventHandler
         private void method() {
+            isInvoked = true;
+        }
+
+    }
+
+    @Tag(Tag.DIV)
+    public static class EnabledHandler extends PolymerTemplate<TemplateModel> {
+
+        private boolean isInvoked;
+
+        EnabledHandler() {
+            super((clazz, tag) -> new TemplateData("", new Element("div")));
+        }
+
+        @EventHandler(DisabledUpdateMode.ALWAYS)
+        private void method() {
+            isInvoked = true;
+        }
+
+        @ClientDelegate(DisabledUpdateMode.ALWAYS)
+        private void operation() {
             isInvoked = true;
         }
     }
@@ -92,29 +128,31 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         @Override
         @EventHandler
-        protected void intMethod(int i) {
+        protected void intMethod(@EventData("foo") int i) {
             intArg = i;
         }
 
         @EventHandler
-        protected void method1(String str, boolean[] array) {
+        protected void method1(@EventData("foo") String str,
+                @EventData("bar") boolean[] array) {
             strArg = str;
             arrayArg = array;
         }
 
         @EventHandler
-        protected void method2(Double[] arg1, Integer... varArg) {
+        protected void method2(@EventData("foo") Double[] arg1,
+                @EventData("bar") Integer... varArg) {
             doubleArg = arg1;
             this.varArg = varArg;
         }
 
         @EventHandler
-        protected void method3(int[][] array) {
+        protected void method3(@EventData("foo") int[][] array) {
             doubleArray = array;
         }
 
         @EventHandler
-        protected void method4(JsonValue value) {
+        protected void method4(@EventData("foo") JsonValue value) {
             jsonValue = value;
         }
     }
@@ -124,7 +162,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         private String[] varArg;
 
         @EventHandler
-        protected void varArgMethod(String... args) {
+        protected void varArgMethod(@EventData("foo") String... args) {
             varArg = args;
         }
 
@@ -152,6 +190,20 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     @Before
     public void setUp() {
         Assert.assertNull(System.getSecurityManager());
+        service = Mockito.mock(VaadinService.class);
+
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        VaadinService.setCurrent(service);
+    }
+
+    @After
+    public void tearDown() {
+        service = null;
+        VaadinService.setCurrent(null);
     }
 
     @Test
@@ -435,6 +487,85 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         } catch (RuntimeException e) {
             Assert.assertTrue(e.getCause() instanceof NullPointerException);
         }
+    }
+
+    @Test
+    public void enabledElement_methodIsInvoked() {
+        UI ui = new UI();
+        ComponentWithMethod component = new ComponentWithMethod();
+        ui.add(component);
+
+        requestInvokeMethod(component);
+
+        Assert.assertTrue(component.isInvoked);
+    }
+
+    @Test
+    public void disabledElement_eventHandlerIsNotInvoked() {
+        UI ui = new UI();
+        ComponentWithMethod component = new ComponentWithMethod();
+        ui.add(component);
+
+        component.getElement().setEnabled(false);
+
+        requestInvokeMethod(component);
+
+        Assert.assertFalse(component.isInvoked);
+    }
+
+    @Test
+    public void implicitelyDisabledElement_eventHandlerIsNotInvoked() {
+        UI ui = new UI();
+        ComponentWithMethod component = new ComponentWithMethod();
+        ui.add(component);
+
+        ui.setEnabled(false);
+
+        requestInvokeMethod(component);
+
+        Assert.assertFalse(component.isInvoked);
+    }
+
+    @Test
+    public void disabledElement_eventHandlerAllowsRPC_methodIsInvoked() {
+        UI ui = new UI();
+        EnabledHandler component = new EnabledHandler();
+        ui.add(component);
+
+        component.getElement().setEnabled(false);
+
+        Assert.assertFalse(component.isInvoked);
+
+        requestInvokeMethod(component);
+
+        Assert.assertTrue(component.isInvoked);
+    }
+
+    @Test
+    public void disabledElement_clientDelegateAllowsRPC_methodIsInvoked() {
+        UI ui = new UI();
+        EnabledHandler component = new EnabledHandler();
+        ui.add(component);
+
+        component.getElement().setEnabled(false);
+
+        Assert.assertFalse(component.isInvoked);
+
+        requestInvokeMethod(component, "operation");
+
+        Assert.assertTrue(component.isInvoked);
+    }
+
+    private void requestInvokeMethod(Component component) {
+        requestInvokeMethod(component, "method");
+    }
+
+    private void requestInvokeMethod(Component component, String method) {
+        JsonObject json = Json.createObject();
+        json.put(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME, method);
+
+        new PublishedServerEventHandlerRpcHandler()
+                .handleNode(component.getElement().getNode(), json);
     }
 
 }
