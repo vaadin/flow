@@ -25,6 +25,7 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
@@ -163,36 +164,14 @@ public interface PushConfiguration extends Serializable {
      * @return the URL to use for push requests, or null to use to default
      */
     String getPushUrl();
-
+    
     /**
-     * Applies the given {@code pushConnectionFactory} if this instance
-     * implements {@link WithConnectionFactory}.
+     * Sets the factory that will be used to create new instances of {@link PushConnection}.
      *
-     * @since
-     * @param pushConnectionFactory The push connection factory
+     * @since 
+     * @param factory the factory that will be used to create new instances of {@link PushConnection}
      */
-    default void applyConnectionFactoryIfPossible(SerializableFunction<UI, PushConnection> pushConnectionFactory) {
-        if (this instanceof WithConnectionFactory) {
-            ((WithConnectionFactory) this).setPushConnectionFactory(pushConnectionFactory);
-        }
-    }
-
-    /**
-     * Interface to be implemented by {@link PushConfiguration} classes
-     * that wishes to delegate the creation of {@link PushConnection}
-     * to an external component.
-     *
-     * @since
-     */
-    interface WithConnectionFactory {
-
-        /**
-         * Sets the factory that will be used to create new instances of {@link PushConnection}.
-         *
-         * @param factory the factory that will be used to create new instances of {@link PushConnection}
-         */
-        void setPushConnectionFactory(SerializableFunction<UI, PushConnection> factory);
-    }
+    void setPushConnectionFactory(PushConnectionFactory factory);
 
 }
 
@@ -201,9 +180,9 @@ public interface PushConfiguration extends Serializable {
  *
  * @author Vaadin Ltd
  */
-class PushConfigurationImpl implements PushConfiguration, PushConfiguration.WithConnectionFactory {
+class PushConfigurationImpl implements PushConfiguration {
     private UI ui;
-    private SerializableFunction<UI, PushConnection> pushConnectionFactory;
+    private PushConnectionFactory pushConnectionFactory;
 
     PushConfigurationImpl(UI ui) {
         this.ui = ui;
@@ -306,7 +285,7 @@ class PushConfigurationImpl implements PushConfiguration, PushConfiguration.With
     }
 
     @Override
-    public void setPushConnectionFactory(SerializableFunction<UI, PushConnection> pushConnectionFactory) {
+    public void setPushConnectionFactory(PushConnectionFactory pushConnectionFactory) {
         this.pushConnectionFactory = Objects.requireNonNull(
             pushConnectionFactory, "Push connection factory must not be null"
         );

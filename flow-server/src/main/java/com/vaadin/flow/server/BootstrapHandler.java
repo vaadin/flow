@@ -29,16 +29,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.PushConfigurator;
+import com.vaadin.flow.server.communication.PushConnectionFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -971,12 +973,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .getPageConfigurationAnnotation(Push.class);
 
         DeploymentConfiguration deploymentConfiguration = context.getSession()
-                .getService().getDeploymentConfiguration();
-        PushConfigurator pushConfigurator = push.map(p -> ReflectTools.createInstance(p.configurator()))
-            .map(PushConfigurator.class::cast)
-            .orElseGet(() -> (cfg, ann) -> cfg.setPushMode(deploymentConfiguration.getPushMode()));
-        pushConfigurator.configurePush(pushConfiguration, push.orElse(null));
+            .getService().getDeploymentConfiguration();
+        PushMode pushMode = push.map(Push::value)
+            .orElseGet(deploymentConfiguration::getPushMode);
+        setupPushConnectionFactory(pushConfiguration, context);
+        pushConfiguration.setPushMode(pushMode);
         pushConfiguration.setPushUrl(deploymentConfiguration.getPushURL());
+        push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
+
 
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
@@ -988,6 +992,19 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         return context;
     }
+
+    private void setupPushConnectionFactory(PushConfiguration pushConfiguration, BootstrapContext context) {
+        VaadinService service = context.getSession().getService();
+        Iterator<PushConnectionFactory> iter = ServiceLoader.load(PushConnectionFactory.class, service.getClassLoader()).iterator();
+        if (iter.hasNext()) {
+            pushConfiguration.setPushConnectionFactory(iter.next());
+            if (iter.hasNext()) {
+                throw new BootstrapException("Multiple " + PushConnectionFactory.class.getName() + " implementations found");
+            }
+        }
+    }
+
+
 
     /**
      * Generates the initial UIDL message which is included in the initial
