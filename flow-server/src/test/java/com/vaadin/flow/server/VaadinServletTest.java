@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -40,7 +37,7 @@ public class VaadinServletTest {
     private VaadinSession session;
     private ServletContext context;
     private VaadinServletService service;
-    private ServletContextUriResolver vaadinUriResolver;
+    private ServiceContextUriResolver vaadinUriResolver;
 
     private CustomVaadinServlet servlet = new CustomVaadinServlet();
 
@@ -124,8 +121,8 @@ public class VaadinServletTest {
                 servlet.getUrlTranslation(new MyTheme(), "/src/foo"));
         Assert.assertEquals("/other/foo",
                 servlet.getUrlTranslation(new MyTheme(), "/other/foo"));
-//        Assert.assertEquals("/theme/src/foo",
-//                servlet.getUrlTranslation(new MyTheme(), "/src/foo"));
+        // Assert.assertEquals("/theme/src/foo",
+        // servlet.getUrlTranslation(new MyTheme(), "/src/foo"));
     }
 
     private void assertResolvedUrl(String expected, String untranslated) {
