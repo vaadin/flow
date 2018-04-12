@@ -158,7 +158,9 @@ public class ExecuteJavaScriptProcessor {
             function.apply(getContextExecutionObject(nodeParameters),
                     parameters);
         } catch (Exception exception) {
-            Console.error("Exception is thrown during JavaScript execution.");
+            Console.reportStacktrace(exception);
+            Console.error(
+                    "Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.");
             registry.getSystemErrorHandler().handleError(exception);
             if (!registry.getApplicationConfiguration().isProductionMode()) {
                 String code = Arrays.asList(parameterNamesAndCode).toString();
