@@ -1,6 +1,10 @@
 package com.vaadin.flow.server;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -153,6 +157,31 @@ public class MockServletServiceSessionSetup {
                 return resourceFoundOverride.apply(resolvedUrl);
             }
             return super.isInServletContext(resolvedUrl);
+        }
+
+        public void addServletContextResource(String path) {
+            addServletContextResource(path, "This is " + path);
+        }
+
+        public void addServletContextResource(String path, String contents) {
+            try {
+                URL url = new URL("file://" + path);
+                Mockito.when(getServletContext().getResource(path))
+                        .thenReturn(url);
+                Mockito.when(getServletContext().getResourceAsStream(path))
+                        .thenAnswer(i -> {
+                            return new ByteArrayInputStream(
+                                    contents.getBytes(StandardCharsets.UTF_8));
+                        });
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public void addWebJarResource(String webjarContent) {
+            // Webjars map /frontend/bower_components/foo/bar.html to
+            // /webjars/foo/bar.html
+            addServletContextResource("/webjars/" + webjarContent);
         }
     }
 
