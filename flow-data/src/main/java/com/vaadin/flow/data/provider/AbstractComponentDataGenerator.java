@@ -24,8 +24,8 @@ import com.vaadin.flow.dom.Element;
 /**
  * Abstract class used as base for DataGenerators that need to manage the
  * lifecycle of components, according to what items are requested or destroyed.
- * 
- * 
+ *
+ *
  * @author Vaadin Ltd.
  *
  * @param <T>
@@ -70,14 +70,14 @@ public abstract class AbstractComponentDataGenerator<T>
 
     /**
      * Gets the element where the generated components will be attached to.
-     * 
+     *
      * @return the container
      */
     protected abstract Element getContainer();
 
     /**
      * Creates a new component based on the provided item.
-     * 
+     *
      * @param item
      *            the data item, possibly <code>null</code>
      * @return a {@link Component} which represents the provided item
@@ -87,7 +87,7 @@ public abstract class AbstractComponentDataGenerator<T>
     /**
      * Gets a unique key for a given item. Items with the same keys are
      * considered equal.
-     * 
+     *
      * @param item
      *            the model item
      * @return a unique key for the item
@@ -97,7 +97,7 @@ public abstract class AbstractComponentDataGenerator<T>
     /**
      * Appends the component to the container and registers it for future use
      * during the lifecycle of the generator.
-     * 
+     *
      * @param itemKey
      *            the key of the model item
      * @param component
@@ -107,6 +107,11 @@ public abstract class AbstractComponentDataGenerator<T>
             Component component) {
 
         Element element = component.getElement();
+        /*
+         * Set the enabled state explicitly. Currently the state is implicit
+         * which is not preserved for detached components.
+         */
+        element.setEnabled(getContainer().isEnabled());
         getContainer().appendChild(element);
         renderedComponents.put(itemKey, component);
     }
