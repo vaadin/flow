@@ -20,11 +20,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,6 +73,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.theme.AbstractTheme;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
@@ -2147,5 +2150,77 @@ public abstract class VaadinService implements Serializable {
         UIInitEvent initEvent = new UIInitEvent(ui, this);
         uiInitListeners.forEach(listener -> listener.uiInit(initEvent));
     }
+
+    /**
+     * Returns a URL to the resource at the given Vaadin URI.
+     *
+     * @param url
+     *            the untranslated Vaadin URL for the resource
+     * @param browser
+     *            the web browser to resolve for, relevant for es5 vs es6
+     *            resolving
+     * @param theme
+     *            the theme to use for translating the URL or <code>null</code>
+     *            if no theme is used
+     *
+     * @return the resource located at the named path, or <code>null</code> if
+     *         there is no resource at that path
+     */
+    public abstract URL getResource(String url, WebBrowser browser,
+            AbstractTheme theme);
+
+    /**
+     * Opens a stream to to the resource at the given Vaadin URI.
+     *
+     * @param url
+     *            the untranslated Vaadin URL for the resource
+     * @param browser
+     *            the web browser to resolve for, relevant for es5 vs es6
+     *            resolving
+     * @param theme
+     *            the theme to use for translating the URL or <code>null</code>
+     *            if no theme is used
+     *
+     * @return a stream for the resource or <code>null</code> if no resource
+     *         exists at the specified path
+     */
+    public abstract InputStream getResourceAsStream(String url,
+            WebBrowser browser, AbstractTheme theme);
+
+    /**
+     * Checks if a resource is available at the given Vaadin URI.
+     *
+     * @param url
+     *            the untranslated Vaadin URL for the resource
+     * @param browser
+     *            the web browser to resolve for, relevant for es5 vs es6
+     *            resolving
+     * @param theme
+     *            the theme to use for translating the URL or <code>null</code>
+     *            if no theme is used
+     *
+     * @return <code>true</code> if a resource is found and can be read using
+     *         {@link #getResourceAsStream(String, WebBrowser, AbstractTheme)},
+     *         <code>false</code> if it is not found
+     */
+    public boolean isResourceAvailable(String url, WebBrowser browser,
+            AbstractTheme theme) {
+        return getResource(url, browser, theme) != null;
+    }
+
+    /**
+     * Resolves the given {@code url} resource to be useful for
+     * {@link #getResource(String, WebBrowser, AbstractTheme)} and
+     * {@link #getResourceAsStream(String, WebBrowser, AbstractTheme)}.
+     *
+     * @param url
+     *            the resource to resolve, not <code>null</code>
+     * @param browser
+     *            the web browser to resolve for, relevant for es5 vs es6
+     *            resolving
+     * @return the resolved URL or the same as the input url if no translation
+     *         was performed
+     */
+    public abstract String resolveResource(String url, WebBrowser browser);
 
 }
