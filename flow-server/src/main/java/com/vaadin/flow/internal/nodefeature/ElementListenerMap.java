@@ -17,13 +17,16 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.internal.ConstantPoolKey;
@@ -51,8 +54,19 @@ public class ElementListenerMap extends NodeMap {
     private static final HashSet<String> emptyHashSet = new HashSet<>();
 
     // Server-side only data
-    private Map<String, ArrayList<DomEventListener>> listeners;
+    private Map<String, List<DomEventListenerWrapper>> listeners;
     private Map<String, Set<String>> typeToExpressions;
+
+    private static class DomEventListenerWrapper {
+        private final DomEventListener origin;
+        private final DisabledUpdateMode mode;
+
+        private DomEventListenerWrapper(DomEventListener origin,
+                DisabledUpdateMode mode) {
+            this.origin = origin;
+            this.mode = mode;
+        }
+    }
 
     /**
      * Creates a new element listener map for the given node.
@@ -72,15 +86,19 @@ public class ElementListenerMap extends NodeMap {
      *            the event type
      * @param listener
      *            the listener to add
+     * @param mode
+     *            controls RPC communication from the client side to the server
+     *            side when the element is disabled, not {@code null}
      * @param eventDataExpressions
      *            the event data expressions
      * @return a handle for removing the listener
      */
-    public Registration add(String eventType,
-            DomEventListener listener, String[] eventDataExpressions) {
+    public Registration add(String eventType, DomEventListener listener,
+            DisabledUpdateMode mode, String[] eventDataExpressions) {
         assert eventType != null;
         assert listener != null;
         assert eventDataExpressions != null;
+        assert mode != null;
 
         if (listeners == null) {
             listeners = new HashMap<>();
@@ -101,7 +119,8 @@ public class ElementListenerMap extends NodeMap {
             put(eventType, createConstantPoolKey(emptyHashSet));
         }
 
-        listeners.get(eventType).add(listener);
+        listeners.get(eventType)
+                .add(new DomEventListenerWrapper(listener, mode));
 
         if (eventDataExpressions.length != 0) {
             Set<String> eventData = new HashSet<>(
@@ -129,9 +148,16 @@ public class ElementListenerMap extends NodeMap {
         if (listeners == null) {
             return;
         }
-        List<DomEventListener> listenerList = listeners.get(eventType);
+        Collection<DomEventListenerWrapper> listenerList = listeners
+                .get(eventType);
         if (listenerList != null) {
-            listenerList.remove(listener);
+            for (Iterator<DomEventListenerWrapper> iterator = listenerList
+                    .iterator(); iterator.hasNext();) {
+                DomEventListenerWrapper wrapper = iterator.next();
+                if (wrapper.origin.equals(listener)) {
+                    iterator.remove();
+                }
+            }
 
             // No more listeners of this type?
             if (listenerList.isEmpty()) {
@@ -159,16 +185,22 @@ public class ElementListenerMap extends NodeMap {
         if (listeners == null) {
             return;
         }
-        List<DomEventListener> typeListeners = listeners
+        boolean isElementEnabled = event.getSource().isEnabled();
+        List<DomEventListenerWrapper> typeListeners = listeners
                 .get(event.getType());
         if (typeListeners == null) {
             return;
         }
 
-        // Copy to allow concurrent modification
-        List<DomEventListener> copy = new ArrayList<>(typeListeners);
+        List<DomEventListener> listeners = new ArrayList<>();
+        for (DomEventListenerWrapper wrapper : typeListeners) {
+            if (isElementEnabled
+                    || DisabledUpdateMode.ALWAYS.equals(wrapper.mode)) {
+                listeners.add(wrapper.origin);
+            }
+        }
 
-        copy.forEach(l -> l.handleEvent(event));
+        listeners.forEach(listener -> listener.handleEvent(event));
     }
 
     /**
@@ -188,4 +220,5 @@ public class ElementListenerMap extends NodeMap {
             return Collections.unmodifiableSet(typeToExpressions.get(name));
         }
     }
+
 }

@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import com.vaadin.flow.component.ClientDelegate;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -42,7 +42,7 @@ public class ClientDelegateHandlers extends AbstractServerHandlers<Component> {
     }
 
     @Override
-    protected Class<? extends Annotation> getHandlerAnnotation() {
+    protected Class<? extends ClientDelegate> getHandlerAnnotation() {
         return ClientDelegate.class;
     }
 
@@ -52,4 +52,8 @@ public class ClientDelegateHandlers extends AbstractServerHandlers<Component> {
         // limit supported types
     }
 
+    @Override
+    protected DisabledUpdateMode getUpdateMode(Method method) {
+        return method.getAnnotation(getHandlerAnnotation()).value();
+    }
 }

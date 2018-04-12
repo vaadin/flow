@@ -22,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 
 /**
  * Publishes the annotated method so it can be invoked from the client side as
@@ -36,4 +37,11 @@ import com.vaadin.flow.component.EventData;
 @Documented
 public @interface EventHandler {
 
+    /**
+     * Controls event handling for the method from the client side to the server
+     * side when the element is disabled.
+     *
+     * @return the property update mode for disabled element
+     */
+    DisabledUpdateMode value() default DisabledUpdateMode.ONLY_WHEN_ENABLED;
 }

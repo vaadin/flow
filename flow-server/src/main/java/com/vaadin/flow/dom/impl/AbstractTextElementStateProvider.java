@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.ClassList;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
@@ -109,7 +110,8 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public Registration addEventListener(StateNode node, String eventType,
-            DomEventListener listener, String[] eventDataExpressions) {
+            DomEventListener listener, DisabledUpdateMode mode,
+            String[] eventDataExpressions) {
         throw new UnsupportedOperationException();
     }
 
@@ -208,4 +210,9 @@ public abstract class AbstractTextElementStateProvider
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void addSynchronizedProperty(StateNode node, String property,
+            DisabledUpdateMode mode) {
+        throw new UnsupportedOperationException();
+    }
 }

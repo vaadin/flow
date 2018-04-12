@@ -292,18 +292,18 @@ public class ComponentUtil {
     }
 
     /**
-     * Gets the name of the synchronized properties defined declaratively for
-     * the given class.
+     * Gets the synchronized property infos of the properties that are defined
+     * declaratively for the given class with their RPC update mode.
      *
      * @param componentClass
      *            the component class to check
-     * @return the synchronized properties defined declaratively for the class
+     * @return the synchronized property infos of the properties defined
+     *         declaratively for the class
      */
-    public static Stream<String> getSynchronizedProperties(
+    public static Collection<SynchronizedPropertyInfo> getSynchronizedProperties(
             Class<? extends Component> componentClass) {
-        Collection<SynchronizedPropertyInfo> infos = componentMetaDataCache
-                .get(componentClass).getSynchronizedProperties();
-        return infos.stream().map(info -> info.getProperty());
+        return componentMetaDataCache.get(componentClass)
+                .getSynchronizedProperties();
     }
 
     /**

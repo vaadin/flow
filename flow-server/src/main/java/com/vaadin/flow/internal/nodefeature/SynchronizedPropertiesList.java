@@ -15,8 +15,12 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -26,10 +30,20 @@ import com.vaadin.flow.internal.StateNode;
  */
 public class SynchronizedPropertiesList extends SerializableNodeList<String> {
 
+    /**
+     * If property is in the list but is not in this map then its mode is
+     * {@literal DisabledUpdateMode.ONLY_WHEN_ENABLED} by default (to avoid
+     * wasting memory).
+     */
+    private Map<String, DisabledUpdateMode> disabledRpcModes;
+
     private static class PropertiesSetView extends NodeList.SetView<String> {
+
+        private SynchronizedPropertiesList origin;
 
         private PropertiesSetView(SynchronizedPropertiesList list) {
             super(list);
+            origin = list;
         }
 
         @Override
@@ -38,6 +52,14 @@ public class SynchronizedPropertiesList extends SerializableNodeList<String> {
                 throw new IllegalArgumentException(
                         "Property name cannot be null");
             }
+        }
+
+        @Override
+        public boolean remove(Object item) {
+            if (origin.disabledRpcModes != null) {
+                origin.disabledRpcModes.remove(item);
+            }
+            return super.remove(item);
         }
 
     }
@@ -59,6 +81,43 @@ public class SynchronizedPropertiesList extends SerializableNodeList<String> {
      */
     public Set<String> getSynchronizedProperties() {
         return new PropertiesSetView(this);
+    }
+
+    /**
+     * Add the {@code property} to the synchronized properties list.
+     *
+     * @param property
+     *            the property to synchronize
+     * @param mode
+     *            controls RPC from the client side to the server side when the
+     *            element is disabled, not {@code null}
+     */
+    public void add(String property, DisabledUpdateMode mode) {
+        Objects.requireNonNull(mode,
+                "The argument which controls RPC for disabled element may not be null");
+        getSynchronizedProperties().add(property);
+        if (!DisabledUpdateMode.ONLY_WHEN_ENABLED.equals(mode)) {
+            if (disabledRpcModes == null) {
+                disabledRpcModes = new HashMap<>();
+            }
+            disabledRpcModes.put(property, mode);
+        }
+    }
+
+    /**
+     * Gets property update mode for disabled element.
+     *
+     * @param property
+     *            the property to get update mode
+     * @return the property update mode for disabled element
+     */
+    public DisabledUpdateMode getDisabledUpdateMode(String property) {
+        DisabledUpdateMode mode = disabledRpcModes == null ? null
+                : disabledRpcModes.get(property);
+        if (mode == null) {
+            return DisabledUpdateMode.ONLY_WHEN_ENABLED;
+        }
+        return mode;
     }
 
 }
