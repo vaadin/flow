@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 
@@ -45,6 +46,8 @@ import com.vaadin.flow.internal.StateNode;
  */
 public abstract class AbstractServerHandlers<T>
         extends SerializableNodeList<String> {
+
+    private Map<String, DisabledUpdateMode> disabledRpcModes;
 
     /**
      * Creates a new meta information list for the given state node.
@@ -78,6 +81,34 @@ public abstract class AbstractServerHandlers<T>
     }
 
     /**
+     * Gets RPC control mode from the client side to the server side for
+     * disabled element.
+     *
+     * @param handler
+     *            the handler name to get control mode
+     * @return the handler RPC control mode for disabled element
+     */
+    public DisabledUpdateMode getDisabledUpdateMode(String handler) {
+        DisabledUpdateMode mode = disabledRpcModes == null ? null
+                : disabledRpcModes.get(handler);
+        if (mode == null) {
+            return DisabledUpdateMode.ONLY_WHEN_ENABLED;
+        }
+        return mode;
+    }
+
+    /**
+     * Checks whether the handler is registered in this feature.
+     *
+     * @param handler
+     *            the handler to check
+     * @return {@code true} if handler is registered in the feature
+     */
+    public boolean hasHandler(String handler) {
+        return indexOf(handler) != -1;
+    }
+
+    /**
      * Collect methods annotated with the handler annotation for given class.
      *
      * @param classWithAnnotations
@@ -100,7 +131,8 @@ public abstract class AbstractServerHandlers<T>
             }
             map.put(method.getName(), method);
         }
-        map.keySet().forEach(this::add);
+        map.values().forEach(
+                method -> add(method.getName(), getUpdateMode(method)));
     }
 
     /**
@@ -164,6 +196,27 @@ public abstract class AbstractServerHandlers<T>
      */
     protected abstract Class<? extends Annotation> getHandlerAnnotation();
 
+    /**
+     * Returns method's RPC communication mode from the client side to the
+     * server side when the element is disabled.
+     *
+     * @param method
+     *            the method to get its update mode
+     * @return RPC communication mode for the method, not {@code null}
+     */
+    protected abstract DisabledUpdateMode getUpdateMode(Method method);
+
+    private void add(String handler, DisabledUpdateMode mode) {
+        add(handler);
+        if (!DisabledUpdateMode.ONLY_WHEN_ENABLED.equals(mode)) {
+            if (disabledRpcModes == null) {
+                disabledRpcModes = new HashMap<>();
+            }
+            disabledRpcModes.put(handler, mode);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     private final Class<T> getType() {
         Type type = GenericTypeReflector.getTypeParameter(
                 getClass().getGenericSuperclass(),

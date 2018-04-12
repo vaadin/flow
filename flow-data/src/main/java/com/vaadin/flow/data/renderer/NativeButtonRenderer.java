@@ -123,10 +123,13 @@ public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
     @Override
     protected String getTemplateForProperty(String property,
             Rendering<SOURCE> context) {
-        String eventName = getTemplatePropertyName(context) + "_event";
+        String templatePropertyName = getTemplatePropertyName(context);
+        String eventName = templatePropertyName + "_event";
+        String disabledName = templatePropertyName + "_disabled";
         setEventHandler(eventName, this::onClick);
-        return String.format("<button on-click=\"%s\">%s</button>", eventName,
-                property);
+        return String.format(
+                "<button on-click=\"%s\" disabled=\"[[item.%s]]\">%s</button>",
+                eventName, disabledName, property);
     }
 
     @Override

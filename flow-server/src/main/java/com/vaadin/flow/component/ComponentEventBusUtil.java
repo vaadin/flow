@@ -20,8 +20,9 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.function.BiConsumer;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
@@ -221,22 +222,23 @@ public class ComponentEventBusUtil {
     }
 
     /**
-     * Gets the DOM event type which should be mapped to the given component
-     * event type.
+     * Applies the handler to extracts
+     * {@link com.vaadin.flow.component.DomEvent} annotation parameters if the
+     * annotation presents.
+     * <p>
+     * The handler is not invoked if there is no annotation for the given
+     * {@code eventType}.
      *
      * @param eventType
      *            the component event type
-     * @return an optional string containing the DOM event name or an empty
-     *         optional if no mapping is defined
      */
-    public static Optional<String> getDomEventType(
-            Class<? extends ComponentEvent<?>> eventType) {
+    public static void handleDomEventType(
+            Class<? extends ComponentEvent<?>> eventType,
+            BiConsumer<String, DisabledUpdateMode> handler) {
         com.vaadin.flow.component.DomEvent domEvent = eventType
                 .getAnnotation(com.vaadin.flow.component.DomEvent.class);
-        if (domEvent == null) {
-            return Optional.empty();
-        } else {
-            return Optional.of(domEvent.value());
+        if (domEvent != null) {
+            handler.accept(domEvent.value(), domEvent.allowUpdates());
         }
     }
 

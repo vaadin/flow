@@ -477,7 +477,8 @@ public class Element extends Node<Element> {
      * <p>
      * Event listeners are triggered in the order they are registered.
      *
-     * @see #addEventListener(String, DomEventListener, String...)
+     * @see #addEventListener(String, DomEventListener, DisabledUpdateMode,
+     *      String...)
      *
      * @param eventType
      *            the type of event to listen to, not <code>null</code>
@@ -487,7 +488,8 @@ public class Element extends Node<Element> {
      */
     public Registration addEventListener(String eventType,
             DomEventListener listener) {
-        return addEventListener(eventType, listener, new String[0]);
+        return addEventListener(eventType, listener,
+                DisabledUpdateMode.ONLY_WHEN_ENABLED, new String[0]);
     }
 
     /**
@@ -522,6 +524,46 @@ public class Element extends Node<Element> {
      */
     public Registration addEventListener(String eventType,
             DomEventListener listener, String... eventDataExpressions) {
+        return addEventListener(eventType, listener,
+                DisabledUpdateMode.ONLY_WHEN_ENABLED, eventDataExpressions);
+    }
+
+    /**
+     * Adds an event listener and event data expressions for the given event
+     * type.
+     * <p>
+     * When an event is fired in the browser, custom JavaScript expressions
+     * defined in the <code>eventDataExpressions</code> parameter are evaluated
+     * to extract data that is sent back to the server. The expression is
+     * evaluated in a context where <code>element</code> refers to this element
+     * and <code>event</code> refers to the fired event. The result of the
+     * evaluation is available in {@link DomEvent#getEventData()} with the
+     * expression as the key in the JSON object. An expression might be e.g.
+     *
+     * <ul>
+     * <li><code>element.value</code> the get the value of an input element for
+     * a change event.
+     * <li><code>event.button === 0</code> to get true for click events
+     * triggered by the primary mouse button.
+     * </ul>
+     * <p>
+     * Event listeners are triggered in the order they are registered.
+     *
+     * @param eventType
+     *            the type of event to listen to, not <code>null</code>
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @param mode
+     *            controls RPC communication from the client side to the server
+     *            side when the element is disabled, not {@code null}
+     * @param eventDataExpressions
+     *            definitions for data that should be passed back to the server
+     *            together with the event
+     * @return a handle that can be used for removing the listener
+     */
+    public Registration addEventListener(String eventType,
+            DomEventListener listener, DisabledUpdateMode mode,
+            String... eventDataExpressions) {
         if (eventType == null) {
             throw new IllegalArgumentException(EVENT_TYPE_MUST_NOT_BE_NULL);
         }
@@ -532,9 +574,13 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(
                     "The event data expressions array must not be null");
         }
+        if (mode == null) {
+            throw new IllegalArgumentException(
+                    "RPC comunication control mode for disabled alement must not be null");
+        }
 
         return getStateProvider().addEventListener(getNode(), eventType,
-                listener, eventDataExpressions);
+                listener, mode, eventDataExpressions);
     }
 
     /**
@@ -1083,18 +1129,77 @@ public class Element extends Node<Element> {
      * This is convenience method for batching
      * {@link #addSynchronizedProperty(String)} and
      * {@link #addSynchronizedPropertyEvent(String)}.
+     * <p>
+     * The method is shorthand for
+     * {@link #synchronizeProperty(String, String, DisabledUpdateMode)} with
+     * {@literal DisabledUpdateMode.ONLY_WHEN_ENABLED} parameter value.
      *
      * @param property
      *            the property name to synchronize
      * @param eventType
      *            the client side event which trigger synchronization of the
      *            property values to the server
+     *
+     * @see #synchronizeProperty(String, String, DisabledUpdateMode)
      * @return this element
      */
     public Element synchronizeProperty(String property, String eventType) {
-        addSynchronizedProperty(property);
+        return synchronizeProperty(property, eventType,
+                DisabledUpdateMode.ONLY_WHEN_ENABLED);
+    }
+
+    /**
+     * Synchronize the given {@code property}'s value when the given
+     * {@code eventType} occurs on this element on the client side. As a result
+     * the {@code property}'s value is automatically updated to this
+     * {@link Element}.
+     * <p>
+     * Only properties which can be set using setProperty can be synchronized,
+     * e.g. classList cannot be synchronized.
+     * <p>
+     * This is convenience method for batching
+     * {@link #addSynchronizedProperty(String)} and
+     * {@link #addSynchronizedPropertyEvent(String)}.
+     *
+     * @param property
+     *            the property name to synchronize
+     * @param eventType
+     *            the client side event which trigger synchronization of the
+     *            property values to the server
+     * @param mode
+     *            controls property update from the client side to the server
+     *            side when the element is disabled, not {@code null}
+     * @return this element
+     */
+    public Element synchronizeProperty(String property, String eventType,
+            DisabledUpdateMode mode) {
+        addSynchronizedProperty(property, mode);
         addSynchronizedPropertyEvent(eventType);
         return this;
+    }
+
+    /**
+     * Adds the property whose value should automatically be synchronized from
+     * the client side and updated in this {@link Element}.
+     * <p>
+     * Synchronization takes place whenever one of the events defined using
+     * {@link #addSynchronizedPropertyEvent(String)} is fired for the element.
+     * <p>
+     * Only properties which can be set using setProperty can be synchronized,
+     * e.g. classList cannot be synchronized.
+     * <p>
+     * The method is shorthand for
+     * {@link #addSynchronizedProperty(String, DisabledUpdateMode)} with
+     * {@literal DisabledUpdateMode.ONLY_WHEN_ENABLED} parameter value.
+     * {@link #addSynchronizedProperty(String, DisabledUpdateMode)}
+     *
+     * @param property
+     *            the property name to synchronize
+     * @return this element
+     */
+    public Element addSynchronizedProperty(String property) {
+        return addSynchronizedProperty(property,
+                DisabledUpdateMode.ONLY_WHEN_ENABLED);
     }
 
     /**
@@ -1109,11 +1214,19 @@ public class Element extends Node<Element> {
      *
      * @param property
      *            the property name to synchronize
+     * @param mode
+     *            controls property update from the client side to the server
+     *            side when the element is disabled, not {@code null}
      * @return this element
      */
-    public Element addSynchronizedProperty(String property) {
+    public Element addSynchronizedProperty(String property,
+            DisabledUpdateMode mode) {
         verifySetPropertyName(property);
-        getStateProvider().getSynchronizedProperties(getNode()).add(property);
+        if (mode == null) {
+            throw new IllegalArgumentException(
+                    "Property update control mode for disabled alement must not be null");
+        }
+        getStateProvider().addSynchronizedProperty(getNode(), property, mode);
         return this;
     }
 
@@ -1422,7 +1535,7 @@ public class Element extends Node<Element> {
 
     /**
      * Sets the enabled state of the element.
-     * 
+     *
      * @param enabled
      *            the enabled state
      * @return the element
@@ -1445,18 +1558,12 @@ public class Element extends Node<Element> {
      * <p>
      * Object may be enabled by itself by but if its ascendant is disabled then
      * it's considered as (implicitly) disabled.
-     * 
+     *
+     *
      * @return {@code true} if node is enabled, {@code false} otherwise
      */
     public boolean isEnabled() {
-        if (!getNode().isEnabled()) {
-            return false;
-        }
-        Element parent = getParent();
-        if (parent != null) {
-            return parent.isEnabled();
-        }
-        return true;
+        return getNode().isEnabled();
     }
 
     @Override

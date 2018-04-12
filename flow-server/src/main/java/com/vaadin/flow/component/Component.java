@@ -129,8 +129,9 @@ public abstract class Component
      * Configures synchronized properties based on given annotations.
      */
     private void configureSynchronizedProperties() {
-        ComponentUtil.getSynchronizedProperties(getClass())
-                .forEach(getElement()::addSynchronizedProperty);
+        ComponentUtil.getSynchronizedProperties(getClass()).forEach(
+                info -> getElement().addSynchronizedProperty(info.getProperty(),
+                        info.getUpdateMode()));
         ComponentUtil.getSynchronizedPropertyEvents(getClass())
                 .forEach(getElement()::addSynchronizedPropertyEvent);
     }
@@ -298,7 +299,6 @@ public abstract class Component
     @Override
     public <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener) {
-
         return getEventBus().addListener(eventType, listener);
     }
 
@@ -507,7 +507,7 @@ public abstract class Component
      * <p>
      * By default this sets or removes the 'disabled' attribute from the
      * element. This can be overridden to have custom handling.
-     * 
+     *
      * @param enabled
      *            the new enabled state of the component
      */

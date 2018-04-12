@@ -23,17 +23,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientDelegate;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
+import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.templatemodel.ModelType;
 
@@ -63,7 +67,8 @@ public class PublishedServerEventHandlerRpcHandler
     }
 
     @Override
-    public Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
+    public Optional<Runnable> handleNode(StateNode node,
+            JsonObject invocationJson) {
         assert invocationJson
                 .hasKey(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
         String methodName = invocationJson
@@ -90,8 +95,27 @@ public class PublishedServerEventHandlerRpcHandler
                             + "there is no component available for the target node");
         }
 
-        invokeMethod(component.get(), component.get().getClass(), methodName,
-                (JsonArray) args);
+        boolean execute = node.isEnabled();
+
+        if (!execute) {
+            ClientDelegateHandlers clientDelegate = node
+                    .getFeature(ClientDelegateHandlers.class);
+            PolymerServerEventHandlers eventHandlers = node
+                    .getFeature(PolymerServerEventHandlers.class);
+            if (clientDelegate.hasHandler(methodName)) {
+                execute = DisabledUpdateMode.ALWAYS.equals(
+                        clientDelegate.getDisabledUpdateMode(methodName));
+            }
+            if (eventHandlers.hasHandler(methodName)) {
+                execute = execute || DisabledUpdateMode.ALWAYS.equals(
+                        eventHandlers.getDisabledUpdateMode(methodName));
+            }
+        }
+
+        if (execute) {
+            invokeMethod(component.get(), component.get().getClass(),
+                    methodName, (JsonArray) args);
+        }
 
         return Optional.empty();
     }

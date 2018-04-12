@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentMetaData.SynchronizedPropertyInfo;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 
 public class ComponentMetaDataTest {
 
@@ -41,7 +42,7 @@ public class ComponentMetaDataTest {
     }
 
     public interface HasFoo {
-        @Synchronize(value = "bar", property = "baz")
+        @Synchronize(value = "bar", property = "baz", allowUpdates = DisabledUpdateMode.ALWAYS)
         String getFoo();
     }
 
@@ -104,7 +105,7 @@ public class ComponentMetaDataTest {
 
     @Test
     public void synchronizedProperties_methodInInterface() {
-        assertFooProperty(HasFooImpl.class);
+        assertFooProperty(HasFooImpl.class, DisabledUpdateMode.ALWAYS);
     }
 
     @Test
@@ -162,6 +163,11 @@ public class ComponentMetaDataTest {
     }
 
     private void assertFooProperty(Class<? extends Component> clazz) {
+        assertFooProperty(clazz, DisabledUpdateMode.ONLY_WHEN_ENABLED);
+    }
+
+    private void assertFooProperty(Class<? extends Component> clazz,
+            DisabledUpdateMode mode) {
         ComponentMetaData data = new ComponentMetaData(clazz);
 
         Collection<SynchronizedPropertyInfo> props = data
@@ -170,6 +176,8 @@ public class ComponentMetaDataTest {
 
         SynchronizedPropertyInfo info = props.iterator().next();
         Assert.assertEquals("baz", info.getProperty());
+
+        Assert.assertEquals(mode, info.getUpdateMode());
 
         List<String> events = info.getEventNames().collect(Collectors.toList());
         Assert.assertEquals(1, events.size());

@@ -22,6 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -43,8 +44,8 @@ import com.vaadin.flow.dom.Element;
  * </ul>
  *
  * @see EventData
- * @see Element#addEventListener(String,
- *      com.vaadin.flow.dom.DomEventListener, String...)
+ * @see Element#addEventListener(String, com.vaadin.flow.dom.DomEventListener,
+ *      String...)
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -59,4 +60,11 @@ public @interface DomEvent {
      * @return the name of the DOM event
      */
     String value();
+
+    /**
+     * Controls RPC for the listener when the element is disabled.
+     *
+     * @return the property update mode for disabled element
+     */
+    DisabledUpdateMode allowUpdates() default DisabledUpdateMode.ONLY_WHEN_ENABLED;
 }

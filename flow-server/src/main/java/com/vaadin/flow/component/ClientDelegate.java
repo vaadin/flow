@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
+
 /**
  * Publishes the annotated method so it can be invoked from the client side
  * using the notation <code>this.$server.method()</code> in template methods.
@@ -33,4 +35,11 @@ import java.lang.annotation.Target;
 @Documented
 public @interface ClientDelegate {
 
+    /**
+     * Controls RPC for the method from the client side to the server side when
+     * the element is disabled.
+     *
+     * @return the property update mode for disabled element
+     */
+    DisabledUpdateMode value() default DisabledUpdateMode.ONLY_WHEN_ENABLED;
 }
