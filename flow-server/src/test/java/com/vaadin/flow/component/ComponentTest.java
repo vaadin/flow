@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -56,7 +55,7 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
-import net.jcip.annotations.NotThreadSafe;
+import static org.mockito.Mockito.when;
 
 @NotThreadSafe
 public class ComponentTest {
@@ -1237,11 +1236,15 @@ public class ComponentTest {
 
         Assert.assertFalse("Parent should be disabled", parent.isEnabled());
         Assert.assertTrue("Child should be enabled.", child.isEnabled());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled", child.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered", stateChange.get());
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
     }
 
     @Test // 3818
@@ -1264,16 +1267,23 @@ public class ComponentTest {
 
         Assert.assertFalse("Parent should be disabled", parent.isEnabled());
         Assert.assertTrue("Child should be enabled.", child.isEnabled());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled", child.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered", stateChange.get());
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
 
         parent.remove(child);
 
-        Assert.assertTrue("After detach child should be enabled", child.isEnabled());
-        Assert.assertTrue("Enable event should have triggered", stateChange.get());
+        Assert.assertTrue("After detach child should be enabled",
+                child.isEnabled());
+        Assert.assertTrue("Enable event should have triggered",
+                stateChange.get());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
     }
 
     @Test // 3818
@@ -1294,21 +1304,28 @@ public class ComponentTest {
             }
         };
         child.setEnabled(false);
-        // Clear state change from  setEnabled
+        // Clear state change from setEnabled
         stateChange.set(null);
 
         Assert.assertFalse("Parent should be disabled", parent.isEnabled());
         Assert.assertFalse("Child should be enabled.", child.isEnabled());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled", child.isEnabled());
-        Assert.assertNull("No change event should have fired", stateChange.get());
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertNull("No change event should have fired",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
 
         parent.remove(child);
 
-        Assert.assertFalse("After detach child should still be disabled", child.isEnabled());
-        Assert.assertNull("No change event should have fired", stateChange.get());
+        Assert.assertFalse("After detach child should still be disabled",
+                child.isEnabled());
+        Assert.assertNull("No change event should have fired",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
     }
 
     @Test // 3818
@@ -1341,21 +1358,36 @@ public class ComponentTest {
 
         Assert.assertFalse("Parent should be disabled", parent.isEnabled());
         Assert.assertTrue("Child should be enabled.", child.isEnabled());
-        Assert.assertTrue("GrandChild should be enabled.", grandChild.isEnabled());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assert.assertTrue("GrandChild should be enabled.",
+                grandChild.isEnabled());
+        Assert.assertNull(grandChild.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled", child.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered", stateChange.get());
-        Assert.assertFalse("After attach GrandChild should be disabled", grandChild.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered", grandStateChange.get());
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("After attach GrandChild should be disabled",
+                grandChild.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                grandStateChange.get());
+        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
 
         parent.remove(child);
 
-        Assert.assertTrue("After detach child should be enabled", child.isEnabled());
-        Assert.assertTrue("Enable event should have triggered", stateChange.get());
-        Assert.assertTrue("After detach GrandChild should be enabled", grandChild.isEnabled());
-        Assert.assertTrue("GrandChild should have gotten true event", grandStateChange.get());
+        Assert.assertTrue("After detach child should be enabled",
+                child.isEnabled());
+        Assert.assertTrue("Enable event should have triggered",
+                stateChange.get());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assert.assertTrue("After detach GrandChild should be enabled",
+                grandChild.isEnabled());
+        Assert.assertTrue("GrandChild should have gotten true event",
+                grandStateChange.get());
+        Assert.assertNull(grandChild.getElement().getAttribute("disabled"));
     }
 
     @Test // 3818
@@ -1376,7 +1408,7 @@ public class ComponentTest {
             }
         };
         child.setEnabled(false);
-        // Clear state change from  setEnabled
+        // Clear state change from setEnabled
         stateChange.set(null);
         AtomicReference<Boolean> grandStateChange = new AtomicReference<>();
         EnabledDiv grandChild = new EnabledDiv() {
@@ -1391,21 +1423,36 @@ public class ComponentTest {
 
         Assert.assertFalse("Parent should be disabled", parent.isEnabled());
         Assert.assertFalse("Child should be disabled.", child.isEnabled());
-        Assert.assertFalse("GrandChild should be disabled.", grandChild.isEnabled());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("GrandChild should be disabled.",
+                grandChild.isEnabled());
+        // note that add doesn't create an attach event as we are not connected
+        // to the UI.
+        Assert.assertNull(grandChild.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled", child.isEnabled());
-        Assert.assertNull("Disabled event should have triggered", stateChange.get());
-        Assert.assertFalse("After attach GrandChild should be disabled", grandChild.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered", grandStateChange.get());
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertNull("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("After attach GrandChild should be disabled",
+                grandChild.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                grandStateChange.get());
+        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
 
         parent.remove(child);
 
-        Assert.assertFalse("After detach child should be disabled", child.isEnabled());
-        Assert.assertNull("No change event should have been sent", stateChange.get());
-        Assert.assertFalse("After detach GrandChild should be disabled", grandChild.isEnabled());
-        Assert.assertFalse("Latest state change should have been disabled", grandStateChange.get());
+        Assert.assertFalse("After detach child should be disabled",
+                child.isEnabled());
+        Assert.assertNull("No change event should have been sent",
+                stateChange.get());
+        Assert.assertFalse("After detach GrandChild should be disabled",
+                grandChild.isEnabled());
+        Assert.assertFalse("Latest state change should have been disabled",
+                grandStateChange.get());
     }
 
     @Test // 3818
@@ -1439,20 +1486,35 @@ public class ComponentTest {
 
         Assert.assertFalse("Parent should be disabled", parent.isEnabled());
         Assert.assertTrue("Child should be enabled.", child.isEnabled());
-        Assert.assertFalse("GrandChild should be disabled.", grandChild.isEnabled());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("GrandChild should be disabled.",
+                grandChild.isEnabled());
+        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled", child.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered", stateChange.get());
-        Assert.assertFalse("After attach GrandChild should be disabled", grandChild.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered", grandStateChange.get());
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("After attach GrandChild should be disabled",
+                grandChild.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                grandStateChange.get());
+        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
 
         parent.remove(child);
 
-        Assert.assertTrue("After detach child should be enabled", child.isEnabled());
-        Assert.assertTrue("Enable event should have triggered", stateChange.get());
-        Assert.assertFalse("After detach GrandChild should be disabled", grandChild.isEnabled());
-        Assert.assertFalse("Latest state change should have been disabled", grandStateChange.get());
+        Assert.assertTrue("After detach child should be enabled",
+                child.isEnabled());
+        Assert.assertTrue("Enable event should have triggered",
+                stateChange.get());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("After detach GrandChild should be disabled",
+                grandChild.isEnabled());
+        Assert.assertFalse("Latest state change should have been disabled",
+                grandStateChange.get());
+        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
     }
 }
