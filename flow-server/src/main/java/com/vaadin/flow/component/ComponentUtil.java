@@ -252,21 +252,37 @@ public class ComponentUtil {
         if (component instanceof HasEnabled
                 && component.getElement().isEnabled() != component.getElement()
                         .getNode().isEnabledSelf()) {
-            boolean state = component.getParent().get().getChildren()
-                    .anyMatch(child -> child.equals(component))
-                            ? checkParentChainState(component.getParent().get())
-                            : component.getElement().getNode().isEnabledSelf();
-            component.onEnabledStateChanged(state);
+            Optional<Component> parent = component.getParent();
+            if (parent.isPresent()) {
+                Component parentComponent = parent.get();
+                boolean state = isAttachedToParent(component, parentComponent)
+                        ? checkParentChainState(parentComponent)
+                        : component.getElement().getNode().isEnabledSelf();
+                component.onEnabledStateChanged(state);
+            } else {
+                component.onEnabledStateChanged(
+                        component.getElement().isEnabled());
+            }
         }
+    }
+
+    private static boolean isAttachedToParent(Component component,
+            Component parentComponent) {
+        return parentComponent.getChildren()
+                .anyMatch(child -> child.equals(component));
     }
 
     private static boolean checkParentChainState(Component component) {
         if (!component.getElement().getNode().isEnabledSelf()) {
             return false;
         }
-        if (component.getParent().get().getChildren()
-                .anyMatch(child -> child.equals(component))) {
-            return checkParentChainState(component.getParent().get());
+
+        Optional<Component> parent = component.getParent();
+        if (parent.isPresent()) {
+            Component parentComponent = parent.get();
+            if (isAttachedToParent(component, parentComponent)) {
+                return checkParentChainState(parentComponent);
+            }
         }
 
         return true;
