@@ -66,7 +66,7 @@ public class VaadinServlet extends HttpServlet {
     private final ReflectionCache<AbstractTheme, ConcurrentHashMap<String, String>> themeTranslations = new ReflectionCache<>(
             type -> new ConcurrentHashMap<>());
 
-    private ServletContextUriResolver servletContextResolver;
+    private ServiceContextUriResolver servletContextResolver;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -96,7 +96,7 @@ public class VaadinServlet extends HttpServlet {
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
         }
-        servletContextResolver = new ServletContextUriResolver();
+        servletContextResolver = new ServiceContextUriResolver();
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
 
@@ -732,5 +732,15 @@ public class VaadinServlet extends HttpServlet {
      */
     public InputStream getResourceAsStream(String path) {
         return getServletContext().getResourceAsStream(path);
+    }
+
+    /**
+     * Gets the web jar server.
+     *
+     * @return the web jar server or <code>null</code> if no web jar server is
+     *         used
+     */
+    protected WebJarServer getWebJarServer() {
+        return webJarServer;
     }
 }
