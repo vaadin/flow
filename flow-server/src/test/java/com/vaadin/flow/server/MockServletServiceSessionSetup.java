@@ -1,6 +1,10 @@
 package com.vaadin.flow.server;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
@@ -16,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class MockServletServiceSessionSetup {
 
@@ -109,6 +114,31 @@ public class MockServletServiceSessionSetup {
             }
             return super.isInServletContext(resolvedUrl);
         }
+
+        public void addServletContextResource(String path) {
+            addServletContextResource(path, "This is " + path);
+        }
+
+        public void addServletContextResource(String path, String contents) {
+            try {
+                URL url = new URL("file://" + path);
+                Mockito.when(getServletContext().getResource(path))
+                        .thenReturn(url);
+                Mockito.when(getServletContext().getResourceAsStream(path))
+                        .thenAnswer(i -> {
+                            return new ByteArrayInputStream(
+                                    contents.getBytes(StandardCharsets.UTF_8));
+                        });
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public void addWebJarResource(String webjarContent) {
+            // Webjars map /frontend/bower_components/foo/bar.html to
+            // /webjars/foo/bar.html
+            addServletContextResource("/webjars/" + webjarContent);
+        }
     }
 
     @Mock
@@ -117,8 +147,6 @@ public class MockServletServiceSessionSetup {
     private VaadinServletRequest request;
     @Mock
     private VaadinSession session;
-    @Mock
-    private DeploymentConfiguration deploymentConfiguration;
     @Mock
     private WebBrowser browser;
     @Mock
@@ -129,14 +157,12 @@ public class MockServletServiceSessionSetup {
     private ServletConfig servletConfig;
     private TestVaadinServlet servlet;
     private TestVaadinServletService service;
+    private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
 
     public MockServletServiceSessionSetup() throws Exception {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(deploymentConfiguration.getEs5FrontendPrefix())
-                .thenReturn(Constants.FRONTEND_URL_DEV_DEFAULT);
-        Mockito.when(deploymentConfiguration.getEs6FrontendPrefix())
-                .thenReturn(Constants.FRONTEND_URL_DEV_DEFAULT);
 
+        deploymentConfiguration.setXsrfProtectionEnabled(false);
         Mockito.when(session.getConfiguration())
                 .thenReturn(deploymentConfiguration);
 
@@ -197,7 +223,19 @@ public class MockServletServiceSessionSetup {
         return deploymentConfiguration;
     }
 
+    public WebBrowser getBrowser() {
+        return browser;
+    }
+
     public void cleanup() {
         CurrentInstance.clearAll();
+    }
+
+    public void setProductionMode(boolean productionMode) {
+        deploymentConfiguration.setProductionMode(productionMode);
+    }
+
+    public void setBrowserEs6(boolean browserEs6) {
+        Mockito.when(browser.isEs6Supported()).thenReturn(browserEs6);
     }
 }
