@@ -218,6 +218,20 @@ public class MapSyncRpcHandlerTest {
         Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
     }
 
+    @Test
+    public void noSyncPropertiesFeature_doesntThrow() {
+        StateNode noSyncProperties = new StateNode(ElementPropertyMap.class);
+
+        ElementPropertyMap map = noSyncProperties
+                .getFeature(ElementPropertyMap.class);
+
+        new MapSyncRpcHandler().handleNode(noSyncProperties,
+                createSyncPropertyInvocation(noSyncProperties, TEST_PROPERTY,
+                        NEW_VALUE));
+
+        Assert.assertEquals(NEW_VALUE, map.getProperty(TEST_PROPERTY));
+    }
+
     private static void sendSynchronizePropertyEvent(Element element, UI ui,
             String eventType, Serializable value) throws Exception {
         new MapSyncRpcHandler().handle(ui,
@@ -226,7 +240,11 @@ public class MapSyncRpcHandlerTest {
 
     private static JsonObject createSyncPropertyInvocation(Element element,
             String property, Serializable value) {
-        StateNode node = element.getNode();
+        return createSyncPropertyInvocation(element.getNode(), property, value);
+    }
+
+    private static JsonObject createSyncPropertyInvocation(StateNode node,
+            String property, Serializable value) {
         // Copied from ServerConnector
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_NODE, node.getId());

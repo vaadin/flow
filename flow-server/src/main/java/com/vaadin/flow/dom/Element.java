@@ -1563,14 +1563,7 @@ public class Element extends Node<Element> {
      * @return {@code true} if node is enabled, {@code false} otherwise
      */
     public boolean isEnabled() {
-        if (!getNode().isEnabled()) {
-            return false;
-        }
-        Element parent = getParent();
-        if (parent != null) {
-            return parent.isEnabled();
-        }
-        return true;
+        return getNode().isEnabled();
     }
 
     @Override

@@ -21,8 +21,6 @@ import java.util.Optional;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -65,16 +63,17 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         assert NodeMap.class.isAssignableFrom(feature);
         assert ElementPropertyMap.class.equals(feature);
 
-        boolean isEnabled = true;
-        if (BasicElementStateProvider.get().supports(node)) {
-            isEnabled = Element.get(node).isEnabled();
-        }
+        boolean isEnabled = node.isEnabled();
+
+        DisabledUpdateMode updateMode = null;
 
         String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
-        SynchronizedPropertiesList syncedProps = node
-                .getFeature(SynchronizedPropertiesList.class);
-        DisabledUpdateMode updateMode = syncedProps
-                .getDisabledUpdateMode(property);
+
+        if (node.hasFeature(SynchronizedPropertiesList.class)) {
+            SynchronizedPropertiesList syncedProps = node
+                    .getFeature(SynchronizedPropertiesList.class);
+            updateMode = syncedProps.getDisabledUpdateMode(property);
+        }
 
         if (isEnabled) {
             return enqueuePropertyUpdate(node, invocationJson, feature,

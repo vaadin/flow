@@ -33,8 +33,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ClientDelegateHandlers;
@@ -97,10 +95,7 @@ public class PublishedServerEventHandlerRpcHandler
                             + "there is no component available for the target node");
         }
 
-        boolean execute = true;
-        if (BasicElementStateProvider.get().supports(node)) {
-            execute = Element.get(node).isEnabled();
-        }
+        boolean execute = node.isEnabled();
 
         if (!execute) {
             ClientDelegateHandlers clientDelegate = node
