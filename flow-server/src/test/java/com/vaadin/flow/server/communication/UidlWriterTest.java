@@ -434,7 +434,7 @@ public class UidlWriterTest {
                 new HashSet<>(Arrays.asList(BaseClass.class)));
 
         mocks.getServlet().setResourceFoundOverride(i -> true);
-        mocks.getService().setResourceAsStreamOverride(
+        mocks.getServlet().setResourceAsStreamOverride(
                 resource -> new ByteArrayInputStream(resource.getBytes()));
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);

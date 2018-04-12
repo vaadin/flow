@@ -73,7 +73,7 @@ public class BundleFilterInitializerTest {
         }).when(event).addDependencyFilter(Mockito.any(DependencyFilter.class));
 
         mocks.getServlet().setResourceFoundOverride(resource -> true);
-        mocks.getService().setResourceAsStreamOverride(resource -> {
+        mocks.getServlet().setResourceAsStreamOverride(resource -> {
             if ("/frontend-es6/vaadin-flow-bundle-manifest.json"
                     .equals(resource)) {
                 return inputStreamProducer.apply(resource);

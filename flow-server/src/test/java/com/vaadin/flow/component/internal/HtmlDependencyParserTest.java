@@ -66,7 +66,7 @@ public class HtmlDependencyParserTest {
 
         Mockito.when(servlet.resolveResource("frontend://foo.html"))
                 .thenReturn("foo.html");
-        Mockito.when(service.getResourceAsStream("foo.html")).thenReturn(
+        Mockito.when(servlet.getResourceAsStream("foo.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
@@ -157,7 +157,7 @@ public class HtmlDependencyParserTest {
 
         Mockito.when(servlet.resolveResource("frontend://relative.html"))
                 .thenReturn("relative.html");
-        Mockito.when(service.getResourceAsStream("relative.html")).thenReturn(
+        Mockito.when(servlet.getResourceAsStream("relative.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Collection<String> dependencies = parser.parseDependencies();
@@ -196,7 +196,7 @@ public class HtmlDependencyParserTest {
                         .getBytes(StandardCharsets.UTF_8));
         Mockito.when(servlet.getResourceAsStream(resolvedRelative))
                 .thenReturn(relativeContent);
-        Mockito.when(service.getResourceAsStream("relative1.html")).thenReturn(
+        Mockito.when(servlet.getResourceAsStream("relative1.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         Collection<String> dependencies = parser.parseDependencies();
