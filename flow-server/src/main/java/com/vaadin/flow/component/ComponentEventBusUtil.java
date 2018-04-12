@@ -222,7 +222,7 @@ public class ComponentEventBusUtil {
     }
 
     /**
-     * Applies the handler to extracts
+     * Applies the handler to extracted
      * {@link com.vaadin.flow.component.DomEvent} annotation parameters if the
      * annotation presents.
      * <p>
@@ -231,6 +231,8 @@ public class ComponentEventBusUtil {
      *
      * @param eventType
      *            the component event type
+     * @param handler
+     *            the handler to consume annotation parameters
      */
     public static void handleDomEventType(
             Class<? extends ComponentEvent<?>> eventType,
