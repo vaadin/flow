@@ -26,7 +26,7 @@
   ],
   "dependencies": {
     "vaadin-button": "2.0.0",
-    "vaadin-checkbox": "2.0.0-beta2",
+    "vaadin-checkbox": "2.0.0",
     "vaadin-combo-box": "4.0.0-beta5",
     "vaadin-date-picker": "3.0.0-beta5",
     "vaadin-dialog": "2.0.0-beta3",
@@ -37,7 +37,7 @@
     "vaadin-radio-button": "1.0.0-beta2",
     "vaadin-split-layout": "4.0.0",
     "vaadin-tabs": "2.0.0-beta3",
-    "vaadin-text-field": "2.0.0-beta4",
+    "vaadin-text-field": "2.0.0",
     "vaadin-upload": "4.0.0-beta2"
   }
 }
