@@ -222,9 +222,10 @@ public class ComponentUtil {
         }
         // inform component about onEnabledState if new state differs from
         // internal state
-        if (component instanceof HasEnabled && component.getElement()
-                .isEnabled() != component.getElement().getNode().isEnabled()) {
-            informEnabledState(component, component.getElement().isEnabled());
+        if (component instanceof HasEnabled
+                && component.getElement().isEnabled() != component.getElement()
+                        .getNode().isEnabledSelf()) {
+            component.onEnabledStateChanged(component.getElement().isEnabled());
         }
     }
 
@@ -248,25 +249,27 @@ public class ComponentUtil {
         }
         // inform component about onEnabledState if parent and child states
         // differ.
-        if (component instanceof HasEnabled && component.getElement()
-                .isEnabled() != component.getElement().getNode().isEnabled()) {
-            informEnabledState(component,
-                    component.getElement().getNode().isEnabled());
+        if (component instanceof HasEnabled
+                && component.getElement().isEnabled() != component.getElement()
+                        .getNode().isEnabledSelf()) {
+            boolean state = component.getParent().get().getChildren()
+                    .anyMatch(child -> child.equals(component))
+                            ? checkParentChainState(component.getParent().get())
+                            : component.getElement().getNode().isEnabledSelf();
+            component.onEnabledStateChanged(state);
         }
     }
 
-    /**
-     * Inform the component and its children about the enabled state on
-     * detach/attach.
-     *
-     * @param component
-     *            component to inform enabled state to.
-     */
-    private static void informEnabledState(Component component,
-            boolean enabled) {
-        component.onEnabledStateChanged(enabled);
-        component.getChildren().forEach(child -> child.onEnabledStateChanged(
-                enabled ? child.getElement().isEnabled() : false));
+    private static boolean checkParentChainState(Component component) {
+        if (!component.getElement().getNode().isEnabledSelf()) {
+            return false;
+        }
+        if (component.getParent().get().getChildren()
+                .anyMatch(child -> child.equals(component))) {
+            return checkParentChainState(component.getParent().get());
+        }
+
+        return true;
     }
 
     /**
