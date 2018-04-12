@@ -199,9 +199,9 @@ public class UidlWriter implements Serializable {
     }
 
     private static InputStream getInlineResourceStream(String url) {
-        String resolvedPath = VaadinServlet.getCurrent().resolveResource(url);
-        InputStream stream = VaadinService.getCurrent()
-                .getResourceAsStream(resolvedPath);
+        VaadinServlet servlet = VaadinServlet.getCurrent();
+        String resolvedPath = servlet.resolveResource(url);
+        InputStream stream = servlet.getResourceAsStream(resolvedPath);
 
         if (stream == null) {
             getLogger().warn("The path '{}' for inline resource "
