@@ -97,7 +97,6 @@ public class DefaultDeploymentConfiguration
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private String webComponentsPolyfillBase;
-    private boolean usingNewRouting;
     private boolean requestTiming;
 
     /**
@@ -131,7 +130,6 @@ public class DefaultDeploymentConfiguration
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
         checkWebComponentsPolyfillBase(resourceScanner);
-        checkUsingNewRouting();
     }
 
     @Override
@@ -392,11 +390,6 @@ public class DefaultDeploymentConfiguration
         sendUrlsAsParameters = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
-    }
-
-    private void checkUsingNewRouting() {
-        usingNewRouting = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_USING_NEW_ROUTING, true);
     }
 
     private Logger getLogger() {
