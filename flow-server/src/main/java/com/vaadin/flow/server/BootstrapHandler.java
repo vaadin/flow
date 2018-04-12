@@ -993,7 +993,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return context;
     }
 
-    private void setupPushConnectionFactory(PushConfiguration pushConfiguration, BootstrapContext context) {
+    protected void setupPushConnectionFactory(PushConfiguration pushConfiguration, BootstrapContext context) {
         VaadinService service = context.getSession().getService();
         Iterator<PushConnectionFactory> iter = ServiceLoader.load(PushConnectionFactory.class, service.getClassLoader()).iterator();
         if (iter.hasNext()) {
