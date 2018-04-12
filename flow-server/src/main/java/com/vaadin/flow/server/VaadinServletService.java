@@ -16,11 +16,12 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,7 @@ public class VaadinServletService extends VaadinService {
      * intercepted) so it does not return <code>null</code>.
      */
     protected VaadinServletService() {
-        this.servlet = null;
+        servlet = null;
     }
 
     @Override
@@ -86,9 +87,9 @@ public class VaadinServletService extends VaadinService {
     }
 
     /**
-     * Retrieves a reference to the servlet associated with this service.
-     * Should be overridden (or otherwise intercepted) if the no-arg
-     * constructor is used to prevent NPEs.
+     * Retrieves a reference to the servlet associated with this service. Should
+     * be overridden (or otherwise intercepted) if the no-arg constructor is
+     * used to prevent NPEs.
      *
      * @return A reference to the VaadinServlet this service is using
      */
@@ -161,16 +162,6 @@ public class VaadinServletService extends VaadinService {
 
     private static final Logger getLogger() {
         return LoggerFactory.getLogger(VaadinServletService.class.getName());
-    }
-
-    @Override
-    public URL getResource(String path) {
-        return getServlet().getResource(path);
-    }
-
-    @Override
-    public InputStream getResourceAsStream(String path) {
-        return getServlet().getResourceAsStream(path);
     }
 
     @Override
