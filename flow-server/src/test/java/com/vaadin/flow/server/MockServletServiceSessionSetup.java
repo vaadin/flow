@@ -22,7 +22,6 @@ public class MockServletServiceSessionSetup {
     public class TestVaadinServletService extends VaadinServletService {
 
         private List<DependencyFilter> dependencyFilterOverride;
-        private Function<String, InputStream> resourceAsStreamOverride;
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
@@ -42,25 +41,12 @@ public class MockServletServiceSessionSetup {
             dependencyFilterOverride = dependencyFilters;
         }
 
-        public void setResourceAsStreamOverride(
-                Function<String, InputStream> resourceAsStreamOverride) {
-            this.resourceAsStreamOverride = resourceAsStreamOverride;
-        }
-
-        @Override
-        public InputStream getResourceAsStream(String path) {
-            if (resourceAsStreamOverride != null) {
-                return resourceAsStreamOverride.apply(path);
-            }
-
-            return super.getResourceAsStream(path);
-        }
-
     }
 
     public class TestVaadinServlet extends VaadinServlet {
         private Function<String, String> resolveOverride;
         private Function<String, Boolean> resourceFoundOverride;
+        private Function<String, InputStream> resourceAsStreamOverride;
 
         @Override
         protected VaadinServletService createServletService()
@@ -84,6 +70,20 @@ public class MockServletServiceSessionSetup {
         public void setResourceFoundOverride(
                 Function<String, Boolean> resourceFoundOverride) {
             this.resourceFoundOverride = resourceFoundOverride;
+        }
+
+        public void setResourceAsStreamOverride(
+                Function<String, InputStream> resourceAsStreamOverride) {
+            this.resourceAsStreamOverride = resourceAsStreamOverride;
+        }
+
+        @Override
+        public InputStream getResourceAsStream(String path) {
+            if (resourceAsStreamOverride != null) {
+                return resourceAsStreamOverride.apply(path);
+            }
+
+            return super.getResourceAsStream(path);
         }
 
         @Override

@@ -76,7 +76,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         VaadinServlet servlet = service.getServlet();
         String manifestResource = servlet
                 .resolveResource("frontend://" + FLOW_BUNDLE_MANIFEST);
-        try (InputStream bundleManifestStream = service
+        try (InputStream bundleManifestStream = servlet
                 .getResourceAsStream(manifestResource)) {
             if (bundleManifestStream == null) {
                 getLogger().info(
