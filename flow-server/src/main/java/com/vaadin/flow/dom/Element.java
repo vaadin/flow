@@ -1545,9 +1545,9 @@ public class Element extends Node<Element> {
 
         Optional<Component> component = getComponent();
         if (component.isPresent()) {
-            component.get().onEnabledStateChange(enabled);
+            component.get().onEnabledStateChanged(enabled);
             component.get().getChildren()
-                    .forEach(child -> child.onEnabledStateChange(
+                    .forEach(child -> child.onEnabledStateChanged(
                             enabled ? child.getElement().isEnabled() : false));
         }
         return getSelf();

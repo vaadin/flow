@@ -511,7 +511,9 @@ public abstract class Component
      * @param enabled
      *            the new enabled state of the component
      */
-    public void onEnabledStateChange(boolean enabled) {
+    public void onEnabledStateChanged(boolean enabled) {
+        // If the node has feature ElementData, then we know that the state
+        // provider accepts attributes
         if (getElement().getNode().hasFeature(ElementData.class)) {
             getElement().setAttribute("disabled", !enabled);
         }
