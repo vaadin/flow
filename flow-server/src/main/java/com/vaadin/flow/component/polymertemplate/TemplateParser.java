@@ -18,6 +18,7 @@ package com.vaadin.flow.component.polymertemplate;
 import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Template content parser.
@@ -79,9 +80,11 @@ public interface TemplateParser {
      *            the template class
      * @param tag
      *            the template tag name
+     * @param service
+     *            the related Vaadin service
      *
      * @return the template data
      */
     TemplateData getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
-            String tag);
+            String tag, VaadinService service);
 }

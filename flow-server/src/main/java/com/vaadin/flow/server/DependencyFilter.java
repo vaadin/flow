@@ -21,7 +21,6 @@ import java.util.List;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.shared.ui.Dependency;
 
 /**
@@ -38,9 +37,7 @@ public interface DependencyFilter extends Serializable {
      * version.
      * <p>
      * Called whenever dependencies are about to be sent to the client side for
-     * loading. The filter is also called when a {@link PolymerTemplate} is
-     * about to be parsed - in this case the filter should return a file that
-     * contains the template definition for the corresponding PolymerTemplate.
+     * loading and when templates are parsed on the server side.
      *
      * @param dependencies
      *            the collected dependencies, possibly already modified by other
@@ -57,25 +54,16 @@ public interface DependencyFilter extends Serializable {
      */
     public static class FilterContext implements Serializable {
 
-        private VaadinSession session;
+        private VaadinService service;
 
         /**
          * Creates a new context for the given session.
          *
-         * @param session
-         *            the session which is loading dependencies
+         * @param service
+         *            the service which is loading dependencies
          */
-        public FilterContext(VaadinSession session) {
-            this.session = session;
-        }
-
-        /**
-         * Gets the related Vaadin session.
-         *
-         * @return the Vaadin session
-         */
-        public VaadinSession getSession() {
-            return session;
+        public FilterContext(VaadinService service) {
+            this.service = service;
         }
 
         /**
@@ -84,7 +72,7 @@ public interface DependencyFilter extends Serializable {
          * @return the Vaadin service
          */
         public VaadinService getService() {
-            return session.getService();
+            return service;
         }
     }
 

@@ -32,6 +32,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.BeanModelType;
 import com.vaadin.flow.templatemodel.ListModelType;
 import com.vaadin.flow.templatemodel.ModelDescriptor;
@@ -75,8 +76,21 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      *            a template parser
      */
     public PolymerTemplate(TemplateParser parser) {
+        this(parser, VaadinService.getCurrent());
+    }
+
+    /**
+     * Creates the component that is responsible for Polymer template
+     * functionality using the provided {@code parser}.
+     *
+     * @param parser
+     *            a template parser
+     * @param service
+     *            the related service instance
+     */
+    public PolymerTemplate(TemplateParser parser, VaadinService service) {
         TemplateInitializer templateInitializer = new TemplateInitializer(this,
-                parser);
+                parser, service);
         templateInitializer.initChildElements();
 
         Set<String> twoWayBindingPaths = templateInitializer
@@ -90,7 +104,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * functionality.
      */
     public PolymerTemplate() {
-        this(DefaultTemplateParser.getInstance());
+        this(DefaultTemplateParser.getInstance(), VaadinService.getCurrent());
     }
 
     /**

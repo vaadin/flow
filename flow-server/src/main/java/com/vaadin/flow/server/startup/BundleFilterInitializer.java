@@ -45,6 +45,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd.
  */
 public class BundleFilterInitializer implements VaadinServiceInitListener {
+
     private static final String FLOW_BUNDLE_MANIFEST = "vaadin-flow-bundle-manifest.json";
 
     @Override
@@ -73,12 +74,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
 
     private Map<String, Set<String>> readBundleDependencies(
             VaadinService service) {
-        WebBrowser es6Browser = new WebBrowser() {
-            @Override
-            public boolean isEs6Supported() {
-                return true;
-            };
-        };
+        WebBrowser es6Browser = new FakeEs6Browser();
         String manifestResource = "frontend://" + FLOW_BUNDLE_MANIFEST;
         try (InputStream bundleManifestStream = service
                 .getResourceAsStream(manifestResource, es6Browser, null)) {

@@ -122,7 +122,7 @@ public class UidlWriter implements Serializable {
 
         encodeChanges(ui, stateChanges);
 
-        populateDependencies(response, session,
+        populateDependencies(response, service,
                 uiInternals.getDependencyList());
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
@@ -148,14 +148,13 @@ public class UidlWriter implements Serializable {
     }
 
     private static void populateDependencies(JsonObject response,
-            VaadinSession session, DependencyList dependencyList) {
+            VaadinService service, DependencyList dependencyList) {
         Collection<Dependency> pendingSendToClient = dependencyList
                 .getPendingSendToClient();
 
-        FilterContext context = new FilterContext(session);
+        FilterContext context = new FilterContext(service);
 
-        for (DependencyFilter filter : session.getService()
-                .getDependencyFilters()) {
+        for (DependencyFilter filter : service.getDependencyFilters()) {
             pendingSendToClient = filter
                     .filter(new ArrayList<>(pendingSendToClient), context);
         }
