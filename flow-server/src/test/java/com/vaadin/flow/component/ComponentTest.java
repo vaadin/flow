@@ -28,12 +28,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -41,21 +39,20 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
-import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
-import static org.mockito.Mockito.when;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ComponentTest {
@@ -146,6 +143,7 @@ public class ComponentTest {
     private Component shadowRootParent;
     private Component shadowChild;
     private UI testUI;
+    private MockServletServiceSessionSetup mocks;
 
     public interface TracksAttachDetach {
         default void track() {
@@ -272,7 +270,7 @@ public class ComponentTest {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         divWithTextComponent = new TestComponent(
                 ElementFactory.createDiv("Test component"));
         parentDivComponent = new TestComponent(ElementFactory.createDiv());
@@ -283,23 +281,22 @@ public class ComponentTest {
                 child1SpanComponent.getElement(),
                 child2InputComponent.getElement());
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        mocks = new MockServletServiceSessionSetup();
+
+        VaadinSession session = mocks.getSession();
         UI ui = new UI() {
             @Override
             public VaadinSession getSession() {
                 return session;
             }
         };
-        VaadinService service = Mockito.mock(VaadinService.class);
-        when(session.getService()).thenReturn(service);
-        DefaultInstantiator instantiator = new DefaultInstantiator(service);
-        when(service.getInstantiator()).thenReturn(instantiator);
         UI.setCurrent(ui);
     }
 
     @After
     public void tearDown() {
         UI.setCurrent(null);
+        mocks.cleanup();
     }
 
     @Test
@@ -1564,8 +1561,7 @@ public class ComponentTest {
                 child.getElement().getAttribute("disabled"));
         Assert.assertNotNull("Disabled attribute should exist for subChild",
                 subChild.getElement().getAttribute("disabled"));
-        Assert.assertNotNull(
-                "Disabled attribute should exist for subSubChild",
+        Assert.assertNotNull("Disabled attribute should exist for subSubChild",
                 subSubChild.getElement().getAttribute("disabled"));
 
     }

@@ -2223,4 +2223,21 @@ public abstract class VaadinService implements Serializable {
      */
     public abstract String resolveResource(String url, WebBrowser browser);
 
+    /**
+     * Checks if the given URL has a themed version. If it does, returns the
+     * untranslated URL for the themed resource.
+     *
+     * @param url
+     *            the URL to lookup
+     * @param browser
+     *            the browser to use for lookup
+     * @param theme
+     *            the theme to check
+     * @return an optional containing the untranslated (containing vaadin
+     *         protocols) URL to the themed resource if such exists, an empty
+     *         optional if the given resource has no themed version
+     */
+    public abstract Optional<String> getThemedUrl(String url,
+            WebBrowser browser, AbstractTheme theme);
+
 }
