@@ -38,7 +38,7 @@ public class LazyLoadingTemplateView extends AbstractDivView {
     @Tag("lazy-widget")
     public static class LazyWidget extends PolymerTemplate<Message> {
         public LazyWidget() {
-            super((clazz, tag) -> new TemplateData("",
+            super((clazz, tag, service) -> new TemplateData("",
                     Jsoup.parse(getTemplateContent())));
             getModel().setText("foo");
         }

@@ -18,8 +18,6 @@ package com.vaadin.flow.component.polymertemplate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -33,9 +31,8 @@ import org.junit.Test;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.HasCurrentService;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -44,8 +41,10 @@ import net.jcip.annotations.NotThreadSafe;
  * @author Vaadin Ltd.
  */
 @NotThreadSafe
-public class TemplateInitializerTest extends HasCurrentService {
+public class TemplateInitializerTest {
     private TemplateParser templateParser;
+    private MockServletServiceSessionSetup mocks;
+    private TestVaadinServletService service;
 
     @Tag("template-initializer-test")
     public class InTemplateClass extends PolymerTemplate<TemplateModel> {
@@ -67,19 +66,10 @@ public class TemplateInitializerTest extends HasCurrentService {
         }
     }
 
-    @Override
-    protected VaadinService createService() {
-        VaadinService service = mock(VaadinService.class);
-        DeploymentConfiguration configuration = mock(
-                DeploymentConfiguration.class);
-        when(configuration.isProductionMode()).thenReturn(false);
-        when(service.getDeploymentConfiguration()).thenReturn(configuration);
-
-        return service;
-    }
-
     @Before
-    public void setUp() throws NoSuchFieldException {
+    public void setUp() throws Exception {
+        mocks = new MockServletServiceSessionSetup();
+        service = mocks.getService();
         String parentTemplateId = InTemplateClass.class.getAnnotation(Tag.class)
                 .value();
         assertThat("Both classes should have the same '@Tag' annotation",
@@ -91,7 +81,7 @@ public class TemplateInitializerTest extends HasCurrentService {
         String outsideTemplateElementId = OutsideTemplateClass.class
                 .getField("element").getAnnotation(Id.class).value();
 
-        templateParser = (clazz, tag) -> new TemplateData("",
+        templateParser = (clazz, tag, service) -> new TemplateData("",
                 Jsoup.parse(String.format("<dom-module id='%s'><template>"
                         + "    <template><div id='%s'>Test</div></template>"
                         + "    <div id='%s'></div>"
@@ -103,18 +93,19 @@ public class TemplateInitializerTest extends HasCurrentService {
 
     @Test(expected = IllegalStateException.class)
     public void inTemplateShouldThrowAnException() {
-        new TemplateInitializer(new InTemplateClass(), templateParser);
+        new TemplateInitializer(new InTemplateClass(), templateParser, service);
     }
 
     @Test
     public void outsideTemplateShouldNotThrowAnException() {
-        new TemplateInitializer(new OutsideTemplateClass(), templateParser);
+        new TemplateInitializer(new OutsideTemplateClass(), templateParser,
+                service);
     }
 
     @Test
     public void twoWayBindingPaths() {
         Set<String> twoWayBindingPaths = new TemplateInitializer(
-                new OutsideTemplateClass(), templateParser)
+                new OutsideTemplateClass(), templateParser, service)
                         .getTwoWayBindingPaths();
 
         Assert.assertEquals(
