@@ -54,7 +54,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         private boolean isInvoked;
 
         ComponentWithMethod() {
-            super((clazz, tag) -> new TemplateData("", new Element("a")));
+            super((clazz, tag, service) -> new TemplateData("",
+                    new Element("a")));
         }
 
         protected void intMethod(int i) {
@@ -73,7 +74,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         private boolean isInvoked;
 
         EnabledHandler() {
-            super((clazz, tag) -> new TemplateData("", new Element("div")));
+            super((clazz, tag, service) -> new TemplateData("",
+                    new Element("div")));
         }
 
         @EventHandler(DisabledUpdateMode.ALWAYS)
