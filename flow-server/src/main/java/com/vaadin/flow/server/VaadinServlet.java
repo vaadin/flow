@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -31,8 +30,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -581,157 +578,6 @@ public class VaadinServlet extends HttpServlet {
                 c > 64 && c < 91 || // A-Z
                 c > 96 && c < 123 // a-z
         ;
-    }
-
-    /**
-     * For the given HtmlImport url value, check against the given Theme if
-     * there exists such a file that the HtmlImport url should load the themed
-     * resource instead of the defined given resource.
-     * <p>
-     * This will return the validated themed resource url if the resource exists
-     * or the original url if a file for the translated one can not be found.
-     * <p>
-     * Result will be cached for future use if production mode is enabled.
-     *
-     * @param theme
-     *            Theme to use for translating url with
-     * @param urlToTranslate
-     *            HtmlImport url that may be rewritten to reflect a themed
-     *            resource
-     * @return theme resource url if resource exists or original url
-     */
-    public String getUrlTranslation(AbstractTheme theme,
-            String urlToTranslate) {
-        if (getService().getDeploymentConfiguration().isProductionMode()) {
-            return themeTranslations.get(theme.getClass()).computeIfAbsent(
-                    urlToTranslate, key -> computeUrlTranslation(theme, key));
-        } else {
-            return computeUrlTranslation(theme, urlToTranslate);
-        }
-    }
-
-    /**
-     * Resolves the given {@code url} resource using vaadin URI resolver.
-     *
-     * @param url
-     *            the resource to resolve
-     * @return resolved resource or <code>null</code> if the resource was not
-     *         found
-     */
-    public String resolveResource(String url) {
-        String resolvedUrl = resolveOnly(url);
-        if (isInServletContext(resolvedUrl)) {
-            return resolvedUrl;
-        }
-        String webjarLocation = getWebJarLocation(resolvedUrl);
-        if (webjarLocation != null) {
-            return webjarLocation;
-        }
-
-        return null;
-    }
-
-    private String resolveOnly(String url) {
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session == null) {
-            /*
-             * Cannot happen in runtime.
-             *
-             * But not all unit tests set it. Let's just return null.
-             */
-            return null;
-        }
-
-        String frontendRootUrl;
-        DeploymentConfiguration config = getService()
-                .getDeploymentConfiguration();
-        if (session.getBrowser().isEs6Supported()) {
-            frontendRootUrl = config.getEs6FrontendPrefix();
-        } else {
-            frontendRootUrl = config.getEs5FrontendPrefix();
-        }
-
-        return servletContextResolver.resolveVaadinUri(url, frontendRootUrl);
-    }
-
-    private final String computeUrlTranslation(AbstractTheme theme,
-            String urlToTranslate) {
-        String translatedUrl = theme.translateUrl(urlToTranslate);
-        if (translatedUrl.equals(urlToTranslate)
-                || isResourceFound(resolveOnly(translatedUrl))) {
-            return translatedUrl;
-        } else {
-            return urlToTranslate;
-        }
-    }
-
-    /**
-     * Checks if the given resource is available.
-     * <p>
-     * Checks the servlet context and webjars for the resource.
-     * <p>
-     * If this method returns <code>true</code>, is is safe to assume that the
-     * browser can load the given resource using the given URL.
-     *
-     * @param resolvedUrl
-     *            the path to check
-     * @return <code>true</code> if the resource is found, <code>false</code>
-     *         otherwise
-     */
-    public boolean isResourceFound(String resolvedUrl) {
-        return isInServletContext(resolvedUrl) || isInWebJar(resolvedUrl);
-    }
-
-    boolean isInServletContext(String resolvedUrl) {
-        return getResource(resolvedUrl) != null;
-    }
-
-    boolean isInWebJar(String resolvedUrl) {
-        return getResource(getWebJarLocation(resolvedUrl)) != null;
-    }
-
-    private String getWebJarLocation(String resolvedUrl) {
-        if (webJarServer != null) {
-            Optional<String> webJarPath = webJarServer
-                    .getWebJarResourcePath(resolvedUrl);
-            if (webJarPath.isPresent()
-                    && isInServletContext(webJarPath.get())) {
-                return webJarPath.get();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns a URL to the resource that is mapped to the given path. The path
-     * must begin with a <tt>/</tt>.
-     *
-     * @param path
-     *            the path to the resource
-     * @return the resource located at the named path, or <code>null</code> if
-     *         there is no resource at that path or an exception happened.
-     */
-    public URL getResource(String path) {
-        try {
-            return getServletContext().getResource(path);
-        } catch (MalformedURLException exception) {
-            LoggerFactory.getLogger(VaadinServlet.class)
-                    .trace("Failed to parse url {}.", path, exception);
-        }
-        return null;
-    }
-
-    /**
-     * Returns the resource located at the named path as an
-     * <code>InputStream</code> object.
-     *
-     * @param path
-     *            the path to the resource
-     * @return the <code>InputStream</code> returned to the servlet, or
-     *         <code>null</code> if no resource exists at the specified path
-     */
-    public InputStream getResourceAsStream(String path) {
-        return getServletContext().getResourceAsStream(path);
     }
 
     /**

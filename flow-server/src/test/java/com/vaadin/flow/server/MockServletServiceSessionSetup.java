@@ -1,7 +1,6 @@
 package com.vaadin.flow.server;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.function.Function;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -93,9 +91,6 @@ public class MockServletServiceSessionSetup {
     }
 
     public class TestVaadinServlet extends VaadinServlet {
-        private Function<String, String> resolveOverride;
-        private Function<String, Boolean> resourceFoundOverride;
-        private Function<String, InputStream> resourceAsStreamOverride;
 
         @Override
         protected VaadinServletService createServletService()
@@ -109,54 +104,6 @@ public class MockServletServiceSessionSetup {
         @Override
         public ServletContext getServletContext() {
             return servletContext;
-        }
-
-        public void setResolveOverride(
-                Function<String, String> resolveOverride) {
-            this.resolveOverride = resolveOverride;
-        }
-
-        public void setResourceFoundOverride(
-                Function<String, Boolean> resourceFoundOverride) {
-            this.resourceFoundOverride = resourceFoundOverride;
-        }
-
-        public void setResourceAsStreamOverride(
-                Function<String, InputStream> resourceAsStreamOverride) {
-            this.resourceAsStreamOverride = resourceAsStreamOverride;
-        }
-
-        @Override
-        public InputStream getResourceAsStream(String path) {
-            if (resourceAsStreamOverride != null) {
-                return resourceAsStreamOverride.apply(path);
-            }
-
-            return super.getResourceAsStream(path);
-        }
-
-        @Override
-        public String resolveResource(String url) {
-            if (resolveOverride != null) {
-                return resolveOverride.apply(url);
-            }
-            return super.resolveResource(url);
-        }
-
-        @Override
-        public boolean isResourceFound(String resolvedUrl) {
-            if (resourceFoundOverride != null) {
-                return resourceFoundOverride.apply(resolvedUrl);
-            }
-            return super.isResourceFound(resolvedUrl);
-        }
-
-        @Override
-        boolean isInServletContext(String resolvedUrl) {
-            if (resourceFoundOverride != null) {
-                return resourceFoundOverride.apply(resolvedUrl);
-            }
-            return super.isInServletContext(resolvedUrl);
         }
 
         public void addServletContextResource(String path) {
