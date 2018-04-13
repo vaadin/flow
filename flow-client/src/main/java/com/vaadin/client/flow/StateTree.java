@@ -199,12 +199,14 @@ public class StateTree {
      *            the type of event
      * @param eventData
      *            extra data associated with the event
+     * @param matchedFilters
+     *            the filters that were matched for the event
      */
     public void sendEventToServer(StateNode node, String eventType,
-            JsonObject eventData) {
+            JsonObject eventData, JsonArray matchedFilters) {
         if (isValidNode(node)) {
             registry.getServerConnector().sendEventMessage(node, eventType,
-                    eventData);
+                    eventData, matchedFilters);
         }
     }
 

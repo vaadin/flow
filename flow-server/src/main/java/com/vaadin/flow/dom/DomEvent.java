@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.util.EventObject;
+import java.util.Set;
 
 import elemental.json.JsonObject;
 
@@ -30,6 +31,8 @@ public class DomEvent extends EventObject {
 
     private final String eventType;
 
+    private final Set<String> matchedFilters;
+
     /**
      * Creates a new DOM event.
      *
@@ -40,8 +43,11 @@ public class DomEvent extends EventObject {
      *            the type of the event, not <code>null</code>
      * @param eventData
      *            additional data related to the event, not <code>null</code>
+     * @param matchedFilters
+     *            the filters that matched for this event
      */
-    public DomEvent(Element source, String eventType, JsonObject eventData) {
+    public DomEvent(Element source, String eventType, JsonObject eventData,
+            Set<String> matchedFilters) {
         super(source);
         assert source != null;
         assert eventType != null;
@@ -49,6 +55,7 @@ public class DomEvent extends EventObject {
 
         this.eventType = eventType;
         this.eventData = eventData;
+        this.matchedFilters = matchedFilters;
     }
 
     @Override
@@ -77,4 +84,19 @@ public class DomEvent extends EventObject {
         return eventData;
     }
 
+    /**
+     * Check whether the given filter string was matched on the client when this
+     * event was sent to the server.
+     *
+     * @see DomListenerRegistration#setFilter(String)
+     *
+     * @param filter
+     *            the filter string to check for
+     *
+     * @return <code>true</code> if the filter string was matched; otherwise
+     *         <code>false</code>
+     */
+    public boolean matchesFilter(String filter) {
+        return matchedFilters.contains(filter);
+    }
 }

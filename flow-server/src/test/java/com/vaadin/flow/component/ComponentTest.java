@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.component;
 
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,7 +31,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,7 +57,7 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
-import static org.mockito.Mockito.when;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ComponentTest {
@@ -1197,7 +1199,8 @@ public class ComponentTest {
     }
 
     private DomEvent createEvent(String type, Component component) {
-        return new DomEvent(component.getElement(), type, Json.createObject());
+        return new DomEvent(component.getElement(), type, Json.createObject(),
+                Collections.singleton(ElementListenerMap.DEFAULT_FILTER));
     }
 
     private void assertDependency(Dependency.Type type, String url,

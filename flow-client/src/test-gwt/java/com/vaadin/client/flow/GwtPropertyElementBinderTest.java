@@ -34,6 +34,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.events.Event;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
@@ -46,6 +47,8 @@ public abstract class GwtPropertyElementBinderTest
     protected static class CollectingStateTree extends StateTree {
         JsArray<StateNode> collectedNodes = JsCollections.array();
         JsArray<JsonObject> collectedEventData = JsCollections.array();
+        JsArray<JsonArray> collectedMatchedFilters = JsCollections.array();
+
         JsMap<StateNode, JsMap<String, Object>> synchronizedProperties = JsCollections
                 .map();
         List<Object> existingElementRpcArgs = new ArrayList<>();
@@ -67,9 +70,10 @@ public abstract class GwtPropertyElementBinderTest
 
         @Override
         public void sendEventToServer(StateNode node, String eventType,
-                JsonObject eventData) {
+                JsonObject eventData, JsonArray matchedFilters) {
             collectedNodes.push(node);
             collectedEventData.push(eventData);
+            collectedMatchedFilters.push(matchedFilters);
         }
 
         @Override

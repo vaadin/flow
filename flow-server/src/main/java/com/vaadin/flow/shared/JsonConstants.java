@@ -158,6 +158,11 @@ public class JsonConstants implements Serializable {
     public static final String RPC_EVENT_DATA = "data";
 
     /**
+     * Key holding matching filters in event messages sent from the client.
+     */
+    public static final String RPC_EVENT_FILTERS = "filters";
+
+    /**
      * Key used for data related to
      * {@link Page#executeJavaScript(String, Serializable...)} in UIDL messages.
      */
@@ -215,7 +220,7 @@ public class JsonConstants implements Serializable {
 
     /**
      * Type value for attach existing element server callback.
-     * 
+     *
      * @see #RPC_ATTACH_ASSIGNED_ID
      * @see #RPC_ATTACH_REQUESTED_ID
      * @see #RPC_ATTACH_TAG_NAME

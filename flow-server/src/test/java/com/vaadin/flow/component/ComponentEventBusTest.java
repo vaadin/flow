@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -89,8 +90,10 @@ public class ComponentEventBusTest {
     private void fireDomEvent(Component component, String domEvent,
             JsonObject eventData) {
         Element e = component.getElement();
-        e.getNode().getFeature(ElementListenerMap.class).fireEvent(
-                new com.vaadin.flow.dom.DomEvent(e, domEvent, eventData));
+        e.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new com.vaadin.flow.dom.DomEvent(e, domEvent,
+                        eventData, Collections
+                                .singleton(ElementListenerMap.DEFAULT_FILTER)));
 
     }
 

@@ -26,7 +26,6 @@ import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.client.flow.nodefeature.NodeFeature;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
@@ -582,14 +581,26 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         String numberExpression = "event.button";
         String stringExpression = "element.tagName";
 
+        String trueFilter = "true";
+        String tagNameFilter = "element.tagName == 'DIV'";
+
         String constantPoolKey = "expressionsKey";
 
-        JsonArray expressionConstantValue = Json.createArray();
-        expressionConstantValue.set(0, booleanExpression);
-        expressionConstantValue.set(1, numberExpression);
-        expressionConstantValue.set(2, stringExpression);
+        JsonArray expressions = Json.createArray();
+        expressions.set(0, booleanExpression);
+        expressions.set(1, numberExpression);
+        expressions.set(2, stringExpression);
 
-        addToConstantPool(constantPoolKey, expressionConstantValue);
+        JsonArray filters = Json.createArray();
+        filters.set(0, trueFilter);
+        filters.set(1, "false");
+        filters.set(2, tagNameFilter);
+
+        JsonArray eventSettingsConstantValue = Json.createArray();
+        eventSettingsConstantValue.set(0, expressions);
+        eventSettingsConstantValue.set(1, filters);
+
+        addToConstantPool(constantPoolKey, eventSettingsConstantValue);
 
         node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("click")
                 .setValue(constantPoolKey);
@@ -610,6 +621,11 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 eventData.get(numberExpression).getType());
         assertEquals("DIV", eventData.getString(stringExpression));
         assertEquals(true, eventData.getBoolean(booleanExpression));
+
+        JsonArray matchedFilters = tree.collectedMatchedFilters.get(0);
+        assertEquals(2, matchedFilters.length());
+        assertEquals(trueFilter, matchedFilters.getString(0));
+        assertEquals(tagNameFilter, matchedFilters.getString(1));
     }
 
     private void addToConstantPool(String key, JsonValue value) {

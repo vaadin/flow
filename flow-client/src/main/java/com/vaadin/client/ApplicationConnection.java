@@ -18,9 +18,7 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.communication.PollConfigurator;
-import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.flow.RouterLinkHandler;
 import com.vaadin.client.flow.StateNode;
@@ -170,14 +168,14 @@ public class ApplicationConnection {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
-    
-        $wnd.Vaadin.Flow.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
+
+        $wnd.Vaadin.Flow.sendEventMessage = $entry(function(nodeId, eventType, eventData, matchedFilters) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
-            sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
+            sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;Lelemental/json/JsonArray;)(nodeId,eventType,eventData,matchedFilters);
         });
-    
+
         client.initializing = false;
-    
+
         $wnd.Vaadin.Flow.clients[applicationId] = client;
     }-*/;
 
@@ -203,7 +201,7 @@ public class ApplicationConnection {
         client.getVersionInfo = $entry(function(parameter) {
             return { "flow": servletVersion};
         });
-    
+
     }-*/;
 
     /**

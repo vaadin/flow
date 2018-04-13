@@ -81,10 +81,12 @@ public class ServerConnector {
      *            the type of event
      * @param eventData
      *            extra data associated with the event
+     * @param matchedFilters
+     *            the filters that were matched for the event
      */
     public void sendEventMessage(StateNode node, String eventType,
-            JsonObject eventData) {
-        sendEventMessage(node.getId(), eventType, eventData);
+            JsonObject eventData, JsonArray matchedFilters) {
+        sendEventMessage(node.getId(), eventType, eventData, matchedFilters);
     }
 
     /**
@@ -96,13 +98,16 @@ public class ServerConnector {
      *            the type of event
      * @param eventData
      *            extra data associated with the event
+     * @param matchedFilters
+     *            the filters that were matched for the event
      */
     public void sendEventMessage(int nodeId, String eventType,
-            JsonObject eventData) {
+            JsonObject eventData, JsonArray matchedFilters) {
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
         message.put(JsonConstants.RPC_NODE, nodeId);
         message.put(JsonConstants.RPC_EVENT_TYPE, eventType);
+        message.put(JsonConstants.RPC_EVENT_FILTERS, matchedFilters);
 
         if (eventData != null) {
             message.put(JsonConstants.RPC_EVENT_DATA, eventData);

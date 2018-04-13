@@ -19,6 +19,10 @@ import com.google.gwt.user.client.Timer;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.flow.component.PollEvent;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
 
 /**
  * Handles polling the server with a given interval.
@@ -83,9 +87,12 @@ public class Poller {
      * Polls the server for changes.
      */
     public void poll() {
+        JsonArray matchedFilters = Json.createArray();
+        matchedFilters.set(0, ElementListenerMap.DEFAULT_FILTER);
+
         StateTree stateTree = registry.getStateTree();
         stateTree.sendEventToServer(stateTree.getRootNode(),
-                PollEvent.DOM_EVENT_NAME, null);
+                PollEvent.DOM_EVENT_NAME, null, matchedFilters);
     }
 
 }

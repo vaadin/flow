@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -118,7 +119,8 @@ public class ElementListenersTest
 
         JsonObject eventData = Json.createObject();
         eventData.put("baz", true);
-        ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData));
+        ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData,
+                Collections.singleton(ElementListenerMap.DEFAULT_FILTER)));
 
         JsonObject capturedJson = eventDataReference.get();
         Assert.assertNotNull(capturedJson);
@@ -176,6 +178,7 @@ public class ElementListenersTest
     }
 
     private static DomEvent createEvent(String type) {
-        return new DomEvent(new Element("fake"), type, Json.createObject());
+        return new DomEvent(new Element("fake"), type, Json.createObject(),
+                Collections.singleton(ElementListenerMap.DEFAULT_FILTER));
     }
 }

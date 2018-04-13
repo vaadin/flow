@@ -251,4 +251,24 @@ public final class JsonUtils {
     public static JsonArray createArray(JsonValue... values) {
         return Stream.of(values).collect(asArray());
     }
+
+    /**
+     * Creates a JSON array with the given values converted to JSON values.
+     *
+     * @param values
+     *            an iterable of values
+     * @param itemToJson
+     *            callback for converting values to JSON
+     * @return the created array
+     */
+    public static <T> JsonArray createArray(Iterable<T> values,
+            Function<T, JsonValue> itemToJson) {
+        JsonArray array = Json.createArray();
+
+        for (T value : values) {
+            array.set(array.length(), itemToJson.apply(value));
+        }
+
+        return array;
+    }
 }

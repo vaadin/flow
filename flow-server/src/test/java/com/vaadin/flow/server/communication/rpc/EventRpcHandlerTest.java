@@ -23,10 +23,13 @@ import org.junit.Test;
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class EventRpcHandlerTest {
@@ -41,7 +44,11 @@ public class EventRpcHandlerTest {
 
         element.addEventListener("test-event",
                 e -> invocations.incrementAndGet());
-        sendElementEvent(element, ui, "test-event", null);
+
+        JsonArray matchedFilters = JsonUtils
+                .createArray(Json.create(ElementListenerMap.DEFAULT_FILTER));
+        sendElementEvent(element, ui, "test-event", null, matchedFilters);
+
         Assert.assertEquals(1, invocations.get());
     }
 
@@ -55,14 +62,18 @@ public class EventRpcHandlerTest {
 
         element.addEventListener("test-event", e -> invocationData
                 .addAndGet((int) e.getEventData().getNumber("nr")));
+
         JsonObject eventData = Json.createObject();
         eventData.put("nr", 123);
-        sendElementEvent(element, ui, "test-event", eventData);
+        JsonArray matchedFilters = JsonUtils
+                .createArray(Json.create(ElementListenerMap.DEFAULT_FILTER));
+        sendElementEvent(element, ui, "test-event", eventData, matchedFilters);
+
         Assert.assertEquals(123, invocationData.get());
     }
 
     private static JsonObject createElementEventInvocation(Element element,
-            String eventType, JsonObject eventData) {
+            String eventType, JsonObject eventData, JsonArray matchedFilters) {
         StateNode node = element.getNode();
         // Copied from ServerConnector
         JsonObject message = Json.createObject();
@@ -73,12 +84,15 @@ public class EventRpcHandlerTest {
             message.put(JsonConstants.RPC_EVENT_DATA, eventData);
         }
 
+        message.put(JsonConstants.RPC_EVENT_FILTERS, matchedFilters);
+
         return message;
     }
 
     private static void sendElementEvent(Element element, UI ui,
-            String eventType, JsonObject eventData) throws Exception {
-        new EventRpcHandler().handle(ui,
-                createElementEventInvocation(element, eventType, eventData));
+            String eventType, JsonObject eventData, JsonArray matchedFilters)
+            throws Exception {
+        new EventRpcHandler().handle(ui, createElementEventInvocation(element,
+                eventType, eventData, matchedFilters));
     }
 }
