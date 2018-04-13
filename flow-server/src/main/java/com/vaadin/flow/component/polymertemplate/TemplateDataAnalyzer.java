@@ -38,6 +38,7 @@ import org.jsoup.select.NodeVisitor;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.VaadinService;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -58,6 +59,7 @@ class TemplateDataAnalyzer {
     private final Class<? extends PolymerTemplate<?>> templateClass;
     private final TemplateParser parser;
     private final String tag;
+    private final VaadinService service;
 
     private final Map<String, String> tagById = new HashMap<>();
     private final Map<Field, String> idByField = new HashMap<>();
@@ -163,11 +165,13 @@ class TemplateDataAnalyzer {
      *            a template type
      * @param parser
      *            a template parser
+     * @param service
      */
     TemplateDataAnalyzer(Class<? extends PolymerTemplate<?>> templateClass,
-            TemplateParser parser) {
+            TemplateParser parser, VaadinService service) {
         this.templateClass = templateClass;
         this.parser = parser;
+        this.service = service;
         tag = getTag(templateClass);
     }
 
@@ -178,7 +182,7 @@ class TemplateDataAnalyzer {
      */
     ParserData parseTemplate() {
         TemplateData templateData = parser.getTemplateContent(templateClass,
-                tag);
+                tag, service);
         templateRoot = templateData.getTemplateElement();
         htmlImportUri = templateData.getHtmlImportUri();
         Elements templates = templateRoot.getElementsByTag("template");

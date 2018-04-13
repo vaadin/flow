@@ -250,7 +250,7 @@ public class TemplateModelTest extends HasCurrentService {
     public static class EmptyDivTemplate<M extends TemplateModel>
             extends PolymerTemplate<M> {
         public EmptyDivTemplate() {
-            super((clazz, tag) -> new TemplateData("",
+            super((clazz, tag, service) -> new TemplateData("",
                     Jsoup.parse("<dom-module id='div'></dom-module>")));
         }
 

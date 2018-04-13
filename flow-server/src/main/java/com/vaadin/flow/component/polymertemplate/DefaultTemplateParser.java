@@ -38,8 +38,8 @@ import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
+import com.vaadin.flow.server.startup.FakeEs6Browser;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 
@@ -74,10 +74,10 @@ public final class DefaultTemplateParser implements TemplateParser {
 
     @Override
     public TemplateData getTemplateContent(
-            Class<? extends PolymerTemplate<?>> clazz, String tag) {
-        VaadinServlet servlet = VaadinServlet.getCurrent();
-
+            Class<? extends PolymerTemplate<?>> clazz, String tag,
+            VaadinService service) {
         boolean logEnabled = LOG_CACHE.get(clazz).compareAndSet(false, true);
+        WebBrowser browser = new FakeEs6Browser();
 
         List<Dependency> dependencies = AnnotationReader
                 .getAnnotationsFor(clazz, HtmlImport.class).stream()
@@ -85,10 +85,8 @@ public final class DefaultTemplateParser implements TemplateParser {
                         htmlImport.value(), htmlImport.loadMode()))
                 .collect(Collectors.toList());
 
-        FilterContext filterContext = new FilterContext(
-                VaadinSession.getCurrent());
-        for (DependencyFilter filter : VaadinService.getCurrent()
-                .getDependencyFilters()) {
+        FilterContext filterContext = new FilterContext(service);
+        for (DependencyFilter filter : service.getDependencyFilters()) {
             dependencies = filter.filter(new ArrayList<>(dependencies),
                     filterContext);
         }
@@ -99,13 +97,8 @@ public final class DefaultTemplateParser implements TemplateParser {
             }
 
             String url = dependency.getUrl();
-            String path = servlet.resolveResource(url);
-
-            if (logEnabled) {
-                getLogger().debug("Html import path '{}' is resolved to '{}'",
-                        url, path);
-            }
-            try (InputStream content = servlet.getResourceAsStream(path)) {
+            try (InputStream content = service.getResourceAsStream(url, browser,
+                    null)) {
                 if (content == null) {
                     throw new IllegalStateException(
                             String.format("Can't find resource '%s' "

@@ -45,6 +45,8 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplateTest.ModelClass;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -55,6 +57,7 @@ import net.jcip.annotations.NotThreadSafe;
 public class DefaultTemplateParserTest {
 
     private MockServletServiceSessionSetup mocks;
+    private VaadinService service;
 
     @Tag("foo")
     @HtmlImport("/bar.html")
@@ -81,7 +84,7 @@ public class DefaultTemplateParserTest {
     @Before
     public void setUp() throws Exception {
         mocks = new MockServletServiceSessionSetup();
-
+        service = mocks.getService();
         ServletContext servletContext = mocks.getServletContext();
         Mockito.when(servletContext.getResource("/bar.html"))
                 .thenReturn(new URL("file://bar.html"));
@@ -116,7 +119,8 @@ public class DefaultTemplateParserTest {
     @Test
     public void defaultParser_hasTemplate_returnsContent() {
         TemplateData data = DefaultTemplateParser.getInstance()
-                .getTemplateContent(ImportsInspectTemplate.class, "foo");
+                .getTemplateContent(ImportsInspectTemplate.class, "foo",
+                        service);
         Element element = data.getTemplateElement();
 
         Assert.assertTrue(element.getElementById("foo") != null);
@@ -131,7 +135,8 @@ public class DefaultTemplateParserTest {
                                 .getBytes(StandardCharsets.UTF_8)));
 
         Element element = DefaultTemplateParser.getInstance()
-                .getTemplateContent(RootImportsInspectTemplate.class, "foo")
+                .getTemplateContent(RootImportsInspectTemplate.class, "foo",
+                        service)
                 .getTemplateElement();
 
         Assert.assertTrue(element.getElementById("foo") != null);
@@ -140,7 +145,8 @@ public class DefaultTemplateParserTest {
     @Test
     public void defaultParser_servletPathIsEmpty_returnsContent() {
         Element element = DefaultTemplateParser.getInstance()
-                .getTemplateContent(ImportsInspectTemplate.class, "foo")
+                .getTemplateContent(ImportsInspectTemplate.class, "foo",
+                        service)
                 .getTemplateElement();
 
         Assert.assertTrue(element.getElementById("foo") != null);
@@ -159,7 +165,8 @@ public class DefaultTemplateParserTest {
                                 .getBytes(StandardCharsets.UTF_8)));
 
         Element element = DefaultTemplateParser.getInstance()
-                .getTemplateContent(ImportsInspectTemplate.class, "foo")
+                .getTemplateContent(ImportsInspectTemplate.class, "foo",
+                        service)
                 .getTemplateElement();
 
         Assert.assertTrue(element.getElementById("foo") != null);
@@ -173,7 +180,8 @@ public class DefaultTemplateParserTest {
                                 .getBytes(StandardCharsets.UTF_8)));
 
         Element element = DefaultTemplateParser.getInstance()
-                .getTemplateContent(ImportsInspectTemplate.class, "foo")
+                .getTemplateContent(ImportsInspectTemplate.class, "foo",
+                        service)
                 .getTemplateElement();
         Assert.assertTrue(element.getElementById("foo") != null);
         assertThat("No comments should be present in the parsing result",
@@ -190,8 +198,8 @@ public class DefaultTemplateParserTest {
 
     @Test(expected = IllegalStateException.class)
     public void defaultParser_noTemplate_throws() {
-        DefaultTemplateParser.getInstance()
-                .getTemplateContent(ImportsInspectTemplate.class, "bar1");
+        DefaultTemplateParser.getInstance().getTemplateContent(
+                ImportsInspectTemplate.class, "bar1", service);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -200,8 +208,8 @@ public class DefaultTemplateParserTest {
                 mocks.getServletContext().getResourceAsStream("/bar1.html"))
                 .thenReturn(null);
 
-        DefaultTemplateParser.getInstance()
-                .getTemplateContent(ImportsInspectTemplate.class, "foo");
+        DefaultTemplateParser.getInstance().getTemplateContent(
+                ImportsInspectTemplate.class, "foo", service);
     }
 
     @Test
@@ -215,24 +223,23 @@ public class DefaultTemplateParserTest {
             return list;
         };
 
-        mocks.getService()
-                .setDependencyFilters(Collections.singletonList(filter));
+        TestVaadinServletService service = mocks.getService();
+        service.setDependencyFilters(Collections.singletonList(filter));
 
         TemplateParser parser = DefaultTemplateParser.getInstance();
 
         Element element = parser
-                .getTemplateContent(ImportsInspectTemplate.class, "foo")
+                .getTemplateContent(ImportsInspectTemplate.class, "foo",
+                        service)
                 .getTemplateElement();
         Assert.assertTrue(element.getElementById("foo") != null);
 
-        element = parser
-                .getTemplateContent(RootImportsInspectTemplate.class, "foo")
-                .getTemplateElement();
+        element = parser.getTemplateContent(RootImportsInspectTemplate.class,
+                "foo", service).getTemplateElement();
         Assert.assertTrue(element.getElementById("foo") != null);
 
-        element = parser
-                .getTemplateContent(OtherImportsInspectTemplate.class, "bar")
-                .getTemplateElement();
+        element = parser.getTemplateContent(OtherImportsInspectTemplate.class,
+                "bar", service).getTemplateElement();
         Assert.assertTrue(element.getElementById("bar") != null);
 
         Assert.assertEquals(
@@ -251,8 +258,8 @@ public class DefaultTemplateParserTest {
         mocks.getService()
                 .setDependencyFilters(Collections.singletonList(filter));
 
-        DefaultTemplateParser.getInstance()
-                .getTemplateContent(ImportsInspectTemplate.class, "foo");
+        DefaultTemplateParser.getInstance().getTemplateContent(
+                ImportsInspectTemplate.class, "foo", service);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -269,8 +276,8 @@ public class DefaultTemplateParserTest {
         mocks.getService()
                 .setDependencyFilters(Collections.singletonList(filter));
 
-        DefaultTemplateParser.getInstance()
-                .getTemplateContent(ImportsInspectTemplate.class, "foo");
+        DefaultTemplateParser.getInstance().getTemplateContent(
+                ImportsInspectTemplate.class, "foo", service);
     }
 
 }
