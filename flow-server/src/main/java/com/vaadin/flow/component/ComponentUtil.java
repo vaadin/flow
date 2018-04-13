@@ -225,7 +225,13 @@ public class ComponentUtil {
         if (component instanceof HasEnabled
                 && component.getElement().isEnabled() != component.getElement()
                         .getNode().isEnabledSelf()) {
-            component.onEnabledStateChanged(component.getElement().isEnabled());
+
+            Optional<Component> parent = component.getParent();
+            if (parent.isPresent()
+                    && isAttachedToParent(component, parent.get())) {
+                component.onEnabledStateChanged(
+                        component.getElement().isEnabled());
+            }
         }
     }
 
