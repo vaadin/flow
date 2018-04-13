@@ -61,8 +61,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ListBoxElement#1.0.0-beta3",
-        "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.ListBoxElement#1.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-list-box")
 @HtmlImport("frontend://bower_components/vaadin-list-box/src/vaadin-list-box.html")
 public abstract class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>>
