@@ -13,7 +13,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -256,9 +255,15 @@ public class BootstrapHandlerDependenciesTest {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
         TestVaadinServlet servlet = mocks.getServlet();
-        servlet.setResourceFoundOverride(r -> true);
-        servlet.setResourceAsStreamOverride(
-                resource -> new ByteArrayInputStream(resource.getBytes()));
+        for (String type : new String[] { "html", "js", "css" }) {
+            servlet.addServletContextResource("/frontend/inline." + type,
+                    "/frontend/inline." + type);
+            servlet.addServletContextResource("/frontend/1." + type,
+                    "/frontend/1." + type);
+            servlet.addServletContextResource("/frontend/2." + type,
+                    "/frontend/2." + type);
+        }
+        servlet.addServletContextResource("/frontend/new.js");
     }
 
     @After
