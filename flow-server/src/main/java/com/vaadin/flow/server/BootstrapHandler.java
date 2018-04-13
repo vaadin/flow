@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -72,8 +74,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -675,22 +675,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static void appendWebComponentsPolyfills(Element head,
             BootstrapContext context) {
-        DeploymentConfiguration config = context.getSession()
-                .getConfiguration();
+        VaadinSession session = context.getSession();
+        DeploymentConfiguration config = session.getConfiguration();
 
         String webcomponentsLoaderUrl = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
-        VaadinServlet servlet = ((VaadinServletService) context.getSession()
-                .getService()).getServlet();
-        String location = servlet.resolveResource(webcomponentsLoaderUrl);
-        if (location == null) {
+        VaadinService service = session.getService();
+        if (!service.isResourceAvailable(webcomponentsLoaderUrl,
+                session.getBrowser(), null)) {
             // No webcomponents polyfill, load nothing
             return;
         }
 
         boolean loadEs5Adapter = config
                 .getBooleanProperty(Constants.LOAD_ES5_ADAPTERS, true);
-        if (loadEs5Adapter
-                && !context.getSession().getBrowser().isEs6Supported()) {
+        if (loadEs5Adapter && !session.getBrowser().isEs6Supported()) {
             // This adapter is required since lots of our current customers
             // use polymer-cli to transpile sources,
             // this tool adds babel-helpers dependency into each file, see:
