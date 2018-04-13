@@ -680,10 +680,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         String webcomponentsLoaderUrl = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
-        VaadinServlet servlet = ((VaadinServletService) context.getSession()
-                .getService()).getServlet();
-        String location = servlet.resolveResource(webcomponentsLoaderUrl);
-        if (location != null) {
+        VaadinService service = context.getSession().getService();
+        if (service.isResourceAvailable(webcomponentsLoaderUrl,
+                context.getSession().getBrowser(), null)) {
             String resolvedUrl = context.getUriResolver()
                     .resolveVaadinUri(webcomponentsLoaderUrl);
             head.appendChild(createJavaScriptElement(resolvedUrl, false));
