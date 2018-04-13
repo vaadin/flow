@@ -199,17 +199,10 @@ public interface ElementStateProvider extends Serializable {
      *            the event type
      * @param listener
      *            the listener
-     * @param mode
-     *            controls RPC communication from the client side to the server
-     *            side when the element is disabled, not {@code null}
-     * @param eventDataExpressions
-     *            the event data expressions
-     *
-     * @return a handle for removing the listener
+     * @return a handle for configuring or removing the listener
      */
-    Registration addEventListener(StateNode node, String eventType,
-            DomEventListener listener, DisabledUpdateMode mode,
-            String[] eventDataExpressions);
+    DomListenerRegistration addEventListener(StateNode node, String eventType,
+            DomEventListener listener);
 
     /**
      * Gets the value of the given property.
