@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,6 +56,7 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -334,7 +334,7 @@ public class UidlWriterTest {
 
         List<JsonObject> inlineDependencies = dependenciesMap
                 .get(LoadMode.INLINE);
-        assertInlineDependencies(inlineDependencies, "/frontend/");
+        assertInlineDependencies(inlineDependencies, "This is /frontend/");
     }
 
     @Test
@@ -350,7 +350,7 @@ public class UidlWriterTest {
                 .<JsonObject> stream(response.getArray(LoadMode.INLINE.name()))
                 .collect(Collectors.toList());
 
-        assertInlineDependencies(inlineDependencies, "/frontend/");
+        assertInlineDependencies(inlineDependencies, "This is /frontend/");
     }
 
     @Test
@@ -433,10 +433,10 @@ public class UidlWriterTest {
         ui.getRouter().getRegistry().setNavigationTargets(
                 new HashSet<>(Arrays.asList(BaseClass.class)));
 
-        mocks.getServlet().setResourceFoundOverride(i -> true);
-        mocks.getServlet().setResourceAsStreamOverride(
-                resource -> new ByteArrayInputStream(resource.getBytes()));
-
+        TestVaadinServlet servlet = mocks.getServlet();
+        servlet.addServletContextResource("/frontend/inline.html");
+        servlet.addServletContextResource("/frontend/inline.js");
+        servlet.addServletContextResource("/frontend/inline.css");
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
 
         VaadinServletRequest vaadinRequestMock = mock(

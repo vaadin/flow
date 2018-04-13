@@ -51,12 +51,13 @@ import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.theme.AbstractTheme;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -122,8 +123,8 @@ public class UidlWriter implements Serializable {
 
         encodeChanges(ui, stateChanges);
 
-        populateDependencies(response, service,
-                uiInternals.getDependencyList());
+        populateDependencies(response, service, uiInternals.getDependencyList(),
+                session.getBrowser(), null);
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.put("constants",
@@ -148,7 +149,8 @@ public class UidlWriter implements Serializable {
     }
 
     private static void populateDependencies(JsonObject response,
-            VaadinService service, DependencyList dependencyList) {
+            VaadinService service, DependencyList dependencyList,
+            WebBrowser browser, AbstractTheme theme) {
         Collection<Dependency> pendingSendToClient = dependencyList
                 .getPendingSendToClient();
 
@@ -160,35 +162,41 @@ public class UidlWriter implements Serializable {
         }
 
         if (!pendingSendToClient.isEmpty()) {
-            groupDependenciesByLoadMode(pendingSendToClient)
-                    .forEach((loadMode, dependencies) -> response
-                            .put(loadMode.name(), dependencies));
+            groupDependenciesByLoadMode(pendingSendToClient, service, browser,
+                    theme).forEach(
+                            (loadMode, dependencies) -> response
+                                    .put(loadMode.name(), dependencies));
         }
         dependencyList.clearPendingSendToClient();
     }
 
     private static Map<LoadMode, JsonArray> groupDependenciesByLoadMode(
-            Collection<Dependency> dependencies) {
+            Collection<Dependency> dependencies, VaadinService service,
+            WebBrowser browser, AbstractTheme theme) {
         Map<LoadMode, JsonArray> result = new EnumMap<>(LoadMode.class);
         dependencies
                 .forEach(dependency -> result.merge(dependency.getLoadMode(),
-                        JsonUtils.createArray(dependencyToJson(dependency)),
+                        JsonUtils.createArray(dependencyToJson(dependency,
+                                service, browser, theme)),
                         JsonUtils.asArray().combiner()));
         return result;
     }
 
-    private static JsonObject dependencyToJson(Dependency dependency) {
+    private static JsonObject dependencyToJson(Dependency dependency,
+            VaadinService service, WebBrowser browser, AbstractTheme theme) {
         JsonObject dependencyJson = dependency.toJson();
         if (dependency.getLoadMode() == LoadMode.INLINE) {
-            dependencyJson.put(Dependency.KEY_CONTENTS,
-                    getDependencyContents(dependency.getUrl()));
+            dependencyJson.put(Dependency.KEY_CONTENTS, getDependencyContents(
+                    dependency.getUrl(), service, browser, theme));
             dependencyJson.remove(Dependency.KEY_URL);
         }
         return dependencyJson;
     }
 
-    private static String getDependencyContents(String url) {
-        try (InputStream inlineResourceStream = getInlineResourceStream(url)) {
+    private static String getDependencyContents(String url,
+            VaadinService service, WebBrowser browser, AbstractTheme theme) {
+        try (InputStream inlineResourceStream = getInlineResourceStream(url,
+                service, browser, theme)) {
             return IOUtils.toString(inlineResourceStream,
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -197,12 +205,12 @@ public class UidlWriter implements Serializable {
         }
     }
 
-    private static InputStream getInlineResourceStream(String url) {
-        VaadinServlet servlet = VaadinServlet.getCurrent();
-        String resolvedPath = servlet.resolveResource(url);
-        InputStream stream = servlet.getResourceAsStream(resolvedPath);
+    private static InputStream getInlineResourceStream(String url,
+            VaadinService service, WebBrowser browser, AbstractTheme theme) {
+        InputStream stream = service.getResourceAsStream(url, browser, theme);
 
         if (stream == null) {
+            String resolvedPath = service.resolveResource(url, browser);
             getLogger().warn("The path '{}' for inline resource "
                     + "has been resolved to '{}'. "
                     + "But resource is not available via the servlet context. "
@@ -219,11 +227,15 @@ public class UidlWriter implements Serializable {
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else {
-            getLogger().debug(
-                    "The path '{}' for inline resource has been successfully "
-                            + "resolved to resource URL '{}'",
-                    url, resolvedPath);
+            if (getLogger().isDebugEnabled()) {
+                String resolvedPath = service.resolveResource(url, browser);
+                getLogger().debug(
+                        "The path '{}' for inline resource has been successfully "
+                                + "resolved to resource URL '{}'",
+                        url, resolvedPath);
+            }
         }
+
         return stream;
     }
 

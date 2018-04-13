@@ -13,7 +13,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -248,6 +247,7 @@ public class BootstrapHandlerDependenciesTest {
 
     private TestVaadinServletService service;
     private MockServletServiceSessionSetup mocks;
+    private TestVaadinServlet servlet;
 
     @Before
     public void setup() throws Exception {
@@ -255,10 +255,23 @@ public class BootstrapHandlerDependenciesTest {
 
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
-        TestVaadinServlet servlet = mocks.getServlet();
-        servlet.setResourceFoundOverride(r -> true);
-        servlet.setResourceAsStreamOverride(
-                resource -> new ByteArrayInputStream(resource.getBytes()));
+        servlet = mocks.getServlet();
+        servlet.addServletContextResource("/frontend/lazy.js");
+        servlet.addServletContextResource("/frontend/lazy.css");
+        servlet.addServletContextResource("/frontend/lazy.html");
+        servlet.addServletContextResource("/frontend/inline.js");
+        servlet.addServletContextResource("/frontend/inline.css");
+        servlet.addServletContextResource("/frontend/inline.html");
+        servlet.addServletContextResource("/frontend/eager.js");
+        servlet.addServletContextResource("/eager-relative.css");
+        servlet.addServletContextResource("/frontend/eager.css");
+        servlet.addServletContextResource("/frontend/eager.html");
+        servlet.addServletContextResource("/frontend/1.html");
+        servlet.addServletContextResource("/frontend/2.html");
+        servlet.addServletContextResource("/frontend/1.js");
+        servlet.addServletContextResource("/frontend/2.js");
+        servlet.addServletContextResource("/frontend/1.css");
+        servlet.addServletContextResource("/frontend/2.css");
     }
 
     @After
@@ -268,13 +281,14 @@ public class BootstrapHandlerDependenciesTest {
 
     @Test
     public void testUiWithSameDependencyInDifferentModes() {
-        Stream.of(new UIAnnotated_BothLazyAndEagerTest(),
-                new UIWithMethods_BothBothLazyAndEagerTest(),
-                new UIAnnotated_BothInlineAndEagerTest(),
-                new UIWithMethods_BothBothInlineAndEagerTest(),
-                new UIAnnotated_BothLazyAndInlineTest(),
-                new UIWithMethods_BothBothLazyAndInlineTest())
-                .forEach(this::checkUiWithNoException);
+        servlet.addServletContextResource("/frontend/new.js");
+
+        checkUiWithNoException(new UIAnnotated_BothLazyAndEagerTest());
+        checkUiWithNoException(new UIWithMethods_BothBothLazyAndEagerTest());
+        checkUiWithNoException(new UIAnnotated_BothInlineAndEagerTest());
+        checkUiWithNoException(new UIWithMethods_BothBothInlineAndEagerTest());
+        checkUiWithNoException(new UIAnnotated_BothLazyAndInlineTest());
+        checkUiWithNoException(new UIWithMethods_BothBothLazyAndInlineTest());
     }
 
     private void checkUiWithNoException(UI ui) {
@@ -451,6 +465,9 @@ public class BootstrapHandlerDependenciesTest {
 
     @Test
     public void duplicateDependenciesAreDiscarded_Inline() {
+        servlet.addServletContextResource("/frontend/1.js");
+        servlet.addServletContextResource("/frontend/2.js");
+
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
