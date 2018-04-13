@@ -204,32 +204,44 @@ public class MockServletServiceSessionSetup {
     private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
 
     public MockServletServiceSessionSetup() throws Exception {
+        this(true);
+    }
+
+    public MockServletServiceSessionSetup(boolean sessionAvailable)
+            throws Exception {
         MockitoAnnotations.initMocks(this);
+        servlet = new TestVaadinServlet();
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
-        Mockito.when(session.getConfiguration())
-                .thenReturn(deploymentConfiguration);
-
-        Mockito.when(session.getBrowser()).thenReturn(browser);
-        Mockito.when(session.getPushId()).thenReturn("fake push id");
-        Mockito.when(session.getLocale()).thenReturn(Locale.ENGLISH);
-
-        Mockito.when(wrappedSession.getHttpSession()).thenReturn(httpSession);
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
+        if (sessionAvailable) {
+            Mockito.when(session.getConfiguration())
+                    .thenReturn(deploymentConfiguration);
 
-        servlet = new TestVaadinServlet();
-        Mockito.when(session.getService()).thenAnswer(i -> service);
-        Mockito.when(session.hasLock()).thenReturn(true);
-        Mockito.when(session.getPendingAccessQueue())
-                .thenReturn(new LinkedBlockingDeque<>());
-        Mockito.when(request.getWrappedSession()).thenReturn(wrappedSession);
+            Mockito.when(session.getBrowser()).thenReturn(browser);
+            Mockito.when(session.getPushId()).thenReturn("fake push id");
+            Mockito.when(session.getLocale()).thenReturn(Locale.ENGLISH);
 
+            Mockito.when(wrappedSession.getHttpSession())
+                    .thenReturn(httpSession);
+
+            Mockito.when(session.getService()).thenAnswer(i -> service);
+            Mockito.when(session.hasLock()).thenReturn(true);
+            Mockito.when(session.getPendingAccessQueue())
+                    .thenReturn(new LinkedBlockingDeque<>());
+            Mockito.when(request.getWrappedSession())
+                    .thenReturn(wrappedSession);
+        } else {
+            session = null;
+        }
         servlet.init(servletConfig);
 
         CurrentInstance.set(VaadinRequest.class, request);
-        CurrentInstance.set(VaadinSession.class, session);
         CurrentInstance.set(VaadinService.class, service);
+        if (sessionAvailable) {
+            CurrentInstance.set(VaadinSession.class, session);
+        }
 
         Mockito.when(request.getServletPath()).thenReturn("");
         Mockito.when(browser.isEs6Supported()).thenReturn(true);
