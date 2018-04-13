@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.WebBrowser;
-import com.vaadin.flow.shared.VaadinUriResolver;
 
 public class VaadinUriResolverTest {
 
