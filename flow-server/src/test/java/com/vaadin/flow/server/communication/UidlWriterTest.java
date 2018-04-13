@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -433,9 +432,10 @@ public class UidlWriterTest {
         ui.getRouter().getRegistry().setNavigationTargets(
                 new HashSet<>(Arrays.asList(BaseClass.class)));
 
-        mocks.getServlet().setResourceFoundOverride(i -> true);
-        mocks.getServlet().setResourceAsStreamOverride(
-                resource -> new ByteArrayInputStream(resource.getBytes()));
+        for (String type : new String[] { "html", "js", "css" }) {
+            mocks.getServlet().addServletContextResource(
+                    "/frontend/inline." + type, "/frontend/inline." + type);
+        }
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
 
