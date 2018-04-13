@@ -139,6 +139,12 @@ public class MockServletServiceSessionSetup {
             // /webjars/foo/bar.html
             addServletContextResource("/webjars/" + webjarContent);
         }
+
+        public void verifyServletContextResourceLoadedOnce(String resource) {
+            Mockito.verify(servlet.getServletContext())
+                    .getResourceAsStream(resource);
+
+        }
     }
 
     @Mock
