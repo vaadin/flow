@@ -31,9 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.WebBrowser;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -51,33 +52,38 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
     public void serviceInit(ServiceInitEvent event) {
         DeploymentConfiguration deploymentConfiguration = event.getSource()
                 .getDeploymentConfiguration();
-        if (deploymentConfiguration.isProductionMode()) {
-            Map<String, Set<String>> importsInBundles = readBundleDependencies(
-                    event);
-            if (!importsInBundles.isEmpty()) {
-                if (importsInBundles.values().stream()
-                        .noneMatch(importSet -> importSet.contains(
-                                BundleDependencyFilter.MAIN_BUNDLE_URL))) {
-                    throw new IllegalArgumentException(String.format(
-                            "Attempted to initialize BundleDependencyFilter with an "
-                                    + "import to bundle mapping which does not contain the main bundle %s",
-                            BundleDependencyFilter.MAIN_BUNDLE_URL));
-                }
-                event.addDependencyFilter(
-                        new BundleDependencyFilter(importsInBundles));
+        if (!deploymentConfiguration.isProductionMode()) {
+            return;
+        }
+
+        Map<String, Set<String>> importsInBundles = readBundleDependencies(
+                event.getSource());
+        if (!importsInBundles.isEmpty()) {
+            if (importsInBundles.values().stream()
+                    .noneMatch(importSet -> importSet.contains(
+                            BundleDependencyFilter.MAIN_BUNDLE_URL))) {
+                throw new IllegalArgumentException(String.format(
+                        "Attempted to initialize BundleDependencyFilter with an "
+                                + "import to bundle mapping which does not contain the main bundle %s",
+                        BundleDependencyFilter.MAIN_BUNDLE_URL));
             }
+            event.addDependencyFilter(
+                    new BundleDependencyFilter(importsInBundles));
         }
     }
 
     private Map<String, Set<String>> readBundleDependencies(
-            ServiceInitEvent event) {
-        VaadinServletService service = ((VaadinServletService) event
-                .getSource());
-        VaadinServlet servlet = service.getServlet();
-        String manifestResource = servlet
-                .resolveResource("frontend://" + FLOW_BUNDLE_MANIFEST);
-        try (InputStream bundleManifestStream = servlet
-                .getResourceAsStream(manifestResource)) {
+            VaadinService service) {
+        WebBrowser es6Browser = new WebBrowser() {
+            @Override
+            public boolean isEs6Supported() {
+                return true;
+            }
+        };
+        String manifestResource = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                + FLOW_BUNDLE_MANIFEST;
+        try (InputStream bundleManifestStream = service
+                .getResourceAsStream(manifestResource, es6Browser, null)) {
             if (bundleManifestStream == null) {
                 getLogger().info(
                         "Bundling disabled: Flow bundle manifest '{}' was not found in servlet context",
@@ -89,17 +95,19 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
                     .toString(bundleManifestStream, StandardCharsets.UTF_8));
             Map<String, Set<String>> importToBundle = new HashMap<>();
             for (String bundlePath : bundlesToUrlsContained.keys()) {
+                if (!service.isResourceAvailable(
+                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                                + bundlePath,
+                        es6Browser, null)) {
+                    throw new IllegalArgumentException(String.format(
+                            "Failed to find bundle at context path '%s', specified in manifest '%s'. "
+                                    + "Remove file reference from the manifest to disable bundle usage or add the bundle to the context path specified.",
+                            bundlePath, manifestResource));
+                }
                 JsonArray bundledFiles = bundlesToUrlsContained
                         .getArray(bundlePath);
                 for (int i = 0; i < bundledFiles.length(); i++) {
                     String bundledFile = bundledFiles.getString(i);
-                    String resolvedFile = servlet.resolveResource(bundledFile);
-                    if (resolvedFile == null) {
-                        throw new IllegalArgumentException(String.format(
-                                "Failed to find bundle at context path '%s', specified in manifest '%s'. "
-                                        + "Remove file reference from the manifest to disable bundle usage or add the bundle to the context path specified.",
-                                bundlePath, manifestResource));
-                    }
                     importToBundle.computeIfAbsent(bundledFile,
                             key -> new HashSet<>()).add(bundlePath);
                 }

@@ -741,6 +741,6 @@ public class VaadinServlet extends HttpServlet {
      *         used
      */
     protected Optional<WebJarServer> getWebJarServer() {
-        return Optional.of(webJarServer);
+        return Optional.ofNullable(webJarServer);
     }
 }
