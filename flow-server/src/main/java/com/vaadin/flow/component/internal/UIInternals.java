@@ -62,8 +62,8 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -760,15 +760,23 @@ public class UIInternals implements Serializable {
     }
 
     private void addHtmlImport(HtmlImportDependency dependency, Page page) {
-        dependency.getUris().stream()
-                .forEach(uri -> page.addHtmlImport(getHtmlImportValue(uri),
-                        dependency.getLoadMode()));
+        // The HTML dependency parser does not consider themes so it can
+        // cache raw information (e.g. vaadin-button/src/vaadin-button.html
+        // import) and not take into consideration which themes might
+        // contain versions for which files. They must be translated before
+        // added to page though, as whatever is added there is sent without
+        // modifications to the client
+        dependency.getUris().stream().forEach(uri -> page
+                .addHtmlImport(translateTheme(uri), dependency.getLoadMode()));
     }
 
-    private String getHtmlImportValue(String importValue) {
+    private String translateTheme(String importValue) {
         if (theme != null) {
-            return VaadinServlet.getCurrent().getUrlTranslation(theme,
-                    importValue);
+            VaadinService service = session.getService();
+            WebBrowser browser = session.getBrowser();
+            Optional<String> themedUrl = service.getThemedUrl(importValue,
+                    browser, theme);
+            return themedUrl.orElse(importValue);
         } else {
             Matcher componentMatcher = componentSource.matcher(importValue);
             if (componentMatcher.matches()) {
