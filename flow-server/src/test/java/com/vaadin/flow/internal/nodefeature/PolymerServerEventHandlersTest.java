@@ -69,7 +69,7 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
             extends PolymerTemplate<TemplateModel> {
 
         CorrectAnnotationUsage() {
-            super((clazz, tag) -> new TemplateData("",
+            super((clazz, tag, service) -> new TemplateData("",
                     Jsoup.parse("<dom-module id='polymer'></dom-module>")));
         }
 

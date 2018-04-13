@@ -46,6 +46,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd.
  */
 public class BundleFilterInitializer implements VaadinServiceInitListener {
+
     private static final String FLOW_BUNDLE_MANIFEST = "vaadin-flow-bundle-manifest.json";
 
     @Override
@@ -59,9 +60,11 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         Map<String, Set<String>> importsInBundles = readBundleDependencies(
                 event.getSource());
         if (!importsInBundles.isEmpty()) {
-            if (!importsInBundles.containsKey(BundleDependencyFilter.MAIN_BUNDLE_URL) &&
-                    importsInBundles.values().stream().noneMatch(
-                            importSet ->importSet.contains(BundleDependencyFilter.MAIN_BUNDLE_URL))) {
+            if (!importsInBundles
+                    .containsKey(BundleDependencyFilter.MAIN_BUNDLE_URL)
+                    && importsInBundles.values().stream()
+                            .noneMatch(importSet -> importSet.contains(
+                                    BundleDependencyFilter.MAIN_BUNDLE_URL))) {
                 throw new IllegalArgumentException(String.format(
                         "Attempted to initialize BundleDependencyFilter with an "
                                 + "import to bundle mapping which does not contain the main bundle %s",
@@ -74,12 +77,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
 
     private Map<String, Set<String>> readBundleDependencies(
             VaadinService service) {
-        WebBrowser es6Browser = new WebBrowser() {
-            @Override
-            public boolean isEs6Supported() {
-                return true;
-            }
-        };
+        WebBrowser es6Browser = FakeEs6Browser.get();
         String manifestResource = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
                 + FLOW_BUNDLE_MANIFEST;
         try (InputStream bundleManifestStream = service

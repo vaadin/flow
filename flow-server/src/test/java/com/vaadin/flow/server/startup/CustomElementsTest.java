@@ -103,8 +103,8 @@ public class CustomElementsTest {
         return clazz.getAnnotation(Tag.class).value();
     }
 
-    private static final TemplateParser TEST_PARSER = (clazz,
-            tag) -> new TemplateData("",
+    private static final TemplateParser TEST_PARSER = (clazz, tag,
+            service) -> new TemplateData("",
                     Jsoup.parse("<dom-module id='" + tag + "'></dom-module>"));
 
     @Tag("custom-element")
