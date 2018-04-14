@@ -20,19 +20,19 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.internal.HtmlDependencyParser.HtmlDependenciesCache;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class HtmlDependencyParserTest {
@@ -101,7 +101,8 @@ public class HtmlDependencyParserTest {
                 .thenReturn(new ByteArrayInputStream(
                         "".getBytes(StandardCharsets.UTF_8)));
 
-        Mockito.when(servlet.resolveResource("frontend://baz/../relative2.html"))
+        Mockito.when(
+                servlet.resolveResource("frontend://baz/../relative2.html"))
                 .thenReturn("relative2.html");
         Mockito.when(servlet.getResourceAsStream("relative2.html")).thenReturn(
                 new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
@@ -210,44 +211,6 @@ public class HtmlDependencyParserTest {
         Assert.assertTrue(
                 "Dependencies parser doesn't return the relative URI which is located in the parent folder",
                 dependencies.contains("frontend://relative1.html"));
-    }
-
-    @Test
-    public void dependenciesAreCached() {
-        String root = "foo.html";
-        HtmlDependencyParser parser = new HtmlDependencyParser(root);
-
-        String resolvedRoot = "baz/bar/" + root;
-        Mockito.when(servlet.resolveResource("frontend://" + root))
-                .thenReturn(resolvedRoot);
-
-        String importContent = "<link rel='import' href='relative.html'>";
-        InputStream stream = new ByteArrayInputStream(
-                importContent.getBytes(StandardCharsets.UTF_8));
-        Mockito.when(servlet.getResourceAsStream(resolvedRoot))
-                .thenReturn(stream);
-
-        Mockito.when(servlet.resolveResource("frontend://relative.html"))
-                .thenReturn("relative.html");
-        Mockito.when(service.getResourceAsStream("relative.html")).thenReturn(
-                new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
-
-        HtmlDependenciesCache cache = new HtmlDependenciesCache();
-        Mockito.when(session.getAttribute(HtmlDependenciesCache.class))
-                .thenReturn(cache);
-
-        Collection<String> dependencies = parser.parseDependencies();
-
-        Assert.assertEquals(2, dependencies.size());
-        Mockito.verify(servlet).getResourceAsStream(resolvedRoot);
-
-        // call one more time
-        dependencies = parser.parseDependencies();
-        // this time only root resource should be returned
-        Assert.assertEquals(1, dependencies.size());
-        // and there shouldn't be one more call for reading the content of the
-        // import
-        Mockito.verify(servlet).getResourceAsStream(resolvedRoot);
     }
 
 }
