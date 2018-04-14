@@ -70,14 +70,14 @@ public class HtmlDependencyParserTest {
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
 
         String importContent = "<link rel='import' href='relative1.html'>"
+                + "<link rel='import' href='foo/../relative1.html'>"
                 + "<link rel='import' href='../relative2.html'>"
                 + "<link rel='import' href='sub/relative3.html'>"
                 + "<link rel='import' href='/absolute.html'>";
         servlet.addServletContextResource("/frontend/" + root, importContent);
 
         servlet.addServletContextResource("/frontend/baz/relative1.html", "");
-        servlet.addServletContextResource("/frontend/baz/../relative2.html",
-                "");
+        servlet.addServletContextResource("/frontend/relative2.html", "");
         servlet.addServletContextResource("/frontend/baz/sub/relative3.html",
                 "");
         servlet.addServletContextResource("/absolute.html", "");
@@ -89,7 +89,7 @@ public class HtmlDependencyParserTest {
         servlet.verifyServletContextResourceLoadedOnce(
                 "/frontend/baz/relative1.html");
         servlet.verifyServletContextResourceLoadedOnce(
-                "/frontend/baz/../relative2.html");
+                "/frontend/relative2.html");
         servlet.verifyServletContextResourceLoadedOnce(
                 "/frontend/baz/sub/relative3.html");
         servlet.verifyServletContextResourceLoadedOnce("/absolute.html");
@@ -101,7 +101,7 @@ public class HtmlDependencyParserTest {
                 dependencies.contains("frontend://baz/relative1.html"));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the relative URI which is located in the parent folder",
-                dependencies.contains("frontend://baz/../relative2.html"));
+                dependencies.contains("frontend://relative2.html"));
         Assert.assertTrue(
                 "Dependencies parser doesn't return the relative URI which is located sub folder",
                 dependencies.contains("frontend://baz/sub/relative3.html"));
@@ -151,6 +151,29 @@ public class HtmlDependencyParserTest {
         Assert.assertTrue(
                 "Dependencies parser doesn't return the relative URI which is located in the parent folder",
                 dependencies.contains("frontend://relative1.html"));
+    }
+
+    @Test
+    public void dependenciesWithDifferentPathsIncludedOnlyOnce() {
+        String root = "foo.html";
+        HtmlDependencyParser parser = new HtmlDependencyParser(root);
+
+        String importContent = "<link rel='import' href='relative.html'>"
+                + "<link rel='import' href='foo/../relative.html'>"
+                + "<link rel='import' href='./relative.html'>";
+
+        servlet.addServletContextResource("/frontend/foo.html", importContent);
+        servlet.addServletContextResource("/frontend/relative.html", "");
+
+        Collection<String> dependencies = parser.parseDependencies();
+
+        Assert.assertEquals(2, dependencies.size());
+
+        Assert.assertTrue("Dependencies parser doesn't return the root URI",
+                dependencies.contains("frontend://" + root));
+        Assert.assertTrue(
+                "Dependencies parser doesn't return the simple relative URI",
+                dependencies.contains("frontend://relative.html"));
     }
 
 }

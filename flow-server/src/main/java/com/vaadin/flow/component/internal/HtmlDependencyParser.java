@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
@@ -118,13 +119,18 @@ public class HtmlDependencyParser {
         return relative;
     }
 
-    private String relativize(String relative, URI base) {
+    private String relativize(String relative, URI base)
+            throws URISyntaxException {
+        URI newUri;
         if (base.getPath().isEmpty()) {
             String uriString = base.toString();
             int index = uriString.lastIndexOf('/');
-            return uriString.substring(0, index + 1) + relative;
+            newUri = new URI(uriString.substring(0, index + 1) + relative);
+        } else {
+            newUri = base.resolve(relative);
         }
-        return base.resolve(relative).toString();
+
+        return VaadinUriResolver.toNormalizedURI(newUri);
     }
 
     private Stream<String> parseHtmlImports(InputStream content, String path) {

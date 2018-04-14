@@ -16,6 +16,7 @@
 package com.vaadin.flow.shared;
 
 import java.io.Serializable;
+import java.net.URI;
 
 /**
  * Utility for translating special Vaadin URIs into URLs usable by the browser.
@@ -84,4 +85,29 @@ public abstract class VaadinUriResolver {
         return vaadinUri;
     }
 
+    /**
+     * Returns a normalized version of the URI, converted to a string.
+     *
+     * @param uri
+     *            the URI to normalize
+     * @return
+     */
+    public static String toNormalizedURI(URI uri) {
+        URI normalized = uri.normalize();
+        // This is because of https://github.com/vaadin/flow/issues/3892
+        if ("frontend".equals(normalized.getScheme())
+                || "base".equals(normalized.getScheme())
+                || "context".equals(normalized.getScheme())) {
+            if (".".equals(normalized.getAuthority())
+                    && normalized.getHost() == null) {
+                // frontend://./foo.html
+                return normalized.toString().replaceAll("//./", "//");
+            }
+            if (normalized.getPath().startsWith("/../")) {
+                return normalized.toString()
+                        .replaceAll(normalized.getHost() + "/../", "");
+            }
+        }
+        return normalized.toString();
+    }
 }

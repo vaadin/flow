@@ -2,11 +2,12 @@ package com.vaadin.flow.shared;
 
 import static org.junit.Assert.assertEquals;
 
+import java.net.URI;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.WebBrowser;
-import com.vaadin.flow.shared.VaadinUriResolver;
 
 public class VaadinUriResolverTest {
 
@@ -66,4 +67,24 @@ public class VaadinUriResolverTest {
                 resolver.resolveVaadinUri("context://my-component.html"));
     }
 
+    @Test
+    public void normalizeURI() throws Exception {
+        assertEquals("http://foo/bar", normalize("http://foo/bar"));
+        assertEquals("http://foo/../bar", normalize("http://foo/../bar"));
+        assertEquals("http://foo/bar", normalize("http://foo/baz/../bar"));
+
+        for (String protocol : new String[] { "frontend", "context", "base" }) {
+            assertEquals(protocol + "://foo/bar",
+                    normalize(protocol + "://foo/bar"));
+            assertEquals(protocol + "://bar",
+                    normalize(protocol + "://foo/../bar"));
+            assertEquals(protocol + "://foo/bar",
+                    normalize(protocol + "://foo/baz/../bar"));
+        }
+
+    }
+
+    private String normalize(String string) throws Exception {
+        return VaadinUriResolver.toNormalizedURI(new URI(string));
+    }
 }
