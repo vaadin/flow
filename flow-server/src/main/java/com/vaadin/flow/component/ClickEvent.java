@@ -19,6 +19,9 @@ package com.vaadin.flow.component;
  * Event fired when a component is clicked.
  *
  * @author Vaadin Ltd
+ *
+ * @param <C>
+ *            The source component type
  */
 @DomEvent("click")
 public class ClickEvent<C extends Component> extends ComponentEvent<C> {
