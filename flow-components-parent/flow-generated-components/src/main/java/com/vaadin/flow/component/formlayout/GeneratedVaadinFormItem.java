@@ -169,7 +169,7 @@ import com.vaadin.flow.dom.Element;
 @Tag("vaadin-form-item")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-item.html")
 public abstract class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
-        extends Component implements HasStyle, ClickNotifier {
+        extends Component implements HasStyle, ClickNotifier<R> {
 
     /**
      * Adds the given components as children of this component at the slot

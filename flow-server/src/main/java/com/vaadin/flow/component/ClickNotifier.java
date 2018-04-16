@@ -37,7 +37,8 @@ public interface ClickNotifier<T extends Component>
      * @return a handle that can be used for removing the listener
      */
     default Registration addClickListener(
-            ComponentEventListener<ClickEvent> listener) {
-        return addListener(ClickEvent.class, listener);
+            ComponentEventListener<ClickEvent<T>> listener) {
+        return addListener(ClickEvent.class,
+                (ComponentEventListener) listener);
     }
 }

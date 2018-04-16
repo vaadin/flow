@@ -103,7 +103,7 @@ import com.vaadin.flow.shared.Registration;
 @Tag("vaadin-radio-button")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-button.html")
 public abstract class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
-        extends Component implements HasStyle, Focusable<R>, ClickNotifier {
+        extends Component implements HasStyle, Focusable<R>, ClickNotifier<R> {
 
     /**
      * <p>

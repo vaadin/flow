@@ -102,7 +102,7 @@ import com.vaadin.flow.dom.Element;
 @HtmlImport("frontend://bower_components/vaadin-button/src/vaadin-button.html")
 public abstract class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
         extends Component
-        implements HasStyle, ClickNotifier, HasText, Focusable<R> {
+        implements HasStyle, ClickNotifier<R>, HasText, Focusable<R> {
 
     /**
      * <p>

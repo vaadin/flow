@@ -106,7 +106,7 @@ import com.vaadin.flow.shared.Registration;
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/src/vaadin-checkbox.html")
 public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
-        extends Component implements HasStyle, Focusable<R>, ClickNotifier {
+        extends Component implements HasStyle, Focusable<R>, ClickNotifier<R> {
 
     /**
      * <p>

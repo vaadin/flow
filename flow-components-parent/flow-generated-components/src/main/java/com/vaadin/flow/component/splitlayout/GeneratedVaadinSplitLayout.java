@@ -189,7 +189,7 @@ import com.vaadin.flow.dom.Element;
 @Tag("vaadin-split-layout")
 @HtmlImport("frontend://bower_components/vaadin-split-layout/src/vaadin-split-layout.html")
 public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
-        extends Component implements HasStyle, ClickNotifier {
+        extends Component implements HasStyle, ClickNotifier<R> {
 
     /**
      * <p>
