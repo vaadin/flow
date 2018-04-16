@@ -215,6 +215,7 @@ public class DataCommunicator<T> implements Serializable {
         handleDetach();
 
         reset();
+        getKeyMapper().removeAll();
 
         this.dataProvider = dataProvider;
 
@@ -433,8 +434,10 @@ public class DataCommunicator<T> implements Serializable {
         if (passivated != null) {
             passivated.forEach(key -> {
                 T item = keyMapper.get(key);
-                dataGenerator.destroyData(item);
-                keyMapper.remove(item);
+                if (item != null) {
+                    dataGenerator.destroyData(item);
+                    keyMapper.remove(item);
+                }
             });
         }
     }
