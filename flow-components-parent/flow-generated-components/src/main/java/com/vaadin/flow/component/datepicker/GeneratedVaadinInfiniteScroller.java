@@ -849,6 +849,10 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      * These properties are retained unless a value of {@code null} is set.
      * </p>
      * <p>
+     * Note: This function does not support updating CSS mixins. You can not
+     * dynamically change the value of an {@code @apply}.
+     * </p>
+     * <p>
      * This function is not supported by Flow because it returns a
      * <code>elemental.json.JsonObject</code>. Functions with return types
      * different than void are not supported at this moment.
