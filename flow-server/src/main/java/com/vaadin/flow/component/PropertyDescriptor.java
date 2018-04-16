@@ -82,4 +82,10 @@ public interface PropertyDescriptor<S, G> {
      */
     G get(Element element);
 
+    /**
+     * Gets the name of the property.
+     *
+     * @return the property name
+     */
+    String getPropertyName();
 }
