@@ -171,6 +171,20 @@ public class DataCommunicatorTest {
         Assert.assertNull("Expected no communication after reattach", lastSet);
     }
 
+    @Test
+    public void setDataProvider_keyMapperIsReset() {
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertEquals("0", dataCommunicator.getKeyMapper().get("1"));
+
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        Assert.assertNull(
+                "The KeyMapper should be reset when a new DataProvider is set",
+                dataCommunicator.getKeyMapper().get("1"));
+    }
+
     private void fakeClientCommunication() {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         ui.getInternals().getStateTree().collectChanges(ignore -> {
