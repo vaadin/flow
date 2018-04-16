@@ -18,41 +18,41 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Mixin interface to handle click events on components.
+ * Mixin interface to handle blur events on components.
  *
  * @param <T>
  *            the type of the component returned at the
- *            {@link ClickEvent#getSource()}
+ *            {@link BlurEvent#getSource()}
  */
-public interface HasClickListeners<T extends Component>
+public interface BlurNotifier<T extends Component>
         extends ComponentEventNotifier {
 
     /**
-     * Add a listener to click DOM events.
+     * Add a listener to blur DOM events.
      * 
      * @param listener
-     *            The click listener.
-     * @return A registration that can be used to unregister the listener.
+     *            the blur listener
+     * @return a registration that can be used to unregister the listener
      * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/Events/click">click
+     *      "https://developer.mozilla.org/en-US/docs/Web/Events/blur">blur
      *      event at MDN</a>
      */
-    default Registration addClickListener(
-            ComponentEventListener<ClickEvent<T>> listener) {
-        return addListener(ClickEvent.class, (ComponentEventListener) listener);
+    default Registration addBlurListener(
+            ComponentEventListener<BlurEvent<T>> listener) {
+        return addListener(BlurEvent.class, (ComponentEventListener) listener);
     }
 
     /**
-     * Class that represents the DOM event "click".
+     * Class that represents the DOM event "blur".
      * 
      * @param <C>
      *            The source component type.
      */
-    @DomEvent("click")
-    class ClickEvent<C extends Component> extends ComponentEvent<C> {
+    @DomEvent("blur")
+    class BlurEvent<C extends Component> extends ComponentEvent<C> {
 
         /**
-         * ComponentEvent base constructor.
+         * BlurEvent base constructor.
          * 
          * @param source
          *            the source component
@@ -61,9 +61,9 @@ public interface HasClickListeners<T extends Component>
          *            side, <code>false</code> otherwise
          * @see ComponentEvent
          */
-        public ClickEvent(C source, boolean fromClient) {
+        public BlurEvent(C source, boolean fromClient) {
             super(source, fromClient);
         }
-    }
 
+    }
 }
