@@ -80,6 +80,11 @@ public final class PropertyDescriptors {
 
             return returnWrapper.apply(rawValue, defaultValue);
         }
+
+        @Override
+        public String getPropertyName() {
+            return name;
+        }
     }
 
     private static final BiFunction<Object, Object, Object> NULL_TO_DEFAULT = new BiFunction<Object, Object, Object>() {
