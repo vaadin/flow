@@ -18,6 +18,7 @@ package com.vaadin.flow.shared;
 import java.io.Serializable;
 
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.dom.DebouncePhase;
 
 /**
  * A utility class providing constants for JSON related features.
@@ -215,7 +216,7 @@ public class JsonConstants implements Serializable {
 
     /**
      * Type value for attach existing element server callback.
-     * 
+     *
      * @see #RPC_ATTACH_ASSIGNED_ID
      * @see #RPC_ATTACH_REQUESTED_ID
      * @see #RPC_ATTACH_TAG_NAME
@@ -270,4 +271,27 @@ public class JsonConstants implements Serializable {
      * Key used for storing child template nodes.
      */
     public static final String CHILD_TEMPLATE_KEY = "children";
+
+    /**
+     * Key holding the debounce phase for an event data map from the client.
+     */
+    // "for" is a reserved keyword, which means that this cannot be a valid JS
+    // expression, thus eliminating the risk for an accidental collision with a
+    // genuine data expression
+    public static final String EVENT_DATA_PHASE = "for";
+
+    /**
+     * Character used for representing {@link DebouncePhase#LEADING}.
+     */
+    public static final String EVENT_PHASE_LEADING = "leading";
+
+    /**
+     * Character used for representing {@link DebouncePhase#INTERMEDIATE}.
+     */
+    public static final String EVENT_PHASE_INTERMEDIATE = "intermediate";
+
+    /**
+     * Character used for representing {@link DebouncePhase#TRAILING}.
+     */
+    public static final String EVENT_PHASE_TRAILING = "trailing";
 }
