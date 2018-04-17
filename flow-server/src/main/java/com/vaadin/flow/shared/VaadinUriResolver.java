@@ -20,8 +20,7 @@ import java.io.Serializable;
 /**
  * Utility for translating special Vaadin URIs into URLs usable by the browser.
  * This is an abstract class performing the main logic in
- * {@link #resolveVaadinUri(String)} and using abstract methods in the class for
- * accessing information specific to the current environment.
+ * {@link #resolveVaadinUri(String, String, String)}.
  * <p>
  * Concrete implementations of this class should implement {@link Serializable}
  * in case a reference to an object of this class is stored on the server side.
@@ -47,64 +46,42 @@ public abstract class VaadinUriResolver {
      * Any other URI protocols, such as <code>http://</code> or
      * <code>https://</code> are passed through this method unmodified.
      *
-     * @param vaadinUri
-     *            the uri to resolve
-     * @return the resolved uri
+     * @param uri
+     *            the URI to resolve
+     * @param frontendUrl
+     *            the URL pointing to the path where the frontend files can be
+     *            found. It is expected that different browsers receive
+     *            different files depending on their capabilities. Can use the
+     *            other protocols.
+     * @param servletToContextRoot
+     *            the relative path from the servlet path (used as base path in
+     *            the client) to the context root
+     * @return the resolved URI
      */
-    public String resolveVaadinUri(String vaadinUri) {
-        if (vaadinUri == null) {
+    protected String resolveVaadinUri(String uri, String frontendUrl,
+            String servletToContextRoot) {
+        if (uri == null) {
             return null;
         }
 
-        String processedUri = processFrontendProtocol(vaadinUri);
-        processedUri = processContextProtocol(processedUri);
-        processedUri = processBaseUri(processedUri);
+        String processedUri = processProtocol(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX, frontendUrl,
+                uri);
+        processedUri = processProtocol(
+                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
+                servletToContextRoot, processedUri);
+        processedUri = processProtocol(
+                ApplicationConstants.BASE_PROTOCOL_PREFIX, "", processedUri);
 
         return processedUri;
     }
 
-    private String processBaseUri(String vaadinUri) {
-        if (vaadinUri.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX)) {
-            vaadinUri = vaadinUri.substring(
-                    ApplicationConstants.BASE_PROTOCOL_PREFIX.length());
+    private String processProtocol(String protocol, String replacement,
+            String vaadinUri) {
+        if (vaadinUri.startsWith(protocol)) {
+            vaadinUri = replacement + vaadinUri.substring(protocol.length());
         }
         return vaadinUri;
     }
-
-    private String processFrontendProtocol(String vaadinUri) {
-        if (vaadinUri
-                .startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
-            String relativeUrl = vaadinUri.substring(
-                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length());
-            return getFrontendRootUrl() + relativeUrl;
-        }
-        return vaadinUri;
-    }
-
-    private String processContextProtocol(String vaadinUri) {
-        if (vaadinUri
-                .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
-            String relativeUrl = vaadinUri.substring(
-                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
-            return getContextRootUrl() + relativeUrl;
-        }
-        return vaadinUri;
-    }
-
-    /**
-     * Gets the URL pointing to the context root.
-     *
-     * @return the context root URL
-     */
-    protected abstract String getContextRootUrl();
-
-    /**
-     * Gets the URL pointing to the root build path where the frontend files
-     * were compiled. It is expected that different browsers receive different
-     * files depending on their capabilities.
-     *
-     * @return the base build URL
-     */
-    protected abstract String getFrontendRootUrl();
 
 }

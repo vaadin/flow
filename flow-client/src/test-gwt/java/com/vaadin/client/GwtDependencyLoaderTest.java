@@ -116,6 +116,10 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
             {
                 set(ResourceLoader.class, mockResourceLoader);
                 set(URIResolver.class, new URIResolver(this));
+                ApplicationConfiguration appConf = new ApplicationConfiguration();
+                appConf.setContextRootUrl("../");
+                appConf.setFrontendRootUrl("/frontend/");
+                set(ApplicationConfiguration.class, appConf);
             }
         };
         initScheduler(new CustomScheduler());
@@ -208,28 +212,32 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String lazyHtmlUrl = "/lazy.html";
         String inlineHtmlContents = "/inline.html";
 
-        new DependencyLoader(registry)
-                .loadDependencies(createDependenciesMap(
-                        createInlineDependency(Dependency.Type.JAVASCRIPT, inlineJsContents),
-                        new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
-                                LoadMode.LAZY).toJson(),
-                        new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
-                                LoadMode.EAGER).toJson(),
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
+                createInlineDependency(Dependency.Type.JAVASCRIPT,
+                        inlineJsContents),
+                new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
+                        LoadMode.LAZY).toJson(),
+                new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
+                        LoadMode.EAGER).toJson(),
 
-                        createInlineDependency(Dependency.Type.STYLESHEET, inlineCssContents),
-                        new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
-                                LoadMode.LAZY).toJson(),
-                        new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
-                                LoadMode.EAGER).toJson(),
+                createInlineDependency(Dependency.Type.STYLESHEET,
+                        inlineCssContents),
+                new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
+                        LoadMode.LAZY).toJson(),
+                new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
+                        LoadMode.EAGER).toJson(),
 
-                        createInlineDependency(Dependency.Type.HTML_IMPORT, inlineHtmlContents),
-                        new Dependency(Dependency.Type.HTML_IMPORT, lazyHtmlUrl,
-                                LoadMode.LAZY).toJson(),
-                        new Dependency(Dependency.Type.HTML_IMPORT,
-                                eagerHtmlUrl, LoadMode.EAGER).toJson()));
+                createInlineDependency(Dependency.Type.HTML_IMPORT,
+                        inlineHtmlContents),
+                new Dependency(Dependency.Type.HTML_IMPORT, lazyHtmlUrl,
+                        LoadMode.LAZY).toJson(),
+                new Dependency(Dependency.Type.HTML_IMPORT, eagerHtmlUrl,
+                        LoadMode.EAGER).toJson()));
 
-        // When multiple LoadModes are used, no guarantees on the order can be made except
-        // for the fact that the last dependencies to be loaded are the lazy ones
+        // When multiple LoadModes are used, no guarantees on the order can be
+        // made except
+        // for the fact that the last dependencies to be loaded are the lazy
+        // ones
         assertEquals("All type of dependencies should be added",
                 Stream.of(eagerJsUrl, inlineJsContents, lazyJsUrl)
                         .collect(Collectors.toSet()),
@@ -267,8 +275,10 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         return jsonArray1;
     }
 
-    private JsonObject createInlineDependency(Dependency.Type dependencyType, String contents) {
-        JsonObject json = new Dependency(dependencyType, "", LoadMode.INLINE).toJson();
+    private JsonObject createInlineDependency(Dependency.Type dependencyType,
+            String contents) {
+        JsonObject json = new Dependency(dependencyType, "", LoadMode.INLINE)
+                .toJson();
         json.remove(Dependency.KEY_URL);
         json.put(Dependency.KEY_CONTENTS, contents);
         return json;
