@@ -94,4 +94,69 @@ public interface DomListenerRegistration extends Registration {
      */
     DomListenerRegistration setDisabledUpdateMode(
             DisabledUpdateMode disabledUpdateMode);
+
+    /**
+     * Configures the debouncing phases for which this listener should be
+     * triggered. Debouncing is disabled and the set phases are ignored if
+     * <code>timeout</code> is set to 0.
+     * <p>
+     * This methods overrides the settings previously set through
+     * {@link #debounce(int)}, {@link #throttle(int)} or
+     * {@link #debounce(int, DebouncePhase, DebouncePhase...)}.
+     *
+     * @see DebouncePhase
+     *
+     * @param timeout
+     *            the debounce timeout in milliseconds, or 0 to disable
+     *            debouncing
+     * @param firstPhase
+     *            the first phase to use
+     * @param rest
+     *            any remaining phases to use
+     * @return this registration, for chaining
+     */
+    // (first, ... rest) looks slightly weird, but is needed for EnumSet.of
+    DomListenerRegistration debounce(int timeout, DebouncePhase firstPhase,
+            DebouncePhase... rest);
+
+    /**
+     * Configures this listener to be notified only when at least
+     * <code>timeout</code> milliseconds has passed since the last time the
+     * event was triggered. This is useful for cases such as text input where
+     * it's only relevant to know the result once the user stops typing.
+     * <p>
+     * Debouncing is disabled if the <code>timeout</code> is set to 0.
+     * <p>
+     * This methods overrides the settings previously set through
+     * {@link #debounce(int)}, {@link #throttle(int)} or
+     * {@link #debounce(int, DebouncePhase, DebouncePhase...)}.
+     *
+     * @param timeout
+     *            the debounce timeout in milliseconds, or 0 to disable
+     *            debouncing
+     * @return this registration, for chaining
+     */
+    default DomListenerRegistration debounce(int timeout) {
+        return debounce(timeout, DebouncePhase.TRAILING);
+    }
+
+    /**
+     * Configures this listener to not be notified more often than
+     * <code>period</code> milliseconds.
+     * <p>
+     * Throttling is disabled if the <code>period</code> is set to 0.
+     * <p>
+     * This methods overrides the settings previously set through
+     * {@link #debounce(int)}, {@link #throttle(int)} or
+     * {@link #debounce(int, DebouncePhase, DebouncePhase...)}.
+     *
+     * @param period
+     *            the minimum period between listener invocations, or 0 to
+     *            disable throttling
+     * @return this registration, for chaining
+     */
+    default DomListenerRegistration throttle(int period) {
+        return debounce(period, DebouncePhase.LEADING,
+                DebouncePhase.INTERMEDIATE);
+    }
 }

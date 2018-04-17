@@ -17,7 +17,10 @@ package com.vaadin.flow.dom;
 
 import java.util.EventObject;
 
+import com.vaadin.flow.shared.JsonConstants;
+
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Server-side representation of a DOM event fired in the browser.
@@ -29,6 +32,8 @@ public class DomEvent extends EventObject {
     private final JsonObject eventData;
 
     private final String eventType;
+
+    private final DebouncePhase phase;
 
     /**
      * Creates a new DOM event.
@@ -49,6 +54,20 @@ public class DomEvent extends EventObject {
 
         this.eventType = eventType;
         this.eventData = eventData;
+
+        phase = extractPhase(eventData);
+    }
+
+    private static DebouncePhase extractPhase(JsonObject eventData) {
+        JsonValue jsonValue = eventData.get(JsonConstants.EVENT_DATA_PHASE);
+        if (jsonValue == null) {
+            return DebouncePhase.LEADING;
+        } else {
+            String phaseString = jsonValue.asString();
+
+            assert phaseString.length() == 1;
+            return DebouncePhase.forCode(phaseString.charAt(0));
+        }
     }
 
     @Override
@@ -77,4 +96,15 @@ public class DomEvent extends EventObject {
         return eventData;
     }
 
+    /**
+     * Gets the debounce phase for which this event is fired. This is used
+     * internally to only deliver the event to the appropriate listener in cases
+     * where there are multiple listeners for the same event with different
+     * debounce settings.
+     *
+     * @return the debounce phase
+     */
+    public DebouncePhase getPhase() {
+        return phase;
+    }
 }
