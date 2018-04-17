@@ -48,6 +48,8 @@ public class FrontendDataProvider {
 
     private final boolean shouldBundle;
     private final boolean shouldMinify;
+    private final boolean shouldHash;
+
     private final Map<String, Set<File>> fragments;
     private final Set<File> shellFileImports;
 
@@ -58,6 +60,7 @@ public class FrontendDataProvider {
      *            whether bundling data should be prepared
      * @param shouldMinify
      *            whether the output files should be minified
+     * @param hash
      * @param es6SourceDirectory
      *            the directory with original ES6 files, not {@code null}
      * @param annotationValuesExtractor
@@ -71,12 +74,13 @@ public class FrontendDataProvider {
      *            without external configuration file, not {@code null}
      */
     public FrontendDataProvider(boolean shouldBundle, boolean shouldMinify,
-            File es6SourceDirectory,
+            boolean shouldHash, File es6SourceDirectory,
             AnnotationValuesExtractor annotationValuesExtractor,
             File fragmentConfigurationFile,
             Map<String, Set<String>> userDefinedFragments) {
         this.shouldBundle = shouldBundle;
         this.shouldMinify = shouldMinify;
+        this.shouldHash = shouldHash;
         fragments = shouldBundle
                 ? resolveFragmentFiles(es6SourceDirectory,
                         fragmentConfigurationFile, userDefinedFragments)
@@ -106,6 +110,17 @@ public class FrontendDataProvider {
      */
     public boolean shouldMinify() {
         return shouldMinify;
+    }
+
+
+    /**
+     * Gets the information whether should the plugin rename the output files by adding
+     * a hash fragment.
+     *
+     * @return {@code true} if renaming of fragments to include a hash part should be performed
+     */
+    public boolean shouldHash() {
+        return shouldHash;
     }
 
     /**

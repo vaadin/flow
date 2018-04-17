@@ -77,7 +77,7 @@ public class FrontendDataProviderTest {
                 AnnotationValuesExtractor annotationValuesExtractor,
                 File fragmentConfigurationFile,
                 Map<String, Set<String>> userDefinedFragments) {
-            super(shouldBundle, shouldMinify, es6SourceDirectory,
+            super(shouldBundle, shouldMinify, false, es6SourceDirectory,
                     annotationValuesExtractor, fragmentConfigurationFile,
                     userDefinedFragments);
         }
